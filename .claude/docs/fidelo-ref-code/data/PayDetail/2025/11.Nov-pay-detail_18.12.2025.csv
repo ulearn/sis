@@ -1,0 +1,154 @@
+"Surname","First name","Invoice numbers","Payment method","Nationality","Salesperson","Group","Student status","Agent","Agency category","Agency number","Course","End","Start","Course - Absolute weeks","Accommodation","Start date","End","Note","Receipt number","Amount","Course","Accommodation","Transfer","Insurance","Additional course fees","Additional accommodation fees","General additional fees","Manually entered positions","Overpayment","Date","Method","Paid by","Type","Created by","Created","Updated by","Updated on"
+"Lee","Yujin","D2025177, D2025513, D2025540","Gross prior to arrival","South Korean","","","","","","","VISA PREMIUM","11/07/2025, 15/08/2025, 03/10/2025, 12/12/2025","12/05/2025, 28/07/2025, 01/09/2025, 20/10/2025",25,"APT-STNDRD / Self catering / Apartment, Individual room / Half-board / Host Family","11/05/2025, 01/11/2025, 22/11/2025","08/06/2025, 22/11/2025, 02/12/2025","Revolut: 6904aad9-8f64-ae4d-8a4d-171744c81ef8","R20253902","€1,055.00","€0.00","€740.00","€0.00","€0.00","€0.00","€65.00","€0.00","€0.00","€250.00","03/11/2025","Bank Transfer","Student","Prior to arrival","Team, Accounts","03/11/2025","Team, Accounts","03/11/2025"
+"Januszewski","Mikolaj","D2025519","Gross prior to arrival","Polish","","","Online","","","","UL-MORN-15","21/11/2025","17/11/2025",1,"","","","Revolut: 69027ebd-420e-ab2f-92c7-78b7d149e253","R20253904","€230.00","€180.00","€0.00","€0.00","€0.00","€50.00","€0.00","€0.00","€0.00","€0.00","04/11/2025","Bank Transfer","Student","Prior to arrival","Team, Accounts","04/11/2025","Team, Accounts","04/11/2025"
+"Mahmood","Haris","D2025514","Net prior to arrival","Pakistani","","","Online","Sajco Educational Consultant Pvt Ltd","Travel agent","","VISA PREMIUM","23/01/2026","04/08/2025",0,"","","","ADMIN FEE ULEARNP2 SP","R20253908","€300.00","€0.00","€0.00","€0.00","€0.00","€300.00","€0.00","€0.00","€0.00","€0.00","01/11/2025","TransferMate","Agent","Prior to arrival","Team, Accounts","04/11/2025","Team, Accounts","04/11/2025"
+"Fischer","Christian","D2025520","Gross prior to arrival","Brazilian","","","Online","","","","UL-AFT-15","14/11/2025","03/11/2025",2,"","","","TransferMate payment (asynchronous), 
+Transaction ID: 2629849, 
+Reference number: , 
+Source amount: 302, 
+Foreign amount:","R20253920","€302.00","€252.00","€0.00","€0.00","€0.00","€50.00","€0.00","€0.00","€0.00","€0.00","04/11/2025","TransferMate","Student","Prior to arrival","","05/11/2025","","05/11/2025"
+"Pierman","Louise","D2025522","Gross prior to arrival","Belgian","","","Online","","","","UL-MORN-20","03/04/2026","12/01/2026",12,"APT-PRM-SNGL / Self catering / Apartment","10/01/2026","04/04/2026","Revolut: 6908fcfd-4021-aaf1-89e9-f0e8cd57b3ee","R20253929","€5,529.80","€1,489.80","€4,015.00","€0.00","€0.00","€25.00","€0.00","€0.00","€0.00","€0.00","04/11/2025","Bank Transfer","Student","Prior to arrival","Team, Accounts","05/11/2025","Team, Accounts","05/11/2025"
+"Vierstra","Sara","D2025508, D2025518, D2025548","Gross prior to arrival","Italian","","","Online","","","","UL-MORN-15","28/11/2025, 19/12/2025","03/11/2025, 01/12/2025",7,"APT-PRM-SNGL / Self catering / Apartment, APT-SUPR-SNGL / Self catering / Apartment","02/11/2025, 09/11/2025, 30/11/2025","09/11/2025, 30/11/2025, 21/12/2025","TransferMate payment (asynchronous), 
+Transaction ID: 2629714, 
+Reference number: FIDELO-XML-SERVICE30706, 
+Source amount: , 
+Foreign amount: EUR 1050, 
+Payment method: Bank Transfer, 
+Paid by payment form (combination ID 27)","R20253930","€1,050.00","€0.00","€1,050.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","04/11/2025","TransferMate","Student","Prior to arrival","","05/11/2025","","05/11/2025"
+"Narita","Aika","D2025380","Gross prior to arrival","Japanese","","","","","","","VISA STANDARD","19/12/2025, 08/05/2026","03/11/2025, 05/01/2026",25,"","","","ULEARND2025380TMUL SP","R20253932","€1,550.00","€1,200.00","€0.00","€0.00","€0.00","€350.00","€0.00","€0.00","€0.00","€0.00","04/11/2025","TransferMate","Student","Prior to arrival","Team, Accounts","06/11/2025","Team, Accounts","06/11/2025"
+"Pierman","Louise","D2025522","Gross prior to arrival","Belgian","","","Online","","","","UL-MORN-20","03/04/2026","12/01/2026",12,"APT-PRM-SNGL / Self catering / Apartment","10/01/2026","04/04/2026","ST-LNBGU7YSVCQG SP","R20253933","€250.00","€0.00","€185.00","€0.00","€0.00","€0.00","€65.00","€0.00","€0.00","€0.00","05/11/2025","Stripe","Student","Prior to arrival","Team, Accounts","06/11/2025","Team, Accounts","06/11/2025"
+"Sirkecioglu Senol","Yagmur","D2025525","Gross prior to arrival","Turkish","","","","","","","UL-MORN-15","19/12/2025","10/11/2025",6,"","","","TransferMate payment (asynchronous), 
+Transaction ID: 2633481, 
+Reference number: FIDELO-XML-SERVICE30645, 
+Source amount: , 
+Foreign amount: EUR 826.2, 
+Payment method: VISA Debit, 
+Paid by payment form (combination ID 27)","R20253934","€826.20","€826.20","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","07/11/2025","TransferMate","Student","Prior to arrival","","07/11/2025","","11/11/2025"
+"Kuramura","Yusuke","D2025526","Net prior to arrival","Japanese","","","","The Gap LTD","Travel agent","","VISA PREMIUM","19/12/2025, 19/06/2026","15/12/2025, 05/01/2026",25,"","","","1580214041P2025951 IP","R20253937","€2,160.00","€1,890.00","€0.00","€0.00","€0.00","€270.00","€0.00","€0.00","€0.00","€0.00","07/11/2025","Bank Transfer","Agent","Prior to arrival","Team, Accounts","10/11/2025","Team, Accounts","10/11/2025"
+"Parada","Paola","D2025398","Gross prior to arrival","Spanish","","","","","","","UL-MORN-AFT-30","19/12/2025","24/11/2025",4,"APT-STNDRD / Self catering / Apartment","22/11/2025","20/12/2025","Revolut:	690c8752-328d-a153-a4f4-644cdbec0db5","R20253943","€900.00","€794.00","€106.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","07/11/2025","Bank Transfer","Student","Prior to arrival","Team, Accounts","10/11/2025","Team, Accounts","10/11/2025"
+"Ibrani","Amine","D2025498, D2025524","Gross prior to arrival","Moroccan","","","Online","","","","VISA STANDARD","26/06/2026","05/01/2026",25,"Individual room / Half-board / Host Family","04/01/2026","11/01/2026","TransferMate payment (asynchronous), 
+Transaction ID: 2636586, 
+Reference number: FIDELO-XML-SERVICE30674, 
+Source amount: , 
+Foreign amount: MAD 3415.38(EUR 305), 
+Payment method: Mastercard Credit, 
+Paid by payment form (combination ID 27)","R20253944","€305.00","€0.00","€240.00","€0.00","€0.00","€0.00","€65.00","€0.00","€0.00","€0.00","11/11/2025","TransferMate","Student","Prior to arrival","","11/11/2025","","13/11/2025"
+"Frauchiger","Moana","D2025527","Gross prior to arrival","Swiss","","","Online","","","","UL-AFT-15","12/12/2025","17/11/2025",4,"","","","TransferMate payment (asynchronous), 
+Transaction ID: 2636725, 
+Reference number: FIDELO-XML-SERVICE30748, 
+Source amount: , 
+Foreign amount: CHF 535.76(EUR 554), 
+Payment method: Mastercard Debit, 
+Paid by payment form (combination ID 27)","R20253945","€554.00","€504.00","€0.00","€0.00","€0.00","€50.00","€0.00","€0.00","€0.00","€0.00","11/11/2025","TransferMate","Student","Prior to arrival","","11/11/2025","","14/11/2025"
+"Nunes Stoduto","Lucas","D2025528","Net prior to arrival","Brazilian","","","Online","Mundus Agency Limited","Travel agent","","VISA STANDARD","19/12/2025, 29/05/2026","24/11/2025, 05/01/2026",25,"","","","158619782030727 P2 IP","R20253948","€1,360.00","€990.00","€0.00","€0.00","€0.00","€370.00","€0.00","€0.00","€0.00","€0.00","11/11/2025","Bank Transfer","Agent","Prior to arrival","Team, Accounts","12/11/2025","Team, Accounts","12/11/2025"
+"Madril Oliveira Molina","Aurora","D2025529","Net prior to arrival","Brazilian","","","","Optima Intercambio","Travel agent","","VISA STANDARD","19/12/2025, 29/05/2026","24/11/2025, 05/01/2026",25,"","","","138116 Aurora Mad SP","R20253954","€1,590.00","€1,170.00","€0.00","€0.00","€0.00","€420.00","€0.00","€0.00","€0.00","€0.00","11/11/2025","Bank Transfer","Agent","Prior to arrival","Team, Accounts","12/11/2025","Team, Accounts","12/11/2025"
+"Kuhl","Maurivan","D2025530","Net prior to arrival","Brazilian","","","Online","BLUE CONSULTORIA EM INTERCAMBIO E TURISMO LTDA ME","Travel agent","","VISA STANDARD","26/06/2026","05/01/2026",25,"","","","BLUE CONSULTORIA E GP","R20253960","€1,509.60","€1,209.60","€0.00","€0.00","€0.00","€300.00","€0.00","€0.00","€0.00","€0.00","11/11/2025","Bank Transfer","Agent","Prior to arrival","Team, Accounts","12/11/2025","Team, Accounts","12/11/2025"
+"dos Santos Coelho","Willians","D2025531","Net prior to arrival","Brazilian","","","Online","BLUE CONSULTORIA EM INTERCAMBIO E TURISMO LTDA ME","Travel agent","","VISA STANDARD","19/12/2025, 12/06/2026","08/12/2025, 05/01/2026",25,"","","","BLUE CONSULTORIA E GP","R20253966","€1,423.20","€1,123.20","€0.00","€0.00","€0.00","€300.00","€0.00","€0.00","€0.00","€0.00","11/11/2025","Bank Transfer","Agent","Prior to arrival","Team, Accounts","12/11/2025","Team, Accounts","12/11/2025"
+"Alves da Silva Molina","Diego","D2025532","Net prior to arrival","Brazilian","","","","Optima Intercambio","Travel agent","","VISA STANDARD","19/12/2025, 29/05/2026","24/11/2025, 05/01/2026",25,"","","","138139 Diego Moli IP","R20253972","€1,590.00","€1,170.00","€0.00","€0.00","€0.00","€420.00","€0.00","€0.00","€0.00","€0.00","11/11/2025","Bank Transfer","Agent","Prior to arrival","Team, Accounts","12/11/2025","Team, Accounts","12/11/2025"
+"Boldbaatar","Regzeddagva","D2025533","Gross prior to arrival","Mongolian","","","","","","","VISA STANDARD","19/12/2025, 19/06/2026","15/12/2025, 05/01/2026",25,"","","","TransferMate payment (asynchronous), 
+Transaction ID: 2637890, 
+Reference number: FIDELO-XML-SERVICE29211, 
+Source amount: , 
+Foreign amount: EUR 1450, 
+Payment method: VISA Debit, 
+Paid by payment form (combination ID 27)","R20253978","€1,450.00","€1,100.00","€0.00","€0.00","€0.00","€350.00","€0.00","€0.00","€0.00","€0.00","12/11/2025","TransferMate","Student","Prior to arrival","","12/11/2025","","14/11/2025"
+"Bayasgalan","Enkhmaa","D2025534","Gross prior to arrival","Mongolian","","","","","","","VISA STANDARD","19/12/2025, 19/06/2026","15/12/2025, 05/01/2026",25,"","","","TransferMate payment (asynchronous), 
+Transaction ID: 2637900, 
+Reference number: FIDELO-XML-SERVICE29210, 
+Source amount: , 
+Foreign amount: EUR 1450, 
+Payment method: VISA Debit, 
+Paid by payment form (combination ID 27)","R20253981","€1,450.00","€1,100.00","€0.00","€0.00","€0.00","€350.00","€0.00","€0.00","€0.00","€0.00","12/11/2025","TransferMate","Student","Prior to arrival","","12/11/2025","","14/11/2025"
+"Álvarez Fernández","Raquel","D2025535","Gross prior to arrival","Spanish","","","","","","","VISA PREMIUM","03/07/2026","12/01/2026",25,"","","","TransferMate payment (asynchronous), 
+Transaction ID: 2638413, 
+Reference number: FIDELO-XML-SERVICE30753, 
+Source amount: , 
+Foreign amount: EUR 2160, 
+Payment method: Mastercard Debit, 
+Paid by payment form (combination ID 27)","R20253984","€2,160.00","€1,890.00","€0.00","€0.00","€0.00","€270.00","€0.00","€0.00","€0.00","€0.00","12/11/2025","TransferMate","Student","Prior to arrival","","12/11/2025","","14/11/2025"
+"Orlandin da Silva","Pedro Henrique","D2025536","Net prior to arrival","Brazilian","","","Online","Mundus Agency Limited","Travel agent","","VISA STANDARD","19/12/2025, 05/06/2026","01/12/2025, 05/01/2026",25,"","","","158771690530723 P2 IP","R20253987","€1,360.00","€990.00","€0.00","€0.00","€0.00","€370.00","€0.00","€0.00","€0.00","€0.00","12/11/2025","Bank Transfer","Agent","Prior to arrival","Team, Accounts","13/11/2025","Team, Accounts","13/11/2025"
+"Bat-Erdene","Sodnom","D2025537","Gross prior to arrival","Mongolian","","","","","","","VISA PREMIUM","19/12/2025, 29/05/2026","24/11/2025, 05/01/2026",25,"","","","TransferMate payment (asynchronous), 
+Transaction ID: 2638869, 
+Reference number: FIDELO-XML-SERVICE29283, 
+Source amount: , 
+Foreign amount: EUR 1656, 
+Payment method: VISA Debit, 
+Paid by payment form (combination ID 27)","R20253993","€1,656.00","€1,306.00","€0.00","€0.00","€0.00","€350.00","€0.00","€0.00","€0.00","€0.00","13/11/2025","TransferMate","Student","Prior to arrival","","13/11/2025","","17/11/2025"
+"Mendsaikhan","Tsengelbayar","D2025538","Gross prior to arrival","Mongolian","","","","","","","VISA PREMIUM","19/12/2025, 05/06/2026","01/12/2025, 05/01/2026",25,"","","","TransferMate payment (asynchronous), 
+Transaction ID: 2639936, 
+Reference number: , 
+Source amount: 1656, 
+Foreign amount:","R20253996","€1,656.00","€1,306.00","€0.00","€0.00","€0.00","€350.00","€0.00","€0.00","€0.00","€0.00","14/11/2025","TransferMate","Student","Prior to arrival","","17/11/2025","","18/11/2025"
+"Avramchenko","Kseniia","D2025542","Gross prior to arrival","Russian","","","Online","","","","VISA PREMIUM","04/09/2026","16/03/2026",25,"APT-PRM-SNGL / Self catering / Apartment","14/03/2026","25/04/2026","TransferMate payment (asynchronous), 
+Transaction ID: 2645370, 
+Reference number: FIDELO-XML-SERVICE30757, 
+Source amount: , 
+Foreign amount: GBP 4071.2(EUR 4417), 
+Payment method: AMEX, 
+Paid by payment form (combination ID 27)","R20254000","€4,417.00","€1,772.00","€2,100.00","€80.00","€0.00","€400.00","€65.00","€0.00","€0.00","€0.00","19/11/2025","TransferMate","Student","Prior to arrival","","19/11/2025","","25/11/2025"
+"Otgonbayar","Badamkhand","D2025543","Gross prior to arrival","Mongolian","","","","","","","VISA PREMIUM","19/12/2025, 05/06/2026","01/12/2025, 05/01/2026",25,"","","","TransferMate payment (asynchronous), 
+Transaction ID: 2643462, 
+Reference number: FIDELO-XML-SERVICE29150, 
+Source amount: , 
+Foreign amount: EUR 1656, 
+Payment method: Bank Transfer, 
+Paid by payment form (combination ID 27)","R20254003","€1,656.00","€1,306.00","€0.00","€0.00","€0.00","€350.00","€0.00","€0.00","€0.00","€0.00","18/11/2025","TransferMate","Student","Prior to arrival","","20/11/2025","","20/11/2025"
+"Zhang","Wei","D2025541","Gross prior to arrival","Chinese","","","","","","","VISA PREMIUM","19/12/2025, 29/05/2026","24/11/2025, 05/01/2026",25,"","","","ULEARNP2025979 DT","R20254006","€1,681.00","€1,306.00","€0.00","€0.00","€0.00","€375.00","€0.00","€0.00","€0.00","€0.00","19/11/2025","TransferMate","Student","Prior to arrival","Team, Sales","20/11/2025","Team, Sales","20/11/2025"
+"Jang","Yeongjae","D2025544","Gross prior to arrival","South Korean","","","Online","","","","VISA STANDARD","19/12/2025, 27/02/2026, 10/07/2026","15/12/2025, 05/01/2026, 23/03/2026",25,"","","","TransferMate payment (asynchronous), 
+Transaction ID: 2647605, 
+Reference number: FIDELO-XML-SERVICE30763, 
+Source amount: , 
+Foreign amount: EUR 2199, 
+Payment method: VISA Debit, 
+Paid by payment form (combination ID 27)","R20254009","€2,199.00","€1,799.00","€0.00","€0.00","€0.00","€400.00","€0.00","€0.00","€0.00","€0.00","20/11/2025","TransferMate","Student","Prior to arrival","","20/11/2025","","24/11/2025"
+"Rodrigues Silva","Vinicius","D2025237","Net prior to arrival","Brazilian","","","","Destino Certo Intercambios","Travel agent","","VISA STANDARD","19/09/2025, 21/11/2025","26/05/2025, 29/09/2025",25,"","","","TEST - With inquiry_id included","R20254012","€15.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€15.00","23/11/2025","Cash","Student","Prior to arrival","","23/11/2025","","23/11/2025"
+"Ganbaatar","Undralbat","D2025545","Net prior to arrival","Mongolian","","","","Sarantuya Taivankhuu","Travel agent","","VISA PREMIUM","05/06/2026","15/12/2025",25,"","","","ID29297 SP","R20254014","€371.00","€21.00","€0.00","€0.00","€0.00","€350.00","€0.00","€0.00","€0.00","€0.00","17/11/2025","Bank Transfer","Agent","Prior to arrival","Team, Accounts","24/11/2025","Team, Accounts","24/11/2025"
+"Le Port","Marie-Yuki","D2025539","Gross prior to arrival","French","","","Online","","","","UL-AFT-20","05/12/2025","24/11/2025",2,"","","","STRIPE-POU2HOCJIGB SP","R20254020","€254.00","€204.00","€0.00","€0.00","€0.00","€50.00","€0.00","€0.00","€0.00","€0.00","20/11/2025","Stripe","Student","Prior to arrival","Team, Accounts","24/11/2025","Team, Accounts","24/11/2025"
+"Lee","Yujin","D2025177, D2025513, D2025540","Gross prior to arrival","South Korean","","","","","","","VISA PREMIUM","11/07/2025, 15/08/2025, 03/10/2025, 12/12/2025","12/05/2025, 28/07/2025, 01/09/2025, 20/10/2025",25,"APT-STNDRD / Self catering / Apartment, Individual room / Half-board / Host Family","11/05/2025, 01/11/2025, 22/11/2025","08/06/2025, 22/11/2025, 02/12/2025","Revolut: 692069bd-7281-a61c-8d09-7623e9a1486e","R20254025","€480.00","€0.00","€480.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","21/11/2025","Bank Transfer","Student","Prior to arrival","Team, Accounts","24/11/2025","Team, Accounts","24/11/2025"
+"González Clavain","Pablo","D2025546","Net prior to arrival","Spanish","","","","LanguageCourse S.L.","Website","","UL-MORN-15","05/12/2025","01/12/2025",1,"Shared Room / Self catering / Apartment","30/11/2025","07/12/2025","Curso Pablo Gonzal SP","R20254026","€436.50","€121.50","€200.00","€0.00","€0.00","€50.00","€65.00","€0.00","€0.00","€0.00","17/11/2025","Bank Transfer","Agent","Prior to arrival","Team, Accounts","24/11/2025","Team, Accounts","24/11/2025"
+"Lalondriz","Yemerisse","D2025547, D2025570","Net prior to arrival","Spanish","","","","LanguageCourse S.L.","Website","","UL-MORN-20, UL-MORN-AFT-30","05/12/2025, 12/12/2025","01/12/2025, 08/12/2025",2,"APT-STNDRD / Self catering / Apartment, Shared Room / Self catering / Apartment","30/11/2025, 07/12/2025, 14/12/2025","07/12/2025, 14/12/2025, 15/12/2025","Pago matricula cur SP","R20254032","€992.62","€347.62","€530.00","€0.00","€0.00","€50.00","€65.00","€0.00","€0.00","€0.00","17/11/2025","Bank Transfer","Agent","Prior to arrival","Team, Accounts","24/11/2025","Team, Accounts","24/11/2025"
+"Kuramura","Yusuke","D2025526","Net prior to arrival","Japanese","","","","The Gap LTD","Travel agent","","VISA PREMIUM","19/12/2025, 19/06/2026","15/12/2025, 05/01/2026",25,"","","","1580214041P2025951 IP - Ai","R20254041","€2,160.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€2,160.00","07/11/2025","Cash","Student","Prior to arrival","","24/11/2025","","24/11/2025"
+"Wang","Yan","D2025412","Net prior to arrival","Chinese","","","","Qingdao Amazing Future Education","Travel agent","","VISA PREMIUM","19/12/2025, 19/06/2026","15/12/2025, 05/01/2026",25,"","","","ULEARNP2025771 SP","R20254047","€2,625.00","€1,653.75","€0.00","€0.00","€0.00","€420.00","€0.00","€0.00","€0.00","€551.25","24/11/2025","TransferMate","Agent","Prior to arrival","Team, Accounts","25/11/2025","Team, Accounts","25/11/2025"
+"Lautaro","Ulises","D2025553","Net prior to arrival","Argentinian","","","","ASK ENGLISH GLOBAL","Travel agent","","VISA STANDARD","19/12/2025, 12/06/2026","08/12/2025, 05/01/2026",25,"","","","Student id: 30751 IP","R20254049","€1,410.00","€990.00","€0.00","€0.00","€0.00","€420.00","€0.00","€0.00","€0.00","€0.00","25/11/2025","Bank Transfer","Agent","Prior to arrival","Team, Accounts","26/11/2025","Team, Accounts","26/11/2025"
+"Gankhuyag","Nandin-erdene","D2025554","Net prior to arrival","Mongolian","","","","BOOSTERS.MN","","","VISA PREMIUM","01/01/2027","13/07/2026",25,"","","","NANDIN-ERDENE SP","R20254055","€100.00","€0.00","€0.00","€0.00","€0.00","€100.00","€0.00","€0.00","€0.00","€0.00","25/11/2025","Bank Transfer","Agent","Prior to arrival","Team, Accounts","26/11/2025","Team, Accounts","26/11/2025"
+"Lu","Enshi","D2025510, D2025551","Net prior to arrival","Chinese","","","","Qingdao Amazing Future Education","Travel agent","","VISA PREMIUM","19/12/2025, 22/05/2026","17/11/2025, 05/01/2026",25,"Individual room / Half-board / Host Family","15/11/2025, 29/11/2025","29/11/2025, 20/12/2025","Revolut: 69258e8b-4ade-a8eb-80e4-27e383b233a1","R20254061","€785.00","€785.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","25/11/2025","Bank Transfer","Agent","Prior to arrival","Team, Accounts","26/11/2025","Team, Accounts","26/11/2025"
+"Giovanelli Barrio","Ignacio","D2025556","Gross prior to arrival","Italian","","","","","","","VISA PREMIUM","26/06/2026","05/01/2026",25,"","","","TransferMate payment (asynchronous), 
+Transaction ID: 2655238, 
+Reference number: FIDELO-XML-SERVICE30772, 
+Source amount: , 
+Foreign amount: EUR 2160, 
+Payment method: VISA Debit, 
+Paid by payment form (combination ID 27)","R20254063","€2,160.00","€1,890.00","€0.00","€0.00","€0.00","€270.00","€0.00","€0.00","€0.00","€0.00","26/11/2025","TransferMate","Student","Prior to arrival","","26/11/2025","","28/11/2025"
+"Chavez Rubio","Julio Cesar","D2025557","Gross prior to arrival","Mexican","","","","","","","VISA PREMIUM","19/12/2025, 19/06/2026","15/12/2025, 05/01/2026",25,"","","","TransferMate payment (asynchronous), 
+Transaction ID: 2656637, 
+Reference number: FIDELO-XML-SERVICE30196, 
+Source amount: , 
+Foreign amount: EUR 1706, 
+Payment method: Mastercard Debit, 
+Paid by payment form (combination ID 27)","R20254066","€1,706.00","€1,306.00","€0.00","€0.00","€0.00","€400.00","€0.00","€0.00","€0.00","€0.00","28/11/2025","TransferMate","Student","Prior to arrival","","28/11/2025","","02/12/2025"
+"Jabato","Teófilo","D2025552","Gross prior to arrival","Spanish","","","","","","","UL-AFT-15","05/06/2026","19/01/2026",20,"APT-SUPR-SNGL / Self catering / Apartment","17/01/2026","06/06/2026","ULEARNP2025995TMUL SP","R20254069","€1,344.00","€1,344.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","27/11/2025","TransferMate","Student","Prior to arrival","Team, Accounts","28/11/2025","Team, Accounts","28/11/2025"
+"Percon Peixoto","Isabela","D2025558","Net prior to arrival","Brazilian","","","Online","BLUE CONSULTORIA EM INTERCAMBIO E TURISMO LTDA ME","Travel agent","","VISA STANDARD","19/12/2025, 12/06/2026","08/12/2025, 05/01/2026",25,"","","","BLUE CONSULTORIA E GP","R20254072","€1,250.40","€950.40","€0.00","€0.00","€0.00","€300.00","€0.00","€0.00","€0.00","€0.00","27/11/2025","Bank Transfer","Agent","Prior to arrival","Team, Accounts","28/11/2025","Team, Accounts","28/11/2025"
+"Pelliccia","Chiara","D2025562","Gross prior to arrival","Italian","","","","","","","UL-MORN-AFT-30","23/01/2026","05/01/2026",3,"APT-STNDRD / Self catering / Apartment","03/01/2026","24/01/2026","Stripe: Giacomo Ferri - Ai","R20254098","€250.00","€0.00","€0.00","€30.00","€0.00","€0.00","€0.00","€220.00","€0.00","€0.00","28/11/2025","Stripe","Student","Prior to arrival","","29/11/2025","Team, Sales","02/12/2025"
+"Padros","Laia","D2025515, D2025559","Gross prior to arrival","Spanish","","","Online","","","","UL-IELTS-MORN","05/12/2025, 12/12/2025","10/11/2025, 08/12/2025",5,"","","","Stripe: py_3SYRfHL17ol1v2QQ1in56EGj - Ai","R20254103","€108.00","€108.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","28/11/2025","Stripe","Student","Prior to arrival","","30/11/2025","","30/11/2025"
+"Lu","Enshi","D2025510, D2025551","Net prior to arrival","Chinese","","","","Qingdao Amazing Future Education","Travel agent","","VISA PREMIUM","19/12/2025, 22/05/2026","17/11/2025, 05/01/2026",25,"Individual room / Half-board / Host Family","15/11/2025, 29/11/2025","29/11/2025, 20/12/2025","Revolut: 69258e8b-4ade-a8eb-80e4-27e383b233a1 - Ai","R20254104","€785.00","€785.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","25/11/2025","Credit Card","Student","Prior to arrival","","30/11/2025","","30/11/2025"
+"Lu","Enshi","D2025510, D2025551","Net prior to arrival","Chinese","","","","Qingdao Amazing Future Education","Travel agent","","VISA PREMIUM","19/12/2025, 22/05/2026","17/11/2025, 05/01/2026",25,"Individual room / Half-board / Host Family","15/11/2025, 29/11/2025","29/11/2025, 20/12/2025","Revolut: 69258e8b-4ade-a8eb-80e4-27e383b233a1 - Ai","R20254106","€785.00","€272.75","€480.00","€0.00","€0.00","€0.00","€32.25","€0.00","€0.00","€0.00","25/11/2025","Credit Card","Student","Prior to arrival","","30/11/2025","","30/11/2025"
+"Parada","Paola","D2025398","Gross prior to arrival","Spanish","","","","","","","UL-MORN-AFT-30","19/12/2025","24/11/2025",4,"APT-STNDRD / Self catering / Apartment","22/11/2025","20/12/2025","Revolut: 6911b724-cd71-a720-99e8-08d9376f5c8d","R20254108","€1,279.00","€0.00","€1,214.00","€0.00","€0.00","€0.00","€65.00","€0.00","€0.00","€0.00","10/11/2025","Bank Transfer","Student","Prior to arrival","Team, Accounts","01/12/2025","Team, Accounts","01/12/2025"
+"Lu","Enshi","D2025510, D2025551","Net prior to arrival","Chinese","","","","Qingdao Amazing Future Education","Travel agent","","VISA PREMIUM","19/12/2025, 22/05/2026","17/11/2025, 05/01/2026",25,"Individual room / Half-board / Host Family","15/11/2025, 29/11/2025","29/11/2025, 20/12/2025","Revolut: 69258e8b-4ade-a8eb-80e4-27e383b233a1 - Ai","R20254109","€785.00","€0.00","€720.00","€0.00","€0.00","€32.25","€32.75","€0.00","€0.00","€0.00","25/11/2025","Credit Card","Student","Prior to arrival","","01/12/2025","","01/12/2025"
+"Vierstra","Sara","D2025508, D2025518, D2025548","Gross prior to arrival","Italian","","","Online","","","","UL-MORN-15","28/11/2025, 19/12/2025","03/11/2025, 01/12/2025",7,"APT-PRM-SNGL / Self catering / Apartment, APT-SUPR-SNGL / Self catering / Apartment","02/11/2025, 09/11/2025, 30/11/2025","09/11/2025, 30/11/2025, 21/12/2025","ULEARND2025548TMUL SP - Ai","R20254111","€1,342.00","€291.60","€1,050.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.40","28/11/2025","Bank Transfer","Student","Prior to arrival","","01/12/2025","","01/12/2025"
+"Belizaire Calderón","Ralph","D2025560","Gross prior to arrival","Mexican","","","Online","","","","VISA STANDARD","24/07/2026","02/02/2026",25,"","","","TransferMate payment (asynchronous), 
+Transaction ID: 2657890, 
+Reference number: , 
+Source amount: 2199, 
+Foreign amount:","R20254112","€2,199.00","€1,799.00","€0.00","€0.00","€0.00","€400.00","€0.00","€0.00","€0.00","€0.00","28/11/2025","TransferMate","Student","Prior to arrival","","01/12/2025","","02/12/2025"
+"Feola","Luca","D2025555","Gross prior to arrival","Italian","","","Online","","","","UL-MORN-15","19/12/2025, 06/03/2026","01/12/2025, 05/01/2026",12,"","","","ULEARNP20251003	DT","R20254115","€1,126.60","€1,101.60","€0.00","€0.00","€0.00","€25.00","€0.00","€0.00","€0.00","€0.00","27/11/2025","Bank Transfer","Student","Prior to arrival","Team, Sales","01/12/2025","Team, Sales","01/12/2025"
+"Gantsooj","Javkhlan","D2025549","Net prior to arrival","Mongolian","","","","Sarantuya Taivankhuu","Travel agent","","VISA PREMIUM","19/12/2025, 12/06/2026","08/12/2025, 05/01/2026",25,"","","","P2025991 SP","R20254127","€1,575.85","€1,175.85","€0.00","€0.00","€0.00","€400.00","€0.00","€0.00","€0.00","€0.00","20/11/2025","Bank Transfer","Agent","Prior to arrival","Team, Accounts","03/12/2025","Team, Accounts","03/12/2025"
+"Otgonbayar","Undram","D2025138","Net prior to arrival","Mongolian","","","","Sarantuya Taivankhuu","Travel agent","","VISA PREMIUM","29/08/2025, 19/12/2025","16/06/2025, 15/09/2025",25,"","","","OTGONBAYAR SP","R20254133","€100.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€100.00","19/11/2025","Bank Transfer","Agent","Prior to arrival","Team, Accounts","03/12/2025","Team, Accounts","03/12/2025"
+"Yu","Jiaojiao","D2025550","Gross prior to arrival","Chinese","","","Online","","","","VISA PREMIUM","26/06/2026","05/01/2026",25,"","","","ULEARNP2025988","R20254138","€2,599.00","€2,199.00","€0.00","€0.00","€0.00","€375.00","€0.00","€0.00","€0.00","€25.00","25/11/2025","TransferMate Escrow","Student","Prior to arrival","Team, Accounts","04/12/2025","Team, Accounts","04/12/2025"
+"Lu","Enshi","D2025510, D2025551","Net prior to arrival","Chinese","","","","Qingdao Amazing Future Education","Travel agent","","VISA PREMIUM","19/12/2025, 22/05/2026","17/11/2025, 05/01/2026",25,"Individual room / Half-board / Host Family","15/11/2025, 29/11/2025","29/11/2025, 20/12/2025","Yeongjae Jang FIDE SP - Ai","R20254148","€2,199.00","€0.00","€0.00","€0.00","€0.00","€32.75","€0.00","€0.00","€0.00","€2,166.25","25/11/2025","Bank Transfer","Student","Prior to arrival","","08/12/2025","","08/12/2025"
+"Gankhuyag","Nandin-erdene","D2025554","Net prior to arrival","Mongolian","","","","BOOSTERS.MN","","","VISA PREMIUM","01/01/2027","13/07/2026",25,"","","","OTGONBAYAR         SP - Ai","R20254152","€100.00","€0.00","€0.00","€0.00","€0.00","€100.00","€0.00","€0.00","€0.00","€0.00","19/11/2025","Bank Transfer","Student","Prior to arrival","","08/12/2025","","08/12/2025"
+"Lu","Enshi","D2025510, D2025551","Net prior to arrival","Chinese","","","","Qingdao Amazing Future Education","Travel agent","","VISA PREMIUM","19/12/2025, 22/05/2026","17/11/2025, 05/01/2026",25,"Individual room / Half-board / Host Family","15/11/2025, 29/11/2025","29/11/2025, 20/12/2025","Amine Ibrani FIDEL SP - Ai","R20254154","€305.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€305.00","14/11/2025","Bank Transfer","Student","Prior to arrival","","08/12/2025","","08/12/2025"
+"Ahmad","Mahmoud  Yaseen Abedalqader","D2025344, D2025511","Gross prior to arrival","Jordanian","","","Online","","","","VISA STANDARD","19/12/2025, 08/05/2026","03/11/2025, 05/01/2026",25,"","","","REFUND - Ai","R20254156","€465.00","€-2,400.00","€0.00","€0.00","€0.00","€-400.00","€0.00","€0.00","€300.00","€2,965.00","13/11/2025","Bank Transfer","Student","Prior to arrival","","08/12/2025","","08/12/2025"
+"Sirkecioglu Senol","Yagmur","D2025432","Gross prior to arrival","Turkish","","","Online","","","","UL-MORN-15","24/10/2025, 07/11/2025","22/09/2025, 03/11/2025",6,"","","","Yagmur Sirkecioglu SP - Ai","R20254157","€826.20","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€826.20","12/11/2025","Bank Transfer","Student","Prior to arrival","","08/12/2025","","08/12/2025"
+"Giovanelli Barrio","Ignacio","D2025556","Gross prior to arrival","Italian","","","","","","","VISA PREMIUM","26/06/2026","05/01/2026",25,"","","","1580214041P2025951 IP - Ai","R20254158","€2,160.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€2,160.00","07/11/2025","Bank Transfer","Student","Prior to arrival","","08/12/2025","","08/12/2025"
+"Padros","Laia","D2025515, D2025559","Gross prior to arrival","Spanish","","","Online","","","","UL-IELTS-MORN","05/12/2025, 12/12/2025","10/11/2025, 08/12/2025",5,"","","","Laia Padros FIDELO SP - Ai","R20254159","€532.40","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€0.00","€532.40","05/11/2025","Bank Transfer","Student","Prior to arrival","","08/12/2025","","08/12/2025"
+

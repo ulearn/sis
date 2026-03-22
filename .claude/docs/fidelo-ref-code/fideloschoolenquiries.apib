@@ -1,0 +1,388 @@
+FORMAT: 1A
+
+# Fidelo School - Enquiries
+
+Create and update (simple) enquiries within Fidelo School.
+
+# Allowed HTTPs requests
+<table>
+    <tr>
+        <td>POST</td>
+        <td>Create new enquiry</td>    
+    </tr>
+    <tr>
+        <td>PATCH</td>
+        <td>Update existing enquiry</td> 
+    </tr>
+    <tr>
+        <td>GET</td>
+        <td>Get an enquiry or search for existing enquiries</td> 
+    </tr>
+</table>
+
+# Possible Server Responses
+- 200 `OK` - The request was successful.
+- 400 `Bad Request` - The request could not be understood or was missing required parameters.
+- 500 `Internal Server Error` - Something went wrong internally.
+- e0001 `Error` - Either the token is wrong or the IP is not stored with the Token.
+
+# Field Error Codes (Status 400)
+<table>
+    <tr>
+        <th>Code</th>
+        <th>Description</th>
+    </tr>
+    <tr>
+        <td>REQUIRED_FIELD_MISSING</td>
+        <td>Required field is missing in request.</td>
+    </tr>
+    <tr>
+        <td>INVALID_FIELD</td>
+        <td>Field does not exist in API.</td>
+    </tr>
+    <tr>
+        <td>INVALID_VALUE</td>
+        <td>Invalid value for field. This could be a mismatching ID for resources.</td>
+    </tr>
+    <tr>
+        <td>INVALID_DATE</td>
+        <td>Invalid date format.</td>
+    </tr>
+    <tr>
+        <td>INVALID_EMAIL</td>
+        <td>Invalid e-mail format.</td>
+    </tr>
+       <tr>
+        <td>INVALID_PHONE</td>
+        <td>Invalid phone number format.</td>
+    </tr>
+</table>
+
+
+# Fields
+<table>
+    <tr>
+        <th>Field</th>
+        <th>Type</th>
+        <th>Required</th>
+        <th>Description</th>
+    </tr>
+    <tr>
+        <td>school_id</td>
+        <td>integer </td>
+        <td>yes</td>
+        <td>Only required for creating.</td>
+    </tr>
+    <tr>
+        <td>firstname</td>
+        <td>string</td> 
+        <td>yes</td>
+        <td>First name of user</td>
+    </tr>
+    <tr>
+        <td>lastname</td>
+        <td>string</td> 
+        <td>yes</td>
+        <td>Last name of user</td>
+    </tr>
+        <tr>
+        <td>email</td>
+        <td>string</td> 
+        <td>yes</td>
+        <td>Valid e-mail address</td>
+    </tr>
+    <tr>
+        <td>corresponding_language</td>
+        <td>string</td> 
+        <td>yes</td>
+        <td>ISO 15897<sup>1</sup></td>
+    </tr>
+    <tr>
+        <td>nationality</td>
+        <td>string</td> 
+        <td></td>
+        <td>ISO 3166-1 alpha-2 (uppercase)</td>
+    </tr>
+    <tr>
+        <td>language</td>
+        <td>string</td> 
+        <td></td>
+        <td>ISO 639-1 (lowercase)</td>
+    </tr>
+    <tr>
+        <td>birthday</td>
+        <td>string</td> 
+        <td></td>
+        <td>Birthday, format: YYYY-MM-DD</td>
+    </tr>
+    <tr>
+        <td>gender</td>
+        <td>integer</td> 
+        <td></td>
+        <td>1 -> male<br>2 -> female</td>
+    </tr>
+    <tr>
+        <td>phone_private</td>
+        <td>string</td> 
+        <td></td>
+        <td>Valid ITU telephone number, like: +49 221 123456789</td>
+    </tr>
+    <tr>
+        <td>comment</td>
+        <td>string</td> 
+        <td></td>
+        <td>Comment field</td>
+    </tr>
+    <tr>
+        <td>comment_course_category</td>
+        <td>string</td> 
+        <td></td>
+        <td>Comment field</td>
+    </tr>
+    <tr>
+        <td>referrer_id</td>
+        <td>integer</td> 
+        <td></td>
+        <td>How did you hear about us? Must be the corresponding ID.</td>
+    </tr>
+    <tr>
+        <td>student_status_id</td>
+        <td>integer</td> 
+        <td></td>
+        <td>Student status</td>
+    </tr>
+</table>
+
+<sup>1</sup> IETF Language Tag with underscore, configured frontend languages only. E.g., if you use `de_DE` (German (German)) instead of `de` (German), you need to submit `de_DE` also.
+
+## Custom fields
+
+Values for custom fields can also be added and updated. The ID of the field is needed. For select fields the IDs for the corresponding options are also needed. See the create request for definition of custom fields.
+
+Further validation is performed for custom fields:
+<table>
+    <tr>
+        <th>Field types</th>
+        <th>Format</th>
+    </tr>
+    <tr>
+        <td>Text/Textarea/HTML</td>
+        <td>Maximum of 64 KB</td>
+    </tr>
+    <tr>
+        <td>Checkbox</td>
+        <td>0 or 1</td>
+    </tr>
+    <tr>
+        <td>Date</td>
+        <td>YYYY-MM-DD</td>
+    </tr>
+    <tr>
+        <td>Select</td>
+        <td>Integer: Valid option ID</td>
+    </tr>
+    <tr>
+        <td>Yes/No</td>
+        <td>yes or no</td>
+    </tr>
+</table>
+
+## Create an enquiry [/api/1.0/ts/enquiries{?token}]
+
++ Parameters
+
+    + token (required, string, `123456789abcdefg`) ... The token which is found at "Administration » Frontend » API Token"
+
+### Create an enquiry [POST]
+
+Create a new enquiry. Optional fields can be skipped.
+
++ Request (application/json)
+
+        {
+            "school_id": 1,
+            "firstname": "API",
+            "lastname": "Test",
+            "birthday": "1990-01-01",
+            "gender": 1,
+            "phone_private": "+49213112345",
+            "email": "test@test.de",
+            "nationality": "DE",
+            "language": "de",
+            "corresponding_language": "de",
+            "comment": "Test comment",
+            "comment_course_category": "Comment",
+            "referrer_id": 5,
+            "student_status_id": 1,
+            "custom_fields": {
+                "4": "Text",
+                "5": 5
+            }
+        }
+
++ Response 200 (application/json)
+
+    The entity has been created successfully. For further updates you can find the corresponding ID for this entity in the response.
+    
+    It can take a moment for the enquiry to show up in the software.
+    
+    + Body
+    
+            {
+                "id": 123,
+                "status": 200,
+                "message": "Enquiry successfully created"
+            }
+
+
++ Response 400 (application/json)
+
+    The validation of your input data has failed. The entity was not created. You can find the issues in the response JSON.
+
+    + Body
+
+            {
+                "errors": [
+                    {
+                        "field": "referrer_id",
+                        "code": "INVALID_VALUE",
+                        "message": "Field referrer id has invalid value: 666"
+                    },
+                    {
+                        "field": "birthday",
+                        "code": "INVALID_DATE",
+                        "message": "Field birthday has invalid date format: 1990-01-01x"
+                    },
+                    {
+                        "field": "corresponding_language",
+                        "code": "REQUIRED_FIELD_MISSING",
+                        "message": "Field is required: corresponding language"
+                    },
+                    {
+                        "field": "custom_fields.124",
+                        "code": "INVALID_VALUE",
+                        "message": "Field custom fields.124 has invalid length"
+                    },
+                    {
+                        "field": "what_field",
+                        "code": "INVALID_FIELD",
+                        "message": "Field does not exist: what_field"
+                    }
+                ],
+                "status": 400,
+                "message": "Validation Error"
+            }
+
+
++ Response 500 (application/json)
+
+    An internal error has happend, the enitity is likely not to be created. Please contact the support team if this error persists.
+
+    + Body
+    
+            {
+                "status": 500,
+                "message": "Internal Error"
+            }
+            
+            
+## Get or update an enquiry [/api/1.0/ts/enquiries/{enquiry_id}{?token}]
+
++ Parameters
+    + enquiry_id (required, integer, `123`) ... Internal Enquiry ID
+    + token (required, string, `123456789abcdefg`) ... The token which is found at "Administration » Frontend » API Token"
+
+### Update an enquiry [PATCH]
+
++ Request (application/json)
+
+        {
+            "comment": "Updated comment"
+        }
+        
++ Response 200 (application/json)
+
+    + Body
+    
+            {
+                "id": 123,
+                "status": 200,
+                "message": "Enquiry successfully updated"
+            }
+        
++ Response 400 (application/json)
+
+    The validation of your input data has failed. The entity was not updated. You can find the issues in the response JSON.
+
+    + Body
+
+            {
+                "errors": [
+                    {
+                        "field": "referrer_id",
+                        "code": "INVALID_VALUE",
+                        "message": "Field referrer id has invalid value: 666"
+                    },
+                ],
+                "status": 400,
+                "message": "Validation Error"
+            }
+
+
++ Response 500 (application/json)
+
+    An internal error has happend, the enitity is likely not to be updated. Please contact the support team if this error persists.
+
+    + Body
+    
+            {
+                "status": 500,
+                "message": "Internal Error"
+            }
+        
+
+
+
+### Get an enquiry by ID [GET]
+
++ Response 200 (application/json)
+
+    + Body
+    
+            {
+                "id": 123,
+                "comment": "Test comment",
+                [enquiry-object]
+            }
+
+
+## Search for enquiries [/api/1.0/ts/enquiries/search{?token}]
+
++ Parameters
+
+    + token (required, string, `123456789abcdefg`) ... The token which is found at "Administration » Frontend » API Token"
+
+### Search for enquiries [GET]
+
+...
+
++ Request (application/json)
+
+        {
+            "school_id": 1
+            "email": "hans@fidelo.com"
+        }
+     
++ Response 200 (application/json)
+
+    + Body
+    
+            {
+                enquiries: [
+                    {
+                        "id": 123,
+                        [enquiry-object]
+                    }
+                ]
+            }
+        

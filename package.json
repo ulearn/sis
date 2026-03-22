@@ -1,0 +1,35 @@
+{
+  "name": "sis",
+  "version": "1.0.0",
+  "description": "ULearn Student Information System",
+  "main": "index.js",
+  "scripts": {
+    "build": "npx tsc",
+    "start": "node index.js",
+    "dev": "npx ts-node src/app.ts",
+    "migrate": "npx prisma migrate dev",
+    "generate": "npx prisma generate",
+    "studio": "npx prisma studio"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.5.0",
+    "@prisma/adapter-pg-worker": "^6.9.0",
+    "@prisma/client": "^7.5.0",
+    "@prisma/pg-worker": "^6.9.0",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "pg": "^8.20.0",
+    "prisma": "^7.5.0",
+    "typescript": "^5.9.3",
+    "xero-node": "^14.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.5.0",
+    "@types/pg": "^8.20.0",
+    "ts-node": "^10.9.2"
+  }
+}

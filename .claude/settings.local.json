@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(source /home/sis/nodevenv/public_html/sis/20/bin/activate)",
+      "Bash(npx tsc:*)",
+      "Bash(ssh:*)"
+    ]
+  }
+}

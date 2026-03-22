@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Environment & secrets
+.env
+xero-tokens.json
+
+# Compiled output
+dist/
+
+# Prisma generated client
+src/generated/
+
+# Logs
+*.log
+sis.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temp
+tmp/

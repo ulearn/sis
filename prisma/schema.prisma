@@ -1,0 +1,705 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================
+// CORE: Students & Contacts
+// ============================================================
+
+model Student {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Identity
+  firstName         String  @map("first_name")
+  lastName          String  @map("last_name")
+  email             String
+  gender            Int?    // 1=male, 2=female (Fidelo convention)
+  birthday          DateTime? @db.Date
+  nationality       String?  @db.Char(2)  // ISO 3166-1 alpha-2
+  language          String?  // mother tongue
+  contactLanguage   String?  @map("contact_language") // correspondence language
+
+  // Address
+  address           String?
+  addressAddon      String?  @map("address_addon")
+  zip               String?
+  city              String?
+  state             String?
+  countryIso        String?  @map("country_iso") @db.Char(2)
+
+  // Contact
+  phone             String?
+  phoneMobile       String?  @map("phone_mobile")
+
+  // Emergency contact
+  emergencyFirstName String? @map("emergency_first_name")
+  emergencyLastName  String? @map("emergency_last_name")
+  emergencyPhone     String? @map("emergency_phone")
+  emergencyEmail     String? @map("emergency_email")
+
+  // Billing
+  billingFirstName  String?  @map("billing_first_name")
+  billingLastName   String?  @map("billing_last_name")
+  billingPhone      String?  @map("billing_phone")
+  billingEmail      String?  @map("billing_email")
+  billingAddress    String?  @map("billing_address")
+  billingZip        String?  @map("billing_zip")
+  billingCity       String?  @map("billing_city")
+  billingCountry    String?  @map("billing_country") @db.Char(2)
+  billingCompany    String?  @map("billing_company")
+
+  // Visa / Passport
+  passportNumber    String?  @map("passport_number")
+  visaRequired      Boolean  @default(false) @map("visa_required")
+  visaStatus        String?  @map("visa_status")
+  visaId            String?  @map("visa_id")
+  visaFrom          DateTime? @map("visa_from") @db.Date
+  visaUntil         DateTime? @map("visa_until") @db.Date
+  passportValidFrom DateTime? @map("passport_valid_from") @db.Date
+  passportValidUntil DateTime? @map("passport_valid_until") @db.Date
+
+  // Dietary / Medical
+  allergies         String?
+  vegetarian        Boolean  @default(false)
+  muslimDiet        Boolean  @default(false) @map("muslim_diet")
+
+  // Placement test / Level
+  currentLevel      String?  @map("current_level")  // A1, A2, B1, B2, C1, C2 — from placement test
+  placementTestDate DateTime? @map("placement_test_date") @db.Date
+  placementTestScore Int?    @map("placement_test_score")
+
+  // Classification
+  studentType       StudentType @default(ADULT) @map("student_type")
+  groupId           Int?        @map("group_id")
+  group             Group?      @relation(fields: [groupId], references: [id])
+
+  // Meta
+  studentStatus     String?  @map("student_status")
+  socialSecurityNum String?  @map("social_security_num")
+  note              String?
+  profilePicture    String?  @map("profile_picture")
+  source            String?  // "How did you hear about us?"
+
+  // External IDs (for migration & sync)
+  fideloContactId   Int?     @unique @map("fidelo_contact_id")
+  fideloCustomerNum String?  @unique @map("fidelo_customer_num")
+  hubspotContactId  String?  @unique @map("hubspot_contact_id")
+  hubspotDealId     String?  @map("hubspot_deal_id")
+
+  // Relations
+  bookings          Booking[]
+
+  @@map("students")
+}
+
+enum StudentType {
+  ADULT
+  JUNIOR
+}
+
+// ============================================================
+// GROUPS
+// ============================================================
+
+model Group {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  name              String
+  type              String?   // "Closed Group", "Agency Group", etc.
+  agencyId          Int?      @map("agency_id")
+  agency            Agency?   @relation(fields: [agencyId], references: [id])
+  startDate         DateTime? @map("start_date") @db.Date
+  endDate           DateTime? @map("end_date") @db.Date
+  defaultAccommRate Decimal?  @map("default_accomm_rate") @db.Decimal(8,2) // override provider rate for this group
+  note              String?
+
+  students          Student[]
+
+  @@map("groups")
+}
+
+// ============================================================
+// BOOKINGS: The commercial heart
+// ============================================================
+
+model Booking {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Student
+  studentId Int      @map("student_id")
+  student   Student  @relation(fields: [studentId], references: [id])
+
+  // Agency (B2B)
+  agencyId  Int?     @map("agency_id")
+  agency    Agency?  @relation(fields: [agencyId], references: [id])
+
+  // Booking details
+  status        BookingStatus @default(ENQUIRY)
+  confirmed     Boolean       @default(false)
+  confirmedAt   DateTime?     @map("confirmed_at")
+  checkinAt     DateTime?     @map("checkin_at")
+  checkoutAt    DateTime?     @map("checkout_at")
+  serviceStart  DateTime?     @map("service_start") @db.Date
+  serviceEnd    DateTime?     @map("service_end") @db.Date
+
+  // Financial
+  currency       String   @default("EUR") @db.Char(3)
+  amountTotal    Decimal? @map("amount_total") @db.Decimal(10,2)
+  amountPaid     Decimal? @map("amount_paid") @db.Decimal(10,2)
+  amountOpen     Decimal? @map("amount_open") @db.Decimal(10,2)
+  amountRefund   Decimal? @map("amount_refund") @db.Decimal(10,2)
+  paymentMethod  String?  @map("payment_method")
+  discountCode   String?  @map("discount_code")
+
+  // Salesperson / referral
+  salesperson    String?
+  referrerSource String?  @map("referrer_source")
+
+  // Notes
+  note           String?
+  commentAgent   String?  @map("comment_agent")
+
+  // External IDs
+  fideloBookingId Int?    @unique @map("fidelo_booking_id")
+  dataSource      DataSource @default(MANUAL) @map("data_source")
+
+  // Relations
+  courses            BookingCourse[]
+  accommodations     BookingAccommodation[]
+  holidays           BookingHoliday[]
+  payments           Payment[]
+  invoices           Invoice[]
+  documents          Document[]
+  statusHistory      BookingStatusHistory[]
+
+  @@map("bookings")
+}
+
+enum BookingStatus {
+  ENQUIRY
+  PENDING
+  CONFIRMED
+  CHECKED_IN
+  CHECKED_OUT
+  COMPLETED
+  CANCELLED
+}
+
+enum DataSource {
+  FIDELO
+  MANUAL
+  HUBSPOT
+}
+
+model BookingStatusHistory {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  bookingId Int           @map("booking_id")
+  booking   Booking       @relation(fields: [bookingId], references: [id])
+  fromStatus BookingStatus @map("from_status")
+  toStatus   BookingStatus @map("to_status")
+  changedBy  String?       @map("changed_by")
+
+  @@map("booking_status_history")
+}
+
+// ============================================================
+// AGENCIES (B2B)
+// ============================================================
+
+model Agency {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  name             String
+  nickname         String?
+  number           String?   // agency reference number
+  email            String?
+  phone            String?
+  category         String?   // agency category
+  commissionRate   Decimal?  @map("commission_rate") @db.Decimal(5,2) // percentage
+  contactPerson    String?   @map("contact_person")
+  note             String?
+
+  // External IDs
+  fideloAgencyId   Int?      @unique @map("fidelo_agency_id")
+  hubspotCompanyId String?   @unique @map("hubspot_company_id")
+
+  // Relations
+  bookings         Booking[]
+  groups           Group[]
+
+  @@map("agencies")
+}
+
+// ============================================================
+// COURSES: What the student is studying
+// ============================================================
+
+model BookingCourse {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  bookingId Int      @map("booking_id")
+  booking   Booking  @relation(fields: [bookingId], references: [id])
+
+  // Course details
+  name              String             // e.g. "Academic Year Afternoon"
+  category          CourseCategory
+  level             String?            // e.g. "A1", "A2", "B1", "B2"
+  startDate         DateTime           @map("start_date") @db.Date
+  endDate           DateTime           @map("end_date") @db.Date
+  weeks             Int
+  hoursPerWeek      Decimal?           @map("hours_per_week") @db.Decimal(4,1)
+  active            Boolean            @default(true)
+  flexibleAllocation Boolean           @default(false) @map("flexible_allocation")
+  note              String?
+
+  // Financial (per-course)
+  fee               Decimal?           @db.Decimal(10,2)
+  discount          Decimal?           @db.Decimal(10,2)
+  commission        Decimal?           @db.Decimal(10,2)
+
+  // External IDs
+  fideloCourseId    Int?               @unique @map("fidelo_course_id")
+
+  // Relations
+  classAssignments  StudentClassAssignment[]
+
+  @@map("booking_courses")
+}
+
+enum CourseCategory {
+  MORNING
+  MORNING_PLUS
+  AFTERNOON
+  AFTERNOON_PLUS
+  INTENSIVE
+  PRIVATE
+  OTHER
+}
+
+// ============================================================
+// CLASS SCHEDULING: Rooms, classes, teachers, assignments
+// ============================================================
+
+model Classroom {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  capacity  Int?
+  active    Boolean  @default(true)
+
+  classes   Class[]
+
+  @@map("classrooms")
+}
+
+model Teacher {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  firstName  String  @map("first_name")
+  lastName   String  @map("last_name")
+  email      String?
+  phone      String?
+  hourlyRate Decimal? @map("hourly_rate") @db.Decimal(6,2)
+  isSalaried Boolean  @default(false) @map("is_salaried") // DOS etc — cover hours don't generate payroll
+  active     Boolean @default(true)
+
+  assignments     TeacherAssignment[]
+  classTeachers   ClassTeacher[]
+  coversOriginal  TeacherCover[] @relation("CoverOriginalTeacher")
+  coversCover     TeacherCover[] @relation("CoverTeacher")
+
+  @@map("teachers")
+}
+
+model Class {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  name          String       // e.g. "A2 PM", "B1 AM"
+  level         String       // A1, A2, B1, B2, C1
+  session       ClassSession // morning or afternoon
+  classroomId   Int?         @map("classroom_id")
+  classroom     Classroom?   @relation(fields: [classroomId], references: [id])
+  startTime     String       @map("start_time")  // "09:00:00"
+  endTime       String       @map("end_time")     // "12:15:00"
+  days          Int[]        // [1,2,3,4,5] = Mon-Fri
+  active        Boolean      @default(true)
+
+  occurrences       ClassOccurrence[]
+  studentAssignments StudentClassAssignment[]
+  classTeachers     ClassTeacher[]
+  covers            TeacherCover[]
+
+  @@map("classes")
+}
+
+enum ClassSession {
+  MORNING
+  AFTERNOON
+}
+
+// Default teacher assigned to a class for a date range
+model ClassTeacher {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  classId   Int      @map("class_id")
+  class_    Class    @relation(fields: [classId], references: [id])
+  teacherId Int      @map("teacher_id")
+  teacher   Teacher  @relation(fields: [teacherId], references: [id])
+  startDate DateTime @map("start_date") @db.Date
+  endDate   DateTime? @map("end_date") @db.Date  // null = ongoing
+
+  @@map("class_teachers")
+}
+
+// Exception: cover teacher replaces default teacher for part/all of a class on a specific date
+model TeacherCover {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  classId           Int      @map("class_id")
+  class_            Class    @relation(fields: [classId], references: [id])
+  date              DateTime @db.Date
+  originalTeacherId Int      @map("original_teacher_id")
+  originalTeacher   Teacher  @relation("CoverOriginalTeacher", fields: [originalTeacherId], references: [id])
+  coverTeacherId    Int      @map("cover_teacher_id")
+  coverTeacher      Teacher  @relation("CoverTeacher", fields: [coverTeacherId], references: [id])
+  startTime         String   @map("start_time")  // "09:00:00"
+  endTime           String   @map("end_time")    // "12:15:00" (full block by default)
+  reason            String?  // "sick", "leave", "late", etc.
+
+  @@map("teacher_covers")
+}
+
+model ClassOccurrence {
+  id        Int      @id @default(autoincrement())
+
+  classId   Int      @map("class_id")
+  class_    Class    @relation(fields: [classId], references: [id])
+  date      DateTime @db.Date
+  cancelled Boolean  @default(false)
+
+  teacherAssignments TeacherAssignment[]
+  attendanceRecords  Attendance[]
+
+  @@unique([classId, date])
+  @@map("class_occurrences")
+}
+
+model TeacherAssignment {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  teacherId       Int       @map("teacher_id")
+  teacher         Teacher   @relation(fields: [teacherId], references: [id])
+  occurrenceId    Int       @map("occurrence_id")
+  occurrence      ClassOccurrence @relation(fields: [occurrenceId], references: [id])
+  startTime       String    @map("start_time")
+  endTime         String    @map("end_time")
+  isSubstitute    Boolean   @default(false) @map("is_substitute")
+
+  @@map("teacher_assignments")
+}
+
+model StudentClassAssignment {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  bookingCourseId Int          @map("booking_course_id")
+  bookingCourse   BookingCourse @relation(fields: [bookingCourseId], references: [id])
+  classId         Int           @map("class_id")
+  class_          Class         @relation(fields: [classId], references: [id])
+  weekStart       DateTime      @map("week_start") @db.Date // the Monday of the assigned week
+  weekEnd         DateTime?     @map("week_end") @db.Date
+
+  @@map("student_class_assignments")
+}
+
+// ============================================================
+// ATTENDANCE
+// ============================================================
+
+model Attendance {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  studentId     Int              @map("student_id")
+  occurrenceId  Int              @map("occurrence_id")
+  occurrence    ClassOccurrence  @relation(fields: [occurrenceId], references: [id])
+  status        AttendanceStatus
+  hours         Decimal?         @db.Decimal(4,2) // actual hours attended (e.g. 3, 2.5, 0)
+  note          String?
+  recordedBy    String?          @map("recorded_by")
+
+  @@unique([studentId, occurrenceId])
+  @@map("attendance")
+}
+
+enum AttendanceStatus {
+  PRESENT
+  LATE
+  ABSENT_CERTIFIED
+  ABSENT_UNCERTIFIED
+  EXCUSED
+}
+
+// ============================================================
+// ACCOMMODATION
+// ============================================================
+
+model AccommodationProvider {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  name          String
+  type          String?    // "Host Family", "Residence", etc.
+  contactPerson String?    @map("contact_person")
+  email         String?
+  phone         String?
+  phone2        String?
+  mobile        String?
+  address       String?
+  addressAddon  String?    @map("address_addon")
+  zip           String?
+  city          String?
+  description   String?    // "Description of family"
+  allergies     String?    // provider's allergy info
+  weeklyRate    Decimal?   @map("weekly_rate") @db.Decimal(8,2) // per-provider rate (not category)
+  note          String?
+  active        Boolean    @default(true)
+
+  fideloProviderId Int?    @unique @map("fidelo_provider_id")
+
+  properties    AccommodationProperty[]
+
+  @@map("accommodation_providers")
+}
+
+model AccommodationProperty {
+  id         Int      @id @default(autoincrement())
+  providerId Int      @map("provider_id")
+  provider   AccommodationProvider @relation(fields: [providerId], references: [id])
+
+  name       String?
+  address    String?
+  rooms      AccommodationRoom[]
+
+  @@map("accommodation_properties")
+}
+
+model AccommodationRoom {
+  id         Int      @id @default(autoincrement())
+  propertyId Int      @map("property_id")
+  property   AccommodationProperty @relation(fields: [propertyId], references: [id])
+
+  name       String    // e.g. "Room 1", "Single room"
+  roomType   String?   @map("room_type")  // "Single", "Double", "Twin", "Triple"
+  enSuite    Boolean   @default(false) @map("en_suite")
+  capacity   Int       @default(1)
+
+  beds       AccommodationBed[]
+
+  @@map("accommodation_rooms")
+}
+
+model AccommodationBed {
+  id     Int      @id @default(autoincrement())
+  roomId Int      @map("room_id")
+  room   AccommodationRoom @relation(fields: [roomId], references: [id])
+
+  name   String?  // "Bed A", "Bed B"
+
+  placements BookingAccommodation[]
+
+  @@map("accommodation_beds")
+}
+
+model BookingAccommodation {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  bookingId Int      @map("booking_id")
+  booking   Booking  @relation(fields: [bookingId], references: [id])
+
+  // What was booked (the request)
+  accommodationType String?  @map("accommodation_type")  // "Host Family", "Hotel"
+  roomType          String?  @map("room_type")            // "Individual room", "Shared"
+  board             String?                                // "Self catering", "Breakfast", "Half-board"
+  startDate         DateTime @map("start_date") @db.Date
+  endDate           DateTime @map("end_date") @db.Date
+  weeks             Int?
+  checkinTime       String?  @map("checkin_time")
+  checkoutTime      String?  @map("checkout_time")
+  active            Boolean  @default(true)
+  note              String?
+  shareWith         String?  @map("share_with")
+
+  // Where they're placed (the assignment)
+  bedId             Int?     @map("bed_id")
+  bed               AccommodationBed? @relation(fields: [bedId], references: [id])
+
+  // Financial
+  fee               Decimal? @db.Decimal(10,2)
+
+  @@map("booking_accommodations")
+}
+
+// ============================================================
+// HOLIDAYS (course pauses)
+// ============================================================
+
+model BookingHoliday {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  bookingId Int      @map("booking_id")
+  booking   Booking  @relation(fields: [bookingId], references: [id])
+
+  startDate DateTime @map("start_date") @db.Date
+  endDate   DateTime @map("end_date") @db.Date
+  weeks     Int?
+  type      String?  // "student", "school"
+
+  @@map("booking_holidays")
+}
+
+// ============================================================
+// PAYMENTS & INVOICES
+// ============================================================
+
+model Payment {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  bookingId     Int?     @map("booking_id")
+  booking       Booking? @relation(fields: [bookingId], references: [id])
+
+  amount        Decimal  @db.Decimal(10,2)
+  method        String?  // "Bank Transfer", "Stripe", "TransferMate", "Cash"
+  paymentDate   DateTime @map("payment_date") @db.Date
+  transactionId String?  @map("transaction_id")
+  paidBy        String?  @map("paid_by")
+  type          String?  // "prior_to_arrival", "at_school", "refund"
+  comment       String?
+  receiptNumber String?  @map("receipt_number")
+
+  fideloPaymentId Int?   @unique @map("fidelo_payment_id")
+  dataSource      DataSource @default(MANUAL) @map("data_source")
+  xeroPaymentId   String?  @unique @map("xero_payment_id")
+
+  @@map("payments")
+}
+
+model Invoice {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  bookingId      Int      @map("booking_id")
+  booking        Booking  @relation(fields: [bookingId], references: [id])
+
+  invoiceNumber  String   @unique @map("invoice_number")
+  type           String?  // "brutto", "netto"
+  date           DateTime @db.Date
+  status         String?  // "draft", "issued", "paid", "cancelled"
+  pdfUrl         String?  @map("pdf_url")
+
+  dataSource     DataSource @default(MANUAL) @map("data_source")
+  xeroInvoiceId  String?    @unique @map("xero_invoice_id")
+
+  lineItems      InvoiceLineItem[]
+
+  @@map("invoices")
+}
+
+model InvoiceLineItem {
+  id        Int      @id @default(autoincrement())
+
+  invoiceId   Int      @map("invoice_id")
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id])
+
+  description String
+  amount      Decimal  @db.Decimal(10,2)
+  discount    Decimal? @db.Decimal(10,2)
+  commission  Decimal? @db.Decimal(10,2)
+  tax         Decimal? @db.Decimal(10,2)
+  serviceFrom DateTime? @map("service_from") @db.Date
+  serviceUntil DateTime? @map("service_until") @db.Date
+  active      Boolean  @default(true)
+
+  @@map("invoice_line_items")
+}
+
+// ============================================================
+// DOCUMENTS
+// ============================================================
+
+model Document {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  bookingId      Int?     @map("booking_id")
+  booking        Booking? @relation(fields: [bookingId], references: [id])
+
+  type           String   // "visa_letter", "booking_confirmation", "accommodation_confirmation", "invoice"
+  filename       String?
+  storageUrl     String?  @map("storage_url")
+  verificationCode String? @unique @map("verification_code") // for QR verification
+  generatedBy    String?  @map("generated_by")
+
+  @@map("documents")
+}
+
+// ============================================================
+// AUDIT LOG
+// ============================================================
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  entityType String   @map("entity_type")  // "student", "booking", "payment", etc.
+  entityId   Int      @map("entity_id")
+  action     String   // "create", "update", "delete"
+  field      String?  // which field changed
+  oldValue   String?  @map("old_value")
+  newValue   String?  @map("new_value")
+  userId     String?  @map("user_id")
+
+  @@index([entityType, entityId])
+  @@map("audit_log")
+}
+
+// ============================================================
+// SCHOOL CONFIG
+// ============================================================
+
+model SchoolConfig {
+  id    Int    @id @default(autoincrement())
+  key   String @unique
+  value String
+
+  @@map("school_config")
+}
