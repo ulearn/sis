@@ -1,0 +1,6 @@
+<p>Dear {firstname},</p>
+<p>Please find&nbsp;below your username and password for your personal login:</p>
+<p>Username: {user_name}<br />Password: {user_password}</p>
+<p>You can access your personal area after downloading the ULearn School App. <br /><br />You can find the App in the Play Store here: <a href="https://play.google.com/store/apps/details?id=com.thebing.app.ts.student.ulearn">https://play.google.com/store/apps/details?id=com.thebing.app.ts.student.ulearn</a> <br /><br />... or in Apple's App Store here <a href="https://itunes.apple.com/ie/app/ulearn-english-school/id1295169740?mt=8" target="_blank" data-saferedirecturl="https://www.google.com/url?hl=en-GB&amp;q=https://itunes.apple.com/ie/app/ulearn-english-school/id1295169740?mt%3D8&amp;source=gmail&amp;ust=1508933473591000&amp;usg=AFQjCNGR1vA0i193BPuc8fykBGm4ZcyL0A" rel="noopener noreferrer"><br />https://itunes.apple.com/ie/<wbr />app/ulearn-english-school/<wbr />id1295169740?mt=8</a><a href="https://play.google.com/store/apps/details?id=com.thebing.app.ts.student.ulearn" a=""> <br /></a></p>
+<p>If you have any problems or if you need help, please ask at the reception desk or send an email to info@ulearnschool.com.</p>
+<p>Best regards, <br />{school_name}</p>

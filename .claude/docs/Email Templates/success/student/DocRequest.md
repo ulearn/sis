@@ -1,0 +1,2 @@
+<p>Dear <span>{firstname}</span>,</p>
+<p>Please find attached the document / documents you requested. Please check all attachments carefully to ensure the information contained is accurate. <br /><br />If you need any other assistance, please do not hesitate to email us back.<br /><br />Regards<br /><br />The ULearn Team</p>

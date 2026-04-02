@@ -1,0 +1,1 @@
+Hi,<br /><br />Could you please come to the Director of Studies' office in Room 3 of building 13 Harcourt Street? There is something related to your course I would like to speak to you about.&nbsp;<br /><br />If I am not in my office,&nbsp;you could visit the reception desk on the ground floor.<br /><br />Best<br /><br />Paul Gill

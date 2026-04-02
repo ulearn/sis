@@ -1,7 +1,0 @@
-# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
-PassengerAppRoot "/home/sis/public_html/sis"
-PassengerBaseURI "/sis"
-PassengerNodejs "/home/sis/nodevenv/public_html/sis/20/bin/node"
-PassengerAppType node
-PassengerStartupFile index.js
-# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END

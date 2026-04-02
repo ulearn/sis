@@ -1,0 +1,1 @@
+Dear Student,&nbsp;<br /><br /><br />Hope you are doing well.&nbsp;<br /><br />This is a gentle reminder that your End of Course Exam Certificate has arrived at our school addressed to 13, Harcourt Street - Dublin.&nbsp;<br /><br />Please feel free to come at any time during school opening hours.&nbsp;<br /><br />Thank You,<br /><br />___________<br /><br />ULearn Team

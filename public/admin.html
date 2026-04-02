@@ -42,6 +42,7 @@ html, body { height: 100%; font-family: var(--font-body); background: var(--cont
 /* LAYOUT */
 .app { display: flex; height: 100vh; overflow: hidden; }
 
+/* SIDEBAR */
 .sidebar {
   width: 220px; min-width: 220px; background: var(--sidebar-bg);
   display: flex; flex-direction: column; padding: 0; user-select: none;
@@ -84,7 +85,6 @@ html, body { height: 100%; font-family: var(--font-body); background: var(--cont
   margin-left: auto; font-size: 11px; font-family: var(--font-mono);
   background: rgba(255,255,255,0.08); padding: 1px 6px; border-radius: 10px;
 }
-
 .sidebar-footer {
   padding: 12px 18px; border-top: 1px solid rgba(255,255,255,0.06);
   font-size: 10px; color: var(--sidebar-text); font-family: var(--font-mono);
@@ -93,8 +93,48 @@ html, body { height: 100%; font-family: var(--font-body); background: var(--cont
 /* MAIN */
 .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 
+/* BROWSER-STYLE TABS */
+.tab-bar {
+  display: flex; align-items: flex-end; gap: 0; background: #e8e7e3;
+  padding: 6px 8px 0; min-height: 38px; overflow-x: auto; flex-shrink: 0;
+}
+.tab-bar::-webkit-scrollbar { display: none; }
+.browser-tab {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 12px; font-size: 12px; font-weight: 500; cursor: pointer;
+  background: #dddcd8; color: var(--text-secondary); border-radius: 8px 8px 0 0;
+  white-space: nowrap; max-width: 200px; position: relative; user-select: none;
+  transition: background 100ms ease;
+}
+.browser-tab:hover { background: #f0efec; }
+.browser-tab.active { background: var(--card-bg); color: var(--text-primary); font-weight: 600; }
+.browser-tab .tab-label { overflow: hidden; text-overflow: ellipsis; }
+.browser-tab .tab-close {
+  width: 16px; height: 16px; border-radius: 50%; display: flex;
+  align-items: center; justify-content: center; font-size: 14px;
+  color: var(--text-muted); cursor: pointer; flex-shrink: 0;
+  transition: all 100ms ease; line-height: 1;
+}
+.browser-tab .tab-close:hover { background: rgba(0,0,0,0.1); color: var(--text-primary); }
+.browser-tab[draggable]:active { cursor: grabbing; }
+.browser-tab { cursor: grab; }
+
+/* Template tree */
+.tpl-tree-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 12px; cursor: pointer; font-size: 13px; font-weight: 500;
+  color: var(--text-secondary); transition: all 100ms ease; border-radius: 4px; margin: 1px 6px;
+}
+.tpl-tree-item:hover { background: #eeedea; color: var(--text-primary); }
+.tpl-tree-item.active { background: var(--accent-light); color: var(--accent); font-weight: 600; }
+.tpl-tree-count {
+  font-size: 11px; font-family: var(--font-mono); color: var(--text-muted);
+  background: rgba(0,0,0,0.04); padding: 0 5px; border-radius: 8px; min-width: 20px; text-align: center;
+}
+.tpl-tree-item.active .tpl-tree-count { background: rgba(37,99,235,0.1); color: var(--accent); }
+
 .topbar {
-  height: 52px; min-height: 52px; background: var(--card-bg);
+  height: 44px; min-height: 44px; background: var(--card-bg);
   border-bottom: 1px solid var(--card-border); display: flex;
   align-items: center; padding: 0 24px; gap: 12px;
 }
@@ -328,12 +368,12 @@ tr:last-child td { border-bottom: none; }
     <nav class="sidebar-nav">
       <div class="sidebar-section">
         <div class="sidebar-section-label">Management</div>
-        <div class="sidebar-item active" data-view="students" onclick="navigate('students')">
+        <div class="sidebar-item" data-view="students" onclick="openTab('students','Students')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           Students
           <span class="sidebar-count" id="studentCount">0</span>
         </div>
-        <div class="sidebar-item" data-view="bookings" onclick="navigate('bookings')">
+        <div class="sidebar-item" data-view="bookings" onclick="openTab('bookings','Bookings')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           Bookings
           <span class="sidebar-count" id="bookingCount">0</span>
@@ -341,27 +381,34 @@ tr:last-child td { border-bottom: none; }
       </div>
       <div class="sidebar-section">
         <div class="sidebar-section-label">Scheduling</div>
-        <div class="sidebar-item" data-view="classes" onclick="navigate('classes')">
+        <div class="sidebar-item" data-view="classes" onclick="openTab('classes','Classes')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
           Classes
         </div>
-        <div class="sidebar-item" data-view="teachers" onclick="navigate('teachers')">
+        <div class="sidebar-item" data-view="teachers" onclick="openTab('teachers','Teachers')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           Teachers
         </div>
       </div>
       <div class="sidebar-section">
         <div class="sidebar-section-label">Attendance</div>
-        <div class="sidebar-item" data-view="attendance" onclick="navigate('attendance')">
+        <div class="sidebar-item" data-view="attendance" onclick="openTab('attendance','Attendance')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
           Attendance
         </div>
       </div>
       <div class="sidebar-section">
         <div class="sidebar-section-label">Accommodation</div>
-        <div class="sidebar-item" data-view="accommodation" onclick="navigate('accommodation')">
+        <div class="sidebar-item" data-view="accommodation" onclick="openTab('accommodation','Accommodation')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
           Providers
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Documents</div>
+        <div class="sidebar-item" data-view="documents" onclick="openTab('documents','Documents')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Documents
         </div>
       </div>
       <div class="sidebar-section">
@@ -372,11 +419,12 @@ tr:last-child td { border-bottom: none; }
         </div>
       </div>
     </nav>
-    <div class="sidebar-footer">SIS v1.0 &middot; Phase 2</div>
+    <div class="sidebar-footer">SIS v1.0</div>
   </aside>
 
   <!-- MAIN -->
   <div class="main">
+    <div class="tab-bar" id="tabBar"></div>
     <div class="topbar">
       <div class="topbar-title" id="topbarTitle">Students</div>
       <div class="topbar-breadcrumb" id="topbarBreadcrumb"></div>
@@ -394,12 +442,192 @@ let currentView = 'students';
 let studentPage = 1, bookingPage = 1;
 let studentSearch = '', bookingSearch = '', bookingStatusFilter = '';
 
-// ─── NAVIGATION ────────────────────────────────
-function navigate(view, opts = {}) {
-  currentView = view;
-  document.querySelectorAll('.sidebar-item').forEach(el => {
-    el.classList.toggle('active', el.dataset.view === view);
+// ─── BROWSER-STYLE TAB SYSTEM ──────────────────
+
+let tabs = [];       // [{id, view, opts, label, contentHtml, topbar}]
+let activeTabId = null;
+let tabCounter = 0;
+
+// Labels for view types
+const viewLabels = {
+  students: 'Students', bookings: 'Bookings', classes: 'Classes', teachers: 'Teachers',
+  attendance: 'Attendance', accommodation: 'Accommodation', documents: 'Documents',
+  'student-detail': 'Student', 'booking-detail': 'Booking', 'class-detail': 'Class',
+  'accommodation-detail': 'Accommodation', 'document-detail': 'Document',
+  'document-templates': 'Templates', 'document-generate': 'Generate Doc',
+};
+
+function openTab(view, label, opts = {}) {
+  // Check if this exact view is already open (for list views, reuse; for details, always new)
+  const isDetail = view.includes('-detail') || view === 'document-templates' || view === 'document-generate';
+  if (!isDetail) {
+    const existing = tabs.find(t => t.view === view);
+    if (existing) {
+      switchToTab(existing.id);
+      return;
+    }
+  }
+
+  const id = ++tabCounter;
+  const tab = { id, view, opts, label: label || viewLabels[view] || view };
+  tabs.push(tab);
+  switchToTab(id);
+  loadView(view, opts);
+}
+
+function switchToTab(id) {
+  // Save current tab's content before switching
+  if (activeTabId) {
+    const prev = tabs.find(t => t.id === activeTabId);
+    if (prev) {
+      prev.contentHtml = document.getElementById('content').innerHTML;
+      prev.topbar = {
+        title: document.getElementById('topbarTitle').innerHTML,
+        breadcrumb: document.getElementById('topbarBreadcrumb').innerHTML,
+        right: document.getElementById('topbarRight').innerHTML,
+      };
+    }
+  }
+
+  activeTabId = id;
+  const tab = tabs.find(t => t.id === id);
+  if (!tab) return;
+
+  currentView = tab.view;
+
+  // Restore content if we have it cached
+  if (tab.contentHtml !== undefined) {
+    document.getElementById('content').innerHTML = tab.contentHtml;
+    if (tab.topbar) {
+      document.getElementById('topbarTitle').innerHTML = tab.topbar.title;
+      document.getElementById('topbarBreadcrumb').innerHTML = tab.topbar.breadcrumb;
+      document.getElementById('topbarRight').innerHTML = tab.topbar.right;
+    }
+  }
+
+  renderTabBar();
+  highlightSidebar(tab.view);
+}
+
+function closeTab(id, event) {
+  if (event) event.stopPropagation();
+  const idx = tabs.findIndex(t => t.id === id);
+  if (idx === -1) return;
+
+  tabs.splice(idx, 1);
+
+  if (tabs.length === 0) {
+    // Open students as default
+    openTab('students', 'Students');
+    return;
+  }
+
+  if (activeTabId === id) {
+    // Switch to nearest tab
+    const newIdx = Math.min(idx, tabs.length - 1);
+    switchToTab(tabs[newIdx].id);
+    loadView(tabs[newIdx].view, tabs[newIdx].opts);
+  }
+
+  renderTabBar();
+}
+
+let dragTabId = null;
+
+function renderTabBar() {
+  const bar = document.getElementById('tabBar');
+  bar.innerHTML = tabs.map(t =>
+    `<div class="browser-tab ${t.id === activeTabId ? 'active' : ''}"
+          draggable="true"
+          data-tab-id="${t.id}"
+          onclick="switchToTab(${t.id})"
+          ondblclick="duplicateTab(${t.id})"
+          ondragstart="tabDragStart(${t.id}, event)"
+          ondragover="tabDragOver(event)"
+          ondrop="tabDrop(${t.id}, event)"
+          ondragend="tabDragEnd()"
+          title="${esc(t.label)}">
+      <span class="tab-label">${esc(t.label)}</span>
+      <span class="tab-close" onclick="closeTab(${t.id}, event)">&times;</span>
+    </div>`
+  ).join('');
+}
+
+function duplicateTab(id) {
+  const src = tabs.find(t => t.id === id);
+  if (!src) return;
+  // Force-open as new tab (bypass dedup for list views)
+  const newId = ++tabCounter;
+  const tab = { id: newId, view: src.view, opts: { ...src.opts }, label: src.label };
+  tabs.push(tab);
+  switchToTab(newId);
+  loadView(tab.view, tab.opts);
+}
+
+function tabDragStart(id, e) {
+  dragTabId = id;
+  e.dataTransfer.effectAllowed = 'move';
+  // Make the dragged tab slightly transparent
+  setTimeout(() => {
+    const el = document.querySelector(`[data-tab-id="${id}"]`);
+    if (el) el.style.opacity = '0.4';
+  }, 0);
+}
+
+function tabDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+}
+
+function tabDrop(targetId, e) {
+  e.preventDefault();
+  if (dragTabId === null || dragTabId === targetId) return;
+  const fromIdx = tabs.findIndex(t => t.id === dragTabId);
+  const toIdx = tabs.findIndex(t => t.id === targetId);
+  if (fromIdx === -1 || toIdx === -1) return;
+  const [moved] = tabs.splice(fromIdx, 1);
+  tabs.splice(toIdx, 0, moved);
+  renderTabBar();
+}
+
+function tabDragEnd() {
+  dragTabId = null;
+  document.querySelectorAll('.browser-tab').forEach(el => el.style.opacity = '');
+}
+
+function highlightSidebar(view) {
+  // Map detail views back to their parent
+  const parentView = view.replace('-detail', '').replace('document-templates', 'documents').replace('document-generate', 'documents');
+  document.querySelectorAll('.sidebar-item[data-view]').forEach(el => {
+    el.classList.toggle('active', el.dataset.view === parentView);
   });
+}
+
+function updateTabLabel(label) {
+  const tab = tabs.find(t => t.id === activeTabId);
+  if (tab) { tab.label = label; renderTabBar(); }
+}
+
+// ─── NAVIGATION (now routes through tab system) ──
+
+function navigate(view, opts = {}) {
+  const label = viewLabels[view] || view;
+  // For sub-views (details etc), navigate within the current tab
+  const isSubView = view.includes('-detail') || view === 'document-templates' || view === 'document-generate';
+  if (isSubView && activeTabId) {
+    const tab = tabs.find(t => t.id === activeTabId);
+    if (tab) {
+      tab.view = view;
+      tab.opts = opts;
+      tab.label = label + (opts.id ? ' #' + opts.id : '');
+      renderTabBar();
+    }
+  }
+  currentView = view;
+  loadView(view, opts);
+}
+
+function loadView(view, opts = {}) {
   if (view === 'students') showStudentsList();
   else if (view === 'student-detail') showStudentDetail(opts.id);
   else if (view === 'bookings') showBookingsList();
@@ -410,6 +638,10 @@ function navigate(view, opts = {}) {
   else if (view === 'attendance') showAttendance();
   else if (view === 'accommodation') showAccommodationList();
   else if (view === 'accommodation-detail') showAccommodationDetail(opts.id);
+  else if (view === 'documents') showDocumentsList();
+  else if (view === 'document-detail') showDocumentDetail(opts.id);
+  else if (view === 'document-templates') showTemplatesList();
+  else if (view === 'document-generate') showDocumentGenerate(opts);
 }
 
 // ─── API HELPERS ────────────────────────────────
@@ -549,7 +781,7 @@ async function showStudentDetail(id) {
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:16px;font-size:13px">
               <div style="display:flex;align-items:center;gap:6px;color:var(--text-secondary)">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                ${esc(s.email || '—')}
+                <a href="#" onclick="event.preventDefault();openCommsCompose(${s.id},'${esc(s.email||'')}','${esc(s.firstName||'')}')" style="color:var(--accent);text-decoration:none">${esc(s.email || '—')}</a>
               </div>
               <div style="display:flex;align-items:center;gap:6px;color:var(--text-secondary)">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72"/></svg>
@@ -667,8 +899,71 @@ async function showStudentDetail(id) {
         <button class="btn btn-secondary" onclick="saveStudent(${s.id})" style="margin-top:4px">Save All Changes</button>
       </div>
 
-      <!-- RIGHT: Bookings -->
+      <!-- RIGHT COLUMN -->
       <div>
+        <!-- Communications -->
+        <div class="card" style="margin-bottom:16px" id="commsCard">
+          <div class="card-header collapse-header" onclick="toggleCollapse(this)" style="padding:10px 18px">
+            <h3 style="font-size:13px;display:flex;align-items:center;gap:8px">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              Communications
+              <span id="commsCount" style="font-size:11px;font-family:var(--font-mono);color:var(--text-muted)"></span>
+            </h3>
+          </div>
+          <div class="card-body collapse-body" style="padding:0" id="commsBody">
+            <div style="padding:14px 18px;border-bottom:1px solid var(--card-border)">
+              <div style="display:flex;gap:10px;margin-bottom:10px">
+                <div style="flex:1">
+                  <label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px">From</label>
+                  <select id="commsFrom" class="filter-select" style="width:100%">
+                    <option value="info@ulearnschool.com">info@</option>
+                    <option value="dos@ulearnschool.com">dos@</option>
+                    <option value="sales@ulearnschool.com">sales@</option>
+                    <option value="accounts@ulearnschool.com">accounts@</option>
+                    <option value="partners@ulearnschool.com">partners@</option>
+                  </select>
+                </div>
+                <div style="flex:1">
+                  <label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px">Template</label>
+                  <select id="commsTpl" class="filter-select" style="width:100%" onchange="loadEmailTemplate(${s.id})">
+                    <option value="">None — blank</option>
+                  </select>
+                </div>
+              </div>
+              <div style="display:flex;gap:10px;margin-bottom:10px">
+                <div style="flex:1">
+                  <label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px">To</label>
+                  <input id="commsTo" type="email" value="${esc(s.email||'')}" style="width:100%;padding:6px 10px;border:1px solid var(--card-border);border-radius:6px;font-size:13px">
+                </div>
+                <div style="flex:1">
+                  <label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px">Subject</label>
+                  <input id="commsSubject" type="text" placeholder="Subject..." style="width:100%;padding:6px 10px;border:1px solid var(--card-border);border-radius:6px;font-size:13px">
+                </div>
+              </div>
+              <div style="border:1px solid var(--card-border);border-radius:6px;overflow:hidden;margin-bottom:10px">
+                <div style="display:flex;gap:2px;padding:4px 8px;border-bottom:1px solid var(--card-border);background:#fafaf8">
+                  <button type="button" class="btn btn-ghost btn-sm" onclick="document.execCommand('bold')" style="font-weight:700;min-width:28px">B</button>
+                  <button type="button" class="btn btn-ghost btn-sm" onclick="document.execCommand('italic')" style="font-style:italic;min-width:28px">I</button>
+                  <button type="button" class="btn btn-ghost btn-sm" onclick="document.execCommand('underline')" style="text-decoration:underline;min-width:28px">U</button>
+                  <div style="width:1px;background:var(--card-border);margin:2px 4px"></div>
+                  <button type="button" class="btn btn-ghost btn-sm" onclick="document.execCommand('insertUnorderedList')" style="min-width:28px">&#8226;</button>
+                  <button type="button" class="btn btn-ghost btn-sm" onclick="var u=prompt('URL:');if(u)document.execCommand('createLink',false,u)" style="min-width:28px;font-size:11px">Link</button>
+                </div>
+                <div id="commsEditor" contenteditable="true" style="min-height:120px;max-height:50vh;overflow-y:auto;padding:12px;font-size:13px;line-height:1.6;outline:none;background:#fff;font-family:Verdana,sans-serif;resize:vertical"></div>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <button class="btn btn-primary btn-sm" onclick="sendCommsEmail(${s.id})">Send</button>
+                <span id="commsSendStatus" style="font-size:12px;color:var(--text-muted)"></span>
+                <span style="flex:1"></span>
+                <span style="font-size:11px;color:var(--text-muted)">Signature auto-appended</span>
+              </div>
+            </div>
+            <div id="commsHistory" style="padding:0">
+            </div>
+          </div>
+        </div>
+
+        <!-- Bookings -->
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
           <div class="section-title" style="margin:0;border:none;padding:0">Bookings (${s.bookings?.length || 0})</div>
           <button class="btn btn-sm btn-secondary" onclick="openNewBookingModal(${s.id})">+ New Booking</button>
@@ -821,8 +1116,213 @@ async function showStudentDetail(id) {
     } else {
       html += `<div class="card"><div class="card-body" style="text-align:center;color:var(--text-muted);padding:30px">No bookings yet</div></div>`;
     }
+
     html += `</div></div>`;
     document.getElementById('content').innerHTML = html;
+    loadCommsHistory(s.id);
+    loadEmailTemplateOptions();
+  } catch (e) { toast(e.message, true); }
+}
+
+// ── COMMS PANE FUNCTIONS ──────────────────────
+
+function openCommsCompose(studentId, email, firstName) {
+  // Expand the comms card if collapsed
+  const header = document.querySelector('#commsCard .collapse-header');
+  const body = document.getElementById('commsBody');
+  if (body && body.style.display === 'none') {
+    if (header) toggleCollapse(header);
+  }
+  // Show compose
+  const compose = document.getElementById('commsCompose');
+  if (compose) compose.style.display = 'block';
+  // Set To field
+  const toField = document.getElementById('commsTo');
+  if (toField && email) toField.value = email;
+  // Focus subject
+  setTimeout(() => document.getElementById('commsSubject')?.focus(), 100);
+  // Scroll to comms card
+  document.getElementById('commsCard')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+const EMAIL_CAT_LABELS = {
+  'academic': 'Academic',
+  'accomm/confirm-provider': 'Accomm / Provider',
+  'accomm/confirm-student': 'Accomm / Student',
+  'accomm/transfer': 'Accomm / Transfer',
+  'accounts': 'Accounts',
+  'app': 'App / Portal',
+  'success/agent': 'Success / Agent',
+  'success/feedback': 'Success / Feedback',
+  'success/student': 'Success / Student',
+  'success/visa': 'Success / Visa',
+  'insurance': 'Insurance',
+  'sales/B2B': 'Sales / B2B',
+  'sales/B2C': 'Sales / B2C',
+};
+
+async function loadEmailTemplateOptions() {
+  try {
+    const templates = await api('/documents/templates?all=true&type=email');
+    const sel = document.getElementById('commsTpl');
+    if (!sel) return;
+
+    // Group by category
+    const groups = {};
+    for (const t of templates) {
+      const cat = t.category || 'other';
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(t);
+    }
+
+    let html = '<option value="">None — blank</option>';
+    for (const cat of Object.keys(EMAIL_CAT_LABELS)) {
+      const items = groups[cat];
+      if (!items || items.length === 0) continue;
+      html += `<optgroup label="${EMAIL_CAT_LABELS[cat]}">`;
+      for (const t of items) {
+        html += `<option value="${t.id}">${esc(t.name)}</option>`;
+      }
+      html += '</optgroup>';
+    }
+    // Any categories not in the predefined list
+    for (const cat of Object.keys(groups)) {
+      if (EMAIL_CAT_LABELS[cat]) continue;
+      html += `<optgroup label="${esc(cat)}">`;
+      for (const t of groups[cat]) {
+        html += `<option value="${t.id}">${esc(t.name)}</option>`;
+      }
+      html += '</optgroup>';
+    }
+    sel.innerHTML = html;
+  } catch (e) {}
+}
+
+async function loadEmailTemplate(studentId) {
+  const tplId = document.getElementById('commsTpl')?.value;
+  if (!tplId) {
+    document.getElementById('commsEditor').innerHTML = '';
+    document.getElementById('commsSubject').value = '';
+    return;
+  }
+  try {
+    const tpl = await api('/documents/templates/' + tplId);
+    if (!tpl) return;
+    // Resolve tokens for this student
+    const tokens = await api('/documents/tokens/' + studentId);
+    let html = tpl.htmlTemplate;
+    // Replace tokens
+    html = html.replace(/\{\{([^}]+)\}\}/g, (m, key) => {
+      const k = key.trim();
+      return tokens[k] !== undefined ? tokens[k] : m;
+    });
+    document.getElementById('commsEditor').innerHTML = html;
+    document.getElementById('commsSubject').value = tpl.name;
+  } catch (e) { toast(e.message, true); }
+}
+
+async function sendCommsEmail(studentId) {
+  const from = document.getElementById('commsFrom')?.value;
+  const to = document.getElementById('commsTo')?.value;
+  const subject = document.getElementById('commsSubject')?.value;
+  const html = document.getElementById('commsEditor')?.innerHTML;
+  const templateId = document.getElementById('commsTpl')?.value || null;
+  const status = document.getElementById('commsSendStatus');
+
+  if (!to || !subject || !html?.trim()) { toast('Fill in To, Subject and body', true); return; }
+
+  status.textContent = 'Sending...';
+  try {
+    await api('/email/send', { method: 'POST', body: { from, fromName: 'ULearn', to, subject, html, studentId, templateId } });
+    status.textContent = '';
+    toast('Sent to ' + to);
+    document.getElementById('commsSubject').value = '';
+    document.getElementById('commsEditor').innerHTML = '';
+    document.getElementById('commsTpl').value = '';
+    loadCommsHistory(studentId);
+  } catch (e) {
+    status.textContent = '';
+    toast(e.message, true);
+  }
+}
+
+let commsExpandedEmailId = null;
+
+async function loadCommsHistory(studentId) {
+  const container = document.getElementById('commsHistory');
+  if (!container) return;
+  try {
+    const logs = await api('/email/history/' + studentId);
+    const countEl = document.getElementById('commsCount');
+
+    if (!logs || logs.length === 0) {
+      container.innerHTML = '';
+      if (countEl) countEl.textContent = '';
+      return;
+    }
+
+    if (countEl) countEl.textContent = `(${logs.length})`;
+
+    const visible = logs.slice(0, 3);
+    let html = '<table style="width:100%;font-size:12px;border-collapse:collapse">';
+    for (const log of visible) {
+      const date = new Date(log.createdAt).toLocaleDateString('en-IE', {day:'2-digit',month:'short'});
+      const time = new Date(log.createdAt).toLocaleTimeString('en-IE', {hour:'2-digit',minute:'2-digit'});
+      // Strip HTML to get plain text teaser, skip past "Dear X," if present
+      let teaser = log.bodyHtml.replace(/<br\s*\/?>/gi,' ').replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/\s+/g,' ').trim();
+      teaser = teaser.replace(/^Dear\s+[^,]+,\s*/i, '');
+      teaser = teaser.substring(0, 120) + (teaser.length > 120 ? '...' : '');
+      html += `<tr style="border-bottom:1px solid var(--card-border);cursor:pointer" onclick="toggleEmailDetail(${log.id})">
+        <td style="padding:8px 12px;width:65px;font-family:var(--font-mono);color:var(--text-muted);white-space:nowrap;font-size:11px">${date}<br>${time}</td>
+        <td style="padding:8px 4px"><strong style="font-size:12px">${esc(log.subject)}</strong><br><span style="color:var(--text-muted);font-size:11px">${esc(teaser)}</span></td>
+      </tr>
+      <tr id="emailDetail-${log.id}" style="display:none">
+        <td colspan="2" style="padding:0 12px 12px;background:#fafaf8">
+          <div style="max-height:300px;overflow-y:auto;padding:12px;background:#fff;border:1px solid var(--card-border);border-radius:4px;font-size:13px;margin-top:4px">${log.bodyHtml}</div>
+        </td>
+      </tr>`;
+    }
+    html += '</table>';
+    if (logs.length > 3) {
+      html += `<div style="padding:8px 12px;text-align:center;border-top:1px solid var(--card-border)">
+        <a href="#" onclick="event.preventDefault();showAllCommsHistory(${studentId})" style="font-size:12px;color:var(--accent)">View all ${logs.length} emails</a>
+      </div>`;
+    }
+    container.innerHTML = html;
+  } catch (e) {
+    container.innerHTML = '';
+  }
+}
+
+function toggleEmailDetail(id) {
+  const row = document.getElementById('emailDetail-' + id);
+  if (row) row.style.display = row.style.display === 'none' ? '' : 'none';
+}
+
+async function showAllCommsHistory(studentId) {
+  const container = document.getElementById('commsHistory');
+  if (!container) return;
+  try {
+    const logs = await api('/email/history/' + studentId);
+    let html = '<table style="width:100%;font-size:12px;border-collapse:collapse">';
+    for (const log of logs) {
+      const date = new Date(log.createdAt).toLocaleDateString('en-IE', {day:'2-digit',month:'short'});
+      const time = new Date(log.createdAt).toLocaleTimeString('en-IE', {hour:'2-digit',minute:'2-digit'});
+      let teaser = log.bodyHtml.replace(/<br\s*\/?>/gi,' ').replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/\s+/g,' ').trim();
+      teaser = teaser.replace(/^Dear\s+[^,]+,\s*/i, '');
+      teaser = teaser.substring(0, 120) + (teaser.length > 120 ? '...' : '');
+      html += `<tr style="border-bottom:1px solid var(--card-border);cursor:pointer" onclick="toggleEmailDetail(${log.id})">
+        <td style="padding:8px 12px;width:65px;font-family:var(--font-mono);color:var(--text-muted);white-space:nowrap;font-size:11px">${date}<br>${time}</td>
+        <td style="padding:8px 4px"><strong style="font-size:12px">${esc(log.subject)}</strong><br><span style="color:var(--text-muted);font-size:11px">${esc(teaser)}</span></td>
+      </tr>
+      <tr id="emailDetail-${log.id}" style="display:none">
+        <td colspan="2" style="padding:0 12px 12px;background:#fafaf8">
+          <div style="max-height:300px;overflow-y:auto;padding:12px;background:#fff;border:1px solid var(--card-border);border-radius:4px;font-size:13px;margin-top:4px">${log.bodyHtml}</div>
+        </td>
+      </tr>`;
+    }
+    html += '</table>';
+    container.innerHTML = html;
   } catch (e) { toast(e.message, true); }
 }
 
@@ -930,111 +1430,98 @@ async function showBookingDetail(id) {
     const studentName = b.student ? `${b.student.firstName} ${b.student.lastName}` : 'Unknown';
     setTopbar(
       `Booking #${b.id}`,
-      `<span onclick="navigate('bookings')">Bookings</span> / #${b.id} — ${studentName}`,
-      `<button class="btn btn-danger btn-sm" onclick="deleteBooking(${b.id})">Delete</button>`
+      `<span onclick="navigate('bookings')">Bookings</span> / #${b.id} — <span style="cursor:pointer;color:var(--accent)" onclick="navigate('student-detail',{id:${b.student?.id}})">${studentName}</span>`,
+      `<button class="btn btn-sm btn-secondary" onclick="saveBooking(${b.id})">Save</button>
+       <button class="btn btn-danger btn-sm" onclick="deleteBooking(${b.id})">Delete</button>`
     );
 
-    let html = `<div class="detail-grid"><div>
-      <div class="card" style="margin-bottom:16px">
-        <div class="card-header"><h3>Booking Info</h3><button class="btn btn-sm btn-secondary" onclick="saveBooking(${b.id})">Save Changes</button></div>
-        <div class="card-body">
-          <div class="form-grid" id="bookingForm">
-            <div class="form-group"><label class="form-label">Student</label>
-              <div style="padding:7px 0;font-weight:600;cursor:pointer;color:var(--accent)" onclick="navigate('student-detail',{id:${b.student?.id}})">${esc(studentName)}</div>
+    let html = `
+    <!-- Booking Info (full width) -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-body" style="padding:16px 20px">
+        <div id="bookingForm" style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:12px;min-width:200px">
+            <div>
+              <div style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono)">#${b.id}</div>
+              <div style="font-size:16px;font-weight:700;cursor:pointer;color:var(--accent)" onclick="navigate('student-detail',{id:${b.student?.id}})">${esc(studentName)}</div>
+              ${b.agency ? `<div style="font-size:12px;color:var(--text-secondary)">Agency: ${esc(b.agency.name)}</div>` : ''}
             </div>
-            ${selectField('status','Status',b.status,[['ENQUIRY','Enquiry'],['PENDING','Pending'],['CONFIRMED','Confirmed'],['CHECKED_IN','Checked In'],['CHECKED_OUT','Checked Out'],['COMPLETED','Completed'],['CANCELLED','Cancelled']])}
-            ${checkboxField('confirmed','Confirmed',b.confirmed)}
-            <div class="form-group"><label class="form-label">Total</label><input class="form-input" type="text" data-field="amountTotal" value="${esc(b.amountTotal??'')}" oninput="calcBalance()"></div>
-            <div class="form-group"><label class="form-label">Paid</label><input class="form-input" type="text" data-field="amountPaid" value="${esc(b.amountPaid??'')}" oninput="calcBalance()"></div>
-            <div class="form-group"><label class="form-label">Balance</label><input class="form-input" type="text" data-field="amountOpen" value="${esc(b.amountOpen??'')}"></div>
-            ${selectField('paymentMethod','Payment Method',b.paymentMethod,[['','—'],['Bank Transfer','Bank Transfer'],['Stripe','Stripe'],['TransferMate','TransferMate'],['TransferMate Escrow','TransferMate Escrow'],['Cash','Cash'],['Credit Card','Credit Card'],['Cheque','Cheque']])}
-            ${field('salesperson','Salesperson',b.salesperson)}
-            ${field('discountCode','Discount Code',b.discountCode)}
-            <div class="form-group full">
-              <label class="form-label">Note</label>
-              <textarea class="form-textarea" data-field="note">${esc(b.note||'')}</textarea>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;flex:1">
+            <div style="min-width:120px">
+              ${selectField('status','Status',b.status,[['ENQUIRY','Enquiry'],['PENDING','Pending'],['CONFIRMED','Confirmed'],['CHECKED_IN','Checked In'],['CHECKED_OUT','Checked Out'],['COMPLETED','Completed'],['CANCELLED','Cancelled']])}
             </div>
+            <div style="min-width:130px">
+              ${selectField('paymentMethod','Payment Method',b.paymentMethod,[['','—'],['Bank Transfer','Bank Transfer'],['Stripe','Stripe'],['TransferMate','TransferMate'],['TransferMate Escrow','TransferMate Escrow'],['Cash','Cash'],['Credit Card','Credit Card'],['Cheque','Cheque']])}
+            </div>
+            <div style="min-width:100px">
+              ${field('salesperson','Salesperson',b.salesperson)}
+            </div>
+            ${b.student?.hubspotDealId ? `<div style="min-width:100px;display:flex;align-items:flex-end;padding-bottom:2px">
+              <a href="https://app-eu1.hubspot.com/contacts/26488591/record/0-3/${b.student.hubspotDealId}" target="_blank" style="color:var(--accent);text-decoration:none;display:inline-flex;align-items:center;gap:4px;font-size:12px">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                HubSpot
+              </a>
+            </div>` : ''}
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-end">
+            <div style="text-align:center"><span class="form-label">Total</span><div class="amount" style="font-size:16px"><input class="form-input" type="text" data-field="amountTotal" value="${esc(b.amountTotal??'')}" oninput="calcBalance()" style="width:80px;text-align:right;font-family:var(--font-mono)"></div></div>
+            <div style="text-align:center"><span class="form-label">Paid</span><div class="amount amount-positive" style="font-size:16px"><input class="form-input" type="text" data-field="amountPaid" value="${esc(b.amountPaid??'')}" oninput="calcBalance()" style="width:80px;text-align:right;font-family:var(--font-mono)"></div></div>
+            <div style="text-align:center"><span class="form-label">Balance</span><div class="amount" style="font-size:16px"><input class="form-input" type="text" data-field="amountOpen" value="${esc(b.amountOpen??'')}" style="width:80px;text-align:right;font-family:var(--font-mono);${parseFloat(b.amountOpen||0)>0?'color:var(--danger)':''}"></div></div>
           </div>
         </div>
       </div>
+    </div>
 
-      <div class="card">
-        <div class="card-header"><h3>Status History</h3></div>
-        <div class="card-body">`;
+    <!-- Two columns: Courses+Payments | Accommodation -->
+    <div class="detail-grid">
+      <div>
+        <!-- Courses -->
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header"><h3>Courses (${b.courses?.length || 0})</h3><button class="btn btn-sm btn-secondary" onclick="openAddCourseModal(${b.id})">+ Add</button></div>
+          <div class="card-body" style="padding:12px 18px">`;
 
-    if (b.statusHistory && b.statusHistory.length > 0) {
-      for (const h of b.statusHistory) {
-        html += `<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;font-size:12px">
-          <span style="color:var(--text-muted);font-family:var(--font-mono)">${formatDate(h.createdAt)}</span>
-          ${statusBadge(h.fromStatus)} <span style="color:var(--text-muted)">&rarr;</span> ${statusBadge(h.toStatus)}
-        </div>`;
-      }
-    } else {
-      html += `<div style="color:var(--text-muted);font-size:13px">No status changes recorded</div>`;
-    }
-
-    html += `</div></div></div><div>`;
-
-    // Courses
-    html += `<div class="card" style="margin-bottom:16px"><div class="card-header"><h3>Courses (${b.courses?.length || 0})</h3><button class="btn btn-sm btn-secondary" onclick="openAddCourseModal(${b.id})">+ Add</button></div><div class="card-body">`;
     if (b.courses && b.courses.length > 0) {
       for (const c of b.courses) {
-        html += `<div class="nested-item">
-          <div class="nested-item-header">
-            <span class="nested-item-title">${esc(c.name)}</span>
-            <div>
-              <button class="btn btn-ghost btn-sm" onclick="openEditCourseModal(${b.id},${JSON.stringify(c).replace(/"/g,'&quot;')})">Edit</button>
-              <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="deleteBookingCourse(${c.id},${b.id})">Delete</button>
-            </div>
-          </div>
-          <div class="nested-item-row">
-            <div class="nested-item-field"><div class="label">Category</div><div class="value">${c.category}</div></div>
-            <div class="nested-item-field"><div class="label">Level</div><div class="value">${c.level||'—'}</div></div>
-            <div class="nested-item-field"><div class="label">Dates</div><div class="value">${formatDate(c.startDate)} — ${formatDate(c.endDate)}</div></div>
-            <div class="nested-item-field"><div class="label">Weeks</div><div class="value">${c.weeks}</div></div>
-            <div class="nested-item-field"><div class="label">Hrs/Wk</div><div class="value">${c.hoursPerWeek||'—'}</div></div>
-            <div class="nested-item-field"><div class="label">Fee</div><div class="value amount">${formatMoney(c.fee)}</div></div>
-          </div>
-        </div>`;
-      }
-    } else {
-      html += `<div style="color:var(--text-muted);font-size:13px">No courses</div>`;
-    }
-    html += `</div></div>`;
+        const nameOpts = COURSE_NAMES.map(([v,l]) => `<option value="${v}" ${v===c.name?'selected':''}>${l}</option>`).join('') + (!COURSE_NAMES.find(([v])=>v===c.name) && c.name ? `<option value="${esc(c.name)}" selected>${esc(c.name)}</option>` : '');
+        const catOpts = COURSE_CATS.map(([v,l]) => `<option value="${v}" ${v===c.category?'selected':''}>${l}</option>`).join('');
+        const lvlOpts = ['','A1','A2','B1','B2','C1','C2'].map(v => `<option value="${v}" ${v===(c.level||'')?'selected':''}>${v||'—'}</option>`).join('');
 
-    // Accommodation
-    html += `<div class="card" style="margin-bottom:16px"><div class="card-header"><h3>Accommodation (${b.accommodations?.length || 0})</h3><button class="btn btn-sm btn-secondary" onclick="openAddAccomModal(${b.id})">+ Add</button></div><div class="card-body">`;
-    if (b.accommodations && b.accommodations.length > 0) {
-      for (const a of b.accommodations) {
-        html += `<div class="nested-item">
-          <div class="nested-item-header">
-            <span class="nested-item-title">${esc(a.accommodationType||'Accommodation')}</span>
-            <div>
-              <button class="btn btn-ghost btn-sm" onclick="openEditAccomModal(${b.id},${JSON.stringify(a).replace(/"/g,'&quot;')})">Edit</button>
-              <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="deleteBookingAccom(${a.id},${b.id})">Delete</button>
+        html += `<div style="padding:10px 0;border-bottom:1px solid #f0efec" data-course-id="${c.id}">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <div style="display:flex;gap:6px;align-items:center;flex:1">
+              <select class="form-select" data-cfield="name" style="font-size:12px;padding:4px 6px;flex:1">${nameOpts}</select>
+              <select class="form-select" data-cfield="category" style="font-size:12px;padding:4px 6px;width:90px">${catOpts}</select>
+              <select class="form-select" data-cfield="level" style="font-size:12px;padding:4px 6px;width:60px">${lvlOpts}</select>
+            </div>
+            <div style="display:flex;gap:4px;margin-left:8px">
+              <button class="btn btn-ghost btn-sm" onclick="saveCourseInline(${c.id},${b.id},this)" style="color:var(--success)">Save</button>
+              <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="deleteBookingCourse(${c.id},${b.id})">Del</button>
             </div>
           </div>
-          <div class="nested-item-row">
-            <div class="nested-item-field"><div class="label">Room</div><div class="value">${esc(a.roomType||'—')}</div></div>
-            <div class="nested-item-field"><div class="label">Board</div><div class="value">${esc(a.board||'—')}</div></div>
-            <div class="nested-item-field"><div class="label">Dates</div><div class="value">${formatDate(a.startDate)} — ${formatDate(a.endDate)}</div></div>
-            <div class="nested-item-field"><div class="label">Weeks</div><div class="value">${a.weeks||'—'}</div></div>
-            <div class="nested-item-field"><div class="label">Fee</div><div class="value amount">${formatMoney(a.fee)}</div></div>
+          <div style="display:grid;grid-template-columns:1fr auto 1fr 1fr 1fr;gap:6px;font-size:12px;align-items:end">
+            <div><span class="form-label">Start</span><input class="form-input" type="date" data-cfield="startDate" value="${c.startDate?.split('T')[0]||''}" onchange="calcCourseEnd(this)" style="font-size:11px;padding:3px 4px"></div>
+            <div><span class="form-label">Wks</span><input class="form-input" type="number" data-cfield="weeks" value="${c.weeks||''}" min="1" onchange="calcCourseEnd(this)" style="font-size:11px;padding:3px 4px;width:48px"></div>
+            <div><span class="form-label">End</span><input class="form-input" type="date" data-cfield="endDate" value="${c.endDate?.split('T')[0]||''}" style="font-size:11px;padding:3px 4px"></div>
+            <div><span class="form-label">Hrs/Wk</span><input class="form-input" type="number" data-cfield="hoursPerWeek" value="${c.hoursPerWeek||''}" style="font-size:11px;padding:3px 4px;width:48px"></div>
+            <div><span class="form-label">Fee</span><input class="form-input" type="text" data-cfield="fee" value="${c.fee||''}" style="font-size:11px;padding:3px 4px;width:70px;font-family:var(--font-mono)"></div>
           </div>
         </div>`;
       }
     } else {
-      html += `<div style="color:var(--text-muted);font-size:13px">No accommodation</div>`;
+      html += `<div style="color:var(--text-muted);font-size:13px;padding:12px 0">No courses</div>`;
     }
     html += `</div></div>`;
 
     // Payments
-    html += `<div class="card"><div class="card-header"><h3>Payments (${b.payments?.length || 0})</h3></div><div class="card-body">`;
+    html += `<div class="card" style="margin-bottom:16px">
+      <div class="card-header collapse-header${b.payments?.length > 0 ? '' : ''}" onclick="toggleCollapse(this)"><h3>Payments (${b.payments?.length || 0})</h3></div>
+      <div class="card-body collapse-body${b.payments?.length > 0 ? ' open' : ''}" style="padding:12px 18px">`;
     if (b.payments && b.payments.length > 0) {
       html += `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Amount</th><th>Method</th><th>Type</th></tr></thead><tbody>`;
       for (const p of b.payments) {
         html += `<tr>
-          <td>${formatDate(p.paymentDate)}</td>
+          <td style="font-family:var(--font-mono);font-size:12px">${formatDate(p.paymentDate)}</td>
           <td class="amount">${formatMoney(p.amount)}</td>
           <td>${esc(p.method||'—')}</td>
           <td>${esc(p.type||'—')}</td>
@@ -1043,6 +1530,59 @@ async function showBookingDetail(id) {
       html += `</tbody></table></div>`;
     } else {
       html += `<div style="color:var(--text-muted);font-size:13px">No payments recorded</div>`;
+    }
+    html += `</div></div>`;
+
+    // Status History
+    html += `<div class="card">
+      <div class="card-header collapse-header" onclick="toggleCollapse(this)"><h3>Status History</h3></div>
+      <div class="card-body collapse-body" style="padding:12px 18px">`;
+    if (b.statusHistory && b.statusHistory.length > 0) {
+      for (const h of b.statusHistory) {
+        html += `<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;font-size:12px">
+          <span style="color:var(--text-muted);font-family:var(--font-mono)">${formatDate(h.createdAt)}</span>
+          ${statusBadge(h.fromStatus)} <span style="color:var(--text-muted)">&rarr;</span> ${statusBadge(h.toStatus)}
+        </div>`;
+      }
+    } else {
+      html += `<div style="color:var(--text-muted);font-size:13px">No status changes</div>`;
+    }
+    html += `</div></div>`;
+
+    html += `</div><div>`;
+
+    // Accommodation (right column)
+    html += `<div class="card" style="margin-bottom:16px">
+      <div class="card-header"><h3>Accommodation (${b.accommodations?.length || 0})</h3><button class="btn btn-sm btn-secondary" onclick="openAddAccomModal(${b.id})">+ Add</button></div>
+      <div class="card-body" style="padding:12px 18px">`;
+    if (b.accommodations && b.accommodations.length > 0) {
+      for (const a of b.accommodations) {
+        const typeOpts = ['','Host Family','Apartment','Hostel','Hotel','Other'].map(v => `<option value="${v}" ${v===(a.accommodationType||'')?'selected':''}>${v||'—'}</option>`).join('');
+        const roomOpts = ['','Single','Double','Twin','Triple','Dorm'].map(v => `<option value="${v}" ${v===(a.roomType||'')?'selected':''}>${v||'—'}</option>`).join('');
+        const boardOpts = ['','Self catering','Breakfast','Half-board','Full-board'].map(v => `<option value="${v}" ${v===(a.board||'')?'selected':''}>${v||'—'}</option>`).join('');
+
+        html += `<div style="padding:10px 0;border-bottom:1px solid #f0efec" data-accom-id="${a.id}">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <div style="display:flex;gap:6px;align-items:center;flex:1">
+              <select class="form-select" data-afield="accommodationType" style="font-size:12px;padding:4px 6px;flex:1">${typeOpts}</select>
+              <select class="form-select" data-afield="roomType" style="font-size:12px;padding:4px 6px;width:80px">${roomOpts}</select>
+              <select class="form-select" data-afield="board" style="font-size:12px;padding:4px 6px;width:100px">${boardOpts}</select>
+            </div>
+            <div style="display:flex;gap:4px;margin-left:8px">
+              <button class="btn btn-ghost btn-sm" onclick="saveAccomInline(${a.id},${b.id},this)" style="color:var(--success)">Save</button>
+              <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="deleteBookingAccom(${a.id},${b.id})">Del</button>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr auto 1fr 1fr;gap:6px;font-size:12px;align-items:end">
+            <div><span class="form-label">Check-in</span><input class="form-input" type="date" data-afield="startDate" value="${a.startDate?.split('T')[0]||''}" onchange="calcAccommEnd(this)" style="font-size:11px;padding:3px 4px"></div>
+            <div><span class="form-label">Wks</span><input class="form-input" type="number" data-afield="weeks" value="${a.weeks||''}" min="1" onchange="calcAccommEnd(this)" style="font-size:11px;padding:3px 4px;width:48px"></div>
+            <div><span class="form-label">Check-out</span><input class="form-input" type="date" data-afield="endDate" value="${a.endDate?.split('T')[0]||''}" style="font-size:11px;padding:3px 4px"></div>
+            <div><span class="form-label">Fee</span><input class="form-input" type="text" data-afield="fee" value="${a.fee||''}" style="font-size:11px;padding:3px 4px;width:70px;font-family:var(--font-mono)"></div>
+          </div>
+        </div>`;
+      }
+    } else {
+      html += `<div style="color:var(--text-muted);font-size:13px;padding:12px 0">No accommodation</div>`;
     }
     html += `</div></div>`;
 
@@ -1079,6 +1619,27 @@ async function deleteBooking(id) {
     await api('/bookings/' + id, { method: 'DELETE' });
     toast('Booking deleted');
     navigate('bookings');
+  } catch (e) { toast(e.message, true); }
+}
+
+// ─── INLINE COURSE/ACCOM SAVE ───────────────────
+async function saveCourseInline(courseId, bookingId, btn) {
+  const row = btn.closest('[data-course-id]');
+  const data = {};
+  row.querySelectorAll('[data-cfield]').forEach(el => { data[el.dataset.cfield] = el.value; });
+  try {
+    await api('/bookings/courses/' + courseId, { method: 'PATCH', body: data });
+    toast('Course saved');
+  } catch (e) { toast(e.message, true); }
+}
+
+async function saveAccomInline(accomId, bookingId, btn) {
+  const row = btn.closest('[data-accom-id]');
+  const data = {};
+  row.querySelectorAll('[data-afield]').forEach(el => { data[el.dataset.afield] = el.value; });
+  try {
+    await api('/bookings/accommodations/' + accomId, { method: 'PATCH', body: data });
+    toast('Accommodation saved');
   } catch (e) { toast(e.message, true); }
 }
 
@@ -1172,9 +1733,9 @@ async function deleteBookingCourse(courseId, bookingId) {
 // ─── BOOKING ACCOMMODATION CRUD ─────────────────
 function accomFormFields(a = {}) {
   return `
-    ${selectField('accommodationType','Type',a.accommodationType||'',[['','—'],['Host Family','Host Family'],['Residence','Residence'],['Hotel','Hotel'],['Apartment','Apartment'],['Other','Other']])}
-    ${selectField('roomType','Room',a.roomType||'',[['','—'],['Single','Single'],['Double','Double'],['Twin','Twin'],['Triple','Triple'],['Dorm','Dorm (4+)']])}
-    ${selectField('board','Board',a.board||'',[['','—'],['Self catering','Self catering'],['Breakfast','Breakfast'],['Half-board','Half-board'],['Full-board','Full-board']])}
+    ${selectField('accommodationType','Type',a.accommodationType||'Host Family',[['','—'],['Host Family','Host Family'],['Apartment','Apartment'],['Hostel','Hostel'],['Hotel','Hotel'],['Other','Other']])}
+    ${selectField('roomType','Room',a.roomType||'Single',[['','—'],['Single','Single'],['Double','Double'],['Twin','Twin'],['Triple','Triple'],['Dorm','Dorm (4+)']])}
+    ${selectField('board','Board',a.board||'Half-board',[['','—'],['Self catering','Self catering'],['Breakfast','Breakfast'],['Half-board','Half-board'],['Full-board','Full-board']])}
     <div class="form-group"><label class="form-label">Check-in</label><input class="form-input" type="date" data-field="startDate" value="${a.startDate?.split('T')[0]||''}" onchange="calcAccommEnd(this)"></div>
     <div class="form-group"><label class="form-label">Weeks</label><input class="form-input" type="number" data-field="weeks" value="${a.weeks||''}" min="1" onchange="calcAccommEnd(this)"></div>
     <div class="form-group"><label class="form-label">Check-out</label><input class="form-input" type="date" data-field="endDate" value="${a.endDate?.split('T')[0]||''}"></div>
@@ -1636,13 +2197,17 @@ async function showClassDetail(id, weekOverride) {
       <div class="card-body">`;
 
     if (matchingUnassigned.length > 0) {
-      html += `<div class="table-wrap"><table>
+      html += `<div style="margin-bottom:10px">
+        <input type="text" id="unassignedSearch" placeholder="Search by name..." oninput="filterUnassignedTable(this.value)"
+          style="width:100%;max-width:300px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--bg-card);color:var(--text-primary)">
+      </div>`;
+      html += `<div class="table-wrap"><table id="unassignedTable">
         <thead><tr><th>Student</th><th>Level</th><th>Course</th><th>Dates</th><th></th></tr></thead><tbody>`;
       for (const bc of matchingUnassigned) {
         const student = bc.booking?.student;
         const sName = student ? `${student.lastName}, ${student.firstName}` : '—';
         const level = student?.currentLevel || bc.level || '?';
-        html += `<tr>
+        html += `<tr data-name="${esc(sName.toLowerCase())}">
           <td><strong>${esc(sName)}</strong></td>
           <td><span class="badge badge-confirmed">${level}</span></td>
           <td>${esc(bc.name)}</td>
@@ -1659,6 +2224,14 @@ async function showClassDetail(id, weekOverride) {
     html += `</div></div>`;
     document.getElementById('content').innerHTML = html;
   } catch (e) { toast(e.message, true); }
+}
+
+function filterUnassignedTable(query) {
+  const q = query.toLowerCase().trim();
+  const rows = document.querySelectorAll('#unassignedTable tbody tr');
+  rows.forEach(row => {
+    row.style.display = row.dataset.name.includes(q) ? '' : 'none';
+  });
 }
 
 async function quickAssign(bookingCourseId, classId) {
@@ -2033,7 +2606,71 @@ async function loadWeeklyAttendance() {
     }
 
     html += `</div></div>`;
+
+    // Attendance sheet upload section
+    html += `<div class="card" style="margin-top:12px">
+      <div class="card-header">
+        <h3>Attendance Sheets</h3>
+        <label class="btn btn-sm btn-secondary" style="cursor:pointer;margin:0">
+          Upload Image / PDF
+          <input type="file" accept="image/*,.pdf" multiple hidden onchange="uploadAttendanceFiles(this.files)">
+        </label>
+      </div>
+      <div class="card-body" id="attendanceUploads" style="min-height:40px">
+        <div style="color:var(--text-muted);font-size:13px">Loading...</div>
+      </div>
+    </div>`;
+
     container.innerHTML = html;
+    loadAttendanceUploads();
+  } catch (e) { toast(e.message, true); }
+}
+
+async function loadAttendanceUploads() {
+  const container = document.getElementById('attendanceUploads');
+  if (!container || !attendanceClassId) return;
+  try {
+    const files = await api('/attendance/uploads/' + attendanceClassId + '/' + isoDate(attendanceWeek));
+    if (files.length === 0) {
+      container.innerHTML = '<div style="color:var(--text-muted);font-size:13px">No sheets uploaded for this week</div>';
+      return;
+    }
+    let html = '<div style="display:flex;flex-wrap:wrap;gap:10px">';
+    for (const f of files) {
+      const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(f.filename);
+      const fileUrl = API + '/attendance/uploads/file/' + f.filename;
+      html += `<div style="position:relative;border:1px solid var(--border);border-radius:6px;overflow:hidden;width:140px">
+        ${isImage
+          ? `<a href="${fileUrl}" target="_blank"><img src="${fileUrl}" style="width:140px;height:100px;object-fit:cover;display:block"></a>`
+          : `<a href="${fileUrl}" target="_blank" style="display:flex;align-items:center;justify-content:center;height:100px;background:var(--bg-main);font-size:12px;color:var(--accent);text-decoration:none">PDF</a>`}
+        <div style="padding:4px 6px;font-size:10px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(f.originalName)}">${esc(f.originalName)}</div>
+        <button onclick="deleteAttendanceFile('${f.filename}')" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;line-height:20px;text-align:center">&times;</button>
+      </div>`;
+    }
+    html += '</div>';
+    container.innerHTML = html;
+  } catch (e) { container.innerHTML = '<div style="color:#991b1b;font-size:13px">Error loading uploads</div>'; }
+}
+
+async function uploadAttendanceFiles(fileList) {
+  if (!attendanceClassId) { toast('Select a class first', true); return; }
+  for (const file of fileList) {
+    const form = new FormData();
+    form.append('file', file);
+    try {
+      await fetch(API + '/attendance/upload/' + attendanceClassId + '/' + isoDate(attendanceWeek), { method: 'POST', body: form });
+    } catch (e) { toast('Upload failed: ' + e.message, true); return; }
+  }
+  toast('Uploaded ' + fileList.length + ' file(s)');
+  loadAttendanceUploads();
+}
+
+async function deleteAttendanceFile(filename) {
+  if (!confirm('Delete this file?')) return;
+  try {
+    await api('/attendance/uploads/' + attendanceClassId + '/' + isoDate(attendanceWeek) + '/' + filename, { method: 'DELETE' });
+    toast('File deleted');
+    loadAttendanceUploads();
   } catch (e) { toast(e.message, true); }
 }
 
@@ -2507,8 +3144,689 @@ function paginationHtml(res, pageVar, fn) {
   </div>`;
 }
 
+// ─── DOCUMENTS ──────────────────────────────────
+
+async function showDocumentsList() {
+  setTopbar('Documents', '', '<button class="btn btn-secondary btn-sm" onclick="navigate(\'document-templates\')">Manage Templates</button>');
+
+  try {
+    const docs = await api('/documents');
+    let html = `
+      <div class="toolbar">
+        <button class="btn btn-primary" onclick="startDocumentGeneration()">Generate Document</button>
+      </div>`;
+
+    if (docs.length === 0) {
+      html += '<div class="table-wrap"><div class="table-empty">No documents yet. Generate your first document above.</div></div>';
+    } else {
+      html += `<div class="table-wrap"><table>
+        <thead><tr><th>ID</th><th>Type</th><th>Student</th><th>Status</th><th>Version</th><th>Issued</th><th></th></tr></thead><tbody>`;
+      for (const d of docs) {
+        const typeName = d.template?.name || d.documentType;
+        const statusCls = d.status === 'ISSUED' ? 'badge-confirmed' : d.status === 'DRAFT' ? 'badge-enquiry' : d.status === 'SUPERSEDED' ? 'badge-pending' : 'badge-cancelled';
+        html += `<tr>
+          <td><span style="font-family:var(--font-mono);font-size:12px">${d.id}</span></td>
+          <td>${esc(typeName)}</td>
+          <td>Student #${d.studentId}</td>
+          <td><span class="badge ${statusCls}">${d.status}</span></td>
+          <td>v${d.versionNo}.0</td>
+          <td style="font-size:12px;font-family:var(--font-mono)">${d.issuedAt ? formatDate(d.issuedAt) : '—'}</td>
+          <td><button class="btn btn-ghost btn-sm" onclick="navigate('document-detail',{id:${d.id}})">View</button></td>
+        </tr>`;
+      }
+      html += '</tbody></table></div>';
+    }
+    document.getElementById('content').innerHTML = html;
+  } catch (e) { toast(e.message, true); }
+}
+
+async function startDocumentGeneration() {
+  try {
+    const [templates, students] = await Promise.all([
+      api('/documents/templates'),
+      api('/students?limit=500'),
+    ]);
+
+    let html = `<div class="card"><div class="card-header"><h3>Generate Document</h3></div><div class="card-body">
+      <div style="display:flex;flex-direction:column;gap:16px;max-width:500px">
+        <div>
+          <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Document Type</label>
+          <select id="docTemplate" class="filter-select" style="width:100%">
+            <option value="">Select template...</option>
+            ${templates.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Student</label>
+          <select id="docStudent" class="filter-select" style="width:100%">
+            <option value="">Select student...</option>
+            ${(students.data || students).map(s => `<option value="${s.id}">${esc(s.lastName)}, ${esc(s.firstName)} (${s.email || '#'+s.id})</option>`).join('')}
+          </select>
+        </div>
+        <div id="docBookingWrap" style="display:none">
+          <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Booking</label>
+          <select id="docBooking" class="filter-select" style="width:100%"></select>
+        </div>
+        <button class="btn btn-primary" onclick="generateDocumentDraft()">Generate Draft</button>
+      </div>
+    </div></div>`;
+
+    document.getElementById('content').innerHTML = html;
+
+    // Load bookings when student changes
+    document.getElementById('docStudent').addEventListener('change', async function() {
+      const sid = parseInt(this.value);
+      const wrap = document.getElementById('docBookingWrap');
+      const sel = document.getElementById('docBooking');
+      if (!sid) { wrap.style.display = 'none'; return; }
+      try {
+        const bookings = await api('/bookings?studentId=' + sid);
+        const blist = bookings.data || bookings;
+        if (blist.length > 0) {
+          sel.innerHTML = '<option value="">No booking (student-level doc)</option>' +
+            blist.map(b => `<option value="${b.id}">Booking #${b.id} — ${b.status} (${b.courses?.[0]?.name || 'no course'})</option>`).join('');
+          wrap.style.display = 'block';
+        } else {
+          wrap.style.display = 'none';
+        }
+      } catch(e) { wrap.style.display = 'none'; }
+    });
+  } catch (e) { toast(e.message, true); }
+}
+
+async function generateDocumentDraft() {
+  const templateId = parseInt(document.getElementById('docTemplate')?.value);
+  const studentId = parseInt(document.getElementById('docStudent')?.value);
+  const bookingId = parseInt(document.getElementById('docBooking')?.value) || null;
+  if (!templateId || !studentId) { toast('Select template and student', true); return; }
+
+  try {
+    const result = await api('/documents/generate', { method: 'POST', body: { templateId, studentId, bookingId } });
+    if (result.missing && result.missing.length > 0) {
+      toast('Draft created with ' + result.missing.length + ' missing token(s)', true);
+    } else {
+      toast('Draft generated');
+    }
+    navigate('document-detail', { id: result.record.id });
+  } catch (e) { toast(e.message, true); }
+}
+
+async function showDocumentDetail(id) {
+  setTopbar('Document', '<span onclick="navigate(\'documents\')">Documents</span> / Detail', '');
+
+  try {
+    const doc = await api('/documents/' + id);
+    const isDraft = doc.status === 'DRAFT';
+    const isIssued = doc.status === 'ISSUED';
+    const typeName = doc.template?.name || doc.documentType;
+
+    const statusCls = doc.status === 'ISSUED' ? 'badge-confirmed' : doc.status === 'DRAFT' ? 'badge-enquiry' : doc.status === 'SUPERSEDED' ? 'badge-pending' : 'badge-cancelled';
+
+    let html = `<div style="display:flex;gap:16px;align-items:center;margin-bottom:16px">
+      <h2 style="font-size:18px;font-weight:600">${esc(typeName)} — v${doc.versionNo}.0</h2>
+      <span class="badge ${statusCls}">${doc.status}</span>
+      ${isIssued ? '<span style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono)">LOCKED</span>' : ''}
+    </div>`;
+
+    // Metadata
+    html += `<div class="card" style="margin-bottom:16px"><div class="card-body" style="display:flex;gap:24px;flex-wrap:wrap;font-size:13px">
+      <div><strong>Student ID:</strong> ${doc.studentId}</div>
+      ${doc.bookingId ? `<div><strong>Booking:</strong> #${doc.bookingId}</div>` : ''}
+      <div><strong>Template:</strong> ${esc(typeName)} v${doc.templateVersion}</div>
+      ${doc.issuedAt ? `<div><strong>Issued:</strong> ${new Date(doc.issuedAt).toLocaleString()}</div>` : ''}
+      ${doc.issuedBy ? `<div><strong>By:</strong> ${esc(doc.issuedBy)}</div>` : ''}
+      ${doc.verificationToken ? `<div><strong>Verification:</strong> <a href="/sis/verify/${doc.verificationToken}" target="_blank" style="color:var(--accent)">/sis/verify/${doc.verificationToken.slice(0,8)}...</a></div>` : ''}
+    </div></div>`;
+
+    // Actions
+    html += `<div style="display:flex;gap:8px;margin-bottom:16px">`;
+    if (isDraft) {
+      html += `<button class="btn btn-primary" onclick="issueDocument(${doc.id})">Issue Document</button>`;
+    }
+    if (isIssued) {
+      html += `<button class="btn btn-secondary" onclick="createNewVersion(${doc.id})">Create New Version</button>`;
+      html += `<button class="btn btn-danger btn-sm" onclick="revokeDocument(${doc.id})">Revoke</button>`;
+    }
+    html += `</div>`;
+
+    // Content preview
+    html += `<div class="card"><div class="card-header"><h3>Document Preview</h3>
+      ${isDraft ? '<button class="btn btn-sm btn-secondary" onclick="toggleDocEdit()">Edit Content</button>' : ''}
+    </div>
+    <div class="card-body">
+      <div id="docPreview" style="border:1px solid var(--card-border);border-radius:6px;padding:24px;background:#fff;max-height:600px;overflow-y:auto">${doc.contentHtml || '<em>No content</em>'}</div>
+      ${isDraft ? `<div id="docEditWrap" style="display:none;margin-top:12px">
+        <textarea id="docEditArea" style="width:100%;height:300px;font-family:var(--font-mono);font-size:12px;padding:10px;border:1px solid var(--card-border);border-radius:6px">${esc(doc.contentHtml || '')}</textarea>
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <button class="btn btn-primary btn-sm" onclick="saveDocContent(${doc.id})">Save Changes</button>
+          <button class="btn btn-ghost btn-sm" onclick="toggleDocEdit()">Cancel</button>
+        </div>
+      </div>` : ''}
+    </div></div>`;
+
+    // Dispatch history
+    if (doc.dispatches && doc.dispatches.length > 0) {
+      html += `<div class="card" style="margin-top:16px"><div class="card-header"><h3>Dispatch History</h3></div>
+        <div class="card-body" style="padding:0"><table><thead><tr><th>Sent To</th><th>Method</th><th>By</th><th>Date</th></tr></thead><tbody>`;
+      for (const d of doc.dispatches) {
+        html += `<tr><td>${esc(d.sentToEmail)}</td><td>${d.deliveryMethod || '—'}</td><td>${d.sentBy || '—'}</td><td style="font-size:12px;font-family:var(--font-mono)">${new Date(d.createdAt).toLocaleString()}</td></tr>`;
+      }
+      html += `</tbody></table></div></div>`;
+    }
+
+    // Version chain
+    if (doc.supersededBy && doc.supersededBy.length > 0) {
+      html += `<div class="card" style="margin-top:16px"><div class="card-header"><h3>Newer Versions</h3></div><div class="card-body">`;
+      for (const s of doc.supersededBy) {
+        html += `<div style="margin-bottom:6px"><button class="btn btn-ghost btn-sm" onclick="navigate('document-detail',{id:${s.id}})">v${s.versionNo}.0 — ${s.status}</button></div>`;
+      }
+      html += `</div></div>`;
+    }
+
+    document.getElementById('content').innerHTML = html;
+  } catch (e) { toast(e.message, true); }
+}
+
+function toggleDocEdit() {
+  const wrap = document.getElementById('docEditWrap');
+  if (wrap) wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
+}
+
+async function saveDocContent(id) {
+  const html = document.getElementById('docEditArea')?.value;
+  try {
+    await api('/documents/' + id, { method: 'PUT', body: { contentHtml: html } });
+    toast('Content saved');
+    showDocumentDetail(id);
+  } catch (e) { toast(e.message, true); }
+}
+
+async function issueDocument(id) {
+  if (!confirm('Issue this document? This will lock it permanently and generate a QR verification code.')) return;
+  try {
+    await api('/documents/' + id + '/issue', { method: 'POST', body: { issuedBy: 'admin' } });
+    toast('Document issued and locked');
+    showDocumentDetail(id);
+  } catch (e) { toast(e.message, true); }
+}
+
+async function createNewVersion(id) {
+  if (!confirm('Create a new version? The current document will be marked as superseded.')) return;
+  try {
+    const newDoc = await api('/documents/' + id + '/new-version', { method: 'POST' });
+    toast('New version created as draft');
+    navigate('document-detail', { id: newDoc.id });
+  } catch (e) { toast(e.message, true); }
+}
+
+async function revokeDocument(id) {
+  if (!confirm('Revoke this document? It will be marked as invalid on the verification page.')) return;
+  try {
+    await api('/documents/' + id + '/revoke', { method: 'POST' });
+    toast('Document revoked');
+    showDocumentDetail(id);
+  } catch (e) { toast(e.message, true); }
+}
+
+// ── TEMPLATES MANAGEMENT ────────────────────
+
+// Shared top-level categories
+const CATEGORIES = [
+  { key: 'academic', label: 'Academic' },
+  { key: 'accomm', label: 'Accommodation' },
+  { key: 'accounts', label: 'Accounts' },
+  { key: 'app', label: 'App / Portal' },
+  { key: 'success', label: 'Success' },
+  { key: 'insurance', label: 'Insurance' },
+  { key: 'sales', label: 'Sales' },
+];
+
+// Document template folder tree — mirrors docs/Document Templates/
+const DOC_TREE = [
+  { key: 'academic', label: 'Academic' },
+  { key: 'accomm', label: 'Accommodation' },
+  { key: 'accounts', label: 'Accounts' },
+  { key: 'class/attend', label: 'Attendance', parent: 'Class' },
+  { key: 'class/certs', label: 'Certificates', parent: 'Class' },
+  { key: 'class/transcript', label: 'Transcripts', parent: 'Class' },
+  { key: 'groups', label: 'Groups' },
+  { key: 'insurance', label: 'Insurance' },
+  { key: 'partners', label: 'Partners' },
+  { key: 'success/student', label: 'Student', parent: 'Success' },
+  { key: 'success/visa', label: 'Visa', parent: 'Success' },
+];
+
+// Email template folder tree (has subcategories)
+const EMAIL_TREE = [
+  { key: 'academic', label: 'Academic' },
+  { key: 'accomm/confirm-provider', label: 'Confirm Provider', parent: 'Accommodation' },
+  { key: 'accomm/confirm-student', label: 'Confirm Student', parent: 'Accommodation' },
+  { key: 'accomm/transfer', label: 'Transfer', parent: 'Accommodation' },
+  { key: 'accounts', label: 'Accounts' },
+  { key: 'app', label: 'App / Portal' },
+  { key: 'success/agent', label: 'Agent', parent: 'Success' },
+  { key: 'success/feedback', label: 'Feedback', parent: 'Success' },
+  { key: 'success/student', label: 'Student', parent: 'Success' },
+  { key: 'success/visa', label: 'Visa', parent: 'Success' },
+  { key: 'insurance', label: 'Insurance' },
+  { key: 'sales/B2B', label: 'B2B', parent: 'Sales' },
+  { key: 'sales/B2C', label: 'B2C', parent: 'Sales' },
+];
+
+let docTplActiveCat = 'success/visa';
+let emailTplActiveCat = 'academic';
+let docTplAll = [];
+let emailTplAll = [];
+
+function buildTree(tree, activeCat, onClickFn, counts, idSuffix) {
+  let html = '';
+  let lastParent = null;
+  for (const node of tree) {
+    if (node.parent && node.parent !== lastParent) {
+      html += `<div style="padding:4px 10px 2px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);font-weight:600;margin-top:6px">${node.parent}</div>`;
+      lastParent = node.parent;
+    } else if (!node.parent && lastParent) {
+      lastParent = null;
+    }
+    const cnt = counts[node.key] || 0;
+    const indent = node.parent ? 'padding-left:22px;' : '';
+    html += `<div class="tpl-tree-item ${activeCat === node.key ? 'active' : ''}" data-cat-${idSuffix}="${node.key}" onclick="${onClickFn}('${node.key}')" style="${indent}">
+      <span class="tpl-tree-label">${node.label}</span>
+      <span class="tpl-tree-count">${cnt}</span>
+    </div>`;
+  }
+  return html;
+}
+
+async function showTemplatesList() {
+  setTopbar('Templates', '<span onclick="navigate(\'documents\')">Documents</span> / Templates', '');
+
+  try {
+    const [docResults, emailResults] = await Promise.all([
+      api('/documents/templates?all=true&type=document'),
+      api('/documents/templates?all=true&type=email'),
+    ]);
+    docTplAll = docResults;
+    emailTplAll = emailResults;
+
+    // Count per category
+    const docCounts = {};
+    for (const t of docTplAll) {
+      const c = t.category || 'academic';
+      docCounts[c] = (docCounts[c] || 0) + 1;
+    }
+    const emailCounts = {};
+    for (const t of emailTplAll) {
+      const c = t.category || 'academic';
+      emailCounts[c] = (emailCounts[c] || 0) + 1;
+    }
+
+    let html = '';
+
+    // ── DOCUMENT TEMPLATES ──
+    html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;color:var(--accent)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <h2 style="font-size:15px;font-weight:700;margin:0">Document Templates</h2>
+      <div style="flex:1"></div>
+      <button class="btn btn-primary btn-sm" onclick="showTemplateEditor()">+ New</button>
+    </div>`;
+
+    html += `<div style="display:flex;gap:0;height:320px;border:1px solid var(--card-border);border-radius:var(--radius);overflow:hidden;background:var(--card-bg);margin-bottom:28px">
+      <div style="width:190px;min-width:190px;border-right:1px solid var(--card-border);background:#fafaf8;overflow-y:auto;padding:6px 0">
+        ${buildTree(DOC_TREE, docTplActiveCat, 'selectDocCat', docCounts, 'doc')}
+      </div>
+      <div style="flex:1;overflow-y:auto" id="docTplList"></div>
+    </div>`;
+
+    // ── DIVIDER ──
+    html += `<div style="border-top:2px solid var(--card-border);margin:0 0 20px"></div>`;
+
+    // ── EMAIL TEMPLATES ──
+    html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;color:var(--warning)"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      <h2 style="font-size:15px;font-weight:700;margin:0">Email Templates</h2>
+      <span style="font-size:12px;color:var(--text-muted)">${emailTplAll.length} templates</span>
+    </div>`;
+
+    html += `<div style="display:flex;gap:0;height:320px;border:1px solid var(--card-border);border-radius:var(--radius);overflow:hidden;background:var(--card-bg)">
+      <div style="width:190px;min-width:190px;border-right:1px solid var(--card-border);background:#fafaf8;overflow-y:auto;padding:6px 0">
+        ${buildTree(EMAIL_TREE, emailTplActiveCat, 'selectEmailCat', emailCounts, 'email')}
+      </div>
+      <div style="flex:1;overflow-y:auto" id="emailTplList"></div>
+    </div>`;
+
+    document.getElementById('content').innerHTML = html;
+    renderDocList();
+    renderEmailList();
+  } catch (e) { toast(e.message, true); }
+}
+
+function selectDocCat(cat) {
+  docTplActiveCat = cat;
+  document.querySelectorAll('[data-cat-doc]').forEach(el => {
+    el.classList.toggle('active', el.getAttribute('data-cat-doc') === cat);
+  });
+  renderDocList();
+}
+
+function selectEmailCat(cat) {
+  emailTplActiveCat = cat;
+  document.querySelectorAll('[data-cat-email]').forEach(el => {
+    el.classList.toggle('active', el.getAttribute('data-cat-email') === cat);
+  });
+  renderEmailList();
+}
+
+function renderDocList() {
+  const container = document.getElementById('docTplList');
+  if (!container) return;
+  const items = docTplAll.filter(t => (t.category || 'letters') === docTplActiveCat);
+  const catLabel = DOC_TREE.find(n => n.key === docTplActiveCat)?.label || docTplActiveCat;
+
+  if (items.length === 0) {
+    container.innerHTML = `<div style="padding:30px;text-align:center;color:var(--text-muted);font-size:13px">No templates in <strong>${esc(catLabel)}</strong></div>`;
+    return;
+  }
+
+  let html = `<table style="width:100%"><thead><tr><th>Name</th><th>Slug</th><th>v</th><th>Status</th><th></th></tr></thead><tbody>`;
+  for (const t of items) {
+    html += `<tr style="cursor:pointer" onclick="showTemplateEditor(${t.id})">
+      <td><strong>${esc(t.name)}</strong></td>
+      <td style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted)">${esc(t.slug)}</td>
+      <td style="font-family:var(--font-mono);font-size:12px">v${t.version}</td>
+      <td>${t.active ? '<span class="badge badge-confirmed">Active</span>' : '<span class="badge badge-cancelled">Inactive</span>'}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();showTemplateEditor(${t.id})">Edit</button></td>
+    </tr>`;
+  }
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+function renderEmailList() {
+  const container = document.getElementById('emailTplList');
+  if (!container) return;
+  const items = emailTplAll.filter(t => (t.category || 'academic') === emailTplActiveCat);
+  const catLabel = EMAIL_TREE.find(n => n.key === emailTplActiveCat)?.label || emailTplActiveCat;
+
+  if (items.length === 0) {
+    container.innerHTML = `<div style="padding:30px;text-align:center;color:var(--text-muted);font-size:13px">No templates in <strong>${esc(catLabel)}</strong></div>`;
+    return;
+  }
+
+  let html = `<table style="width:100%"><thead><tr><th>Name</th><th>Slug</th><th>v</th><th>Status</th><th></th></tr></thead><tbody>`;
+  for (const t of items) {
+    html += `<tr style="cursor:pointer" onclick="showTemplateEditor(${t.id})">
+      <td><strong>${esc(t.name)}</strong></td>
+      <td style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted)">${esc(t.slug)}</td>
+      <td style="font-family:var(--font-mono);font-size:12px">v${t.version}</td>
+      <td>${t.active ? '<span class="badge badge-confirmed">Active</span>' : '<span class="badge badge-cancelled">Inactive</span>'}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();showTemplateEditor(${t.id})">Edit</button></td>
+    </tr>`;
+  }
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+async function showTemplateEditor(id) {
+  setTopbar(id ? 'Edit Template' : 'New Template', '<span onclick="navigate(\'documents\')">Documents</span> / <span onclick="navigate(\'document-templates\')">Templates</span>', '');
+
+  let template = null;
+  if (id) {
+    template = await api('/documents/templates/' + id);
+  }
+
+  const tokenHelp = `Available tokens: {{student.full_name}}, {{student.first_name}}, {{student.last_name}}, {{student.dob}}, {{student.nationality}}, {{student.passport_number_masked}}, {{student.current_level}}, {{student.photo}}, {{booking.reference}}, {{booking.start_date}}, {{booking.end_date}}, {{booking.course_name}}, {{booking.course_level}}, {{booking.hours_per_week}}, {{booking.weeks}}, {{booking.amount_total}}, {{institution.name}}, {{institution.address}}, {{document.issue_date}}, {{document.qr}}, {{document.verification_url}}, {{document.version}}, {{document.number}}. Editable blocks: use {{custom.your_field_name}}.`;
+
+  let html = `<div class="card"><div class="card-body">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;gap:14px">
+        <div style="flex:2">
+          <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Template Name</label>
+          <input id="tplName" type="text" value="${template ? esc(template.name) : ''}" placeholder="Letter of Acceptance" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+        </div>
+        <div style="flex:1">
+          <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Category (Folder)</label>
+          <select id="tplCategory" class="filter-select" style="width:100%">
+          ${DOC_TREE.map(c => '<option value="'+c.key+'" '+(template?.category === c.key ? 'selected' : '')+'>'+(c.parent ? c.parent+' / ' : '')+c.label+'</option>').join('')}
+        </select>
+        </div>
+        <div style="flex:1">
+          <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Slug</label>
+          <input id="tplSlug" type="text" value="${template ? esc(template.slug) : ''}" placeholder="loa" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font-mono)">
+        </div>
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <label style="font-size:12px;font-weight:600">HTML Template</label>
+          <div style="display:flex;gap:4px">
+            <button class="btn btn-ghost btn-sm" onclick="setTplView('split')" id="tplViewSplit" style="font-size:11px;font-weight:600">Split</button>
+            <button class="btn btn-ghost btn-sm" onclick="setTplView('code')" id="tplViewCode" style="font-size:11px">Code</button>
+            <button class="btn btn-ghost btn-sm" onclick="setTplView('preview')" id="tplViewPreview" style="font-size:11px">Preview</button>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px">${tokenHelp}</div>
+        <div id="tplEditorWrap" style="display:flex;gap:0;height:480px;border:1px solid var(--card-border);border-radius:6px;overflow:hidden">
+          <div id="tplCodePane" style="flex:1;min-width:0;display:flex;flex-direction:column">
+            <textarea id="tplHtml" oninput="updateTplPreview()" style="flex:1;width:100%;resize:none;font-family:var(--font-mono);font-size:12px;padding:10px;border:none;outline:none;line-height:1.5;background:#fafaf8">${template ? esc(template.htmlTemplate) : defaultLoATemplate()}</textarea>
+          </div>
+          <div style="width:1px;background:var(--card-border)" id="tplDivider"></div>
+          <div id="tplPreviewCol" style="flex:1;min-width:0;display:flex;flex-direction:column">
+            <div id="tplToolbar" style="display:flex;gap:2px;padding:4px 8px;border-bottom:1px solid var(--card-border);background:#fafaf8;flex-wrap:wrap">
+              <button type="button" class="btn btn-ghost btn-sm" onclick="tplExec('bold')" title="Bold" style="font-weight:700;min-width:28px">B</button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="tplExec('italic')" title="Italic" style="font-style:italic;min-width:28px">I</button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="tplExec('underline')" title="Underline" style="text-decoration:underline;min-width:28px">U</button>
+              <div style="width:1px;background:var(--card-border);margin:2px 4px"></div>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="tplExec('formatBlock','<h1>')" title="Heading 1" style="min-width:28px;font-size:11px">H1</button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="tplExec('formatBlock','<h2>')" title="Heading 2" style="min-width:28px;font-size:11px">H2</button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="tplExec('formatBlock','<h3>')" title="Heading 3" style="min-width:28px;font-size:11px">H3</button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="tplExec('formatBlock','<p>')" title="Paragraph" style="min-width:28px;font-size:11px">P</button>
+              <div style="width:1px;background:var(--card-border);margin:2px 4px"></div>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="tplExec('insertUnorderedList')" title="Bullet list" style="min-width:28px;font-size:13px">&#8226;</button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="tplExec('insertOrderedList')" title="Numbered list" style="min-width:28px;font-size:11px">1.</button>
+              <div style="width:1px;background:var(--card-border);margin:2px 4px"></div>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="tplExecLink()" title="Insert link" style="min-width:28px;font-size:11px">Link</button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="tplExec('removeFormat')" title="Clear formatting" style="min-width:28px;font-size:11px;color:var(--danger)">Clear</button>
+              <div style="flex:1"></div>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="tplInsertToken()" title="Insert token" style="font-size:11px;color:var(--accent)">+ Token</button>
+            </div>
+            <div id="tplPreviewPane" contenteditable="true" oninput="syncPreviewToCode()" style="flex:1;overflow-y:auto;padding:20px;background:#fff;outline:none;font-size:14px;line-height:1.7"></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn btn-primary" onclick="saveTemplate(${id || 'null'})">${id ? 'Update' : 'Create'} Template</button>
+        ${id ? `<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+          <input type="checkbox" id="tplActive" ${template?.active !== false ? 'checked' : ''}> Active
+        </label>` : ''}
+        <button class="btn btn-ghost" onclick="navigate('document-templates')">Cancel</button>
+      </div>
+    </div>
+  </div></div>`;
+
+  document.getElementById('content').innerHTML = html;
+  updateTplPreview();
+  setTplView('split');
+}
+
+let tplSyncDirection = null; // 'code' or 'preview' — prevents feedback loops
+
+function tokensToPills(html) {
+  return html.replace(/\{\{([^}]+)\}\}/g, (m, key) => {
+    const k = key.trim();
+    if (k === 'document.qr') return '<span contenteditable="false" data-token="document.qr" style="display:inline-block;width:100px;height:100px;border:2px dashed #cbd5e1;border-radius:8px;text-align:center;line-height:100px;font-size:10px;color:#94a3b8;vertical-align:middle;user-select:all">QR Code</span>';
+    return '<span contenteditable="false" data-token="' + k + '" style="background:#eff3fe;color:#2563eb;padding:1px 6px;border-radius:3px;font-size:12px;font-family:monospace;user-select:all">' + k + '</span>';
+  });
+}
+
+function pillsToTokens(html) {
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  div.querySelectorAll('[data-token]').forEach(el => {
+    el.replaceWith('{{' + el.dataset.token + '}}');
+  });
+  return div.innerHTML;
+}
+
+function updateTplPreview() {
+  if (tplSyncDirection === 'preview') return;
+  const html = document.getElementById('tplHtml')?.value || '';
+  const preview = document.getElementById('tplPreviewPane');
+  if (!preview) return;
+  tplSyncDirection = 'code';
+  preview.innerHTML = tokensToPills(html);
+  tplSyncDirection = null;
+}
+
+function syncPreviewToCode() {
+  if (tplSyncDirection === 'code') return;
+  const preview = document.getElementById('tplPreviewPane');
+  const textarea = document.getElementById('tplHtml');
+  if (!preview || !textarea) return;
+  tplSyncDirection = 'preview';
+  textarea.value = pillsToTokens(preview.innerHTML);
+  tplSyncDirection = null;
+}
+
+function tplExec(cmd, val) {
+  document.execCommand(cmd, false, val || null);
+  document.getElementById('tplPreviewPane')?.focus();
+  syncPreviewToCode();
+}
+
+function tplExecLink() {
+  const url = prompt('Enter URL:');
+  if (url) tplExec('createLink', url);
+}
+
+function tplInsertToken() {
+  const tokens = [
+    'student.full_name','student.first_name','student.last_name','student.dob',
+    'student.nationality','student.passport_number','student.passport_number_masked',
+    'student.current_level','student.salutation','student.gender','student.allergies',
+    'student.pronoun_subject','student.pronoun_possessive','student.pronoun_possessive_cap',
+    'student.attendance_rate','student.visa_until','student.photo',
+    'booking.reference','booking.start_date','booking.end_date',
+    'booking.course_name','booking.course_level','booking.hours_per_week',
+    'booking.weeks','booking.amount_total',
+    'accommodation.contact_name','accommodation.provider_name','accommodation.address',
+    'accommodation.phone','accommodation.email','accommodation.start_date',
+    'accommodation.end_date','accommodation.weeks','accommodation.room_type','accommodation.board',
+    'institution.name','institution.address',
+    'document.issue_date','document.qr','document.verification_url','document.version','document.number',
+    'custom.visa_note','custom.remarks','custom.additional_info',
+  ];
+  const sel = prompt('Insert token:\\n\\n' + tokens.map((t,i) => (i+1)+'. '+t).join('\\n') + '\\n\\nEnter number or type token name:');
+  if (!sel) return;
+  const token = /^\d+$/.test(sel.trim()) ? tokens[parseInt(sel.trim())-1] : sel.trim();
+  if (!token) return;
+  // Insert pill at cursor
+  const pill = '<span contenteditable="false" data-token="' + token + '" style="background:#eff3fe;color:#2563eb;padding:1px 6px;border-radius:3px;font-size:12px;font-family:monospace;user-select:all">' + token + '</span>&nbsp;';
+  document.execCommand('insertHTML', false, pill);
+  syncPreviewToCode();
+}
+
+function setTplView(mode) {
+  const code = document.getElementById('tplCodePane');
+  const divider = document.getElementById('tplDivider');
+  const previewCol = document.getElementById('tplPreviewCol');
+  const btnSplit = document.getElementById('tplViewSplit');
+  const btnCode = document.getElementById('tplViewCode');
+  const btnPreview = document.getElementById('tplViewPreview');
+  if (!code || !previewCol) return;
+
+  [btnSplit, btnCode, btnPreview].forEach(b => { if (b) b.style.fontWeight = '400'; });
+
+  if (mode === 'split') {
+    code.style.display = 'flex'; code.style.flex = '1';
+    divider.style.display = ''; previewCol.style.display = 'flex'; previewCol.style.flex = '1';
+    if (btnSplit) btnSplit.style.fontWeight = '600';
+  } else if (mode === 'code') {
+    code.style.display = 'flex'; code.style.flex = '1';
+    divider.style.display = 'none'; previewCol.style.display = 'none';
+    if (btnCode) btnCode.style.fontWeight = '600';
+  } else if (mode === 'preview') {
+    code.style.display = 'none'; divider.style.display = 'none';
+    previewCol.style.display = 'flex'; previewCol.style.flex = '1';
+    if (btnPreview) btnPreview.style.fontWeight = '600';
+  }
+  updateTplPreview();
+}
+
+function defaultLoATemplate() {
+  return `<div style="max-width:700px;margin:0 auto;font-family:Verdana,sans-serif;font-size:14px;line-height:1.7;color:#1a1d23">
+  <div style="text-align:center;margin-bottom:30px">
+    <h1 style="font-size:20px;font-weight:700;margin:0">ULearn English Language School</h1>
+    <p style="color:#6b7280;font-size:12px;margin:4px 0">Dublin, Ireland</p>
+  </div>
+
+  <h2 style="text-align:center;font-size:17px;margin-bottom:24px;text-transform:uppercase;letter-spacing:1px">Letter of Acceptance</h2>
+
+  <p style="margin-bottom:4px"><strong>Document Reference:</strong> {{document.number}}</p>
+  <p style="margin-bottom:16px"><strong>Date of Issue:</strong> {{document.issue_date}}</p>
+
+  <p>This is to confirm that <strong>{{student.full_name}}</strong>, born <strong>{{student.dob}}</strong>, of nationality <strong>{{student.nationality}}</strong>, has been accepted onto the following programme of study at ULearn English Language School:</p>
+
+  <table style="width:100%;border-collapse:collapse;margin:16px 0">
+    <tr><td style="padding:6px 0;border-bottom:1px solid #e5e4e0;color:#6b7280;width:160px">Course</td><td style="padding:6px 0;border-bottom:1px solid #e5e4e0;font-weight:600">{{booking.course_name}}</td></tr>
+    <tr><td style="padding:6px 0;border-bottom:1px solid #e5e4e0;color:#6b7280">Level</td><td style="padding:6px 0;border-bottom:1px solid #e5e4e0">{{booking.course_level}}</td></tr>
+    <tr><td style="padding:6px 0;border-bottom:1px solid #e5e4e0;color:#6b7280">Hours per Week</td><td style="padding:6px 0;border-bottom:1px solid #e5e4e0">{{booking.hours_per_week}}</td></tr>
+    <tr><td style="padding:6px 0;border-bottom:1px solid #e5e4e0;color:#6b7280">Duration</td><td style="padding:6px 0;border-bottom:1px solid #e5e4e0">{{booking.weeks}} weeks</td></tr>
+    <tr><td style="padding:6px 0;border-bottom:1px solid #e5e4e0;color:#6b7280">Start Date</td><td style="padding:6px 0;border-bottom:1px solid #e5e4e0">{{booking.start_date}}</td></tr>
+    <tr><td style="padding:6px 0;border-bottom:1px solid #e5e4e0;color:#6b7280">End Date</td><td style="padding:6px 0;border-bottom:1px solid #e5e4e0">{{booking.end_date}}</td></tr>
+    <tr><td style="padding:6px 0;color:#6b7280">Booking Reference</td><td style="padding:6px 0;font-family:monospace">{{booking.reference}}</td></tr>
+  </table>
+
+  <div data-editable="visa_note" style="margin:16px 0;padding:12px;background:#f9fafb;border-radius:6px">
+    {{custom.visa_note}}
+  </div>
+
+  <div data-editable="remarks" style="margin:16px 0;padding:12px;background:#f9fafb;border-radius:6px">
+    {{custom.remarks}}
+  </div>
+
+  <p style="margin-top:24px">This letter is issued for immigration and enrolment purposes.</p>
+
+  <div style="margin-top:40px">
+    <p style="margin:0"><strong>Authorised Signatory</strong></p>
+    <p style="margin:0;color:#6b7280;font-size:13px">ULearn English Language School</p>
+  </div>
+
+  <div style="margin-top:30px;display:flex;justify-content:space-between;align-items:flex-end">
+    <div style="font-size:11px;color:#9b9ea6">
+      <p style="margin:0">Version: {{document.version}}</p>
+      <p style="margin:0">Verify: {{document.verification_url}}</p>
+    </div>
+    <div>{{document.qr}}</div>
+  </div>
+</div>`;
+}
+
+async function saveTemplate(id) {
+  const cat = document.getElementById('tplCategory').value;
+  const data = {
+    name: document.getElementById('tplName').value,
+    slug: document.getElementById('tplSlug').value,
+    category: cat,
+    documentType: cat,
+    htmlTemplate: document.getElementById('tplHtml').value,
+  };
+  if (!data.name || !data.slug || !data.htmlTemplate) { toast('Fill in all required fields', true); return; }
+
+  try {
+    if (id) {
+      const active = document.getElementById('tplActive')?.checked;
+      await api('/documents/templates/' + id, { method: 'PUT', body: { ...data, active } });
+      toast('Template updated');
+    } else {
+      await api('/documents/templates', { method: 'POST', body: data });
+      toast('Template created');
+    }
+    navigate('document-templates');
+  } catch (e) { toast(e.message, true); }
+}
+
 // ─── INIT ───────────────────────────────────────
-navigate('students');
+openTab('students', 'Students');
 </script>
 </body>
 </html>

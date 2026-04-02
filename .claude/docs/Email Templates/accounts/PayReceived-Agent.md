@@ -1,0 +1,6 @@
+<p>Hi {agency},</p>
+<p>We have received payment for {salutation} {firstname} {surname}.&nbsp;<br /><br />Please see below the booking details:</p>
+<p><span>{start_loop_individual_transfer}</span><strong>Transfer:</strong> {booked_transfer} <br /><strong>Arrival date:</strong> {arrival_date} <br /><strong>Departure date:</strong> {departure_date}<span>{end_loop_individual_transfer}</span></p>
+<p><span>{start_loop_courses}</span><strong>Course:</strong> {course} <br /><strong>Course start:</strong> {date_course_start} <br /><strong>Course end:</strong> <span>{date_last_course_end}&nbsp;</span><span>{end_loop_courses}</span></p>
+<p><span>{start_loop_accommodations}</span><strong>Accommodation:</strong> {accommodation_category} <br /><strong>Room type:</strong> {roomtype_full} <br /><strong>Acc. start:</strong> {date_accommodation_start} <br /><strong>Acc. end:</strong> {date_accommodation_end} <span>{end_loop_accommodations}<br /><br />Please find attached the school acceptance letter and the payment receipt.</span></p>
+<p><span>Closer to {salutation} {surname}'s arrival date, we will&nbsp;send you the pre-arrival instructions.&nbsp;&nbsp;</span><br /><br /><span>If you have any questions, please do not hesitate to contact us at any time. <br /><br /><br /></span></p>

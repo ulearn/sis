@@ -1,0 +1,2 @@
+<p>Dear <span>{firstname}</span>,</p>
+<p>Please find attached a letter of acceptance for your course.&nbsp; Please check it carefully to make sure that all the information contained in it is accurate. <br /><br />If you need any other assistance, please do not hesitate to email us back.<br /><br />Regards<br /><br /><br />The ULearn Team</p>

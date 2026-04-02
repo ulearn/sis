@@ -1,5 +1,15 @@
 # SIS — To Do / Future Items
 
+
+## ACCOMM
+- Repalce the Google Sheet for Accomm 
+- - Or integrate it? bring flexibility into the system?
+- - Or we can do better - just clone an accomm / AirBnB system like Lodge etc 
+
+NOTE: so we will be replacing that Google Sheet setup here in the SIS along with an approximate Host Family 
+Placement clone - essentially they are both gonna be part of the same vacancy/occupancy/matching engine                
+i. Rename "Providers" to "Hosts" and then create a second Icon called "Apartments" where we will store our own and 3rd party rentals
+
 ## Invoicing Integration
 
 ### Option A: HubSpot → SIS Direct
@@ -197,3 +207,26 @@ This is the clearly defined protocol for when a student enters SIS and Xero:
 - All of the above is done manually today
 - Staff send an email called "Incoming Payments" to notify the sales team
 - That email becomes redundant once payment reconciliation is automated
+
+---
+
+## User Permissions & Roles
+
+### Why
+- Fidelo allowed all staff to create document templates — resulted in 200+ templates, 90% noise
+- One staff member created per-variation "templates" instead of using tokens (e.g. separate templates for "apartment to agent", "apartment to student", "apartment to student sharing")
+- Template list became unsearchable and unworkable
+- Same risk exists for email templates (208 in Fidelo)
+- Must prevent this in new SIS
+
+### Permission Model
+- **Admin:** Full access — create/edit/delete templates, manage users, system config
+- **Staff (Operations):** Use templates to generate documents, edit permitted fields in drafts, issue/send, view all records. Cannot create/edit/delete templates.
+- **Read-only:** View only (reporting, management dashboards)
+
+### Implementation Notes
+- Lock template creation/editing to Admin role only
+- Staff can only select from active templates and generate document instances
+- Consider: role-based sidebar (hide admin-only sections from staff)
+- Consider: audit log for who created/edited templates
+- Session/auth system needed (currently no auth on SIS admin panel)

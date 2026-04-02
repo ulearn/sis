@@ -1,0 +1,2 @@
+<p>Dear <span>{agency_staffmember_firstname}</span>,</p>
+<p>Please find attached a letter of acceptance for <span>{firstname}</span>.&nbsp; Please check it carefully to make sure that all the information contained in it is accurate. <br /><br />If you need any other assistance, please do not hesitate to email us back.<br /><br />Regards<br /><br />Paul Gill<br /><em>Director of Studies</em></p>

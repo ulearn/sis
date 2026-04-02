@@ -1,0 +1,1 @@
+Dear <span>{agency}<br /><br />Please find attached a credit note to the value of {manual_credit_note_amount} {manual_credit_note_currency}.<br /><br />This credit note is valid until the end of the current year.</span>

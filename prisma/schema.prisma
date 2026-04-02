@@ -181,6 +181,7 @@ model Booking {
   payments           Payment[]
   invoices           Invoice[]
   documents          Document[]
+  documentRecords    DocumentRecord[]
   statusHistory      BookingStatusHistory[]
 
   @@map("bookings")
@@ -653,7 +654,7 @@ model InvoiceLineItem {
 }
 
 // ============================================================
-// DOCUMENTS
+// DOCUMENTS (legacy — postgres-owned table, kept for compatibility)
 // ============================================================
 
 model Document {
@@ -663,13 +664,104 @@ model Document {
   bookingId      Int?     @map("booking_id")
   booking        Booking? @relation(fields: [bookingId], references: [id])
 
-  type           String   // "visa_letter", "booking_confirmation", "accommodation_confirmation", "invoice"
+  type           String
   filename       String?
   storageUrl     String?  @map("storage_url")
-  verificationCode String? @unique @map("verification_code") // for QR verification
+  verificationCode String? @unique @map("verification_code")
   generatedBy    String?  @map("generated_by")
 
   @@map("documents")
+}
+
+// ============================================================
+// DOCUMENTS: Templates, Records, Dispatches
+// ============================================================
+
+model DocumentTemplate {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  name           String            // "Letter of Acceptance", "Enrollment Letter"
+  slug           String   @unique  // "loa", "enrollment", "attendance_letter"
+  templateType   String   @default("document") @map("template_type") // "document" or "email"
+  category       String   @default("academic")  // folder path matching docs architecture
+  documentType   String   @map("document_type")  // "letter_of_acceptance", "enrollment_letter", etc.
+  htmlTemplate   String   @map("html_template")  // HTML with {{tokens}} and data-editable regions
+  tokenSchema    String?  @map("token_schema")    // JSON: available tokens + editable blocks definition
+  version        Int      @default(1)
+  active         Boolean  @default(true)
+
+  records        DocumentRecord[]
+
+  @@map("document_templates")
+}
+
+model DocumentRecord {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Links
+  studentId      Int      @map("student_id")
+  bookingId      Int?     @map("booking_id")
+  booking        Booking? @relation(fields: [bookingId], references: [id])
+  templateId     Int      @map("template_id")
+  template       DocumentTemplate @relation(fields: [templateId], references: [id])
+
+  // Content
+  documentType   String   @map("document_type")   // denormalised from template for quick lookups
+  sourceJson     String?  @map("source_json")      // JSON: structured data used to build the letter
+  contentHtml    String?  @map("content_html")      // final locked rendered HTML
+  editableFields String?  @map("editable_fields")   // JSON: user-edited content blocks
+  templateVersion Int     @map("template_version")  // which template version was used
+
+  // Versioning
+  versionNo      Int      @default(1) @map("version_no")
+  supersedesId   Int?     @map("supersedes_id")
+  supersedes     DocumentRecord?  @relation("DocumentSupersedes", fields: [supersedesId], references: [id])
+  supersededBy   DocumentRecord[] @relation("DocumentSupersedes")
+
+  // Status & locking
+  status         DocumentStatus @default(DRAFT)
+  issuedAt       DateTime?      @map("issued_at")
+  issuedBy       String?        @map("issued_by")
+  lockedAt       DateTime?      @map("locked_at")
+
+  // Verification
+  verificationToken String? @unique @map("verification_token")
+
+  // Photo snapshot
+  photoAssetUsed String?  @map("photo_asset_used")  // reference to student photo at issue time
+
+  // PDF
+  pdfHash        String?  @map("pdf_hash")
+
+  // Dispatches
+  dispatches     DocumentDispatch[]
+
+  @@map("document_records")
+}
+
+enum DocumentStatus {
+  DRAFT
+  ISSUED
+  SUPERSEDED
+  REVOKED
+}
+
+model DocumentDispatch {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  documentId     Int      @map("document_id")
+  document       DocumentRecord @relation(fields: [documentId], references: [id])
+
+  sentToEmail    String   @map("sent_to_email")
+  deliveryMethod String?  @map("delivery_method")  // "email", "download", "print"
+  sentBy         String?  @map("sent_by")
+
+  @@map("document_dispatches")
 }
 
 // ============================================================
@@ -693,6 +785,29 @@ model AuditLog {
 }
 
 // ============================================================
+// EMAIL LOG
+// ============================================================
+
+model EmailLog {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  studentId      Int?     @map("student_id")
+  bookingId      Int?     @map("booking_id")
+  fromEmail      String   @map("from_email")
+  toEmail        String   @map("to_email")
+  subject        String
+  bodyHtml       String   @map("body_html")
+  templateId     Int?     @map("template_id")
+  gmailMessageId String?  @map("gmail_message_id")
+  gmailThreadId  String?  @map("gmail_thread_id")
+  sentBy         String?  @map("sent_by")  // which SIS user triggered it
+
+  @@index([studentId])
+  @@index([toEmail])
+  @@map("email_log")
+}
+
 // SCHOOL CONFIG
 // ============================================================
 

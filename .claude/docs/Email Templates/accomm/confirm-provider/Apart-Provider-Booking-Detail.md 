@@ -1,0 +1,50 @@
+Dear {{Accomm-Provider-Contact-First-Name}}<br /><br />Please see below {firstname} {surname}'s details as requested in relation to the&nbsp;<br /><span>{date_accommodation_start} booking.</span><br /><strong><br />Type</strong>: {accommodation_category} <br /><strong>Room</strong>: {roomtype_full}<br /><br />
+<table border="1" style="height: 200px; width: 62.6959%; border-collapse: collapse; border-style: none;" height="200">
+<tbody>
+<tr>
+<td style="width: 50%;"><strong>Full name:</strong></td>
+<td style="width: 50%;">{firstname} {surname}</td>
+</tr>
+<tr>
+<td style="width: 50%;"><strong>Email address:</strong></td>
+<td style="width: 50%;"><span>{email}</span></td>
+</tr>
+<tr>
+<td style="width: 50%;"><strong>Contact number:</strong></td>
+<td style="width: 50%;"><span>{phone_home}</span></td>
+</tr>
+<tr>
+<td style="width: 50%;"><strong>Emergency contact no:</strong></td>
+<td style="width: 50%;"><span>{emergency_contact_phone}</span></td>
+</tr>
+<tr>
+<td style="width: 50%;"><strong>Date of birth:</strong></td>
+<td style="width: 50%;"><span>{birthdate}</span></td>
+</tr>
+<tr>
+<td style="width: 50%;"><strong>Nationality:</strong></td>
+<td style="width: 50%;"><span>{nationality}</span></td>
+</tr>
+<tr>
+<td style="width: 50%;"><strong>Gender:</strong></td>
+<td style="width: 50%;"><span>{gender}</span></td>
+</tr>
+<tr>
+<td style="width: 50%;"><strong>Airline:</strong></td>
+<td style="width: 50%;"><span>{arrival_airline}</span></td>
+</tr>
+<tr>
+<td style="width: 50%;"><strong>Flight number:</strong></td>
+<td style="width: 50%;"><span>{arrival_flightnumber}</span></td>
+</tr>
+<tr>
+<td style="width: 50%;"><strong>Arrival date:</strong></td>
+<td style="width: 50%;"><span>{arrival_date}</span></td>
+</tr>
+<tr>
+<td style="width: 50%;"><strong>Arrival time:</strong></td>
+<td style="width: 50%;"><span>{arrival_time}</span></td>
+</tr>
+</tbody>
+</table>
+<br /><strong>Transfer</strong>:&nbsp;{if transfer_booked}{booked_transfer}<br /><br />We will follow up with any&nbsp; information not provided above as soon as possible.

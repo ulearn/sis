@@ -8,3 +8,7 @@ Clean Hotel Dash layout
 
 Accomm - there are plenty examples of these
 https://dribbble.com/shots/21355181-Room-Operation-Hotel-Management-Web-App-V2
+
+
+https://dribbble.com/shots/27195997-Schola-Dashboard-Teachers-Page-School-Management-Dashboard
+cool dashboard & teacher page - check Feedback & Reviews

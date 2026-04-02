@@ -1,0 +1,1 @@
+- [Server migration](project_server_migration.md) — moved from cPanel to Linux + HestiaCP, new paths, no .htaccess

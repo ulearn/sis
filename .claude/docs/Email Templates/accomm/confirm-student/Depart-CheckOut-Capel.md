@@ -1,0 +1,13 @@
+<div class="gmail_default">Dear {firstname},</div>
+<div class="gmail_default"></div>
+<div class="gmail_default">We hope you have enjoyed your stay in our Capel Street residence!&nbsp;<br /><br />Please see below some information to help your check-out go smoothly on <b><span>{date_accommodation_end}</span></b>.</div>
+<div class="gmail_default"></div>
+<div class="gmail_default"><b>Checkout time is 10:00am</b></div>
+<div class="gmail_default"><br />This is to allow our cleaners to get your room ready for the next student.</div>
+<div class="gmail_default"></div>
+<div class="gmail_default">Please clear your food items from the shelves and compartments in the fridge freezer and from the food cupboards. Left-over food that can be used by other students can be placed on the breakfast bar.&nbsp;<br /><br /></div>
+<div class="gmail_default">Make sure that your room is left in good condition. If something needs our attention, please let us know. The room will be inspected after your departure.</div>
+<div class="gmail_default"></div>
+<div class="gmail_default"><b>Please leave your key on the table in your room and close the door behind you.&nbsp; If you need to leave luggage in the apartment until later in the day, please coordinate this with a member of ULearn's staff using the school Whatsapp: +353851574801. You must leave your room key behind at 10:00am unless otherwise arranged with a member of ULearn's staff.</b></div>
+<div class="gmail_default"><b>&nbsp;</b><br />Thank you for choosing ULearn. We hope that you've enjoyed your course and that you've had a memorable experience with us here in Dublin. We hope you have a safe onward journey!<br /><br />Best regards<br /><br />The ULearn Team</div>
+<div class="gmail_default"></div>
