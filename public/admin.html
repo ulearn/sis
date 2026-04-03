@@ -35,6 +35,9 @@
   --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
   --shadow-lg: 0 12px 36px rgba(0,0,0,0.12);
   --transition: 150ms ease;
+  --bg-main: #f4f3f0;
+  --bg-subtle: var(--bg-subtle);
+  --bg-muted: var(--bg-muted);
 }
 
 html, body { height: 100%; font-family: var(--font-body); background: var(--content-bg); color: var(--text-primary); font-size: 14px; line-height: 1.5; }
@@ -95,7 +98,7 @@ html, body { height: 100%; font-family: var(--font-body); background: var(--cont
 
 /* BROWSER-STYLE TABS */
 .tab-bar {
-  display: flex; align-items: flex-end; gap: 0; background: #e8e7e3;
+  display: flex; align-items: flex-end; gap: 0; background: var(--bg-muted);
   padding: 6px 8px 0; min-height: 38px; overflow-x: auto; flex-shrink: 0;
 }
 .tab-bar::-webkit-scrollbar { display: none; }
@@ -118,6 +121,17 @@ html, body { height: 100%; font-family: var(--font-body); background: var(--cont
 .browser-tab .tab-close:hover { background: rgba(0,0,0,0.1); color: var(--text-primary); }
 .browser-tab[draggable]:active { cursor: grabbing; }
 .browser-tab { cursor: grab; }
+
+/* Student preview */
+.preview-btn {
+  visibility: hidden; cursor: pointer; color: var(--text-muted); margin-left: 6px;
+  vertical-align: middle; padding: 2px 4px; border-radius: 4px;
+  transition: all 100ms ease; display: inline-flex;
+}
+.preview-btn:hover { color: var(--accent); background: var(--accent-light); }
+tr:hover .preview-btn { visibility: visible; }
+tr.preview-active { background: var(--accent-light) !important; }
+tr.preview-active td { border-bottom-color: rgba(37,99,235,0.15); }
 
 /* Template tree */
 .tpl-tree-item {
@@ -186,7 +200,7 @@ table { width: 100%; border-collapse: collapse; }
 th {
   text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 600;
   text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted);
-  background: #fafaf8; border-bottom: 1px solid var(--card-border);
+  background: var(--bg-subtle); border-bottom: 1px solid var(--card-border);
   font-family: var(--font-mono); white-space: nowrap;
 }
 td {
@@ -200,7 +214,7 @@ tr:last-child td { border-bottom: none; }
 .table-empty { padding: 40px; text-align: center; color: var(--text-muted); font-size: 13px; }
 
 /* PAGINATION */
-.pagination { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #fafaf8; border-top: 1px solid var(--card-border); font-size: 12px; color: var(--text-secondary); }
+.pagination { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--bg-subtle); border-top: 1px solid var(--card-border); font-size: 12px; color: var(--text-secondary); }
 .pagination-btns { display: flex; gap: 4px; }
 .pagination-btns button {
   padding: 4px 10px; border: 1px solid var(--card-border); background: var(--card-bg);
@@ -283,7 +297,7 @@ tr:last-child td { border-bottom: none; }
 
 /* NESTED ITEMS */
 .nested-item {
-  background: #fafaf8; border: 1px solid var(--card-border); border-radius: var(--radius);
+  background: var(--bg-subtle); border: 1px solid var(--card-border); border-radius: var(--radius);
   padding: 12px 14px; margin-bottom: 8px;
 }
 .nested-item:last-child { margin-bottom: 0; }
@@ -684,6 +698,8 @@ function setTopbar(title, breadcrumb = '', rightHtml = '') {
 }
 
 // ─── STUDENTS LIST ──────────────────────────────
+let studentPreviewId = null;
+
 async function showStudentsList() {
   setTopbar('Students', '', `<button class="btn btn-primary" onclick="openNewStudentModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> New Student</button>`);
 
@@ -694,7 +710,8 @@ async function showStudentsList() {
     const res = await api('/students?' + params);
     document.getElementById('studentCount').textContent = res.total;
 
-    let html = `
+    let html = `<div style="display:flex;gap:0;height:calc(100vh - 150px)">
+      <div style="flex:1;overflow-y:auto;min-width:0">
       <div class="toolbar">
         <div class="search-bar">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -712,8 +729,13 @@ async function showStudentsList() {
       html += `<tr><td colspan="5" class="table-empty">No students found</td></tr>`;
     } else {
       for (const s of res.data) {
-        html += `<tr class="clickable" onclick="navigate('student-detail',{id:${s.id}})">
-          <td><strong>${esc(s.lastName)}, ${esc(s.firstName)}</strong></td>
+        html += `<tr class="clickable ${s.id === studentPreviewId ? 'preview-active' : ''}">
+          <td style="position:relative">
+            <strong style="cursor:pointer" onclick="navigate('student-detail',{id:${s.id}})">${esc(s.lastName)}, ${esc(s.firstName)}</strong>
+            <span class="preview-btn" onclick="event.stopPropagation();showStudentPreview(${s.id})" title="Preview">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </span>
+          </td>
           <td>${esc(s.email)}</td>
           <td>${countryName(s.nationality)}</td>
           <td style="font-family:var(--font-mono);font-size:12px">${esc(s.phone || s.phoneMobile || '—')}</td>
@@ -724,10 +746,300 @@ async function showStudentsList() {
 
     html += `</tbody></table>`;
     html += paginationHtml(res, 'studentPage', 'showStudentsList');
-    html += `</div>`;
+    html += `</div>
+      </div>
+      <div id="studentPreviewPane" style="width:0;min-width:0;overflow:hidden;transition:width 200ms ease;border-left:1px solid var(--card-border);background:var(--card-bg)"></div>
+    </div>`;
 
     document.getElementById('content').innerHTML = html;
   } catch (e) { toast(e.message, true); }
+}
+
+async function showStudentPreview(id) {
+  studentPreviewId = id;
+  const pane = document.getElementById('studentPreviewPane');
+  if (!pane) return;
+
+  // Highlight active row
+  document.querySelectorAll('tr.preview-active').forEach(r => r.classList.remove('preview-active'));
+  event?.target?.closest?.('tr')?.classList?.add('preview-active');
+
+  // Open pane
+  pane.style.width = '45vw';
+  pane.style.minWidth = '45vw';
+  pane.innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-muted);font-size:12px">Loading...</div>';
+
+  try {
+    const s = await api('/students/' + id);
+    const initials = (s.firstName?.[0] || '') + (s.lastName?.[0] || '');
+    const age = s.birthday ? Math.floor((Date.now() - new Date(s.birthday).getTime()) / (365.25*24*60*60*1000)) : null;
+
+    // Active booking summary
+    const now = new Date();
+    const liveBooking = s.bookings?.find(b => b.courses?.some(c => new Date(c.startDate) <= now && new Date(c.endDate) >= now));
+    const course = liveBooking?.courses?.find(c => new Date(c.startDate) <= now && new Date(c.endDate) >= now);
+
+    const genderLabel = s.gender === 1 ? 'Male' : s.gender === 2 ? 'Female' : '—';
+
+    // Filter to live/upcoming bookings only
+    const liveOrUpcoming = (s.bookings || []).filter(b => {
+      return b.courses?.some(c => new Date(c.endDate) >= now) || b.accommodations?.some(a => new Date(a.endDate) >= now);
+    });
+
+    let html = `
+      <div style="overflow-y:auto;height:100%">
+      <!-- Close button -->
+      <div style="position:sticky;top:0;z-index:1;background:var(--card-bg);display:flex;justify-content:flex-end;padding:6px 10px;border-bottom:1px solid var(--card-border)">
+        <button class="btn btn-ghost btn-sm" onclick="closeStudentPreview()" style="font-size:16px;padding:2px 8px">&times;</button>
+      </div>
+
+      <!-- 1. Profile Card (same as student detail) -->
+      <div style="padding:16px 20px;border-bottom:1px solid var(--card-border)">
+        <div style="display:flex;gap:14px;align-items:flex-start">
+          <div style="width:60px;height:60px;border-radius:50%;background:#e8e6e1;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:var(--text-secondary);flex-shrink:0;overflow:hidden;border:3px solid var(--card-border)">
+            ${s.profilePicture ? '<img src="'+esc(s.profilePicture)+'" style="width:100%;height:100%;object-fit:cover">' : initials}
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:18px;font-weight:700;letter-spacing:-0.3px">${esc(s.firstName)} ${esc(s.lastName)}</div>
+            <div style="font-size:12px;color:var(--text-muted);font-family:var(--font-mono);margin-top:1px">${esc(s.fideloCustomerNum || s.hubspotContactId || 'ID: '+s.id)}</div>
+            <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
+              ${s.nationality ? '<span class="badge badge-confirmed">'+countryName(s.nationality)+'</span>' : ''}
+              ${s.currentLevel ? '<span class="badge" style="background:#dbeafe;color:#1e40af">'+s.currentLevel+'</span>' : ''}
+              ${s.studentType === 'JUNIOR' ? '<span class="badge" style="background:#fef3c7;color:#92400e">Junior</span>' : ''}
+              ${s.visaRequired ? '<span class="badge" style="background:#fce7f3;color:#9d174d">Visa</span>' : ''}
+            </div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:12px;font-size:13px">
+          <div style="display:flex;align-items:center;gap:6px;color:var(--text-secondary)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <a href="#" onclick="event.preventDefault();document.getElementById('pvCommsSubject')?.focus()" style="color:var(--accent);text-decoration:none;font-size:12px">${esc(s.email || '—')}</a>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;color:var(--text-secondary);font-size:12px">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72"/></svg>
+            ${esc(s.phoneMobile || s.phone || '—')}
+          </div>
+          ${(s.gender || age || s.birthday) ? '<div style="color:var(--text-muted);font-size:11px">' + [s.gender ? genderLabel : '', age ? 'Age ' + age : '', s.birthday ? 'DOB ' + formatDate(s.birthday) : ''].filter(Boolean).join(' · ') + '</div>' : ''}
+          <div style="text-align:right"><a onclick="navigate('student-detail',{id:${s.id}})" style="font-size:12px;color:var(--accent);cursor:pointer">View full profile →</a></div>
+        </div>
+      </div>
+
+      <!-- 2. Details (collapsed) -->
+      <div style="border-bottom:1px solid var(--card-border)">
+        <div class="collapse-header" onclick="toggleCollapse(this)" style="padding:10px 20px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:var(--bg-muted)">
+          <span style="font-size:12px;font-weight:600">Details</span>
+        </div>
+        <div class="collapse-body" style="padding:8px 20px 14px;font-size:13px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="color:var(--text-muted)">Phone</span><span>${esc(s.phoneMobile || s.phone || '—')}</span></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="color:var(--text-muted)">DOB</span><span>${s.birthday ? formatDate(s.birthday) : '—'}</span></div>
+          ${age ? '<div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="color:var(--text-muted)">Age</span><span>'+age+'</span></div>' : ''}
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="color:var(--text-muted)">Level</span><span>${s.currentLevel || '—'}</span></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="color:var(--text-muted)">Language</span><span>${esc(s.language || '—')}</span></div>
+          ${s.visaRequired ? '<div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="color:var(--text-muted)">Visa Until</span><span>'+(s.visaUntil ? formatDate(s.visaUntil) : '—')+'</span></div>' : ''}
+          ${s.passportNumber ? '<div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Passport</span><span>'+esc(s.passportNumber)+'</span></div>' : ''}
+        </div>
+      </div>
+
+      <!-- 3. Bookings (live/upcoming only, open on load, collapsible) -->
+      <div style="border-bottom:1px solid var(--card-border)">
+        <div class="collapse-header open" onclick="toggleCollapse(this)" style="padding:10px 20px;cursor:pointer;background:var(--bg-subtle)">
+          <span style="font-size:12px;font-weight:600">Bookings${liveOrUpcoming.length ? ' ('+liveOrUpcoming.length+')' : ''}</span>
+        </div>
+        <div class="collapse-body open" style="padding:12px 20px">
+        ${liveOrUpcoming.length ? liveOrUpcoming.map(b => {
+          const c = b.courses?.[0];
+          const isLive = c && new Date(c.startDate) <= now && new Date(c.endDate) >= now;
+          const open = parseFloat(b.amountOpen || 0);
+          const balanceHtml = open > 0
+            ? '<span style="font-weight:600;color:var(--danger)">'+formatMoney(b.amountOpen)+' due</span>'
+            : '<span style="font-weight:600;color:var(--success)">Paid</span>';
+          return '<div style="padding:8px 10px;background:var(--bg-subtle);border-radius:6px;margin-bottom:6px;font-size:12px;cursor:pointer;border-left:3px solid '+(isLive?'var(--success)':'var(--accent)')+'" onclick="navigate(\'booking-detail\',{id:'+b.id+'})">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center"><strong>' + esc(c?.name || 'Booking #'+b.id) + '</strong>'+balanceHtml+'</div>' +
+            '<div style="color:var(--text-muted);margin-top:2px;font-family:var(--font-mono);font-size:11px">' + (c ? formatDate(c.startDate)+' — '+formatDate(c.endDate) : '—') + ' · <span class="badge '+(b.status==='CONFIRMED'||b.status==='CHECKED_IN'?'badge-confirmed':'badge-enquiry')+'" style="font-size:10px">'+b.status+'</span></div>' +
+          '</div>';
+        }).join('') : '<div style="font-size:12px;color:var(--text-muted)">No active bookings</div>'}
+        </div>
+      </div>
+
+      <!-- 4. Communications (open on load, collapsible) -->
+      <div style="border-bottom:1px solid var(--card-border)">
+        <div class="collapse-header open" onclick="toggleCollapse(this)" style="padding:10px 20px;cursor:pointer;background:var(--bg-muted)">
+          <span style="font-size:12px;font-weight:600">Communications</span>
+        </div>
+        <div class="collapse-body open" style="padding:14px 20px">
+          <div style="display:flex;gap:10px;margin-bottom:10px">
+            <div style="flex:1">
+              <label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px">From</label>
+              <select id="pvCommsFrom" class="filter-select" style="width:100%">
+                <option value="info@ulearnschool.com">info@</option>
+                <option value="dos@ulearnschool.com">dos@</option>
+                <option value="sales@ulearnschool.com">sales@</option>
+                <option value="accounts@ulearnschool.com">accounts@</option>
+                <option value="partners@ulearnschool.com">partners@</option>
+              </select>
+            </div>
+            <div style="flex:1">
+              <label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px">Template</label>
+              <select id="pvCommsTpl" class="filter-select" style="width:100%" onchange="loadPvEmailTemplate(${s.id})">
+                <option value="">None — blank</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-bottom:10px">
+            <div style="flex:1">
+              <label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px">To</label>
+              <input id="pvCommsTo" type="email" value="${esc(s.email||'')}" style="width:100%;padding:6px 10px;border:1px solid var(--card-border);border-radius:6px;font-size:13px">
+            </div>
+            <div style="flex:1">
+              <label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px">Subject</label>
+              <input id="pvCommsSubject" type="text" placeholder="Subject..." style="width:100%;padding:6px 10px;border:1px solid var(--card-border);border-radius:6px;font-size:13px">
+            </div>
+          </div>
+          <div style="border:1px solid var(--card-border);border-radius:6px;overflow:hidden;margin-bottom:10px">
+            <div style="display:flex;gap:2px;padding:4px 8px;border-bottom:1px solid var(--card-border);background:var(--bg-subtle)">
+              <button type="button" class="btn btn-ghost btn-sm" onclick="document.execCommand('bold')" style="font-weight:700;min-width:28px">B</button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="document.execCommand('italic')" style="font-style:italic;min-width:28px">I</button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="document.execCommand('underline')" style="text-decoration:underline;min-width:28px">U</button>
+              <div style="width:1px;background:var(--card-border);margin:2px 4px"></div>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="document.execCommand('insertUnorderedList')" style="min-width:28px">&#8226;</button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="var u=prompt('URL:');if(u)document.execCommand('createLink',false,u)" style="min-width:28px;font-size:11px">Link</button>
+            </div>
+            <div id="pvCommsEditor" contenteditable="true" style="min-height:100px;max-height:40vh;overflow-y:auto;padding:12px;font-size:13px;line-height:1.6;outline:none;background:#fff;font-family:Verdana,sans-serif;resize:vertical"></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn btn-primary btn-sm" onclick="sendPvEmail(${s.id})">Send</button>
+            <span id="pvCommsSendStatus" style="font-size:12px;color:var(--text-muted)"></span>
+            <span style="flex:1"></span>
+            <span style="font-size:11px;color:var(--text-muted)">Signature auto-appended</span>
+          </div>
+          <div id="pvCommsHistory" style="padding:0"></div>
+        </div>
+      </div>
+
+      <!-- 5. Documents (collapsed) -->
+      <div>
+        <div class="collapse-header" onclick="toggleCollapse(this)" style="padding:10px 20px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:var(--bg-subtle)">
+          <span style="font-size:12px;font-weight:600">Documents</span>
+        </div>
+        <div class="collapse-body" style="padding:8px 20px 14px" id="pvDocsBody">
+          <div style="color:var(--text-muted);font-size:12px">Loading...</div>
+        </div>
+      </div>
+      </div>`;
+
+    pane.innerHTML = html;
+    loadPvEmailTemplateOptions();
+    loadPvCommsHistory(s.id);
+    loadPvDocs(s.id);
+  } catch (e) {
+    pane.innerHTML = '<div style="padding:20px;color:var(--danger);font-size:12px">Error loading preview</div>';
+  }
+}
+
+function closeStudentPreview() {
+  studentPreviewId = null;
+  const pane = document.getElementById('studentPreviewPane');
+  if (pane) { pane.style.width = '0'; pane.style.minWidth = '0'; }
+  document.querySelectorAll('tr.preview-active').forEach(r => r.classList.remove('preview-active'));
+}
+
+// Preview pane email functions (mirror the profile ones but with pv* IDs)
+async function loadPvEmailTemplateOptions() {
+  try {
+    const templates = await api('/documents/templates?all=true&type=email');
+    const sel = document.getElementById('pvCommsTpl');
+    if (!sel) return;
+    const groups = {};
+    for (const t of templates) { const c = t.category || 'other'; if (!groups[c]) groups[c] = []; groups[c].push(t); }
+    let html = '<option value="">None — blank</option>';
+    for (const cat of Object.keys(EMAIL_CAT_LABELS)) {
+      const items = groups[cat]; if (!items) continue;
+      html += '<optgroup label="'+EMAIL_CAT_LABELS[cat]+'">';
+      for (const t of items) html += '<option value="'+t.id+'">'+esc(t.name)+'</option>';
+      html += '</optgroup>';
+    }
+    sel.innerHTML = html;
+  } catch(e) {}
+}
+
+async function loadPvEmailTemplate(studentId) {
+  const tplId = document.getElementById('pvCommsTpl')?.value;
+  if (!tplId) { document.getElementById('pvCommsEditor').innerHTML = ''; document.getElementById('pvCommsSubject').value = ''; return; }
+  try {
+    const tpl = await api('/documents/templates/' + tplId);
+    if (!tpl) return;
+    const tokens = await api('/documents/tokens/' + studentId);
+    let html = tpl.htmlTemplate;
+    html = html.replace(/\{\{([^}]+)\}\}/g, (m, key) => { const k = key.trim(); return tokens[k] !== undefined ? tokens[k] : m; });
+    document.getElementById('pvCommsEditor').innerHTML = html;
+    document.getElementById('pvCommsSubject').value = tpl.name;
+  } catch(e) { toast(e.message, true); }
+}
+
+async function sendPvEmail(studentId) {
+  const from = document.getElementById('pvCommsFrom')?.value;
+  const to = document.getElementById('pvCommsTo')?.value;
+  const subject = document.getElementById('pvCommsSubject')?.value;
+  const html = document.getElementById('pvCommsEditor')?.innerHTML;
+  const templateId = document.getElementById('pvCommsTpl')?.value || null;
+  const status = document.getElementById('pvCommsSendStatus');
+  if (!to || !subject || !html?.trim()) { toast('Fill in To, Subject and body', true); return; }
+  status.textContent = 'Sending...';
+  try {
+    await api('/email/send', { method: 'POST', body: { from, fromName: 'ULearn', to, subject, html, studentId, templateId } });
+    status.textContent = '';
+    toast('Sent to ' + to);
+    document.getElementById('pvCommsSubject').value = '';
+    document.getElementById('pvCommsEditor').innerHTML = '';
+    document.getElementById('pvCommsTpl').value = '';
+    loadPvCommsHistory(studentId);
+  } catch(e) { status.textContent = ''; toast(e.message, true); }
+}
+
+async function loadPvCommsHistory(studentId) {
+  const container = document.getElementById('pvCommsHistory');
+  if (!container) return;
+  try {
+    const logs = await api('/email/history/' + studentId);
+    if (!logs || logs.length === 0) { container.innerHTML = ''; return; }
+    const visible = logs.slice(0, 3);
+    let html = '<table style="width:100%;font-size:12px;border-collapse:collapse">';
+    for (const log of visible) {
+      const date = new Date(log.createdAt).toLocaleDateString('en-IE', {day:'2-digit',month:'short'});
+      const time = new Date(log.createdAt).toLocaleTimeString('en-IE', {hour:'2-digit',minute:'2-digit'});
+      let teaser = log.bodyHtml.replace(/<br\s*\/?>/gi,' ').replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/\s+/g,' ').trim();
+      teaser = teaser.replace(/^Dear\s+[^,]+,\s*/i, '');
+      teaser = teaser.substring(0, 120) + (teaser.length > 120 ? '...' : '');
+      html += '<tr style="border-top:1px solid var(--card-border);cursor:pointer" onclick="toggleEmailDetail('+log.id+')">' +
+        '<td style="padding:8px 12px;width:65px;font-family:var(--font-mono);color:var(--text-muted);white-space:nowrap;font-size:11px">'+date+'<br>'+time+'</td>' +
+        '<td style="padding:8px 4px"><strong style="font-size:12px">'+esc(log.subject)+'</strong><br><span style="color:var(--text-muted);font-size:11px">'+esc(teaser)+'</span></td></tr>' +
+        '<tr id="emailDetail-'+log.id+'" style="display:none"><td colspan="2" style="padding:0 12px 12px;background:var(--bg-subtle)">' +
+        '<div style="max-height:200px;overflow-y:auto;padding:10px;background:#fff;border:1px solid var(--card-border);border-radius:4px;font-size:12px;margin-top:4px">'+log.bodyHtml+'</div></td></tr>';
+    }
+    html += '</table>';
+    if (logs.length > 3) {
+      html += '<div style="padding:6px 12px;text-align:center;border-top:1px solid var(--card-border)"><a href="#" onclick="event.preventDefault();navigate(\'student-detail\',{id:'+studentId+'})" style="font-size:11px;color:var(--accent)">View all '+logs.length+' emails →</a></div>';
+    }
+    container.innerHTML = html;
+  } catch(e) { container.innerHTML = ''; }
+}
+
+async function loadPvDocs(studentId) {
+  const container = document.getElementById('pvDocsBody');
+  if (!container) return;
+  try {
+    const docs = await api('/documents?studentId=' + studentId);
+    if (!docs || docs.length === 0) { container.innerHTML = '<div style="color:var(--text-muted);font-size:12px">No documents</div>'; return; }
+    let html = '';
+    for (const d of docs) {
+      const typeName = d.template?.name || d.documentType;
+      const statusCls = d.status === 'ISSUED' ? 'badge-confirmed' : d.status === 'DRAFT' ? 'badge-enquiry' : 'badge-cancelled';
+      html += '<div style="padding:6px 0;border-bottom:1px solid var(--card-border);font-size:12px;display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="navigate(\'document-detail\',{id:'+d.id+'})">' +
+        '<span>'+esc(typeName)+' <span class="badge '+statusCls+'" style="font-size:10px">'+d.status+'</span></span>' +
+        '<span style="font-family:var(--font-mono);color:var(--text-muted);font-size:11px">'+(d.issuedAt ? formatDate(d.issuedAt) : 'draft')+'</span></div>';
+    }
+    container.innerHTML = html;
+  } catch(e) { container.innerHTML = '<div style="color:var(--text-muted);font-size:12px">Error loading</div>'; }
 }
 
 let searchTimeout;
@@ -787,7 +1099,7 @@ async function showStudentDetail(id) {
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72"/></svg>
                 ${esc(s.phone || s.phoneMobile || '—')}
               </div>
-              <div style="color:var(--text-muted);font-size:12px">${genderLabel}${age ? ' &middot; Age ' + age : ''}${s.birthday ? ' &middot; DOB ' + formatDate(s.birthday) : ''}</div>
+              ${(s.gender || age || s.birthday) ? '<div style="color:var(--text-muted);font-size:12px">' + [s.gender ? genderLabel : '', age ? 'Age ' + age : '', s.birthday ? 'DOB ' + formatDate(s.birthday) : ''].filter(Boolean).join(' · ') + '</div>' : ''}
               <div style="color:var(--text-muted);font-size:12px">${s.language || ''}</div>
             </div>
           </div>
@@ -803,7 +1115,7 @@ async function showStudentDetail(id) {
               ${field('email','Email',s.email,'email')}
               ${selectField('gender','Gender',s.gender,[['','—'],['1','Male'],['2','Female']])}
               ${field('birthday','Birthday',s.birthday?.split('T')[0],'date')}
-              ${field('nationality','Nationality',s.nationality)}
+              ${countrySelect('nationality','Nationality',s.nationality)}
               ${field('language','Mother Tongue',s.language)}
               ${field('contactLanguage','Contact Lang',s.contactLanguage)}
               ${field('phone','Phone',s.phone)}
@@ -821,7 +1133,7 @@ async function showStudentDetail(id) {
               ${field('zip','Postal Code',s.zip)}
               ${field('city','City',s.city)}
               ${field('state','State',s.state)}
-              ${field('countryIso','Country ISO',s.countryIso)}
+              ${countrySelect('countryIso','Country',s.countryIso)}
             </div>
           </div>
         </div>
@@ -848,7 +1160,7 @@ async function showStudentDetail(id) {
               ${field('billingAddress','Address',s.billingAddress)}
               ${field('billingZip','Postal Code',s.billingZip)}
               ${field('billingCity','City',s.billingCity)}
-              ${field('billingCountry','Country',s.billingCountry)}
+              ${countrySelect('billingCountry','Country',s.billingCountry)}
             </div>
           </div>
         </div>
@@ -941,7 +1253,7 @@ async function showStudentDetail(id) {
                 </div>
               </div>
               <div style="border:1px solid var(--card-border);border-radius:6px;overflow:hidden;margin-bottom:10px">
-                <div style="display:flex;gap:2px;padding:4px 8px;border-bottom:1px solid var(--card-border);background:#fafaf8">
+                <div style="display:flex;gap:2px;padding:4px 8px;border-bottom:1px solid var(--card-border);background:var(--bg-subtle)">
                   <button type="button" class="btn btn-ghost btn-sm" onclick="document.execCommand('bold')" style="font-weight:700;min-width:28px">B</button>
                   <button type="button" class="btn btn-ghost btn-sm" onclick="document.execCommand('italic')" style="font-style:italic;min-width:28px">I</button>
                   <button type="button" class="btn btn-ghost btn-sm" onclick="document.execCommand('underline')" style="text-decoration:underline;min-width:28px">U</button>
@@ -1004,7 +1316,7 @@ async function showStudentDetail(id) {
           <div class="card-body" style="padding:16px 18px">
 
             <!-- Financial Summary -->
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;padding:12px;background:#fafaf8;border-radius:var(--radius)">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;padding:12px;background:var(--bg-subtle);border-radius:var(--radius)">
               <div><span class="form-label">Total</span><div class="amount" style="font-size:16px">${formatMoney(b.amountTotal)}</div></div>
               <div><span class="form-label">Paid</span><div class="amount amount-positive" style="font-size:16px">${formatMoney(b.amountPaid)}</div></div>
               <div><span class="form-label">Balance</span><div class="amount ${parseFloat(b.amountOpen||0) > 0 ? 'amount-negative' : ''}" style="font-size:16px">${formatMoney(b.amountOpen)}</div></div>
@@ -1277,7 +1589,7 @@ async function loadCommsHistory(studentId) {
         <td style="padding:8px 4px"><strong style="font-size:12px">${esc(log.subject)}</strong><br><span style="color:var(--text-muted);font-size:11px">${esc(teaser)}</span></td>
       </tr>
       <tr id="emailDetail-${log.id}" style="display:none">
-        <td colspan="2" style="padding:0 12px 12px;background:#fafaf8">
+        <td colspan="2" style="padding:0 12px 12px;background:var(--bg-subtle)">
           <div style="max-height:300px;overflow-y:auto;padding:12px;background:#fff;border:1px solid var(--card-border);border-radius:4px;font-size:13px;margin-top:4px">${log.bodyHtml}</div>
         </td>
       </tr>`;
@@ -1316,7 +1628,7 @@ async function showAllCommsHistory(studentId) {
         <td style="padding:8px 4px"><strong style="font-size:12px">${esc(log.subject)}</strong><br><span style="color:var(--text-muted);font-size:11px">${esc(teaser)}</span></td>
       </tr>
       <tr id="emailDetail-${log.id}" style="display:none">
-        <td colspan="2" style="padding:0 12px 12px;background:#fafaf8">
+        <td colspan="2" style="padding:0 12px 12px;background:var(--bg-subtle)">
           <div style="max-height:300px;overflow-y:auto;padding:12px;background:#fff;border:1px solid var(--card-border);border-radius:4px;font-size:13px;margin-top:4px">${log.bodyHtml}</div>
         </td>
       </tr>`;
@@ -1806,7 +2118,7 @@ function openNewStudentModal() {
           ${field('email','Email *','','email')}
           ${selectField('gender','Gender','',[['','—'],['1','Male'],['2','Female']])}
           ${field('birthday','Birthday','','date')}
-          ${field('nationality','Nationality','')}
+          ${countrySelect('nationality','Nationality','')}
           ${field('language','Mother Tongue','')}
           ${field('contactLanguage','Contact Language','')}
           ${field('phone','Phone','')}
@@ -2552,7 +2864,7 @@ async function loadWeeklyAttendance() {
 
       html += `<table style="width:100%;border-collapse:collapse">
         <thead><tr>
-          <th style="padding:8px 12px;text-align:left;min-width:180px;position:sticky;left:0;background:#fafaf8;z-index:1">Student</th>`;
+          <th style="padding:8px 12px;text-align:left;min-width:180px;position:sticky;left:0;background:var(--bg-subtle);z-index:1">Student</th>`;
 
       // Day headers with date and cancel toggle
       for (let i = 0; i < 5; i++) {
@@ -3109,6 +3421,18 @@ function selectField(name, label, value, options) {
   </div>`;
 }
 
+function countrySelect(name, label, value) {
+  const val = (value || '').toUpperCase();
+  let opts = '<option value="">—</option>';
+  for (const [code, cname] of Object.entries(COUNTRIES)) {
+    opts += `<option value="${code}" ${val === code ? 'selected' : ''}>${cname}</option>`;
+  }
+  return `<div class="form-group">
+    <label class="form-label">${label}</label>
+    <select class="form-select" data-field="${name}" style="max-width:100%">${opts}</select>
+  </div>`;
+}
+
 function checkboxField(name, label, checked) {
   return `<div class="form-group">
     <label class="form-label">&nbsp;</label>
@@ -3472,7 +3796,7 @@ async function showTemplatesList() {
     </div>`;
 
     html += `<div style="display:flex;gap:0;height:320px;border:1px solid var(--card-border);border-radius:var(--radius);overflow:hidden;background:var(--card-bg);margin-bottom:28px">
-      <div style="width:190px;min-width:190px;border-right:1px solid var(--card-border);background:#fafaf8;overflow-y:auto;padding:6px 0">
+      <div style="width:190px;min-width:190px;border-right:1px solid var(--card-border);background:var(--bg-subtle);overflow-y:auto;padding:6px 0">
         ${buildTree(DOC_TREE, docTplActiveCat, 'selectDocCat', docCounts, 'doc')}
       </div>
       <div style="flex:1;overflow-y:auto" id="docTplList"></div>
@@ -3489,7 +3813,7 @@ async function showTemplatesList() {
     </div>`;
 
     html += `<div style="display:flex;gap:0;height:320px;border:1px solid var(--card-border);border-radius:var(--radius);overflow:hidden;background:var(--card-bg)">
-      <div style="width:190px;min-width:190px;border-right:1px solid var(--card-border);background:#fafaf8;overflow-y:auto;padding:6px 0">
+      <div style="width:190px;min-width:190px;border-right:1px solid var(--card-border);background:var(--bg-subtle);overflow-y:auto;padding:6px 0">
         ${buildTree(EMAIL_TREE, emailTplActiveCat, 'selectEmailCat', emailCounts, 'email')}
       </div>
       <div style="flex:1;overflow-y:auto" id="emailTplList"></div>
@@ -3607,11 +3931,11 @@ async function showTemplateEditor(id) {
         <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px">${tokenHelp}</div>
         <div id="tplEditorWrap" style="display:flex;gap:0;height:480px;border:1px solid var(--card-border);border-radius:6px;overflow:hidden">
           <div id="tplCodePane" style="flex:1;min-width:0;display:flex;flex-direction:column">
-            <textarea id="tplHtml" oninput="updateTplPreview()" style="flex:1;width:100%;resize:none;font-family:var(--font-mono);font-size:12px;padding:10px;border:none;outline:none;line-height:1.5;background:#fafaf8">${template ? esc(template.htmlTemplate) : defaultLoATemplate()}</textarea>
+            <textarea id="tplHtml" oninput="updateTplPreview()" style="flex:1;width:100%;resize:none;font-family:var(--font-mono);font-size:12px;padding:10px;border:none;outline:none;line-height:1.5;background:var(--bg-subtle)">${template ? esc(template.htmlTemplate) : defaultLoATemplate()}</textarea>
           </div>
           <div style="width:1px;background:var(--card-border)" id="tplDivider"></div>
           <div id="tplPreviewCol" style="flex:1;min-width:0;display:flex;flex-direction:column">
-            <div id="tplToolbar" style="display:flex;gap:2px;padding:4px 8px;border-bottom:1px solid var(--card-border);background:#fafaf8;flex-wrap:wrap">
+            <div id="tplToolbar" style="display:flex;gap:2px;padding:4px 8px;border-bottom:1px solid var(--card-border);background:var(--bg-subtle);flex-wrap:wrap">
               <button type="button" class="btn btn-ghost btn-sm" onclick="tplExec('bold')" title="Bold" style="font-weight:700;min-width:28px">B</button>
               <button type="button" class="btn btn-ghost btn-sm" onclick="tplExec('italic')" title="Italic" style="font-style:italic;min-width:28px">I</button>
               <button type="button" class="btn btn-ghost btn-sm" onclick="tplExec('underline')" title="Underline" style="text-decoration:underline;min-width:28px">U</button>
