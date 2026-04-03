@@ -43,6 +43,18 @@ app.use('/sis/api/attendance', attendanceRoutes(prisma));
 app.use('/sis/api/documents', documentRoutes(prisma));
 app.use('/sis/api/email', emailRoutes(prisma));
 
+// School config (select options etc)
+app.get('/sis/api/config', async (_req, res) => {
+  try {
+    const rows = await prisma.schoolConfig.findMany();
+    const config: Record<string, any> = {};
+    for (const r of rows) {
+      try { config[r.key] = JSON.parse(r.value); } catch { config[r.key] = r.value; }
+    }
+    res.json(config);
+  } catch (e) { res.status(500).json({ error: String(e) }); }
+});
+
 // Public verification page (no auth)
 const docScripts = documentScripts(prisma);
 

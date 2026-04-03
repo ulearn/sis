@@ -7,7 +7,8 @@
       "Bash(ls /home/sis/web/sis.ulearnschool.com/public_html/sis/*.log)",
       "Read(//home/sis/**)",
       "Bash(sed -n '440,3749p' /home/sis/web/sis.ulearnschool.com/public_html/sis/public/admin.html)",
-      "Bash(node --check /tmp/sis_script.js)"
+      "Bash(node --check /tmp/sis_script.js)",
+      "Bash(xargs -I{} bash -c 'sed -n \"458,$\\(\\({}-1\\)\\)p\" /home/sis/web/sis.ulearnschool.com/public_html/sis/public/admin.html > /tmp/sis_script.js && node --check /tmp/sis_script.js')"
     ]
   }
 }

@@ -133,6 +133,14 @@ tr:hover .preview-btn { visibility: visible; }
 tr.preview-active { background: var(--accent-light) !important; }
 tr.preview-active td { border-bottom-color: rgba(37,99,235,0.15); }
 
+/* Matching tooltip */
+.match-tooltip {
+  display: none; position: fixed; background: #4a4d56; color: #fff; padding: 10px 14px; border-radius: 8px;
+  font-size: 12px; font-weight: 400; white-space: nowrap; z-index: 10000;
+  box-shadow: var(--shadow-lg); pointer-events: none;
+}
+.match-dot.selected:hover .match-tooltip { display: none; }
+
 /* Template tree */
 .tpl-tree-item {
   display: flex; align-items: center; justify-content: space-between;
@@ -413,9 +421,17 @@ tr:last-child td { border-bottom: none; }
       </div>
       <div class="sidebar-section">
         <div class="sidebar-section-label">Accommodation</div>
-        <div class="sidebar-item" data-view="accommodation" onclick="openTab('accommodation','Accommodation')">
+        <div class="sidebar-item" data-view="accommodation" onclick="openTab('accommodation','Hosts')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-          Providers
+          Hosts
+        </div>
+        <div class="sidebar-item" data-view="apartments" onclick="openTab('apartments','Apartments')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="9" y1="6" x2="9" y2="6.01"/><line x1="15" y1="6" x2="15" y2="6.01"/><line x1="9" y1="10" x2="9" y2="10.01"/><line x1="15" y1="10" x2="15" y2="10.01"/><line x1="9" y1="14" x2="9" y2="14.01"/><line x1="15" y1="14" x2="15" y2="14.01"/><line x1="9" y1="18" x2="15" y2="18"/></svg>
+          Apartments
+        </div>
+        <div class="sidebar-item" data-view="matching" onclick="openTab('matching','Matching')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>
+          Matching
         </div>
       </div>
       <div class="sidebar-section">
@@ -456,6 +472,29 @@ let currentView = 'students';
 let studentPage = 1, bookingPage = 1;
 let studentSearch = '', bookingSearch = '', bookingStatusFilter = '';
 
+// ─── SCHOOL CONFIG (single source of truth for select options) ──
+let SIS_CONFIG = {};
+async function loadConfig() {
+  try { SIS_CONFIG = await api('/config'); } catch(e) { console.error('Config load failed', e); }
+}
+
+// Generate <option> list from a config array key
+function configOptions(key, includeBlank = true) {
+  const items = SIS_CONFIG[key] || [];
+  let html = includeBlank ? '<option value="">—</option>' : '';
+  for (const item of items) {
+    html += `<option value="${esc(item)}">${esc(item)}</option>`;
+  }
+  return html;
+}
+
+// Generate select field using config
+function configSelect(name, label, value, configKey) {
+  const items = SIS_CONFIG[configKey] || [];
+  const opts = [['','—'], ...items.map(i => [i, i])];
+  return selectField(name, label, value || '', opts);
+}
+
 // ─── BROWSER-STYLE TAB SYSTEM ──────────────────
 
 let tabs = [];       // [{id, view, opts, label, contentHtml, topbar}]
@@ -465,11 +504,38 @@ let tabCounter = 0;
 // Labels for view types
 const viewLabels = {
   students: 'Students', bookings: 'Bookings', classes: 'Classes', teachers: 'Teachers',
-  attendance: 'Attendance', accommodation: 'Accommodation', documents: 'Documents',
+  attendance: 'Attendance', accommodation: 'Hosts', apartments: 'Apartments', 'host-matching': 'Host Matching', 'apartment-matching': 'Apt Matching', matching: 'Matching', documents: 'Documents',
   'student-detail': 'Student', 'booking-detail': 'Booking', 'class-detail': 'Class',
   'accommodation-detail': 'Accommodation', 'document-detail': 'Document',
   'document-templates': 'Templates', 'document-generate': 'Generate Doc',
 };
+
+function saveTabState() {
+  const state = tabs.map(t => ({ view: t.view, opts: t.opts, label: t.label }));
+  const activeView = tabs.find(t => t.id === activeTabId);
+  sessionStorage.setItem('sis_tabs', JSON.stringify(state));
+  sessionStorage.setItem('sis_active_tab', activeView ? JSON.stringify({ view: activeView.view, opts: activeView.opts }) : '');
+}
+
+function restoreTabState() {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem('sis_tabs') || '[]');
+    const active = JSON.parse(sessionStorage.getItem('sis_active_tab') || '{}');
+    if (saved.length === 0) return false;
+    for (const t of saved) {
+      const id = ++tabCounter;
+      tabs.push({ id, view: t.view, opts: t.opts || {}, label: t.label });
+    }
+    // Find the active tab and switch to it
+    const activeMatch = tabs.find(t => t.view === active.view && JSON.stringify(t.opts) === JSON.stringify(active.opts || {}));
+    const target = activeMatch || tabs[tabs.length - 1];
+    switchToTab(target.id);
+    loadView(target.view, target.opts);
+    // Render other tabs' content lazily — they'll load when switched to
+    renderTabBar();
+    return true;
+  } catch { return false; }
+}
 
 function openTab(view, label, opts = {}) {
   // Check if this exact view is already open (for list views, reuse; for details, always new)
@@ -487,6 +553,7 @@ function openTab(view, label, opts = {}) {
   tabs.push(tab);
   switchToTab(id);
   loadView(view, opts);
+  saveTabState();
 }
 
 function switchToTab(id) {
@@ -509,7 +576,7 @@ function switchToTab(id) {
 
   currentView = tab.view;
 
-  // Restore content if we have it cached
+  // Restore content if we have it cached, otherwise reload the view
   if (tab.contentHtml !== undefined) {
     document.getElementById('content').innerHTML = tab.contentHtml;
     if (tab.topbar) {
@@ -517,10 +584,13 @@ function switchToTab(id) {
       document.getElementById('topbarBreadcrumb').innerHTML = tab.topbar.breadcrumb;
       document.getElementById('topbarRight').innerHTML = tab.topbar.right;
     }
+  } else {
+    loadView(tab.view, tab.opts);
   }
 
   renderTabBar();
   highlightSidebar(tab.view);
+  saveTabState();
 }
 
 function closeTab(id, event) {
@@ -544,6 +614,7 @@ function closeTab(id, event) {
   }
 
   renderTabBar();
+  saveTabState();
 }
 
 let dragTabId = null;
@@ -652,6 +723,10 @@ function loadView(view, opts = {}) {
   else if (view === 'attendance') showAttendance();
   else if (view === 'accommodation') showAccommodationList();
   else if (view === 'accommodation-detail') showAccommodationDetail(opts.id);
+  else if (view === 'apartments') showApartmentsList();
+  else if (view === 'host-matching') showAccommMatching('Host Family');
+  else if (view === 'apartment-matching') showAccommMatching('Apartment');
+  else if (view === 'matching') showUnifiedMatching();
   else if (view === 'documents') showDocumentsList();
   else if (view === 'document-detail') showDocumentDetail(opts.id);
   else if (view === 'document-templates') showTemplatesList();
@@ -682,8 +757,9 @@ function formatDate(d) {
 }
 
 function formatMoney(v) {
-  if (v == null) return '—';
-  return '€' + parseFloat(v).toFixed(2);
+  if (v == null || v === '') return '€0';
+  const n = parseFloat(v);
+  return '€' + (n % 1 === 0 ? n.toFixed(0) : n.toFixed(2));
 }
 
 function statusBadge(status) {
@@ -1187,8 +1263,7 @@ async function showStudentDetail(id) {
               ${field('studentStatus','Status',s.studentStatus)}
               ${field('source','Source',s.source)}
               ${field('socialSecurityNum','PPS/SSN',s.socialSecurityNum)}
-              ${checkboxField('vegetarian','Vegetarian',s.vegetarian)}
-              ${checkboxField('muslimDiet','Muslim Diet',s.muslimDiet)}
+              ${configSelect('diet','Diet',s.diet,'diet_types')}
               ${field('allergies','Allergies',s.allergies)}
               <div class="form-group full">
                 <label class="form-label">Note</label>
@@ -1304,24 +1379,24 @@ async function showStudentDetail(id) {
         const stateLabel = isLive ? 'Live' : 'Upcoming';
         const courseNames = b.courses?.map(c => c.name).join(', ') || '—';
 
+        const balanceVal = parseFloat(b.amountOpen || 0);
+        const balanceDisplay = formatMoney(b.amountOpen) || '€0.00';
+        const balanceColor = balanceVal > 0 ? 'var(--danger)' : 'var(--success)';
+
         html += `<div class="card" style="margin-bottom:16px;border-left:4px solid ${stateColor}">
-          <div class="card-header" style="padding:14px 18px;background:${stateBg}">
-            <h3 style="font-size:15px;display:flex;align-items:center;gap:8px">
-              <span style="background:${stateColor};color:#fff;font-size:10px;padding:2px 8px;border-radius:8px;text-transform:uppercase;letter-spacing:0.5px">${stateLabel}</span>
+          <div class="card-header" style="padding:10px 18px;background:${stateBg};flex-wrap:wrap;gap:6px">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:14px;font-weight:700;font-family:var(--font-mono)">#${b.id}</span>
               ${statusBadge(b.status)}
-              Booking #${b.id}
-            </h3>
-            <span class="amount" style="font-size:16px;font-weight:700">${formatMoney(b.amountTotal)}</span>
+              <span style="background:${stateColor};color:#fff;font-size:10px;padding:2px 8px;border-radius:8px;text-transform:uppercase;letter-spacing:0.5px">${stateLabel}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:16px;font-size:12px">
+              <div style="text-align:center"><span style="color:var(--text-muted);font-size:10px;display:block">Total</span><span style="font-weight:600">${formatMoney(b.amountTotal)}</span></div>
+              <div style="text-align:center"><span style="color:var(--text-muted);font-size:10px;display:block">Paid</span><span style="font-weight:600;color:var(--success)">${formatMoney(b.amountPaid) || '€0.00'}</span></div>
+              <div style="text-align:center"><span style="color:var(--text-muted);font-size:10px;display:block">Balance</span><span style="font-weight:600;color:${balanceColor}">${balanceDisplay}</span></div>
+            </div>
           </div>
           <div class="card-body" style="padding:16px 18px">
-
-            <!-- Financial Summary -->
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;padding:12px;background:var(--bg-subtle);border-radius:var(--radius)">
-              <div><span class="form-label">Total</span><div class="amount" style="font-size:16px">${formatMoney(b.amountTotal)}</div></div>
-              <div><span class="form-label">Paid</span><div class="amount amount-positive" style="font-size:16px">${formatMoney(b.amountPaid)}</div></div>
-              <div><span class="form-label">Balance</span><div class="amount ${parseFloat(b.amountOpen||0) > 0 ? 'amount-negative' : ''}" style="font-size:16px">${formatMoney(b.amountOpen)}</div></div>
-            </div>
-
             <!-- Courses -->
             <div style="margin-bottom:12px">
               <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);margin-bottom:6px">Courses</div>`;
@@ -1795,9 +1870,9 @@ async function showBookingDetail(id) {
 
     if (b.courses && b.courses.length > 0) {
       for (const c of b.courses) {
-        const nameOpts = COURSE_NAMES.map(([v,l]) => `<option value="${v}" ${v===c.name?'selected':''}>${l}</option>`).join('') + (!COURSE_NAMES.find(([v])=>v===c.name) && c.name ? `<option value="${esc(c.name)}" selected>${esc(c.name)}</option>` : '');
-        const catOpts = COURSE_CATS.map(([v,l]) => `<option value="${v}" ${v===c.category?'selected':''}>${l}</option>`).join('');
-        const lvlOpts = ['','A1','A2','B1','B2','C1','C2'].map(v => `<option value="${v}" ${v===(c.level||'')?'selected':''}>${v||'—'}</option>`).join('');
+        const nameOpts = getCourseNames().map(([v,l]) => `<option value="${v}" ${v===c.name?'selected':''}>${l}</option>`).join('') + (!getCourseNames().find(([v])=>v===c.name) && c.name ? `<option value="${esc(c.name)}" selected>${esc(c.name)}</option>` : '');
+        const catOpts = getCourseCats().map(([v,l]) => `<option value="${v}" ${v===c.category?'selected':''}>${l}</option>`).join('');
+        const lvlOpts = getCourseLevels().map(([v,l]) => `<option value="${v}" ${v===(c.level||'')?'selected':''}>${l||'—'}</option>`).join('');
 
         html += `<div style="padding:10px 0;border-bottom:1px solid #f0efec" data-course-id="${c.id}">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
@@ -1956,31 +2031,23 @@ async function saveAccomInline(accomId, bookingId, btn) {
 }
 
 // ─── BOOKING COURSE CRUD ────────────────────────
-const COURSE_CATS = [['MORNING','Morning'],['MORNING_PLUS','Morning Plus'],['AFTERNOON','Afternoon'],['AFTERNOON_PLUS','Afternoon Plus'],['INTENSIVE','Intensive'],['PRIVATE','Private'],['OTHER','Other']];
-
-const COURSE_NAMES = [
-  ['General English AM','General English AM'],
-  ['General English AM Plus','General English AM Plus'],
-  ['General English PM','General English PM'],
-  ['General English PM Plus','General English PM Plus'],
-  ['Intensive General English','Intensive General English'],
-  ['IELTS AM','IELTS AM'],
-  ['IELTS PM','IELTS PM'],
-  ['Cambridge FCE AM','Cambridge FCE AM'],
-  ['Cambridge CAE AM','Cambridge CAE AM'],
-  ['Academic Year AM','Academic Year AM'],
-  ['Academic Year AM Plus','Academic Year AM Plus'],
-  ['Academic Year PM','Academic Year PM'],
-  ['Academic Year PM Plus','Academic Year PM Plus'],
-  ['Private Lessons','Private Lessons'],
-];
+// Course/accomm select options are now sourced from SIS_CONFIG (loaded from school_config DB table)
+// Helpers to get them as [[value,label]] pairs for selectField()
+function getCourseNames() { return (SIS_CONFIG.course_names || []).map(n => [n, n]); }
+function getCourseCats() { return (SIS_CONFIG.course_categories || []).map(n => [n, n]); }
+function getCourseLevels() { return [['','—'], ...(SIS_CONFIG.course_levels || []).map(n => [n, n])]; }
+function getAccommTypes() { return [['','—'], ...(SIS_CONFIG.accomm_types || []).map(n => [n, n])]; }
+function getAccommRoomTypes() { return [['','—'], ...(SIS_CONFIG.accomm_room_types || []).map(n => [n, n])]; }
+function getAccommBoardTypes() { return [['','—'], ...(SIS_CONFIG.accomm_board_types || []).map(n => [n, n])]; }
 
 function courseFormFields(c = {}) {
-  const nameMatch = COURSE_NAMES.find(([v]) => v === c.name);
+  const names = getCourseNames();
+  const nameMatch = names.find(([v]) => v === c.name);
+  const nameOpts = nameMatch ? names : [...names, ...(c.name ? [[c.name, c.name]] : [])];
   return `
-    ${nameMatch ? selectField('name','Course',c.name,COURSE_NAMES) : `<div class="form-group"><label class="form-label">Course</label><select class="form-select" data-field="name">${COURSE_NAMES.map(([v,l]) => '<option value="'+v+'" '+(v===c.name?'selected':'')+'>'+l+'</option>').join('')}${c.name && !nameMatch ? '<option value="'+esc(c.name)+'" selected>'+esc(c.name)+'</option>' : ''}</select></div>`}
-    ${selectField('category','Category',c.category||'MORNING',COURSE_CATS)}
-    ${selectField('level','Level',c.level||'',[['','—'],['A1','A1'],['A2','A2'],['B1','B1'],['B2','B2'],['C1','C1'],['C2','C2']])}
+    ${selectField('name','Course',c.name||'',nameOpts)}
+    ${selectField('category','Category',c.category||'MORNING',getCourseCats())}
+    ${selectField('level','Level',c.level||'',getCourseLevels())}
     <div class="form-group"><label class="form-label">Start</label><input class="form-input" type="date" data-field="startDate" value="${c.startDate?.split('T')[0]||''}" onchange="calcCourseEnd(this)"></div>
     <div class="form-group"><label class="form-label">Weeks</label><input class="form-input" type="number" data-field="weeks" value="${c.weeks||''}" min="1" onchange="calcCourseEnd(this)"></div>
     <div class="form-group"><label class="form-label">End</label><input class="form-input" type="date" data-field="endDate" value="${c.endDate?.split('T')[0]||''}"></div>
@@ -2045,9 +2112,9 @@ async function deleteBookingCourse(courseId, bookingId) {
 // ─── BOOKING ACCOMMODATION CRUD ─────────────────
 function accomFormFields(a = {}) {
   return `
-    ${selectField('accommodationType','Type',a.accommodationType||'Host Family',[['','—'],['Host Family','Host Family'],['Apartment','Apartment'],['Hostel','Hostel'],['Hotel','Hotel'],['Other','Other']])}
-    ${selectField('roomType','Room',a.roomType||'Single',[['','—'],['Single','Single'],['Double','Double'],['Twin','Twin'],['Triple','Triple'],['Dorm','Dorm (4+)']])}
-    ${selectField('board','Board',a.board||'Half-board',[['','—'],['Self catering','Self catering'],['Breakfast','Breakfast'],['Half-board','Half-board'],['Full-board','Full-board']])}
+    ${selectField('accommodationType','Type',a.accommodationType||'Host Family',getAccommTypes())}
+    ${selectField('roomType','Room',a.roomType||(a.accommodationType==='Host Family'?'Individual':''),getAccommRoomTypes())}
+    ${selectField('board','Board',a.board||(a.accommodationType==='Host Family'?'Half Board':a.accommodationType==='Apartment'?'Self Catering':''),getAccommBoardTypes())}
     <div class="form-group"><label class="form-label">Check-in</label><input class="form-input" type="date" data-field="startDate" value="${a.startDate?.split('T')[0]||''}" onchange="calcAccommEnd(this)"></div>
     <div class="form-group"><label class="form-label">Weeks</label><input class="form-input" type="number" data-field="weeks" value="${a.weeks||''}" min="1" onchange="calcAccommEnd(this)"></div>
     <div class="form-group"><label class="form-label">Check-out</label><input class="form-input" type="date" data-field="endDate" value="${a.endDate?.split('T')[0]||''}"></div>
@@ -2175,12 +2242,12 @@ async function openNewBookingModal(presetStudentId) {
           <div class="section-title">Course</div>
           <div class="inline-add">
             <div class="form-grid" id="newBookingCourse">
-              ${field('name','Course Name','')}
-              ${selectField('category','Category','MORNING',[['MORNING','Morning'],['MORNING_PLUS','Morning Plus'],['AFTERNOON','Afternoon'],['AFTERNOON_PLUS','Afternoon Plus'],['INTENSIVE','Intensive'],['PRIVATE','Private'],['OTHER','Other']])}
-              ${field('level','Level','')}
+              ${configSelect('name','Course Name','','course_names')}
+              ${configSelect('category','Category','MORNING','course_categories')}
+              ${configSelect('level','Level','','course_levels')}
               ${field('startDate','Start','','date')}
-              ${field('endDate','End','','date')}
               ${field('weeks','Weeks','')}
+              ${field('endDate','End (auto)','','date')}
               ${field('hoursPerWeek','Hrs/Week','')}
               ${field('fee','Fee','')}
             </div>
@@ -2190,12 +2257,12 @@ async function openNewBookingModal(presetStudentId) {
           <div class="section-title">Accommodation (optional)</div>
           <div class="inline-add">
             <div class="form-grid" id="newBookingAccom">
-              ${field('accommodationType','Type','')}
-              ${field('roomType','Room Type','')}
-              ${field('board','Board','')}
+              ${configSelect('accommodationType','Type','','accomm_types')}
+              ${configSelect('roomType','Room Type','','accomm_room_types')}
+              ${configSelect('board','Board','','accomm_board_types')}
               ${field('startDate','Start','','date')}
-              ${field('endDate','End','','date')}
               ${field('weeks','Weeks','')}
+              ${field('endDate','End (auto)','','date')}
               ${field('fee','Fee','')}
             </div>
           </div>
@@ -2208,6 +2275,46 @@ async function openNewBookingModal(presetStudentId) {
     </div>
   </div>`;
   document.body.insertAdjacentHTML('beforeend', html);
+
+  // Auto-calculate end dates from start + weeks
+  function wireAutoEndDate(formId, endOnFriday = false) {
+    const form = document.getElementById(formId);
+    if (!form) return;
+    const startInput = form.querySelector('[data-field="startDate"]');
+    const weeksInput = form.querySelector('[data-field="weeks"]');
+    const endInput = form.querySelector('[data-field="endDate"]');
+    if (!startInput || !weeksInput || !endInput) return;
+
+    function calc() {
+      const start = startInput.value;
+      const weeks = parseInt(weeksInput.value);
+      if (start && weeks > 0) {
+        const d = new Date(start);
+        d.setDate(d.getDate() + weeks * 7 - (endOnFriday ? 2 : 0));
+        endInput.value = d.toISOString().split('T')[0];
+      }
+    }
+    startInput.addEventListener('change', calc);
+    weeksInput.addEventListener('input', calc);
+  }
+
+  wireAutoEndDate('newBookingCourse', true);
+  wireAutoEndDate('newBookingAccom', false);
+
+  // Auto-set board to "Half Board" when Host Family is selected
+  const accommType = document.querySelector('#newBookingAccom [data-field="accommodationType"]');
+  if (accommType) {
+    accommType.addEventListener('change', function() {
+      const board = document.querySelector('#newBookingAccom [data-field="board"]');
+      const room = document.querySelector('#newBookingAccom [data-field="roomType"]');
+      if (this.value === 'Host Family') {
+        if (board) board.value = 'Half Board';
+        if (room && !room.value) room.value = 'Individual';
+      } else if (this.value === 'City Centre Apartment' || this.value === 'Apartment') {
+        if (board) board.value = 'Self Catering';
+      }
+    });
+  }
 }
 
 async function createBooking() {
@@ -2398,7 +2505,7 @@ async function showClassDetail(id, weekOverride) {
         <div class="card-body">
           <div class="form-grid" id="classForm">
             ${field('name','Name',cls.name)}
-            ${selectField('level','Level',cls.level,[['A1','A1'],['A2','A2'],['B1','B1'],['B2','B2'],['C1','C1'],['C2','C2']])}
+            ${selectField('level','Level',cls.level,getCourseLevels())}
             ${selectField('session','Session',cls.session,[['MORNING','Morning'],['AFTERNOON','Afternoon']])}
             <div class="form-group">
               <label class="form-label">Classroom</label>
@@ -2688,7 +2795,7 @@ async function openNewClassModal() {
       <div class="modal-body">
         <div class="form-grid" id="newClassForm">
           ${field('name','Name *','','text')}
-          ${selectField('level','Level *','A1',[['A1','A1'],['A2','A2'],['B1','B1'],['B2','B2'],['C1','C1'],['C2','C2']])}
+          ${selectField('level','Level *','A1',getCourseLevels())}
           ${selectField('session','Session *','MORNING',[['MORNING','Morning'],['AFTERNOON','Afternoon']])}
           <div class="form-group">
             <label class="form-label">Classroom *</label>
@@ -3054,11 +3161,662 @@ async function toggleCancelDay(classId, date) {
 }
 
 // ─── ACCOMMODATION LIST ─────────────────────────
-async function showAccommodationList() {
-  setTopbar('Accommodation Providers', '', `<button class="btn btn-primary" onclick="openNewProviderModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> New Provider</button>`);
+// ── HOST MATCHING ENGINE ─────────────────────────
+
+let matchingFrom = null; // date string
+let matchingSelectedDot = null; // bookingAccommodationId
+
+function getMonday2(d) { const dt = new Date(d); const day = dt.getDay(); const diff = dt.getDate() - day + (day === 0 ? -6 : 1); dt.setDate(diff); return dt; }
+
+let matchingUnplaced = []; // cache for selection lookups
+
+let matchingProviderType = 'Host Family';
+
+let unifiedFilterHosts = true;
+let unifiedFilterApts = true;
+
+async function showUnifiedMatching() {
+  matchingProviderType = '_all';
+  setTopbar('Matching', '', `<button class="btn btn-ghost btn-sm" onclick="showUnifiedMatching()" title="Refresh"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button>`);
+  if (!matchingFrom) matchingFrom = getMonday2(new Date()).toISOString().split('T')[0];
 
   try {
-    const providers = await api('/accommodation');
+    const [allUnplaced, aptHosts, famHosts] = await Promise.all([
+      api('/accommodation/matching/unplaced'),
+      api('/accommodation/matching/timeline?from=' + matchingFrom + '&weeks=6&type=Apartment'),
+      api('/accommodation/matching/timeline?from=' + matchingFrom + '&weeks=6&type=Host+Family'),
+    ]);
+    matchingUnplaced = allUnplaced;
+
+    // Build shared date/day arrays
+    const fromDate = new Date(matchingFrom);
+    const days = [];
+    for (let i = 0; i < 42; i++) { const d = new Date(fromDate); d.setDate(d.getDate() + i); days.push(d); }
+    const today = new Date(); today.setHours(0,0,0,0);
+    const now = new Date();
+
+    // Selected student
+    const selStudent = matchingSelectedDot ? allUnplaced.find(u => u.id === matchingSelectedDot) : null;
+    const selStart = selStudent ? selStudent.startDate.split('T')[0] : null;
+    const selEnd = selStudent ? selStudent.endDate.split('T')[0] : null;
+
+    // Filter unplaced by toggle
+    const filtered = allUnplaced.filter(u => {
+      if (u.accommodationType === 'Host Family' && !unifiedFilterHosts) return false;
+      if (u.accommodationType !== 'Host Family' && !unifiedFilterApts) return false;
+      return true;
+    });
+
+    // Group unplaced
+    const twoWeekEnd = new Date(now.getTime() + 3 * 7 * 86400000);
+    const sixWeekEnd = new Date(now.getTime() + 6 * 7 * 86400000);
+    const twoWeeks_ = filtered.filter(u => new Date(u.startDate) <= twoWeekEnd);
+    const sixWeeks_ = filtered.filter(u => { const s = new Date(u.startDate); return s > twoWeekEnd && s <= sixWeekEnd; });
+    const later = filtered.filter(u => new Date(u.startDate) > sixWeekEnd);
+
+    // Reuse the dot group renderer from showAccommMatching
+    const dotGroupBg = { '2 Weeks': '#c597da57', '6 Weeks': '#c597da33', 'Later': '#c597da17' };
+    function renderDot(u) {
+      const s = u.booking?.student; if (!s) return '';
+      const isMale = s.gender === 1;
+      const color = isMale ? '#3b82f6' : s.gender === 2 ? '#ec4899' : '#9ca3af';
+      const selected = matchingSelectedDot === u.id;
+      const age = s.birthday ? Math.floor((Date.now() - new Date(s.birthday).getTime()) / (365.25*24*60*60*1000)) : null;
+      const gLabel = s.gender === 1 ? 'M' : s.gender === 2 ? 'F' : '?';
+      const diet = [s.diet || '', s.allergies || ''].filter(Boolean).join(', ');
+      const accommLabel = u.accommodationType === 'Host Family' ? 'HF' : 'APT';
+      const accommBg = u.accommodationType === 'Host Family' ? '#00ff9d' : '#642de1';
+      const accommFont = u.accommodationType === 'Host Family' ? '#000' : '#fff';
+      return `<div draggable="true" ondragstart="matchDragStart(event,${u.id})"
+        onclick="selectMatchingDot(${u.id})"
+        onmouseenter="showMatchTooltip(this)" onmouseleave="hideMatchTooltip(this)"
+        class="match-dot${selected ? ' selected' : ''}"
+        style="min-width:60px;height:30px;border-radius:15px;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;padding:0 10px;gap:4px;font-size:11px;font-weight:600;cursor:grab;user-select:none;border:2px solid ${selected ? '#84cc16' : 'transparent'};box-shadow:${selected ? '0 0 0 2px #84cc16' : 'none'};transition:all 150ms ease;position:relative">
+        ${esc(s.firstName)}<span style="font-size:9px;background:${accommBg};color:${accommFont};padding:1px 4px;border-radius:6px;font-weight:700">${accommLabel}</span>
+        <div class="match-tooltip">
+          <div style="font-weight:700;margin-bottom:4px">${esc(s.firstName)} ${esc(s.lastName)}</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:11px">
+            ${age ? '<span>Age '+age+'</span>' : ''}
+            <span style="background:#fff;color:${color};width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px">${gLabel}</span>
+            ${s.nationality ? '<span>'+countryName(s.nationality)+'</span>' : ''}
+            <span style="background:${accommBg};color:${accommFont};padding:1px 5px;border-radius:4px;font-size:10px">${esc(u.accommodationType||'')}</span>
+          </div>
+          ${diet ? '<div style="font-size:10px;color:#fde68a;margin-top:3px;font-weight:600">Diet: '+esc(diet)+'</div>' : ''}
+          <div style="font-family:var(--font-mono);font-size:10px;margin-top:4px;color:#fff">${(() => {
+            const sd = new Date(u.startDate), ed = new Date(u.endDate), pad = n => String(n).padStart(2,'0');
+            const sameYear = sd.getFullYear() === ed.getFullYear();
+            return pad(sd.getDate())+'/'+pad(sd.getMonth()+1)+(sameYear?'':'/'+sd.getFullYear())+' - '+pad(ed.getDate())+'/'+pad(ed.getMonth()+1)+'/'+ed.getFullYear();
+          })()}</div>
+        </div>
+      </div>`;
+    }
+
+    function renderDotGroup2(label, items) {
+      const bg = dotGroupBg[label] || 'var(--card-bg)';
+      let html = `<div style="background:${bg};border-radius:8px;padding:10px 12px">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-secondary);margin-bottom:6px">${label} (${items.length})</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">`;
+      for (const u of items) html += renderDot(u);
+      html += '</div></div>';
+      return html;
+    }
+
+    // Timeline renderer (shared for both sections)
+    function renderTimeline(hosts, sectionLabel) {
+      let html = `<table style="border-collapse:collapse;font-size:11px;width:100%">
+        <thead><tr style="position:sticky;top:0;z-index:2;background:#fff">
+          <th style="position:sticky;left:0;z-index:3;background:#fff;min-width:220px;max-width:220px;padding:4px 8px;text-align:left;font-size:10px;border-right:2px solid var(--card-border)">${sectionLabel}</th>`;
+      let lastMonth = '';
+      for (let i = 0; i < 42; i++) {
+        const d = days[i];
+        const dStr = d.toISOString().split('T')[0];
+        const isToday = d.getTime() === today.getTime();
+        const isSat = d.getDay() === 6;
+        const isSun = d.getDay() === 0;
+        const isWeekend = isSat || isSun;
+        const dayLabel = ['S','M','T','W','T','F','S'][d.getDay()];
+        const dateNum = d.getDate();
+        const monthLabel = d.toLocaleDateString('en-IE', { month: 'short' });
+        const showMonth = monthLabel !== lastMonth; lastMonth = monthLabel;
+        const inSelRange = selStart && selEnd && dStr >= selStart && dStr <= selEnd;
+        let thBg = 'background:#fff;';
+        if (isToday) thBg = 'background:#84cc16;color:#fff;';
+        else if (inSelRange) thBg = 'background:#ecfccb;';
+        else if (isWeekend) thBg = 'background:#eef0f4;';
+        html += '<th style="min-width:28px;max-width:28px;padding:2px 0;text-align:center;'+thBg+(isSun?'border-right:2px solid var(--card-border);':'')+'font-weight:400">';
+        html += (showMonth ? '<div style="font-size:9px;color:'+(isToday?'#fff':'var(--text-muted)')+'">'+monthLabel+'</div>' : '<div style="height:12px"></div>');
+        html += '<div>'+dateNum+'</div><div style="font-size:9px;color:'+(isToday?'#fff':'var(--text-muted)')+'">'+dayLabel+'</div></th>';
+      }
+      html += '</tr></thead><tbody>';
+
+      for (const host of hosts) {
+        for (const prop of host.properties) {
+          for (const room of prop.rooms) {
+            for (const bed of room.beds) {
+              const roomLabel = prop.rooms.length > 1 ? room.name : '';
+              const bedLabel = room.beds.length > 1 ? bed.name : '';
+              html += '<tr><td style="position:sticky;left:0;z-index:1;background:var(--card-bg);padding:6px 8px;border-right:2px solid var(--card-border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:220px;max-width:220px;font-size:11px" title="'+esc(host.name)+'"><strong>'+esc(host.name)+'</strong>'+(roomLabel||bedLabel?'<span style="color:var(--text-muted)"> / '+esc(roomLabel||bedLabel)+'</span>':'')+'</td>';
+
+              for (let i = 0; i < 42; i++) {
+                const d = days[i];
+                const dStr = d.toISOString().split('T')[0];
+                const isToday = d.getTime() === today.getTime();
+                const isSat = d.getDay() === 6;
+                const isSun = d.getDay() === 0;
+                const isWeekend = isSat || isSun;
+                const inSelRange = selStart && selEnd && dStr >= selStart && dStr <= selEnd;
+
+                let placement = null, pStart = false, pEnd = false;
+                for (const p of bed.placements) {
+                  const psStr = p.startDate.split('T')[0];
+                  const peStr = p.endDate.split('T')[0];
+                  if (dStr >= psStr && dStr <= peStr) { placement = p; pStart = dStr === psStr; pEnd = dStr === peStr; break; }
+                }
+
+                let cellBg = '';
+                if (isToday) cellBg = 'rgba(132,204,22,0.12)';
+                else if (inSelRange) cellBg = '#f7fee7';
+                else if (isWeekend) cellBg = '#eef0f4';
+
+                if (placement) {
+                  const st = placement.booking?.student;
+                  const isMale = st?.gender === 1;
+                  const barColor = isMale ? '#93c5fd' : st?.gender === 2 ? '#f9a8d4' : '#d1d5db';
+                  const textColor = isMale ? '#1e3a5f' : st?.gender === 2 ? '#831843' : '#374151';
+                  const radius = (pStart && pEnd) ? '11px' : pStart ? '11px 0 0 11px' : pEnd ? '0 11px 11px 0' : '0';
+                  html += '<td style="padding:0;height:28px;'+(cellBg?'background:'+cellBg+';':'')+(isSun?'border-right:2px solid var(--card-border);':'')+'position:relative" ondragover="event.preventDefault();matchHighlightRow(this)" data-orig-bg="'+cellBg+'" ondrop="matchDrop(event,'+bed.id+')">';
+                  html += '<div draggable="true" ondragstart="matchDragStart(event,'+placement.id+')" ondblclick="matchUnplace('+placement.id+')" style="background:'+barColor+';height:22px;margin:3px 0;border-radius:'+radius+';'+(pStart?'padding-left:6px;':'')+'cursor:grab;display:flex;align-items:center;overflow:visible;position:relative;z-index:1" title="Drag to move · Double-click to unassign">';
+                  html += pStart ? '<span style="font-size:10px;font-weight:700;color:'+textColor+';white-space:nowrap">'+esc(st?.firstName||'')+'</span>' : '';
+                  html += '</div></td>';
+                } else {
+                  html += '<td style="padding:0;height:28px;'+(cellBg?'background:'+cellBg+';':'')+(isSun?'border-right:2px solid var(--card-border);':'')+(matchingSelectedDot?'cursor:pointer;':'')+'" ondragover="event.preventDefault();matchHighlightRow(this)" data-orig-bg="'+cellBg+'" onclick="matchClickPlace('+bed.id+')" '+(matchingSelectedDot?'onmouseenter="matchHighlightRow(this)" onmouseleave="matchClearHighlight()"':'')+' ondrop="matchDrop(event,'+bed.id+')"></td>';
+                }
+              }
+              html += '</tr>';
+            }
+          }
+        }
+      }
+      html += '</tbody></table>';
+      return html;
+    }
+
+    // Build detail bar
+    let detailBarHtml = '';
+    if (selStudent) {
+      const ss = selStudent.booking?.student;
+      const age = ss?.birthday ? Math.floor((Date.now() - new Date(ss.birthday).getTime()) / (365.25*24*60*60*1000)) : null;
+      const gLabel = ss?.gender === 1 ? 'Male' : ss?.gender === 2 ? 'Female' : '—';
+      const gColor = ss?.gender === 1 ? '#3b82f6' : ss?.gender === 2 ? '#ec4899' : '#9ca3af';
+      const weeks = selStudent.weeks || Math.round((new Date(selStudent.endDate) - new Date(selStudent.startDate)) / (7*86400000));
+      const initials = (ss?.firstName?.[0] || '') + (ss?.lastName?.[0] || '');
+      const sd = new Date(selStudent.startDate); const ed = new Date(selStudent.endDate);
+      const pad = n => String(n).padStart(2,'0');
+      const sameYear = sd.getFullYear() === ed.getFullYear();
+      const startFmt = pad(sd.getDate())+'/'+pad(sd.getMonth()+1)+(sameYear?'':'/'+sd.getFullYear());
+      const endFmt = pad(ed.getDate())+'/'+pad(ed.getMonth()+1)+'/'+ed.getFullYear();
+      const dietLabel = ss?.diet || '';
+      const allergies = ss?.allergies || '';
+      detailBarHtml = `<div style="display:flex;align-items:center;gap:12px;font-size:13px">
+        <div style="width:72px;height:72px;border-radius:50%;background:#e8e6e1;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:var(--text-secondary);flex-shrink:0;overflow:hidden;border:2px solid var(--card-border)">
+          ${ss?.profilePicture ? '<img src="'+esc(ss.profilePicture)+'" style="width:100%;height:100%;object-fit:cover">' : initials}
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid var(--card-border);border-radius:20px;background:var(--card-bg)">
+          <strong>${esc(ss?.firstName||'')} ${esc(ss?.lastName||'')}</strong>
+          ${age ? '<span style="color:var(--text-muted)">Age '+age+'</span>' : ''}
+          <span style="color:${gColor};font-weight:600">${gLabel}</span>
+          ${ss?.nationality ? '<span>'+countryName(ss.nationality)+'</span>' : ''}
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid var(--card-border);border-radius:20px;background:var(--card-bg);font-family:var(--font-mono);font-size:12px">
+          <span>${startFmt} - ${endFmt}</span>
+          <span style="font-weight:700">(${weeks} Weeks)</span>
+        </div>
+        <div style="padding:4px 10px;border-radius:12px;font-size:11px;font-weight:700;${selStudent.accommodationType==='Host Family'?'background:#00ff9d;color:#000':'background:#642de1;color:#fff'}">${esc(selStudent.accommodationType||'')}</div>
+        ${(dietLabel||allergies) ? '<div style="display:flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid var(--card-border);border-radius:20px;background:var(--card-bg);font-size:12px">'+(dietLabel?'<span style="color:var(--warning);font-weight:600">'+esc(dietLabel)+'</span>':'')+(allergies?'<span style="color:var(--danger)">'+esc(allergies)+'</span>':'')+'</div>' : ''}
+        <button class="btn btn-ghost btn-sm" onclick="matchingSelectedDot=null;showUnifiedMatching()" style="margin-left:auto">&times;</button>
+      </div>`;
+    }
+
+    let html = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:6px;border:1px solid var(--card-border);border-radius:20px;padding:4px 6px;background:var(--card-bg)">
+        <button class="btn btn-secondary btn-sm" style="border:none;padding:4px 8px" onclick="matchingFrom=new Date(new Date(matchingFrom).getTime()-7*86400000).toISOString().split('T')[0];showUnifiedMatching()">&larr;</button>
+        <span style="font-weight:600;font-size:13px;min-width:170px;text-align:center">${fromDate.toLocaleDateString('en-IE',{day:'2-digit',month:'short'})} — ${days[41].toLocaleDateString('en-IE',{day:'2-digit',month:'short',year:'numeric'})}</span>
+        <button class="btn btn-secondary btn-sm" style="border:none;padding:4px 8px" onclick="matchingFrom=new Date(new Date(matchingFrom).getTime()+7*86400000).toISOString().split('T')[0];showUnifiedMatching()">&rarr;</button>
+        <button class="btn btn-ghost btn-sm" style="font-size:11px;padding:4px 8px" onclick="matchingFrom=getMonday2(new Date()).toISOString().split('T')[0];showUnifiedMatching()">Today</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;border:1px solid var(--card-border);border-radius:20px;padding:4px 6px;background:var(--card-bg)">
+        <span style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;padding:0 4px">Show</span>
+        <button class="btn btn-sm" onclick="unifiedFilterHosts=!unifiedFilterHosts;showUnifiedMatching()" style="font-size:12px;font-weight:700;border-radius:14px;padding:5px 14px;${unifiedFilterHosts ? 'background:#00ff9d;color:#000;border:2px solid #00ff9d' : 'background:transparent;color:var(--text-muted);border:2px solid var(--card-border)'}">Hosts${unifiedFilterHosts ? ' ✕' : ''}</button>
+        <button class="btn btn-sm" onclick="unifiedFilterApts=!unifiedFilterApts;showUnifiedMatching()" style="font-size:12px;font-weight:700;border-radius:14px;padding:5px 14px;${unifiedFilterApts ? 'background:#642de1;color:#fff;border:2px solid #642de1' : 'background:transparent;color:var(--text-muted);border:2px solid var(--card-border)'}">Apartments${unifiedFilterApts ? ' ✕' : ''}</button>
+      </div>
+      <span style="flex:1"></span>
+      <span style="font-size:12px;color:var(--text-muted)">${allUnplaced.length} unplaced</span>
+    </div>
+
+    <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);padding:5px;margin-bottom:0;display:flex;flex-wrap:wrap;min-height:50px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;width:100%">
+        ${renderDotGroup2('2 Weeks', twoWeeks_)}
+        ${renderDotGroup2('6 Weeks', sixWeeks_)}
+        ${renderDotGroup2('Later', later)}
+      </div>
+    </div>
+
+    <div id="matchingDetailBar" style="background:var(--bg-muted);border:1px solid var(--card-border);border-top:none;border-radius:0 0 var(--radius) var(--radius);padding:${selStudent?'10px 16px':'0'};margin-bottom:12px;transition:all 200ms ease;overflow:hidden;${selStudent?'':'height:0;padding:0 16px;'}">
+      ${detailBarHtml}
+    </div>
+
+    ${unifiedFilterApts ? `<!-- Apartments section -->
+    <div style="margin-bottom:8px">
+      <div class="collapse-header open" onclick="toggleCollapse(this)" style="padding:8px 12px;background:var(--bg-muted);border-radius:var(--radius) var(--radius) 0 0;cursor:pointer">
+        <span style="font-size:12px;font-weight:600">Apartments (${aptHosts.reduce((s,h)=>s+h.properties.reduce((ps,p)=>ps+p.rooms.reduce((rs,r)=>rs+r.beds.length,0),0),0)} beds)</span>
+      </div>
+      <div class="collapse-body open" style="background:var(--card-bg);border:1px solid var(--card-border);border-top:none;border-radius:0 0 var(--radius) var(--radius);overflow:auto;max-height:250px">
+        ${aptHosts.length ? renderTimeline(aptHosts, 'Apartment / Room') : '<div style="padding:20px;color:var(--text-muted);font-size:12px;text-align:center">No apartments</div>'}
+      </div>
+    </div>` : ''}
+
+    ${unifiedFilterHosts ? `<!-- Hosts section -->
+    <div>
+      <div class="collapse-header open" onclick="toggleCollapse(this)" style="padding:8px 12px;background:var(--bg-muted);border-radius:var(--radius) var(--radius) 0 0;cursor:pointer">
+        <span style="font-size:12px;font-weight:600">Host Families (${famHosts.length} hosts)</span>
+      </div>
+      <div class="collapse-body open" style="background:var(--card-bg);border:1px solid var(--card-border);border-top:none;border-radius:0 0 var(--radius) var(--radius);overflow:auto;max-height:calc(100vh - ${selStudent?'520':'460'}px)">
+        ${famHosts.length ? renderTimeline(famHosts, 'Host / Room') : '<div style="padding:20px;color:var(--text-muted);font-size:12px;text-align:center">No hosts</div>'}
+      </div>
+    </div>` : ''}`;
+
+    document.getElementById('content').innerHTML = html;
+  } catch (e) { toast(e.message, true); }
+}
+
+async function showAccommMatching(providerType) {
+  matchingProviderType = providerType || 'Host Family';
+  const isApt = matchingProviderType === 'Apartment';
+  const title = isApt ? 'Apartment Matching' : 'Host Matching';
+  const backView = isApt ? 'apartments' : 'accommodation';
+  const backLabel = isApt ? 'Apartments' : 'Hosts';
+  setTopbar(title,
+    `<span onclick="navigate('${backView}')">${backLabel}</span> / Matching`,
+    `<button class="btn btn-ghost btn-sm" onclick="showAccommMatching('${matchingProviderType}')" title="Refresh"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button>`);
+  if (!matchingFrom) matchingFrom = getMonday2(new Date()).toISOString().split('T')[0];
+
+  try {
+    const [unplaced, hosts] = await Promise.all([
+      api('/accommodation/matching/unplaced?type=' + encodeURIComponent(matchingProviderType)),
+      api('/accommodation/matching/timeline?from=' + matchingFrom + '&weeks=6&type=' + encodeURIComponent(matchingProviderType)),
+    ]);
+    matchingUnplaced = unplaced;
+
+    const fromDate = new Date(matchingFrom);
+    const days = [];
+    for (let i = 0; i < 42; i++) { const d = new Date(fromDate); d.setDate(d.getDate() + i); days.push(d); }
+
+    const today = new Date(); today.setHours(0,0,0,0);
+    const now = new Date();
+
+    // Selected student's date range (for highlighting)
+    const selStudent = matchingSelectedDot ? unplaced.find(u => u.id === matchingSelectedDot) : null;
+    const selStart = selStudent ? new Date(selStudent.startDate) : null;
+    const selEnd = selStudent ? new Date(selStudent.endDate) : null;
+    if (selStart) selStart.setHours(0,0,0,0);
+    if (selEnd) selEnd.setHours(0,0,0,0);
+
+    // Group unplaced
+    // "2 Weeks" = start date is within this week + next 2 full weeks (up to end of Sunday week+2)
+    // "6 Weeks" = start date is weeks 3-6
+    // "Later" = 6+ weeks out
+    const twoWeekEnd = new Date(now.getTime() + 3 * 7 * 86400000); // ~21 days
+    const sixWeekEnd = new Date(now.getTime() + 6 * 7 * 86400000); // ~42 days
+    const twoWeeks_ = unplaced.filter(u => new Date(u.startDate) <= twoWeekEnd);
+    const sixWeeks_ = unplaced.filter(u => { const s = new Date(u.startDate); return s > twoWeekEnd && s <= sixWeekEnd; });
+    const later = unplaced.filter(u => new Date(u.startDate) > sixWeekEnd);
+
+    const dotGroupBg = { '2 Weeks': '#c597da57', '6 Weeks': '#c597da33', 'Later': '#c597da17' };
+    function renderDotGroup(label, items) {
+      const bg = dotGroupBg[label] || 'var(--card-bg)';
+      let html = `<div style="background:${bg};border-radius:8px;padding:10px 12px">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-secondary);margin-bottom:6px">${label} (${items.length})</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">`;
+      for (const u of items) {
+        const s = u.booking?.student;
+        if (!s) continue;
+        const isMale = s.gender === 1;
+        const color = isMale ? '#3b82f6' : s.gender === 2 ? '#ec4899' : '#9ca3af';
+        const selected = matchingSelectedDot === u.id;
+        const age = s.birthday ? Math.floor((Date.now() - new Date(s.birthday).getTime()) / (365.25*24*60*60*1000)) : null;
+        const gLabel = s.gender === 1 ? 'M' : s.gender === 2 ? 'F' : '?';
+        const diet = [s.diet || '', s.allergies || ''].filter(Boolean).join(', ');
+        html += `<div draggable="true" ondragstart="matchDragStart(event,${u.id})"
+          onclick="selectMatchingDot(${u.id})"
+          onmouseenter="showMatchTooltip(this)" onmouseleave="hideMatchTooltip(this)"
+          class="match-dot${selected ? ' selected' : ''}"
+          style="min-width:60px;height:30px;border-radius:15px;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;padding:0 10px;font-size:11px;font-weight:600;cursor:grab;user-select:none;border:2px solid ${selected ? '#84cc16' : 'transparent'};box-shadow:${selected ? '0 0 0 2px #84cc16' : 'none'};transition:all 150ms ease;position:relative">
+          ${esc(s.firstName)}
+          <div class="match-tooltip">
+            <div style="font-weight:700;margin-bottom:4px">${esc(s.firstName)} ${esc(s.lastName)}</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:11px">
+              ${age ? '<span>Age '+age+'</span>' : ''}
+              <span style="background:#fff;color:${color};width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px">${gLabel}</span>
+              ${s.nationality ? '<span>'+countryName(s.nationality)+'</span>' : ''}
+            </div>
+            ${diet ? '<div style="font-size:10px;color:#fde68a;margin-top:3px;font-weight:600">Diet: '+esc(diet)+'</div>' : ''}
+            <div style="font-family:var(--font-mono);font-size:10px;margin-top:4px;color:#fff">${(() => {
+            const sd = new Date(u.startDate), ed = new Date(u.endDate), pad = n => String(n).padStart(2,'0');
+            const sameYear = sd.getFullYear() === ed.getFullYear();
+            return pad(sd.getDate())+'/'+pad(sd.getMonth()+1)+(sameYear?'':'/'+sd.getFullYear())+' - '+pad(ed.getDate())+'/'+pad(ed.getMonth()+1)+'/'+ed.getFullYear();
+          })()}</div>
+          </div>
+        </div>`;
+      }
+      html += `</div></div>`;
+      return html;
+    }
+
+    let html = `
+    <!-- Nav -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+      <button class="btn btn-secondary btn-sm" onclick="matchingFrom=new Date(new Date(matchingFrom).getTime()-7*86400000).toISOString().split('T')[0];showAccommMatching(matchingProviderType)">&larr;</button>
+      <span style="font-weight:600;font-size:13px;min-width:180px;text-align:center">${fromDate.toLocaleDateString('en-IE',{day:'2-digit',month:'short'})} — ${days[41].toLocaleDateString('en-IE',{day:'2-digit',month:'short',year:'numeric'})}</span>
+      <button class="btn btn-secondary btn-sm" onclick="matchingFrom=new Date(new Date(matchingFrom).getTime()+7*86400000).toISOString().split('T')[0];showAccommMatching(matchingProviderType)">&rarr;</button>
+      <button class="btn btn-ghost btn-sm" onclick="matchingFrom=getMonday2(new Date()).toISOString().split('T')[0];showAccommMatching(matchingProviderType)">Today</button>
+      <span style="flex:1"></span>
+      <span style="font-size:12px;color:var(--text-muted)">${unplaced.length} unplaced</span>
+    </div>
+
+    <!-- Unplaced dots -->
+    <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);padding:5px;margin-bottom:0;display:flex;flex-wrap:wrap;min-height:50px">
+      ${unplaced.length === 0 ? '<div style="color:var(--text-muted);font-size:13px;padding:8px">All students placed</div>' :
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;width:100%">' +
+        renderDotGroup('2 Weeks', twoWeeks_) +
+        renderDotGroup('6 Weeks', sixWeeks_) +
+        renderDotGroup('Later', later) +
+        '</div>'
+      }
+    </div>
+
+    <!-- Selected student detail bar -->
+    <div id="matchingDetailBar" style="background:var(--bg-muted);border:1px solid var(--card-border);border-top:none;border-radius:0 0 var(--radius) var(--radius);padding:${selStudent ? '10px 16px' : '0'};margin-bottom:12px;transition:all 200ms ease;overflow:hidden;${selStudent ? '' : 'height:0;padding:0 16px;'}">
+      ${selStudent ? (() => {
+        const ss = selStudent.booking?.student;
+        const age = ss?.birthday ? Math.floor((Date.now() - new Date(ss.birthday).getTime()) / (365.25*24*60*60*1000)) : null;
+        const gLabel = ss?.gender === 1 ? 'Male' : ss?.gender === 2 ? 'Female' : '—';
+        const gColor = ss?.gender === 1 ? '#3b82f6' : ss?.gender === 2 ? '#ec4899' : '#9ca3af';
+        const weeks = selStudent.weeks || Math.round((selEnd - selStart) / (7*86400000));
+        const initials = (ss?.firstName?.[0] || '') + (ss?.lastName?.[0] || '');
+        // Date formatting: DD/MM - DD/MM/YYYY (omit year on start if same year)
+        const sd = new Date(selStudent.startDate);
+        const ed = new Date(selStudent.endDate);
+        const pad = n => String(n).padStart(2,'0');
+        const sameYear = sd.getFullYear() === ed.getFullYear();
+        const startFmt = pad(sd.getDate()) + '/' + pad(sd.getMonth()+1) + (sameYear ? '' : '/' + sd.getFullYear());
+        const endFmt = pad(ed.getDate()) + '/' + pad(ed.getMonth()+1) + '/' + ed.getFullYear();
+        // Diet/allergies
+        const dietLabel = ss?.diet || '';
+        const allergies = ss?.allergies || '';
+        const hasDietInfo = dietLabel || allergies;
+        return `<div style="display:flex;align-items:center;gap:12px;font-size:13px">
+          <div style="width:72px;height:72px;border-radius:50%;background:#e8e6e1;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:var(--text-secondary);flex-shrink:0;overflow:hidden;border:2px solid var(--card-border)">
+            ${ss?.profilePicture ? '<img src="'+esc(ss.profilePicture)+'" style="width:100%;height:100%;object-fit:cover">' : initials}
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid var(--card-border);border-radius:20px;background:var(--card-bg)">
+            <strong>${esc(ss?.firstName || '')} ${esc(ss?.lastName || '')}</strong>
+            ${age ? '<span style="color:var(--text-muted)">Age '+age+'</span>' : ''}
+            <span style="color:${gColor};font-weight:600">${gLabel}</span>
+            ${ss?.nationality ? '<span>'+countryName(ss.nationality)+'</span>' : ''}
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid var(--card-border);border-radius:20px;background:var(--card-bg);font-family:var(--font-mono);font-size:12px">
+            <span>${startFmt} - ${endFmt}</span>
+            <span style="font-weight:700">(${weeks} Weeks)</span>
+          </div>
+          ${hasDietInfo ? '<div style="display:flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid var(--card-border);border-radius:20px;background:var(--card-bg);font-size:12px">' +
+            (dietLabel ? '<span style="color:var(--warning);font-weight:600">'+esc(dietLabel)+'</span>' : '') +
+            (allergies ? '<span style="color:var(--danger)">'+esc(allergies)+'</span>' : '') +
+          '</div>' : ''}
+          <button class="btn btn-ghost btn-sm" onclick="matchingSelectedDot=null;showAccommMatching(matchingProviderType)" style="margin-left:auto">&times;</button>
+        </div>`;
+      })() : ''}
+    </div>
+
+    <!-- Timeline grid -->
+    <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);overflow:auto;max-height:calc(100vh - ${selStudent ? '360' : '300'}px)">
+      <table style="border-collapse:collapse;font-size:11px">
+        <thead>
+          <tr style="position:sticky;top:0;z-index:2;background:#fff">
+            <th style="position:sticky;left:0;z-index:3;background:#fff;min-width:220px;max-width:220px;padding:4px 8px;text-align:left;font-size:10px;border-right:2px solid var(--card-border)">Host / Room</th>`;
+
+    // Day headers
+    let lastMonth = '';
+    for (let i = 0; i < 42; i++) {
+      const d = days[i];
+      const isToday = d.getTime() === today.getTime();
+      const isSat = d.getDay() === 6;
+      const isSun = d.getDay() === 0;
+      const isWeekend = isSat || isSun;
+      const dayLabel = ['S','M','T','W','T','F','S'][d.getDay()];
+      const dateNum = d.getDate();
+      const monthLabel = d.toLocaleDateString('en-IE', { month: 'short' });
+      const showMonth = monthLabel !== lastMonth;
+      lastMonth = monthLabel;
+      // Highlight: today = lime green border, selected range = light green bg, weekend = grey
+      const inSelRange = selStart && selEnd && d >= selStart && d <= selEnd;
+      let thBg = 'background:#fff;';
+      if (isToday) thBg = 'background:#84cc16;color:#fff;';
+      else if (inSelRange) thBg = 'background:#ecfccb;';
+      else if (isWeekend) thBg = 'background:#eef0f4;';
+      html += `<th style="min-width:28px;max-width:28px;padding:2px 0;text-align:center;${thBg}${isSun ? 'border-right:2px solid var(--card-border);' : ''}font-weight:400">
+        ${showMonth ? '<div style="font-size:9px;color:'+(isToday?'#fff':'var(--text-muted)')+'">'+monthLabel+'</div>' : '<div style="height:12px"></div>'}
+        <div>${dateNum}</div>
+        <div style="font-size:9px;color:${isToday?'#fff':'var(--text-muted)'}">${dayLabel}</div>
+      </th>`;
+    }
+    html += `</tr></thead><tbody>`;
+
+    // Host rows
+    for (const host of hosts) {
+      for (const prop of host.properties) {
+        for (const room of prop.rooms) {
+          for (const bed of room.beds) {
+            const roomLabel = prop.rooms.length > 1 ? room.name : '';
+            const bedLabel = room.beds.length > 1 ? bed.name : '';
+            const label = host.name + (roomLabel ? ' / ' + roomLabel : '') + (bedLabel ? ' / ' + bedLabel : '');
+
+            html += `<tr>
+              <td style="position:sticky;left:0;z-index:1;background:var(--card-bg);padding:6px 8px;border-right:2px solid var(--card-border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:220px;max-width:220px;font-size:11px" title="${esc(label)}">
+                <strong>${esc(host.name)}</strong>${roomLabel || bedLabel ? '<span style="color:var(--text-muted)"> / '+esc(roomLabel||bedLabel)+'</span>' : ''}
+              </td>`;
+
+            for (let i = 0; i < 42; i++) {
+              const d = days[i];
+              const isToday = d.getTime() === today.getTime();
+              const isSat = d.getDay() === 6;
+              const isSun = d.getDay() === 0;
+              const isWeekend = isSat || isSun;
+              const inSelRange = selStart && selEnd && d >= selStart && d <= selEnd;
+
+              let placement = null;
+              let pStart = false;
+              let pEnd = false;
+              const dStr = d.toISOString().split('T')[0];
+              for (const p of bed.placements) {
+                const psStr = p.startDate.split('T')[0];
+                const peStr = p.endDate.split('T')[0];
+                if (dStr >= psStr && dStr <= peStr) {
+                  placement = p;
+                  pStart = dStr === psStr;
+                  pEnd = dStr === peStr;
+                  break;
+                }
+              }
+
+              // Cell background
+              let cellBg = '';
+              if (isToday) cellBg = 'rgba(132,204,22,0.12)';
+              else if (inSelRange) cellBg = '#f7fee7';
+              else if (isWeekend) cellBg = '#eef0f4';
+
+              if (placement) {
+                const st = placement.booking?.student;
+                const isMale = st?.gender === 1;
+                const barColor = isMale ? '#93c5fd' : st?.gender === 2 ? '#f9a8d4' : '#d1d5db';
+                const textColor = isMale ? '#1e3a5f' : st?.gender === 2 ? '#831843' : '#374151';
+                const radius = (pStart && pEnd) ? '11px' : pStart ? '11px 0 0 11px' : pEnd ? '0 11px 11px 0' : '0';
+                html += `<td style="padding:0;height:28px;${cellBg ? 'background:'+cellBg+';' : ''}${isSun ? 'border-right:2px solid var(--card-border);' : ''}position:relative"
+                  ondragover="event.preventDefault();matchHighlightRow(this)"
+                  data-orig-bg="${cellBg}"
+                  ondrop="matchDrop(event,${bed.id})">
+                  <div draggable="true" ondragstart="matchDragStart(event,${placement.id})"
+                    ondblclick="matchUnplace(${placement.id})"
+                    style="background:${barColor};height:22px;margin:3px 0;border-radius:${radius};${pStart ? 'padding-left:6px;' : ''}cursor:grab;display:flex;align-items:center;overflow:visible;position:relative;z-index:1"
+                    title="Drag to move · Double-click to unassign">
+                    ${pStart ? '<span style="font-size:10px;font-weight:700;color:'+textColor+';white-space:nowrap">'+esc(st?.firstName || '')+'</span>' : ''}
+                  </div>
+                </td>`;
+              } else {
+                html += `<td style="padding:0;height:28px;${cellBg ? 'background:'+cellBg+';' : ''}${isSun ? 'border-right:2px solid var(--card-border);' : ''}${matchingSelectedDot ? 'cursor:pointer;' : ''}"
+                  ondragover="event.preventDefault();matchHighlightRow(this)"
+                  data-orig-bg="${cellBg}"
+                  onclick="matchClickPlace(${bed.id})"
+                  ${matchingSelectedDot ? 'onmouseenter="matchHighlightRow(this)" onmouseleave="matchClearHighlight()"' : ''}
+                  ondrop="matchDrop(event,${bed.id})"></td>`;
+              }
+            }
+            html += `</tr>`;
+          }
+        }
+      }
+    }
+
+    html += `</tbody></table></div>`;
+    document.getElementById('content').innerHTML = html;
+  } catch (e) { toast(e.message, true); }
+}
+
+function showMatchTooltip(dot) {
+  if (dot.classList.contains('selected')) return;
+  const tip = dot.querySelector('.match-tooltip');
+  if (!tip) return;
+  const rect = dot.getBoundingClientRect();
+  tip.style.display = 'block';
+  tip.style.left = (rect.left + rect.width / 2 - tip.offsetWidth / 2) + 'px';
+  tip.style.top = (rect.top - tip.offsetHeight - 8) + 'px';
+}
+
+function hideMatchTooltip(dot) {
+  const tip = dot.querySelector('.match-tooltip');
+  if (tip) tip.style.display = 'none';
+}
+
+function refreshMatching() {
+  if (matchingProviderType === '_all') showUnifiedMatching();
+  else showAccommMatching(matchingProviderType);
+}
+
+function selectMatchingDot(bookingAccommId) {
+  matchingSelectedDot = matchingSelectedDot === bookingAccommId ? null : bookingAccommId;
+  refreshMatching();
+}
+
+let matchDragId = null;
+let matchLastHighlightedCells = [];
+
+function matchDragStart(event, bookingAccommId) {
+  matchDragId = bookingAccommId;
+  event.dataTransfer.effectAllowed = 'move';
+}
+
+function matchHighlightRow(cell) {
+  // Clear previous highlights
+  matchLastHighlightedCells.forEach(c => { c.style.outline = ''; c.style.background = c.dataset.origBg || ''; });
+  matchLastHighlightedCells = [];
+
+  const tr = cell.closest('tr');
+  if (!tr) return;
+  const tds = Array.from(tr.querySelectorAll('td'));
+  const idx = tds.indexOf(cell);
+  if (idx < 1) return; // skip the name column (idx 0)
+
+  for (let i = idx; i < Math.min(idx + 7, tds.length); i++) {
+    const c = tds[i];
+    c.style.background = i === idx ? '#65a30d' : '#84cc16';
+    matchLastHighlightedCells.push(c);
+  }
+}
+
+function matchClearHighlight() {
+  matchLastHighlightedCells.forEach(c => { c.style.outline = ''; c.style.background = c.dataset.origBg || ''; });
+  matchLastHighlightedCells = [];
+}
+
+document.addEventListener('dragend', matchClearHighlight);
+
+async function matchDrop(event, bedId) {
+  event.preventDefault();
+  if (!matchDragId) return;
+  try {
+    await api('/accommodation/matching/place', { method: 'POST', body: { bookingAccommodationId: matchDragId, bedId } });
+    toast('Student placed');
+    matchDragId = null;
+    matchingSelectedDot = null;
+    refreshMatching();
+  } catch (e) { toast(e.message, true); }
+}
+
+async function matchClickPlace(bedId) {
+  if (!matchingSelectedDot) return;
+  try {
+    await api('/accommodation/matching/place', { method: 'POST', body: { bookingAccommodationId: matchingSelectedDot, bedId } });
+    toast('Student placed');
+    matchingSelectedDot = null;
+    refreshMatching();
+  } catch (e) { toast(e.message, true); }
+}
+
+async function matchUnplace(bookingAccommodationId) {
+  try {
+    await api('/accommodation/matching/unplace', { method: 'POST', body: { bookingAccommodationId } });
+    toast('Student unassigned');
+    refreshMatching();
+  } catch (e) { toast(e.message, true); }
+}
+
+async function showApartmentsList() {
+  setTopbar('Apartments', '', `<button class="btn btn-primary" onclick="navigate('apartment-matching')" style="margin-right:8px">Matching</button><button class="btn btn-secondary" onclick="openNewProviderModal('Apartment')">+ New Apartment</button>`);
+
+  try {
+    const providers = await api('/accommodation?type=Apartment');
+
+    let html = `<div class="table-wrap"><table>
+      <thead><tr><th>Name</th><th>Address</th><th>Contact</th><th>Properties</th><th>Rooms</th><th>Beds</th><th>Active</th></tr></thead><tbody>`;
+
+    if (providers.length === 0) {
+      html += `<tr><td colspan="7" class="table-empty">No apartments yet. Add your first one above.</td></tr>`;
+    } else {
+      for (const p of providers) {
+        const propCount = p.properties?.length || 0;
+        const roomCount = p.properties?.reduce((sum, pr) => sum + (pr.rooms?.length || 0), 0) || 0;
+        const bedCount = p.properties?.reduce((sum, pr) => sum + (pr.rooms?.reduce((rs, r) => rs + (r.beds?.length || 0), 0) || 0), 0) || 0;
+        html += `<tr class="clickable" onclick="navigate('accommodation-detail',{id:${p.id}})">
+          <td><strong>${esc(p.name)}</strong></td>
+          <td style="font-size:12px">${esc(p.address || '—')}</td>
+          <td>${esc(p.contactPerson || '—')}</td>
+          <td style="font-family:var(--font-mono)">${propCount}</td>
+          <td style="font-family:var(--font-mono)">${roomCount}</td>
+          <td style="font-family:var(--font-mono)">${bedCount}</td>
+          <td>${p.active ? '<span style="color:var(--success)">Yes</span>' : '<span style="color:var(--text-muted)">No</span>'}</td>
+        </tr>`;
+      }
+    }
+    html += `</tbody></table></div>`;
+    document.getElementById('content').innerHTML = html;
+  } catch (e) { toast(e.message, true); }
+}
+
+async function showAccommodationList() {
+  setTopbar('Host Families', '', `<button class="btn btn-primary" onclick="navigate('host-matching')" style="margin-right:8px">Matching</button><button class="btn btn-secondary" onclick="openNewProviderModal('Host Family')">+ New Host</button>`);
+
+  try {
+    const providers = await api('/accommodation?type=Host+Family');
 
     let html = `<div class="table-wrap"><table>
       <thead><tr><th>Name</th><th>Type</th><th>Contact</th><th>Email</th><th>Phone</th><th>Properties</th><th>Rooms</th><th>Active</th></tr></thead><tbody>`;
@@ -3092,9 +3850,13 @@ async function showAccommodationDetail(id) {
     const p = await api('/accommodation/' + id);
     if (!p) { toast('Provider not found', true); return navigate('accommodation'); }
 
+    const isApt = p.type === 'Apartment';
+    const backView = isApt ? 'apartments' : 'accommodation';
+    const backLabel = isApt ? 'Apartments' : 'Hosts';
+
     setTopbar(
       p.name,
-      `<span onclick="navigate('accommodation')">Accommodation</span> / ${esc(p.name)}`,
+      `<span onclick="navigate('${backView}')">${backLabel}</span> / ${esc(p.name)}`,
       `<button class="btn btn-danger btn-sm" onclick="deleteAccomProvider(${p.id})">Delete</button>`
     );
 
@@ -3130,6 +3892,7 @@ async function showAccommodationDetail(id) {
         <div class="card-header">
           <h3>${esc(prop.name || 'Property')} ${prop.address ? '— '+esc(prop.address) : ''}</h3>
           <div>
+            <button class="btn btn-ghost btn-sm" onclick="editAccomProperty(${prop.id},${p.id},'${esc(prop.name||'')}','${esc(prop.address||'')}')">Edit</button>
             <button class="btn btn-sm btn-secondary" onclick="addRoomToProperty(${prop.id},${p.id})">+ Room</button>
             <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="deleteAccomProperty(${prop.id},${p.id})">Delete</button>
           </div>
@@ -3144,6 +3907,7 @@ async function showAccommodationDetail(id) {
               <span class="nested-item-title">${esc(room.name)}</span>
               <div>
                 <span class="nested-item-meta" style="margin-right:8px">${esc(room.roomType||'')}${room.enSuite?' &middot; En Suite':''} &middot; Cap: ${room.capacity} &middot; ${bedCount} bed${bedCount!==1?'s':''}</span>
+                <button class="btn btn-ghost btn-sm" onclick="editAccomRoom(${room.id},${p.id},'${esc(room.name)}','${esc(room.roomType||'')}',${room.capacity},${room.enSuite})">Edit</button>
                 <button class="btn btn-ghost btn-sm" onclick="addBedToRoom(${room.id},${p.id})">+ Bed</button>
                 <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="deleteAccomRoom(${room.id},${p.id})">Del</button>
               </div>
@@ -3206,6 +3970,36 @@ async function addPropertyToProvider(providerId) {
   } catch (e) { toast(e.message, true); }
 }
 
+function editAccomProperty(propId, providerId, name, address) {
+  const html = `<div class="modal-overlay" onclick="if(event.target===this)this.remove()">
+    <div class="modal">
+      <div class="modal-header"><h2>Edit Property</h2><button class="btn btn-ghost" onclick="this.closest('.modal-overlay').remove()">&times;</button></div>
+      <div class="modal-body">
+        <div class="form-grid" id="editPropertyForm">
+          ${field('name','Property Name',name)}
+          ${field('address','Address',address)}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveAccomProperty(${propId},${providerId})">Save</button>
+      </div>
+    </div>
+  </div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+async function saveAccomProperty(propId, providerId) {
+  const data = collectFormData('editPropertyForm');
+  for (const k of Object.keys(data)) { if (data[k] === '') data[k] = null; }
+  try {
+    await api('/accommodation/properties/' + propId, { method: 'PATCH', body: data });
+    toast('Property updated');
+    document.querySelector('.modal-overlay')?.remove();
+    showAccommodationDetail(providerId);
+  } catch (e) { toast(e.message, true); }
+}
+
 async function deleteAccomProperty(propId, providerId) {
   if (!confirm('Delete this property and all its rooms/beds?')) return;
   try {
@@ -3222,7 +4016,7 @@ function addRoomToProperty(propertyId, providerId) {
       <div class="modal-body">
         <div class="form-grid" id="addRoomForm">
           ${field('name','Room Name *','')}
-          ${selectField('roomType','Room Type','Single',[['Single','Single'],['Double','Double'],['Twin','Twin'],['Triple','Triple'],['Dorm','Dorm (4+)']])}
+          ${selectField('roomType','Room Type','Single',getAccommRoomTypes())}
           ${field('capacity','Capacity','1')}
           ${checkboxField('enSuite','En Suite',false)}
         </div>
@@ -3243,6 +4037,39 @@ async function submitAddRoom(propertyId, providerId) {
   try {
     await api('/accommodation/properties/' + propertyId + '/rooms', { method: 'POST', body: data });
     toast('Room added');
+    document.querySelector('.modal-overlay')?.remove();
+    showAccommodationDetail(providerId);
+  } catch (e) { toast(e.message, true); }
+}
+
+function editAccomRoom(roomId, providerId, name, roomType, capacity, enSuite) {
+  const html = `<div class="modal-overlay" onclick="if(event.target===this)this.remove()">
+    <div class="modal">
+      <div class="modal-header"><h2>Edit Room</h2><button class="btn btn-ghost" onclick="this.closest('.modal-overlay').remove()">&times;</button></div>
+      <div class="modal-body">
+        <div class="form-grid" id="editRoomForm">
+          ${field('name','Room Name',name)}
+          ${selectField('roomType','Room Type',roomType,getAccommRoomTypes())}
+          ${field('capacity','Capacity',capacity)}
+          ${checkboxField('enSuite','En Suite',enSuite)}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveAccomRoom(${roomId},${providerId})">Save</button>
+      </div>
+    </div>
+  </div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+async function saveAccomRoom(roomId, providerId) {
+  const data = collectFormData('editRoomForm');
+  if (data.capacity) data.capacity = parseInt(data.capacity);
+  for (const k of Object.keys(data)) { if (data[k] === '') data[k] = null; }
+  try {
+    await api('/accommodation/rooms/' + roomId, { method: 'PATCH', body: data });
+    toast('Room updated');
     document.querySelector('.modal-overlay')?.remove();
     showAccommodationDetail(providerId);
   } catch (e) { toast(e.message, true); }
@@ -3275,40 +4102,42 @@ async function deleteAccomBed(bedId, providerId) {
   } catch (e) { toast(e.message, true); }
 }
 
-function openNewProviderModal() {
+function openNewProviderModal(defaultType = 'Host Family') {
+  const isApt = defaultType === 'Apartment';
+  const title = isApt ? 'New Apartment' : 'New Host Family';
   const html = `<div class="modal-overlay" onclick="if(event.target===this)this.remove()">
     <div class="modal">
-      <div class="modal-header"><h2>New Accommodation Provider</h2><button class="btn btn-ghost" onclick="this.closest('.modal-overlay').remove()">&times;</button></div>
+      <div class="modal-header"><h2>${title}</h2><button class="btn btn-ghost" onclick="this.closest('.modal-overlay').remove()">&times;</button></div>
       <div class="modal-body">
         <div class="form-grid" id="newProviderForm">
           ${field('name','Name *','')}
-          ${selectField('type','Type','Host Family',[['Host Family','Host Family'],['Apartment','Apartment'],['Hostel','Hostel'],['Hotel','Hotel'],['Other','Other']])}
+          <input type="hidden" data-field="type" value="${defaultType}">
           ${field('contactPerson','Contact Person','')}
           ${field('email','Email','','email')}
           ${field('phone','Phone','')}
           ${field('address','Address','')}
           ${field('zip','Postal Code','')}
           ${field('city','City','Dublin')}
-          ${field('weeklyRate','Weekly Rate (€)','220')}
+          ${isApt ? '' : field('weeklyRate','Weekly Rate (€)','220')}
         </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
-        <button class="btn btn-primary" onclick="createAccomProvider()">Create Provider</button>
+        <button class="btn btn-primary" onclick="createAccomProvider('${defaultType}')">Create</button>
       </div>
     </div>
   </div>`;
   document.body.insertAdjacentHTML('beforeend', html);
 }
 
-async function createAccomProvider() {
+async function createAccomProvider(providerType) {
   const data = collectFormData('newProviderForm');
   if (!data.name) { toast('Name is required', true); return; }
   if (data.weeklyRate) data.weeklyRate = parseFloat(data.weeklyRate);
   for (const k of Object.keys(data)) { if (data[k] === '') data[k] = null; }
   try {
     const p = await api('/accommodation', { method: 'POST', body: data });
-    toast('Provider created');
+    toast((providerType === 'Apartment' ? 'Apartment' : 'Host') + ' created');
     document.querySelector('.modal-overlay')?.remove();
     navigate('accommodation-detail', { id: p.id });
   } catch (e) { toast(e.message, true); }
@@ -4150,7 +4979,11 @@ async function saveTemplate(id) {
 }
 
 // ─── INIT ───────────────────────────────────────
-openTab('students', 'Students');
+loadConfig().then(() => {
+  if (!restoreTabState()) {
+    openTab('students', 'Students');
+  }
+});
 </script>
 </body>
 </html>

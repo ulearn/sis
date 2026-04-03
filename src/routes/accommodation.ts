@@ -43,6 +43,11 @@ export function accommodationRoutes(prisma: PrismaClient) {
     catch (e) { res.status(400).json({ error: String(e) }); }
   });
 
+  router.patch('/properties/:id', async (req, res) => {
+    try { res.json(await scripts.updateProperty(parseInt(req.params.id), req.body)); }
+    catch (e) { res.status(400).json({ error: String(e) }); }
+  });
+
   router.delete('/properties/:id', async (req, res) => {
     try { await scripts.deleteProperty(parseInt(req.params.id)); res.json({ deleted: true }); }
     catch (e) { res.status(400).json({ error: String(e) }); }
@@ -73,6 +78,47 @@ export function accommodationRoutes(prisma: PrismaClient) {
   router.delete('/beds/:id', async (req, res) => {
     try { await scripts.deleteBed(parseInt(req.params.id)); res.json({ deleted: true }); }
     catch (e) { res.status(400).json({ error: String(e) }); }
+  });
+
+  // ── Matching Engine ────────────────────────────
+
+  // Get unplaced students (optionally filtered by accommodation type)
+  router.get('/matching/unplaced', async (_req, res) => {
+    try {
+      const accommType = _req.query.type as string | undefined;
+      res.json(await scripts.getUnplacedStudents(accommType));
+    } catch (e) { res.status(500).json({ error: String(e) }); }
+  });
+
+  // Get host timeline
+  router.get('/matching/timeline', async (req, res) => {
+    try {
+      const from = req.query.from as string || new Date().toISOString().split('T')[0];
+      const weeks = parseInt(req.query.weeks as string) || 6;
+      const toDate = new Date(from);
+      toDate.setDate(toDate.getDate() + weeks * 7);
+      const to = toDate.toISOString().split('T')[0];
+      const providerType = req.query.type as string | undefined;
+      res.json(await scripts.getHostTimeline(from, to, providerType));
+    } catch (e) { res.status(500).json({ error: String(e) }); }
+  });
+
+  // Place student
+  router.post('/matching/place', async (req, res) => {
+    try {
+      const { bookingAccommodationId, bedId } = req.body;
+      if (!bookingAccommodationId || !bedId) return res.status(400).json({ error: 'bookingAccommodationId and bedId required' });
+      res.json(await scripts.placeStudent(bookingAccommodationId, bedId));
+    } catch (e) { res.status(400).json({ error: String(e) }); }
+  });
+
+  // Unplace student
+  router.post('/matching/unplace', async (req, res) => {
+    try {
+      const { bookingAccommodationId } = req.body;
+      if (!bookingAccommodationId) return res.status(400).json({ error: 'bookingAccommodationId required' });
+      res.json(await scripts.unplaceStudent(bookingAccommodationId));
+    } catch (e) { res.status(400).json({ error: String(e) }); }
   });
 
   return router;

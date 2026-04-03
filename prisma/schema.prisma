@@ -67,8 +67,9 @@ model Student {
 
   // Dietary / Medical
   allergies         String?
-  vegetarian        Boolean  @default(false)
-  muslimDiet        Boolean  @default(false) @map("muslim_diet")
+  diet              String?   // from school_config diet_types
+  vegetarian        Boolean  @default(false)  // legacy — use diet field
+  muslimDiet        Boolean  @default(false) @map("muslim_diet")  // legacy — use diet field
 
   // Placement test / Level
   currentLevel      String?  @map("current_level")  // A1, A2, B1, B2, C1, C2 — from placement test

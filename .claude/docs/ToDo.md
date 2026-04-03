@@ -230,3 +230,41 @@ This is the clearly defined protocol for when a student enters SIS and Xero:
 - Consider: role-based sidebar (hide admin-only sections from staff)
 - Consider: audit log for who created/edited templates
 - Session/auth system needed (currently no auth on SIS admin panel)
+
+---
+
+## 2022 Host Match System (via Airtable / Make / ManyChat)
+
+### Context
+- A self-service host matching system was built in 2022 using Airtable + Make.com + ManyChat/Bird WhatsApp
+- Each host had a unique private URL (slug = their email or ID) — no login required
+- URL showed pseudonymised upcoming students needing placement (name, nationality, age, dates — no email/photo/contact info)
+- Host selects a student → provisional match created in Airtable → student removed from available pool
+- First-come-first-serve: send to top 10 preferred hosts first, expand if needed
+- Dramatically reduced phone calls for placement — only fallback if no one responds
+- WhatsApp outreach: "Are you available?" → link to their personal selection page
+
+### Goal for SIS
+- Recreate this as a native SIS feature
+- Host gets a unique URL → sees available students → selects → match created in SIS
+- Integrates with the accommodation matching engine already built
+- Staff controls: choose which hosts to notify, how many at a time, stagger outreach
+- Consider: Bird.com WABA integration for the WhatsApp notification (already in use on Hub server)
+- Schematics from the original system to be reviewed and adapted
+
+---
+
+## Unified Matching Screen (All Accommodation Types)
+
+### Context
+- Currently: Hosts have their own matching screen, Apartments will have theirs — same engine, different filter
+- Staff (Noelle) doesn't always care whether a student needs a host or apartment — she just needs to find them a room
+- Scale: apartments are ~10-11 rooms (maybe 30 in summer), hosts are ~80 families. Not a massive dataset.
+
+### Proposed: A third "Matching" screen in the sidebar
+- Shows ALL unplaced students regardless of accommodation type
+- Below the dots: two collapsible sections — Apartments (small, collapsed by default) and Hosts (expanded)
+- Or: a filter toggle (All / Hosts / Apartments) that switches the provider list
+- Same drag & drop engine, same timeline grid
+- Staff can filter to just Hosts or just Apartments if needed, but default shows everything
+- NOT a channel management system — keep it simple, just two types for now

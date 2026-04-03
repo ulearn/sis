@@ -120,6 +120,29 @@ export function bookingScripts(prisma: PrismaClient) {
   }
 
   async function remove(id: number) {
+    // Cascade delete all related records
+    await prisma.bookingStatusHistory.deleteMany({ where: { bookingId: id } });
+    await prisma.bookingHoliday.deleteMany({ where: { bookingId: id } });
+    await prisma.payment.deleteMany({ where: { bookingId: id } });
+    // Courses — need to clear class assignments first
+    const courses = await prisma.bookingCourse.findMany({ where: { bookingId: id }, select: { id: true } });
+    if (courses.length) {
+      await prisma.studentClassAssignment.deleteMany({ where: { bookingCourseId: { in: courses.map(c => c.id) } } });
+    }
+    await prisma.bookingCourse.deleteMany({ where: { bookingId: id } });
+    await prisma.bookingAccommodation.deleteMany({ where: { bookingId: id } });
+    // Documents & invoices
+    const invoices = await prisma.invoice.findMany({ where: { bookingId: id }, select: { id: true } });
+    if (invoices.length) {
+      await prisma.invoiceLineItem.deleteMany({ where: { invoiceId: { in: invoices.map(i => i.id) } } });
+    }
+    await prisma.invoice.deleteMany({ where: { bookingId: id } });
+    const docRecords = await prisma.documentRecord.findMany({ where: { bookingId: id }, select: { id: true } });
+    if (docRecords.length) {
+      await prisma.documentDispatch.deleteMany({ where: { documentId: { in: docRecords.map(d => d.id) } } });
+    }
+    await prisma.documentRecord.deleteMany({ where: { bookingId: id } });
+    await prisma.document.deleteMany({ where: { bookingId: id } });
     return prisma.booking.delete({ where: { id } });
   }
 
