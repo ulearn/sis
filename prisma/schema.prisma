@@ -492,6 +492,8 @@ model AccommodationProvider {
   iban          String?
   bic           String?
 
+  // External IDs
+  xeroContactId    String?  @unique @map("xero_contact_id")
   fideloProviderId Int?    @unique @map("fidelo_provider_id")
 
   properties    AccommodationProperty[]

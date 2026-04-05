@@ -1,4 +1,5 @@
 import { PrismaClient } from '../generated/prisma/client';
+import { getAuthedXero } from './xero';
 
 /**
  * Host Payment Calculation
@@ -227,5 +228,165 @@ export function hostPaymentScripts(prisma: PrismaClient) {
     });
   }
 
-  return { calculatePaymentRun, listPaymentRuns, getPaymentRun, approveRun, markPaid };
+  // Build the BIC/IBAN Xero account number format
+  function xeroAccountNumber(bic: string | null, iban: string | null): string | null {
+    if (!iban) return null;
+    // Format: BIC/IBAN — if no BIC, just IBAN
+    return bic ? `${bic}/${iban}` : iban;
+  }
+
+  // Submit a single line item as a Bill to Xero
+  async function submitBillToXero(lineItemId: number) {
+    const li = await prisma.hostPaymentLineItem.findUnique({ where: { id: lineItemId } });
+    if (!li) throw new Error('Line item not found');
+
+    const run = await prisma.hostPaymentRun.findUnique({ where: { id: li.runId } });
+    if (!run) throw new Error('Payment run not found');
+
+    const provider = await prisma.accommodationProvider.findUnique({
+      where: { id: li.providerId },
+      select: { name: true, email: true, iban: true, bic: true, contactPerson: true, xeroContactId: true },
+    });
+    if (!provider) throw new Error('Host provider not found');
+
+    const acctNumber = xeroAccountNumber(provider.bic || null, provider.iban || null);
+
+    const { xero, tenantId } = await getAuthedXero();
+
+    let contactId: string | null = provider.xeroContactId || null;
+
+    try {
+      if (!contactId) {
+        // Search by email only (most reliable)
+        if (provider.email) {
+          const byEmail = await xero.accountingApi.getContacts(tenantId, undefined, `EmailAddress=="${provider.email}"`);
+          contactId = byEmail.body.contacts?.[0]?.contactID || null;
+        }
+        // Search by account number (BIC/IBAN)
+        if (!contactId && acctNumber) {
+          const byAcct = await xero.accountingApi.getContacts(tenantId, undefined, `AccountNumber=="${acctNumber}"`);
+          contactId = byAcct.body.contacts?.[0]?.contactID || null;
+        }
+
+        // Create if not found
+        if (!contactId) {
+          const newContact = await xero.accountingApi.createContacts(tenantId, {
+            contacts: [{
+              name: provider.name,
+              emailAddress: provider.email || undefined,
+              accountNumber: acctNumber || undefined,
+              bankAccountDetails: acctNumber || undefined,
+            }],
+          });
+          contactId = newContact.body.contacts?.[0]?.contactID || null;
+          if (!contactId) throw new Error('Failed to create Xero contact');
+        }
+
+        // Save the xeroContactId for future use
+        if (contactId) {
+          await prisma.accommodationProvider.update({
+            where: { id: li.providerId },
+            data: { xeroContactId: contactId },
+          });
+        }
+      }
+
+      // Ensure contact is in Accomm Hosts group
+      if (contactId) {
+        try {
+          await xero.accountingApi.createContactGroupContacts(tenantId, '3a6ef17b-42b3-48a3-94a6-db271f6824e8', {
+            contacts: [{ contactID: contactId }],
+          });
+        } catch {} // Ignore if already in group
+      }
+
+      // Ensure account number is set on the contact
+      if (contactId && acctNumber) {
+        await xero.accountingApi.updateContact(tenantId, contactId, {
+          contacts: [{
+            contactID: contactId,
+            accountNumber: acctNumber,
+            bankAccountDetails: acctNumber,
+          }],
+        });
+      }
+    } catch (e: any) {
+      throw new Error('Xero contact error: ' + e.message);
+    }
+
+    // Build the Bill
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const from = new Date(li.periodFrom);
+    const to = new Date(li.periodTo);
+    const fromFmt = pad(from.getDate()) + '/' + pad(from.getMonth() + 1);
+    const toFmt = pad(to.getDate()) + '/' + pad(to.getMonth() + 1) + '/' + to.getFullYear();
+    const runDate = new Date(run.runDate);
+    const dueDate = new Date(runDate);
+    dueDate.setDate(dueDate.getDate() + 2); // Wednesday
+
+    const reference = `H-${3500 + li.id}`;
+
+    const billLineItems: any[] = [];
+
+    // Main stay line
+    if (li.reason !== 'amendment') {
+      const nights = (li.weeksPaid * 7) + (li.daysPaid || 0);
+      const baseAmount = Number(li.weeksPaid) * Number(li.weeklyRate) + (li.daysPaid || 0) * Number(li.weeklyRate) / 7;
+      billLineItems.push({
+        description: `${li.studentName} — ${fromFmt} to ${toFmt} (${nights} nights)`,
+        quantity: 1,
+        unitAmount: Math.round(baseAmount * 100) / 100,
+        accountCode: 'A100',
+      });
+
+      // Amendment on top of stay (if exists)
+      if (li.amendmentNote) {
+        const amendAmount = Number(li.amount) - Math.round(baseAmount * 100) / 100;
+        if (Math.abs(amendAmount) > 0.01) {
+          billLineItems.push({
+            description: `Amendment: ${li.amendmentNote}`,
+            quantity: 1,
+            unitAmount: Math.round(amendAmount * 100) / 100,
+            accountCode: 'A100',
+          });
+        }
+      }
+    } else {
+      // Pure amendment
+      billLineItems.push({
+        description: li.amendmentNote || 'Amendment',
+        quantity: 1,
+        unitAmount: Number(li.amount),
+        accountCode: 'A100',
+      });
+    }
+
+    try {
+      const bill = await xero.accountingApi.createInvoices(tenantId, {
+        invoices: [{
+          type: 'ACCPAY' as any,
+          contact: { contactID: contactId },
+          date: runDate.toISOString().split('T')[0],
+          dueDate: dueDate.toISOString().split('T')[0],
+          reference,
+          status: 'SUBMITTED' as any,
+          lineItems: billLineItems,
+          lineAmountTypes: 'NoTax' as any,
+        }],
+      });
+
+      const invoiceId = bill.body.invoices?.[0]?.invoiceID;
+      return {
+        success: true,
+        xeroInvoiceId: invoiceId,
+        reference,
+        message: `Bill created in Xero: ${reference}`,
+      };
+    } catch (e: any) {
+      const detail = e.response?.body?.Message || e.body?.Message || e.message;
+      throw new Error('Xero bill creation failed: ' + detail);
+    }
+  }
+
+  return { calculatePaymentRun, listPaymentRuns, getPaymentRun, approveRun, markPaid, submitBillToXero };
 }

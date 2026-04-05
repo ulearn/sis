@@ -3879,7 +3879,7 @@ async function matchDrop(event, bedId) {
   if (!matchDragId) return;
   try {
     await api('/accommodation/matching/place', { method: 'POST', body: { bookingAccommodationId: matchDragId, bedId } });
-    toast('Student placed');
+    toast('Placed');
     matchDragId = null;
     matchingSelectedDot = null;
     refreshMatching();
@@ -3890,7 +3890,7 @@ async function matchClickPlace(bedId) {
   if (!matchingSelectedDot) return;
   try {
     await api('/accommodation/matching/place', { method: 'POST', body: { bookingAccommodationId: matchingSelectedDot, bedId } });
-    toast('Student placed');
+    toast('Placed');
     matchingSelectedDot = null;
     refreshMatching();
   } catch (e) { toast(e.message, true); }
@@ -3991,7 +3991,7 @@ function splitAtDate(placementId, dateStr) {
 async function doSplit(placementId, dateStr) {
   try {
     await api('/accommodation/matching/split', { method: 'POST', body: { bookingAccommodationId: placementId, splitDate: dateStr } });
-    toast('Placement split');
+    toast('Split');
     refreshMatching();
   } catch (e) { toast(e.message, true); }
 }
@@ -3999,7 +3999,7 @@ async function doSplit(placementId, dateStr) {
 async function matchUnplace(bookingAccommodationId) {
   try {
     await api('/accommodation/matching/unplace', { method: 'POST', body: { bookingAccommodationId } });
-    toast('Student unassigned');
+    toast('Unassigned');
     refreshMatching();
   } catch (e) { toast(e.message, true); }
 }
@@ -4215,10 +4215,12 @@ function savePaymentLineItem(id) {
   }}).then(() => { toast('Updated'); showHostPayments(); }).catch(e => toast(e.message, true));
 }
 
-function submitSingleLineItem(id) {
-  if (!confirm('Submit this line item to Xero?')) return;
-  // TODO: Xero API call for single bill
-  toast('Xero submission coming soon');
+async function submitSingleLineItem(id) {
+  if (!confirm('Submit this Bill to Xero?')) return;
+  try {
+    const result = await api('/host-payments/line-items/' + id + '/submit-xero', { method: 'POST' });
+    toast(result.message || 'Bill submitted to Xero');
+  } catch (e) { toast(e.message, true); }
 }
 
 async function triggerPaymentRun() {
@@ -4417,6 +4419,8 @@ async function showAccommodationDetail(id) {
             ${field('weeklyRate','Weekly Rate (€)',p.weeklyRate)}
             ${field('iban','IBAN',p.iban)}
             ${field('bic','BIC',p.bic)}
+            <div class="form-group"><label class="form-label">Xero Account</label><input class="form-input" type="text" value="${esc((p.bic && p.iban) ? p.bic+'/'+p.iban : p.iban || '')}" readonly style="background:var(--bg-subtle);color:var(--text-secondary)"></div>
+            ${field('xeroContactId','Xero ID',p.xeroContactId)}
             ${checkboxField('active','Active',p.active)}
             <div class="form-group full"><label class="form-label">Description</label><textarea class="form-textarea" data-field="description">${esc(p.description||'')}</textarea></div>
             <div class="form-group full"><label class="form-label">Allergies Info</label><textarea class="form-textarea" data-field="allergies">${esc(p.allergies||'')}</textarea></div>

@@ -3,7 +3,12 @@
 - Get rid of that horrible font which is outputting zero that looks like an 8 - super confusing 
 - Back to the Matching Screen for a second - we need to be able to "split" the Reservation between 2 or more Hosts - i forgot this but it is pretty common
 
+
+
+
 ## ACCOMM
+SEE: /home/sis/web/sis.ulearnschool.com/public_html/sis/.claude/docs/accomm/HostTasks.md
+
 - Repalce the Google Sheet for Accomm 
 - - Or integrate it? bring flexibility into the system?
 - - Or we can do better - just clone an accomm / AirBnB system like Lodge etc 
@@ -11,6 +16,11 @@
 NOTE: so we will be replacing that Google Sheet setup here in the SIS along with an approximate Host Family 
 Placement clone - essentially they are both gonna be part of the same vacancy/occupancy/matching engine                
 i. Rename "Providers" to "Hosts" and then create a second Icon called "Apartments" where we will store our own and 3rd party rentals
+
+- XERO/SIS
+- - I think there are far more Hosts in Xero that are not here - because they are old for example - I am not sure if I really want to start bringing them in    
+  here... Perhaps we could bring them in but then i would need some kinda active/quiet/inactive field that populates based on their last booking with us. If  
+  they are Quiet or Inactive for example we might just remove them from the Matching screen - let's just add that to ToDo's instead of exectuting it now      
 
 ## Invoicing Integration
 

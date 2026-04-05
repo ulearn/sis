@@ -22,6 +22,7 @@ import { attendanceRoutes } from './routes/attendance';
 import { documentRoutes } from './routes/documents';
 import { emailRoutes } from './routes/email';
 import { hostPaymentRoutes } from './routes/host-payments';
+import { validateIBAN } from './scripts/iban-validator';
 import { documentScripts } from './scripts/documents';
 import { seedClassrooms } from './scripts/seed';
 import { seedDocumentTemplates } from './scripts/seed-templates';
@@ -44,6 +45,11 @@ app.use('/sis/api/attendance', attendanceRoutes(prisma));
 app.use('/sis/api/documents', documentRoutes(prisma));
 app.use('/sis/api/email', emailRoutes(prisma));
 app.use('/sis/api/host-payments', hostPaymentRoutes(prisma));
+
+// IBAN validator
+app.get('/sis/api/validate-iban/:iban', (req, res) => {
+  res.json(validateIBAN(req.params.iban as string));
+});
 
 // School config (select options etc)
 app.get('/sis/api/config', async (_req, res) => {

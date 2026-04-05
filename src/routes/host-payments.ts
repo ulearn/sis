@@ -99,6 +99,14 @@ export function hostPaymentRoutes(prisma: PrismaClient) {
     } catch (e) { res.status(400).json({ error: String(e) }); }
   });
 
+  // Submit a line item as a Bill to Xero
+  router.post('/line-items/:id/submit-xero', async (req, res) => {
+    try {
+      const result = await scripts.submitBillToXero(parseInt(req.params.id as string));
+      res.json(result);
+    } catch (e) { res.status(500).json({ error: String(e) }); }
+  });
+
   // Delete a line item
   router.delete('/line-items/:id', async (req, res) => {
     try {
