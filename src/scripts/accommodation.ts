@@ -217,33 +217,29 @@ export function accommodationScripts(prisma: PrismaClient) {
       orderBy: { name: 'asc' },
     });
 
-    // Sort by most recently booked (has any placement with latest start date)
+    // Get most recent booking start date per provider (across ALL time, not just visible range)
+    const latestBookings = await prisma.$queryRaw<{provider_id: number, latest: Date}[]>`
+      SELECT ap.provider_id, MAX(ba.start_date) as latest
+      FROM booking_accommodations ba
+      JOIN accommodation_beds ab ON ba.bed_id = ab.id
+      JOIN accommodation_rooms ar ON ab.room_id = ar.id
+      JOIN accommodation_properties ap ON ar.property_id = ap.id
+      WHERE ba.active = true
+      GROUP BY ap.provider_id
+    `;
+    const latestMap: Record<number, number> = {};
+    for (const r of latestBookings) {
+      latestMap[r.provider_id] = new Date(r.latest).getTime();
+    }
+
+    // Sort: hosts with most recent bookings first, fallback to alphabetical
     hosts.sort((a, b) => {
-      let latestA = 0, latestB = 0;
-      for (const prop of a.properties) {
-        for (const room of prop.rooms) {
-          for (const bed of room.beds) {
-            for (const p of bed.placements) {
-              const t = new Date(p.startDate).getTime();
-              if (t > latestA) latestA = t;
-            }
-          }
-        }
-      }
-      for (const prop of b.properties) {
-        for (const room of prop.rooms) {
-          for (const bed of room.beds) {
-            for (const p of bed.placements) {
-              const t = new Date(p.startDate).getTime();
-              if (t > latestB) latestB = t;
-            }
-          }
-        }
-      }
-      // Hosts with placements first, then by most recent
-      if (latestA && !latestB) return -1;
-      if (!latestA && latestB) return 1;
-      return latestB - latestA;
+      const la = latestMap[a.id] || 0;
+      const lb = latestMap[b.id] || 0;
+      if (la && !lb) return -1;
+      if (!la && lb) return 1;
+      if (la !== lb) return lb - la;
+      return a.name.localeCompare(b.name);
     });
 
     return hosts;
@@ -265,11 +261,59 @@ export function accommodationScripts(prisma: PrismaClient) {
     });
   }
 
+  async function splitPlacement(bookingAccommodationId: number, splitDate: string) {
+    const placement = await prisma.bookingAccommodation.findUnique({
+      where: { id: bookingAccommodationId },
+    });
+    if (!placement) throw new Error('Placement not found');
+    if (!placement.bedId) throw new Error('Student is not placed');
+
+    const split = new Date(splitDate);
+    const origStart = new Date(placement.startDate);
+    const origEnd = new Date(placement.endDate);
+
+    if (split <= origStart || split >= origEnd) throw new Error('Split date must be between start and end');
+
+    // Shorten original: ends day before split
+    const newOrigEnd = new Date(split);
+    newOrigEnd.setDate(newOrigEnd.getDate() - 1);
+    const origDays = Math.ceil((newOrigEnd.getTime() - origStart.getTime()) / 86400000) + 1;
+    const origWeeks = Math.ceil(origDays / 7);
+
+    await prisma.bookingAccommodation.update({
+      where: { id: bookingAccommodationId },
+      data: {
+        endDate: newOrigEnd,
+        weeks: origWeeks,
+      },
+    });
+
+    // Create new placement: starts on split date, ends on original end, unplaced
+    const newDays = Math.ceil((origEnd.getTime() - split.getTime()) / 86400000) + 1;
+    const newWeeks = Math.ceil(newDays / 7);
+
+    const newPlacement = await prisma.bookingAccommodation.create({
+      data: {
+        bookingId: placement.bookingId,
+        accommodationType: placement.accommodationType,
+        roomType: placement.roomType,
+        board: placement.board,
+        startDate: split,
+        endDate: origEnd,
+        weeks: newWeeks,
+        active: true,
+        bedId: placement.bedId, // stays with same host — user can drag to move
+      },
+    });
+
+    return { original: bookingAccommodationId, newPlacement: newPlacement.id };
+  }
+
   return {
     listProviders, getProviderById, createProvider, updateProvider, deleteProvider,
     addProperty, updateProperty, deleteProperty,
     addRoom, updateRoom, deleteRoom,
     addBed, deleteBed,
-    getUnplacedStudents, getHostTimeline, placeStudent, unplaceStudent,
+    getUnplacedStudents, getHostTimeline, placeStudent, unplaceStudent, splitPlacement,
   };
 }

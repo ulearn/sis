@@ -146,7 +146,7 @@ model Booking {
   agency    Agency?  @relation(fields: [agencyId], references: [id])
 
   // Booking details
-  status        BookingStatus @default(ENQUIRY)
+  status        BookingStatus @default(PENDING)
   confirmed     Boolean       @default(false)
   confirmedAt   DateTime?     @map("confirmed_at")
   checkinAt     DateTime?     @map("checkin_at")
@@ -189,11 +189,8 @@ model Booking {
 }
 
 enum BookingStatus {
-  ENQUIRY
   PENDING
   CONFIRMED
-  CHECKED_IN
-  CHECKED_OUT
   COMPLETED
   CANCELLED
 }
@@ -491,6 +488,10 @@ model AccommodationProvider {
   note          String?
   active        Boolean    @default(true)
 
+  // Banking
+  iban          String?
+  bic           String?
+
   fideloProviderId Int?    @unique @map("fidelo_provider_id")
 
   properties    AccommodationProperty[]
@@ -783,6 +784,56 @@ model AuditLog {
 
   @@index([entityType, entityId])
   @@map("audit_log")
+}
+
+// ============================================================
+// HOST PAYMENT TRACKING
+// ============================================================
+
+model HostPaymentRun {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  runDate       DateTime  @map("run_date") @db.Date      // The Monday the cron ran
+  status        String    @default("pending")              // pending, approved, paid
+  approvedAt    DateTime? @map("approved_at")
+  approvedBy    String?   @map("approved_by")
+  paidAt        DateTime? @map("paid_at")
+  totalAmount   Decimal?  @map("total_amount") @db.Decimal(10,2)
+  note          String?
+
+  lineItems     HostPaymentLineItem[]
+
+  @@map("host_payment_runs")
+}
+
+model HostPaymentLineItem {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  runId         Int      @map("run_id")
+  run           HostPaymentRun @relation(fields: [runId], references: [id])
+
+  providerId    Int      @map("provider_id")
+  bookingAccommodationId Int @map("booking_accommodation_id")
+
+  studentName   String   @map("student_name")     // denormalised for readability
+  providerName  String   @map("provider_name")     // denormalised
+
+  weeksPaid     Int      @map("weeks_paid")        // how many weeks this line covers
+  daysPaid      Int?     @map("days_paid")         // for partial week settlements
+  weeklyRate    Decimal  @map("weekly_rate") @db.Decimal(8,2)
+  amount        Decimal  @db.Decimal(10,2)         // weeksPaid * weeklyRate (or pro-rata)
+
+  reason        String?  // "fortnightly", "checkout", or "amendment"
+  periodFrom    DateTime @map("period_from") @db.Date
+  periodTo      DateTime @map("period_to") @db.Date
+
+  // Amendments
+  amendmentNote String?  @map("amendment_note")  // reason for adjustment
+  amendedBy     String?  @map("amended_by")       // who made the adjustment
+
+  @@map("host_payment_line_items")
 }
 
 // ============================================================

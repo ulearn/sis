@@ -1,5 +1,7 @@
 # SIS — To Do / Future Items
-
+## Font
+- Get rid of that horrible font which is outputting zero that looks like an 8 - super confusing 
+- Back to the Matching Screen for a second - we need to be able to "split" the Reservation between 2 or more Hosts - i forgot this but it is pretty common
 
 ## ACCOMM
 - Repalce the Google Sheet for Accomm 

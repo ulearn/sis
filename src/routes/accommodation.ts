@@ -112,6 +112,15 @@ export function accommodationRoutes(prisma: PrismaClient) {
     } catch (e) { res.status(400).json({ error: String(e) }); }
   });
 
+  // Split placement
+  router.post('/matching/split', async (req, res) => {
+    try {
+      const { bookingAccommodationId, splitDate } = req.body;
+      if (!bookingAccommodationId || !splitDate) return res.status(400).json({ error: 'bookingAccommodationId and splitDate required' });
+      res.json(await scripts.splitPlacement(bookingAccommodationId, splitDate));
+    } catch (e) { res.status(400).json({ error: String(e) }); }
+  });
+
   // Unplace student
   router.post('/matching/unplace', async (req, res) => {
     try {

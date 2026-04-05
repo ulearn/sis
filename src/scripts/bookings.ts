@@ -83,8 +83,8 @@ export function bookingScripts(prisma: PrismaClient) {
         ...bookingData,
         statusHistory: {
           create: {
-            fromStatus: BookingStatus.ENQUIRY,
-            toStatus: bookingData.status || BookingStatus.ENQUIRY,
+            fromStatus: BookingStatus.PENDING,
+            toStatus: bookingData.status || BookingStatus.PENDING,
           },
         },
         courses: courses ? { create: courses } : undefined,
