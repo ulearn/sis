@@ -98,7 +98,7 @@ async function main() {
       const existsInDb = await prisma.accommodationProvider.findFirst({ where: { xeroContactId: found.contactID } });
       if (alreadyUsed || existsInDb) {
         console.log(`  SKIP: ${host.name} — Xero contact "${found.name}" already matched to ${alreadyUsed?.sisName || existsInDb?.name || 'another host'}`);
-        notFoundXero.push(`${host.name} (duplicate match with ${alreadyUsed.sisName})`);
+        notFoundXero.push(`${host.name} (duplicate match with ${alreadyUsed?.sisName})`);
       } else {
         await prisma.accommodationProvider.update({
           where: { id: host.id },

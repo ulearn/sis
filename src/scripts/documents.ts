@@ -1,6 +1,7 @@
 import { PrismaClient, DocumentStatus } from '../generated/prisma/client';
 import crypto from 'crypto';
 import QRCode from 'qrcode';
+import puppeteer from 'puppeteer';
 
 const BASE_URL = process.env.BASE_URL || 'https://sis.ulearnschool.com';
 
@@ -52,7 +53,7 @@ export function documentScripts(prisma: PrismaClient) {
     const booking = bookingId
       ? await prisma.booking.findUnique({
           where: { id: bookingId },
-          include: { courses: true, accommodations: true },
+          include: { courses: true, accommodations: true, agency: true },
         })
       : null;
 
@@ -95,6 +96,8 @@ export function documentScripts(prisma: PrismaClient) {
       'student.address': [student.address, student.addressAddon, student.city, student.zip].filter(Boolean).join(', '),
       'student.phone': student.phoneMobile || student.phone || '',
       'student.emergency_phone': student.emergencyPhone || '',
+      'student.age': student.birthday ? String(Math.floor((Date.now() - new Date(student.birthday).getTime()) / (365.25 * 24 * 60 * 60 * 1000))) : '',
+      'student.language': (student as any).language || (student as any).contactLanguage || '',
       'student.attendance_rate': '', // computed at render time from attendance records
 
       // Gender pronouns (replaces Fidelo {if gender} blocks)
@@ -114,6 +117,7 @@ export function documentScripts(prisma: PrismaClient) {
       'booking.hours_per_week': course?.hoursPerWeek ? String(course.hoursPerWeek) : '',
       'booking.weeks': course?.weeks ? String(course.weeks) : '',
       'booking.amount_total': booking?.amountTotal ? `€${booking.amountTotal}` : '',
+      'booking.agency': (booking as any)?.agency?.name || '',
 
       // Visa
       'student.visa_until': fmtDate(student.visaUntil),
@@ -158,9 +162,9 @@ export function documentScripts(prisma: PrismaClient) {
     const { tokens } = await resolveTokens(studentId, bookingId);
     const rendered = renderTemplate(template.htmlTemplate, tokens);
 
-    // Find missing tokens
+    // Find missing tokens (exclude custom blocks and document.* tokens resolved at issue time)
     const missing = (rendered.match(/\{\{[^}]+\}\}/g) || [])
-      .filter(t => !t.includes('custom.') && !t.includes('document.qr'));
+      .filter(t => !t.includes('custom.') && !t.includes('document.'));
 
     const record = await prisma.documentRecord.create({
       data: {
@@ -322,6 +326,45 @@ export function documentScripts(prisma: PrismaClient) {
     };
   }
 
+  // ── PDF GENERATION ─────────────────────────
+
+  async function generatePdf(contentHtml: string): Promise<Buffer> {
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+    });
+    try {
+      const page = await browser.newPage();
+      const fullHtml = `<!DOCTYPE html><html><head>
+        <meta charset="UTF-8">
+        <style>body{margin:0;padding:40px;font-family:Verdana,sans-serif;font-size:14px;line-height:1.7;color:#1a1d23}img{max-width:100%}</style>
+      </head><body>${contentHtml}</body></html>`;
+      await page.setContent(fullHtml, { waitUntil: 'networkidle0' });
+      const pdf = await page.pdf({
+        format: 'A4',
+        margin: { top: '20mm', bottom: '20mm', left: '15mm', right: '15mm' },
+        printBackground: true,
+      });
+      return Buffer.from(pdf);
+    } finally {
+      await browser.close();
+    }
+  }
+
+  async function getDocumentPdf(id: number): Promise<{ pdf: Buffer; filename: string }> {
+    const doc = await prisma.documentRecord.findUnique({
+      where: { id },
+      include: { template: true },
+    });
+    if (!doc) throw new Error('Document not found');
+    if (!doc.contentHtml) throw new Error('Document has no content');
+
+    const pdf = await generatePdf(doc.contentHtml);
+    const tplSlug = doc.template?.slug || doc.documentType || 'document';
+    const filename = `${tplSlug}-${doc.id}-v${doc.versionNo}.pdf`;
+    return { pdf, filename };
+  }
+
   // ── DISPATCH LOGGING ──────────────────────
 
   async function logDispatch(documentId: number, sentToEmail: string, deliveryMethod: string, sentBy?: string) {
@@ -339,6 +382,7 @@ export function documentScripts(prisma: PrismaClient) {
     generateDraft, getDocument, listDocuments, updateDraft,
     issueDocument, createNewVersion, revokeDocument,
     verify,
+    generatePdf, getDocumentPdf,
     logDispatch,
   };
 }

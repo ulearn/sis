@@ -126,15 +126,8 @@ This is the clearly defined protocol for when a student enters SIS and Xero:
    - Student + Booking is created in SIS (even though not yet paid — DOS needs visibility)
 4. **Payment may come later** — terms say 2 weeks before arrival minimum, but students often pay on day one or even on arrival
 
-**This is the bifurcation point**: Sales → Operations (Success + Academic)
-
-**Implementation options:**
-- **Option A: HubSpot Workflow Webhook** — triggers on quote→invoice conversion. Concern: reliance on third-party webhook service, cost, reliability.
-- **Option B: Periodic poll (preferred)** — SIS checks HubSpot every hour: "any quotes converted to invoices since last check?" Scrape and process. No third-party dependency. More reliable.
-- **Option C: Hybrid** — webhook for speed, hourly poll as safety net to catch anything missed.
-
-**What gets pushed:**
-- To Xero: Invoice with student name, email, line items from HubSpot deal
+**This is the bifurcation point**: Sales → Operations
+)
 - To SIS: Student record (basic CRM data from HubSpot contact) + Booking (from deal line items / product codes)
 
 **Current state being replaced:**

@@ -835,7 +835,114 @@ model HostPaymentLineItem {
   amendmentNote String?  @map("amendment_note")  // reason for adjustment
   amendedBy     String?  @map("amended_by")       // who made the adjustment
 
+  // Xero Bill link
+  xeroBillId    String?  @map("xero_bill_id")     // Xero invoice ID once submitted
+
   @@map("host_payment_line_items")
+}
+
+// ============================================================
+// TEACHER PAYROLL
+// ============================================================
+
+model TeacherPayrollEntry {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Teacher
+  teacherId     Int      @map("teacher_id")
+  teacherName   String   @map("teacher_name")    // "LastName, FirstName" format
+  email         String?
+  ppsNumber     String?  @map("pps_number")
+
+  // Class
+  classId       Int?     @map("class_id")
+  className     String   @map("class_name")
+  courseList     String?  @map("course_list")
+
+  // Week
+  compositeKey  String   @unique @map("composite_key")  // teacher+week+class unique key
+  weekLabel     String   @map("week_label")              // "Week 08, 16/02/2026 – 22/02/2026"
+  weekFrom      DateTime @map("week_from") @db.Date
+  weekTo        DateTime @map("week_to") @db.Date
+
+  // Hours & Pay
+  studentCount  Int?     @map("student_count")
+  lessons       Decimal? @db.Decimal(10,2)
+  hours         Decimal  @db.Decimal(10,2)
+  hourlyRate    Decimal  @map("hourly_rate") @db.Decimal(8,2)
+  amount        Decimal  @db.Decimal(10,2)               // hours * hourlyRate
+
+  // Monthly rollup flags
+  hoursIncludedThisMonth Decimal? @map("hours_included_this_month") @db.Decimal(10,2)
+  weeklyPay              Decimal? @map("weekly_pay") @db.Decimal(10,2)
+
+  // Leave (from Zoho)
+  leaveHours    Decimal? @map("leave_hours") @db.Decimal(10,2) @default(0)
+  sickDays      Int?     @map("sick_days") @default(0)
+  leaveTaken    Decimal? @map("leave_taken") @db.Decimal(10,2) @default(0)
+  leaveBalance  Decimal? @map("leave_balance") @db.Decimal(10,2) @default(0)
+
+  // Adjustments
+  other         Decimal? @db.Decimal(10,2) @default(0)
+  impactBonus   Decimal? @map("impact_bonus") @db.Decimal(10,2) @default(0)
+
+  // Approval
+  managerChecked Boolean @default(false) @map("manager_checked")
+
+  // Auto-populate flag (from Fidelo era — keep for compatibility)
+  canAutoPopulate    Boolean @default(true) @map("can_auto_populate")
+  autoPopulateReason String? @map("auto_populate_reason")
+
+  @@index([teacherId])
+  @@index([weekFrom, weekTo])
+  @@map("teacher_payroll_entries")
+}
+
+model TeacherMonthlyAdjustment {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  teacherName String  @map("teacher_name")
+  month       String                        // "JAN", "FEB", etc.
+  year        Int
+  other       Decimal? @db.Decimal(10,2) @default(0)
+  impactBonus Decimal? @map("impact_bonus") @db.Decimal(10,2) @default(0)
+
+  @@unique([teacherName, month, year])
+  @@map("teacher_monthly_adjustments")
+}
+
+model PayrollPeriod {
+  id        Int      @id @default(autoincrement())
+
+  period    Int                              // 1-12
+  year      Int
+  month     String                           // "JAN", "FEB", etc.
+  dateFrom  DateTime @map("date_from") @db.Date
+  dateTo    DateTime @map("date_to") @db.Date
+  weeks     Int
+
+  @@unique([period, year])
+  @@map("payroll_periods")
+}
+
+model PayrollAuthorization {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  period    Int
+  year      Int
+  month     String
+  authorizedBy String @map("authorized_by")
+  totalHours   Decimal? @map("total_hours") @db.Decimal(10,2)
+  totalPay     Decimal? @map("total_pay") @db.Decimal(10,2)
+  snapshotJson String?  @map("snapshot_json")   // JSON snapshot of payroll at authorization time
+
+  @@unique([period, year])
+  @@map("payroll_authorizations")
 }
 
 // ============================================================

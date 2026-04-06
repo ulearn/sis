@@ -1,0 +1,29 @@
+{
+  "description": "Teacher Payroll Period Definitions - Payroll runs on the last Thursday of each month, includes up to & including Wednesday",
+  "periods": [
+    { "period": 1, "year": 2025, "month": "JAN", "from": "2025-01-02", "to": "2025-01-29", "weeks": 5, "fideloFrom": "2024-12-30", "fideloTo": "2025-02-03" },
+    { "period": 2, "year": 2025, "month": "FEB", "from": "2025-01-30", "to": "2025-02-26", "weeks": 5, "fideloFrom": "2025-01-27", "fideloTo": "2025-03-03" },
+    { "period": 3, "year": 2025, "month": "MAR", "from": "2025-02-27", "to": "2025-03-26", "weeks": 5, "fideloFrom": "2025-02-24", "fideloTo": "2025-03-31" },
+    { "period": 4, "year": 2025, "month": "APR", "from": "2025-03-27", "to": "2025-04-30", "weeks": 6, "fideloFrom": "2025-03-24", "fideloTo": "2025-05-05" },
+    { "period": 5, "year": 2025, "month": "MAY", "from": "2025-05-01", "to": "2025-05-28", "weeks": 5, "fideloFrom": "2025-04-28", "fideloTo": "2025-06-02" },
+    { "period": 6, "year": 2025, "month": "JUN", "from": "2025-05-29", "to": "2025-06-25", "weeks": 5, "fideloFrom": "2025-05-26", "fideloTo": "2025-06-30" },
+    { "period": 7, "year": 2025, "month": "JUL", "from": "2025-06-26", "to": "2025-07-30", "weeks": 6, "fideloFrom": "2025-06-23", "fideloTo": "2025-08-04" },
+    { "period": 8, "year": 2025, "month": "AUG", "from": "2025-07-31", "to": "2025-08-27", "weeks": 5, "fideloFrom": "2025-07-28", "fideloTo": "2025-09-01" },
+    { "period": 9, "year": 2025, "month": "SEP", "from": "2025-08-28", "to": "2025-09-24", "weeks": 5, "fideloFrom": "2025-08-25", "fideloTo": "2025-09-29" },
+    { "period": 10, "year": 2025, "month": "OCT", "from": "2025-09-25", "to": "2025-10-29", "weeks": 6, "fideloFrom": "2025-09-22", "fideloTo": "2025-11-03" },
+    { "period": 11, "year": 2025, "month": "NOV", "from": "2025-10-30", "to": "2025-11-26", "weeks": 5, "fideloFrom": "2025-10-27", "fideloTo": "2025-12-01" },
+    { "period": 12, "year": 2025, "month": "DEC", "from": "2025-11-27", "to": "2025-12-31", "weeks": 6, "fideloFrom": "2025-11-24", "fideloTo": "2026-01-05" },
+    { "period": 1, "year": 2026, "month": "JAN", "from": "2026-01-01", "to": "2026-01-28", "weeks": 5, "fideloFrom": "2025-12-29", "fideloTo": "2026-02-02" },
+    { "period": 2, "year": 2026, "month": "FEB", "from": "2026-01-29", "to": "2026-02-25", "weeks": 5, "fideloFrom": "2026-01-26", "fideloTo": "2026-03-02" },
+    { "period": 3, "year": 2026, "month": "MAR", "from": "2026-02-26", "to": "2026-03-25", "weeks": 5, "fideloFrom": "2026-02-23", "fideloTo": "2026-03-30" },
+    { "period": 4, "year": 2026, "month": "APR", "from": "2026-03-26", "to": "2026-04-29", "weeks": 6, "fideloFrom": "2026-03-23", "fideloTo": "2026-05-04" },
+    { "period": 5, "year": 2026, "month": "MAY", "from": "2026-04-30", "to": "2026-05-27", "weeks": 5, "fideloFrom": "2026-04-27", "fideloTo": "2026-06-01" },
+    { "period": 6, "year": 2026, "month": "JUN", "from": "2026-05-28", "to": "2026-06-24", "weeks": 5, "fideloFrom": "2026-05-25", "fideloTo": "2026-06-29" },
+    { "period": 7, "year": 2026, "month": "JUL", "from": "2026-06-25", "to": "2026-07-29", "weeks": 6, "fideloFrom": "2026-06-22", "fideloTo": "2026-08-03" },
+    { "period": 8, "year": 2026, "month": "AUG", "from": "2026-07-30", "to": "2026-08-26", "weeks": 5, "fideloFrom": "2026-07-27", "fideloTo": "2026-08-31" },
+    { "period": 9, "year": 2026, "month": "SEP", "from": "2026-08-27", "to": "2026-09-30", "weeks": 6, "fideloFrom": "2026-08-24", "fideloTo": "2026-10-05" },
+    { "period": 10, "year": 2026, "month": "OCT", "from": "2026-10-01", "to": "2026-10-28", "weeks": 5, "fideloFrom": "2026-09-28", "fideloTo": "2026-11-02" },
+    { "period": 11, "year": 2026, "month": "NOV", "from": "2026-10-29", "to": "2026-11-25", "weeks": 5, "fideloFrom": "2026-10-26", "fideloTo": "2026-11-30" },
+    { "period": 12, "year": 2026, "month": "DEC", "from": "2026-11-26", "to": "2026-12-30", "weeks": 6, "fideloFrom": "2026-11-23", "fideloTo": "2027-01-04" }
+  ]
+}

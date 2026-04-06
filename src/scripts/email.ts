@@ -27,6 +27,12 @@ function getAuth(impersonateEmail: string): JWT {
   });
 }
 
+export interface EmailAttachment {
+  filename: string;
+  content: Buffer;
+  contentType: string;
+}
+
 function buildRawEmail(opts: {
   from: string;
   fromName?: string;
@@ -34,8 +40,15 @@ function buildRawEmail(opts: {
   subject: string;
   html: string;
   replyTo?: string;
+  attachments?: EmailAttachment[];
 }): string {
-  const boundary = '----=_Part_' + Date.now().toString(36);
+  const hasAttachments = opts.attachments && opts.attachments.length > 0;
+  const mixedBoundary = '----=_Mixed_' + Date.now().toString(36);
+  const altBoundary = '----=_Alt_' + Date.now().toString(36) + '_a';
+
+  const contentType = hasAttachments
+    ? `multipart/mixed; boundary="${mixedBoundary}"`
+    : `multipart/alternative; boundary="${altBoundary}"`;
 
   const headers = [
     `From: ${opts.fromName ? `${opts.fromName} <${opts.from}>` : opts.from}`,
@@ -43,7 +56,7 @@ function buildRawEmail(opts: {
     `Subject: =?UTF-8?B?${Buffer.from(opts.subject).toString('base64')}?=`,
     opts.replyTo ? `Reply-To: ${opts.replyTo}` : '',
     'MIME-Version: 1.0',
-    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    `Content-Type: ${contentType}`,
   ].filter(Boolean).join('\r\n');
 
   const plainText = opts.html
@@ -56,17 +69,43 @@ function buildRawEmail(opts: {
     .replace(/&gt;/g, '>')
     .trim();
 
-  const body = [
-    `--${boundary}`,
+  const textParts = [
+    `--${hasAttachments ? altBoundary : altBoundary}`,
     'Content-Type: text/plain; charset=UTF-8',
     '',
     plainText,
-    `--${boundary}`,
+    `--${hasAttachments ? altBoundary : altBoundary}`,
     'Content-Type: text/html; charset=UTF-8',
     '',
     opts.html,
-    `--${boundary}--`,
+    `--${hasAttachments ? altBoundary : altBoundary}--`,
   ].join('\r\n');
+
+  let body: string;
+  if (hasAttachments) {
+    // Wrap text content in multipart/alternative inside multipart/mixed
+    let parts = [
+      `--${mixedBoundary}`,
+      `Content-Type: multipart/alternative; boundary="${altBoundary}"`,
+      '',
+      textParts,
+    ].join('\r\n');
+
+    for (const att of opts.attachments!) {
+      parts += '\r\n' + [
+        `--${mixedBoundary}`,
+        `Content-Type: ${att.contentType}; name="${att.filename}"`,
+        `Content-Disposition: attachment; filename="${att.filename}"`,
+        'Content-Transfer-Encoding: base64',
+        '',
+        att.content.toString('base64').replace(/(.{76})/g, '$1\r\n'),
+      ].join('\r\n');
+    }
+    parts += `\r\n--${mixedBoundary}--`;
+    body = parts;
+  } else {
+    body = textParts;
+  }
 
   const raw = headers + '\r\n\r\n' + body;
 
@@ -115,6 +154,7 @@ export async function sendEmail(opts: {
   subject: string;
   html: string;
   replyTo?: string;
+  attachments?: EmailAttachment[];
 }): Promise<{ messageId: string; threadId: string }> {
   if (!ALLOWED_SENDERS.includes(opts.from)) {
     throw new Error(`Sender "${opts.from}" not allowed. Use one of: ${ALLOWED_SENDERS.join(', ')}`);

@@ -49,7 +49,7 @@ export function hostPaymentRoutes(prisma: PrismaClient) {
   router.patch('/line-items/:id', async (req, res) => {
     try {
       const id = parseInt(req.params.id as string);
-      const { amount, weeksPaid, daysPaid, weeklyRate, amendmentNote, amendedBy } = req.body;
+      const { amount, weeksPaid, daysPaid, weeklyRate, amendmentNote, amendedBy, periodFrom, periodTo } = req.body;
       const data: any = {};
       if (amount !== undefined) data.amount = parseFloat(amount);
       if (weeksPaid !== undefined) data.weeksPaid = parseInt(weeksPaid);
@@ -57,6 +57,8 @@ export function hostPaymentRoutes(prisma: PrismaClient) {
       if (weeklyRate !== undefined) data.weeklyRate = parseFloat(weeklyRate);
       if (amendmentNote !== undefined) data.amendmentNote = amendmentNote;
       if (amendedBy !== undefined) data.amendedBy = amendedBy;
+      if (periodFrom !== undefined) data.periodFrom = new Date(periodFrom);
+      if (periodTo !== undefined) data.periodTo = new Date(periodTo);
       const updated = await prisma.hostPaymentLineItem.update({ where: { id }, data });
       // Recalculate run total
       const allItems = await prisma.hostPaymentLineItem.findMany({ where: { runId: updated.runId } });
@@ -103,6 +105,22 @@ export function hostPaymentRoutes(prisma: PrismaClient) {
   router.post('/line-items/:id/submit-xero', async (req, res) => {
     try {
       const result = await scripts.submitBillToXero(parseInt(req.params.id as string));
+      res.json(result);
+    } catch (e) { res.status(500).json({ error: String(e) }); }
+  });
+
+  // Update an existing bill in Xero
+  router.post('/line-items/:id/update-xero', async (req, res) => {
+    try {
+      const result = await scripts.updateBillInXero(parseInt(req.params.id as string));
+      res.json(result);
+    } catch (e) { res.status(500).json({ error: String(e) }); }
+  });
+
+  // Delete/void a bill from Xero
+  router.post('/line-items/:id/delete-xero', async (req, res) => {
+    try {
+      const result = await scripts.deleteBillFromXero(parseInt(req.params.id as string));
       res.json(result);
     } catch (e) { res.status(500).json({ error: String(e) }); }
   });

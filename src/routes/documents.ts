@@ -1,6 +1,12 @@
 import { Router } from 'express';
 import { PrismaClient } from '../generated/prisma/client';
 import { documentScripts } from '../scripts/documents';
+import { sendEmail } from '../scripts/email';
+import fs from 'fs';
+import path from 'path';
+
+const sigPath = path.join(__dirname, '..', '..', '.claude', 'docs', 'Email Templates', 'signature.html');
+const DOC_SIGNATURE_HTML = fs.existsSync(sigPath) ? fs.readFileSync(sigPath, 'utf-8') : '';
 
 export function documentRoutes(prisma: PrismaClient) {
   const router = Router();
@@ -75,6 +81,16 @@ export function documentRoutes(prisma: PrismaClient) {
     } catch (e) { res.status(400).json({ error: String(e) }); }
   });
 
+  // Delete a document record
+  router.delete('/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id as string);
+      await prisma.documentDispatch.deleteMany({ where: { documentId: id } });
+      await prisma.documentRecord.delete({ where: { id } });
+      res.json({ deleted: true });
+    } catch (e) { res.status(400).json({ error: String(e) }); }
+  });
+
   // Update draft content (only works on DRAFT status)
   router.put('/:id', async (req, res) => {
     try {
@@ -102,6 +118,71 @@ export function documentRoutes(prisma: PrismaClient) {
     try {
       res.json(await scripts.revokeDocument(parseInt(req.params.id as string)));
     } catch (e) { res.status(400).json({ error: String(e) }); }
+  });
+
+  // Download document as PDF
+  router.get('/:id/pdf', async (req, res) => {
+    try {
+      const { pdf, filename } = await scripts.getDocumentPdf(parseInt(req.params.id as string));
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send(pdf);
+    } catch (e) { res.status(400).json({ error: String(e) }); }
+  });
+
+  // Send document as PDF email attachment
+  router.post('/:id/send', async (req, res) => {
+    try {
+      const docId = parseInt(req.params.id as string);
+      const { to, from, fromName, subject, body: emailBody, sentBy } = req.body;
+      if (!to || !from) return res.status(400).json({ error: 'to and from are required' });
+
+      const doc = await scripts.getDocument(docId);
+      if (!doc) return res.status(404).json({ error: 'Document not found' });
+      if (doc.status !== 'ISSUED') return res.status(400).json({ error: 'Only issued documents can be sent' });
+
+      // Generate PDF
+      const { pdf, filename } = await scripts.getDocumentPdf(docId);
+
+      // Build email body
+      const htmlBody = (emailBody || '<p>Please find the attached document.</p>') + '<br>' + DOC_SIGNATURE_HTML;
+      const tplName = (doc as any).template?.name || doc.documentType || 'Document';
+      const emailSubject = subject || tplName;
+
+      // Send via Gmail API with PDF attachment
+      const result = await sendEmail({
+        from,
+        fromName: fromName || 'ULearn',
+        to,
+        subject: emailSubject,
+        html: htmlBody,
+        attachments: [{
+          filename,
+          content: pdf,
+          contentType: 'application/pdf',
+        }],
+      });
+
+      // Log dispatch
+      await scripts.logDispatch(docId, to, 'email', sentBy || from);
+
+      // Also log to EmailLog
+      await prisma.emailLog.create({
+        data: {
+          studentId: doc.studentId,
+          bookingId: doc.bookingId,
+          fromEmail: from,
+          toEmail: to,
+          subject: emailSubject,
+          bodyHtml: htmlBody,
+          gmailMessageId: result.messageId,
+          gmailThreadId: result.threadId,
+          sentBy: sentBy || from,
+        },
+      });
+
+      res.json({ status: 'sent', messageId: result.messageId, filename });
+    } catch (e) { res.status(500).json({ error: String(e) }); }
   });
 
   // Log a dispatch (email/download)

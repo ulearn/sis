@@ -442,6 +442,10 @@ tr:last-child td { border-bottom: none; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           Teachers
         </div>
+        <div class="sidebar-item" data-view="payroll" onclick="openTab('payroll','Payroll')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+          Payroll
+        </div>
       </div>
       <div class="sidebar-section">
         <div class="sidebar-section-label">Attendance</div>
@@ -546,7 +550,7 @@ let tabCounter = 0;
 // Labels for view types
 const viewLabels = {
   students: 'Students', bookings: 'Bookings', classes: 'Classes', teachers: 'Teachers',
-  attendance: 'Attendance', accommodation: 'Hosts', apartments: 'Apartments', 'host-matching': 'Host Matching', 'apartment-matching': 'Apt Matching', matching: 'Matching', 'host-payments': 'Payments', documents: 'Documents',
+  attendance: 'Attendance', payroll: 'Payroll', accommodation: 'Hosts', apartments: 'Apartments', 'host-matching': 'Host Matching', 'apartment-matching': 'Apt Matching', matching: 'Matching', 'host-payments': 'Payments', documents: 'Documents',
   'student-detail': 'Student', 'booking-detail': 'Booking', 'class-detail': 'Class',
   'accommodation-detail': 'Accommodation', 'document-detail': 'Document',
   'document-templates': 'Templates', 'document-generate': 'Generate Doc',
@@ -763,6 +767,7 @@ function loadView(view, opts = {}) {
   else if (view === 'class-detail') showClassDetail(opts.id);
   else if (view === 'teachers') showTeachersList();
   else if (view === 'attendance') showAttendance();
+  else if (view === 'payroll') showPayroll();
   else if (view === 'accommodation') showAccommodationList();
   else if (view === 'accommodation-detail') showAccommodationDetail(opts.id);
   else if (view === 'apartments') showApartmentsList();
@@ -1078,6 +1083,7 @@ async function loadPvEmailTemplateOptions() {
       html += '</optgroup>';
     }
     sel.innerHTML = html;
+    makeSearchable(sel);
   } catch(e) {}
 }
 
@@ -1090,6 +1096,10 @@ async function loadPvEmailTemplate(studentId) {
     const tokens = await api('/documents/tokens/' + studentId);
     let html = tpl.htmlTemplate;
     html = html.replace(/\{\{([^}]+)\}\}/g, (m, key) => { const k = key.trim(); return tokens[k] !== undefined ? tokens[k] : m; });
+    html = html.replace(/\{([a-z_]+)\}/g, (m, key) => { const mapped = FIDELO_TOKEN_MAP[key]; if (mapped && tokens[mapped] !== undefined) return tokens[mapped]; return m; });
+    html = html.replace(/\{if [^}]+\}/g, '').replace(/\{\/if\}/g, '').replace(/\{else\}/g, '');
+    html = html.replace(/\{start_loop_[^}]+\}/g, '').replace(/\{end_loop_[^}]+\}/g, '');
+    html = html.replace(/\{start_selected_entries\}/g, '').replace(/\{end_selected_entries\}/g, '');
     document.getElementById('pvCommsEditor').innerHTML = html;
     document.getElementById('pvCommsSubject').value = tpl.name;
   } catch(e) { toast(e.message, true); }
@@ -1381,6 +1391,13 @@ async function showStudentDetail(id) {
                 </div>
                 <div id="commsEditor" contenteditable="true" style="min-height:120px;max-height:50vh;overflow-y:auto;padding:12px;font-size:13px;line-height:1.6;outline:none;background:#fff;font-family:Verdana,sans-serif;resize:vertical"></div>
               </div>
+              <div id="commsAttachRow" style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" style="flex-shrink:0"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                <select id="commsAttachDoc" class="filter-select" style="flex:1;font-size:12px">
+                  <option value="">No attachment</option>
+                </select>
+                <span id="commsAttachLabel" style="font-size:11px;color:var(--text-muted)"></span>
+              </div>
               <div style="display:flex;gap:8px;align-items:center">
                 <button class="btn btn-primary btn-sm" onclick="sendCommsEmail(${s.id})">Send</button>
                 <span id="commsSendStatus" style="font-size:12px;color:var(--text-muted)"></span>
@@ -1389,6 +1406,25 @@ async function showStudentDetail(id) {
               </div>
             </div>
             <div id="commsHistory" style="padding:0">
+            </div>
+          </div>
+        </div>
+
+        <!-- Documents -->
+        <div class="card" style="margin-bottom:16px" id="studentDocsCard">
+          <div class="card-header collapse-header" onclick="toggleCollapse(this)" style="padding:10px 18px">
+            <h3 style="font-size:13px;display:flex;align-items:center;gap:8px">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Documents
+              <span id="studentDocsCount" style="font-size:11px;font-family:var(--font-mono);color:var(--text-muted)"></span>
+            </h3>
+          </div>
+          <div class="card-body collapse-body" style="padding:0" id="studentDocsBody">
+            <div style="padding:10px 18px;border-bottom:1px solid var(--card-border);display:flex;gap:8px;align-items:center">
+              <button class="btn btn-sm btn-primary" onclick="quickGenerateDoc(${s.id})">+ Generate Document</button>
+            </div>
+            <div id="studentDocsList" style="padding:0">
+              <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px">Loading...</div>
             </div>
           </div>
         </div>
@@ -1550,7 +1586,118 @@ async function showStudentDetail(id) {
     html += `</div></div>`;
     document.getElementById('content').innerHTML = html;
     loadCommsHistory(s.id);
+    loadStudentDocs(s.id);
+    loadCommsAttachmentOptions(s.id);
     loadEmailTemplateOptions();
+  } catch (e) { toast(e.message, true); }
+}
+
+// ── STUDENT DOCUMENTS PANE ────────────────────
+
+async function loadStudentDocs(studentId) {
+  try {
+    const docs = await api('/documents?studentId=' + studentId);
+    const countEl = document.getElementById('studentDocsCount');
+    const listEl = document.getElementById('studentDocsList');
+    if (countEl) countEl.textContent = docs.length ? '(' + docs.length + ')' : '';
+    if (!listEl) return;
+
+    if (!docs.length) {
+      listEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px">No documents yet</div>';
+      return;
+    }
+
+    // Group by category
+    const grouped = {};
+    for (const d of docs) {
+      const cat = d.template?.category || d.documentType || 'other';
+      if (!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push(d);
+    }
+
+    let html = '';
+    const catLabels = {};
+    for (const node of DOC_TREE) catLabels[node.key] = node.parent ? node.parent + ' / ' + node.label : node.label;
+
+    const catKeys = Object.keys(grouped).sort((a, b) => (catLabels[a] || a).localeCompare(catLabels[b] || b));
+    for (const cat of catKeys) {
+      const items = grouped[cat];
+      const label = catLabels[cat] || cat;
+      html += '<div style="padding:4px 18px 2px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);font-weight:600;margin-top:6px;border-top:1px solid var(--card-border)">' + label + '</div>';
+      for (const d of items) {
+        const typeName = d.template?.name || d.documentType;
+        const statusCls = d.status === 'ISSUED' ? 'badge-confirmed' : d.status === 'DRAFT' ? 'badge-enquiry' : d.status === 'SUPERSEDED' ? 'badge-pending' : 'badge-cancelled';
+        const dateStr = d.issuedAt ? formatDate(d.issuedAt) : d.createdAt ? formatDate(d.createdAt) : '';
+        html += '<div style="display:flex;align-items:center;gap:8px;padding:6px 18px;cursor:pointer;border-bottom:1px solid var(--bg-subtle)" onclick="navigate(\'document-detail\',{id:' + d.id + '})">'
+          + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>'
+          + '<span style="flex:1;font-size:13px">' + esc(typeName) + ' <span style="color:var(--text-muted);font-size:11px">v' + d.versionNo + '.0</span></span>'
+          + '<span class="badge ' + statusCls + '" style="font-size:10px">' + d.status + '</span>'
+          + '<span style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono)">' + dateStr + '</span>'
+          + '</div>';
+      }
+    }
+    listEl.innerHTML = html;
+  } catch (e) {
+    const listEl = document.getElementById('studentDocsList');
+    if (listEl) listEl.innerHTML = '<div style="padding:12px 18px;color:var(--danger);font-size:12px">Failed to load documents</div>';
+  }
+}
+
+async function quickGenerateDoc(studentId) {
+  try {
+    const templates = await api('/documents/templates?type=document');
+    const bookings = await api('/bookings?studentId=' + studentId).then(r => r.data || r).catch(() => []);
+
+    // Build grouped template options
+    const grouped = {};
+    for (const t of templates) { const c = t.category || 'other'; if (!grouped[c]) grouped[c] = []; grouped[c].push(t); }
+    let tplOpts = '<option value="">Select template...</option>';
+    for (const node of DOC_TREE) {
+      const items = grouped[node.key];
+      if (!items || !items.length) continue;
+      const lbl = node.parent ? node.parent + ' / ' + node.label : node.label;
+      tplOpts += '<optgroup label="' + lbl + '">';
+      for (const t of items) tplOpts += '<option value="' + t.id + '">' + esc(t.name) + '</option>';
+      tplOpts += '</optgroup>';
+    }
+    const treeKeys = new Set(DOC_TREE.map(n => n.key));
+    const other = templates.filter(t => !treeKeys.has(t.category || 'other'));
+    if (other.length) { tplOpts += '<optgroup label="Other">'; for (const t of other) tplOpts += '<option value="' + t.id + '">' + esc(t.name) + '</option>'; tplOpts += '</optgroup>'; }
+
+    let bkOpts = '<option value="">No booking (student-level)</option>';
+    for (const b of bookings) bkOpts += '<option value="' + b.id + '">Booking #' + b.id + ' — ' + (b.status || '') + ' (' + (b.courses?.[0]?.name || 'no course') + ')</option>';
+
+    const modal = document.createElement('div');
+    modal.id = 'quickDocModal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center';
+    modal.innerHTML = '<div style="background:var(--card-bg);border-radius:12px;padding:24px;width:440px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.3)">'
+      + '<h3 style="margin:0 0 16px;font-size:16px">Generate Document</h3>'
+      + '<div style="margin-bottom:12px"><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Template</label><select id="qdocTpl" class="filter-select" style="width:100%">' + tplOpts + '</select></div>'
+      + '<div style="margin-bottom:16px"><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Booking</label><select id="qdocBk" class="filter-select" style="width:100%">' + bkOpts + '</select></div>'
+      + '<div style="display:flex;gap:8px;justify-content:flex-end">'
+      + '<button class="btn btn-ghost" onclick="document.getElementById(\'quickDocModal\').remove()">Cancel</button>'
+      + '<button class="btn btn-primary" onclick="submitQuickDoc(' + studentId + ')">Generate Draft</button>'
+      + '</div></div>';
+    document.body.appendChild(modal);
+    makeSearchable(document.getElementById('qdocTpl'));
+    modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+  } catch (e) { toast(e.message, true); }
+}
+
+async function submitQuickDoc(studentId) {
+  const templateId = parseInt(document.getElementById('qdocTpl')?.value);
+  const bookingId = parseInt(document.getElementById('qdocBk')?.value) || null;
+  if (!templateId) { toast('Select a template', true); return; }
+  try {
+    const result = await api('/documents/generate', { method: 'POST', body: { templateId, studentId, bookingId } });
+    document.getElementById('quickDocModal')?.remove();
+    if (result.missing?.length > 0) {
+      toast('Draft created with ' + result.missing.length + ' missing token(s)', true);
+    } else {
+      toast('Draft generated');
+    }
+    loadStudentDocs(studentId);
+    loadCommsAttachmentOptions(studentId);
   } catch (e) { toast(e.message, true); }
 }
 
@@ -1625,8 +1772,58 @@ async function loadEmailTemplateOptions() {
       html += '</optgroup>';
     }
     sel.innerHTML = html;
+    makeSearchable(sel);
   } catch (e) {}
 }
+
+// Map Fidelo {single_brace} token names → SIS {{double.dot}} token keys
+const FIDELO_TOKEN_MAP = {
+  'firstname': 'student.first_name',
+  'surname': 'student.last_name',
+  'email': 'student.email',
+  'birthdate': 'student.dob',
+  'nationality': 'student.nationality',
+  'gender': 'student.gender',
+  'salutation': 'student.salutation',
+  'phone_home': 'student.phone',
+  'phone_mobile': 'student.phone',
+  'age': 'student.age',
+  'address': 'student.address',
+  'city': 'student.address',
+  'zip': 'student.address',
+  'country': 'student.nationality',
+  'passport_number': 'student.passport_number',
+  'student_criteria_allergies': 'student.allergies',
+  'mothertongue': 'student.language',
+  'emergency_contact_phone': 'student.emergency_phone',
+  'course': 'booking.course_name',
+  'course_weeks': 'booking.weeks',
+  'date_course_start': 'booking.start_date',
+  'date_course_end': 'booking.end_date',
+  'school_name': 'institution.name',
+  'accommodation_provider_name': 'accommodation.provider_name',
+  'accommodation_contact_firstname': 'accommodation.contact_name',
+  'accommodation_contact_firststname': 'accommodation.contact_name',
+  'accommodation_contact_lastname': 'accommodation.contact_name',
+  'accommodation_address': 'accommodation.address',
+  'accommodation_city': 'accommodation.address',
+  'accommodation_zip': 'accommodation.address',
+  'accommodation_phone': 'accommodation.phone',
+  'accommodation_mobile': 'accommodation.phone',
+  'accommodation_provider_email': 'accommodation.email',
+  'date_accommodation_start': 'accommodation.start_date',
+  'date_accommodation_end': 'accommodation.end_date',
+  'accommodation_allocation_start': 'accommodation.start_date',
+  'accommodation_allocation_end': 'accommodation.end_date',
+  'accommodation_weeks': 'accommodation.weeks',
+  'accommodation_category': 'accommodation.type',
+  'accommodation_meal_full': 'accommodation.board',
+  'accommodation_meal': 'accommodation.board',
+  'roomtype': 'accommodation.room_type',
+  'roomtype_full': 'accommodation.room_type',
+  'amount': 'booking.amount_total',
+  'agency': 'booking.agency',
+};
 
 async function loadEmailTemplate(studentId) {
   const tplId = document.getElementById('commsTpl')?.value;
@@ -1641,11 +1838,29 @@ async function loadEmailTemplate(studentId) {
     // Resolve tokens for this student
     const tokens = await api('/documents/tokens/' + studentId);
     let html = tpl.htmlTemplate;
-    // Replace tokens
+
+    // Replace {{double.dot}} tokens (SIS native)
     html = html.replace(/\{\{([^}]+)\}\}/g, (m, key) => {
       const k = key.trim();
       return tokens[k] !== undefined ? tokens[k] : m;
     });
+
+    // Replace {single_brace} Fidelo tokens via mapping
+    html = html.replace(/\{([a-z_]+)\}/g, (m, key) => {
+      const mapped = FIDELO_TOKEN_MAP[key];
+      if (mapped && tokens[mapped] !== undefined) return tokens[mapped];
+      return m; // leave unresolved tokens as-is
+    });
+
+    // Strip Fidelo conditionals {if ...}...{/if} and loops — show content, drop tags
+    html = html.replace(/\{if [^}]+\}/g, '');
+    html = html.replace(/\{\/if\}/g, '');
+    html = html.replace(/\{else\}/g, '');
+    html = html.replace(/\{start_loop_[^}]+\}/g, '');
+    html = html.replace(/\{end_loop_[^}]+\}/g, '');
+    html = html.replace(/\{start_selected_entries\}/g, '');
+    html = html.replace(/\{end_selected_entries\}/g, '');
+
     document.getElementById('commsEditor').innerHTML = html;
     document.getElementById('commsSubject').value = tpl.name;
   } catch (e) { toast(e.message, true); }
@@ -1657,23 +1872,54 @@ async function sendCommsEmail(studentId) {
   const subject = document.getElementById('commsSubject')?.value;
   const html = document.getElementById('commsEditor')?.innerHTML;
   const templateId = document.getElementById('commsTpl')?.value || null;
+  const attachDocId = document.getElementById('commsAttachDoc')?.value || null;
   const status = document.getElementById('commsSendStatus');
 
   if (!to || !subject || !html?.trim()) { toast('Fill in To, Subject and body', true); return; }
 
-  status.textContent = 'Sending...';
+  status.textContent = attachDocId ? 'Generating PDF & sending...' : 'Sending...';
   try {
-    await api('/email/send', { method: 'POST', body: { from, fromName: 'ULearn', to, subject, html, studentId, templateId } });
+    if (attachDocId) {
+      // Send via document endpoint which generates PDF and attaches it
+      await api('/documents/' + attachDocId + '/send', {
+        method: 'POST',
+        body: { from, fromName: 'ULearn', to, subject, body: html, sentBy: from },
+      });
+    } else {
+      await api('/email/send', { method: 'POST', body: { from, fromName: 'ULearn', to, subject, html, studentId, templateId } });
+    }
     status.textContent = '';
-    toast('Sent to ' + to);
+    toast('Sent to ' + to + (attachDocId ? ' (with PDF)' : ''));
     document.getElementById('commsSubject').value = '';
     document.getElementById('commsEditor').innerHTML = '';
     document.getElementById('commsTpl').value = '';
+    if (document.getElementById('commsAttachDoc')) document.getElementById('commsAttachDoc').value = '';
+    if (document.getElementById('commsAttachLabel')) document.getElementById('commsAttachLabel').textContent = '';
     loadCommsHistory(studentId);
   } catch (e) {
     status.textContent = '';
     toast(e.message, true);
   }
+}
+
+async function loadCommsAttachmentOptions(studentId) {
+  const sel = document.getElementById('commsAttachDoc');
+  if (!sel) return;
+  try {
+    const docs = await api('/documents?studentId=' + studentId);
+    const issued = docs.filter(d => d.status === 'ISSUED');
+    sel.innerHTML = '<option value="">No attachment</option>';
+    for (const d of issued) {
+      const name = d.template?.name || d.documentType || 'Document';
+      const date = d.issuedAt ? formatDate(d.issuedAt) : '';
+      sel.innerHTML += '<option value="' + d.id + '">' + esc(name) + ' v' + d.versionNo + '.0' + (date ? ' (' + date + ')' : '') + '</option>';
+    }
+    // Update label when selection changes
+    sel.onchange = function() {
+      const label = document.getElementById('commsAttachLabel');
+      if (label) label.textContent = this.value ? 'PDF will be generated & attached' : '';
+    };
+  } catch (e) { /* silent */ }
 }
 
 let commsExpandedEmailId = null;
@@ -3201,6 +3447,15 @@ async function toggleCancelDay(classId, date) {
 }
 
 // ─── ACCOMMODATION LIST ─────────────────────────
+// ── TEACHER PAYROLL DASHBOARD ─────────────────────
+
+async function showPayroll() {
+  setTopbar('Teacher Payroll', '', '');
+  document.getElementById('content').innerHTML = `
+    <iframe src="/sis/payroll" style="width:100%;height:calc(100vh - 60px);border:none;margin:-16px;width:calc(100% + 32px)"></iframe>
+  `;
+}
+
 // ── HOST MATCHING ENGINE ─────────────────────────
 
 let matchingFrom = null; // date string
@@ -4118,17 +4373,17 @@ function showPaymentPreview(lineItemId) {
         <div style="display:flex;gap:10px">
           <div style="flex:1">
             <label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px">From</label>
-            <input id="ppFrom" type="date" value="${li.periodFrom.split('T')[0]}" ${editable?'':'disabled'} style="width:100%;padding:6px 10px;border:1px solid var(--card-border);border-radius:6px;font-size:12px">
+            <input id="ppFrom" type="date" value="${li.periodFrom.split('T')[0]}" ${editable?'onchange="ppCalcEndDate()"':'disabled'} style="width:100%;padding:6px 10px;border:1px solid var(--card-border);border-radius:6px;font-size:12px">
           </div>
           <div style="flex:1">
             <label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px">To</label>
-            <input id="ppTo" type="date" value="${li.periodTo.split('T')[0]}" ${editable?'':'disabled'} style="width:100%;padding:6px 10px;border:1px solid var(--card-border);border-radius:6px;font-size:12px">
+            <input id="ppTo" type="date" value="${li.periodTo.split('T')[0]}" ${editable?'onchange="ppCalcNights();ppCalcTotal()"':'disabled'} style="width:100%;padding:6px 10px;border:1px solid var(--card-border);border-radius:6px;font-size:12px">
           </div>
         </div>
         <div style="display:flex;gap:10px">
           <div style="flex:1">
             <label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px">Nights</label>
-            <input id="ppNights" type="number" value="${nights}" ${editable?'':'disabled'} style="width:100%;padding:6px 10px;border:1px solid var(--card-border);border-radius:6px;font-size:13px">
+            <input id="ppNights" type="number" value="${nights}" ${editable?'oninput="ppCalcTotal();ppCalcEndDate()"':'disabled'} style="width:100%;padding:6px 10px;border:1px solid var(--card-border);border-radius:6px;font-size:13px">
           </div>
           <div style="flex:1">
             <label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px">Weekly Rate (€)</label>
@@ -4166,11 +4421,18 @@ function showPaymentPreview(lineItemId) {
     ${editable ? `
     <div style="padding:16px 20px;display:flex;flex-direction:column;gap:10px">
       <button class="btn btn-secondary" onclick="savePaymentLineItem(${li.id})" style="width:100%">Save Changes</button>
-      <button class="btn btn-primary" onclick="submitSingleLineItem(${li.id})" style="width:100%">Submit to Xero</button>
+      ${!li.xeroBillId ? `
+        <button class="btn btn-primary" onclick="submitSingleLineItem(${li.id})" style="width:100%">Submit to Xero</button>
+      ` : `
+        <button class="btn btn-primary" onclick="updateXeroBill(${li.id})" style="width:100%">Update Xero</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteXeroBill(${li.id})" style="width:100%">Void Xero Bill</button>
+        <div style="font-size:10px;color:var(--text-muted);text-align:center;padding:4px 0">Xero: ${esc(li.xeroBillId.substring(0,8))}...</div>
+      `}
     </div>` : ''}
     </div>`;
 
   pane.innerHTML = html;
+  ppOriginalAmount = Number(li.amount);
 }
 
 function closePaymentPreview() {
@@ -4179,6 +4441,8 @@ function closePaymentPreview() {
   if (pane) { pane.style.width = '0'; pane.style.minWidth = '0'; }
   document.querySelectorAll('tr.payment-active').forEach(r => r.classList.remove('payment-active'));
 }
+
+let ppOriginalAmount = 0; // set when preview opens
 
 function ppCalcTotal() {
   const rate = parseFloat(document.getElementById('ppRate')?.value) || 0;
@@ -4195,31 +4459,86 @@ function ppCalcTotal() {
   if (totalEl) totalEl.textContent = formatMoney(Math.round(total * 100) / 100);
 }
 
+function ppCalcEndDate() {
+  const from = document.getElementById('ppFrom')?.value;
+  const nights = parseInt(document.getElementById('ppNights')?.value) || 0;
+  const toField = document.getElementById('ppTo');
+  if (from && nights > 0 && toField) {
+    const d = new Date(from);
+    d.setDate(d.getDate() + nights - 1);
+    toField.value = d.toISOString().split('T')[0];
+  }
+}
+
+function ppCalcNights() {
+  const from = document.getElementById('ppFrom')?.value;
+  const to = document.getElementById('ppTo')?.value;
+  const nightsField = document.getElementById('ppNights');
+  if (from && to && nightsField) {
+    const diff = Math.round((new Date(to).getTime() - new Date(from).getTime()) / 86400000) + 1;
+    if (diff > 0) nightsField.value = diff;
+  }
+}
+
 function savePaymentLineItem(id) {
   const rate = parseFloat(document.getElementById('ppRate')?.value) || 0;
   const nights = parseInt(document.getElementById('ppNights')?.value) || 0;
   const amend = parseFloat(document.getElementById('ppAmend')?.value) || 0;
   const note = document.getElementById('ppAmendNote')?.value;
+  const from = document.getElementById('ppFrom')?.value;
+  const to = document.getElementById('ppTo')?.value;
   const weeks = Math.floor(nights / 7);
   const days = nights % 7;
   const base = (weeks * rate) + (days * rate / 7);
   const total = Math.round((base + amend) * 100) / 100;
+
+  // Divergence warning
+  if (ppOriginalAmount > 0) {
+    const pctChange = Math.abs(total - ppOriginalAmount) / ppOriginalAmount * 100;
+    const nightsDiff = Math.abs(nights - Math.round(ppOriginalAmount / (rate / 7)));
+    if (pctChange > 20) {
+      if (!confirm('This changes the total by ' + Math.round(pctChange) + '% from the original (' + formatMoney(ppOriginalAmount) + ' → ' + formatMoney(total) + '). Are you sure?')) return;
+    } else if (nightsDiff > 3) {
+      if (!confirm('This changes the stay by more than 3 nights. Are you sure?')) return;
+    }
+  }
 
   api('/host-payments/line-items/' + id, { method: 'PATCH', body: {
     weeklyRate: rate,
     weeksPaid: weeks,
     daysPaid: days,
     amount: total,
+    periodFrom: from ? new Date(from) : undefined,
+    periodTo: to ? new Date(to) : undefined,
     amendmentNote: note || null,
-    amendedBy: amend ? 'admin' : null,
-  }}).then(() => { toast('Updated'); showHostPayments(); }).catch(e => toast(e.message, true));
+    amendedBy: (amend || total !== ppOriginalAmount) ? 'admin' : null,
+  }}).then(() => { toast('Saved'); }).catch(e => toast(e.message, true));
 }
 
 async function submitSingleLineItem(id) {
-  if (!confirm('Submit this Bill to Xero?')) return;
   try {
     const result = await api('/host-payments/line-items/' + id + '/submit-xero', { method: 'POST' });
-    toast(result.message || 'Bill submitted to Xero');
+    toast(result.message || 'Submitted');
+    const runs = await api('/host-payments/runs');
+    paymentRunCache = runs[0];
+    showPaymentPreview(id);
+  } catch (e) { toast(e.message, true); }
+}
+
+async function updateXeroBill(id) {
+  try {
+    const result = await api('/host-payments/line-items/' + id + '/update-xero', { method: 'POST' });
+    toast(result.message || 'Updated');
+  } catch (e) { toast(e.message, true); }
+}
+
+async function deleteXeroBill(id) {
+  try {
+    const result = await api('/host-payments/line-items/' + id + '/delete-xero', { method: 'POST' });
+    toast(result.message || 'Voided');
+    const runs = await api('/host-payments/runs');
+    paymentRunCache = runs[0];
+    showPaymentPreview(id);
   } catch (e) { toast(e.message, true); }
 }
 
@@ -4830,6 +5149,146 @@ function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+/**
+ * Wrap a <select> with a searchable dropdown overlay.
+ * Call after the select is in the DOM and populated.
+ * onSelect callback fires with the chosen value.
+ */
+function makeSearchable(selectEl, onSelect) {
+  if (!selectEl || selectEl._searchable) return;
+  selectEl._searchable = true;
+
+  // Build flat list of {value, label, group} from the select
+  function getItems() {
+    const items = [];
+    for (const child of selectEl.children) {
+      if (child.tagName === 'OPTGROUP') {
+        const group = child.label;
+        for (const opt of child.children) {
+          items.push({ value: opt.value, label: opt.textContent, group });
+        }
+      } else if (child.tagName === 'OPTION' && child.value) {
+        items.push({ value: child.value, label: child.textContent, group: null });
+      }
+    }
+    return items;
+  }
+
+  // Hide real select, create wrapper
+  selectEl.style.display = 'none';
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:relative;width:100%';
+  selectEl.parentNode.insertBefore(wrap, selectEl);
+
+  const display = document.createElement('div');
+  display.className = 'filter-select';
+  display.style.cssText = 'cursor:pointer;display:flex;align-items:center;justify-content:space-between;width:100%;min-height:32px;user-select:none';
+  display.innerHTML = '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-muted)">Select...</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-left:6px"><polyline points="6 9 12 15 18 9"/></svg>';
+  wrap.appendChild(display);
+
+  const dd = document.createElement('div');
+  dd.style.cssText = 'display:none;position:absolute;top:100%;left:0;right:0;background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.15);z-index:9999;max-height:320px;overflow:hidden;flex-direction:column;margin-top:4px';
+  wrap.appendChild(dd);
+
+  const searchInput = document.createElement('input');
+  searchInput.type = 'text';
+  searchInput.placeholder = 'Search...';
+  searchInput.style.cssText = 'width:100%;padding:8px 12px;border:none;border-bottom:1px solid var(--card-border);font-size:13px;outline:none;background:transparent;box-sizing:border-box';
+  dd.appendChild(searchInput);
+
+  const listEl = document.createElement('div');
+  listEl.style.cssText = 'overflow-y:auto;max-height:270px';
+  dd.appendChild(listEl);
+
+  function renderList(filter) {
+    const items = getItems();
+    const q = (filter || '').toLowerCase();
+    let html = '';
+    let lastGroup = null;
+    let count = 0;
+    for (const item of items) {
+      if (q && !item.label.toLowerCase().includes(q) && !(item.group && item.group.toLowerCase().includes(q))) continue;
+      if (item.group && item.group !== lastGroup) {
+        html += '<div style="padding:4px 12px 2px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);font-weight:600;' + (lastGroup !== null ? 'border-top:1px solid var(--card-border);margin-top:4px;padding-top:6px' : '') + '">' + esc(item.group) + '</div>';
+        lastGroup = item.group;
+      } else if (!item.group && lastGroup) {
+        lastGroup = null;
+      }
+      html += '<div class="search-dd-item" data-val="' + item.value + '" style="padding:6px 12px;font-size:13px;cursor:pointer;transition:background 100ms" onmouseover="this.style.background=\'var(--bg-subtle)\'" onmouseout="this.style.background=\'transparent\'">' + esc(item.label) + '</div>';
+      count++;
+    }
+    if (!count) html = '<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:12px">No matches</div>';
+    listEl.innerHTML = html;
+
+    // Click handlers
+    for (const el of listEl.querySelectorAll('.search-dd-item')) {
+      el.addEventListener('click', () => {
+        const val = el.dataset.val;
+        selectEl.value = val;
+        display.querySelector('span').textContent = el.textContent;
+        display.querySelector('span').style.color = 'var(--text-primary)';
+        close();
+        selectEl.dispatchEvent(new Event('change'));
+        if (onSelect) onSelect(val);
+      });
+    }
+  }
+
+  let isOpen = false;
+  function open() {
+    dd.style.display = 'flex';
+    isOpen = true;
+    searchInput.value = '';
+    renderList('');
+    setTimeout(() => searchInput.focus(), 0);
+  }
+  function close() {
+    dd.style.display = 'none';
+    isOpen = false;
+  }
+
+  display.addEventListener('click', () => { isOpen ? close() : open(); });
+  searchInput.addEventListener('input', () => renderList(searchInput.value));
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') close();
+    if (e.key === 'Enter') {
+      const first = listEl.querySelector('.search-dd-item');
+      if (first) first.click();
+    }
+  });
+
+  // Close on outside click
+  document.addEventListener('click', (e) => {
+    if (isOpen && !wrap.contains(e.target)) close();
+  });
+
+  // Sync display if select value changes externally
+  const origVal = selectEl.value;
+  if (origVal) {
+    const opt = selectEl.querySelector('option[value="' + origVal + '"]');
+    if (opt) {
+      display.querySelector('span').textContent = opt.textContent;
+      display.querySelector('span').style.color = 'var(--text-primary)';
+    }
+  }
+
+  // Expose a reset method
+  wrap._reset = function() {
+    selectEl.value = '';
+    display.querySelector('span').textContent = 'Select...';
+    display.querySelector('span').style.color = 'var(--text-muted)';
+  };
+  // Expose refresh for when options change
+  wrap._refresh = function() {
+    if (selectEl.value) {
+      const opt = selectEl.querySelector('option[value="' + selectEl.value + '"]');
+      display.querySelector('span').textContent = opt ? opt.textContent : 'Select...';
+    }
+  };
+
+  return wrap;
+}
+
 function paginationHtml(res, pageVar, fn) {
   return `<div class="pagination">
     <span>Showing ${res.data.length} of ${res.total}</span>
@@ -4880,7 +5339,7 @@ async function showDocumentsList() {
 async function startDocumentGeneration() {
   try {
     const [templates, students] = await Promise.all([
-      api('/documents/templates'),
+      api('/documents/templates?type=document'),
       api('/students?limit=500'),
     ]);
 
@@ -4890,7 +5349,27 @@ async function startDocumentGeneration() {
           <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Document Type</label>
           <select id="docTemplate" class="filter-select" style="width:100%">
             <option value="">Select template...</option>
-            ${templates.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join('')}
+            ${(() => {
+              const grouped = {};
+              for (const t of templates) { const c = t.category || 'other'; if (!grouped[c]) grouped[c] = []; grouped[c].push(t); }
+              let opts = '';
+              for (const node of DOC_TREE) {
+                const items = grouped[node.key];
+                if (!items || !items.length) continue;
+                const lbl = node.parent ? node.parent + ' / ' + node.label : node.label;
+                opts += '<optgroup label="' + lbl + '">';
+                for (const t of items) opts += '<option value="' + t.id + '">' + esc(t.name) + '</option>';
+                opts += '</optgroup>';
+              }
+              const treeKeys = new Set(DOC_TREE.map(n => n.key));
+              const other = templates.filter(t => !treeKeys.has(t.category || 'other'));
+              if (other.length) {
+                opts += '<optgroup label="Other">';
+                for (const t of other) opts += '<option value="' + t.id + '">' + esc(t.name) + '</option>';
+                opts += '</optgroup>';
+              }
+              return opts;
+            })()}
           </select>
         </div>
         <div>
@@ -4909,6 +5388,7 @@ async function startDocumentGeneration() {
     </div></div>`;
 
     document.getElementById('content').innerHTML = html;
+    makeSearchable(document.getElementById('docTemplate'));
 
     // Load bookings when student changes
     document.getElementById('docStudent').addEventListener('change', async function() {
@@ -4981,7 +5461,9 @@ async function showDocumentDetail(id) {
       html += `<button class="btn btn-primary" onclick="issueDocument(${doc.id})">Issue Document</button>`;
     }
     if (isIssued) {
-      html += `<button class="btn btn-secondary" onclick="createNewVersion(${doc.id})">Create New Version</button>`;
+      html += `<a class="btn btn-primary" href="/sis/api/documents/${doc.id}/pdf" target="_blank" style="text-decoration:none">Download PDF</a>`;
+      html += `<button class="btn btn-secondary" onclick="openSendDocModal(${doc.id}, ${doc.studentId})">Send as Email</button>`;
+      html += `<button class="btn btn-secondary" onclick="createNewVersion(${doc.id})">New Version</button>`;
       html += `<button class="btn btn-danger btn-sm" onclick="revokeDocument(${doc.id})">Revoke</button>`;
     }
     html += `</div>`;
@@ -5063,6 +5545,75 @@ async function revokeDocument(id) {
     toast('Document revoked');
     showDocumentDetail(id);
   } catch (e) { toast(e.message, true); }
+}
+
+async function openSendDocModal(docId, studentId) {
+  try {
+    const student = await api('/students/' + studentId);
+    const modal = document.createElement('div');
+    modal.id = 'sendDocModal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center';
+    modal.innerHTML = `<div style="background:var(--card-bg);border-radius:12px;padding:24px;width:500px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+      <h3 style="margin:0 0 16px;font-size:16px">Send Document as PDF</h3>
+      <div style="margin-bottom:12px">
+        <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">From</label>
+        <select id="sdFrom" class="filter-select" style="width:100%">
+          <option value="info@ulearnschool.com">info@</option>
+          <option value="dos@ulearnschool.com">dos@</option>
+          <option value="sales@ulearnschool.com">sales@</option>
+          <option value="accounts@ulearnschool.com">accounts@</option>
+          <option value="partners@ulearnschool.com">partners@</option>
+        </select>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">To</label>
+        <input id="sdTo" type="email" value="${esc(student.email || '')}" style="width:100%;padding:6px 10px;border:1px solid var(--card-border);border-radius:6px;font-size:13px">
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Subject</label>
+        <input id="sdSubject" type="text" value="Your document from ULearn" style="width:100%;padding:6px 10px;border:1px solid var(--card-border);border-radius:6px;font-size:13px">
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Message (optional)</label>
+        <textarea id="sdBody" rows="3" style="width:100%;padding:8px 10px;border:1px solid var(--card-border);border-radius:6px;font-size:13px;resize:vertical" placeholder="Please find the attached document.">Dear ${esc(student.firstName || '')},\n\nPlease find the attached document.</textarea>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;align-items:center">
+        <span id="sdStatus" style="font-size:12px;color:var(--text-muted);flex:1"></span>
+        <button class="btn btn-ghost" onclick="document.getElementById('sendDocModal').remove()">Cancel</button>
+        <button class="btn btn-primary" id="sdSendBtn" onclick="submitSendDoc(${docId})">Send</button>
+      </div>
+    </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+  } catch (e) { toast(e.message, true); }
+}
+
+async function submitSendDoc(docId) {
+  const to = document.getElementById('sdTo')?.value?.trim();
+  const from = document.getElementById('sdFrom')?.value;
+  const subject = document.getElementById('sdSubject')?.value?.trim();
+  const bodyText = document.getElementById('sdBody')?.value?.trim();
+  if (!to) { toast('Enter a recipient email', true); return; }
+
+  const btn = document.getElementById('sdSendBtn');
+  const status = document.getElementById('sdStatus');
+  if (btn) { btn.disabled = true; btn.textContent = 'Generating PDF...'; }
+  if (status) status.textContent = 'Generating PDF and sending...';
+
+  try {
+    const bodyHtml = bodyText ? '<p>' + bodyText.replace(/\n/g, '<br>') + '</p>' : '';
+    const result = await api('/documents/' + docId + '/send', {
+      method: 'POST',
+      body: { to, from, subject, body: bodyHtml, sentBy: from },
+    });
+    document.getElementById('sendDocModal')?.remove();
+    toast('Document sent to ' + to);
+    showDocumentDetail(docId);
+  } catch (e) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Send'; }
+    if (status) status.textContent = '';
+    toast(e.message, true);
+  }
 }
 
 // ── TEMPLATES MANAGEMENT ────────────────────

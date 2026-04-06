@@ -22,6 +22,7 @@ import { attendanceRoutes } from './routes/attendance';
 import { documentRoutes } from './routes/documents';
 import { emailRoutes } from './routes/email';
 import { hostPaymentRoutes } from './routes/host-payments';
+import { payrollRoutes } from './routes/payroll';
 import { validateIBAN } from './scripts/iban-validator';
 import { documentScripts } from './scripts/documents';
 import { seedClassrooms } from './scripts/seed';
@@ -30,9 +31,17 @@ import { seedDocumentTemplates } from './scripts/seed-templates';
 const app = express();
 app.use(express.json());
 
+// Serve static files from public directory
+app.use('/sis/public', express.static(path.join(__dirname, '..', 'public')));
+
 // Serve admin UI
 app.get('/sis/admin', (_req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'admin.html'));
+});
+
+// Payroll dashboard (standalone — cloned from Hub)
+app.get('/sis/payroll', (_req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'payroll.html'));
 });
 
 // API routes
@@ -45,6 +54,7 @@ app.use('/sis/api/attendance', attendanceRoutes(prisma));
 app.use('/sis/api/documents', documentRoutes(prisma));
 app.use('/sis/api/email', emailRoutes(prisma));
 app.use('/sis/api/host-payments', hostPaymentRoutes(prisma));
+app.use('/sis/api/payroll', payrollRoutes(prisma));
 
 // IBAN validator
 app.get('/sis/api/validate-iban/:iban', (req, res) => {

@@ -326,6 +326,9 @@ export function hostPaymentScripts(prisma: PrismaClient) {
 
     const reference = `H-${3500 + li.id}`;
 
+    // Xero tracking category "Costs" → "Cost of Sales"
+    const tracking = [{ name: 'Costs', option: 'Cost of Sales' }];
+
     const billLineItems: any[] = [];
 
     // Main stay line
@@ -337,6 +340,7 @@ export function hostPaymentScripts(prisma: PrismaClient) {
         quantity: 1,
         unitAmount: Math.round(baseAmount * 100) / 100,
         accountCode: 'A100',
+        tracking,
       });
 
       // Amendment on top of stay (if exists)
@@ -348,6 +352,7 @@ export function hostPaymentScripts(prisma: PrismaClient) {
             quantity: 1,
             unitAmount: Math.round(amendAmount * 100) / 100,
             accountCode: 'A100',
+        tracking,
           });
         }
       }
@@ -358,6 +363,7 @@ export function hostPaymentScripts(prisma: PrismaClient) {
         quantity: 1,
         unitAmount: Number(li.amount),
         accountCode: 'A100',
+        tracking,
       });
     }
 
@@ -368,7 +374,8 @@ export function hostPaymentScripts(prisma: PrismaClient) {
           contact: { contactID: contactId },
           date: runDate.toISOString().split('T')[0],
           dueDate: dueDate.toISOString().split('T')[0],
-          reference,
+          invoiceNumber: reference,
+          reference: reference,
           status: 'SUBMITTED' as any,
           lineItems: billLineItems,
           lineAmountTypes: 'NoTax' as any,
@@ -376,6 +383,15 @@ export function hostPaymentScripts(prisma: PrismaClient) {
       });
 
       const invoiceId = bill.body.invoices?.[0]?.invoiceID;
+
+      // Store the Xero bill ID on the line item
+      if (invoiceId) {
+        await prisma.hostPaymentLineItem.update({
+          where: { id: lineItemId },
+          data: { xeroBillId: invoiceId },
+        });
+      }
+
       return {
         success: true,
         xeroInvoiceId: invoiceId,
@@ -388,5 +404,105 @@ export function hostPaymentScripts(prisma: PrismaClient) {
     }
   }
 
-  return { calculatePaymentRun, listPaymentRuns, getPaymentRun, approveRun, markPaid, submitBillToXero };
+  // Update an existing bill in Xero
+  async function updateBillInXero(lineItemId: number) {
+    const li = await prisma.hostPaymentLineItem.findUnique({ where: { id: lineItemId } });
+    if (!li) throw new Error('Line item not found');
+    if (!li.xeroBillId) throw new Error('No Xero bill linked — submit first');
+
+    const run = await prisma.hostPaymentRun.findUnique({ where: { id: li.runId } });
+    if (!run) throw new Error('Payment run not found');
+
+    const { xero, tenantId } = await getAuthedXero();
+
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const from = new Date(li.periodFrom);
+    const to = new Date(li.periodTo);
+    const fromFmt = pad(from.getDate()) + '/' + pad(from.getMonth() + 1);
+    const toFmt = pad(to.getDate()) + '/' + pad(to.getMonth() + 1) + '/' + to.getFullYear();
+    const reference = `H-${3500 + li.id}`;
+    const tracking = [{ name: 'Costs', option: 'Cost of Sales' }];
+
+    const billLineItems: any[] = [];
+
+    if (li.reason !== 'amendment') {
+      const nights = (li.weeksPaid * 7) + (li.daysPaid || 0);
+      const baseAmount = Number(li.weeksPaid) * Number(li.weeklyRate) + (li.daysPaid || 0) * Number(li.weeklyRate) / 7;
+      billLineItems.push({
+        description: `${li.studentName} — ${fromFmt} to ${toFmt} (${nights} nights)`,
+        quantity: 1,
+        unitAmount: Math.round(baseAmount * 100) / 100,
+        accountCode: 'A100',
+        tracking,
+      });
+      if (li.amendmentNote) {
+        const amendAmount = Number(li.amount) - Math.round(baseAmount * 100) / 100;
+        if (Math.abs(amendAmount) > 0.01) {
+          billLineItems.push({
+            description: `Amendment: ${li.amendmentNote}`,
+            quantity: 1,
+            unitAmount: Math.round(amendAmount * 100) / 100,
+            accountCode: 'A100',
+            tracking,
+          });
+        }
+      }
+    } else {
+      billLineItems.push({
+        description: li.amendmentNote || 'Amendment',
+        quantity: 1,
+        unitAmount: Number(li.amount),
+        accountCode: 'A100',
+        tracking,
+      });
+    }
+
+    try {
+      await xero.accountingApi.updateInvoice(tenantId, li.xeroBillId, {
+        invoices: [{
+          invoiceID: li.xeroBillId,
+          invoiceNumber: reference,
+          reference: reference,
+          lineItems: billLineItems,
+          lineAmountTypes: 'NoTax' as any,
+        }],
+      });
+      return { success: true, message: `Bill updated in Xero: ${reference}` };
+    } catch (e: any) {
+      const detail = e.response?.body?.Message || e.body?.Message || e.message;
+      throw new Error('Xero update failed: ' + detail);
+    }
+  }
+
+  // Delete a bill from Xero
+  async function deleteBillFromXero(lineItemId: number) {
+    const li = await prisma.hostPaymentLineItem.findUnique({ where: { id: lineItemId } });
+    if (!li) throw new Error('Line item not found');
+    if (!li.xeroBillId) throw new Error('No Xero bill linked');
+
+    const { xero, tenantId } = await getAuthedXero();
+
+    try {
+      // Void the invoice (Xero doesn't truly delete, it voids)
+      await xero.accountingApi.updateInvoice(tenantId, li.xeroBillId, {
+        invoices: [{
+          invoiceID: li.xeroBillId,
+          status: 'VOIDED' as any,
+        }],
+      });
+
+      // Clear the bill ID from our record
+      await prisma.hostPaymentLineItem.update({
+        where: { id: lineItemId },
+        data: { xeroBillId: null },
+      });
+
+      return { success: true, message: 'Bill voided in Xero' };
+    } catch (e: any) {
+      const detail = e.response?.body?.Message || e.body?.Message || e.message;
+      throw new Error('Xero delete failed: ' + detail);
+    }
+  }
+
+  return { calculatePaymentRun, listPaymentRuns, getPaymentRun, approveRun, markPaid, submitBillToXero, updateBillInXero, deleteBillFromXero };
 }
