@@ -36,11 +36,13 @@ export function payrollScripts(prisma: PrismaClient) {
     return `Week ${pad(weekNum)}, ${from} – ${toStr}`;
   }
 
-  // Compute hours from time strings like "09:00:00" and "12:15:00"
-  function hoursFromTimes(startTime: string, endTime: string): number {
+  // Compute hours from time strings like "09:00:00" and "12:15:00",
+  // subtracting any unpaid break (in minutes) that sits inside the session
+  function hoursFromTimes(startTime: string, endTime: string, breakMinutes: number = 0): number {
     const [sh, sm] = startTime.split(':').map(Number);
     const [eh, em] = endTime.split(':').map(Number);
-    return (eh * 60 + em - sh * 60 - sm) / 60;
+    const totalMinutes = (eh * 60 + em) - (sh * 60 + sm) - (breakMinutes || 0);
+    return Math.max(0, totalMinutes) / 60;
   }
 
   /**
@@ -59,7 +61,7 @@ export function payrollScripts(prisma: PrismaClient) {
       },
       include: {
         class_: {
-          select: { id: true, name: true, level: true, session: true, startTime: true, endTime: true },
+          select: { id: true, name: true, level: true, session: true, startTime: true, endTime: true, breakMinutes: true },
         },
         teacherAssignments: {
           include: {
@@ -160,7 +162,13 @@ export function payrollScripts(prisma: PrismaClient) {
       for (const teacher of teachers) {
         if ((teacher as any).isSalaried) continue; // salaried staff don't generate payroll hours
 
-        const hours = hoursFromTimes(teacher.startTime, teacher.endTime);
+        // Only subtract the class break if the teacher's session spans the whole class
+        // (i.e. teacher times == class times). Covers/partial assignments with custom
+        // times are assumed to already exclude breaks.
+        const useBreak = teacher.startTime === cls.startTime && teacher.endTime === cls.endTime
+          ? (cls as any).breakMinutes || 0
+          : 0;
+        const hours = hoursFromTimes(teacher.startTime, teacher.endTime, useBreak);
         const key = `${teacher.id}-${cls.id}-${monday.toISOString().split('T')[0]}`;
         const name = `${teacher.lastName}, ${teacher.firstName}`;
 
@@ -190,6 +198,12 @@ export function payrollScripts(prisma: PrismaClient) {
    * Refresh payroll entries for a date range — recalculate from scheduling data and upsert.
    */
   async function refreshPayroll(from: string, to: string) {
+    // Safety net: make sure occurrences exist for the range before calculating
+    try {
+      const { schedulingScripts } = await import('./scheduling');
+      await schedulingScripts(prisma).generateOccurrences(new Date(from), new Date(to));
+    } catch (e) { console.error('generateOccurrences (pre-refresh) failed:', e); }
+
     const calculated = await calculateWeeklyHours(from, to);
 
     let upserted = 0;

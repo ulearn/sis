@@ -7,6 +7,32 @@ import { PrismaClient } from '../generated/prisma/client';
  * Gender-conditional pronouns are replaced with {{student.pronoun_*}} tokens.
  */
 
+// A4 page wrapper with branded header & footer
+const HEADER = `<div style="width:210mm;min-height:297mm;margin:0 auto;font-family:Verdana,sans-serif;font-size:13px;line-height:1.7;color:#1a1d23;position:relative;box-sizing:border-box">
+  <img src="/sis/public/doc-header.jpg" style="width:100%;display:block" alt="ULearn Header">
+  <div style="padding:20px 40px 80px 40px">`;
+
+const FOOTER = `  </div>
+  <div style="position:absolute;bottom:0;left:0;right:0">
+    <img src="/sis/public/doc-footer.png" style="width:100%;display:block" alt="ULearn Footer">
+  </div>
+</div>`;
+
+const DOC_META = `<div style="margin-top:30px;font-size:10px;color:#9b9ea6">
+    <p style="margin:0">Document: {{document.number}} | Version: {{document.version}} | Issued: {{document.issue_date}}</p>
+  </div>`;
+
+const DOC_META_SHORT = `<div style="margin-top:30px;font-size:10px;color:#9b9ea6">
+    <p style="margin:0">Document: {{document.number}} | Issued: {{document.issue_date}}</p>
+  </div>`;
+
+const SIGNOFF = `<p style="margin-top:30px">Yours faithfully,</p>
+  <div style="margin-top:10px">
+    <img src="/sis/public/doc-signature.jpg" style="height:80px;display:block" alt="Signature">
+    <p style="margin:4px 0 0"><strong>Authorised Signatory</strong></p>
+    <p style="margin:0;color:#6b7280;font-size:12px">ULearn English Language School</p>
+  </div>`;
+
 const templates = [
   // ── SUCCESS / VISA ──────────────────────────────
   {
@@ -14,13 +40,8 @@ const templates = [
     slug: 'LOA-NonEU-QR',
     category: 'success',
     documentType: 'success',
-    htmlTemplate: `<div style="max-width:700px;margin:0 auto;font-family:Verdana,sans-serif;font-size:14px;line-height:1.7;color:#1a1d23">
-  <div style="text-align:center;margin-bottom:30px">
-    <h1 style="font-size:20px;font-weight:700;margin:0">ULearn English Language School</h1>
-    <p style="color:#6b7280;font-size:12px;margin:4px 0">Dublin, Ireland</p>
-  </div>
-
-  <p style="margin-bottom:16px">To Whom It May Concern,</p>
+    htmlTemplate: `${HEADER}
+  <p style="margin-bottom:24px">To Whom It May Concern,</p>
 
   <p>This letter is a secure document. To confirm the recipient &amp; holder is a genuine ULearn Student please scan the QR code below with the camera on your phone.</p>
   <ul>
@@ -57,20 +78,17 @@ const templates = [
 
   <p>I may be contacted at 01-4751222 or 0851574801 for any confirmation of the details in this document that may be necessary.</p>
 
-  <div style="margin-top:40px">
-    <p style="margin:0"><strong>Authorised Signatory</strong></p>
-    <p style="margin:0;color:#6b7280;font-size:13px">ULearn English Language School</p>
-  </div>
+  ${SIGNOFF}
 
   <div style="margin-top:30px;display:flex;justify-content:space-between;align-items:flex-end">
-    <div style="font-size:11px;color:#9b9ea6">
+    <div style="font-size:10px;color:#9b9ea6">
       <p style="margin:0">Document: {{document.number}}</p>
       <p style="margin:0">Version: {{document.version}}</p>
       <p style="margin:0">Issued: {{document.issue_date}}</p>
     </div>
     <div>{{document.qr}}</div>
   </div>
-</div>`,
+${FOOTER}`,
   },
 
   {
@@ -78,15 +96,10 @@ const templates = [
     slug: 'ISD-Confirm',
     category: 'success',
     documentType: 'success',
-    htmlTemplate: `<div style="max-width:700px;margin:0 auto;font-family:Verdana,sans-serif;font-size:14px;line-height:1.7;color:#1a1d23">
-  <div style="text-align:center;margin-bottom:30px">
-    <h1 style="font-size:20px;font-weight:700;margin:0">ULearn English Language School</h1>
-    <p style="color:#6b7280;font-size:12px;margin:4px 0">Dublin, Ireland</p>
-  </div>
+    htmlTemplate: `${HEADER}
+  <p style="margin-bottom:8px">Student Number: {{student.id}}</p>
 
-  <p>Student Number: {{student.id}}</p>
-
-  <p style="margin-bottom:16px">To whom it may concern,</p>
+  <p style="margin-bottom:24px">To whom it may concern,</p>
 
   <p>This letter is to certify that {{student.salutation}} {{student.first_name}} {{student.last_name}} is a registered full time student with ULearn English Language School.</p>
 
@@ -96,16 +109,9 @@ const templates = [
 
   <p>Please contact us for any confirmation of the above which may be necessary.</p>
 
-  <p style="margin-top:30px">Yours faithfully,</p>
-  <div style="margin-top:40px">
-    <p style="margin:0"><strong>Authorised Signatory</strong></p>
-    <p style="margin:0;color:#6b7280;font-size:13px">ULearn English Language School</p>
-  </div>
-
-  <div style="margin-top:30px;font-size:11px;color:#9b9ea6">
-    <p style="margin:0">Document: {{document.number}} | Version: {{document.version}} | Issued: {{document.issue_date}}</p>
-  </div>
-</div>`,
+  ${SIGNOFF}
+  ${DOC_META}
+${FOOTER}`,
   },
 
   {
@@ -113,13 +119,8 @@ const templates = [
     slug: 'Confirmation-General',
     category: 'success',
     documentType: 'success',
-    htmlTemplate: `<div style="max-width:700px;margin:0 auto;font-family:Verdana,sans-serif;font-size:14px;line-height:1.7;color:#1a1d23">
-  <div style="text-align:center;margin-bottom:30px">
-    <h1 style="font-size:20px;font-weight:700;margin:0">ULearn English Language School</h1>
-    <p style="color:#6b7280;font-size:12px;margin:4px 0">Dublin, Ireland</p>
-  </div>
-
-  <p style="margin-bottom:16px">To whom it may concern,</p>
+    htmlTemplate: `${HEADER}
+  <p style="margin-bottom:24px">To whom it may concern,</p>
 
   <p>This letter is to certify that {{student.salutation}} {{student.first_name}} {{student.last_name}} is a registered full time student with ULearn English Language School.</p>
 
@@ -129,16 +130,9 @@ const templates = [
 
   <p>Please contact us for any confirmation of the above which may be necessary.</p>
 
-  <p style="margin-top:30px">Yours faithfully,</p>
-  <div style="margin-top:40px">
-    <p style="margin:0"><strong>Authorised Signatory</strong></p>
-    <p style="margin:0;color:#6b7280;font-size:13px">ULearn English Language School</p>
-  </div>
-
-  <div style="margin-top:30px;font-size:11px;color:#9b9ea6">
-    <p style="margin:0">Document: {{document.number}} | Version: {{document.version}} | Issued: {{document.issue_date}}</p>
-  </div>
-</div>`,
+  ${SIGNOFF}
+  ${DOC_META}
+${FOOTER}`,
   },
 
   {
@@ -146,15 +140,10 @@ const templates = [
     slug: 'Exit-Letter',
     category: 'academic',
     documentType: 'academic',
-    htmlTemplate: `<div style="max-width:700px;margin:0 auto;font-family:Verdana,sans-serif;font-size:14px;line-height:1.7;color:#1a1d23">
-  <div style="text-align:center;margin-bottom:30px">
-    <h1 style="font-size:20px;font-weight:700;margin:0">ULearn English Language School</h1>
-    <p style="color:#6b7280;font-size:12px;margin:4px 0">Dublin, Ireland</p>
-  </div>
+    htmlTemplate: `${HEADER}
+  <p style="margin-bottom:8px">Programme: {{booking.course_name}}</p>
 
-  <p>Programme: {{booking.course_name}}</p>
-
-  <p style="margin-bottom:16px">To whom it may concern,</p>
+  <p style="margin-bottom:24px">To whom it may concern,</p>
 
   <p>This letter is to certify that {{student.salutation}} {{student.first_name}} {{student.last_name}} was a registered full time student with ULearn English Language School.</p>
 
@@ -168,16 +157,9 @@ const templates = [
 
   <p>Please contact us for any confirmation of the above which may be necessary.</p>
 
-  <p style="margin-top:30px">Yours faithfully,</p>
-  <div style="margin-top:40px">
-    <p style="margin:0"><strong>Authorised Signatory</strong></p>
-    <p style="margin:0;color:#6b7280;font-size:13px">ULearn English Language School</p>
-  </div>
-
-  <div style="margin-top:30px;font-size:11px;color:#9b9ea6">
-    <p style="margin:0">Document: {{document.number}} | Version: {{document.version}} | Issued: {{document.issue_date}}</p>
-  </div>
-</div>`,
+  ${SIGNOFF}
+  ${DOC_META}
+${FOOTER}`,
   },
 
   {
@@ -185,13 +167,8 @@ const templates = [
     slug: 'Holiday-Letter',
     category: 'academic',
     documentType: 'academic',
-    htmlTemplate: `<div style="max-width:700px;margin:0 auto;font-family:Verdana,sans-serif;font-size:14px;line-height:1.7;color:#1a1d23">
-  <div style="text-align:center;margin-bottom:30px">
-    <h1 style="font-size:20px;font-weight:700;margin:0">ULearn English Language School</h1>
-    <p style="color:#6b7280;font-size:12px;margin:4px 0">Dublin, Ireland</p>
-  </div>
-
-  <p style="margin-bottom:16px">To whom it may concern,</p>
+    htmlTemplate: `${HEADER}
+  <p style="margin-bottom:24px">To whom it may concern,</p>
 
   <p>This letter is to certify that {{student.salutation}} {{student.first_name}} {{student.last_name}} is a registered full time student with ULearn English Language School.</p>
 
@@ -205,16 +182,9 @@ const templates = [
 
   <p>Please contact us for any confirmation of the above which may be necessary.</p>
 
-  <p style="margin-top:30px">Yours faithfully,</p>
-  <div style="margin-top:40px">
-    <p style="margin:0"><strong>Authorised Signatory</strong></p>
-    <p style="margin:0;color:#6b7280;font-size:13px">ULearn English Language School</p>
-  </div>
-
-  <div style="margin-top:30px;font-size:11px;color:#9b9ea6">
-    <p style="margin:0">Document: {{document.number}} | Version: {{document.version}} | Issued: {{document.issue_date}}</p>
-  </div>
-</div>`,
+  ${SIGNOFF}
+  ${DOC_META}
+${FOOTER}`,
   },
 
   // ── ACCOMMODATION ────────────────────────────
@@ -224,17 +194,12 @@ const templates = [
     slug: 'Confirm-Provider',
     category: 'accomm',
     documentType: 'accomm',
-    htmlTemplate: `<div style="max-width:700px;margin:0 auto;font-family:Verdana,sans-serif;font-size:14px;line-height:1.7;color:#1a1d23">
-  <div style="text-align:center;margin-bottom:30px">
-    <h1 style="font-size:20px;font-weight:700;margin:0">ULearn English Language School</h1>
-    <p style="color:#6b7280;font-size:12px;margin:4px 0">Dublin, Ireland</p>
-  </div>
-
-  <p style="margin-bottom:16px">Dear {{accommodation.contact_name}},</p>
+    htmlTemplate: `${HEADER}
+  <p style="margin-bottom:24px">Dear {{accommodation.contact_name}},</p>
 
   <p>We confirm the following student information you have agreed to accommodate:</p>
 
-  <h3 style="font-size:15px;margin:16px 0 8px">Personal Details</h3>
+  <h3 style="font-size:14px;margin:16px 0 8px">Personal Details</h3>
   <table style="width:100%;border-collapse:collapse">
     <tr><td style="padding:4px 0;width:160px;color:#6b7280">First name</td><td style="padding:4px 0">{{student.first_name}}</td></tr>
     <tr><td style="padding:4px 0;color:#6b7280">Last name</td><td style="padding:4px 0">{{student.last_name}}</td></tr>
@@ -243,7 +208,7 @@ const templates = [
     <tr><td style="padding:4px 0;color:#6b7280">Nationality</td><td style="padding:4px 0">{{student.nationality}}</td></tr>
   </table>
 
-  <h3 style="font-size:15px;margin:16px 0 8px">Accommodation Dates</h3>
+  <h3 style="font-size:14px;margin:16px 0 8px">Accommodation Dates</h3>
   <table style="width:100%;border-collapse:collapse">
     <tr><td style="padding:4px 0;width:160px;color:#6b7280">From</td><td style="padding:4px 0">{{accommodation.start_date}}</td></tr>
     <tr><td style="padding:4px 0;color:#6b7280">Until</td><td style="padding:4px 0">{{accommodation.end_date}}</td></tr>
@@ -255,10 +220,8 @@ const templates = [
 
   <p style="margin-top:20px">Thank you for providing accommodation to this student. If you need anything please feel free to contact us at any time.</p>
 
-  <div style="margin-top:30px;font-size:11px;color:#9b9ea6">
-    <p style="margin:0">Document: {{document.number}} | Issued: {{document.issue_date}}</p>
-  </div>
-</div>`,
+  ${DOC_META_SHORT}
+${FOOTER}`,
   },
 
   {
@@ -266,13 +229,8 @@ const templates = [
     slug: 'AccommInfo-Student',
     category: 'accomm',
     documentType: 'accomm',
-    htmlTemplate: `<div style="max-width:700px;margin:0 auto;font-family:Verdana,sans-serif;font-size:14px;line-height:1.7;color:#1a1d23">
-  <div style="text-align:center;margin-bottom:30px">
-    <h1 style="font-size:20px;font-weight:700;margin:0">ULearn English Language School</h1>
-    <p style="color:#6b7280;font-size:12px;margin:4px 0">Dublin, Ireland</p>
-  </div>
-
-  <p style="margin-bottom:16px">Dear {{student.first_name}},</p>
+    htmlTemplate: `${HEADER}
+  <p style="margin-bottom:24px">Dear {{student.first_name}},</p>
 
   <p>Your accommodation details are as follows:</p>
 
@@ -294,17 +252,113 @@ const templates = [
 
   <p>ULearn's emergency number over the weekend is +353851574801.</p>
 
-  <div style="margin-top:30px;font-size:11px;color:#9b9ea6">
-    <p style="margin:0">Document: {{document.number}} | Issued: {{document.issue_date}}</p>
-  </div>
-</div>`,
+  ${DOC_META_SHORT}
+${FOOTER}`,
+  },
+
+  // ── FINANCIAL / AGENCY ──────────────────────
+  {
+    name: 'Agency Net Statement',
+    slug: 'Agency-Net-Statement',
+    category: 'accounts',
+    documentType: 'accounts',
+    htmlTemplate: `${HEADER}
+  <p style="text-align:right;font-size:12px;color:#6b7280;margin-bottom:4px">Date: {{document.issue_date}}</p>
+
+  <h2 style="font-size:16px;margin:0 0 20px;border-bottom:2px solid #1a1d23;padding-bottom:8px">Agency Net Statement</h2>
+
+  <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
+    <tr><td style="padding:4px 0;width:130px;color:#6b7280;font-size:12px">Agency</td><td style="padding:4px 0;font-weight:600">{{agency.name}}</td></tr>
+    <tr><td style="padding:4px 0;color:#6b7280;font-size:12px">Student</td><td style="padding:4px 0">{{student.first_name}} {{student.last_name}}</td></tr>
+    <tr><td style="padding:4px 0;color:#6b7280;font-size:12px">Nationality</td><td style="padding:4px 0">{{student.nationality}}</td></tr>
+    <tr><td style="padding:4px 0;color:#6b7280;font-size:12px">Course</td><td style="padding:4px 0">{{booking.course_name}}</td></tr>
+    <tr><td style="padding:4px 0;color:#6b7280;font-size:12px">Dates</td><td style="padding:4px 0">{{booking.start_date}} — {{booking.end_date}}</td></tr>
+    <tr><td style="padding:4px 0;color:#6b7280;font-size:12px">Duration</td><td style="padding:4px 0">{{booking.weeks}} weeks</td></tr>
+  </table>
+
+  <table style="width:100%;border-collapse:collapse;margin:20px 0">
+    <thead>
+      <tr style="border-bottom:2px solid #1a1d23">
+        <th style="text-align:left;padding:8px 0;font-size:12px">Description</th>
+        <th style="text-align:right;padding:8px 0;font-size:12px">Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding:8px 0;border-bottom:1px solid #e5e4e0">Course Fee</td>
+        <td style="padding:8px 0;border-bottom:1px solid #e5e4e0;text-align:right">{{booking.course_fee}}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 0;border-bottom:1px solid #e5e4e0;color:#059669">Less Agency Commission ({{agency.commission_rate}})</td>
+        <td style="padding:8px 0;border-bottom:1px solid #e5e4e0;text-align:right;color:#059669">- {{booking.course_commission}}</td>
+      </tr>
+      <tr style="font-weight:700;font-size:15px">
+        <td style="padding:12px 0">Net Payable</td>
+        <td style="padding:12px 0;text-align:right">{{booking.course_net}}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="font-size:11px;color:#9b9ea6;margin-top:30px">This is a presentation document only and does not constitute a tax invoice. The official invoice is issued via Xero.</p>
+
+  ${DOC_META_SHORT}
+${FOOTER}`,
+  },
+
+  {
+    name: 'Net-to-Gross Invoice',
+    slug: 'Net-to-Gross-Invoice',
+    category: 'accounts',
+    documentType: 'accounts',
+    htmlTemplate: `${HEADER}
+  <p style="text-align:right;font-size:12px;color:#6b7280;margin-bottom:4px">Date: {{document.issue_date}}</p>
+  <p style="text-align:right;font-size:12px;color:#6b7280;margin-bottom:4px">Reference: {{document.number}}</p>
+
+  <h2 style="font-size:16px;margin:0 0 20px;border-bottom:2px solid #1a1d23;padding-bottom:8px">Invoice</h2>
+
+  <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
+    <tr><td style="padding:4px 0;width:130px;color:#6b7280;font-size:12px">Billed to</td><td style="padding:4px 0;font-weight:600">{{agency.name}}</td></tr>
+    <tr><td style="padding:4px 0;color:#6b7280;font-size:12px">Student</td><td style="padding:4px 0">{{student.first_name}} {{student.last_name}}</td></tr>
+    <tr><td style="padding:4px 0;color:#6b7280;font-size:12px">Nationality</td><td style="padding:4px 0">{{student.nationality}}</td></tr>
+    <tr><td style="padding:4px 0;color:#6b7280;font-size:12px">Course</td><td style="padding:4px 0">{{booking.course_name}}</td></tr>
+    <tr><td style="padding:4px 0;color:#6b7280;font-size:12px">Dates</td><td style="padding:4px 0">{{booking.start_date}} — {{booking.end_date}}</td></tr>
+    <tr><td style="padding:4px 0;color:#6b7280;font-size:12px">Duration</td><td style="padding:4px 0">{{booking.weeks}} weeks</td></tr>
+  </table>
+
+  <table style="width:100%;border-collapse:collapse;margin:20px 0">
+    <thead>
+      <tr style="border-bottom:2px solid #1a1d23">
+        <th style="text-align:left;padding:8px 0;font-size:12px">Description</th>
+        <th style="text-align:right;padding:8px 0;font-size:12px">Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding:8px 0;border-bottom:1px solid #e5e4e0">{{booking.course_name}} — {{booking.weeks}} weeks</td>
+        <td style="padding:8px 0;border-bottom:1px solid #e5e4e0;text-align:right">{{booking.gross_from_net}}</td>
+      </tr>
+      <tr style="font-weight:700;font-size:15px">
+        <td style="padding:12px 0">Total</td>
+        <td style="padding:12px 0;text-align:right">{{booking.gross_from_net}}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="font-size:11px;color:#9b9ea6;margin-top:30px">This is a presentation document only and does not constitute a tax invoice. The official invoice is issued via Xero.</p>
+
+  ${DOC_META_SHORT}
+${FOOTER}`,
   },
 ];
 
 export async function seedDocumentTemplates(prisma: PrismaClient) {
   for (const t of templates) {
+    // Always update existing templates to pick up layout changes
     const existing = await prisma.documentTemplate.findUnique({ where: { slug: t.slug } });
-    if (!existing) {
+    if (existing) {
+      await prisma.documentTemplate.update({ where: { slug: t.slug }, data: { htmlTemplate: t.htmlTemplate } });
+      console.log(`[Seed] Updated template: ${t.name}`);
+    } else {
       await prisma.documentTemplate.create({ data: t });
       console.log(`[Seed] Created template: ${t.name}`);
     }

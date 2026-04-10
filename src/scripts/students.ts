@@ -33,12 +33,33 @@ export function studentScripts(prisma: PrismaClient) {
     if (query.nationality) where.nationality = query.nationality;
     if (query.status) where.studentStatus = query.status;
 
-    const [data, total] = await Promise.all([
+    const [data, total, natRows] = await Promise.all([
       prisma.student.findMany({ where, skip, take: limit, orderBy: { lastName: 'asc' } }),
       prisma.student.count({ where }),
+      prisma.student.findMany({ where: { nationality: { not: null } }, select: { nationality: true }, distinct: ['nationality'], orderBy: { nationality: 'asc' } }),
     ]);
+    const nationalities = natRows.map(r => r.nationality).filter(Boolean) as string[];
 
-    return { data, total, page, limit, pages: Math.ceil(total / limit) };
+    // Compute onboarding date = earliest start across all course/accom bookings per student
+    const ids = data.map(s => s.id);
+    if (ids.length) {
+      const rows = await prisma.$queryRaw<{ student_id: number, onboarding_date: Date | null }[]>`
+        SELECT b.student_id,
+               LEAST(
+                 MIN(bc.start_date),
+                 MIN(ba.start_date)
+               ) AS onboarding_date
+        FROM bookings b
+        LEFT JOIN booking_courses bc ON bc.booking_id = b.id
+        LEFT JOIN booking_accommodations ba ON ba.booking_id = b.id
+        WHERE b.student_id = ANY(${ids}::int[])
+        GROUP BY b.student_id
+      `;
+      const byId = new Map(rows.map(r => [r.student_id, r.onboarding_date]));
+      for (const s of data as any[]) s.onboardingDate = byId.get(s.id) || null;
+    }
+
+    return { data, total, page, limit, pages: Math.ceil(total / limit), nationalities };
   }
 
   async function getById(id: number) {
@@ -74,6 +95,22 @@ export function studentScripts(prisma: PrismaClient) {
   }
 
   async function remove(id: number) {
+    // Cascade: delete child records first
+    const bookings = await prisma.booking.findMany({ where: { studentId: id }, select: { id: true } });
+    const bookingIds = bookings.map(b => b.id);
+    if (bookingIds.length > 0) {
+      await prisma.bookingStatusHistory.deleteMany({ where: { bookingId: { in: bookingIds } } });
+      await prisma.bookingHoliday.deleteMany({ where: { bookingId: { in: bookingIds } } });
+      const courseIds = (await prisma.bookingCourse.findMany({ where: { bookingId: { in: bookingIds } }, select: { id: true } })).map(c => c.id);
+      if (courseIds.length > 0) {
+        await prisma.studentClassAssignment.deleteMany({ where: { bookingCourseId: { in: courseIds } } });
+      }
+      await prisma.bookingCourse.deleteMany({ where: { bookingId: { in: bookingIds } } });
+      await prisma.bookingAccommodation.deleteMany({ where: { bookingId: { in: bookingIds } } });
+      await prisma.booking.deleteMany({ where: { id: { in: bookingIds } } });
+    }
+    await prisma.studentClassAssignment.deleteMany({ where: { studentId: id } });
+    await prisma.attendance.deleteMany({ where: { studentId: id } });
     return prisma.student.delete({ where: { id } });
   }
 

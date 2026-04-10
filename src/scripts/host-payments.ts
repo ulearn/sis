@@ -474,34 +474,46 @@ export function hostPaymentScripts(prisma: PrismaClient) {
     }
   }
 
-  // Delete a bill from Xero
+  // Delete a Xero bill and unlink it from our line item.
+  // Draft bills in Xero are deletable (status='DELETED'). If the remote bill is
+  // already gone (e.g. deleted manually in Xero, leaving an orphaned ID on our
+  // side), we still want to clear the local link so the line item is unstuck.
   async function deleteBillFromXero(lineItemId: number) {
     const li = await prisma.hostPaymentLineItem.findUnique({ where: { id: lineItemId } });
     if (!li) throw new Error('Line item not found');
     if (!li.xeroBillId) throw new Error('No Xero bill linked');
 
-    const { xero, tenantId } = await getAuthedXero();
+    let remoteResult = 'deleted';
+    let remoteError: string | null = null;
 
     try {
-      // Void the invoice (Xero doesn't truly delete, it voids)
+      const { xero, tenantId } = await getAuthedXero();
       await xero.accountingApi.updateInvoice(tenantId, li.xeroBillId, {
         invoices: [{
           invoiceID: li.xeroBillId,
-          status: 'VOIDED' as any,
+          status: 'DELETED' as any,
         }],
       });
-
-      // Clear the bill ID from our record
-      await prisma.hostPaymentLineItem.update({
-        where: { id: lineItemId },
-        data: { xeroBillId: null },
-      });
-
-      return { success: true, message: 'Bill voided in Xero' };
     } catch (e: any) {
-      const detail = e.response?.body?.Message || e.body?.Message || e.message;
-      throw new Error('Xero delete failed: ' + detail);
+      remoteError = e.response?.body?.Message || e.body?.Message || e.message || 'Unknown Xero error';
+      const isOrphan = /not (found|exist)|invalid|cannot be found|does not exist/i.test(remoteError || '');
+      remoteResult = isOrphan ? 'already_gone' : 'failed';
     }
+
+    // Always clear the local Xero link so the line item is unstuck
+    await prisma.hostPaymentLineItem.update({
+      where: { id: lineItemId },
+      data: { xeroBillId: null },
+    });
+
+    if (remoteResult === 'deleted') {
+      return { success: true, message: 'Bill deleted in Xero and unlinked locally' };
+    }
+    if (remoteResult === 'already_gone') {
+      return { success: true, message: 'Xero bill no longer exists — link cleared locally' };
+    }
+    // Hard failure in Xero (auth, rate limit, etc.) — but we still cleared the link
+    return { success: true, warning: `Local link cleared. Xero delete failed: ${remoteError}` };
   }
 
   return { calculatePaymentRun, listPaymentRuns, getPaymentRun, approveRun, markPaid, submitBillToXero, updateBillInXero, deleteBillFromXero };

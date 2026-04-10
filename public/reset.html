@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/png" href="/sis/public/favicon.ico?v=2">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ULearn SIS - Reset Password</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f3f0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+  .login-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); width: 100%; max-width: 380px; padding: 40px; }
+  .logo { text-align: center; margin-bottom: 8px; font-size: 22px; font-weight: 700; color: #1a1d23; }
+  .subtitle { text-align: center; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: #9b9ea6; margin-bottom: 24px; }
+  label { display: block; font-size: 13px; font-weight: 600; color: #4a4d56; margin-bottom: 6px; }
+  input { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; margin-bottom: 16px; outline: none; transition: border-color 0.2s; }
+  input:focus { border-color: #4f46e5; }
+  button { width: 100%; padding: 11px; background: #4f46e5; color: #fff; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+  button:hover { background: #4338ca; }
+  .error { background: #fef2f2; color: #dc2626; padding: 10px 12px; border-radius: 6px; font-size: 13px; margin-bottom: 16px; display: none; }
+  .success { background: #f0fdf4; color: #166534; padding: 12px; border-radius: 6px; font-size: 13px; margin-bottom: 16px; display: none; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="login-card">
+  <div class="logo">ULearn</div>
+  <div class="subtitle">Set New Password</div>
+  <div class="error" id="error"></div>
+  <div class="success" id="success">Password updated. <a href="/sis/login" style="color:#166534;">Sign in →</a></div>
+  <form id="resetForm">
+    <label for="password">New password</label>
+    <input type="password" id="password" name="password" autocomplete="new-password" minlength="8" required autofocus>
+    <label for="confirm">Confirm password</label>
+    <input type="password" id="confirm" name="confirm" autocomplete="new-password" minlength="8" required>
+    <button type="submit">Update Password</button>
+  </form>
+</div>
+<script>
+const params = new URLSearchParams(window.location.search);
+const token = params.get('token');
+if (!token) {
+  document.getElementById('error').textContent = 'Invalid reset link.';
+  document.getElementById('error').style.display = 'block';
+  document.getElementById('resetForm').style.display = 'none';
+}
+document.getElementById('resetForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const errEl = document.getElementById('error');
+  errEl.style.display = 'none';
+  const pw = document.getElementById('password').value;
+  const cf = document.getElementById('confirm').value;
+  if (pw !== cf) {
+    errEl.textContent = 'Passwords do not match.';
+    errEl.style.display = 'block';
+    return;
+  }
+  try {
+    const res = await fetch('/sis/auth/reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, password: pw }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById('resetForm').style.display = 'none';
+      document.getElementById('success').style.display = 'block';
+    } else {
+      errEl.textContent = data.error || 'Reset failed';
+      errEl.style.display = 'block';
+    }
+  } catch {
+    errEl.textContent = 'Connection error';
+    errEl.style.display = 'block';
+  }
+});
+</script>
+</body>
+</html>

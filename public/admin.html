@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="icon" type="image/png" href="/sis/public/favicon.ico?v=2">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ULearn SIS Admin</title>
@@ -67,7 +68,7 @@ html, body { height: 100%; font-family: var(--font-body); background: var(--cont
 .sidebar-section { margin-bottom: 16px; }
 .sidebar-section-label {
   font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px;
-  color: var(--sidebar-text); padding: 4px 12px 6px; font-weight: 600;
+  color: rgba(255,255,255,0.85); padding: 4px 12px 6px; font-weight: 600;
   font-family: var(--font-mono);
 }
 .sidebar-item {
@@ -124,11 +125,13 @@ html, body { height: 100%; font-family: var(--font-body); background: var(--cont
 
 /* Student preview */
 .preview-btn {
-  visibility: hidden; cursor: pointer; color: var(--text-muted); margin-left: 6px;
-  vertical-align: middle; padding: 2px 4px; border-radius: 4px;
-  transition: all 100ms ease; display: inline-flex;
+  visibility: hidden; cursor: pointer; color: var(--text-muted);
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  padding: 3px 10px; border-radius: 4px; border: 1px solid var(--card-border);
+  background: var(--card-bg); font-size: 11px; font-weight: 500;
+  transition: all 100ms ease; display: inline-flex; align-items: center; gap: 4px;
 }
-.preview-btn:hover { color: var(--accent); background: var(--accent-light); }
+.preview-btn:hover { color: var(--accent); background: var(--accent-light); border-color: var(--accent); }
 tr:hover .preview-btn { visibility: visible; }
 tr.preview-active { background: var(--accent-light) !important; }
 tr.payment-active { background: var(--accent-light) !important; }
@@ -420,20 +423,18 @@ tr:last-child td { border-bottom: none; }
     </div>
     <nav class="sidebar-nav">
       <div class="sidebar-section">
-        <div class="sidebar-section-label">Management</div>
+        <div class="sidebar-section-label">Manage</div>
         <div class="sidebar-item" data-view="students" onclick="openTab('students','Students')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           Students
-          <span class="sidebar-count" id="studentCount">0</span>
         </div>
         <div class="sidebar-item" data-view="bookings" onclick="openTab('bookings','Bookings')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           Bookings
-          <span class="sidebar-count" id="bookingCount">0</span>
         </div>
       </div>
       <div class="sidebar-section">
-        <div class="sidebar-section-label">Scheduling</div>
+        <div class="sidebar-section-label">Schedule</div>
         <div class="sidebar-item" data-view="classes" onclick="openTab('classes','Classes')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
           Classes
@@ -442,20 +443,17 @@ tr:last-child td { border-bottom: none; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           Teachers
         </div>
+        <div class="sidebar-item" data-view="attendance" onclick="openTab('attendance','Attendance')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          Attendance
+        </div>
         <div class="sidebar-item" data-view="payroll" onclick="openTab('payroll','Payroll')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
           Payroll
         </div>
       </div>
       <div class="sidebar-section">
-        <div class="sidebar-section-label">Attendance</div>
-        <div class="sidebar-item" data-view="attendance" onclick="openTab('attendance','Attendance')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-          Attendance
-        </div>
-      </div>
-      <div class="sidebar-section">
-        <div class="sidebar-section-label">Accommodation</div>
+        <div class="sidebar-section-label">Accomm</div>
         <div class="sidebar-item" data-view="accommodation" onclick="openTab('accommodation','Hosts')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
           Hosts
@@ -474,7 +472,7 @@ tr:last-child td { border-bottom: none; }
         </div>
       </div>
       <div class="sidebar-section">
-        <div class="sidebar-section-label">Documents</div>
+        <div class="sidebar-section-label">Docs</div>
         <div class="sidebar-item" data-view="documents" onclick="openTab('documents','Documents')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
           Documents
@@ -485,6 +483,10 @@ tr:last-child td { border-bottom: none; }
         <div class="sidebar-item" onclick="checkHealth()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
           Health Check
+        </div>
+        <div class="sidebar-item" onclick="window.location.href='/sis/auth/logout'" style="color:var(--text-muted)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Logout
         </div>
       </div>
     </nav>
@@ -508,6 +510,30 @@ tr:last-child td { border-bottom: none; }
 <script>
 const API = '/sis/api';
 
+// ─── USER PERMISSIONS ──────────────────────────
+let currentUser = { user: '', role: 'staff', permissions: { deny: [], viewOnly: [] } };
+
+(async function loadUserPermissions() {
+  try {
+    const res = await fetch(API.replace('/api', '/auth/me'));
+    const data = await res.json();
+    if (data.success) {
+      currentUser = data;
+      // Hide denied sidebar items
+      for (const section of data.permissions.deny) {
+        const el = document.querySelector(`[data-view="${section}"]`);
+        if (el) el.style.display = 'none';
+      }
+      // Show username in sidebar footer
+      const footer = document.querySelector('.sidebar-footer');
+      if (footer) footer.textContent = data.displayName || data.user;
+    }
+  } catch {}
+})();
+
+function canEdit(section) { return !currentUser.permissions.viewOnly.includes(section) && !currentUser.permissions.deny.includes(section); }
+function canView(section) { return !currentUser.permissions.deny.includes(section); }
+
 function toggleSidebar() {
   const sb = document.getElementById('mainSidebar');
   const btn = sb.querySelector('.sidebar-collapse-btn');
@@ -516,7 +542,7 @@ function toggleSidebar() {
 }
 let currentView = 'students';
 let studentPage = 1, bookingPage = 1;
-let studentSearch = '', bookingSearch = '', bookingStatusFilter = '';
+let studentSearch = '', studentNatFilter = '', bookingSearch = '', bookingStatusFilter = '';
 
 // ─── SCHOOL CONFIG (single source of truth for select options) ──
 let SIS_CONFIG = {};
@@ -804,6 +830,19 @@ function formatDate(d) {
   return new Date(d).toLocaleDateString('en-IE', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
+function levelBadge(level) {
+  const colours = {
+    'A1': 'background:#ecfdf5;color:#065f46',
+    'A2': 'background:#d1fae5;color:#065f46',
+    'B1': 'background:#eff6ff;color:#1e40af',
+    'B2': 'background:#dbeafe;color:#1e40af',
+    'C1': 'background:#faf5ff;color:#6b21a8',
+    'C2': 'background:#f3e8ff;color:#6b21a8',
+  };
+  const style = colours[level] || 'background:#e5e7eb;color:#374151';
+  return '<span class="badge" style="'+style+'">'+esc(level || '?')+'</span>';
+}
+
 function formatMoney(v) {
   if (v == null || v === '') return '€0';
   const n = parseFloat(v);
@@ -829,23 +868,27 @@ async function showStudentsList() {
 
   const params = new URLSearchParams({ page: studentPage, limit: 25 });
   if (studentSearch) params.set('search', studentSearch);
+  if (studentNatFilter) params.set('nationality', studentNatFilter);
 
   try {
     const res = await api('/students?' + params);
-    document.getElementById('studentCount').textContent = res.total;
 
     let html = `<div style="display:flex;gap:0;height:calc(100vh - 150px)">
       <div style="flex:1;overflow-y:auto;min-width:0">
       <div class="toolbar">
         <div class="search-bar">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" placeholder="Search students..." value="${esc(studentSearch)}" oninput="debounceStudentSearch(this.value)">
+          <input type="text" id="studentSearchInput" placeholder="Search students..." value="${esc(studentSearch)}" oninput="debounceStudentSearch(this.value)">
         </div>
+        <select class="filter-select" id="studentNatSelect" onchange="studentNatFilter=this.value;studentPage=1;showStudentsList()">
+          <option value="">All Nationalities</option>
+          ${(res.nationalities || []).map(n => `<option value="${esc(n)}" ${studentNatFilter===n?'selected':''}>${countryName(n)}</option>`).join('')}
+        </select>
       </div>
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th>Name</th><th>Email</th><th>Nationality</th><th>Phone</th><th>Status</th>
+            <th>Name</th><th>Email</th><th>Nationality</th><th>Phone</th><th>Onboarded</th>
           </tr></thead>
           <tbody>`;
 
@@ -853,17 +896,19 @@ async function showStudentsList() {
       html += `<tr><td colspan="5" class="table-empty">No students found</td></tr>`;
     } else {
       for (const s of res.data) {
+        const onboarded = s.onboardingDate ? formatDate(s.onboardingDate) : '—';
         html += `<tr class="clickable ${s.id === studentPreviewId ? 'preview-active' : ''}">
-          <td style="position:relative">
+          <td style="position:relative;padding-right:80px">
             <strong style="cursor:pointer" onclick="navigate('student-detail',{id:${s.id}})">${esc(s.lastName)}, ${esc(s.firstName)}</strong>
             <span class="preview-btn" onclick="event.stopPropagation();showStudentPreview(${s.id})" title="Preview">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              Preview
             </span>
           </td>
           <td>${esc(s.email)}</td>
           <td>${countryName(s.nationality)}</td>
           <td style="font-family:var(--font-mono);font-size:12px">${esc(s.phone || s.phoneMobile || '—')}</td>
-          <td>${s.studentStatus || '—'}</td>
+          <td style="font-family:var(--font-mono);font-size:12px">${onboarded}</td>
         </tr>`;
       }
     }
@@ -876,6 +921,7 @@ async function showStudentsList() {
     </div>`;
 
     document.getElementById('content').innerHTML = html;
+    makeSearchable(document.getElementById('studentNatSelect'));
   } catch (e) { toast(e.message, true); }
 }
 
@@ -925,12 +971,13 @@ async function showStudentPreview(id) {
           </div>
           <div style="flex:1;min-width:0">
             <div style="font-size:18px;font-weight:700;letter-spacing:-0.3px">${esc(s.firstName)} ${esc(s.lastName)}</div>
-            <div style="font-size:12px;color:var(--text-muted);font-family:var(--font-mono);margin-top:1px">${esc(s.fideloCustomerNum || s.hubspotContactId || 'ID: '+s.id)}</div>
+            <div style="font-size:12px;color:var(--text-muted);font-family:var(--font-mono);margin-top:1px">ID: ${s.id}</div>
             <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
               ${s.nationality ? '<span class="badge badge-confirmed">'+countryName(s.nationality)+'</span>' : ''}
               ${s.currentLevel ? '<span class="badge" style="background:#dbeafe;color:#1e40af">'+s.currentLevel+'</span>' : ''}
               ${s.studentType === 'JUNIOR' ? '<span class="badge" style="background:#fef3c7;color:#92400e">Junior</span>' : ''}
               ${s.visaRequired ? '<span class="badge" style="background:#fce7f3;color:#9d174d">Visa</span>' : ''}
+              ${(() => { const ab = (s.bookings||[]).find(b => b.agency); return ab ? '<span class="badge" style="background:#f3e8ff;color:#7c3aed">'+esc(ab.agency.name)+'</span>' : ''; })()}
             </div>
           </div>
         </div>
@@ -979,7 +1026,7 @@ async function showStudentPreview(id) {
             : '<span style="font-weight:600;color:var(--success)">Paid</span>';
           return '<div style="padding:8px 10px;background:var(--bg-subtle);border-radius:6px;margin-bottom:6px;font-size:12px;cursor:pointer;border-left:3px solid '+(isLive?'var(--success)':'var(--accent)')+'" onclick="navigate(\'booking-detail\',{id:'+b.id+'})">' +
             '<div style="display:flex;justify-content:space-between;align-items:center"><strong>' + esc(c?.name || 'Booking #'+b.id) + '</strong>'+balanceHtml+'</div>' +
-            '<div style="color:var(--text-muted);margin-top:2px;font-family:var(--font-mono);font-size:11px">' + (c ? formatDate(c.startDate)+' — '+formatDate(c.endDate) : '—') + ' · <span class="badge '+(b.status==='CONFIRMED'?'badge-confirmed':'badge-pending')+'" style="font-size:10px">'+b.status+'</span></div>' +
+            '<div style="color:var(--text-muted);margin-top:2px;font-family:var(--font-mono);font-size:11px">' + (c ? formatDate(c.startDate)+' — '+formatDate(c.endDate) : '—') + ' · <span class="badge '+(b.status==='CONFIRMED'?'badge-confirmed':b.status==='PARTIAL'?'badge-pending':b.status==='ESCROW'?'badge-confirmed':'badge-pending')+'" style="font-size:10px">'+b.status+'</span></div>' +
           '</div>';
         }).join('') : '<div style="font-size:12px;color:var(--text-muted)">No active bookings</div>'}
         </div>
@@ -1174,7 +1221,14 @@ async function loadPvDocs(studentId) {
 let searchTimeout;
 function debounceStudentSearch(val) {
   clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => { studentSearch = val; studentPage = 1; showStudentsList(); }, 300);
+  searchTimeout = setTimeout(() => {
+    studentSearch = val;
+    studentPage = 1;
+    showStudentsList().then(() => {
+      const input = document.getElementById('studentSearchInput');
+      if (input) { input.focus(); input.selectionStart = input.selectionEnd = input.value.length; }
+    });
+  }, 400);
 }
 
 // ─── STUDENT DETAIL ─────────────────────────────
@@ -1193,6 +1247,9 @@ async function showStudentDetail(id) {
     const initials = (s.firstName?.[0] || '') + (s.lastName?.[0] || '');
     const age = s.birthday ? Math.floor((Date.now() - new Date(s.birthday).getTime()) / (365.25*24*60*60*1000)) : null;
     const genderLabel = s.gender === 1 ? 'Male' : s.gender === 2 ? 'Female' : '—';
+    // Get agency from first booking that has one
+    const agencyBooking = (s.bookings || []).find(b => b.agency);
+    const agency = agencyBooking?.agency;
 
     let html = `
     <div class="detail-grid">
@@ -1210,12 +1267,13 @@ async function showStudentDetail(id) {
               </div>
               <div style="flex:1">
                 <div style="font-size:20px;font-weight:700;letter-spacing:-0.3px">${esc(s.firstName)} ${esc(s.lastName)}</div>
-                <div style="font-size:12px;color:var(--text-muted);font-family:var(--font-mono);margin-top:2px">${esc(s.fideloCustomerNum || s.hubspotContactId || 'ID: '+s.id)}</div>
+                <div style="font-size:12px;color:var(--text-muted);font-family:var(--font-mono);margin-top:2px">ID: ${s.id}</div>
                 <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap">
                   ${s.nationality ? `<span class="badge badge-confirmed">${countryName(s.nationality)}</span>` : ''}
                   ${s.currentLevel ? `<span class="badge" style="background:#dbeafe;color:#1e40af">${s.currentLevel}</span>` : ''}
                   ${s.studentType === 'JUNIOR' ? '<span class="badge" style="background:#fef3c7;color:#92400e">Junior</span>' : ''}
                   ${s.visaRequired ? '<span class="badge" style="background:#fce7f3;color:#9d174d">Visa</span>' : ''}
+                  ${agency ? `<span class="badge" style="background:#f3e8ff;color:#7c3aed">Partner: ${esc(agency.name)}</span>` : ''}
                 </div>
               </div>
             </div>
@@ -1278,8 +1336,16 @@ async function showStudentDetail(id) {
           </div>
         </div>
         <div class="card" style="margin-bottom:8px">
-          <div class="card-header collapse-header" onclick="toggleCollapse(this)" style="padding:10px 18px"><h3 style="font-size:13px">Billing</h3></div>
+          <div class="card-header collapse-header" onclick="toggleCollapse(this)" style="padding:10px 18px"><h3 style="font-size:13px">Partners & Billing</h3></div>
           <div class="card-body collapse-body" style="padding:12px 18px">
+            ${agency ? `<div style="border:1px solid var(--card-border);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;background:var(--bg-subtle)">
+              <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:8px;font-weight:600">Partner</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:13px">
+                <div><span style="color:var(--text-muted);font-size:11px;display:block">Name</span><strong>${esc(agency.name)}</strong></div>
+                <div><span style="color:var(--text-muted);font-size:11px;display:block">Contact</span>${esc(agency.contactPerson || '—')}</div>
+                <div><span style="color:var(--text-muted);font-size:11px;display:block">Email</span>${agency.email ? `<a href="#" onclick="event.preventDefault();openCommsCompose(${s.id},'${esc(agency.email)}','${esc(agency.contactPerson || agency.name)}')" style="color:var(--accent);text-decoration:none">${esc(agency.email)}</a>` : '—'}</div>
+              </div>
+            </div>` : ''}
             <div class="form-grid" id="studentFormBilling">
               ${field('billingCompany','Company',s.billingCompany)}
               ${field('billingFirstName','First Name',s.billingFirstName)}
@@ -1313,7 +1379,6 @@ async function showStudentDetail(id) {
           <div class="card-body collapse-body" style="padding:12px 18px">
             <div class="form-grid" id="studentFormOther">
               ${selectField('studentType','Adult / Junior',s.studentType||'ADULT',[['ADULT','Adult'],['JUNIOR','Junior']])}
-              ${field('studentStatus','Status',s.studentStatus)}
               ${field('source','Source',s.source)}
               ${field('socialSecurityNum','PPS/SSN',s.socialSecurityNum)}
               ${configSelect('diet','Diet',s.diet,'diet_types')}
@@ -1707,8 +1772,8 @@ function openCommsCompose(studentId, email, firstName) {
   // Expand the comms card if collapsed
   const header = document.querySelector('#commsCard .collapse-header');
   const body = document.getElementById('commsBody');
-  if (body && body.style.display === 'none') {
-    if (header) toggleCollapse(header);
+  if (header && body && !body.classList.contains('open')) {
+    toggleCollapse(header);
   }
   // Show compose
   const compose = document.getElementById('commsCompose');
@@ -1839,17 +1904,18 @@ async function loadEmailTemplate(studentId) {
     const tokens = await api('/documents/tokens/' + studentId);
     let html = tpl.htmlTemplate;
 
-    // Replace {{double.dot}} tokens (SIS native)
+    // Replace {{double.dot}} tokens (SIS native) — empty string if unset
     html = html.replace(/\{\{([^}]+)\}\}/g, (m, key) => {
       const k = key.trim();
-      return tokens[k] !== undefined ? tokens[k] : m;
+      if (k.startsWith('custom.') || k.startsWith('document.')) return tokens[k] !== undefined ? tokens[k] : m;
+      return tokens[k] || '';
     });
 
-    // Replace {single_brace} Fidelo tokens via mapping
+    // Replace {single_brace} Fidelo tokens via mapping — empty string if unset
     html = html.replace(/\{([a-z_]+)\}/g, (m, key) => {
       const mapped = FIDELO_TOKEN_MAP[key];
-      if (mapped && tokens[mapped] !== undefined) return tokens[mapped];
-      return m; // leave unresolved tokens as-is
+      if (mapped) return tokens[mapped] || '';
+      return '';
     });
 
     // Strip Fidelo conditionals {if ...}...{/if} and loops — show content, drop tags
@@ -2040,7 +2106,6 @@ async function showBookingsList() {
 
   try {
     const res = await api('/bookings?' + params);
-    document.getElementById('bookingCount').textContent = res.total;
 
     let html = `
       <div class="toolbar">
@@ -2050,9 +2115,9 @@ async function showBookingsList() {
         </div>
         <select class="filter-select" onchange="bookingStatusFilter=this.value;bookingPage=1;showBookingsList()">
           <option value="">All Statuses</option>
-          <option value="PENDING" ${bookingStatusFilter==='PENDING'?'selected':''}>Pending</option>
+          <option value="PARTIAL" ${bookingStatusFilter==='PARTIAL'?'selected':''}>Partial</option>
           <option value="CONFIRMED" ${bookingStatusFilter==='CONFIRMED'?'selected':''}>Confirmed</option>
-          <option value="COMPLETED" ${bookingStatusFilter==='COMPLETED'?'selected':''}>Completed</option>
+          <option value="ESCROW" ${bookingStatusFilter==='ESCROW'?'selected':''}>Escrow</option>
           <option value="CANCELLED" ${bookingStatusFilter==='CANCELLED'?'selected':''}>Cancelled</option>
         </select>
       </div>
@@ -2117,12 +2182,12 @@ async function showBookingDetail(id) {
             <div>
               <div style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono)">#${b.id}</div>
               <div style="font-size:16px;font-weight:700;cursor:pointer;color:var(--accent)" onclick="navigate('student-detail',{id:${b.student?.id}})">${esc(studentName)}</div>
-              ${b.agency ? `<div style="font-size:12px;color:var(--text-secondary)">Agency: ${esc(b.agency.name)}</div>` : ''}
+              ${b.agency ? `<div style="font-size:12px;color:var(--text-secondary)">Agency: ${esc(b.agency.name)} <button class="btn btn-ghost btn-sm" onclick="generateNetStatement(${b.id})" style="font-size:11px;padding:1px 6px;margin-left:4px">Net Statement</button></div>` : ''}
             </div>
           </div>
           <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;flex:1">
             <div style="min-width:120px">
-              ${selectField('status','Status',b.status,[['PENDING','Pending'],['CONFIRMED','Confirmed'],['COMPLETED','Completed'],['CANCELLED','Cancelled']])}
+              ${selectField('status','Status',b.status,[['PARTIAL','Partial'],['CONFIRMED','Confirmed'],['ESCROW','Escrow'],['CANCELLED','Cancelled']])}
             </div>
             <div style="min-width:130px">
               ${selectField('paymentMethod','Payment Method',b.paymentMethod,[['','—'],['Bank Transfer','Bank Transfer'],['Stripe','Stripe'],['TransferMate','TransferMate'],['TransferMate Escrow','TransferMate Escrow'],['Cash','Cash'],['Credit Card','Credit Card'],['Cheque','Cheque']])}
@@ -2271,6 +2336,17 @@ function calcBalance() {
   const paid = parseFloat(form.querySelector('[data-field="amountPaid"]')?.value) || 0;
   const balanceField = form.querySelector('[data-field="amountOpen"]');
   if (balanceField) balanceField.value = (total - paid).toFixed(2);
+}
+
+async function generateNetStatement(bookingId) {
+  try {
+    const result = await api('/documents/net-statement/' + bookingId);
+    if (!result.success) { toast(result.error, true); return; }
+    // Open in new window for print/PDF
+    const win = window.open('', '_blank');
+    win.document.write('<!DOCTYPE html><html><head><title>Net Statement — ' + esc(result.booking.agency) + ' — ' + esc(result.booking.student) + '</title></head><body style="margin:0">' + result.html + '</body></html>');
+    win.document.close();
+  } catch (e) { toast(e.message, true); }
 }
 
 async function saveBooking(id) {
@@ -2519,7 +2595,7 @@ async function openNewBookingModal(presetStudentId) {
             <label class="form-label">Student *</label>
             <select class="form-select" data-field="studentId">${studentOptions}</select>
           </div>
-          ${selectField('status','Status','PENDING',[['PENDING','Pending'],['CONFIRMED','Confirmed']])}
+          ${selectField('status','Status','PARTIAL',[['PARTIAL','Partial'],['CONFIRMED','Confirmed'],['ESCROW','Escrow'],['CANCELLED','Cancelled']])}
           ${field('amountTotal','Total Amount','')}
           ${field('salesperson','Salesperson','')}
           <div class="form-group full"><label class="form-label">Note</label><textarea class="form-textarea" data-field="note"></textarea></div>
@@ -2636,7 +2712,13 @@ async function createBooking() {
 }
 
 // ─── CLASSES LIST ───────────────────────────────
-let classSessionFilter = '', classLevelFilter = '';
+let classSessionFilter = '', classLevelFilter = '', classRoomFilter = '';
+let classSortCol = 'session', classSortDir = 'asc';
+function toggleClassSort(col) {
+  if (classSortCol === col) classSortDir = classSortDir === 'asc' ? 'desc' : 'asc';
+  else { classSortCol = col; classSortDir = 'asc'; }
+  showClassesList();
+}
 let classListWeek = getMonday(new Date());
 
 function getMonday(d) {
@@ -2649,7 +2731,7 @@ function fmtWeekLabel(mon) {
   const fri = getFriday(mon);
   return `${mon.toLocaleDateString('en-IE',{day:'2-digit',month:'short'})} — ${fri.toLocaleDateString('en-IE',{day:'2-digit',month:'short',year:'numeric'})}`;
 }
-function isoDate(d) { return d.toISOString().split('T')[0]; }
+function isoDate(d) { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function isCurrentWeek(mon) { const now = getMonday(new Date()); return isoDate(mon) === isoDate(now); }
 
 async function showClassesList() {
@@ -2679,6 +2761,7 @@ async function showClassesList() {
         <select class="filter-select" onchange="classSessionFilter=this.value;showClassesList()">
           <option value="">All Sessions</option>
           <option value="MORNING" ${classSessionFilter==='MORNING'?'selected':''}>Morning</option>
+          <option value="PLUS_FIVE" ${classSessionFilter==='PLUS_FIVE'?'selected':''}>+5</option>
           <option value="AFTERNOON" ${classSessionFilter==='AFTERNOON'?'selected':''}>Afternoon</option>
         </select>
         <select class="filter-select" onchange="classLevelFilter=this.value;showClassesList()">
@@ -2695,36 +2778,81 @@ async function showClassesList() {
       <div style="margin-bottom:20px">
         <div class="section-title">Classrooms</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          ${classrooms.map(r => `<div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);padding:8px 14px;font-size:13px;font-weight:500">${esc(r.name)}</div>`).join('')}
+          <div onclick="classRoomFilter='';showClassesList()" style="background:${classRoomFilter===''?'var(--accent)':'var(--card-bg)'};color:${classRoomFilter===''?'#fff':'inherit'};border:1px solid var(--card-border);border-radius:var(--radius);padding:8px 14px;font-size:13px;font-weight:500;cursor:pointer">All</div>
+          ${classrooms.map(r => `<div onclick="classRoomFilter='${esc(r.name)}';showClassesList()" style="background:${classRoomFilter===r.name?'var(--accent)':'var(--card-bg)'};color:${classRoomFilter===r.name?'#fff':'inherit'};border:1px solid var(--card-border);border-radius:var(--radius);padding:8px 14px;font-size:13px;font-weight:500;cursor:pointer">${esc(r.name)}</div>`).join('')}
         </div>
       </div>
 
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th>Class</th><th>Level</th><th>Session</th><th>Room</th><th>Time</th><th>Students This Week</th><th>Active</th>
+            <th style="cursor:pointer" onclick="toggleClassSort('name')">Class ${classSortCol==='name'?(classSortDir==='asc'?'&#9650;':'&#9660;'):''}</th>
+            <th style="cursor:pointer" onclick="toggleClassSort('level')">Level ${classSortCol==='level'?(classSortDir==='asc'?'&#9650;':'&#9660;'):''}</th>
+            <th style="cursor:pointer" onclick="toggleClassSort('session')">Session ${classSortCol==='session'?(classSortDir==='asc'?'&#9650;':'&#9660;'):''}</th>
+            <th style="cursor:pointer" onclick="toggleClassSort('room')">Room ${classSortCol==='room'?(classSortDir==='asc'?'&#9650;':'&#9660;'):''}</th>
+            <th>Time</th>
+            <th style="cursor:pointer" onclick="toggleClassSort('teacher')">Teacher ${classSortCol==='teacher'?(classSortDir==='asc'?'&#9650;':'&#9660;'):''}</th>
+            <th style="cursor:pointer" onclick="toggleClassSort('students')">Students ${classSortCol==='students'?(classSortDir==='asc'?'&#9650;':'&#9660;'):''}</th>
+            <th style="cursor:pointer" onclick="toggleClassSort('vacant')">Vacant ${classSortCol==='vacant'?(classSortDir==='asc'?'&#9650;':'&#9660;'):''}</th>
           </tr></thead>
           <tbody>`;
 
-    if (classes.length === 0) {
-      html += `<tr><td colspan="7" class="table-empty">No classes found</td></tr>`;
+    const CLASS_MAX = 16;
+    // Filter: hide classes with no classroom assigned
+    let filtered = classes.filter(c => c.classroomId || c.classroom);
+    // Room filter
+    if (classRoomFilter) filtered = filtered.filter(c => (c.classroom?.name || '') === classRoomFilter);
+    // Sort
+    filtered.sort((a, b) => {
+      let va, vb;
+      switch (classSortCol) {
+        case 'name': va = a.name; vb = b.name; break;
+        case 'level': va = a.level; vb = b.level; break;
+        case 'session': va = a.session; vb = b.session; break;
+        case 'room': va = a.classroom?.name || ''; vb = b.classroom?.name || ''; break;
+        case 'teacher': va = (a.classTeachers?.[0]?.teacher ? a.classTeachers[0].teacher.lastName : ''); vb = (b.classTeachers?.[0]?.teacher ? b.classTeachers[0].teacher.lastName : ''); break;
+        case 'students': va = a.studentAssignments?.length || 0; vb = b.studentAssignments?.length || 0; return classSortDir === 'asc' ? va - vb : vb - va;
+        case 'vacant': va = CLASS_MAX - (a.studentAssignments?.length || 0); vb = CLASS_MAX - (b.studentAssignments?.length || 0); return classSortDir === 'asc' ? va - vb : vb - va;
+        default: va = a.name; vb = b.name;
+      }
+      const cmp = String(va).localeCompare(String(vb));
+      return classSortDir === 'asc' ? cmp : -cmp;
+    });
+
+    let totalStudents = 0, totalVacant = 0;
+    if (filtered.length === 0) {
+      html += `<tr><td colspan="8" class="table-empty">No classes found</td></tr>`;
     } else {
-      for (const c of classes) {
+      for (const c of filtered) {
         const room = c.classroom?.name || '—';
         const studentCount = c.studentAssignments?.length || 0;
+        const vacant = CLASS_MAX - studentCount;
+        totalStudents += studentCount;
+        totalVacant += Math.max(0, vacant);
         const sessionBadge = c.session === 'MORNING'
           ? '<span class="badge" style="background:#fef3c7;color:#92400e">AM</span>'
+          : c.session === 'PLUS_FIVE'
+          ? '<span class="badge" style="background:#fed7aa;color:#9a3412">+5</span>'
           : '<span class="badge" style="background:#dbeafe;color:#1e40af">PM</span>';
+        const vacantStyle = vacant <= 0 ? 'color:var(--danger);font-weight:700' : vacant <= 3 ? 'color:#d97706;font-weight:600' : 'color:var(--success)';
+        const teacherNames = (c.classTeachers || []).map(ct => ct.teacher ? `${ct.teacher.firstName} ${ct.teacher.lastName}` : '').filter(Boolean).join(', ');
         html += `<tr class="clickable" onclick="navigate('class-detail',{id:${c.id}})">
           <td><strong>${esc(c.name)}</strong></td>
-          <td><span class="badge badge-confirmed">${c.level}</span></td>
+          <td>${levelBadge(c.level)}</td>
           <td>${sessionBadge}</td>
           <td>${esc(room)}</td>
-          <td style="font-family:var(--font-mono);font-size:12px">${c.startTime?.slice(0,5)} — ${c.endTime?.slice(0,5)}</td>
+          <td style="font-family:var(--font-mono);font-size:12px">${c.startTime?.slice(0,5)} — ${c.endTime?.slice(0,5)}${c.breakMinutes ? ` <span style="color:var(--text-muted);font-size:11px" title="Unpaid break — subtracted from payroll">(−${c.breakMinutes}m)</span>` : ''}</td>
+          <td style="font-size:12px">${teacherNames ? esc(teacherNames) : '<span style="color:var(--text-muted)">—</span>'}</td>
           <td style="font-family:var(--font-mono)">${studentCount}</td>
-          <td>${c.active ? '<span style="color:var(--success)">Yes</span>' : '<span style="color:var(--text-muted)">No</span>'}</td>
+          <td style="font-family:var(--font-mono);${vacantStyle}">${vacant}</td>
         </tr>`;
       }
+      // Totals row
+      html += `<tr style="background:var(--bg-muted);border-top:2px solid var(--card-border);font-weight:700">
+        <td colspan="6" style="text-align:right">TOTAL</td>
+        <td style="font-family:var(--font-mono)">${totalStudents}</td>
+        <td style="font-family:var(--font-mono);color:var(--success)">${totalVacant}</td>
+      </tr>`;
     }
     html += `</tbody></table></div>`;
     document.getElementById('content').innerHTML = html;
@@ -2757,11 +2885,17 @@ async function showClassDetail(id, weekOverride) {
       return ws <= fri && we >= mon;
     });
 
-    // Filter unassigned to matching session
+    // Filter unassigned to matching session + level
     const matchingUnassigned = unassigned.filter(bc => {
+      // Session filter
       const cat = bc.category;
-      if (cls.session === 'MORNING') return ['MORNING','MORNING_PLUS','INTENSIVE'].includes(cat);
-      if (cls.session === 'AFTERNOON') return ['AFTERNOON','AFTERNOON_PLUS','INTENSIVE'].includes(cat);
+      if (cls.session === 'MORNING' && !['MORNING','MORNING_PLUS','INTENSIVE'].includes(cat)) return false;
+      if (cls.session === 'AFTERNOON' && !['AFTERNOON','AFTERNOON_PLUS','INTENSIVE'].includes(cat)) return false;
+      // +5 class pulls from both MORNING_PLUS (AM students staying on) and AFTERNOON_PLUS (PM students arriving early)
+      if (cls.session === 'PLUS_FIVE' && !['MORNING_PLUS','AFTERNOON_PLUS'].includes(cat)) return false;
+      // Level filter: match class level or unknown/null
+      const studentLevel = bc.booking?.student?.currentLevel || bc.level || null;
+      if (studentLevel && studentLevel !== cls.level) return false;
       return true;
     });
 
@@ -2792,7 +2926,8 @@ async function showClassDetail(id, weekOverride) {
           <div class="form-grid" id="classForm">
             ${field('name','Name',cls.name)}
             ${selectField('level','Level',cls.level,getCourseLevels())}
-            ${selectField('session','Session',cls.session,[['MORNING','Morning'],['AFTERNOON','Afternoon']])}
+            ${selectField('session','Session',cls.session,[['MORNING','Morning'],['PLUS_FIVE','+5'],['AFTERNOON','Afternoon']])}
+            ${field('breakMinutes','Break (minutes)',cls.breakMinutes ?? 0,'number')}
             <div class="form-group">
               <label class="form-label">Classroom</label>
               <select class="form-select" data-field="classroomId">
@@ -2877,13 +3012,13 @@ async function showClassDetail(id, weekOverride) {
       html += `<div class="table-wrap"><table>
         <thead><tr><th>Student</th><th>Level</th><th>Course</th><th>Enrolled</th><th></th></tr></thead><tbody>`;
       for (const a of weekStudents) {
-        const student = a.bookingCourse?.booking?.student;
+        const student = a.student || a.bookingCourse?.booking?.student;
         const sName = student ? `${student.lastName}, ${student.firstName}` : '—';
-        const sId = student?.id;
+        const sId = student?.id || 0;
         const level = student?.currentLevel || a.bookingCourse?.level || '?';
         html += `<tr>
-          <td><span style="cursor:pointer;color:var(--accent);font-weight:500" onclick="navigate('student-detail',{id:${sId}})">${esc(sName)}</span></td>
-          <td><span class="badge badge-confirmed">${level}</span></td>
+          <td>${sId ? `<span style="cursor:pointer;color:var(--accent);font-weight:500" onclick="navigate('student-detail',{id:${sId}})">${esc(sName)}</span>` : esc(sName)}</td>
+          <td>${levelBadge(level)}</td>
           <td>${esc(a.bookingCourse?.name || '—')}</td>
           <td style="font-size:12px;font-family:var(--font-mono)">${formatDate(a.weekStart)} — ${formatDate(a.weekEnd)}</td>
           <td><button class="btn btn-ghost btn-sm" onclick="removeClassAssignment(${a.id},${cls.id})" style="color:var(--danger)">Remove</button></td>
@@ -2898,7 +3033,7 @@ async function showClassDetail(id, weekOverride) {
 
     // Unassigned pool
     html += `<div class="card">
-      <div class="card-header"><h3>Unassigned Students — ${cls.session === 'MORNING' ? 'Morning' : 'Afternoon'} (${matchingUnassigned.length})</h3></div>
+      <div class="card-header"><h3>Unassigned Students — ${cls.session === 'MORNING' ? 'Morning' : cls.session === 'PLUS_FIVE' ? '+5' : 'Afternoon'} (${matchingUnassigned.length})</h3></div>
       <div class="card-body">`;
 
     if (matchingUnassigned.length > 0) {
@@ -2911,10 +3046,11 @@ async function showClassDetail(id, weekOverride) {
       for (const bc of matchingUnassigned) {
         const student = bc.booking?.student;
         const sName = student ? `${student.lastName}, ${student.firstName}` : '—';
+        const sId = student?.id;
         const level = student?.currentLevel || bc.level || '?';
         html += `<tr data-name="${esc(sName.toLowerCase())}">
-          <td><strong>${esc(sName)}</strong></td>
-          <td><span class="badge badge-confirmed">${level}</span></td>
+          <td>${sId ? `<span style="cursor:pointer;color:var(--accent);font-weight:600" onclick="event.stopPropagation();navigate('student-detail',{id:${sId}})">${esc(sName)}</span>` : `<strong>${esc(sName)}</strong>`}</td>
+          <td>${levelBadge(level)}</td>
           <td>${esc(bc.name)}</td>
           <td style="font-size:12px;font-family:var(--font-mono)">${formatDate(bc.startDate)} — ${formatDate(bc.endDate)}</td>
           <td><button class="btn btn-sm btn-primary" onclick="quickAssign(${bc.id},${cls.id})">Assign</button></td>
@@ -3082,7 +3218,8 @@ async function openNewClassModal() {
         <div class="form-grid" id="newClassForm">
           ${field('name','Name *','','text')}
           ${selectField('level','Level *','A1',getCourseLevels())}
-          ${selectField('session','Session *','MORNING',[['MORNING','Morning'],['AFTERNOON','Afternoon']])}
+          ${selectField('session','Session *','MORNING',[['MORNING','Morning'],['PLUS_FIVE','+5'],['AFTERNOON','Afternoon']])}
+          ${field('breakMinutes','Break (minutes)','0','number')}
           <div class="form-group">
             <label class="form-label">Classroom *</label>
             <select class="form-select" data-field="classroomId">${classroomOpts}</select>
@@ -3209,7 +3346,7 @@ async function showAttendance() {
         <select class="filter-select" style="min-width:200px" onchange="attendanceClassId=parseInt(this.value)||null;loadWeeklyAttendance()">
           <option value="">Select a class...</option>
           ${classes.map(c => {
-            const badge = c.session === 'MORNING' ? 'AM' : 'PM';
+            const badge = c.session === 'MORNING' ? 'AM' : c.session === 'PLUS_FIVE' ? '+5' : 'PM';
             return `<option value="${c.id}" ${c.id === attendanceClassId ? 'selected' : ''}>${esc(c.name)} (${badge} — ${c.classroom?.name || ''})</option>`;
           }).join('')}
         </select>
@@ -3604,6 +3741,12 @@ async function showUnifiedMatching() {
 
     // Timeline renderer (shared for both sections)
     function renderTimeline(hosts, sectionLabel) {
+      // Pre-pass: build a set of bookingIds that appear on >1 placement (i.e. split bookings)
+      const bookingCounts = {};
+      for (const h of hosts) for (const pr of (h.properties||[])) for (const rm of (pr.rooms||[])) for (const bd of (rm.beds||[])) for (const pl of (bd.placements||[])) {
+        if (pl.bookingId != null) bookingCounts[pl.bookingId] = (bookingCounts[pl.bookingId] || 0) + 1;
+      }
+      const splitBookings = new Set(Object.entries(bookingCounts).filter(([,c]) => c > 1).map(([id]) => parseInt(id)));
       let html = `<table style="border-collapse:collapse;font-size:11px;width:100%">
         <thead><tr style="position:sticky;top:0;z-index:2;background:#fff">
           <th style="position:sticky;left:0;z-index:3;background:#fff;min-width:220px;max-width:220px;padding:4px 8px;text-align:left;font-size:10px;border-right:2px solid var(--card-border);cursor:pointer" onclick="toggleMatchingSort()">${sectionLabel} <span style="font-size:9px;color:var(--text-muted)">${sortLabel()}</span></th>`;
@@ -3666,7 +3809,8 @@ async function showUnifiedMatching() {
                   const textColor = isMale ? '#1e3a5f' : st?.gender === 2 ? '#831843' : '#374151';
                   const radius = (pStart && pEnd) ? '11px' : pStart ? '11px 0 0 11px' : pEnd ? '0 11px 11px 0' : '0';
                   html += '<td style="padding:0;height:28px;'+(cellBg?'background:'+cellBg+';':'')+(isSun?'border-right:2px solid var(--card-border);':'')+'position:relative" ondragover="event.preventDefault();matchHighlightRow(this)" data-orig-bg="'+cellBg+'" ondrop="matchDrop(event,'+bed.id+')">';
-                  html += '<div data-placement-id="'+placement.id+'" draggable="true" ondragstart="matchDragStart(event,'+placement.id+')" onclick="event.stopPropagation();if(splitModeId==='+placement.id+'){splitAtDate('+placement.id+',\''+dStr+'\')}else{showPlacementMenu(event,'+placement.id+',\''+placement.startDate.split('T')[0]+'\',\''+placement.endDate.split('T')[0]+'\')}" style="background:'+barColor+';height:22px;margin:3px 0;border-radius:'+radius+';'+(pStart?'padding-left:6px;':'')+'cursor:grab;display:flex;align-items:center;overflow:visible;position:relative;z-index:1" title="Click for options · Drag to move">';
+                  const hasSibling = splitBookings.has(placement.bookingId);
+                  html += '<div data-placement-id="'+placement.id+'" draggable="true" ondragstart="matchDragStart(event,'+placement.id+')" onclick="event.stopPropagation();if(splitModeId==='+placement.id+'){splitAtDate('+placement.id+',\''+dStr+'\')}else{showPlacementMenu(event,'+placement.id+',\''+placement.startDate.split('T')[0]+'\',\''+placement.endDate.split('T')[0]+'\','+hasSibling+')}" style="background:'+barColor+';height:22px;margin:3px 0;border-radius:'+radius+';'+(pStart?'padding-left:6px;':'')+'cursor:grab;display:flex;align-items:center;overflow:visible;position:relative;z-index:1" title="Click for options · Drag to move">';
                   html += pStart ? '<span style="font-size:10px;font-weight:700;color:'+textColor+';white-space:nowrap">'+esc(st?.firstName||'')+'</span>' : '';
                   html += '</div></td>';
                 } else {
@@ -3951,6 +4095,13 @@ async function showAccommMatching(providerType) {
     }
     html += `</tr></thead><tbody>`;
 
+    // Pre-pass: detect split bookings (bookingId appearing on >1 placement)
+    const unifBookingCounts = {};
+    for (const h of hosts) for (const pr of (h.properties||[])) for (const rm of (pr.rooms||[])) for (const bd of (rm.beds||[])) for (const pl of (bd.placements||[])) {
+      if (pl.bookingId != null) unifBookingCounts[pl.bookingId] = (unifBookingCounts[pl.bookingId] || 0) + 1;
+    }
+    const unifSplitBookings = new Set(Object.entries(unifBookingCounts).filter(([,c]) => c > 1).map(([id]) => parseInt(id)));
+
     // Host rows
     for (const host of hosts) {
       for (const prop of host.properties) {
@@ -4000,12 +4151,13 @@ async function showAccommMatching(providerType) {
                 const barColor = isMale ? '#93c5fd' : st?.gender === 2 ? '#f9a8d4' : '#d1d5db';
                 const textColor = isMale ? '#1e3a5f' : st?.gender === 2 ? '#831843' : '#374151';
                 const radius = (pStart && pEnd) ? '11px' : pStart ? '11px 0 0 11px' : pEnd ? '0 11px 11px 0' : '0';
+                const unifHasSibling = unifSplitBookings.has(placement.bookingId);
                 html += `<td style="padding:0;height:28px;${cellBg ? 'background:'+cellBg+';' : ''}${isSun ? 'border-right:2px solid var(--card-border);' : ''}position:relative"
                   ondragover="event.preventDefault();matchHighlightRow(this)"
                   data-orig-bg="${cellBg}"
                   ondrop="matchDrop(event,${bed.id})">
                   <div data-placement-id="${placement.id}" draggable="true" ondragstart="matchDragStart(event,${placement.id})"
-                    onclick="event.stopPropagation();if(splitModeId===${placement.id}){splitAtDate(${placement.id},'${dStr}')}else{showPlacementMenu(event,${placement.id},'${placement.startDate.split('T')[0]}','${placement.endDate.split('T')[0]}')}"
+                    onclick="event.stopPropagation();if(splitModeId===${placement.id}){splitAtDate(${placement.id},'${dStr}')}else{showPlacementMenu(event,${placement.id},'${placement.startDate.split('T')[0]}','${placement.endDate.split('T')[0]}',${unifHasSibling})}"
                     style="background:${barColor};height:22px;margin:3px 0;border-radius:${radius};${pStart ? 'padding-left:6px;' : ''}cursor:grab;display:flex;align-items:center;overflow:visible;position:relative;z-index:1"
                     title="Click for options · Drag to move">
                     ${pStart ? '<span style="font-size:10px;font-weight:700;color:'+textColor+';white-space:nowrap">'+esc(st?.firstName || '')+'</span>' : ''}
@@ -4151,7 +4303,7 @@ async function matchClickPlace(bedId) {
   } catch (e) { toast(e.message, true); }
 }
 
-function showPlacementMenu(event, placementId, startDate, endDate) {
+function showPlacementMenu(event, placementId, startDate, endDate, hasSibling) {
   // Remove any existing menu
   document.getElementById('placementMenu')?.remove();
 
@@ -4161,10 +4313,16 @@ function showPlacementMenu(event, placementId, startDate, endDate) {
   menu.style.left = event.clientX + 'px';
   menu.style.top = event.clientY + 'px';
 
+  const rejoinItem = hasSibling ? `
+    <div style="padding:8px 12px;cursor:pointer;border-radius:4px;font-size:13px;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='var(--bg-subtle)'" onmouseout="this.style.background=''" onclick="document.getElementById('placementMenu').remove();matchRejoin(${placementId})">
+      <span style="font-size:15px">&#8644;</span> <span>Rejoin</span>
+    </div>` : '';
+
   menu.innerHTML = `
     <div style="padding:8px 12px;cursor:pointer;border-radius:4px;font-size:13px;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='var(--bg-subtle)'" onmouseout="this.style.background=''" onclick="document.getElementById('placementMenu').remove();enterSplitMode(${placementId})">
       <span style="font-size:15px">&#9986;</span> <span>Split</span>
     </div>
+    ${rejoinItem}
     <div style="padding:8px 12px;cursor:pointer;border-radius:4px;font-size:13px;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='var(--bg-subtle)'" onmouseout="this.style.background=''" onclick="document.getElementById('placementMenu').remove();matchUnplace(${placementId})">
       <span style="color:var(--danger)">Unplace</span>
     </div>
@@ -4247,6 +4405,14 @@ async function doSplit(placementId, dateStr) {
   try {
     await api('/accommodation/matching/split', { method: 'POST', body: { bookingAccommodationId: placementId, splitDate: dateStr } });
     toast('Split');
+    refreshMatching();
+  } catch (e) { toast(e.message, true); }
+}
+
+async function matchRejoin(placementId) {
+  try {
+    await api('/accommodation/matching/rejoin', { method: 'POST', body: { bookingAccommodationId: placementId } });
+    toast('Rejoined');
     refreshMatching();
   } catch (e) { toast(e.message, true); }
 }
@@ -4425,7 +4591,7 @@ function showPaymentPreview(lineItemId) {
         <button class="btn btn-primary" onclick="submitSingleLineItem(${li.id})" style="width:100%">Submit to Xero</button>
       ` : `
         <button class="btn btn-primary" onclick="updateXeroBill(${li.id})" style="width:100%">Update Xero</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteXeroBill(${li.id})" style="width:100%">Void Xero Bill</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteXeroBill(${li.id})" style="width:100%">Delete Xero Bill</button>
         <div style="font-size:10px;color:var(--text-muted);text-align:center;padding:4px 0">Xero: ${esc(li.xeroBillId.substring(0,8))}...</div>
       `}
     </div>` : ''}
@@ -4534,8 +4700,8 @@ async function updateXeroBill(id) {
 
 async function deleteXeroBill(id) {
   try {
-    const result = await api('/host-payments/line-items/' + id + '/delete-xero', { method: 'POST' });
-    toast(result.message || 'Voided');
+    await api('/host-payments/line-items/' + id + '/delete-xero', { method: 'POST' });
+    toast('Deleted');
     const runs = await api('/host-payments/runs');
     paymentRunCache = runs[0];
     showPaymentPreview(id);
@@ -4645,7 +4811,9 @@ async function showApartmentsList() {
   try {
     const providers = await api('/accommodation?type=Apartment');
 
-    let html = `<div class="table-wrap"><table>
+    let html = `<div style="display:flex;gap:0;height:calc(100vh - 150px)">
+      <div style="flex:1;overflow-y:auto;min-width:0">
+      <div class="table-wrap"><table>
       <thead><tr><th>Name</th><th>Address</th><th>Contact</th><th>Properties</th><th>Rooms</th><th>Beds</th><th>Active</th></tr></thead><tbody>`;
 
     if (providers.length === 0) {
@@ -4655,8 +4823,14 @@ async function showApartmentsList() {
         const propCount = p.properties?.length || 0;
         const roomCount = p.properties?.reduce((sum, pr) => sum + (pr.rooms?.length || 0), 0) || 0;
         const bedCount = p.properties?.reduce((sum, pr) => sum + (pr.rooms?.reduce((rs, r) => rs + (r.beds?.length || 0), 0) || 0), 0) || 0;
-        html += `<tr class="clickable" onclick="navigate('accommodation-detail',{id:${p.id}})">
-          <td><strong>${esc(p.name)}</strong></td>
+        html += `<tr class="${p.id === apartmentPreviewId ? 'preview-active' : ''}">
+          <td style="position:relative;padding-right:90px">
+            <strong style="cursor:pointer" onclick="navigate('accommodation-detail',{id:${p.id}})">${esc(p.name)}</strong>
+            <span class="preview-btn" onclick="event.stopPropagation();showApartmentPreview(${p.id})" title="Preview">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              Preview
+            </span>
+          </td>
           <td style="font-size:12px">${esc(p.address || '—')}</td>
           <td>${esc(p.contactPerson || '—')}</td>
           <td style="font-family:var(--font-mono)">${propCount}</td>
@@ -4666,10 +4840,16 @@ async function showApartmentsList() {
         </tr>`;
       }
     }
-    html += `</tbody></table></div>`;
+    html += `</tbody></table></div>
+      </div>
+      <div id="apartmentPreviewPane" style="width:0;min-width:0;overflow:hidden;transition:width 350ms cubic-bezier(0.16, 1, 0.3, 1), min-width 350ms cubic-bezier(0.16, 1, 0.3, 1);border-left:1px solid var(--card-border);background:var(--card-bg)"></div>
+    </div>`;
     document.getElementById('content').innerHTML = html;
   } catch (e) { toast(e.message, true); }
 }
+
+let hostPreviewId = null;
+let apartmentPreviewId = null;
 
 async function showAccommodationList() {
   setTopbar('Host Families', '', `<button class="btn btn-primary" onclick="navigate('host-matching')" style="margin-right:8px">Matching</button><button class="btn btn-secondary" onclick="openNewProviderModal('Host Family')">+ New Host</button>`);
@@ -4677,18 +4857,25 @@ async function showAccommodationList() {
   try {
     const providers = await api('/accommodation?type=Host+Family');
 
-    let html = `<div class="table-wrap"><table>
-      <thead><tr><th>Name</th><th>Type</th><th>Contact</th><th>Email</th><th>Phone</th><th>Properties</th><th>Rooms</th><th>Active</th></tr></thead><tbody>`;
+    let html = `<div style="display:flex;gap:0;height:calc(100vh - 150px)">
+      <div style="flex:1;overflow-y:auto;min-width:0">
+      <div class="table-wrap"><table>
+      <thead><tr><th>Name</th><th>Contact</th><th>Email</th><th>Phone</th><th>Properties</th><th>Rooms</th><th>Active</th></tr></thead><tbody>`;
 
     if (providers.length === 0) {
-      html += `<tr><td colspan="8" class="table-empty">No accommodation providers yet</td></tr>`;
+      html += `<tr><td colspan="7" class="table-empty">No accommodation providers yet</td></tr>`;
     } else {
       for (const p of providers) {
         const propCount = p.properties?.length || 0;
         const roomCount = p.properties?.reduce((sum, pr) => sum + (pr.rooms?.length || 0), 0) || 0;
-        html += `<tr class="clickable" onclick="navigate('accommodation-detail',{id:${p.id}})">
-          <td><strong>${esc(p.name)}</strong></td>
-          <td>${esc(p.type || '—')}</td>
+        html += `<tr class="${p.id === hostPreviewId ? 'preview-active' : ''}">
+          <td style="position:relative;padding-right:90px">
+            <strong style="cursor:pointer" onclick="navigate('accommodation-detail',{id:${p.id}})">${esc(p.name)}</strong>
+            <span class="preview-btn" onclick="event.stopPropagation();showHostPreview(${p.id})" title="Preview">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              Preview
+            </span>
+          </td>
           <td>${esc(p.contactPerson || '—')}</td>
           <td>${esc(p.email || '—')}</td>
           <td style="font-family:var(--font-mono);font-size:12px">${esc(p.phone || '—')}</td>
@@ -4698,9 +4885,163 @@ async function showAccommodationList() {
         </tr>`;
       }
     }
-    html += `</tbody></table></div>`;
+    html += `</tbody></table></div>
+      </div>
+      <div id="hostPreviewPane" style="width:0;min-width:0;overflow:hidden;transition:width 350ms cubic-bezier(0.16, 1, 0.3, 1), min-width 350ms cubic-bezier(0.16, 1, 0.3, 1);border-left:1px solid var(--card-border);background:var(--card-bg)"></div>
+    </div>`;
     document.getElementById('content').innerHTML = html;
   } catch (e) { toast(e.message, true); }
+}
+
+async function showHostPreview(id) {
+  hostPreviewId = id;
+  const pane = document.getElementById('hostPreviewPane');
+  if (!pane) return;
+
+  document.querySelectorAll('tr.preview-active').forEach(r => r.classList.remove('preview-active'));
+  event?.target?.closest?.('tr')?.classList?.add('preview-active');
+
+  pane.style.width = '45vw';
+  pane.style.minWidth = '45vw';
+  pane.innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-muted);font-size:12px">Loading...</div>';
+
+  try {
+    const p = await api('/accommodation/' + id);
+    pane.innerHTML = renderAccomPreview(p, 'closeHostPreview');
+  } catch (e) {
+    pane.innerHTML = '<div style="padding:20px;color:var(--danger);font-size:12px">Error loading preview</div>';
+  }
+}
+
+function closeHostPreview() {
+  hostPreviewId = null;
+  const pane = document.getElementById('hostPreviewPane');
+  if (pane) { pane.style.width = '0'; pane.style.minWidth = '0'; }
+  document.querySelectorAll('tr.preview-active').forEach(r => r.classList.remove('preview-active'));
+}
+
+async function showApartmentPreview(id) {
+  apartmentPreviewId = id;
+  const pane = document.getElementById('apartmentPreviewPane');
+  if (!pane) return;
+
+  document.querySelectorAll('tr.preview-active').forEach(r => r.classList.remove('preview-active'));
+  event?.target?.closest?.('tr')?.classList?.add('preview-active');
+
+  pane.style.width = '45vw';
+  pane.style.minWidth = '45vw';
+  pane.innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-muted);font-size:12px">Loading...</div>';
+
+  try {
+    const p = await api('/accommodation/' + id);
+    pane.innerHTML = renderAccomPreview(p, 'closeApartmentPreview');
+  } catch (e) {
+    pane.innerHTML = '<div style="padding:20px;color:var(--danger);font-size:12px">Error loading preview</div>';
+  }
+}
+
+function closeApartmentPreview() {
+  apartmentPreviewId = null;
+  const pane = document.getElementById('apartmentPreviewPane');
+  if (pane) { pane.style.width = '0'; pane.style.minWidth = '0'; }
+  document.querySelectorAll('tr.preview-active').forEach(r => r.classList.remove('preview-active'));
+}
+
+function renderAccomPreview(p, closeFn) {
+  const initials = (p.name || '').split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
+  const propCount = p.properties?.length || 0;
+  const roomCount = p.properties?.reduce((sum, pr) => sum + (pr.rooms?.length || 0), 0) || 0;
+  const bedCount = p.properties?.reduce((sum, pr) => sum + (pr.rooms?.reduce((rs, r) => rs + (r.beds?.length || 0), 0) || 0), 0) || 0;
+  const fullAddr = [p.address, p.addressAddon, p.zip, p.city].filter(Boolean).join(', ');
+
+  return `
+    <div style="overflow-y:auto;height:100%">
+    <div style="position:sticky;top:0;z-index:1;background:var(--card-bg);display:flex;justify-content:flex-end;padding:6px 10px;border-bottom:1px solid var(--card-border)">
+      <button class="btn btn-ghost btn-sm" onclick="${closeFn}()" style="font-size:16px;padding:2px 8px">&times;</button>
+    </div>
+
+    <!-- Profile card -->
+    <div style="padding:16px 20px;border-bottom:1px solid var(--card-border)">
+      <div style="display:flex;gap:14px;align-items:flex-start">
+        <div style="width:60px;height:60px;border-radius:50%;background:#e8e6e1;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--text-secondary);flex-shrink:0;border:3px solid var(--card-border)">${initials || '—'}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:18px;font-weight:700;letter-spacing:-0.3px">${esc(p.name)}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:1px">${esc(p.type || '—')}</div>
+          <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
+            ${p.active ? '<span class="badge badge-confirmed">Active</span>' : '<span class="badge badge-pending">Inactive</span>'}
+            ${p.weeklyRate ? '<span class="badge" style="background:#dcfce7;color:#166534">€'+p.weeklyRate+'/wk</span>' : ''}
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:12px;font-size:13px">
+        <div style="display:flex;align-items:center;gap:6px;color:var(--text-secondary);font-size:12px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          ${esc(p.email || '—')}
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;color:var(--text-secondary);font-size:12px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72"/></svg>
+          ${esc(p.phone || p.mobile || '—')}
+        </div>
+        <div style="grid-column:1/-1;color:var(--text-muted);font-size:12px;display:flex;align-items:flex-start;gap:6px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:2px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          ${esc(fullAddr || '—')}
+        </div>
+        <div style="grid-column:1/-1;text-align:right;margin-top:4px"><a onclick="navigate('accommodation-detail',{id:${p.id}})" style="font-size:12px;color:var(--accent);cursor:pointer">View full profile →</a></div>
+      </div>
+    </div>
+
+    <!-- Capacity summary -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--card-border);border-bottom:1px solid var(--card-border)">
+      <div style="background:var(--card-bg);padding:12px;text-align:center"><div style="font-size:20px;font-weight:700">${propCount}</div><div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Properties</div></div>
+      <div style="background:var(--card-bg);padding:12px;text-align:center"><div style="font-size:20px;font-weight:700">${roomCount}</div><div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Rooms</div></div>
+      <div style="background:var(--card-bg);padding:12px;text-align:center"><div style="font-size:20px;font-weight:700">${bedCount}</div><div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Beds</div></div>
+    </div>
+
+    <!-- Properties & rooms -->
+    <div style="border-bottom:1px solid var(--card-border)">
+      <div class="collapse-header open" onclick="toggleCollapse(this)" style="padding:10px 20px;cursor:pointer;background:var(--bg-subtle)">
+        <span style="font-size:12px;font-weight:600">Properties & Rooms</span>
+      </div>
+      <div class="collapse-body open" style="padding:12px 20px">
+        ${(p.properties || []).length === 0 ? '<div style="font-size:12px;color:var(--text-muted)">No properties configured</div>' :
+          p.properties.map(pr => `
+            <div style="padding:10px 12px;background:var(--bg-subtle);border-radius:6px;margin-bottom:8px;font-size:12px">
+              <div style="font-weight:600;margin-bottom:4px">${esc(pr.name || pr.address || 'Property')}</div>
+              ${(pr.rooms || []).length === 0 ? '<div style="color:var(--text-muted);font-size:11px">No rooms</div>' :
+                pr.rooms.map(r => `
+                  <div style="display:flex;justify-content:space-between;padding:3px 0;border-top:1px solid var(--card-border);font-size:11px">
+                    <span>${esc(r.name || r.roomType || 'Room')}</span>
+                    <span style="color:var(--text-muted)">${r.roomType || ''} · ${(r.beds?.length || 0)} bed${(r.beds?.length||0)===1?'':'s'}</span>
+                  </div>
+                `).join('')}
+            </div>
+          `).join('')}
+      </div>
+    </div>
+
+    <!-- Description -->
+    ${p.description ? `
+    <div style="border-bottom:1px solid var(--card-border)">
+      <div class="collapse-header" onclick="toggleCollapse(this)" style="padding:10px 20px;cursor:pointer;background:var(--bg-muted)">
+        <span style="font-size:12px;font-weight:600">Description</span>
+      </div>
+      <div class="collapse-body" style="padding:12px 20px;font-size:12px;color:var(--text-secondary);line-height:1.5;white-space:pre-wrap">${esc(p.description)}</div>
+    </div>
+    ` : ''}
+
+    <!-- Banking -->
+    ${(p.iban || p.bic) ? `
+    <div>
+      <div class="collapse-header" onclick="toggleCollapse(this)" style="padding:10px 20px;cursor:pointer;background:var(--bg-subtle)">
+        <span style="font-size:12px;font-weight:600">Banking</span>
+      </div>
+      <div class="collapse-body" style="padding:8px 20px 14px;font-size:12px">
+        ${p.iban ? '<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--text-muted)">IBAN</span><span style="font-family:var(--font-mono)">'+esc(p.iban)+'</span></div>' : ''}
+        ${p.bic ? '<div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">BIC</span><span style="font-family:var(--font-mono)">'+esc(p.bic)+'</span></div>' : ''}
+      </div>
+    </div>
+    ` : ''}
+    </div>`;
 }
 
 // ─── ACCOMMODATION DETAIL ───────────────────────
@@ -5316,18 +5657,19 @@ async function showDocumentsList() {
       html += '<div class="table-wrap"><div class="table-empty">No documents yet. Generate your first document above.</div></div>';
     } else {
       html += `<div class="table-wrap"><table>
-        <thead><tr><th>ID</th><th>Type</th><th>Student</th><th>Status</th><th>Version</th><th>Issued</th><th></th></tr></thead><tbody>`;
+        <thead><tr><th>ID</th><th>Type</th><th>Student</th><th>Issued</th><th></th></tr></thead><tbody>`;
       for (const d of docs) {
         const typeName = d.template?.name || d.documentType;
-        const statusCls = d.status === 'ISSUED' ? 'badge-confirmed' : d.status === 'DRAFT' ? 'badge-enquiry' : d.status === 'SUPERSEDED' ? 'badge-pending' : 'badge-cancelled';
+        const studentName = d.student ? `${esc(d.student.firstName || '')} ${esc(d.student.lastName || '')}`.trim() : `Student #${d.studentId}`;
+        const studentLink = d.student
+          ? `<a onclick="openTab('student-detail','${studentName.replace(/'/g,"\\'")}',{id:${d.student.id}})" style="color:var(--accent);text-decoration:none;cursor:pointer">${studentName}</a>`
+          : studentName;
         html += `<tr>
           <td><span style="font-family:var(--font-mono);font-size:12px">${d.id}</span></td>
           <td>${esc(typeName)}</td>
-          <td>Student #${d.studentId}</td>
-          <td><span class="badge ${statusCls}">${d.status}</span></td>
-          <td>v${d.versionNo}.0</td>
+          <td>${studentLink}</td>
           <td style="font-size:12px;font-family:var(--font-mono)">${d.issuedAt ? formatDate(d.issuedAt) : '—'}</td>
-          <td><button class="btn btn-ghost btn-sm" onclick="navigate('document-detail',{id:${d.id}})">View</button></td>
+          <td><button class="btn btn-sm" style="background:#e5e7eb;color:#1f2937;border:1px solid #d1d5db" onclick="navigate('document-detail',{id:${d.id}})">View</button></td>
         </tr>`;
       }
       html += '</tbody></table></div>';

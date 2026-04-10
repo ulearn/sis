@@ -193,5 +193,75 @@ export function documentRoutes(prisma: PrismaClient) {
     } catch (e) { res.status(400).json({ error: String(e) }); }
   });
 
+  // ── NET STATEMENT (on-demand, agency only) ──
+  router.get('/net-statement/:bookingId', async (req, res) => {
+    try {
+      const bookingId = parseInt(req.params.bookingId as string);
+      const booking = await prisma.booking.findUnique({
+        where: { id: bookingId },
+        include: { student: true, agency: true, courses: true },
+      });
+      if (!booking) return res.status(404).json({ error: 'Booking not found' });
+      if (!booking.agencyId || !booking.agency) return res.status(400).json({ error: 'No agency on this booking' });
+
+      const rate = Number(booking.agency.commissionRate || 0);
+      if (rate === 0) return res.status(400).json({ error: 'No commission rate set for this agency' });
+
+      // Get the template
+      const tpl = await prisma.documentTemplate.findUnique({ where: { slug: 'Agency-Net-Statement' } });
+      if (!tpl) return res.status(500).json({ error: 'Net statement template not found — restart server to seed' });
+
+      // Resolve tokens
+      const { tokens } = await scripts.resolveTokens(booking.studentId, bookingId);
+
+      // Render
+      let html = tpl.htmlTemplate.replace(/\{\{([^}]+)\}\}/g, (_match: string, key: string) => {
+        const k = key.trim();
+        if (k.startsWith('custom.') || k.startsWith('document.')) {
+          if (k === 'document.issue_date') return new Date().toLocaleDateString('en-IE', { day: '2-digit', month: 'long', year: 'numeric' });
+          if (k === 'document.number') return `NS-${bookingId}`;
+          return tokens[k] || '';
+        }
+        return tokens[k] || '';
+      });
+
+      res.json({ success: true, html, booking: { id: booking.id, agency: booking.agency.name, student: `${booking.student.firstName} ${booking.student.lastName}` } });
+    } catch (e) { res.status(500).json({ error: String(e) }); }
+  });
+
+  // ── NET-TO-GROSS INVOICE (on-demand, agency only) ──
+  // Mirror of /net-statement — agents who were billed NET in Xero but want a
+  // gross-style presentation invoice with no mention of commission.
+  // Commission rate is fetched live from HubSpot per the agency-data rule.
+  router.get('/net-to-gross/:bookingId', async (req, res) => {
+    try {
+      const bookingId = parseInt(req.params.bookingId as string);
+      const booking = await prisma.booking.findUnique({
+        where: { id: bookingId },
+        include: { student: true, agency: true, courses: true },
+      });
+      if (!booking) return res.status(404).json({ error: 'Booking not found' });
+      if (!booking.agencyId || !booking.agency) return res.status(400).json({ error: 'No agency on this booking' });
+      if (!booking.agency.hubspotCompanyId) return res.status(400).json({ error: 'Agency is not linked to HubSpot — cannot fetch commission rate' });
+
+      const tpl = await prisma.documentTemplate.findUnique({ where: { slug: 'Net-to-Gross-Invoice' } });
+      if (!tpl) return res.status(500).json({ error: 'Net-to-Gross template not found — restart server to seed' });
+
+      const { tokens } = await scripts.resolveTokens(booking.studentId, bookingId);
+
+      let html = tpl.htmlTemplate.replace(/\{\{([^}]+)\}\}/g, (_match: string, key: string) => {
+        const k = key.trim();
+        if (k.startsWith('custom.') || k.startsWith('document.')) {
+          if (k === 'document.issue_date') return new Date().toLocaleDateString('en-IE', { day: '2-digit', month: 'long', year: 'numeric' });
+          if (k === 'document.number') return `INV-${bookingId}`;
+          return tokens[k] || '';
+        }
+        return tokens[k] || '';
+      });
+
+      res.json({ success: true, html, booking: { id: booking.id, agency: booking.agency.name, student: `${booking.student.firstName} ${booking.student.lastName}` } });
+    } catch (e) { res.status(500).json({ error: String(e) }); }
+  });
+
   return router;
 }

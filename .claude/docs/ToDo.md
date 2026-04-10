@@ -75,6 +75,8 @@ i. Rename "Providers" to "Hosts" and then create a second Icon called "Apartment
 - Better reference codes on invoices would help (booking ID, student ID in transfer reference)
 
 ### Payroll (Fidelo Limitation — Reason to Migrate)
+07.04.2026 - add Cron (sunday - pull weekly data) once its fully tested and operational
+
 - Fidelo does bi-weekly payroll, but teachers are paid by the hour
 - Pay on Thursday, payroll cuts off on Wednesday before
 - Next month must include Thu/Fri from the cutoff — Fidelo can't output this
@@ -259,7 +261,7 @@ This is the clearly defined protocol for when a student enters SIS and Xero:
 
 ---
 
-## Unified Matching Screen (All Accommodation Types)
+## Unified Matching Screen (All Accommodation Types) - DONE
 
 ### Context
 - Currently: Hosts have their own matching screen, Apartments will have theirs — same engine, different filter

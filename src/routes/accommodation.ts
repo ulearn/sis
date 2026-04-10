@@ -121,6 +121,15 @@ export function accommodationRoutes(prisma: PrismaClient) {
     } catch (e) { res.status(400).json({ error: String(e) }); }
   });
 
+  // Rejoin placement (merge with adjacent sibling on same booking)
+  router.post('/matching/rejoin', async (req, res) => {
+    try {
+      const { bookingAccommodationId } = req.body;
+      if (!bookingAccommodationId) return res.status(400).json({ error: 'bookingAccommodationId required' });
+      res.json(await scripts.rejoinPlacement(bookingAccommodationId));
+    } catch (e) { res.status(400).json({ error: String(e) }); }
+  });
+
   // Unplace student
   router.post('/matching/unplace', async (req, res) => {
     try {

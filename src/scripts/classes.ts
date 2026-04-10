@@ -16,26 +16,41 @@ export function classScripts(prisma: PrismaClient) {
     if (query.classroomId) where.classroomId = parseInt(query.classroomId);
 
     // Filter student assignments to the requested week (default: current week)
-    const weekOf = query.weekOf ? new Date(query.weekOf) : new Date();
+    // Use local-time parsing to avoid UTC timezone shift on DATE columns
+    const weekOfStr = query.weekOf || new Date().toISOString().split('T')[0];
+    const weekOf = new Date(weekOfStr + 'T12:00:00'); // noon local to avoid timezone edge
     const monday = new Date(weekOf);
-    monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7)); // get Monday
-    monday.setHours(0,0,0,0);
-    const friday = new Date(monday);
-    friday.setDate(friday.getDate() + 4);
+    monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+    monday.setHours(0, 0, 0, 0);
+    // Extend range by 1 day each side to handle Prisma DATE→DateTime timezone shift
+    const rangeStart = new Date(monday);
+    rangeStart.setDate(rangeStart.getDate() - 1);
+    const rangeEnd = new Date(monday);
+    rangeEnd.setDate(rangeEnd.getDate() + 5); // Saturday
 
     return prisma.class.findMany({
       where,
       include: {
         classroom: true,
+        classTeachers: {
+          where: {
+            startDate: { lte: rangeEnd },
+            OR: [{ endDate: null }, { endDate: { gte: rangeStart } }],
+          },
+          include: {
+            teacher: { select: { id: true, firstName: true, lastName: true } },
+          },
+        },
         studentAssignments: {
           where: {
-            weekStart: { lte: friday },
+            weekStart: { lte: rangeEnd },
             OR: [
               { weekEnd: null },
-              { weekEnd: { gte: monday } },
+              { weekEnd: { gte: rangeStart } },
             ],
           },
           include: {
+            student: { select: { id: true, firstName: true, lastName: true, currentLevel: true } },
             bookingCourse: {
               include: {
                 booking: {
@@ -57,6 +72,7 @@ export function classScripts(prisma: PrismaClient) {
         classroom: true,
         studentAssignments: {
           include: {
+            student: true,
             bookingCourse: {
               include: {
                 booking: {
@@ -80,18 +96,30 @@ export function classScripts(prisma: PrismaClient) {
   }
 
   async function createClass(data: Record<string, any>) {
-    return prisma.class.create({
+    const cls = await prisma.class.create({
       data: data as any,
       include: { classroom: true },
     });
+    // Materialise occurrences for the new class (next 8 weeks)
+    try {
+      const { schedulingScripts } = await import('./scheduling');
+      await schedulingScripts(prisma).regenerateForClass(cls.id);
+    } catch (e) { console.error('regenerateForClass failed:', e); }
+    return cls;
   }
 
   async function updateClass(id: number, data: Record<string, any>) {
-    return prisma.class.update({
+    const cls = await prisma.class.update({
       where: { id },
       data: data as any,
       include: { classroom: true },
     });
+    // Regenerate: days/times may have changed
+    try {
+      const { schedulingScripts } = await import('./scheduling');
+      await schedulingScripts(prisma).regenerateForClass(cls.id);
+    } catch (e) { console.error('regenerateForClass failed:', e); }
+    return cls;
   }
 
   async function deleteClass(id: number) {
@@ -121,9 +149,12 @@ export function classScripts(prisma: PrismaClient) {
 
     if (!weekOf) return [];
 
-    const weekStart = new Date(weekOf);
-    const weekEnd = new Date(weekOf);
-    weekEnd.setDate(weekEnd.getDate() + 4); // Friday
+    const weekStart = new Date(weekOf + 'T12:00:00'); // noon local to avoid timezone edge
+    const monday = new Date(weekStart);
+    monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+    monday.setHours(0, 0, 0, 0);
+    const weekEnd = new Date(monday);
+    weekEnd.setDate(weekEnd.getDate() + 6); // extend through Sunday for timezone safety
 
     // Find all active booking courses whose dates overlap this week
     const sessionCategories: string[] = [];
@@ -136,7 +167,8 @@ export function classScripts(prisma: PrismaClient) {
         active: true,
         category: { in: sessionCategories as any },
         startDate: { lte: weekEnd },
-        endDate: { gte: weekStart },
+        endDate: { gte: monday },
+        booking: { amountPaid: { gt: 0 }, status: { notIn: ['ESCROW', 'CANCELLED'] } },
       },
       include: {
         booking: {
@@ -147,7 +179,7 @@ export function classScripts(prisma: PrismaClient) {
             weekStart: { lte: weekEnd },
             OR: [
               { weekEnd: null },
-              { weekEnd: { gte: weekStart } },
+              { weekEnd: { gte: monday } },
             ],
           },
         },

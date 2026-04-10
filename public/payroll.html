@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="icon" type="image/png" href="/sis/public/favicon.ico?v=2">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teacher Payroll Dashboard v2 (Year Filter)</title>
@@ -1049,16 +1050,6 @@
                     {view === 'detail' && data && (
                         <div className="detail-section">
                             <h2>Weekly Hours Detail</h2>
-                            <div className="legend">
-                                <div className="legend-item">
-                                    <div className="legend-box auto"></div>
-                                    <span>Auto-populated (full week or safe cutoff)</span>
-                                </div>
-                                <div className="legend-item">
-                                    <div className="legend-box manual"></div>
-                                    <span>Needs manual input (mixed days)</span>
-                                </div>
-                            </div>
                             {(() => {
                                 // Filter weeks based on selected period
                                 const isWeekInPeriod = (weekString) => {
@@ -1211,55 +1202,10 @@
                                                     </div>
                                                     <div className="week-reason">{reasonText}</div>
 
-                                                    {!shouldAutoPopulate && !isEditing && (
-                                                        <button
-                                                            className="save-btn"
-                                                            onClick={() => setEditingWeek({[`${teacher.teacher_name}-${week}`]: true})}
-                                                        >
-                                                            Edit Hours
-                                                        </button>
-                                                    )}
-
-                                                    {isEditing && (
-                                                        <div>
-                                                            <input
-                                                                type="number"
-                                                                step="0.5"
-                                                                className="editable-field"
-                                                                placeholder="Hours"
-                                                                id={`hours-${idx}-${week}`}
-                                                                defaultValue={displayHours === '0.00' ? '' : displayHours}
-                                                            />
-                                                            <div style={{fontSize: '11px', color: '#7f8c8d', marginTop: '5px', fontStyle: 'italic'}}>
-                                                                Leave & Sick Days pulled from Zoho (read-only)
-                                                            </div>
-                                                            <div className="button-row">
-                                                                <button
-                                                                    className="save-btn"
-                                                                    onClick={() => {
-                                                                        const hours = document.getElementById(`hours-${idx}-${week}`).value;
-                                                                        updateWeekHours(teacher.teacher_name, week, hours, null, 0, 0);
-                                                                    }}
-                                                                >
-                                                                    Save
-                                                                </button>
-                                                                <button
-                                                                    className="reset-btn"
-                                                                    onClick={() => resetWeek(teacher.teacher_name, week)}
-                                                                >
-                                                                    Reset
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                    {(weekData.manager_checked || weekData.hours_included_this_month !== null) && !isEditing && (
-                                                        <button
-                                                            className="reset-btn"
-                                                            onClick={() => resetWeek(teacher.teacher_name, week)}
-                                                        >
-                                                            Reset Week
-                                                        </button>
-                                                    )}
+                                                    {/* Edit/Reset buttons removed — hours now come from SIS scheduling (source of truth).
+                                                        To adjust hours, edit the underlying class schedule or teacher assignment.
+                                                        Historical hours_included_this_month overrides (from the Fidelo era) are still
+                                                        honoured by the display logic above, but no longer editable from this screen. */}
                                                 </div>
                                             );
                                         })}

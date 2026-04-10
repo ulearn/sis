@@ -232,12 +232,7 @@ export async function syncNewInvoices() {
           note: `HubSpot Deal: ${deal.properties?.dealname || dealId}`,
           courses: courses.length > 0 ? { create: courses } : undefined,
           accommodations: accommodations.length > 0 ? { create: accommodations } : undefined,
-          statusHistory: {
-            create: {
-              fromStatus: 'ENQUIRY',
-              toStatus: hsPaid >= hsAmount && hsAmount > 0 ? 'CONFIRMED' : 'PENDING',
-            },
-          },
+          // No statusHistory entry on initial creation — there's no genuine "from" state.
         } as any,
         include: { student: true, courses: true, accommodations: true },
       });

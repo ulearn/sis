@@ -9,7 +9,24 @@
       "Bash(sed -n '440,3749p' /home/sis/web/sis.ulearnschool.com/public_html/sis/public/admin.html)",
       "Bash(node --check /tmp/sis_script.js)",
       "Bash(xargs -I{} bash -c 'sed -n \"458,$\\(\\({}-1\\)\\)p\" /home/sis/web/sis.ulearnschool.com/public_html/sis/public/admin.html > /tmp/sis_script.js && node --check /tmp/sis_script.js')",
-      "Bash(npx prisma:*)"
+      "Bash(npx prisma:*)",
+      "Bash(xargs -I{} bash -c 'sed -n \"505,$\\(\\({}-1\\)\\)p\" /home/sis/web/sis.ulearnschool.com/public_html/sis/public/admin.html > /tmp/sis_script.js && node --check /tmp/sis_script.js')",
+      "Bash(node:*)",
+      "Bash(npx playwright:*)",
+      "Bash(dpkg -l)",
+      "Bash(sudo cp:*)",
+      "Bash(sudo systemctl:*)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" https://sis.ulearnschool.com/sis/zoho-tokens.json)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" https://sis.ulearnschool.com/sis/package.json)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" https://sis.ulearnschool.com/sis/src/app.ts)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" https://sis.ulearnschool.com/sis/dist/app.js)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" https://sis.ulearnschool.com/sis/prisma/schema.prisma)",
+      "Bash(curl -sk https://sis.ulearnschool.com/sis/forgot)",
+      "Bash(curl -sk -X POST https://sis.ulearnschool.com/sis/auth/forgot -H \"Content-Type: application/json\" -d '{\"email\":\"nonexistent@example.com\"}')",
+      "Bash(timeout 120 /usr/bin/node dist/scripts/import-fidelo.js)",
+      "Bash(timeout 1200 /usr/bin/node dist/scripts/import-fidelo.js --from=2024-01-01 --filter-territory --territory-map=TerritoryMap-Export.json)",
+      "Bash(/usr/bin/node dist/scripts/import-fidelo-payments-api.js --from=2024-01-01 --to=2024-06-30)",
+      "Bash(/usr/bin/node dist/scripts/import-fidelo-payments-api.js --from=2024-01-01 --to=2024-12-31 --apply)"
     ]
   }
 }

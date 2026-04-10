@@ -309,11 +309,73 @@ export function accommodationScripts(prisma: PrismaClient) {
     return { original: bookingAccommodationId, newPlacement: newPlacement.id };
   }
 
+  /**
+   * Rejoin: given a placement id, find any sibling placement on the same booking
+   * that is adjacent (end-date-of-one touches start-date-of-the-other by ≤1 day)
+   * and has matching accommodationType/roomType/board. Merge them into a single row.
+   * The earlier row survives and its end_date is extended; the later row is deleted.
+   */
+  async function rejoinPlacement(bookingAccommodationId: number) {
+    const placement = await prisma.bookingAccommodation.findUnique({
+      where: { id: bookingAccommodationId },
+    });
+    if (!placement) throw new Error('Placement not found');
+
+    // Find all siblings on the same booking with matching type/room/board
+    const siblings = await prisma.bookingAccommodation.findMany({
+      where: {
+        bookingId: placement.bookingId,
+        id: { not: placement.id },
+        accommodationType: placement.accommodationType,
+        roomType: placement.roomType,
+        board: placement.board,
+      },
+      orderBy: { startDate: 'asc' },
+    });
+
+    // Find one that is adjacent (gap ≤ 1 day on either side)
+    const DAY = 86400000;
+    const thisStart = new Date(placement.startDate).getTime();
+    const thisEnd = new Date(placement.endDate).getTime();
+
+    const adjacent = siblings.find(s => {
+      const sStart = new Date(s.startDate).getTime();
+      const sEnd = new Date(s.endDate).getTime();
+      // sibling ends just before this starts, or sibling starts just after this ends
+      return (sEnd + DAY >= thisStart && sEnd < thisStart)
+          || (sStart - DAY <= thisEnd && sStart > thisEnd)
+          || (sStart === thisStart + DAY || sEnd === thisStart - DAY)
+          || (sEnd + DAY === thisStart || sStart - DAY === thisEnd);
+    });
+
+    if (!adjacent) throw new Error('No adjacent placement to rejoin');
+
+    // Determine earlier + later
+    const earlier = new Date(placement.startDate) < new Date(adjacent.startDate) ? placement : adjacent;
+    const later = earlier.id === placement.id ? adjacent : placement;
+
+    const mergedStart = new Date(earlier.startDate);
+    const mergedEnd = new Date(later.endDate);
+    const mergedDays = Math.ceil((mergedEnd.getTime() - mergedStart.getTime()) / DAY) + 1;
+    const mergedWeeks = Math.ceil(mergedDays / 7);
+
+    // Extend the earlier row, delete the later one
+    await prisma.$transaction([
+      prisma.bookingAccommodation.update({
+        where: { id: earlier.id },
+        data: { endDate: mergedEnd, weeks: mergedWeeks },
+      }),
+      prisma.bookingAccommodation.delete({ where: { id: later.id } }),
+    ]);
+
+    return { kept: earlier.id, removed: later.id };
+  }
+
   return {
     listProviders, getProviderById, createProvider, updateProvider, deleteProvider,
     addProperty, updateProperty, deleteProperty,
     addRoom, updateRoom, deleteRoom,
     addBed, deleteBed,
-    getUnplacedStudents, getHostTimeline, placeStudent, unplaceStudent, splitPlacement,
+    getUnplacedStudents, getHostTimeline, placeStudent, unplaceStudent, splitPlacement, rejoinPlacement,
   };
 }

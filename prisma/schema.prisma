@@ -95,7 +95,8 @@ model Student {
   hubspotDealId     String?  @map("hubspot_deal_id")
 
   // Relations
-  bookings          Booking[]
+  bookings            Booking[]
+  classAssignments    StudentClassAssignment[]
 
   @@map("students")
 }
@@ -146,7 +147,7 @@ model Booking {
   agency    Agency?  @relation(fields: [agencyId], references: [id])
 
   // Booking details
-  status        BookingStatus @default(PENDING)
+  status        BookingStatus?
   confirmed     Boolean       @default(false)
   confirmedAt   DateTime?     @map("confirmed_at")
   checkinAt     DateTime?     @map("checkin_at")
@@ -172,8 +173,10 @@ model Booking {
   commentAgent   String?  @map("comment_agent")
 
   // External IDs
-  fideloBookingId Int?    @unique @map("fidelo_booking_id")
-  dataSource      DataSource @default(MANUAL) @map("data_source")
+  fideloBookingId  Int?    @unique @map("fidelo_booking_id")
+  hubspotDealId    String? @unique @map("hubspot_deal_id")
+  hubspotInvoiceId String? @unique @map("hubspot_invoice_id")
+  dataSource       DataSource @default(MANUAL) @map("data_source")
 
   // Relations
   courses            BookingCourse[]
@@ -190,8 +193,9 @@ model Booking {
 
 enum BookingStatus {
   PENDING
+  PARTIAL
   CONFIRMED
-  COMPLETED
+  ESCROW
   CANCELLED
 }
 
@@ -339,6 +343,7 @@ model Class {
   classroom     Classroom?   @relation(fields: [classroomId], references: [id])
   startTime     String       @map("start_time")  // "09:00:00"
   endTime       String       @map("end_time")     // "12:15:00"
+  breakMinutes  Int          @default(0) @map("break_minutes") // unpaid break inside the session
   days          Int[]        // [1,2,3,4,5] = Mon-Fri
   active        Boolean      @default(true)
 
@@ -352,6 +357,7 @@ model Class {
 
 enum ClassSession {
   MORNING
+  PLUS_FIVE
   AFTERNOON
 }
 
@@ -389,6 +395,17 @@ model TeacherCover {
   @@map("teacher_covers")
 }
 
+model SchoolClosure {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  name      String
+  startDate DateTime @map("start_date") @db.Date
+  endDate   DateTime @map("end_date")   @db.Date
+  note      String?
+
+  @@map("school_closures")
+}
+
 model ClassOccurrence {
   id        Int      @id @default(autoincrement())
 
@@ -423,12 +440,14 @@ model StudentClassAssignment {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now()) @map("created_at")
 
-  bookingCourseId Int          @map("booking_course_id")
-  bookingCourse   BookingCourse @relation(fields: [bookingCourseId], references: [id])
-  classId         Int           @map("class_id")
-  class_          Class         @relation(fields: [classId], references: [id])
-  weekStart       DateTime      @map("week_start") @db.Date // the Monday of the assigned week
-  weekEnd         DateTime?     @map("week_end") @db.Date
+  bookingCourseId Int?           @map("booking_course_id")
+  bookingCourse   BookingCourse? @relation(fields: [bookingCourseId], references: [id])
+  studentId       Int?           @map("student_id")
+  student         Student?       @relation(fields: [studentId], references: [id])
+  classId         Int            @map("class_id")
+  class_          Class          @relation(fields: [classId], references: [id])
+  weekStart       DateTime       @map("week_start") @db.Date
+  weekEnd         DateTime?      @map("week_end") @db.Date
 
   @@map("student_class_assignments")
 }
@@ -610,10 +629,12 @@ model Payment {
   comment       String?
   receiptNumber String?  @map("receipt_number")
 
-  fideloPaymentId Int?   @unique @map("fidelo_payment_id")
-  dataSource      DataSource @default(MANUAL) @map("data_source")
-  xeroPaymentId   String?  @unique @map("xero_payment_id")
+  fideloPaymentId  Int?    @unique @map("fidelo_payment_id")
+  hubspotPaymentId String? @unique @map("hubspot_payment_id")
+  xeroPaymentId    String? @unique @map("xero_payment_id")
+  dataSource       DataSource @default(MANUAL) @map("data_source")
 
+  @@unique([receiptNumber, bookingId], map: "payments_receipt_booking_unique")
   @@map("payments")
 }
 
@@ -978,4 +999,23 @@ model SchoolConfig {
   value String
 
   @@map("school_config")
+}
+
+// ============================================================
+// AUTH: Users
+// ============================================================
+
+model SisUser {
+  id                Int       @id @default(autoincrement())
+  username          String    @unique
+  email             String?
+  passwordHash      String    @map("password_hash")
+  displayName       String?   @map("display_name")
+  role              String    @default("staff") // admin, dos, sales, accomm, staff
+  active            Boolean   @default(true)
+  resetToken        String?   @map("reset_token")
+  resetTokenExpires DateTime? @map("reset_token_expires")
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  @@map("sis_users")
 }

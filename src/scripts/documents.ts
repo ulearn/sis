@@ -44,6 +44,42 @@ export function documentScripts(prisma: PrismaClient) {
     });
   }
 
+  // ── HUBSPOT COMMISSION FETCH ──────────────────
+  // Per the CLAUDE.md agency-data rule: commission rates must come from HubSpot,
+  // not from the local `agencies.commission_rate` column (which is Fidelo-era stale
+  // data kept only for FK joins). This helper fetches the live rate.
+  // The exact HubSpot Company property name may need adjustment — override with
+  // HUBSPOT_COMMISSION_PROPERTY env var if the internal name differs.
+  const HS_COMMISSION_PROP = process.env.HUBSPOT_COMMISSION_PROPERTY || 'commission';
+
+  async function fetchHubspotCommissionRate(hubspotCompanyId: string): Promise<number | null> {
+    const token = process.env.ACCESS_TOKEN;
+    if (!token) return null;
+    try {
+      const https = await import('https');
+      const data = await new Promise<any>((resolve, reject) => {
+        https.get({
+          hostname: 'api.hubapi.com',
+          path: `/crm/v3/objects/companies/${encodeURIComponent(hubspotCompanyId)}?properties=${HS_COMMISSION_PROP}`,
+          headers: { Authorization: `Bearer ${token}` },
+        }, (res) => {
+          let body = '';
+          res.on('data', (c: string) => body += c);
+          res.on('end', () => { try { resolve(JSON.parse(body)); } catch (e) { reject(e); } });
+        }).on('error', reject);
+      });
+      const raw = data?.properties?.[HS_COMMISSION_PROP];
+      if (raw == null || raw === '') return null;
+      const n = Number(raw);
+      if (isNaN(n)) return null;
+      // HubSpot stores commission as a decimal (0.3 = 30%) — convert to percentage.
+      // Defensive: if someone enters "30" instead of "0.3", treat values >= 1 as already-percent.
+      return n < 1 ? n * 100 : n;
+    } catch {
+      return null;
+    }
+  }
+
   // ── TOKEN RESOLUTION ──────────────────────
 
   async function resolveTokens(studentId: number, bookingId?: number | null) {
@@ -56,6 +92,10 @@ export function documentScripts(prisma: PrismaClient) {
           include: { courses: true, accommodations: true, agency: true },
         })
       : null;
+
+    // Commission rate (HubSpot-authoritative — see CLAUDE.md agency rule)
+    const hsCompanyId = (booking as any)?.agency?.hubspotCompanyId;
+    const hsCommissionRate: number | null = hsCompanyId ? await fetchHubspotCommissionRate(hsCompanyId) : null;
 
     const course = booking?.courses?.[0];
 
@@ -118,6 +158,55 @@ export function documentScripts(prisma: PrismaClient) {
       'booking.weeks': course?.weeks ? String(course.weeks) : '',
       'booking.amount_total': booking?.amountTotal ? `€${booking.amountTotal}` : '',
       'booking.agency': (booking as any)?.agency?.name || '',
+      'booking.amount_paid': booking?.amountPaid ? `€${Number(booking.amountPaid).toFixed(2)}` : '',
+      'booking.amount_open': booking?.amountOpen ? `€${Number(booking.amountOpen).toFixed(2)}` : '',
+      'booking.currency': booking?.currency || 'EUR',
+
+      // Agency / Commission
+      'agency.name': (booking as any)?.agency?.name || '',
+      'agency.contact': (booking as any)?.agency?.contactPerson || '',
+      'agency.email': (booking as any)?.agency?.email || '',
+      'agency.commission_rate': (booking as any)?.agency?.commissionRate ? String((booking as any).agency.commissionRate) + '%' : '',
+      'agency.commission_amount': (() => {
+        const rate = Number((booking as any)?.agency?.commissionRate || 0);
+        const total = Number(booking?.amountTotal || 0);
+        return rate > 0 ? `€${(total * rate / 100).toFixed(2)}` : '';
+      })(),
+      'agency.net_amount': (() => {
+        const rate = Number((booking as any)?.agency?.commissionRate || 0);
+        const total = Number(booking?.amountTotal || 0);
+        return rate > 0 ? `€${(total - (total * rate / 100)).toFixed(2)}` : booking?.amountTotal ? `€${Number(booking.amountTotal).toFixed(2)}` : '';
+      })(),
+
+      // Course fee breakdown
+      'booking.course_fee': course?.fee ? `€${Number(course.fee).toFixed(2)}` : booking?.amountTotal ? `€${Number(booking.amountTotal).toFixed(2)}` : '',
+      'booking.course_commission': (() => {
+        const rate = Number((booking as any)?.agency?.commissionRate || 0);
+        const fee = Number(course?.fee || booking?.amountTotal || 0);
+        return rate > 0 ? `€${(fee * rate / 100).toFixed(2)}` : '';
+      })(),
+      'booking.course_net': (() => {
+        const rate = Number((booking as any)?.agency?.commissionRate || 0);
+        const fee = Number(course?.fee || booking?.amountTotal || 0);
+        return rate > 0 ? `€${(fee - (fee * rate / 100)).toFixed(2)}` : `€${fee.toFixed(2)}`;
+      })(),
+      // Net-to-Gross transformation for the Net-to-Gross Invoice document.
+      // booking.amountTotal is the NET amount (post Xero-sync flip). Gross is
+      // derived via the complement of the commission rate:
+      //   Gross = Net ÷ (1 − rate/100)      // 22% → Gross = Net ÷ 0.78
+      // Commission rate is fetched from HubSpot (never local) per the
+      // agency-data rule in CLAUDE.md.
+      'booking.gross_from_net': (() => {
+        const rate = hsCommissionRate;
+        const net = Number(course?.fee || booking?.amountTotal || 0);
+        if (rate == null || rate <= 0 || rate >= 100) {
+          // No live HubSpot rate — can't derive gross. Return net as a safe fallback
+          // so the template still renders without blowing up.
+          return net ? `€${net.toFixed(2)}` : '';
+        }
+        const gross = net / (1 - rate / 100);
+        return `€${gross.toFixed(2)}`;
+      })(),
 
       // Visa
       'student.visa_until': fmtDate(student.visaUntil),
@@ -149,7 +238,12 @@ export function documentScripts(prisma: PrismaClient) {
   function renderTemplate(htmlTemplate: string, tokens: Record<string, string>): string {
     return htmlTemplate.replace(/\{\{([^}]+)\}\}/g, (match, key) => {
       const trimmed = key.trim();
-      return tokens[trimmed] !== undefined ? tokens[trimmed] : match;
+      // Keep custom.* and document.* placeholders (resolved later or editable)
+      if (trimmed.startsWith('custom.') || trimmed.startsWith('document.')) {
+        return tokens[trimmed] !== undefined ? tokens[trimmed] : match;
+      }
+      // For all other tokens: output value if set, empty string if missing/empty
+      return tokens[trimmed] || '';
     });
   }
 
@@ -194,11 +288,21 @@ export function documentScripts(prisma: PrismaClient) {
     if (filters.studentId) where.studentId = filters.studentId;
     if (filters.bookingId) where.bookingId = filters.bookingId;
     if (filters.status) where.status = filters.status;
-    return prisma.documentRecord.findMany({
+    const docs = await prisma.documentRecord.findMany({
       where,
       include: { template: { select: { name: true, slug: true } } },
       orderBy: { createdAt: 'desc' },
     });
+    // Hydrate student names in a single query
+    const studentIds = Array.from(new Set(docs.map(d => d.studentId)));
+    const students = studentIds.length
+      ? await prisma.student.findMany({
+          where: { id: { in: studentIds } },
+          select: { id: true, firstName: true, lastName: true },
+        })
+      : [];
+    const byId = new Map(students.map(s => [s.id, s]));
+    return docs.map(d => ({ ...d, student: byId.get(d.studentId) || null }));
   }
 
   async function updateDraft(id: number, data: { contentHtml?: string; editableFields?: string }) {

@@ -81,12 +81,12 @@ export function bookingScripts(prisma: PrismaClient) {
     return prisma.booking.create({
       data: {
         ...bookingData,
-        statusHistory: {
+        statusHistory: bookingData.status ? {
           create: {
-            fromStatus: BookingStatus.PENDING,
-            toStatus: bookingData.status || BookingStatus.PENDING,
+            fromStatus: bookingData.status,
+            toStatus: bookingData.status,
           },
-        },
+        } : undefined,
         courses: courses ? { create: courses } : undefined,
         accommodations: accommodations ? { create: accommodations } : undefined,
       } as any,
@@ -103,7 +103,7 @@ export function bookingScripts(prisma: PrismaClient) {
       await prisma.bookingStatusHistory.create({
         data: {
           bookingId: id,
-          fromStatus: existing.status,
+          fromStatus: existing.status!,
           toStatus: data.status,
           changedBy: data._changedBy,
         },
