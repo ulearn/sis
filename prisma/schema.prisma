@@ -18,7 +18,7 @@ model Student {
 
   // Identity
   firstName         String  @map("first_name")
-  lastName          String  @map("last_name")
+  lastName          String? @map("last_name")
   email             String
   gender            Int?    // 1=male, 2=female (Fidelo convention)
   birthday          DateTime? @db.Date
@@ -97,6 +97,7 @@ model Student {
   // Relations
   bookings            Booking[]
   classAssignments    StudentClassAssignment[]
+  documents           StudentDocument[]
 
   @@map("students")
 }
@@ -244,6 +245,7 @@ model Agency {
   // Relations
   bookings         Booking[]
   groups           Group[]
+  portalUsers      SisUser[]
 
   @@map("agencies")
 }
@@ -284,6 +286,22 @@ model BookingCourse {
   classAssignments  StudentClassAssignment[]
 
   @@map("booking_courses")
+}
+
+model StudentDocument {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  studentId    Int    @map("student_id")
+  student      Student @relation(fields: [studentId], references: [id])
+  filename     String               // stored filename on disk
+  originalName String @map("original_name") // user's original filename
+  mimeType     String @map("mime_type")
+  size         Int                   // bytes
+  category     String @default("visa") // "visa", "passport", "other"
+  uploadedBy   String? @map("uploaded_by")
+
+  @@map("student_documents")
 }
 
 enum CourseCategory {
@@ -1016,6 +1034,13 @@ model SisUser {
   resetToken        String?   @map("reset_token")
   resetTokenExpires DateTime? @map("reset_token_expires")
   createdAt         DateTime  @default(now()) @map("created_at")
+
+  // Partner portal fields
+  userType          String    @default("staff") @map("user_type") // staff | partner
+  agencyId          Int?      @map("agency_id")
+  agency            Agency?   @relation(fields: [agencyId], references: [id])
+  portalPermissions String?   @map("portal_permissions") // JSON: { canSeeFinance, canSeeClasses, ... }
+  lastLoginAt       DateTime? @map("last_login_at")
 
   @@map("sis_users")
 }

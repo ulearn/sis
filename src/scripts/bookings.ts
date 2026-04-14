@@ -26,6 +26,18 @@ export function bookingScripts(prisma: PrismaClient) {
     if (query.status) where.status = query.status;
     if (query.agencyId) where.agencyId = parseInt(query.agencyId);
 
+    // Date range filters on serviceStart and serviceEnd
+    if (query.startFrom || query.startTo) {
+      where.serviceStart = {};
+      if (query.startFrom) where.serviceStart.gte = new Date(query.startFrom);
+      if (query.startTo) where.serviceStart.lte = new Date(query.startTo);
+    }
+    if (query.endFrom || query.endTo) {
+      where.serviceEnd = {};
+      if (query.endFrom) where.serviceEnd.gte = new Date(query.endFrom);
+      if (query.endTo) where.serviceEnd.lte = new Date(query.endTo);
+    }
+
     if (search) {
       where.student = {
         OR: [
@@ -36,12 +48,20 @@ export function bookingScripts(prisma: PrismaClient) {
       };
     }
 
+    // Sorting — default is createdAt desc. Supports student name, serviceStart, serviceEnd.
+    let orderBy: any = { createdAt: 'desc' };
+    const sortCol = query.sortBy;
+    const sortDir = query.sortDir === 'asc' ? 'asc' : 'desc';
+    if (sortCol === 'student') orderBy = { student: { firstName: sortDir } };
+    else if (sortCol === 'start') orderBy = { serviceStart: sortDir };
+    else if (sortCol === 'end') orderBy = { serviceEnd: sortDir };
+
     const [data, total] = await Promise.all([
       prisma.booking.findMany({
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy,
         include: {
           student: { select: { id: true, firstName: true, lastName: true, email: true, nationality: true } },
           agency: { select: { id: true, name: true, nickname: true } },

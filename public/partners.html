@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/png" href="/sis/public/favicon.ico?v=2">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ULearn — Partner Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════
+   Partner Portal — CSS
+   Borrows design language from the booking form:
+   Plus Jakarta Sans, green palette, rounded cards, chips
+   ═══════════════════════════════════════════════════ */
+:root {
+  --green: #339900;
+  --green-light: #e8f5e9;
+  --green-deep: #2d8600;
+  --blue: #14a3c7;
+  --navy: #1a1a2e;
+  --ink: #1e293b;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --bg: #f4f3f0;
+  --card: #ffffff;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.06);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+/* ── Top bar ── */
+.topbar {
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.topbar-left { display: flex; align-items: center; gap: 16px; }
+.topbar-logo { font-size: 20px; font-weight: 800; color: var(--navy); letter-spacing: -0.02em; }
+.topbar-divider { width: 1px; height: 24px; background: var(--line); }
+.topbar-portal { font-size: 12px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 1px; }
+.topbar-right { display: flex; align-items: center; gap: 16px; }
+.topbar-agency { font-size: 13px; font-weight: 600; color: var(--muted); }
+.topbar-user { font-size: 13px; color: var(--ink); font-weight: 600; }
+.btn-logout {
+  padding: 6px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  background: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.btn-logout:hover { border-color: #dc2626; color: #dc2626; }
+
+/* ── Nav tabs ── */
+.nav-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 12px 24px 0;
+  border-bottom: 1px solid var(--line);
+  background: var(--card);
+}
+.nav-tab {
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.nav-tab:hover { color: var(--ink); }
+.nav-tab.active { color: var(--green); border-bottom-color: var(--green); }
+.nav-tab svg { width: 16px; height: 16px; }
+.nav-tab.cta {
+  background: var(--green);
+  color: #fff;
+  border-radius: 999px;
+  padding: 8px 18px;
+  border-bottom: none;
+  margin-left: auto;
+  box-shadow: 0 4px 12px rgba(51,153,0,0.2);
+}
+.nav-tab.cta:hover { background: var(--green-deep); }
+
+/* ── Main content ── */
+.main { max-width: 1200px; margin: 0 auto; padding: 24px; }
+.section { display: none; }
+.section.active { display: block; }
+
+/* ── Cards ── */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  margin-bottom: 16px;
+}
+.card-title { font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 16px; }
+
+/* ── Stat grid (dashboard) ── */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  text-align: center;
+}
+.stat-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--navy);
+  letter-spacing: -0.02em;
+}
+.stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 4px;
+}
+.stat-card.green .stat-value { color: var(--green); }
+.stat-card.blue .stat-value { color: var(--blue); }
+
+/* ── Tables ── */
+.table-wrap { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 8px 12px;
+  border-bottom: 2px solid var(--line);
+}
+td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+}
+tr:hover td { background: #fafaf8; }
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.badge-pending { background: #fef3c7; color: #92400e; }
+.badge-partial { background: #dbeafe; color: #1e40af; }
+.badge-confirmed { background: #d1fae5; color: #065f46; }
+.badge-cancelled { background: #fee2e2; color: #991b1b; }
+.badge-escrow { background: #ede9fe; color: #5b21b6; }
+
+/* ── Search bar ── */
+.search-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.search-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-input:focus { border-color: var(--green); }
+
+/* ── Finance cards ── */
+.finance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+/* ═══════════════════════════════════════════════════
+   ENROLLMENT FORM — adapted from booking-form.css
+   ═══════════════════════════════════════════════════ */
+.enroll-shell {
+  max-width: 860px;
+  margin: 0 auto;
+}
+.enroll-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+}
+.enroll-header {
+  background: linear-gradient(135deg, #339900 0%, #1a6600 100%);
+  padding: 24px 32px;
+  color: #fff;
+}
+.enroll-header h2 { font-size: 22px; font-weight: 800; margin: 0 0 4px; }
+.enroll-header p { font-size: 14px; opacity: 0.85; margin: 0; }
+.enroll-body {
+  padding: 24px 32px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Form fields */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+}
+.form-grid .full { grid-column: 1 / -1; }
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.field label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.field label .req { color: #d42e12; }
+.field input, .field select, .field textarea {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 9px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  color: var(--ink);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none;
+  border-color: var(--green);
+  box-shadow: 0 0 0 4px rgba(51, 153, 0, 0.08);
+}
+.field textarea { resize: vertical; min-height: 60px; }
+
+/* Accordion sections */
+.enroll-accordion { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.enroll-acc {
+  background: #f8faf8;
+  border: 1px solid #d8e6d8;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+.enroll-acc:hover { border-color: var(--green); }
+.enroll-acc.open { border-color: var(--green); background: #fff; box-shadow: 0 1px 3px rgba(51,153,0,0.08); }
+.enroll-acc-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  cursor: pointer;
+  user-select: none;
+}
+.enroll-acc-icon {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  background: var(--green-light);
+  color: var(--green);
+  display: grid; place-items: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+.enroll-acc.open .enroll-acc-icon { background: var(--green); color: #fff; }
+.enroll-acc-icon svg { width: 18px; height: 18px; }
+.enroll-acc-titles { flex: 1; }
+.enroll-acc-titles h3 { font-size: 14px; font-weight: 700; color: var(--navy); margin: 0; }
+.enroll-acc-titles .sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
+.enroll-acc-chev { color: var(--muted); transition: transform 0.3s; }
+.enroll-acc.open .enroll-acc-chev { transform: rotate(180deg); color: var(--green); }
+.enroll-acc-body { display: none; padding: 4px 16px 16px; border-top: 1px dashed var(--line); }
+.enroll-acc.open .enroll-acc-body { display: block; }
+
+/* Chip radios */
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0;
+}
+.chip-row input[type="radio"],
+.chip-row input[type="checkbox"] { display: none; }
+.chip-row label {
+  padding: 8px 16px;
+  border: 2px solid var(--green);
+  border-radius: 999px;
+  background: #f5f5f5;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.chip-row label:hover { background: var(--green-light); }
+.chip-row:has(input[type="radio"]:checked) label {
+  opacity: 0.45; border-color: #cbd5e1; background: #f5f5f5; color: #94a3b8;
+}
+.chip-row input:checked + label {
+  opacity: 1 !important;
+  background: var(--green) !important;
+  border-color: var(--green-deep) !important;
+  color: #fff !important;
+}
+
+/* Sub-options: hidden until parent selected */
+.sub-options { display: none; margin-top: 8px; }
+.sub-options.show { display: block; }
+
+/* Submit CTA */
+.enroll-cta {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+}
+.btn-enroll {
+  padding: 14px 32px;
+  background: var(--green);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(51,153,0,0.3);
+  transition: all 0.2s;
+}
+.btn-enroll:hover { background: var(--green-deep); transform: translateY(-1px); }
+.btn-enroll:disabled { background: #cbd5e1; box-shadow: none; cursor: not-allowed; transform: none; }
+.enroll-status { font-size: 13px; color: var(--muted); }
+.enroll-success {
+  background: #d1fae5;
+  color: #065f46;
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  display: none;
+}
+.enroll-error {
+  background: #fef2f2;
+  color: #dc2626;
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-size: 13px;
+  display: none;
+}
+
+/* ── Loading state ── */
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .topbar { padding: 0 12px; }
+  .topbar-agency { display: none; }
+  .nav-tabs { padding: 8px 12px 0; overflow-x: auto; }
+  .main { padding: 16px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .stat-grid { grid-template-columns: repeat(3, 1fr); }
+  .enroll-header, .enroll-body { padding-left: 16px; padding-right: 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ Top bar ═══ -->
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="topbar-logo">ULearn</span>
+    <span class="topbar-divider"></span>
+    <span class="topbar-portal">Partner Portal</span>
+  </div>
+  <div class="topbar-right">
+    <span class="topbar-agency" id="agencyName"></span>
+    <span class="topbar-user" id="userName"></span>
+    <button class="btn-logout" onclick="location.href='/sis/partners/auth/logout'">Sign Out</button>
+  </div>
+</div>
+
+<!-- ═══ Nav tabs ═══ -->
+<div class="nav-tabs" id="navTabs">
+  <button class="nav-tab active" data-tab="dashboard">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+    Dashboard
+  </button>
+  <button class="nav-tab" data-tab="students">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Students
+  </button>
+  <button class="nav-tab cta" data-tab="enroll">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Add New
+  </button>
+</div>
+
+<!-- ═══ Main content ═══ -->
+<div class="main">
+
+  <!-- ── Dashboard ── -->
+  <div class="section active" id="sec-dashboard">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:12px;color:var(--muted)">
+        <span id="lastRefresh">Live data from HubSpot</span>
+      </div>
+      <button class="btn-logout" id="refreshBtn" style="border-color:var(--green);color:var(--green)">
+        ⟳ Refresh
+      </button>
+    </div>
+    <div class="stat-grid" id="dashStats">
+      <div class="loading">Loading dashboard...</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Quotes Awaiting Your Acceptance</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Quote #</th><th>Title</th><th>Amount</th><th>Created</th><th>Expires</th><th></th></tr></thead>
+          <tbody id="quoteRows"><tr><td colspan="6" class="loading">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Invoices</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Invoice #</th><th>Status</th><th>Billed</th><th>Paid</th><th>Balance</th><th>Issued</th><th>Due</th><th></th></tr></thead>
+          <tbody id="invoiceRows"><tr><td colspan="8" class="loading">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Students ── -->
+  <div class="section" id="sec-students">
+    <div class="card">
+      <div class="search-bar">
+        <input class="search-input" id="studentSearch" placeholder="Search students..." type="text">
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Name</th><th>Nationality</th><th>Level</th><th>Course</th><th>Dates</th><th>Status</th></tr>
+          </thead>
+          <tbody id="studentRows">
+            <tr><td colspan="6" class="loading">Loading students...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ── Add New (Enrollment Form) ── -->
+  <div class="section" id="sec-enroll">
+    <div class="enroll-shell">
+      <div class="enroll-card">
+        <div class="enroll-header">
+          <h2>Enroll a New Student</h2>
+          <p>Submit a student enrollment — it will be reviewed by the ULearn team.</p>
+        </div>
+        <div class="enroll-body">
+          <div class="enroll-error" id="enrollError"></div>
+          <div class="enroll-success" id="enrollSuccess">
+            Enrollment submitted successfully! Our team will be in touch shortly.
+          </div>
+          <form id="enrollForm">
+            <!-- About the student -->
+            <div class="form-grid" id="enrollFields">
+              <div class="field">
+                <label>First Name <span class="req">*</span></label>
+                <input type="text" name="firstName" required>
+              </div>
+              <div class="field">
+                <label>Last Name <span class="req">*</span></label>
+                <input type="text" name="lastName" required>
+              </div>
+              <div class="field">
+                <label>Email <span class="req">*</span></label>
+                <input type="email" name="email" required>
+              </div>
+              <div class="field">
+                <label>Phone</label>
+                <input type="tel" name="phone">
+              </div>
+              <div class="field">
+                <label>Date of Birth</label>
+                <input type="date" name="dateOfBirth">
+              </div>
+              <div class="field">
+                <label>Nationality <span class="req">*</span></label>
+                <select name="nationality" required id="enrollNationality">
+                  <option value="">Select nationality...</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Accordion: Course / Accommodation / Extras -->
+            <div class="enroll-accordion">
+
+              <!-- Course -->
+              <div class="enroll-acc" data-acc="course">
+                <div class="enroll-acc-head">
+                  <div class="enroll-acc-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                  </div>
+                  <div class="enroll-acc-titles">
+                    <h3>Course</h3>
+                    <div class="sub" id="courseSummary">Select course type, dates & duration</div>
+                  </div>
+                  <div class="enroll-acc-chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+                </div>
+                <div class="enroll-acc-body">
+                  <div class="field full">
+                    <label>Course Type <span class="req">*</span></label>
+                    <div class="chip-row" id="courseTypeChips">
+                      <input type="radio" name="courseType" id="ct-group" value="group"><label for="ct-group">General English</label>
+                      <input type="radio" name="courseType" id="ct-exam" value="exam"><label for="ct-exam">Exam Prep</label>
+                      <input type="radio" name="courseType" id="ct-private" value="private"><label for="ct-private">Private</label>
+                      <input type="radio" name="courseType" id="ct-lifepass" value="lifepass"><label for="ct-lifepass">LifePass</label>
+                      <input type="radio" name="courseType" id="ct-academic" value="academic_year"><label for="ct-academic">Academic Year</label>
+                      <input type="radio" name="courseType" id="ct-junior" value="junior"><label for="ct-junior">Junior</label>
+                    </div>
+                  </div>
+
+                  <!-- Sub-options: General English -->
+                  <div class="sub-options" data-sub="group">
+                    <div class="field"><label>Session</label>
+                      <div class="chip-row">
+                        <input type="radio" name="courseSlot" id="cs-am" value="morning"><label for="cs-am">Morning</label>
+                        <input type="radio" name="courseSlot" id="cs-pm" value="afternoon"><label for="cs-pm">Afternoon</label>
+                      </div>
+                    </div>
+                    <div class="field"><label>Hours per week</label>
+                      <div class="chip-row">
+                        <input type="radio" name="courseHours" id="ch-15" value="15"><label for="ch-15">15 hrs</label>
+                        <input type="radio" name="courseHours" id="ch-20" value="20"><label for="ch-20">20 hrs</label>
+                        <input type="radio" name="courseHours" id="ch-30" value="30"><label for="ch-30">30 hrs</label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Sub-options: Exam -->
+                  <div class="sub-options" data-sub="exam">
+                    <div class="field"><label>Exam Type</label>
+                      <div class="chip-row">
+                        <input type="radio" name="examType" id="ex-ielts" value="ielts"><label for="ex-ielts">IELTS</label>
+                        <input type="radio" name="examType" id="ex-fce" value="fce"><label for="ex-fce">Cambridge First (FCE)</label>
+                        <input type="radio" name="examType" id="ex-cae" value="cae"><label for="ex-cae">Cambridge Advanced (CAE)</label>
+                      </div>
+                    </div>
+                    <!-- IELTS slot — only shown when IELTS selected -->
+                    <div class="sub-options" data-exam-sub="ielts" id="ieltsSlotRow">
+                      <div class="field"><label>IELTS Session</label>
+                        <div class="chip-row">
+                          <input type="radio" name="ieltsSlot" id="is-am" value="morning"><label for="is-am">Morning</label>
+                          <input type="radio" name="ieltsSlot" id="is-pm" value="afternoon"><label for="is-pm">Afternoon</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Sub-options: Junior -->
+                  <div class="sub-options" data-sub="junior">
+                    <div class="field"><label>Junior Pack</label>
+                      <div class="chip-row">
+                        <input type="radio" name="juniorPack" id="jp-study" value="study"><label for="jp-study">Study</label>
+                        <input type="radio" name="juniorPack" id="jp-culture" value="culture"><label for="jp-culture">Culture</label>
+                        <input type="radio" name="juniorPack" id="jp-active" value="active"><label for="jp-active">Active</label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Sub-options: Academic Year / LifePass slot -->
+                  <div class="sub-options" data-sub="academic_year">
+                    <div class="field"><label>Session</label>
+                      <div class="chip-row">
+                        <input type="radio" name="aySlot" id="ay-am" value="morning"><label for="ay-am">Morning</label>
+                        <input type="radio" name="aySlot" id="ay-pm" value="afternoon"><label for="ay-pm">Afternoon</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="sub-options" data-sub="lifepass">
+                    <div class="field"><label>Session</label>
+                      <div class="chip-row">
+                        <input type="radio" name="lpSlot" id="lp-am" value="morning"><label for="lp-am">Morning</label>
+                        <input type="radio" name="lpSlot" id="lp-pm" value="afternoon"><label for="lp-pm">Afternoon</label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Sub-options: Private -->
+                  <div class="sub-options" data-sub="private">
+                    <div class="field"><label>Number of Hours</label>
+                      <select name="privateHours">
+                        <option value="">Select...</option>
+                        <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                        <option value="5">5</option><option value="10">10</option><option value="15">15</option><option value="20">20</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Dates row -->
+                  <div class="form-grid" style="margin-top: 12px;">
+                    <div class="field">
+                      <label>Start Date <span class="req">*</span></label>
+                      <input type="date" name="courseStart" required id="courseStart">
+                    </div>
+                    <div class="field" id="weeksField">
+                      <label>Number of Weeks <span class="req">*</span></label>
+                      <select name="courseWeeks" id="courseWeeks">
+                        <option value="">Select...</option>
+                        <option value="1">1 week</option><option value="2">2 weeks</option><option value="3">3 weeks</option>
+                        <option value="4">4 weeks</option><option value="5">5 weeks</option><option value="6">6 weeks</option>
+                        <option value="7">7 weeks</option><option value="8">8 weeks</option><option value="9">9 weeks</option>
+                        <option value="10">10 weeks</option><option value="11">11 weeks</option><option value="12">12 weeks</option>
+                        <option value="16">16 weeks</option><option value="20">20 weeks</option><option value="24">24 weeks</option>
+                        <option value="25">25+ weeks</option>
+                      </select>
+                    </div>
+                    <div class="field">
+                      <label>End Date</label>
+                      <input type="date" name="courseEnd" id="courseEnd" readonly style="background:#f8fafc">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Accommodation -->
+              <div class="enroll-acc" data-acc="accomm">
+                <div class="enroll-acc-head">
+                  <div class="enroll-acc-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                  </div>
+                  <div class="enroll-acc-titles">
+                    <h3>Accommodation</h3>
+                    <div class="sub" id="accommSummary">Optional — select if needed</div>
+                  </div>
+                  <div class="enroll-acc-chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+                </div>
+                <div class="enroll-acc-body">
+                  <div class="field">
+                    <label>Accommodation Type</label>
+                    <div class="chip-row">
+                      <input type="radio" name="accommType" id="acc-none" value="none" checked><label for="acc-none">None</label>
+                      <input type="radio" name="accommType" id="acc-host" value="host"><label for="acc-host">Host Family</label>
+                      <input type="radio" name="accommType" id="acc-apt" value="apartment"><label for="acc-apt">Apartment</label>
+                      <input type="radio" name="accommType" id="acc-hostel" value="hostel_hotel"><label for="acc-hostel">Hostel / Hotel</label>
+                    </div>
+                  </div>
+
+                  <!-- Apartment room type -->
+                  <div class="sub-options" data-accomm-sub="apartment">
+                    <div class="field"><label>Room Type</label>
+                      <div class="chip-row">
+                        <input type="radio" name="accommRoom" id="ar-prem" value="premium"><label for="ar-prem">Premium</label>
+                        <input type="radio" name="accommRoom" id="ar-sup" value="superior"><label for="ar-sup">Superior</label>
+                        <input type="radio" name="accommRoom" id="ar-std" value="standard"><label for="ar-std">Standard</label>
+                        <input type="radio" name="accommRoom" id="ar-twin" value="twin_shared"><label for="ar-twin">Twin/Shared</label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Hostel room type -->
+                  <div class="sub-options" data-accomm-sub="hostel_hotel">
+                    <div class="field"><label>Room Type</label>
+                      <div class="chip-row">
+                        <input type="radio" name="accommRoom" id="hr-ind" value="individual"><label for="hr-ind">Individual</label>
+                        <input type="radio" name="accommRoom" id="hr-dorm" value="dorm"><label for="hr-dorm">Dorm</label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div id="accommDates" style="display:none">
+                    <div class="form-grid" style="margin-top: 12px;">
+                      <div class="field">
+                        <label>Arrival Date</label>
+                        <input type="date" name="accommStart">
+                      </div>
+                      <div class="field">
+                        <label>Accommodation Weeks</label>
+                        <select name="accommWeeks" id="accommWeeks">
+                          <option value="">Select...</option>
+                          <option value="1">1 week</option><option value="2">2 weeks</option><option value="3">3 weeks</option>
+                          <option value="4">4 weeks</option><option value="6">6 weeks</option><option value="8">8 weeks</option>
+                          <option value="10">10 weeks</option><option value="12">12 weeks</option>
+                        </select>
+                      </div>
+                      <div class="field">
+                        <label>End Date</label>
+                        <input type="date" name="accommEnd" id="accommEnd" readonly style="background:#f8fafc">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Extras -->
+              <div class="enroll-acc" data-acc="extras">
+                <div class="enroll-acc-head">
+                  <div class="enroll-acc-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                  </div>
+                  <div class="enroll-acc-titles">
+                    <h3>Extras</h3>
+                    <div class="sub">Airport transfers, exams</div>
+                  </div>
+                  <div class="enroll-acc-chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+                </div>
+                <div class="enroll-acc-body">
+                  <div class="chip-row">
+                    <input type="checkbox" name="extras" id="ex-pickup" value="airport_pickup"><label for="ex-pickup">Airport Pickup</label>
+                    <input type="checkbox" name="extras" id="ex-dropoff" value="airport_dropoff"><label for="ex-dropoff">Airport Drop-off</label>
+                    <input type="checkbox" name="extras" id="ex-exam" value="exam_fee"><label for="ex-exam">Exam Fee</label>
+                  </div>
+                  <div class="sub-options" data-extra-sub="airport_pickup">
+                    <div class="field" style="margin-top:8px"><label>Pickup Date & Time</label><input type="datetime-local" name="pickupTime"></div>
+                  </div>
+                  <div class="sub-options" data-extra-sub="airport_dropoff">
+                    <div class="field" style="margin-top:8px"><label>Drop-off Date & Time</label><input type="datetime-local" name="dropoffTime"></div>
+                  </div>
+                  <div class="sub-options" data-extra-sub="exam_fee">
+                    <div class="field" style="margin-top:8px"><label>Exam Type</label>
+                      <select name="examTypeExtra">
+                        <option value="">Select...</option>
+                        <option value="ielts">IELTS</option><option value="fce">FCE</option><option value="cae">CAE</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Message -->
+              <div class="enroll-acc" data-acc="message">
+                <div class="enroll-acc-head">
+                  <div class="enroll-acc-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  </div>
+                  <div class="enroll-acc-titles">
+                    <h3>Notes</h3>
+                    <div class="sub">Additional information or requests</div>
+                  </div>
+                  <div class="enroll-acc-chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+                </div>
+                <div class="enroll-acc-body">
+                  <div class="field full">
+                    <textarea name="notes" rows="3" placeholder="Any additional information, special requests, or questions..."></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="enroll-cta">
+              <span class="enroll-status" id="enrollStatus"></span>
+              <button type="submit" class="btn-enroll" id="enrollSubmit">Submit Enrollment</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   Partner Portal — JavaScript
+   ═══════════════════════════════════════════════════ */
+(function() {
+  'use strict';
+
+  // ── State ──
+  let me = null;
+
+  // ── Territory map (inline for the partner portal — no external dependency) ──
+  const TERRITORY_MAP = {"Afghanistan":"Unsupported Territory","Albania":"Non-EU (VBD)","Algeria":"Non-EU (VBD)","Andorra":"EU","Angola":"Unsupported Territory","Argentina":"Non-EU (No Visa)","Armenia":"Non-EU (VBD)","Australia":"Non-EU (VBD)","Austria":"EU","Azerbaijan":"Non-EU (VBD)","Bahamas":"Unsupported Territory","Bahrain":"Unsupported Territory","Bangladesh":"Unsupported Territory","Barbados":"Unsupported Territory","Belarus":"Non-EU (VBD)","Belgium":"EU","Belize":"Unsupported Territory","Benin":"Unsupported Territory","Bhutan":"Unsupported Territory","Bolivia":"Non-EU (No Visa)","Bosnia and Herzegovina":"Non-EU (VBD)","Botswana":"Unsupported Territory","Brazil":"Non-EU (No Visa)","Brunei":"Non-EU (VBD)","Bulgaria":"EU","Burkina Faso":"Unsupported Territory","Burundi":"Unsupported Territory","Cambodia":"Unsupported Territory","Cameroon":"Non-EU (VBD)","Canada":"Non-EU (VBD)","Cape Verde":"Unsupported Territory","Central African Republic":"Unsupported Territory","Chad":"Unsupported Territory","Chile":"Non-EU (No Visa)","China":"Non-EU (VBD)","Colombia":"Non-EU (VBD)","Comoros":"Unsupported Territory","Congo":"Unsupported Territory","Cook Islands":"Non-EU (VBD)","Costa Rica":"Non-EU (No Visa)","Croatia":"EU","Cuba":"Unsupported Territory","Cyprus":"EU","Czech Republic":"EU","Denmark":"EU","Djibouti":"Unsupported Territory","Dominica":"Unsupported Territory","Dominican Republic":"Unsupported Territory","Ecuador":"Non-EU (VBD)","Egypt":"Non-EU (VBD)","El Salvador":"Non-EU (No Visa)","Equatorial Guinea":"Unsupported Territory","Eritrea":"Unsupported Territory","Estonia":"EU","Ethiopia":"Unsupported Territory","Fiji":"Non-EU (VBD)","Finland":"EU","France":"EU","Gabon":"Unsupported Territory","Gambia":"Unsupported Territory","Georgia":"Non-EU (VBD)","Germany":"EU","Ghana":"Unsupported Territory","Gibraltar":"EU","Greece":"EU","Grenada":"Non-EU (VBD)","Guatemala":"Non-EU (No Visa)","Guinea":"Unsupported Territory","Guyana":"Unsupported Territory","Haiti":"Unsupported Territory","Honduras":"Non-EU (No Visa)","Hong Kong":"Non-EU (No Visa)","Hungary":"EU","Iceland":"EU","India":"Unsupported Territory","Indonesia":"Non-EU (VBD)","Iran":"Unsupported Territory","Iraq":"Unsupported Territory","Ireland":"EU","Israel":"EU","Italy":"EU","Jamaica":"Unsupported Territory","Japan":"Non-EU (No Visa)","Jordan":"Non-EU (VBD)","Kazakhstan":"Non-EU (VBD)","Kenya":"Unsupported Territory","Kiribati":"Unsupported Territory","Kosovo":"Unsupported Territory","Kuwait":"Non-EU (VBD)","Kyrgyzstan":"Unsupported Territory","Laos":"Unsupported Territory","Latvia":"EU","Lebanon":"Unsupported Territory","Lesotho":"Unsupported Territory","Liberia":"Unsupported Territory","Libya":"Unsupported Territory","Liechtenstein":"EU","Lithuania":"EU","Luxembourg":"EU","Macau":"Non-EU (VBD)","Madagascar":"Unsupported Territory","Malawi":"Unsupported Territory","Malaysia":"Non-EU (No Visa)","Maldives":"Non-EU (VBD)","Mali":"Unsupported Territory","Malta":"EU","Marshall Islands":"Unsupported Territory","Mauritania":"Unsupported Territory","Mauritius":"Unsupported Territory","Mexico":"Non-EU (No Visa)","Micronesia":"Unsupported Territory","Moldova":"Non-EU (VBD)","Monaco":"EU","Mongolia":"Non-EU (VBD)","Montenegro":"Non-EU (VBD)","Morocco":"Non-EU (VBD)","Mozambique":"Unsupported Territory","Myanmar (Burma)":"Unsupported Territory","Namibia":"Unsupported Territory","Nauru":"Unsupported Territory","Nepal":"Unsupported Territory","Netherlands":"EU","New Zealand":"Non-EU (VBD)","Nicaragua":"Non-EU (No Visa)","Niger":"Unsupported Territory","Nigeria":"Unsupported Territory","North Korea":"Unsupported Territory","Norway":"EU","Oman":"Non-EU (VBD)","Pakistan":"Unsupported Territory","Palestine":"Unsupported Territory","Panama":"Non-EU (No Visa)","Papua New Guinea":"Unsupported Territory","Paraguay":"Non-EU (No Visa)","Peru":"Non-EU (VBD)","Philippines":"Unsupported Territory","Poland":"EU","Portugal":"EU","Qatar":"Non-EU (No Visa)","Romania":"EU","Russia":"Non-EU (VBD)","Rwanda":"Unsupported Territory","Samoa":"Non-EU (VBD)","San Marino":"EU","Saudi Arabia":"Non-EU (No Visa)","Senegal":"Unsupported Territory","Serbia":"Non-EU (VBD)","Seychelles":"Non-EU (VBD)","Sierra Leone":"Unsupported Territory","Singapore":"Non-EU (VBD)","Slovakia":"EU","Slovenia":"EU","Solomon Islands":"Non-EU (VBD)","Somalia":"Unsupported Territory","South Africa":"Unsupported Territory","South Korea":"Non-EU (No Visa)","South Sudan":"Unsupported Territory","Spain":"EU","Sri Lanka":"Unsupported Territory","Sudan":"Unsupported Territory","Suriname":"Unsupported Territory","Sweden":"EU","Switzerland":"EU","Syria":"Unsupported Territory","Taiwan":"Non-EU (No Visa)","Tajikistan":"Unsupported Territory","Tanzania":"Unsupported Territory","Thailand":"Unsupported Territory","Togo":"Unsupported Territory","Tonga":"Unsupported Territory","Trinidad and Tobago":"Unsupported Territory","Tunisia":"Unsupported Territory","Turkey":"Non-EU (VBD)","Turkmenistan":"Unsupported Territory","Tuvalu":"Unsupported Territory","Uganda":"Unsupported Territory","Ukraine":"Non-EU (VBD)","United Arab Emirates":"Non-EU (VBD)","United Kingdom":"EU","United States":"Non-EU (VBD)","Uruguay":"Non-EU (No Visa)","Uzbekistan":"Non-EU (VBD)","Vanuatu":"Unsupported Territory","Vatican City":"EU","Venezuela":"Unsupported Territory","Vietnam":"Unsupported Territory","Yemen":"Unsupported Territory","Zambia":"Unsupported Territory","Zimbabwe":"Unsupported Territory"};
+
+  const COURSE_RULES = {
+    'EU':                    ['group','exam','private','junior'],
+    'Non-EU (No Visa)':      ['group','lifepass','academic_year','junior'],
+    'Non-EU (VBD)':          ['group','academic_year','junior'],
+    'Unsupported Territory': ['group','academic_year','junior'],
+  };
+
+  // ── Init ──
+  async function init() {
+    try {
+      const res = await fetch('/sis/partners/api/me');
+      if (!res.ok) { location.href = '/sis/partners/login'; return; }
+      me = await res.json();
+      if (!me.success) { location.href = '/sis/partners/login'; return; }
+      document.getElementById('agencyName').textContent = me.agencyName || '';
+      document.getElementById('userName').textContent = me.displayName || me.user;
+    } catch { location.href = '/sis/partners/login'; return; }
+
+    populateNationalities();
+    setupTabs();
+    setupAccordions();
+    setupCourseFiltering();
+    setupDateComputation();
+    setupAccommToggle();
+    setupExtrasToggle();
+    setupEnrollForm();
+    loadDashboard();
+
+    // Refresh button → re-poll live finance
+    const refreshBtn = document.getElementById('refreshBtn');
+    if (refreshBtn) refreshBtn.addEventListener('click', loadDashboard);
+  }
+
+  // ── Tab navigation ──
+  function setupTabs() {
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const t = tab.dataset.tab;
+        document.querySelectorAll('.nav-tab').forEach(n => n.classList.remove('active'));
+        tab.classList.add('active');
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById('sec-' + t).classList.add('active');
+
+        if (t === 'students') loadStudents();
+        else if (t === 'dashboard') loadDashboard();
+      });
+    });
+  }
+
+  // ── Populate nationality dropdown ──
+  // Exact match with Drupal B2C booking form / HubSpot nationality field
+  const POPULAR_NATIONS = ["Albania","Algeria","Andorra","Argentina","Australia","Austria","Azerbaijan","Belarus","Belgium","Bolivia","Bosnia and Herzegovina","Brazil","Bulgaria","Chile","China","Colombia","Costa Rica","Croatia","Cura\u00e7ao","Cyprus","Czech Republic","Denmark","Ecuador","El Salvador","Estonia","Finland","France","Georgia","Germany","Gibraltar","Greece","Greenland","Guatemala","Honduras","Hong Kong","Hungary","Iceland","Indonesia","Ireland","Israel","Italy","Japan","Kazakhstan","Latvia","Liechtenstein","Lithuania","Luxembourg","Malaysia","Malta","Mexico","Moldova","Monaco","Mongolia","Montenegro","Netherlands","Nicaragua","Norway","Oman","Panama","Paraguay","Peru","Poland","Portugal","Qatar","Romania","Russia","San Marino","Saudi Arabia","Serbia","Singapore","Slovakia","Slovenia","South Korea","Spain","Sweden","Switzerland","Taiwan","Turkey","Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay","Uzbekistan"];
+  const OTHER_NATIONS = ["Afghanistan","Aland Islands","American Samoa","Angola","Anguilla","Antarctica","Antigua and Barbuda","Armenia","Aruba","Bahamas","Bahrain","Bangladesh","Barbados","Belize","Benin","Bermuda","Bhutan","Botswana","British Virgin Islands","Brunei","Burkina Faso","Burundi","Cambodia","Cameroon","Canada","Cape Verde","Caribbean Netherlands","Cayman Islands","Central African Republic","Chad","Cocos (Keeling) Islands","Comoros","Congo","Cook Islands","Cuba","Democratic Republic of the Congo","Djibouti","Dominica","Dominican Republic","East Timor","Egypt","Equatorial Guinea","Eritrea","Ethiopia","Falkland Islands","Faroe Islands","Fiji","French Guiana","French Polynesia","Gabon","Gambia","Ghana","Grenada","Guadeloupe","Guam","Guernsey","Guinea","Guinea-Bissau","Guyana","Haiti","India","Iran","Iraq","Isle of Man","Jamaica","Jersey","Jordan","Kenya","Kiribati","Kosovo","Kuwait","Kyrgyzstan","Laos","Lebanon","Lesotho","Liberia","Libya","Macau","Madagascar","Malawi","Maldives","Mali","Marshall Islands","Martinique","Mauritania","Mauritius","Micronesia","Montserrat","Morocco","Mozambique","Myanmar (Burma)","Namibia","Nauru","Nepal","New Caledonia","New Zealand","Niger","Nigeria","Niue","Norfolk Island","North Korea","Northern Mariana Islands","Pakistan","Palau","Palestine","Papua New Guinea","Philippines","Puerto Rico","R\u00e9union","Rwanda","Saint Barth\u00e9lemy","Saint Helena","Saint Kitts and Nevis","Saint Lucia","Saint Martin","Saint Pierre and Miquelon","Saint Vincent and the Grenadines","Samoa","Sao Tome and Principe","Senegal","Seychelles","Sierra Leone","Sint Maarten","Solomon Islands","Somalia","South Africa","South Sudan","Sri Lanka","Sudan","Suriname","Swaziland","Syria","Tajikistan","Tanzania","Thailand","Togo","Tonga","Trinidad and Tobago","Tunisia","Turkmenistan","Turks and Caicos Islands","Tuvalu","Uganda","Vanuatu","Vatican City","Venezuela","Vietnam","Western Sahara","Yemen","Zambia","Zimbabwe"];
+
+  function populateNationalities() {
+    const sel = document.getElementById('enrollNationality');
+    const g1 = document.createElement('optgroup');
+    g1.label = 'Popular';
+    POPULAR_NATIONS.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; g1.appendChild(o); });
+    sel.appendChild(g1);
+    const g2 = document.createElement('optgroup');
+    g2.label = 'Other';
+    OTHER_NATIONS.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; g2.appendChild(o); });
+    sel.appendChild(g2);
+  }
+
+  // ── Enrollment form accordions ──
+  function openAccSection(acc) {
+    if (!acc) return;
+    document.querySelectorAll('.enroll-acc').forEach(a => a.classList.remove('open'));
+    acc.classList.add('open');
+    // Focus first visible input inside the newly opened section
+    setTimeout(() => {
+      const first = acc.querySelector('.enroll-acc-body input:not([type=hidden]):not([readonly]), .enroll-acc-body select, .enroll-acc-body textarea');
+      if (first) first.focus();
+    }, 50);
+  }
+
+  function setupAccordions() {
+    const sections = Array.from(document.querySelectorAll('.enroll-acc'));
+
+    document.querySelectorAll('.enroll-acc-head').forEach(head => {
+      head.addEventListener('click', () => {
+        const acc = head.closest('.enroll-acc');
+        if (acc.classList.contains('open')) {
+          acc.classList.remove('open');
+        } else {
+          openAccSection(acc);
+        }
+      });
+    });
+
+    // ── Tab progression: nationality → Course, last course field → Accomm, etc. ──
+    // From the "About You" nationality field, tab into the Course accordion
+    const natSel = document.getElementById('enrollNationality');
+    natSel.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab' && !e.shiftKey) {
+        e.preventDefault();
+        openAccSection(sections[0]); // Course
+      }
+    });
+
+    // Wire tab-out from each accordion section to the next one
+    sections.forEach((section, i) => {
+      const next = sections[i + 1];
+      if (!next) return;
+      // Use a delegated keydown on the body so it catches dynamically shown fields
+      section.querySelector('.enroll-acc-body').addEventListener('keydown', (e) => {
+        if (e.key !== 'Tab' || e.shiftKey) return;
+        // Only intercept if the focused element is the last visible field in this section
+        const fields = Array.from(section.querySelectorAll(
+          '.enroll-acc-body input:not([type=hidden]):not([type=radio]):not([type=checkbox]):not([readonly]):not([disabled]), .enroll-acc-body select:not([disabled]), .enroll-acc-body textarea:not([disabled])'
+        )).filter(el => el.offsetParent !== null);
+        const last = fields[fields.length - 1];
+        if (e.target === last) {
+          e.preventDefault();
+          openAccSection(next);
+        }
+      });
+    });
+
+    // Also: when clicking a chip radio/checkbox, if it's the only action needed in a
+    // visible sub-section, auto-tab could be jarring. So we only auto-progress on Tab key.
+  }
+
+  // ── Course type filtering by nationality ──
+  function setupCourseFiltering() {
+    const natSel = document.getElementById('enrollNationality');
+    natSel.addEventListener('change', () => {
+      applyCourseFilter(natSel.value);
+      // Auto-open Course section once nationality is chosen
+      if (natSel.value) {
+        const courseAcc = document.querySelector('.enroll-acc[data-acc="course"]');
+        if (courseAcc && !courseAcc.classList.contains('open')) {
+          openAccSection(courseAcc);
+        }
+      }
+    });
+
+    // Course type sub-options
+    document.querySelectorAll('input[name="courseType"]').forEach(inp => {
+      inp.addEventListener('change', () => {
+        document.querySelectorAll('.enroll-acc-body .sub-options[data-sub]').forEach(el => {
+          el.classList.toggle('show', el.dataset.sub === inp.value);
+        });
+        // Reset IELTS slot visibility when course type changes
+        document.getElementById('ieltsSlotRow').classList.remove('show');
+        // Show/hide weeks vs private hours
+        const wf = document.getElementById('weeksField');
+        if (inp.value === 'private') {
+          wf.style.display = 'none';
+        } else {
+          wf.style.display = '';
+        }
+      });
+    });
+
+    // Exam type → show IELTS slot when IELTS selected
+    document.querySelectorAll('input[name="examType"]').forEach(inp => {
+      inp.addEventListener('change', () => {
+        document.getElementById('ieltsSlotRow').classList.toggle('show', inp.value === 'ielts');
+      });
+    });
+  }
+
+  function applyCourseFilter(country) {
+    const chips = document.querySelectorAll('#courseTypeChips input[type="radio"]');
+    if (!country || !TERRITORY_MAP[country]) {
+      chips.forEach(c => { c.parentElement.querySelector('label[for="' + c.id + '"]').style.display = ''; });
+      return;
+    }
+    const territory = TERRITORY_MAP[country];
+    const allowed = COURSE_RULES[territory] || COURSE_RULES['Unsupported Territory'];
+    chips.forEach(c => {
+      const lbl = document.querySelector('label[for="' + c.id + '"]');
+      if (allowed.includes(c.value)) {
+        lbl.style.display = '';
+      } else {
+        lbl.style.display = 'none';
+        if (c.checked) c.checked = false;
+      }
+    });
+  }
+
+  // ── Date auto-computation ──
+  function setupDateComputation() {
+    const startEl = document.querySelector('[name="courseStart"]');
+    const weeksEl = document.getElementById('courseWeeks');
+    const endEl = document.getElementById('courseEnd');
+
+    function compute() {
+      if (!startEl.value || !weeksEl.value) return;
+      const dt = new Date(startEl.value + 'T00:00:00');
+      dt.setDate(dt.getDate() + (parseInt(weeksEl.value) * 7) - 2); // End on Friday
+      endEl.value = dt.toISOString().split('T')[0];
+    }
+    startEl.addEventListener('change', compute);
+    weeksEl.addEventListener('change', compute);
+
+    // Accomm dates
+    const accStart = document.querySelector('[name="accommStart"]');
+    const accWeeks = document.getElementById('accommWeeks');
+    const accEnd = document.getElementById('accommEnd');
+    function computeAccomm() {
+      if (!accStart.value || !accWeeks.value) return;
+      const dt = new Date(accStart.value + 'T00:00:00');
+      dt.setDate(dt.getDate() + (parseInt(accWeeks.value) * 7));
+      accEnd.value = dt.toISOString().split('T')[0];
+    }
+    accStart.addEventListener('change', computeAccomm);
+    accWeeks.addEventListener('change', computeAccomm);
+  }
+
+  // ── Accommodation type toggle ──
+  function setupAccommToggle() {
+    document.querySelectorAll('input[name="accommType"]').forEach(inp => {
+      inp.addEventListener('change', () => {
+        const dates = document.getElementById('accommDates');
+        dates.style.display = (inp.value !== 'none') ? '' : 'none';
+        // Room type sub-options
+        document.querySelectorAll('[data-accomm-sub]').forEach(el => {
+          el.classList.toggle('show', el.dataset.accommSub === inp.value);
+        });
+      });
+    });
+  }
+
+  // ── Extras toggle ──
+  function setupExtrasToggle() {
+    document.querySelectorAll('input[name="extras"]').forEach(inp => {
+      inp.addEventListener('change', () => {
+        const sub = document.querySelector('[data-extra-sub="' + inp.value + '"]');
+        if (sub) sub.classList.toggle('show', inp.checked);
+      });
+    });
+  }
+
+  // ── Dashboard ──
+  async function loadDashboard() {
+    const refreshBtn = document.getElementById('refreshBtn');
+    if (refreshBtn) { refreshBtn.disabled = true; refreshBtn.textContent = '⟳ Loading...'; }
+    try {
+      const res = await fetch('/sis/partners/api/live-finance');
+      const d = await res.json();
+      if (!d.success) throw new Error(d.error || 'Failed to load');
+
+      // Stat cards — all from live HubSpot data
+      document.getElementById('dashStats').innerHTML = `
+        <div class="stat-card"><div class="stat-value">${d.dealCount}</div><div class="stat-label">Total Deals</div></div>
+        <div class="stat-card blue"><div class="stat-value">${d.commissionRate}%</div><div class="stat-label">Commission Rate</div></div>
+        <div class="stat-card green"><div class="stat-value">&euro;${fmt(d.totals.billed)}</div><div class="stat-label">Total Billed</div></div>
+        <div class="stat-card green"><div class="stat-value">&euro;${fmt(d.totals.paid)}</div><div class="stat-label">Total Paid</div></div>
+        <div class="stat-card" style="${d.totals.balance > 0 ? 'border: 2px solid #f59e0b' : ''}"><div class="stat-value">&euro;${fmt(d.totals.balance)}</div><div class="stat-label">Balance Open</div></div>
+      `;
+
+      // Quotes
+      const qtbody = document.getElementById('quoteRows');
+      if (d.quotes.length) {
+        qtbody.innerHTML = d.quotes.map(q => `<tr>
+          <td><strong>${esc(q.quoteNumber || q.id)}</strong></td>
+          <td>${esc(q.title || '-')}</td>
+          <td><strong>&euro;${fmt(q.amount)}</strong></td>
+          <td>${fmtDate(q.createdAt)}</td>
+          <td>${fmtDate(q.expiresAt)}</td>
+          <td>${q.publicUrl ? `<a href="${esc(q.publicUrl)}" target="_blank" style="color:var(--green);font-weight:600;text-decoration:none">View →</a>` : '-'}</td>
+        </tr>`).join('');
+      } else {
+        qtbody.innerHTML = '<tr><td colspan="6" class="loading">No quotes ready for acceptance</td></tr>';
+      }
+
+      // Invoices — with paid/balance columns so payments are visible inline
+      const itbody = document.getElementById('invoiceRows');
+      if (d.invoices.length) {
+        itbody.innerHTML = d.invoices.map(inv => {
+          const statusColor = inv.status === 'paid' ? 'var(--green)'
+            : inv.status === 'voided' ? '#dc2626'
+            : inv.balance > 0 ? '#f59e0b' : 'var(--muted)';
+          return `<tr>
+            <td><strong>${esc(inv.number || inv.id)}</strong></td>
+            <td><span class="badge" style="background:${statusColor};color:#fff">${esc(inv.status || '-')}</span></td>
+            <td><strong>&euro;${fmt(inv.billed)}</strong></td>
+            <td style="color:var(--green)">&euro;${fmt(inv.paid)}</td>
+            <td style="${inv.balance > 0 ? 'color:#f59e0b;font-weight:600' : 'color:var(--muted)'}">&euro;${fmt(inv.balance)}</td>
+            <td>${fmtDate(inv.invoiceDate)}</td>
+            <td>${fmtDate(inv.dueDate)}</td>
+            <td style="white-space:nowrap">
+              ${inv.invoiceUrl ? `<a href="${esc(inv.invoiceUrl)}" target="_blank" style="color:var(--green);text-decoration:none;font-weight:600">View →</a>` : ''}
+              ${inv.pdfUrl && inv.invoiceUrl ? ' · ' : ''}
+              ${inv.pdfUrl ? `<a href="${esc(inv.pdfUrl)}" target="_blank" style="color:var(--muted);text-decoration:none;font-weight:600;font-size:12px">PDF</a>` : ''}
+            </td>
+          </tr>`;
+        }).join('');
+      } else {
+        itbody.innerHTML = '<tr><td colspan="8" class="loading">No invoices yet</td></tr>';
+      }
+
+      // Timestamp
+      const lr = document.getElementById('lastRefresh');
+      if (lr) lr.textContent = 'Last refreshed: ' + new Date().toLocaleTimeString('en-IE', { hour: '2-digit', minute: '2-digit' });
+    } catch (e) {
+      console.error('Dashboard load error:', e);
+    } finally {
+      if (refreshBtn) { refreshBtn.disabled = false; refreshBtn.textContent = '⟳ Refresh'; }
+    }
+  }
+
+  // ── Students ──
+  let studentSearchTimer;
+  async function loadStudents(search) {
+    const tbody = document.getElementById('studentRows');
+    tbody.innerHTML = '<tr><td colspan="6" class="loading">Loading...</td></tr>';
+    try {
+      const q = search ? '?search=' + encodeURIComponent(search) : '';
+      const res = await fetch('/sis/partners/api/students' + q);
+      const d = await res.json();
+      if (!d.success || !d.rows.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="loading">No students found</td></tr>';
+        return;
+      }
+      tbody.innerHTML = d.rows.map(s => {
+        const b = s.bookings[0];
+        const course = b?.courses?.[0];
+        const age = s.birthday ? Math.floor((Date.now() - new Date(s.birthday).getTime()) / 31557600000) : '';
+        return `<tr>
+          <td><strong>${esc(s.firstName)} ${esc(s.lastName)}</strong>${age ? ' <span style="color:var(--muted);font-size:11px">('+age+')</span>' : ''}</td>
+          <td>${esc(s.nationality || '-')}</td>
+          <td>${esc(s.currentLevel || course?.level || '-')}</td>
+          <td>${esc(course?.name || '-')}</td>
+          <td>${b ? fmtDate(b.serviceStart) + ' — ' + fmtDate(b.serviceEnd) : '-'}</td>
+          <td>${b ? badge(b.status) : '-'}</td>
+        </tr>`;
+      }).join('');
+    } catch (e) { console.error(e); }
+  }
+
+  document.getElementById('studentSearch').addEventListener('input', (e) => {
+    clearTimeout(studentSearchTimer);
+    studentSearchTimer = setTimeout(() => loadStudents(e.target.value), 300);
+  });
+
+  // ── Finance ──
+
+  // ═══ Enrollment form submission → HubSpot ═══
+  function setupEnrollForm() {
+    const form = document.getElementById('enrollForm');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('enrollSubmit');
+      const statusEl = document.getElementById('enrollStatus');
+      const errEl = document.getElementById('enrollError');
+      const successEl = document.getElementById('enrollSuccess');
+      errEl.style.display = 'none';
+      successEl.style.display = 'none';
+      btn.disabled = true;
+      statusEl.textContent = 'Submitting...';
+
+      try {
+        const fd = new FormData(form);
+
+        // Build contact properties
+        const courseType = fd.get('courseType');
+
+        statusEl.textContent = 'Submitting enrollment...';
+
+        // Build payload — server handles all HubSpot logic
+        const payload = {
+          firstName: fd.get('firstName'),
+          lastName: fd.get('lastName'),
+          email: fd.get('email'),
+          phone: fd.get('phone') || '',
+          dateOfBirth: fd.get('dateOfBirth') || '',
+          nationality: fd.get('nationality'),
+          courseType: courseType,
+          courseSlot: fd.get('courseSlot') || '',
+          aySlot: fd.get('aySlot') || '',
+          lpSlot: fd.get('lpSlot') || '',
+          courseHours: fd.get('courseHours') || '',
+          examType: fd.get('examType') || '',
+          ieltsSlot: fd.get('ieltsSlot') || '',
+          juniorPack: fd.get('juniorPack') || '',
+          privateHours: fd.get('privateHours') || '',
+          courseStart: fd.get('courseStart') || '',
+          courseEnd: fd.get('courseEnd') || '',
+          courseWeeks: fd.get('courseWeeks') || '',
+          accommType: fd.get('accommType') || 'none',
+          accommRoom: fd.get('accommRoom') || '',
+          accommStart: fd.get('accommStart') || '',
+          accommEnd: fd.get('accommEnd') || '',
+          accommWeeks: fd.get('accommWeeks') || '',
+          extras: fd.getAll('extras'),
+          pickupTime: fd.get('pickupTime') || '',
+          dropoffTime: fd.get('dropoffTime') || '',
+          examTypeExtra: fd.get('examTypeExtra') || '',
+          notes: fd.get('notes') || '',
+        };
+
+        const result = await fetch('/sis/partners/api/enroll', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        }).then(r => r.json());
+
+        if (!result.success) throw new Error(result.error || 'Submission failed');
+
+        // Success!
+        statusEl.textContent = '';
+        successEl.style.display = 'block';
+        form.reset();
+        document.querySelectorAll('.sub-options').forEach(el => el.classList.remove('show'));
+        document.getElementById('accommDates').style.display = 'none';
+
+      } catch (err) {
+        errEl.textContent = 'Error: ' + (err.message || 'Submission failed. Please try again.');
+        errEl.style.display = 'block';
+        statusEl.textContent = '';
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  }
+
+  // ── Helpers ──
+  function fmt(n) { return Math.round(Number(n || 0)).toLocaleString('en-IE'); }
+  function fmtDate(d) { return d ? new Date(d).toLocaleDateString('en-IE', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'; }
+  function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+  function badge(status) {
+    if (!status) return '-';
+    const cls = 'badge-' + status.toLowerCase();
+    return '<span class="badge ' + cls + '">' + status + '</span>';
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>

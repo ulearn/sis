@@ -37,6 +37,7 @@ export function attendanceScripts(prisma: PrismaClient) {
             OR: [{ weekEnd: null }, { weekEnd: { gte: monday } }],
           },
           include: {
+            student: { select: { id: true, firstName: true, lastName: true, currentLevel: true, nationality: true } },
             bookingCourse: {
               include: {
                 booking: {
@@ -75,9 +76,12 @@ export function attendanceScripts(prisma: PrismaClient) {
       where: { occurrenceId: { in: occIds } },
     });
 
-    // Build student rows with daily attendance
+    // Build student rows with daily attendance.
+    // Student can come from two paths:
+    //   1. bookingCourse → booking → student (when assignment is linked to a booking course)
+    //   2. direct studentId on the assignment (manual assignments without a booking course)
     const students = (classData.studentAssignments || []).map(sa => {
-      const student = sa.bookingCourse?.booking?.student;
+      const student = sa.bookingCourse?.booking?.student || (sa as any).student;
       if (!student) return null;
 
       const dailyData = days.map((d, i) => {

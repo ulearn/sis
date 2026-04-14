@@ -118,9 +118,9 @@ export function documentScripts(prisma: PrismaClient) {
 
     const tokens: Record<string, string> = {
       // Student
-      'student.full_name': `${student.firstName} ${student.lastName}`,
+      'student.full_name': `${student.firstName} ${student.lastName || ''}`,
       'student.first_name': student.firstName,
-      'student.last_name': student.lastName,
+      'student.last_name': student.lastName || '',
       'student.email': student.email || '',
       'student.dob': fmtDate(student.birthday),
       'student.nationality': student.nationality || '',
@@ -417,7 +417,7 @@ export function documentScripts(prisma: PrismaClient) {
       versionNo: doc.versionNo,
       issuedAt: doc.issuedAt,
       student: student ? {
-        fullName: `${student.firstName} ${student.lastName}`,
+        fullName: `${student.firstName} ${student.lastName || ''}`,
         dob: student.birthday,
         nationality: student.nationality,
       } : null,

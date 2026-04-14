@@ -543,6 +543,9 @@ function toggleSidebar() {
 let currentView = 'students';
 let studentPage = 1, bookingPage = 1;
 let studentSearch = '', studentNatFilter = '', bookingSearch = '', bookingStatusFilter = '';
+let bookingStartFrom = '', bookingStartTo = '', bookingEndFrom = '', bookingEndTo = '';
+let bookingDatePanel = ''; // '' | 'start' | 'end'
+let bookingSortCol = '', bookingSortDir = 'asc';
 
 // ─── SCHOOL CONFIG (single source of truth for select options) ──
 let SIS_CONFIG = {};
@@ -876,14 +879,16 @@ async function showStudentsList() {
     let html = `<div style="display:flex;gap:0;height:calc(100vh - 150px)">
       <div style="flex:1;overflow-y:auto;min-width:0">
       <div class="toolbar">
-        <div class="search-bar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" id="studentSearchInput" placeholder="Search students..." value="${esc(studentSearch)}" oninput="debounceStudentSearch(this.value)">
+        <div style="display:flex;gap:8px;align-items:center">
+          <div class="search-bar" style="width:280px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="studentSearchInput" placeholder="Search students..." value="${esc(studentSearch)}" oninput="debounceStudentSearch(this.value)">
+          </div>
+          <select class="filter-select" id="studentNatSelect" onchange="studentNatFilter=this.value;studentPage=1;showStudentsList()" style="width:500px;max-width:500px">
+            <option value="">All Nationalities</option>
+            ${(res.nationalities || []).map(n => `<option value="${esc(n)}" ${studentNatFilter===n?'selected':''}>${countryName(n)}</option>`).join('')}
+          </select>
         </div>
-        <select class="filter-select" id="studentNatSelect" onchange="studentNatFilter=this.value;studentPage=1;showStudentsList()">
-          <option value="">All Nationalities</option>
-          ${(res.nationalities || []).map(n => `<option value="${esc(n)}" ${studentNatFilter===n?'selected':''}>${countryName(n)}</option>`).join('')}
-        </select>
       </div>
       <div class="table-wrap">
         <table>
@@ -899,7 +904,7 @@ async function showStudentsList() {
         const onboarded = s.onboardingDate ? formatDate(s.onboardingDate) : '—';
         html += `<tr class="clickable ${s.id === studentPreviewId ? 'preview-active' : ''}">
           <td style="position:relative;padding-right:80px">
-            <strong style="cursor:pointer" onclick="navigate('student-detail',{id:${s.id}})">${esc(s.lastName)}, ${esc(s.firstName)}</strong>
+            <strong style="cursor:pointer" onclick="navigate('student-detail',{id:${s.id}})">${esc(s.firstName)} ${esc(s.lastName || '')}</strong>
             <span class="preview-btn" onclick="event.stopPropagation();showStudentPreview(${s.id})" title="Preview">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
               Preview
@@ -1325,17 +1330,6 @@ async function showStudentDetail(id) {
           </div>
         </div>
         <div class="card" style="margin-bottom:8px">
-          <div class="card-header collapse-header" onclick="toggleCollapse(this)" style="padding:10px 18px"><h3 style="font-size:13px">Emergency Contact</h3></div>
-          <div class="card-body collapse-body" style="padding:12px 18px">
-            <div class="form-grid" id="studentFormEmergency">
-              ${field('emergencyFirstName','First Name',s.emergencyFirstName)}
-              ${field('emergencyLastName','Last Name',s.emergencyLastName)}
-              ${field('emergencyPhone','Phone',s.emergencyPhone)}
-              ${field('emergencyEmail','Email',s.emergencyEmail,'email')}
-            </div>
-          </div>
-        </div>
-        <div class="card" style="margin-bottom:8px">
           <div class="card-header collapse-header" onclick="toggleCollapse(this)" style="padding:10px 18px"><h3 style="font-size:13px">Partners & Billing</h3></div>
           <div class="card-body collapse-body" style="padding:12px 18px">
             ${agency ? `<div style="border:1px solid var(--card-border);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;background:var(--bg-subtle)">
@@ -1372,6 +1366,16 @@ async function showStudentDetail(id) {
               ${field('passportValidFrom','Passport From',s.passportValidFrom?.split('T')[0],'date')}
               ${field('passportValidUntil','Passport Until',s.passportValidUntil?.split('T')[0],'date')}
             </div>
+            <div style="margin-top:14px;border-top:1px solid var(--card-border);padding-top:12px">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <span style="font-size:12px;font-weight:600;color:var(--text-secondary)">Documents</span>
+                <label style="cursor:pointer;font-size:12px;color:var(--accent);font-weight:600">
+                  + Upload
+                  <input type="file" multiple accept="image/*,.pdf,.doc,.docx" style="display:none" onchange="uploadStudentDocs(${s.id},this.files)">
+                </label>
+              </div>
+              <div id="studentDocsList" style="display:flex;flex-direction:column;gap:4px"></div>
+            </div>
           </div>
         </div>
         <div class="card" style="margin-bottom:8px">
@@ -1383,6 +1387,17 @@ async function showStudentDetail(id) {
               ${field('socialSecurityNum','PPS/SSN',s.socialSecurityNum)}
               ${configSelect('diet','Diet',s.diet,'diet_types')}
               ${field('allergies','Allergies',s.allergies)}
+            </div>
+            <div style="border:1px solid var(--card-border);border-radius:8px;padding:12px 14px;margin-top:12px">
+              <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);font-weight:600;margin-bottom:8px">Emergency Contact</div>
+              <div class="form-grid" id="studentFormEmergency">
+                ${field('emergencyFirstName','First Name',s.emergencyFirstName)}
+                ${field('emergencyLastName','Last Name',s.emergencyLastName)}
+                ${field('emergencyPhone','Phone',s.emergencyPhone)}
+                ${field('emergencyEmail','Email',s.emergencyEmail,'email')}
+              </div>
+            </div>
+            <div class="form-grid" style="margin-top:12px">
               <div class="form-group full">
                 <label class="form-label">Note</label>
                 <textarea class="form-textarea" data-field="note">${esc(s.note||'')}</textarea>
@@ -2082,8 +2097,11 @@ async function saveStudent(id) {
   // Clean empty strings to null
   for (const k of Object.keys(data)) { if (data[k] === '') data[k] = null; }
   try {
-    await api('/students/' + id, { method: 'PATCH', body: data });
+    const updated = await api('/students/' + id, { method: 'PATCH', body: data });
     toast('Student saved');
+    // Refresh the topbar title with the new name
+    const name = `${updated.firstName || ''} ${updated.lastName || ''}`.trim();
+    if (name) setTopbar(name, document.getElementById('topbarBreadcrumb')?.innerHTML || '', document.getElementById('topbarRight')?.innerHTML || '');
   } catch (e) { toast(e.message, true); }
 }
 
@@ -2096,6 +2114,49 @@ async function deleteStudent(id) {
   } catch (e) { toast(e.message, true); }
 }
 
+// ─── STUDENT DOCUMENTS (visa/passport uploads) ────────
+async function loadStudentDocs(studentId) {
+  const el = document.getElementById('studentDocsList');
+  if (!el) return;
+  try {
+    const docs = await api('/students/' + studentId + '/documents');
+    if (docs.length === 0) {
+      el.innerHTML = '<div style="font-size:11px;color:var(--text-muted)">No documents uploaded</div>';
+      return;
+    }
+    el.innerHTML = docs.map(d => {
+      const sizeKb = (d.size / 1024).toFixed(0);
+      const icon = d.mimeType.startsWith('image/') ? '🖼' : d.mimeType.includes('pdf') ? '📄' : '📎';
+      return `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--bg-subtle);border-radius:4px;font-size:12px">
+        <span>${icon}</span>
+        <a href="/sis/api/students/${studentId}/documents/${d.id}/download" style="flex:1;color:var(--accent);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(d.originalName)}">${esc(d.originalName)}</a>
+        <span style="color:var(--text-muted);font-size:10px">${sizeKb}kB</span>
+        <button class="btn btn-ghost btn-sm" onclick="deleteStudentDoc(${studentId},${d.id})" style="padding:2px 4px;font-size:10px;color:var(--danger)">✕</button>
+      </div>`;
+    }).join('');
+  } catch (e) { el.innerHTML = '<div style="font-size:11px;color:var(--danger)">Error loading docs</div>'; }
+}
+
+async function uploadStudentDocs(studentId, files) {
+  if (!files || files.length === 0) return;
+  const form = new FormData();
+  for (const f of files) form.append('files', f);
+  form.append('category', 'visa');
+  try {
+    await fetch(API + '/students/' + studentId + '/documents', { method: 'POST', body: form });
+    toast('Uploaded ' + files.length + ' file(s)');
+    loadStudentDocs(studentId);
+  } catch (e) { toast('Upload failed', true); }
+}
+
+async function deleteStudentDoc(studentId, docId) {
+  try {
+    await api('/students/' + studentId + '/documents/' + docId, { method: 'DELETE' });
+    toast('Deleted');
+    loadStudentDocs(studentId);
+  } catch (e) { toast(e.message, true); }
+}
+
 // ─── BOOKINGS LIST ──────────────────────────────
 async function showBookingsList() {
   setTopbar('Bookings', '', `<button class="btn btn-primary" onclick="openNewBookingModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> New Booking</button>`);
@@ -2103,6 +2164,11 @@ async function showBookingsList() {
   const params = new URLSearchParams({ page: bookingPage, limit: 25 });
   if (bookingSearch) params.set('search', bookingSearch);
   if (bookingStatusFilter) params.set('status', bookingStatusFilter);
+  if (bookingStartFrom) params.set('startFrom', bookingStartFrom);
+  if (bookingStartTo) params.set('startTo', bookingStartTo);
+  if (bookingEndFrom) params.set('endFrom', bookingEndFrom);
+  if (bookingEndTo) params.set('endTo', bookingEndTo);
+  if (bookingSortCol) { params.set('sortBy', bookingSortCol); params.set('sortDir', bookingSortDir); }
 
   try {
     const res = await api('/bookings?' + params);
@@ -2115,26 +2181,47 @@ async function showBookingsList() {
         </div>
         <select class="filter-select" onchange="bookingStatusFilter=this.value;bookingPage=1;showBookingsList()">
           <option value="">All Statuses</option>
+          <option value="PENDING" ${bookingStatusFilter==='PENDING'?'selected':''}>Pending</option>
           <option value="PARTIAL" ${bookingStatusFilter==='PARTIAL'?'selected':''}>Partial</option>
           <option value="CONFIRMED" ${bookingStatusFilter==='CONFIRMED'?'selected':''}>Confirmed</option>
           <option value="ESCROW" ${bookingStatusFilter==='ESCROW'?'selected':''}>Escrow</option>
           <option value="CANCELLED" ${bookingStatusFilter==='CANCELLED'?'selected':''}>Cancelled</option>
         </select>
+        <button class="btn btn-sm" onclick="bookingDatePanel=bookingDatePanel==='start'?'':'start';showBookingsList()" style="font-size:12px;font-weight:600;border-radius:14px;padding:5px 14px;${bookingDatePanel==='start'?'background:var(--accent);color:#fff;border:1px solid var(--accent)':'background:transparent;color:var(--text-secondary);border:1px solid var(--card-border)'}">Start${bookingStartFrom||bookingStartTo?' ✕':''}</button>
+        <button class="btn btn-sm" onclick="bookingDatePanel=bookingDatePanel==='end'?'':'end';showBookingsList()" style="font-size:12px;font-weight:600;border-radius:14px;padding:5px 14px;${bookingDatePanel==='end'?'background:var(--accent);color:#fff;border:1px solid var(--accent)':'background:transparent;color:var(--text-secondary);border:1px solid var(--card-border)'}">End${bookingEndFrom||bookingEndTo?' ✕':''}</button>
       </div>
+      ${bookingDatePanel==='start' ? `<div style="display:flex;gap:8px;align-items:center;padding:6px 16px 10px;font-size:12px">
+        <span style="color:var(--text-muted);font-weight:600">Start date</span>
+        <span style="color:var(--text-muted)">from</span>
+        <input type="date" value="${bookingStartFrom}" onchange="bookingStartFrom=this.value;bookingPage=1;showBookingsList()" style="padding:4px 8px;border:1px solid var(--card-border);border-radius:4px;font-size:12px">
+        <span style="color:var(--text-muted)">to</span>
+        <input type="date" value="${bookingStartTo}" onchange="bookingStartTo=this.value;bookingPage=1;showBookingsList()" style="padding:4px 8px;border:1px solid var(--card-border);border-radius:4px;font-size:12px">
+        ${bookingStartFrom||bookingStartTo ? `<button class="btn btn-ghost btn-sm" onclick="bookingStartFrom='';bookingStartTo='';bookingPage=1;showBookingsList()" style="font-size:11px;color:var(--text-muted)">Clear</button>` : ''}
+      </div>` : ''}
+      ${bookingDatePanel==='end' ? `<div style="display:flex;gap:8px;align-items:center;padding:6px 16px 10px;font-size:12px">
+        <span style="color:var(--text-muted);font-weight:600">End date</span>
+        <span style="color:var(--text-muted)">from</span>
+        <input type="date" value="${bookingEndFrom}" onchange="bookingEndFrom=this.value;bookingPage=1;showBookingsList()" style="padding:4px 8px;border:1px solid var(--card-border);border-radius:4px;font-size:12px">
+        <span style="color:var(--text-muted)">to</span>
+        <input type="date" value="${bookingEndTo}" onchange="bookingEndTo=this.value;bookingPage=1;showBookingsList()" style="padding:4px 8px;border:1px solid var(--card-border);border-radius:4px;font-size:12px">
+        ${bookingEndFrom||bookingEndTo ? `<button class="btn btn-ghost btn-sm" onclick="bookingEndFrom='';bookingEndTo='';bookingPage=1;showBookingsList()" style="font-size:11px;color:var(--text-muted)">Clear</button>` : ''}
+      </div>` : ''}
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th>ID</th><th>Student</th><th>Status</th><th>Service Start</th><th>Service End</th><th>Course</th><th>Agency</th><th>Total</th>
+            <th>ID</th><th style="cursor:pointer" onclick="toggleBookingSort('student')">Student ${bookingSortCol==='student'?(bookingSortDir==='asc'?'&#9650;':'&#9660;'):''}</th><th>Status</th><th style="cursor:pointer" onclick="toggleBookingSort('start')">Start ${bookingSortCol==='start'?(bookingSortDir==='asc'?'&#9650;':'&#9660;'):''}</th><th style="cursor:pointer" onclick="toggleBookingSort('end')">End ${bookingSortCol==='end'?(bookingSortDir==='asc'?'&#9650;':'&#9660;'):''}</th><th>Course</th><th>Agency</th><th>Total</th><th>Paid</th><th>Balance</th>
           </tr></thead>
           <tbody>`;
 
     if (res.data.length === 0) {
-      html += `<tr><td colspan="8" class="table-empty">No bookings found</td></tr>`;
+      html += `<tr><td colspan="10" class="table-empty">No bookings found</td></tr>`;
     } else {
       for (const b of res.data) {
-        const name = b.student ? `${b.student.lastName}, ${b.student.firstName}` : '—';
+        const name = b.student ? `${b.student.firstName} ${b.student.lastName || ''}`.trim() : '—';
         const course = b.courses?.[0]?.name || '—';
         const agency = b.agency?.name || '—';
+        const balance = b.amountOpen != null ? formatMoney(b.amountOpen) : '—';
+        const balanceStyle = parseFloat(b.amountOpen || 0) > 0 ? 'color:var(--danger);font-weight:600' : 'color:var(--success)';
         html += `<tr class="clickable" onclick="navigate('booking-detail',{id:${b.id}})">
           <td style="font-family:var(--font-mono)">#${b.id}</td>
           <td><strong>${esc(name)}</strong></td>
@@ -2144,6 +2231,8 @@ async function showBookingsList() {
           <td>${esc(course)}</td>
           <td>${esc(agency)}</td>
           <td class="amount">${formatMoney(b.amountTotal)}</td>
+          <td class="amount">${formatMoney(b.amountPaid)}</td>
+          <td class="amount" style="${balanceStyle}">${balance}</td>
         </tr>`;
       }
     }
@@ -2157,6 +2246,13 @@ async function showBookingsList() {
 function debounceBookingSearch(val) {
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => { bookingSearch = val; bookingPage = 1; showBookingsList(); }, 300);
+}
+
+function toggleBookingSort(col) {
+  if (bookingSortCol === col) bookingSortDir = bookingSortDir === 'asc' ? 'desc' : 'asc';
+  else { bookingSortCol = col; bookingSortDir = col === 'student' ? 'asc' : 'desc'; }
+  bookingPage = 1;
+  showBookingsList();
 }
 
 // ─── BOOKING DETAIL ─────────────────────────────
@@ -3013,7 +3109,7 @@ async function showClassDetail(id, weekOverride) {
         <thead><tr><th>Student</th><th>Level</th><th>Course</th><th>Enrolled</th><th></th></tr></thead><tbody>`;
       for (const a of weekStudents) {
         const student = a.student || a.bookingCourse?.booking?.student;
-        const sName = student ? `${student.lastName}, ${student.firstName}` : '—';
+        const sName = student ? `${student.firstName} ${student.lastName || ''}` : '—';
         const sId = student?.id || 0;
         const level = student?.currentLevel || a.bookingCourse?.level || '?';
         html += `<tr>
@@ -3045,7 +3141,7 @@ async function showClassDetail(id, weekOverride) {
         <thead><tr><th>Student</th><th>Level</th><th>Course</th><th>Dates</th><th></th></tr></thead><tbody>`;
       for (const bc of matchingUnassigned) {
         const student = bc.booking?.student;
-        const sName = student ? `${student.lastName}, ${student.firstName}` : '—';
+        const sName = student ? `${student.firstName} ${student.lastName || ''}` : '—';
         const sId = student?.id;
         const level = student?.currentLevel || bc.level || '?';
         html += `<tr data-name="${esc(sName.toLowerCase())}">
@@ -3412,7 +3508,7 @@ async function loadWeeklyAttendance() {
       for (const s of data.students) {
         html += `<tr data-student-id="${s.studentId}">
           <td style="padding:6px 12px;border-bottom:1px solid #f0efec;position:sticky;left:0;background:#fff;z-index:1">
-            <strong style="cursor:pointer;color:var(--accent);font-size:13px" onclick="navigate('student-detail',{id:${s.studentId}})">${esc(s.lastName)}, ${esc(s.firstName)}</strong>
+            <strong style="cursor:pointer;color:var(--accent);font-size:13px" onclick="navigate('student-detail',{id:${s.studentId}})">${esc(s.firstName)} ${esc(s.lastName || '')}</strong>
             ${s.nationality ? '<span style="font-size:11px;color:var(--text-muted);margin-left:4px">'+countryName(s.nationality)+'</span>' : ''}
           </td>`;
 
@@ -5518,7 +5614,7 @@ function makeSearchable(selectEl, onSelect) {
   // Hide real select, create wrapper
   selectEl.style.display = 'none';
   const wrap = document.createElement('div');
-  wrap.style.cssText = 'position:relative;width:100%';
+  wrap.style.cssText = 'position:relative;width:280px';
   selectEl.parentNode.insertBefore(wrap, selectEl);
 
   const display = document.createElement('div');
@@ -5718,7 +5814,7 @@ async function startDocumentGeneration() {
           <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Student</label>
           <select id="docStudent" class="filter-select" style="width:100%">
             <option value="">Select student...</option>
-            ${(students.data || students).map(s => `<option value="${s.id}">${esc(s.lastName)}, ${esc(s.firstName)} (${s.email || '#'+s.id})</option>`).join('')}
+            ${(students.data || students).map(s => `<option value="${s.id}">${esc(s.firstName)} ${esc(s.lastName || '')} (${s.email || '#'+s.id})</option>`).join('')}
           </select>
         </div>
         <div id="docBookingWrap" style="display:none">

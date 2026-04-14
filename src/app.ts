@@ -26,6 +26,7 @@ import { documentRoutes } from './routes/documents';
 import { emailRoutes } from './routes/email';
 import { hostPaymentRoutes } from './routes/host-payments';
 import { payrollRoutes } from './routes/payroll';
+import { partnerRoutes } from './routes/partners';
 import { validateIBAN } from './scripts/iban-validator';
 import { documentScripts } from './scripts/documents';
 import { seedClassrooms } from './scripts/seed';
@@ -37,7 +38,16 @@ app.use(express.json());
 
 // ── Session setup ─────────────────────────────
 declare module 'express-session' {
-  interface SessionData { user?: string; role?: string; displayName?: string; }
+  interface SessionData {
+    user?: string;
+    role?: string;
+    displayName?: string;
+    userType?: string;       // 'staff' | 'partner'
+    agencyId?: number;
+    agencyName?: string;
+    partnerHubspotContactId?: string;  // HubSpot contact ID of the logged-in partner (Agent Employee)
+    portalPermissions?: Record<string, boolean>;
+  }
 }
 
 // Permission definitions per role
@@ -55,7 +65,7 @@ app.use(session({
   cookie: {
     secure: false,       // set true if behind HTTPS-only proxy
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000,  // 24 hours
+    maxAge: 4 * 60 * 60 * 1000,   // 4 hours — partners re-auth ensures live data refresh
     sameSite: 'lax',
   },
 }));
@@ -76,8 +86,12 @@ app.post('/sis/auth/login', async (req, res) => {
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) return res.json({ success: false, error: 'Invalid credentials' });
 
+    // Partner users should use the partner login, not the SIS login
+    if (user.userType === 'partner') return res.json({ success: false, error: 'Please use the partner portal to log in' });
+
     req.session.user = username;
     req.session.role = user.role;
+    req.session.userType = user.userType || 'staff';
     req.session.displayName = user.displayName || username;
     res.json({ success: true });
   } catch (e) { res.json({ success: false, error: 'Login error' }); }
@@ -220,13 +234,111 @@ app.post('/sis/auth/reset', resetIpLimiter, async (req, res) => {
   }
 });
 
+// ── Partner portal routes ─────────────────────
+// Serve partner login page (unauthenticated)
+app.get('/sis/partners/login', (_req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'partners-login.html'));
+});
+
+// Partner login
+app.post('/sis/partners/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) return res.json({ success: false, error: 'Username and password required' });
+
+  try {
+    const user = await prisma.sisUser.findUnique({
+      where: { username },
+      include: { agency: true },
+    });
+    if (!user || !user.active) return res.json({ success: false, error: 'Invalid credentials' });
+    if (user.userType !== 'partner') return res.json({ success: false, error: 'Invalid credentials' });
+    if (!user.agencyId) return res.json({ success: false, error: 'Account not linked to an agency' });
+
+    const valid = await bcrypt.compare(password, user.passwordHash);
+    if (!valid) return res.json({ success: false, error: 'Invalid credentials' });
+
+    // Parse portal permissions
+    let perms: Record<string, boolean> = { canSeeFinance: true, canSeeClasses: true, canSeeDocuments: true };
+    if (user.portalPermissions) {
+      try { perms = JSON.parse(user.portalPermissions); } catch {}
+    }
+
+    req.session.user = username;
+    req.session.role = 'partner';
+    req.session.displayName = user.displayName || username;
+    req.session.userType = 'partner';
+    req.session.agencyId = user.agencyId;
+    req.session.agencyName = user.agency?.name || '';
+    req.session.portalPermissions = perms;
+
+    // Look up partner's HubSpot contact ID by email (Agent Employee)
+    // Cached in session for use during enrollment deal creation.
+    if (user.email && process.env.ACCESS_TOKEN) {
+      try {
+        const lookupRes = await fetch('https://api.hubapi.com/crm/v3/objects/contacts/search', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.ACCESS_TOKEN}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            filterGroups: [{ filters: [{ propertyName: 'email', operator: 'EQ', value: user.email }] }],
+            properties: ['email', 'type'],
+            limit: 1,
+          }),
+        });
+        const data: any = await lookupRes.json().catch(() => ({}));
+        if (data.results?.[0]?.id) {
+          req.session.partnerHubspotContactId = data.results[0].id;
+        }
+      } catch (e) {
+        // Non-fatal — enrollment will still work, just without partner contact association
+        console.warn('[partner-login] HubSpot contact lookup failed:', String(e));
+      }
+    }
+
+    // Update last login
+    await prisma.sisUser.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+
+    res.json({ success: true });
+  } catch (e) { res.json({ success: false, error: 'Login error' }); }
+});
+
+app.get('/sis/partners/auth/logout', (req, res) => {
+  req.session.destroy(() => { res.redirect('/sis/partners/login'); });
+});
+
+// Partner portal page — redirect to login if not authenticated
+app.get('/sis/partners', (req, res) => {
+  if (!req.session.user || req.session.userType !== 'partner') {
+    return res.redirect('/sis/partners/login');
+  }
+  res.sendFile(path.join(__dirname, '..', 'public', 'partners.html'));
+});
+
+// Partner API middleware — enforce partner auth + agencyId on every API call
+function requirePartnerAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
+  if (!req.session.user || req.session.userType !== 'partner' || !req.session.agencyId) {
+    return res.status(401).json({ success: false, error: 'Not authenticated' });
+  }
+  next();
+}
+
+app.use('/sis/partners/api', requirePartnerAuth, partnerRoutes(prisma));
+
+// Serve static assets for partner portal (favicon etc)
+app.use('/sis/partners/public', express.static(path.join(__dirname, '..', 'public')));
+
 // ── Auth middleware ────────────────────────────
 // Public routes that skip auth:
-const publicPaths = ['/sis/login', '/sis/forgot', '/sis/reset', '/sis/auth/', '/sis/health', '/sis/verify/', '/sis/api/webhooks', '/sis/public/favicon.ico'];
+const publicPaths = ['/sis/login', '/sis/forgot', '/sis/reset', '/sis/auth/', '/sis/health', '/sis/verify/', '/sis/api/webhooks', '/sis/public/favicon.ico', '/sis/partners/login', '/sis/partners/auth/', '/sis/partners/public/'];
 
 function requireAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
   // Skip auth for public paths
   if (publicPaths.some(p => req.path.startsWith(p))) return next();
+
+  // Partner routes are handled by their own middleware — skip the SIS auth check
+  if (req.path.startsWith('/sis/partners')) return next();
 
   if (req.session.user) return next();
 
