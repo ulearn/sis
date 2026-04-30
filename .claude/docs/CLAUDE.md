@@ -38,7 +38,6 @@ HUBSPOT
 
 GIT
 Repo: https://github.com/ulearn/sis
-- We are only operating on the claude branch
 - Never do anything destructive with git without asking permission
 
 =========================================================================================================
