@@ -1,4 +1,5 @@
 import { PrismaClient, BookingStatus } from '../generated/prisma/client';
+import { autoFillIlepForStudent } from './ilep-deriver';
 
 const DATE_FIELDS = ['confirmedAt', 'checkinAt', 'checkoutAt', 'serviceStart', 'serviceEnd'];
 const COURSE_DATE_FIELDS = ['startDate', 'endDate'];
@@ -83,6 +84,7 @@ export function bookingScripts(prisma: PrismaClient) {
         agency: true,
         courses: true,
         accommodations: true,
+        extras: true,
         holidays: true,
         payments: { orderBy: { paymentDate: 'desc' } },
         invoices: { include: { lineItems: true } },
@@ -93,10 +95,11 @@ export function bookingScripts(prisma: PrismaClient) {
   }
 
   async function create(data: Record<string, any>) {
-    const { courses, accommodations, ...bookingData } = data;
+    const { courses, accommodations, extras, ...bookingData } = data;
     parseDates(bookingData, DATE_FIELDS);
     if (courses) courses.forEach((c: any) => parseDates(c, COURSE_DATE_FIELDS));
     if (accommodations) accommodations.forEach((a: any) => parseDates(a, ACCOM_DATE_FIELDS));
+    if (extras) extras.forEach((e: any) => parseDates(e, ['scheduledAt']));
 
     return prisma.booking.create({
       data: {
@@ -109,8 +112,9 @@ export function bookingScripts(prisma: PrismaClient) {
         } : undefined,
         courses: courses ? { create: courses } : undefined,
         accommodations: accommodations ? { create: accommodations } : undefined,
+        extras: extras && extras.length ? { create: extras } : undefined,
       } as any,
-      include: { student: true, courses: true, accommodations: true },
+      include: { student: true, courses: true, accommodations: true, extras: true },
     });
   }
 
@@ -175,7 +179,12 @@ export function bookingScripts(prisma: PrismaClient) {
     if (data.discount) data.discount = parseFloat(data.discount);
     if (data.commission) data.commission = parseFloat(data.commission);
     for (const k of Object.keys(data)) { if (data[k] === '') data[k] = null; }
-    return prisma.bookingCourse.create({ data: { bookingId, ...data } as any });
+    const created = await prisma.bookingCourse.create({ data: { bookingId, ...data } as any });
+    const booking = await prisma.booking.findUnique({ where: { id: bookingId }, select: { studentId: true } });
+    if (booking?.studentId) {
+      try { await autoFillIlepForStudent(prisma, booking.studentId); } catch (e) { console.error('autoFillIlep failed', e); }
+    }
+    return created;
   }
 
   async function updateCourse(id: number, data: Record<string, any>) {
@@ -186,7 +195,13 @@ export function bookingScripts(prisma: PrismaClient) {
     if (data.discount) data.discount = parseFloat(data.discount);
     if (data.commission) data.commission = parseFloat(data.commission);
     for (const k of Object.keys(data)) { if (data[k] === '') data[k] = null; }
-    return prisma.bookingCourse.update({ where: { id }, data: data as any });
+    const updated = await prisma.bookingCourse.update({ where: { id }, data: data as any });
+    const bc = await prisma.bookingCourse.findUnique({ where: { id }, select: { booking: { select: { studentId: true } } } });
+    const studentId = bc?.booking?.studentId;
+    if (studentId) {
+      try { await autoFillIlepForStudent(prisma, studentId); } catch (e) { console.error('autoFillIlep failed', e); }
+    }
+    return updated;
   }
 
   async function removeCourse(id: number) {
@@ -214,9 +229,29 @@ export function bookingScripts(prisma: PrismaClient) {
     return prisma.bookingAccommodation.delete({ where: { id } });
   }
 
+  // ── Booking Extras ──────────────────────────
+  async function addExtra(bookingId: number, data: Record<string, any>) {
+    parseDates(data, ['scheduledAt']);
+    if (data.fee !== undefined && data.fee !== null && data.fee !== '') data.fee = parseFloat(data.fee);
+    for (const k of Object.keys(data)) { if (data[k] === '') data[k] = null; }
+    return prisma.bookingExtra.create({ data: { bookingId, ...data } as any });
+  }
+
+  async function updateExtra(id: number, data: Record<string, any>) {
+    parseDates(data, ['scheduledAt']);
+    if (data.fee !== undefined && data.fee !== null && data.fee !== '') data.fee = parseFloat(data.fee);
+    for (const k of Object.keys(data)) { if (data[k] === '') data[k] = null; }
+    return prisma.bookingExtra.update({ where: { id }, data: data as any });
+  }
+
+  async function removeExtra(id: number) {
+    return prisma.bookingExtra.delete({ where: { id } });
+  }
+
   return {
     list, getById, create, update, remove,
     addCourse, updateCourse, removeCourse,
     addAccommodation, updateAccommodation, removeAccommodation,
+    addExtra, updateExtra, removeExtra,
   };
 }

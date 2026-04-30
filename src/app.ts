@@ -1,4 +1,5 @@
 import express from 'express';
+import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
 import pg from 'pg';
@@ -27,8 +28,11 @@ import { emailRoutes } from './routes/email';
 import { hostPaymentRoutes } from './routes/host-payments';
 import { payrollRoutes } from './routes/payroll';
 import { partnerRoutes } from './routes/partners';
+import { studentRoutesPortal } from './routes/student';
+import { zohoAuthRoutes } from './routes/zoho-auth';
 import { validateIBAN } from './scripts/iban-validator';
 import { documentScripts } from './scripts/documents';
+import { testRoutesStaff, testRoutesPublic } from './routes/tests';
 import { seedClassrooms } from './scripts/seed';
 import { seedDocumentTemplates } from './scripts/seed-templates';
 
@@ -56,6 +60,11 @@ const ROLE_PERMISSIONS: Record<string, { deny: string[]; viewOnly: string[] }> =
   dos: { deny: [], viewOnly: ['documents'] },
   sales: { deny: ['payroll'], viewOnly: ['classes', 'documents'] },
   accomm: { deny: ['payroll'], viewOnly: ['classes', 'documents'] },
+  // Unified-app roles — ZERO SIS API access by default (GDPR / payroll / student PII).
+  // Student-self routes (own profile, own bookings) will be added later;
+  // teachers must never see SIS data. See TODO inside /sis/auth/login.
+  teacher: { deny: ['accommodation','apartments','attendance','bookings','classes','documents','email','healthcheck','host-payments','matching','partners','payroll','students','student','teachers','tests','webhooks'], viewOnly: [] },
+  student: { deny: ['accommodation','apartments','attendance','bookings','classes','documents','email','healthcheck','host-payments','matching','partners','payroll','students','student','teachers','tests','webhooks'], viewOnly: [] },
 };
 
 app.use(session({
@@ -67,6 +76,7 @@ app.use(session({
     httpOnly: true,
     maxAge: 4 * 60 * 60 * 1000,   // 4 hours — partners re-auth ensures live data refresh
     sameSite: 'lax',
+    domain: '.ulearnschool.com',  // share session across lms/sis/hub subdomains (unified app)
   },
 }));
 
@@ -88,6 +98,12 @@ app.post('/sis/auth/login', async (req, res) => {
 
     // Partner users should use the partner login, not the SIS login
     if (user.userType === 'partner') return res.json({ success: false, error: 'Please use the partner portal to log in' });
+
+    // TODO(unified-app): handle userType === 'student' and 'teacher' here.
+    //   Students log in via the LMS app (lms.ulearnschool.com) but auth
+    //   resolves against the same SisUser table. Teachers should never see
+    //   SIS-side UI; their session exists only to satisfy the LMS API.
+    //   Until those flows are built, only staff and partner can log in here.
 
     req.session.user = username;
     req.session.role = user.role;
@@ -176,21 +192,24 @@ app.post('/sis/auth/forgot', forgotIpLimiter, async (req, res) => {
     });
 
     const baseUrl = process.env.SIS_BASE_URL || 'https://sis.ulearnschool.com';
-    const link = `${baseUrl}/sis/reset?token=${token}`;
+    const isPartner = user.userType === 'partner';
+    const link = `${baseUrl}/sis/reset?token=${token}${isPartner ? '&portal=partners' : ''}`;
+    const productLabel = isPartner ? 'ULearn Partner Portal' : 'ULearn SIS';
+    const buttonColor = isPartner ? '#339900' : '#4f46e5';
 
     const { sendEmail } = await import('./scripts/email');
     await sendEmail({
       from: 'info@ulearnschool.com',
-      fromName: 'ULearn SIS',
+      fromName: productLabel,
       to: user.email!,
-      subject: 'ULearn SIS — Password Reset',
+      subject: `${productLabel} — Password Reset`,
       html: `
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:520px;margin:0 auto;padding:24px;color:#1a1d23;">
           <h2 style="margin:0 0 16px;font-size:20px;">Password reset request</h2>
           <p>Hi ${user.displayName || user.username},</p>
-          <p>We received a request to reset your ULearn SIS password. Click the button below to set a new one. This link expires in 1 hour.</p>
+          <p>We received a request to reset your ${productLabel} password. Click the button below to set a new one. This link expires in 1 hour.</p>
           <p style="margin:24px 0;">
-            <a href="${link}" style="display:inline-block;padding:12px 24px;background:#4f46e5;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;">Reset Password</a>
+            <a href="${link}" style="display:inline-block;padding:12px 24px;background:${buttonColor};color:#fff;text-decoration:none;border-radius:6px;font-weight:600;">Reset Password</a>
           </p>
           <p style="font-size:13px;color:#6b7280;">If you didn't request this, you can safely ignore this email.</p>
           <p style="font-size:12px;color:#9ca3af;word-break:break-all;">Or paste this link into your browser:<br>${link}</p>
@@ -240,6 +259,33 @@ app.get('/sis/partners/login', (_req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'partners-login.html'));
 });
 
+// Serve partner registration page (unauthenticated)
+app.get('/sis/partners/register', (_req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'partners-register.html'));
+});
+
+// Serve partner forgot-password page (unauthenticated)
+app.get('/sis/partners/forgot', (_req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'partners-forgot.html'));
+});
+
+// Partner registration — validates email against HubSpot + creates SisUser
+import { partnerScripts as _partnerScriptsForReg } from './scripts/partners';
+const _regScripts = _partnerScriptsForReg(prisma);
+const registerLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (_req, res) => res.json({ success: false, error: 'Too many attempts. Try again later.' }),
+});
+app.post('/sis/partners/auth/register', registerLimiter, async (req, res) => {
+  try {
+    const result = await _regScripts.registerPartner(req.body);
+    res.json(result);
+  } catch (e) { res.json({ success: false, error: String(e) }); }
+});
+
 // Partner login
 app.post('/sis/partners/auth/login', async (req, res) => {
   const { username, password } = req.body;
@@ -269,33 +315,8 @@ app.post('/sis/partners/auth/login', async (req, res) => {
     req.session.userType = 'partner';
     req.session.agencyId = user.agencyId;
     req.session.agencyName = user.agency?.name || '';
+    req.session.partnerHubspotContactId = user.hubspotContactId || undefined;
     req.session.portalPermissions = perms;
-
-    // Look up partner's HubSpot contact ID by email (Agent Employee)
-    // Cached in session for use during enrollment deal creation.
-    if (user.email && process.env.ACCESS_TOKEN) {
-      try {
-        const lookupRes = await fetch('https://api.hubapi.com/crm/v3/objects/contacts/search', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${process.env.ACCESS_TOKEN}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            filterGroups: [{ filters: [{ propertyName: 'email', operator: 'EQ', value: user.email }] }],
-            properties: ['email', 'type'],
-            limit: 1,
-          }),
-        });
-        const data: any = await lookupRes.json().catch(() => ({}));
-        if (data.results?.[0]?.id) {
-          req.session.partnerHubspotContactId = data.results[0].id;
-        }
-      } catch (e) {
-        // Non-fatal — enrollment will still work, just without partner contact association
-        console.warn('[partner-login] HubSpot contact lookup failed:', String(e));
-      }
-    }
 
     // Update last login
     await prisma.sisUser.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
@@ -329,9 +350,30 @@ app.use('/sis/partners/api', requirePartnerAuth, partnerRoutes(prisma));
 // Serve static assets for partner portal (favicon etc)
 app.use('/sis/partners/public', express.static(path.join(__dirname, '..', 'public')));
 
+// ── Student Portal (scaffold) ──────────────────
+// Mobile-first portal at /sis/student with 3 tabs: Profile, Challenges, Learning.
+// Auth is NOT yet wired — shell currently renders in preview/demo mode so the
+// structure can be iterated on. Phase 1 work is students table + login.
+app.get('/sis/student', (_req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'student.html'));
+});
+app.use('/sis/student/api', studentRoutesPortal(prisma));
+app.use('/sis/student/public', express.static(path.join(__dirname, '..', 'public')));
+
+// ── Teacher / LMS-bound login (mirrors partner pattern but redirects to LMS, not SIS UI) ──
+// Teachers should never see the SIS UI (GDPR / payroll exposure). This page POSTs to the
+// existing /sis/auth/login endpoint, then on success the form JS redirects to lms.ulearnschool.com.
+// Admin/DOS may also use it when they want to land directly in the LMS rather than the SIS dash.
+app.get('/sis/teachers/login', (_req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'teachers-login.html'));
+});
+app.get('/sis/teachers/auth/logout', (req, res) => {
+  req.session.destroy(() => res.redirect('/sis/teachers/login'));
+});
+
 // ── Auth middleware ────────────────────────────
 // Public routes that skip auth:
-const publicPaths = ['/sis/login', '/sis/forgot', '/sis/reset', '/sis/auth/', '/sis/health', '/sis/verify/', '/sis/api/webhooks', '/sis/public/favicon.ico', '/sis/partners/login', '/sis/partners/auth/', '/sis/partners/public/'];
+const publicPaths = ['/sis/login', '/sis/forgot', '/sis/reset', '/sis/auth/', '/sis/health', '/sis/verify/', '/sis/api/webhooks', '/sis/api/email/quiz-result', '/sis/api/tests/public/', '/sis/public/favicon.ico', '/sis/public/launch/', '/sis/partners/login', '/sis/partners/auth/', '/sis/partners/public/', '/sis/student', '/sis/teachers/login', '/sis/teachers/auth/'];
 
 function requireAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
   // Skip auth for public paths
@@ -346,6 +388,11 @@ function requireAuth(req: express.Request, res: express.Response, next: express.
   if (req.path.startsWith('/sis/api/')) {
     return res.status(401).json({ success: false, error: 'Not authenticated' });
   }
+  // Route unknown page requests by context:
+  //   - Referer from the partner portal → partner login
+  //   - Otherwise → staff login (default)
+  const ref = req.get('referer') || '';
+  if (ref.includes('/sis/partners')) return res.redirect('/sis/partners/login');
   return res.redirect('/sis/login');
 }
 
@@ -388,17 +435,28 @@ app.get('/sis/payroll', (_req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'payroll.html'));
 });
 
+// Static reference data — ILEP programme codes (read-only, served from JSON file)
+app.get('/sis/api/ilep-codes', (_req, res) => {
+  try {
+    const p = path.join(__dirname, '..', '.claude', 'docs', 'ILEP', 'ilep-codes.json');
+    res.json(JSON.parse(fs.readFileSync(p, 'utf-8')));
+  } catch (e) { res.status(500).json({ error: String(e) }); }
+});
+
 // API routes
 app.use('/sis/api/students', studentRoutes(prisma));
 app.use('/sis/api/bookings', bookingRoutes(prisma));
 app.use('/sis/api/classes', classRoutes(prisma));
 app.use('/sis/api/accommodation', accommodationRoutes(prisma));
 app.use('/sis/api/webhooks', webhookRoutes(prisma));
+app.use('/sis/api/tests/public', testRoutesPublic(prisma));     // LMS posts results here (CORS)
+app.use('/sis/api/tests', testRoutesStaff(prisma));              // staff-auth token issuance
 app.use('/sis/api/attendance', attendanceRoutes(prisma));
 app.use('/sis/api/documents', documentRoutes(prisma));
 app.use('/sis/api/email', emailRoutes(prisma));
 app.use('/sis/api/host-payments', hostPaymentRoutes(prisma));
 app.use('/sis/api/payroll', payrollRoutes(prisma));
+app.use('/sis/zoho/auth', zohoAuthRoutes());
 
 // Scheduling (closures CRUD) + startup occurrence top-up
 import { schedulingScripts } from './scripts/scheduling';

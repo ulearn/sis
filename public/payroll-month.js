@@ -16,13 +16,24 @@ window.MonthlyPayrollComponent = function({ data, selectedMonthlyPeriod, onDataR
     const [authorizingPayroll, setAuthorizingPayroll] = React.useState(false);
     const [editingCell, setEditingCell] = React.useState(null); // {teacherName, field}
     const [editingPPS, setEditingPPS] = React.useState(null); // teacherName being edited
+    const [authStatus, setAuthStatus] = React.useState(null); // { locked, authorization }
 
-    // Fetch leave, PPS, and monthly adjustments when period changes
+    const fetchAuthStatus = async () => {
+        if (!selectedMonthlyPeriod) return;
+        try {
+            const r = await fetch(`/sis/api/payroll/auth-status?period=${selectedMonthlyPeriod.period}&year=${selectedMonthlyPeriod.year}`);
+            const d = await r.json();
+            if (d.success) setAuthStatus({ locked: d.locked, authorization: d.authorization });
+        } catch (e) { console.warn('[MONTH.JS] auth-status fetch failed', e); }
+    };
+
+    // Fetch leave, PPS, monthly adjustments + auth status when period changes
     React.useEffect(() => {
         if (selectedMonthlyPeriod) {
             fetchLeaveDataForPeriod();
             fetchPPSData();
             fetchMonthlyAdjustments();
+            fetchAuthStatus();
         }
     }, [selectedMonthlyPeriod]);
 
@@ -211,46 +222,61 @@ window.MonthlyPayrollComponent = function({ data, selectedMonthlyPeriod, onDataR
         }
     };
 
+    // Toggle: if currently locked → confirm unlock; else → confirm authorize.
     const authorizePayroll = async () => {
         if (!selectedMonthlyPeriod) return;
+        const year = new Date(selectedMonthlyPeriod.from).getFullYear();
 
-        if (!confirm(`Authorize payroll for ${selectedMonthlyPeriod.month}?\n\nThis will:\n1. Save a snapshot of all teacher payroll data\n2. Mark the period as AUTHORIZED\n3. Make it available for final processing\n\nContinue?`)) {
+        if (authStatus && authStatus.locked) {
+            // UNLOCK path
+            if (!confirm(`Period locked for editing — are you sure you want to unlock ${selectedMonthlyPeriod.month} ${year}?\n\nThis will allow further edits and re-authorization. The audit trail is preserved.`)) {
+                return;
+            }
+            setAuthorizingPayroll(true);
+            try {
+                const r = await fetch('/sis/api/payroll/unlock', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ period: selectedMonthlyPeriod.period, year }),
+                });
+                const d = await r.json();
+                if (d.success) {
+                    setAuthStatus({ locked: false, authorization: null });
+                } else {
+                    alert('Error unlocking: ' + (d.error || 'unknown'));
+                }
+            } catch (e) { alert('Error unlocking: ' + e.message); }
+            finally { setAuthorizingPayroll(false); }
             return;
         }
 
+        // AUTHORIZE path
+        if (!confirm(`Authorize payroll for ${selectedMonthlyPeriod.month}?\n\nThis will:\n1. Save a permanent snapshot of all teacher payroll data\n2. Lock the period from further edits\n3. Any future changes require an explicit unlock\n\nContinue?`)) {
+            return;
+        }
         setAuthorizingPayroll(true);
         try {
-            // Prepare teacher data from monthlyData
-            const teacherDataForSnapshot = {
-                teachers: monthlyData,
-                totalHours: monthlyData.reduce((sum, t) => sum + t.total_hours, 0),
-                totalLeave: monthlyData.reduce((sum, t) => sum + t.leave_taken, 0),
-                totalLeaveEuro: monthlyData.reduce((sum, t) => sum + (t.average_rate * t.leave_taken), 0),
-                totalPay: monthlyData.reduce((sum, t) => sum + t.total_pay, 0)
-            };
-
             const response = await fetch('/sis/api/payroll/authorize', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    period: selectedMonthlyPeriod.period,
-                    year: new Date(selectedMonthlyPeriod.from).getFullYear(),
-                    authorizedBy: 'admin'
-                })
+                body: JSON.stringify({ period: selectedMonthlyPeriod.period, year }),
             });
-
             const result = await response.json();
-
             if (result.success) {
-                alert(`Payroll authorized successfully!\n\nSnapshot saved with ID: ${result.authorizationId}\n\nThis payroll period has been marked as authorized and is now available for final processing.`);
+                setAuthStatus({
+                    locked: true,
+                    authorization: {
+                        id: result.authorizationId,
+                        authorizedAt: result.authorizedAt,
+                        authorizedBy: result.authorizedBy,
+                    },
+                });
+                alert(`Payroll authorized for ${selectedMonthlyPeriod.month} ${year}.\nSnapshot ID: ${result.authorizationId}`);
             } else {
                 alert('Error authorizing payroll: ' + result.error);
             }
-        } catch (error) {
-            alert('Error authorizing payroll: ' + error.message);
-        } finally {
-            setAuthorizingPayroll(false);
-        }
+        } catch (error) { alert('Error authorizing payroll: ' + error.message); }
+        finally { setAuthorizingPayroll(false); }
     };
 
     if (!data || !data.weeks || !data.teachers || !selectedMonthlyPeriod) {
@@ -303,13 +329,14 @@ window.MonthlyPayrollComponent = function({ data, selectedMonthlyPeriod, onDataR
         console.log(`[MONTH.JS] Looking up leave for: "${teacher.teacher_name}" (email: ${teacher.email})`);
         console.log('[MONTH.JS] Available keys in leaveData:', leaveData ? Object.keys(leaveData) : 'null');
 
-        const leaveFromZoho = leaveData && teacher.email && leaveData[teacher.email]
-            ? (typeof leaveData[teacher.email] === 'object' ? leaveData[teacher.email].leave : leaveData[teacher.email])
-            : 0;
-
-        // Sick leave from Zoho is in DAYS (not hours)
-        const sickDaysFromZoho = leaveData && teacher.email && leaveData[teacher.email] && typeof leaveData[teacher.email] === 'object'
-            ? leaveData[teacher.email].sick
+        // The /leave-for-period endpoint returns { leave_taken, sick_days, leave_balance }
+        // keyed by email. Fall back to legacy .leave/.sick keys for safety, default 0.
+        const leaveRow = leaveData && teacher.email ? leaveData[teacher.email] : null;
+        const leaveFromZoho = leaveRow && typeof leaveRow === 'object'
+            ? Number(leaveRow.leave_taken ?? leaveRow.leave ?? 0)
+            : Number(leaveRow ?? 0);
+        const sickDaysFromZoho = leaveRow && typeof leaveRow === 'object'
+            ? Number(leaveRow.sick_days ?? leaveRow.sick ?? 0)
             : 0;
 
         // Calculate sick leave hours: sick days × average hours per day
@@ -328,28 +355,25 @@ window.MonthlyPayrollComponent = function({ data, selectedMonthlyPeriod, onDataR
         console.log(`[MONTH.JS] Sick leave calculation: ${numWeeks} weeks = ${workingDaysInPeriod} working days in period`);
         console.log(`[MONTH.JS] Average: ${periodTotalHours}h ÷ ${workingDaysInPeriod} days = ${avgHoursPerDay.toFixed(2)} h/day → Sick: ${sickDaysFromZoho} days × ${avgHoursPerDay.toFixed(2)} h/day × €rate × 0.70 = sick pay`);
 
-        // Get monthly adjustments from the new table (NOT from weekly data)
-        // Reverse name back to "Surname, First Name" format for lookup
-        const reverseNameBack = (name) => {
-            if (!name || !name.includes(' ')) return name;
-            const parts = name.split(' ');
-            if (parts.length === 2) {
-                return `${parts[1]}, ${parts[0]}`;
-            }
-            const lastName = parts[parts.length - 1];
-            const firstNames = parts.slice(0, -1).join(' ');
-            return `${lastName}, ${firstNames}`;
-        };
-        const dbName = reverseNameBack(teacher.teacher_name);
+        // teacher.teacher_name is already in "Surname, First Name" format
+        // (matches teacher_payroll_entries.teacher_name and the adjustments key).
+        // Use it as-is — the previous reversal was a leftover from a brief
+        // window where the API returned "First Last" and silently broke lookups.
+        const dbName = teacher.teacher_name;
 
         const adjustments = monthlyAdjustments && monthlyAdjustments[dbName]
             ? monthlyAdjustments[dbName]
             : { other: 0, impact_bonus: 0 };
 
+        // PPS source preference: ppsData dict (distinct across ALL of teacher's
+        // entry rows, so picks up his PPS even if THIS period's row is fresh and
+        // null) → entry-row's pps → 'N/A'. Stops a brand-new row in a refreshed
+        // period from masking a PPS that's already on file elsewhere.
+        const ppsFromDict = ppsData && ppsData[teacher.teacher_name];
         return {
             teacher_name: teacher.teacher_name,
             email: teacher.email,
-            pps_number: teacher.pps_number || 'N/A',  // Will be populated from Zoho
+            pps_number: ppsFromDict || teacher.pps_number || 'N/A',
             total_hours: periodTotalHours,
             average_rate: rateCount > 0 ? rateSum / rateCount : 0,
             total_pay: periodTotalPay,
@@ -408,6 +432,7 @@ window.MonthlyPayrollComponent = function({ data, selectedMonthlyPeriod, onDataR
                         <button
                             onClick={updateLeaveBalances}
                             disabled={updatingBalances}
+                            title="NewBal = StartBal + Accrued − Taken"
                             style={{
                                 padding: '8px 16px',
                                 background: updatingBalances ? '#95a5a6' : '#16a085',
@@ -425,9 +450,14 @@ window.MonthlyPayrollComponent = function({ data, selectedMonthlyPeriod, onDataR
                 <button
                     onClick={authorizePayroll}
                     disabled={authorizingPayroll || loadingLeave}
+                    title={authStatus?.locked && authStatus.authorization ? `Authorized ${new Date(authStatus.authorization.authorizedAt).toLocaleString()} by ${authStatus.authorization.authorizedBy} — click to unlock` : ''}
                     style={{
                         padding: '10px 20px',
-                        background: authorizingPayroll ? '#95a5a6' : 'linear-gradient(135deg, #27ae60 0%, #229954 100%)',
+                        background: authorizingPayroll
+                            ? '#95a5a6'
+                            : authStatus?.locked
+                                ? 'linear-gradient(135deg, #e67e22 0%, #d35400 100%)'
+                                : 'linear-gradient(135deg, #27ae60 0%, #229954 100%)',
                         color: 'white',
                         border: 'none',
                         borderRadius: '5px',
@@ -436,11 +466,10 @@ window.MonthlyPayrollComponent = function({ data, selectedMonthlyPeriod, onDataR
                         fontWeight: '600'
                     }}
                 >
-                    {authorizingPayroll ? 'Authorizing...' : '✓ Authorize Payroll'}
+                    {authorizingPayroll
+                        ? (authStatus?.locked ? 'Unlocking...' : 'Authorizing...')
+                        : authStatus?.locked ? '🔒 Authorized' : '✓ Authorize Payroll'}
                 </button>
-                <span style={{fontSize: '13px', color: '#7f8c8d', fontStyle: 'italic'}}>
-                    Formula: new_balance = start_balance + leave_accrued (8%) - leave_taken
-                </span>
             </div>
             <table className="summary-table">
                 <thead>
@@ -510,16 +539,16 @@ window.MonthlyPayrollComponent = function({ data, selectedMonthlyPeriod, onDataR
                                         </span>
                                     )}
                                 </td>
-                                <td>{teacher.total_hours.toFixed(2)}h</td>
+                                <td>{Number(teacher.total_hours || 0).toFixed(2)}h</td>
                                 <td>{formatCurrency(teacher.average_rate)}</td>
                                 <td className="leave-cell">
-                                    {(teacher.total_hours * 0.08).toFixed(2)}h
+                                    {(Number(teacher.total_hours || 0) * 0.08).toFixed(2)}h
                                 </td>
                                 <td className="leave-cell">
                                     {loadingLeave ? (
                                         <span style={{color: '#7f8c8d'}}>Loading...</span>
                                     ) : (
-                                        `${teacher.leave_taken.toFixed(2)}h`
+                                        `${Number(teacher.leave_taken || 0).toFixed(2)}h`
                                     )}
                                 </td>
                                 <td className="leave-cell">{formatCurrency(leaveEuro)}</td>
@@ -527,7 +556,7 @@ window.MonthlyPayrollComponent = function({ data, selectedMonthlyPeriod, onDataR
                                     {loadingLeave ? (
                                         <span style={{color: '#7f8c8d'}}>Loading...</span>
                                     ) : (
-                                        `${teacher.sick_days_taken.toFixed(2)} days`
+                                        `${Number(teacher.sick_days_taken || 0).toFixed(2)} days`
                                     )}
                                 </td>
                                 <td className="leave-cell">{formatCurrency(sickLeaveEuro)}</td>

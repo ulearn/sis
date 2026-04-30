@@ -1,11 +1,19 @@
 import { PrismaClient } from '../generated/prisma/client';
 
+function withEffectiveActive<T extends { active: boolean; activeFrom?: Date | null; activeTo?: Date | null } | null>(p: T): T extends null ? null : T & { effectiveActive: boolean } {
+  if (!p) return p as any;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const inRange = !!(p.activeFrom && p.activeTo && today >= new Date(p.activeFrom) && today <= new Date(p.activeTo));
+  return { ...p, effectiveActive: p.active === true || inRange } as any;
+}
+
 export function accommodationScripts(prisma: PrismaClient) {
 
   // ── Providers ─────────────────────────────────
   async function listProviders(query: Record<string, any>) {
     const where: any = {};
-    if (query.active !== undefined) where.active = query.active === 'true';
+    const activeFilter = query.active === undefined ? undefined : query.active === 'true';
     if (query.type) where.type = query.type;
     if (query.search) {
       where.OR = [
@@ -14,7 +22,7 @@ export function accommodationScripts(prisma: PrismaClient) {
         { email: { contains: query.search, mode: 'insensitive' } },
       ];
     }
-    return prisma.accommodationProvider.findMany({
+    const rows = await prisma.accommodationProvider.findMany({
       where,
       include: {
         properties: {
@@ -25,10 +33,13 @@ export function accommodationScripts(prisma: PrismaClient) {
       },
       orderBy: { name: 'asc' },
     });
+    const enriched = rows.map(withEffectiveActive);
+    if (activeFilter === undefined) return enriched;
+    return enriched.filter(p => p.effectiveActive === activeFilter);
   }
 
   async function getProviderById(id: number) {
-    return prisma.accommodationProvider.findUnique({
+    const row = await prisma.accommodationProvider.findUnique({
       where: { id },
       include: {
         properties: {
@@ -56,6 +67,7 @@ export function accommodationScripts(prisma: PrismaClient) {
         }
       },
     });
+    return withEffectiveActive(row);
   }
 
   async function createProvider(data: Record<string, any>) {

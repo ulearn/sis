@@ -6,6 +6,22 @@ export function payrollRoutes(prisma: PrismaClient) {
   const router = Router();
   const scripts = payrollScripts(prisma);
 
+  // Find any payroll_periods covering [from, to] that are CURRENTLY LOCKED.
+  // Used by mutation routes to refuse overwriting authorized months.
+  async function findLockedPeriodsInRange(from: string, to: string): Promise<Array<{ period: number; year: number; month: string }>> {
+    const dFrom = new Date(from);
+    const dTo = new Date(to);
+    const periods = await prisma.payrollPeriod.findMany({
+      where: { dateFrom: { lte: dTo }, dateTo: { gte: dFrom } },
+      select: { period: true, year: true, month: true },
+    });
+    const locked = [];
+    for (const p of periods) {
+      if (await scripts.isPeriodLocked(p.period, p.year)) locked.push(p);
+    }
+    return locked;
+  }
+
   // ── Periods ─────────────────────────────────
   router.get('/periods', async (req, res) => {
     try {
@@ -148,6 +164,13 @@ export function payrollRoutes(prisma: PrismaClient) {
       const f = dateFrom || from;
       const t = dateTo || to;
       if (!f || !t) return res.status(400).json({ success: false, error: 'dateFrom and dateTo required' });
+      const locked = await findLockedPeriodsInRange(f, t);
+      if (locked.length) {
+        return res.status(423).json({
+          success: false, code: 'PERIOD_LOCKED',
+          error: `Authorized period(s) block refresh: ${locked.map(l => `${l.month} ${l.year}`).join(', ')}. Unlock first.`,
+        });
+      }
       const result = await scripts.refreshPayroll(f, t);
       res.json({ success: true, ...result });
     } catch (e) { res.status(500).json({ success: false, error: String(e) }); }
@@ -171,6 +194,15 @@ export function payrollRoutes(prisma: PrismaClient) {
       }
 
       if (entries.length === 0) return res.status(404).json({ success: false, error: 'Entry not found' });
+
+      // Lock guard — the entry's weekFrom tells us which period it belongs to
+      const locked = await findLockedPeriodsInRange(
+        entries[0].weekFrom.toISOString().split('T')[0],
+        entries[0].weekTo.toISOString().split('T')[0],
+      );
+      if (locked.length) {
+        return res.status(423).json({ success: false, code: 'PERIOD_LOCKED', error: `${locked[0].month} ${locked[0].year} is authorized — unlock first.` });
+      }
 
       const newHoursIncluded = hours_included !== undefined ? parseFloat(hours_included) : (hoursIncludedThisMonth !== undefined ? parseFloat(hoursIncludedThisMonth) : undefined);
       const newWeeklyPay = weekly_pay !== undefined ? parseFloat(weekly_pay) : (weeklyPay !== undefined ? parseFloat(weeklyPay) : undefined);
@@ -213,18 +245,35 @@ export function payrollRoutes(prisma: PrismaClient) {
       const { compositeKey, composite_key, teacher_name, week } = req.body;
       const key = compositeKey || composite_key;
 
+      // Resolve target entries to derive the week's period for lock check
+      let target: any;
+      if (key) {
+        target = await prisma.teacherPayrollEntry.findUnique({ where: { compositeKey: key } });
+      } else if (teacher_name && week) {
+        target = await prisma.teacherPayrollEntry.findFirst({ where: { teacherName: teacher_name, weekLabel: week } });
+      } else {
+        return res.status(400).json({ success: false, error: 'compositeKey or teacher_name+week required' });
+      }
+      if (!target) return res.status(404).json({ success: false, error: 'Entry not found' });
+
+      const locked = await findLockedPeriodsInRange(
+        target.weekFrom.toISOString().split('T')[0],
+        target.weekTo.toISOString().split('T')[0],
+      );
+      if (locked.length) {
+        return res.status(423).json({ success: false, code: 'PERIOD_LOCKED', error: `${locked[0].month} ${locked[0].year} is authorized — unlock first.` });
+      }
+
       if (key) {
         await prisma.teacherPayrollEntry.update({
           where: { compositeKey: key },
           data: { hoursIncludedThisMonth: null, weeklyPay: null },
         });
-      } else if (teacher_name && week) {
+      } else {
         await prisma.teacherPayrollEntry.updateMany({
           where: { teacherName: teacher_name, weekLabel: week },
           data: { hoursIncludedThisMonth: null, weeklyPay: null },
         });
-      } else {
-        return res.status(400).json({ success: false, error: 'compositeKey or teacher_name+week required' });
       }
       res.json({ success: true });
     } catch (e) { res.status(400).json({ success: false, error: String(e) }); }
@@ -345,6 +394,13 @@ export function payrollRoutes(prisma: PrismaClient) {
   router.post('/update-monthly-adjustment', async (req, res) => {
     try {
       const { teacher_name, month, year, field, value } = req.body;
+      // Lock guard — find the period number for this month/year, check if locked
+      const periodRow = await prisma.payrollPeriod.findFirst({
+        where: { month, year: parseInt(year) }, select: { period: true },
+      });
+      if (periodRow && await scripts.isPeriodLocked(periodRow.period, parseInt(year))) {
+        return res.status(423).json({ success: false, code: 'PERIOD_LOCKED', error: `${month} ${year} is authorized — unlock first.` });
+      }
       const data: any = {};
       if (field === 'other') data.other = parseFloat(value) || 0;
       if (field === 'impact_bonus') data.impactBonus = parseFloat(value) || 0;
@@ -361,20 +417,27 @@ export function payrollRoutes(prisma: PrismaClient) {
   // ── Update leave balances (Zoho) ─────
   router.post('/update-leave-balances', async (req, res) => {
     try {
-      const ZohoLeaveSync = require('../scripts/zoho-leave-sync');
-      const sync = new ZohoLeaveSync({});
       const { dateFrom, dateTo, updateDate } = req.body;
       if (!dateFrom || !dateTo) return res.status(400).json({ success: false, error: 'dateFrom and dateTo required' });
+      const locked = await findLockedPeriodsInRange(dateFrom, dateTo);
+      if (locked.length) {
+        return res.status(423).json({
+          success: false, code: 'PERIOD_LOCKED',
+          error: `Period already authorized: ${locked.map(l => `${l.month} ${l.year}`).join(', ')}. Accrual was pushed at authorize time. Unlock if you need to push again.`,
+        });
+      }
+      const ZohoLeaveSync = require('../scripts/zoho-leave-sync');
+      const sync = new ZohoLeaveSync({});
 
-      // Get teacher data from payroll entries
-      const entries = await prisma.teacherPayrollEntry.findMany({
-        where: { weekFrom: { gte: new Date(dateFrom) }, weekTo: { lte: new Date(dateTo) } },
-        select: { teacherName: true, email: true, hours: true },
-      });
-
-      // Aggregate hours by teacher
+      // Aggregate hours by teacher from a fresh per-period calculation, NOT from
+      // the stored payroll entries. The entries' `hours` value is whatever the
+      // last refresh wrote — for straddling weeks (e.g. WK 13 spans March/April)
+      // the row holds only one period's portion, so summing entries gives the
+      // wrong answer for the *other* period's push. calculateWeeklyHours filters
+      // class_occurrences by date and is period-correct by construction.
+      const calculated = await scripts.calculateWeeklyHours(dateFrom, dateTo);
       const byTeacher: Record<string, { email: string; totalHours: number }> = {};
-      for (const e of entries) {
+      for (const e of calculated) {
         if (!byTeacher[e.teacherName]) byTeacher[e.teacherName] = { email: e.email || '', totalHours: 0 };
         byTeacher[e.teacherName].totalHours += Number(e.hours);
       }
@@ -435,11 +498,86 @@ export function payrollRoutes(prisma: PrismaClient) {
   });
 
   // ── Authorize ───────────────────────────────
-  router.post('/authorize', async (req, res) => {
+  // Authorising a period also pushes the leave-balance accrual to Zoho. The two
+  // were separate buttons before — easy to forget the push, which is exactly how
+  // the March 2026 balances ended up short. Bundling them here means "authorise"
+  // is the single end-of-month action: snapshot is taken, period is locked, and
+  // each teacher's Zoho balance is updated. If the Zoho push fails (rate limit,
+  // token expiry, etc.), the authorise still stands and the push result is
+  // surfaced in the response for retry via the standalone Push Accrued button.
+  router.post('/authorize', async (req: any, res) => {
     try {
-      const { period, year, authorizedBy } = req.body;
-      res.json(await scripts.authorizePayroll(period, year, authorizedBy || 'admin'));
-    } catch (e) { res.status(400).json({ success: false, error: String(e) }); }
+      const { period, year } = req.body;
+      const authorizedBy = req.body.authorizedBy || req.session?.user || 'admin';
+      const row = await scripts.authorizePayroll(period, year, authorizedBy);
+
+      // Push leave-balance accrual to Zoho for the same period.
+      let push: any = null;
+      try {
+        const periodRow = await prisma.payrollPeriod.findFirst({ where: { period, year } });
+        if (periodRow) {
+          const dateFrom = periodRow.dateFrom.toISOString().split('T')[0];
+          const dateTo = periodRow.dateTo.toISOString().split('T')[0];
+          const ZohoLeaveSync = require('../scripts/zoho-leave-sync');
+          const sync = new ZohoLeaveSync({});
+          const calculated = await scripts.calculateWeeklyHours(dateFrom, dateTo);
+          const byTeacher: Record<string, { email: string; totalHours: number }> = {};
+          for (const e of calculated) {
+            if (!byTeacher[e.teacherName]) byTeacher[e.teacherName] = { email: e.email || '', totalHours: 0 };
+            byTeacher[e.teacherName].totalHours += Number(e.hours);
+          }
+          push = await sync.updateLeaveBalances(byTeacher, dateTo);
+        }
+      } catch (pushErr: any) {
+        push = { error: pushErr?.message || String(pushErr) };
+      }
+
+      res.json({
+        success: true,
+        authorizationId: row.id,
+        authorizedAt: row.createdAt,
+        authorizedBy: row.authorizedBy,
+        leaveBalancePush: push,
+      });
+    } catch (e: any) {
+      res.status(e?.code === 'PERIOD_LOCKED' ? 409 : 400)
+         .json({ success: false, error: e?.message || String(e), code: e?.code });
+    }
+  });
+
+  // ── Unlock (to allow re-authorize or further edits) ──
+  router.post('/unlock', async (req: any, res) => {
+    try {
+      const { period, year } = req.body;
+      const unlockedBy = req.body.unlockedBy || req.session?.user || 'admin';
+      const result = await scripts.unlockPayroll(period, year, unlockedBy);
+      res.json({ success: true, ...result });
+    } catch (e: any) {
+      res.status(e?.code === 'PERIOD_NOT_LOCKED' ? 409 : 400)
+         .json({ success: false, error: e?.message || String(e), code: e?.code });
+    }
+  });
+
+  // ── Authorization status (for UI toggle) ──
+  router.get('/auth-status', async (req, res) => {
+    try {
+      const period = parseInt(req.query.period as string);
+      const year = parseInt(req.query.year as string);
+      if (!period || !year) return res.status(400).json({ success: false, error: 'period and year required' });
+      const latest = await scripts.getLatestAuthorization(period, year);
+      const locked = !!latest && latest.unlockedAt == null;
+      res.json({
+        success: true,
+        locked,
+        authorization: latest ? {
+          id: latest.id,
+          authorizedAt: latest.createdAt,
+          authorizedBy: latest.authorizedBy,
+          unlockedAt: latest.unlockedAt,
+          unlockedBy: latest.unlockedBy,
+        } : null,
+      });
+    } catch (e: any) { res.status(500).json({ success: false, error: String(e) }); }
   });
 
   return router;

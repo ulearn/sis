@@ -1,0 +1,2 @@
+<h2 style="text-align: center;">{firstname} {surname}</h2>
+<p style="text-align: center;">who attended our<strong>&nbsp;{course} Course<br /></strong> from: <strong>{date_course_start}&nbsp;</strong>to<strong> <span>{date_last_course_end}</span><br /></strong>totalling: <strong>{lessons_amount_total}&nbsp;hours ({student_attendance})<br /></strong>class level upon completion: <strong>{last_level}</strong></p>

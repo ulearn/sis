@@ -25,7 +25,7 @@
   <div class="logo">ULearn</div>
   <div class="subtitle">Set New Password</div>
   <div class="error" id="error"></div>
-  <div class="success" id="success">Password updated. <a href="/sis/login" style="color:#166534;">Sign in →</a></div>
+  <div class="success" id="success">Password updated. <a href="/sis/login" id="loginLink" style="color:#166534;">Sign in →</a></div>
   <form id="resetForm">
     <label for="password">New password</label>
     <input type="password" id="password" name="password" autocomplete="new-password" minlength="8" required autofocus>
@@ -37,6 +37,10 @@
 <script>
 const params = new URLSearchParams(window.location.search);
 const token = params.get('token');
+const portal = params.get('portal'); // 'partners' for partner portal resets
+if (portal === 'partners') {
+  document.getElementById('loginLink').href = '/sis/partners/login';
+}
 if (!token) {
   document.getElementById('error').textContent = 'Invalid reset link.';
   document.getElementById('error').style.display = 'block';

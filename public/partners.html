@@ -125,7 +125,7 @@ body {
 /* ── Stat grid (dashboard) ── */
 .stat-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
   margin-bottom: 24px;
 }
@@ -217,6 +217,390 @@ tr:hover td { background: #fafaf8; }
   gap: 16px;
   margin-bottom: 24px;
 }
+
+/* ── "View more" link ── */
+.view-more-link {
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.view-more-link:hover { color: var(--green-deep); text-decoration: underline; }
+
+/* ── Filter pills (history tab) ── */
+.filter-pills {
+  display: inline-flex;
+  gap: 4px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px;
+}
+.filter-pill {
+  padding: 6px 14px;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 999px;
+  transition: all 0.15s;
+}
+.filter-pill:hover { color: var(--ink); }
+.filter-pill.active {
+  background: var(--green);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(51,153,0,0.2);
+}
+.history-row {
+  display: grid;
+  grid-template-columns: 80px 100px 1fr 110px 120px 100px 100px;
+  gap: 12px;
+  padding: 10px 4px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+  align-items: center;
+}
+.history-row:last-child { border-bottom: none; }
+.history-row .type-pill {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.type-pill.quote { background: #dbeafe; color: #1e40af; }
+.type-pill.invoice { background: #d1fae5; color: #065f46; }
+@media (max-width: 768px) {
+  .history-row { grid-template-columns: 1fr; gap: 4px; }
+}
+
+/* ── Quote row (stacked cards with state-driven border) ── */
+.quote-row {
+  border: 2px solid #f59e0b;  /* pending = orange */
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  background: #fff;
+  transition: border-color 0.2s, background 0.2s;
+}
+.quote-row.accepted { border-color: var(--green); background: #f6fdf6; }
+.quote-row.queried { border-color: #f59e0b; background: #fffbf0; }
+.quote-main {
+  display: grid;
+  grid-template-columns: 100px 1fr 120px 110px 110px auto auto;
+  gap: 12px;
+  align-items: center;
+  font-size: 13px;
+}
+.quote-main .num { font-weight: 700; color: var(--navy); }
+.quote-main .title { color: var(--ink); }
+.quote-main .amt { font-weight: 700; color: var(--navy); text-align: right; }
+.quote-main .dates { color: var(--muted); font-size: 12px; }
+.quote-actions { display: flex; gap: 6px; }
+.qa-btn {
+  padding: 6px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.qa-btn:hover { border-color: var(--ink); color: var(--ink); }
+.qa-accept:hover { border-color: var(--green); color: var(--green); background: #f6fdf6; }
+.qa-query:hover { border-color: #f59e0b; color: #f59e0b; background: #fffbf0; }
+.qa-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.qa-accepted-badge {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--green);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.qa-queried-badge {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #f59e0b;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.quote-view-link {
+  color: var(--green);
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.quote-comments-box {
+  display: none;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+}
+.quote-comments-box.show { display: block; }
+.quote-comments-box textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  resize: vertical;
+  min-height: 60px;
+  outline: none;
+}
+.quote-comments-box textarea:focus { border-color: #f59e0b; }
+.quote-comments-actions { margin-top: 6px; display: flex; gap: 6px; justify-content: flex-end; }
+.quote-comments-view {
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: rgba(245, 158, 11, 0.08);
+  border-radius: 6px;
+  font-size: 12px;
+  color: #78350f;
+  border-left: 3px solid #f59e0b;
+}
+@media (max-width: 768px) {
+  .quote-main { grid-template-columns: 1fr; gap: 4px; }
+  .quote-main .amt { text-align: left; }
+}
+
+/* ── Student drawer (side panel for drilldown) ── */
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(2px);
+  display: none;
+  z-index: 9998;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.drawer-overlay.show { display: block; opacity: 1; }
+.drawer-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 560px;
+  max-width: 100%;
+  background: #fff;
+  box-shadow: -16px 0 40px rgba(15, 23, 42, 0.15);
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+  overflow-y: auto;
+  z-index: 9999;
+}
+.drawer-panel.show { transform: translateX(0); }
+.drawer-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 1;
+}
+.drawer-close {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 20px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  line-height: 1;
+}
+.drawer-close:hover { background: var(--bg); color: var(--ink); }
+.drawer-body { padding: 24px; }
+.drawer-avatar {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: var(--green-light);
+  color: var(--green);
+  display: grid; place-items: center;
+  font-size: 22px; font-weight: 800;
+  overflow: hidden;
+}
+.drawer-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.drawer-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.drawer-chip {
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--bg);
+  color: var(--ink);
+}
+.drawer-section {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.drawer-section-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.drawer-kv {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 4px 12px;
+  font-size: 13px;
+}
+.drawer-kv .k { color: var(--muted); }
+.drawer-kv .v { color: var(--ink); font-weight: 500; }
+.drawer-booking {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  background: #fafaf8;
+}
+.drawer-booking-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--navy);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.drawer-booking-meta {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.drawer-fin-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+  padding: 8px 0 0;
+  border-top: 1px dashed var(--line);
+}
+.drawer-fin-grid .cell {
+  text-align: center;
+  padding: 4px 6px;
+}
+.drawer-fin-grid .label {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.drawer-fin-grid .val { font-size: 13px; font-weight: 700; color: var(--ink); margin-top: 2px; }
+.drawer-fin-grid .val.green { color: var(--green); }
+.drawer-fin-grid .val.amber { color: #f59e0b; }
+.students-table tr { cursor: pointer; }
+.students-table tr:hover td { background: var(--bg); }
+@media (max-width: 768px) { .drawer-panel { width: 100%; } }
+
+/* ── Modal (branded confirm / alert) ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  padding: 20px;
+}
+.modal-overlay.show { display: flex; opacity: 1; }
+.modal-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.25);
+  max-width: 440px;
+  width: 100%;
+  padding: 28px 30px 24px;
+  transform: translateY(8px) scale(0.98);
+  transition: transform 0.25s ease;
+}
+.modal-overlay.show .modal-card { transform: translateY(0) scale(1); }
+.modal-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--green-light);
+  color: var(--green);
+  display: grid;
+  place-items: center;
+  margin: 0 auto 14px;
+}
+.modal-icon svg { width: 28px; height: 28px; }
+.modal-icon.warn { background: #fff4e0; color: #f59e0b; }
+.modal-icon.info { background: #e0f2fe; color: #0369a1; }
+.modal-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--navy);
+  text-align: center;
+  margin: 0 0 6px;
+  letter-spacing: -0.01em;
+}
+.modal-body {
+  font-size: 14px;
+  color: var(--muted);
+  text-align: center;
+  margin: 0 0 22px;
+  line-height: 1.45;
+}
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+.modal-btn {
+  padding: 11px 22px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  min-width: 110px;
+}
+.modal-btn:hover { border-color: var(--ink); color: var(--ink); }
+.modal-btn.primary {
+  background: var(--green);
+  color: #fff;
+  border-color: var(--green);
+  box-shadow: 0 6px 16px rgba(51, 153, 0, 0.25);
+}
+.modal-btn.primary:hover { background: var(--green-deep); border-color: var(--green-deep); }
+.modal-btn.warn {
+  background: #f59e0b;
+  color: #fff;
+  border-color: #f59e0b;
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.25);
+}
+.modal-btn.warn:hover { background: #d97706; border-color: #d97706; }
 
 /* ═══════════════════════════════════════════════════
    ENROLLMENT FORM — adapted from booking-form.css
@@ -447,6 +831,14 @@ tr:hover td { background: #fafaf8; }
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
     Students
   </button>
+  <button class="nav-tab" data-tab="history">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    History
+  </button>
+  <button class="nav-tab" data-tab="documents">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    Documents
+  </button>
   <button class="nav-tab cta" data-tab="enroll">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     Add New
@@ -470,12 +862,10 @@ tr:hover td { background: #fafaf8; }
       <div class="loading">Loading dashboard...</div>
     </div>
     <div class="card">
-      <div class="card-title">Quotes Awaiting Your Acceptance</div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Quote #</th><th>Title</th><th>Amount</th><th>Created</th><th>Expires</th><th></th></tr></thead>
-          <tbody id="quoteRows"><tr><td colspan="6" class="loading">Loading...</td></tr></tbody>
-        </table>
+      <div class="card-title">Quotes</div>
+      <div id="quoteList"><div class="loading">Loading...</div></div>
+      <div id="quoteViewMore" style="display:none;text-align:center;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)">
+        <a href="#" class="view-more-link" data-go-history="quotes">View all quotes →</a>
       </div>
     </div>
     <div class="card">
@@ -486,6 +876,32 @@ tr:hover td { background: #fafaf8; }
           <tbody id="invoiceRows"><tr><td colspan="8" class="loading">Loading...</td></tr></tbody>
         </table>
       </div>
+      <div id="invoiceViewMore" style="display:none;text-align:center;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)">
+        <a href="#" class="view-more-link" data-go-history="invoices">View all invoices →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── History ── -->
+  <div class="section" id="sec-history">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div class="filter-pills" id="historyFilters">
+        <button class="filter-pill active" data-filter="all">All</button>
+        <button class="filter-pill" data-filter="quotes">Quotes</button>
+        <button class="filter-pill" data-filter="invoices">Invoices</button>
+      </div>
+      <div style="font-size:12px;color:var(--muted)"><span id="historyCount"></span></div>
+    </div>
+    <div class="card">
+      <div id="historyList"><div class="loading">Loading history...</div></div>
+    </div>
+  </div>
+
+  <!-- ── Documents ── -->
+  <div class="section" id="sec-documents">
+    <div class="card">
+      <div class="card-title">Signed Documents</div>
+      <div id="documentList"><div class="loading">Loading documents...</div></div>
     </div>
   </div>
 
@@ -514,7 +930,7 @@ tr:hover td { background: #fafaf8; }
     <div class="enroll-shell">
       <div class="enroll-card">
         <div class="enroll-header">
-          <h2>Enroll a New Student</h2>
+          <h2>Enroll New Student</h2>
           <p>Submit a student enrollment — it will be reviewed by the ULearn team.</p>
         </div>
         <div class="enroll-body">
@@ -534,8 +950,8 @@ tr:hover td { background: #fafaf8; }
                 <input type="text" name="lastName" required>
               </div>
               <div class="field">
-                <label>Email <span class="req">*</span></label>
-                <input type="email" name="email" required>
+                <label>Email</label>
+                <input type="email" name="email">
               </div>
               <div class="field">
                 <label>Phone</label>
@@ -661,7 +1077,7 @@ tr:hover td { background: #fafaf8; }
                   <!-- Dates row -->
                   <div class="form-grid" style="margin-top: 12px;">
                     <div class="field">
-                      <label>Start Date <span class="req">*</span></label>
+                      <label>Start (estimate if needed) <span class="req">*</span></label>
                       <input type="date" name="courseStart" required id="courseStart">
                     </div>
                     <div class="field" id="weeksField">
@@ -675,6 +1091,11 @@ tr:hover td { background: #fafaf8; }
                         <option value="16">16 weeks</option><option value="20">20 weeks</option><option value="24">24 weeks</option>
                         <option value="25">25+ weeks</option>
                       </select>
+                    </div>
+                    <!-- LifePass is fixed at 24 months — swap in a read-only display in place of the weeks dropdown -->
+                    <div class="field" id="lifepassDurationField" style="display:none">
+                      <label>Duration</label>
+                      <input type="text" value="24 Months" readonly style="background:#f8fafc;font-weight:600;color:var(--green)">
                     </div>
                     <div class="field">
                       <label>End Date</label>
@@ -769,7 +1190,12 @@ tr:hover td { background: #fafaf8; }
                   <div class="chip-row">
                     <input type="checkbox" name="extras" id="ex-pickup" value="airport_pickup"><label for="ex-pickup">Airport Pickup</label>
                     <input type="checkbox" name="extras" id="ex-dropoff" value="airport_dropoff"><label for="ex-dropoff">Airport Drop-off</label>
-                    <input type="checkbox" name="extras" id="ex-exam" value="exam_fee"><label for="ex-exam">Exam Fee</label>
+                    <input type="checkbox" name="extras" id="ex-exam" value="exam_fee"><label for="ex-exam" id="lbl-ex-exam">Exam Fee</label>
+                    <input type="checkbox" name="extras" id="ex-pel" value="insurance_pel"><label for="ex-pel" id="lbl-ex-pel">PEL Insurance</label>
+                    <input type="checkbox" name="extras" id="ex-health" value="insurance_health"><label for="ex-health" id="lbl-ex-health">Health Insurance</label>
+                  </div>
+                  <div class="bundled-note" id="bundledNote" style="display:none;margin-top:8px;padding:8px 12px;background:#f0f9ff;border-left:3px solid #38bdf8;font-size:12px;color:#075985;border-radius:4px">
+                    Exam Fee + PEL & Health Insurance are bundled with this course — automatically included.
                   </div>
                   <div class="sub-options" data-extra-sub="airport_pickup">
                     <div class="field" style="margin-top:8px"><label>Pickup Date & Time</label><input type="datetime-local" name="pickupTime"></div>
@@ -864,6 +1290,32 @@ tr:hover td { background: #fafaf8; }
     // Refresh button → re-poll live finance
     const refreshBtn = document.getElementById('refreshBtn');
     if (refreshBtn) refreshBtn.addEventListener('click', loadDashboard);
+
+    // "View all" links in dashboard → switch to History tab, optionally pre-filter
+    document.querySelectorAll('.view-more-link').forEach(a => {
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        const filter = a.dataset.goHistory; // 'quotes' | 'invoices'
+        historyFilter = filter || 'all';
+        // Reflect in the pill UI
+        document.querySelectorAll('.filter-pill').forEach(p => p.classList.toggle('active', p.dataset.filter === historyFilter));
+        // Switch tab
+        document.querySelectorAll('.nav-tab').forEach(n => n.classList.remove('active'));
+        document.querySelector('.nav-tab[data-tab="history"]').classList.add('active');
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById('sec-history').classList.add('active');
+        loadHistory();
+      });
+    });
+
+    // Filter pills inside History tab
+    document.querySelectorAll('.filter-pill').forEach(p => {
+      p.addEventListener('click', () => {
+        historyFilter = p.dataset.filter || 'all';
+        document.querySelectorAll('.filter-pill').forEach(x => x.classList.toggle('active', x === p));
+        loadHistory();
+      });
+    });
   }
 
   // ── Tab navigation ──
@@ -878,6 +1330,8 @@ tr:hover td { background: #fafaf8; }
 
         if (t === 'students') loadStudents();
         else if (t === 'dashboard') loadDashboard();
+        else if (t === 'history') loadHistory();
+        else if (t === 'documents') loadDocuments();
       });
     });
   }
@@ -980,13 +1434,32 @@ tr:hover td { background: #fafaf8; }
         });
         // Reset IELTS slot visibility when course type changes
         document.getElementById('ieltsSlotRow').classList.remove('show');
-        // Show/hide weeks vs private hours
+        // Show/hide weeks field — Private uses hours, LifePass is fixed 24 months
         const wf = document.getElementById('weeksField');
+        const lp = document.getElementById('lifepassDurationField');
         if (inp.value === 'private') {
           wf.style.display = 'none';
+          lp.style.display = 'none';
+        } else if (inp.value === 'lifepass') {
+          wf.style.display = 'none';
+          lp.style.display = '';
         } else {
           wf.style.display = '';
+          lp.style.display = 'none';
         }
+        // Hide bundled extras (Exam Fee + Insurance) for AY / LifePass — they're auto-applied server-side
+        const bundled = inp.value === 'lifepass' || inp.value === 'academic_year';
+        ['ex-exam','ex-pel','ex-health'].forEach(id => {
+          const cb = document.getElementById(id);
+          const lbl = document.getElementById('lbl-' + id);
+          if (cb) { if (bundled) cb.checked = false; cb.style.display = bundled ? 'none' : ''; }
+          if (lbl) lbl.style.display = bundled ? 'none' : '';
+        });
+        const note = document.getElementById('bundledNote');
+        if (note) note.style.display = bundled ? '' : 'none';
+        // Hide the "Exam Type" sub-options when bundled — exam type is set later from level test
+        const examSub = document.querySelector('[data-extra-sub="exam_fee"]');
+        if (examSub && bundled) examSub.classList.remove('show');
       });
     });
 
@@ -1071,6 +1544,173 @@ tr:hover td { background: #fafaf8; }
   }
 
   // ── Dashboard ──
+  // ── Branded modal (replaces native confirm/alert) ──
+  // Supports: confirm-style (Yes/No) and alert-style (single OK).
+  // Options: { title, body, variant: 'success'|'warn'|'info', confirmLabel, cancelLabel, icon: 'check'|'warn'|'info' }
+  // Returns a Promise<boolean>.
+  const MODAL_ICONS = {
+    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+    warn:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+    info:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+  };
+  function showModal(opts) {
+    return new Promise((resolve) => {
+      const overlay = document.getElementById('modalOverlay');
+      const icon = document.getElementById('modalIcon');
+      const title = document.getElementById('modalTitle');
+      const body = document.getElementById('modalBody');
+      const actions = document.getElementById('modalActions');
+      const variant = opts.variant || 'success';
+      const iconKey = opts.icon || (variant === 'warn' ? 'warn' : variant === 'info' ? 'info' : 'check');
+
+      icon.className = 'modal-icon' + (variant === 'warn' ? ' warn' : variant === 'info' ? ' info' : '');
+      icon.innerHTML = MODAL_ICONS[iconKey] || MODAL_ICONS.check;
+      title.textContent = opts.title || 'Confirm';
+      body.textContent = opts.body || '';
+
+      // Build action buttons
+      actions.innerHTML = '';
+      const cleanup = (result) => {
+        overlay.classList.remove('show');
+        overlay.removeEventListener('click', onOverlayClick);
+        document.removeEventListener('keydown', onKey);
+        resolve(result);
+      };
+      const onOverlayClick = (e) => { if (e.target === overlay) cleanup(false); };
+      const onKey = (e) => {
+        if (e.key === 'Escape') cleanup(false);
+        if (e.key === 'Enter') cleanup(true);
+      };
+      overlay.addEventListener('click', onOverlayClick);
+      document.addEventListener('keydown', onKey);
+
+      if (opts.isAlert) {
+        const ok = document.createElement('button');
+        ok.className = 'modal-btn primary';
+        ok.textContent = opts.confirmLabel || 'OK';
+        ok.onclick = () => cleanup(true);
+        actions.appendChild(ok);
+      } else {
+        const cancel = document.createElement('button');
+        cancel.className = 'modal-btn';
+        cancel.textContent = opts.cancelLabel || 'Cancel';
+        cancel.onclick = () => cleanup(false);
+        const ok = document.createElement('button');
+        ok.className = 'modal-btn ' + (variant === 'warn' ? 'warn' : 'primary');
+        ok.textContent = opts.confirmLabel || 'Confirm';
+        ok.onclick = () => cleanup(true);
+        actions.appendChild(cancel);
+        actions.appendChild(ok);
+      }
+
+      overlay.classList.add('show');
+      // Auto-focus primary action
+      setTimeout(() => actions.querySelector('.primary, .warn')?.focus(), 60);
+    });
+  }
+  function showAlert(title, body, variant) {
+    return showModal({ title, body, variant: variant || 'info', isAlert: true });
+  }
+
+  // Render a single quote row with Accept / Query buttons and state-driven border
+  function renderQuoteRow(q) {
+    const isAccepted = q.partnerAction === 'ACCEPTED';
+    const isQueried = q.partnerAction === 'QUERIED';
+    const stateClass = isAccepted ? 'accepted' : isQueried ? 'queried' : '';
+    const viewLink = q.publicUrl
+      ? `<a href="${esc(q.publicUrl)}" target="_blank" class="quote-view-link">View →</a>`
+      : '';
+
+    // Action cell content
+    let actionHtml = '';
+    if (isAccepted) {
+      actionHtml = `<span class="qa-accepted-badge">Accepted</span>`;
+    } else if (isQueried) {
+      actionHtml = `<span class="qa-queried-badge">Queried</span>
+        <button class="qa-btn qa-accept" onclick="quoteAccept('${esc(q.id)}','${esc(q.dealId)}')">Accept</button>`;
+    } else {
+      actionHtml = `<div class="quote-actions">
+        <button class="qa-btn qa-accept" onclick="quoteAccept('${esc(q.id)}','${esc(q.dealId)}')">Accept</button>
+        <button class="qa-btn qa-query" onclick="quoteQueryToggle('${esc(q.id)}')">Query</button>
+      </div>`;
+    }
+
+    return `<div class="quote-row ${stateClass}" data-quote-id="${esc(q.id)}">
+      <div class="quote-main">
+        <div class="num">${esc(q.quoteNumber || q.id)}</div>
+        <div class="title">${esc(q.title || '-')}</div>
+        <div class="amt">&euro;${fmt(q.amount)}</div>
+        <div class="dates">${fmtDate(q.createdAt)}</div>
+        <div class="dates">Exp: ${fmtDate(q.expiresAt)}</div>
+        <div>${actionHtml}</div>
+        <div>${viewLink}</div>
+      </div>
+      ${isQueried && q.partnerComments ? `<div class="quote-comments-view"><strong>Query:</strong> ${esc(q.partnerComments)}</div>` : ''}
+      <div class="quote-comments-box" id="qc-${esc(q.id)}">
+        <textarea placeholder="Explain your query (e.g. 'Wrong course', 'Price doesn't match our email conversation')..."></textarea>
+        <div class="quote-comments-actions">
+          <button class="qa-btn" onclick="quoteQueryToggle('${esc(q.id)}')">Cancel</button>
+          <button class="qa-btn qa-query" onclick="quoteQuerySubmit('${esc(q.id)}','${esc(q.dealId)}')">Submit Query</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // Handlers exposed on window so inline onclick can call them
+  window.quoteAccept = async function(quoteId, dealId) {
+    const ok = await showModal({
+      title: 'Accept this quote?',
+      body: 'Our team will be notified and will convert this to an invoice shortly.',
+      variant: 'success',
+      confirmLabel: 'Accept',
+      cancelLabel: 'Cancel',
+    });
+    if (!ok) return;
+    const res = await fetch('/sis/partners/api/quote-action', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ quoteId, dealId, action: 'ACCEPTED' }),
+    }).then(r => r.json()).catch(() => ({ success: false }));
+    if (!res.success) {
+      await showAlert('Couldn\'t record acceptance', res.error || 'Please try again in a moment.', 'warn');
+      return;
+    }
+    await loadDashboard();
+  };
+
+  window.quoteQueryToggle = function(quoteId) {
+    const box = document.getElementById('qc-' + quoteId);
+    if (!box) return;
+    box.classList.toggle('show');
+    if (box.classList.contains('show')) {
+      setTimeout(() => box.querySelector('textarea')?.focus(), 50);
+    }
+  };
+
+  window.quoteQuerySubmit = async function(quoteId, dealId) {
+    const box = document.getElementById('qc-' + quoteId);
+    const comments = box?.querySelector('textarea')?.value?.trim() || '';
+    if (!comments) {
+      await showAlert('Reason required', 'Please enter a brief note explaining your query so our team can follow up.', 'warn');
+      box?.querySelector('textarea')?.focus();
+      return;
+    }
+    const res = await fetch('/sis/partners/api/quote-action', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ quoteId, dealId, action: 'QUERIED', comments }),
+    }).then(r => r.json()).catch(() => ({ success: false }));
+    if (!res.success) {
+      await showAlert('Couldn\'t submit query', res.error || 'Please try again in a moment.', 'warn');
+      return;
+    }
+    await loadDashboard();
+  };
+
+  // Cache of last fetched finance payload — reused by the history tab so we don't refetch
+  let lastFinance = null;
+  const DASH_LIMIT = 5;
+
   async function loadDashboard() {
     const refreshBtn = document.getElementById('refreshBtn');
     if (refreshBtn) { refreshBtn.disabled = true; refreshBtn.textContent = '⟳ Loading...'; }
@@ -1078,56 +1718,35 @@ tr:hover td { background: #fafaf8; }
       const res = await fetch('/sis/partners/api/live-finance');
       const d = await res.json();
       if (!d.success) throw new Error(d.error || 'Failed to load');
+      lastFinance = d;
 
       // Stat cards — all from live HubSpot data
       document.getElementById('dashStats').innerHTML = `
         <div class="stat-card"><div class="stat-value">${d.dealCount}</div><div class="stat-label">Total Deals</div></div>
-        <div class="stat-card blue"><div class="stat-value">${d.commissionRate}%</div><div class="stat-label">Commission Rate</div></div>
         <div class="stat-card green"><div class="stat-value">&euro;${fmt(d.totals.billed)}</div><div class="stat-label">Total Billed</div></div>
         <div class="stat-card green"><div class="stat-value">&euro;${fmt(d.totals.paid)}</div><div class="stat-label">Total Paid</div></div>
         <div class="stat-card" style="${d.totals.balance > 0 ? 'border: 2px solid #f59e0b' : ''}"><div class="stat-value">&euro;${fmt(d.totals.balance)}</div><div class="stat-label">Balance Open</div></div>
       `;
 
-      // Quotes
-      const qtbody = document.getElementById('quoteRows');
-      if (d.quotes.length) {
-        qtbody.innerHTML = d.quotes.map(q => `<tr>
-          <td><strong>${esc(q.quoteNumber || q.id)}</strong></td>
-          <td>${esc(q.title || '-')}</td>
-          <td><strong>&euro;${fmt(q.amount)}</strong></td>
-          <td>${fmtDate(q.createdAt)}</td>
-          <td>${fmtDate(q.expiresAt)}</td>
-          <td>${q.publicUrl ? `<a href="${esc(q.publicUrl)}" target="_blank" style="color:var(--green);font-weight:600;text-decoration:none">View →</a>` : '-'}</td>
-        </tr>`).join('');
+      // Quotes — newest first, show 5 max, "View all" link when there are more
+      const qList = document.getElementById('quoteList');
+      const recent = d.quotes.slice(0, DASH_LIMIT);
+      if (!recent.length) {
+        qList.innerHTML = '<div class="loading">No quotes yet</div>';
       } else {
-        qtbody.innerHTML = '<tr><td colspan="6" class="loading">No quotes ready for acceptance</td></tr>';
+        qList.innerHTML = recent.map(q => renderQuoteRow(q)).join('');
       }
+      document.getElementById('quoteViewMore').style.display = d.quotes.length > DASH_LIMIT ? 'block' : 'none';
 
-      // Invoices — with paid/balance columns so payments are visible inline
+      // Invoices — newest first, show 5 max
       const itbody = document.getElementById('invoiceRows');
-      if (d.invoices.length) {
-        itbody.innerHTML = d.invoices.map(inv => {
-          const statusColor = inv.status === 'paid' ? 'var(--green)'
-            : inv.status === 'voided' ? '#dc2626'
-            : inv.balance > 0 ? '#f59e0b' : 'var(--muted)';
-          return `<tr>
-            <td><strong>${esc(inv.number || inv.id)}</strong></td>
-            <td><span class="badge" style="background:${statusColor};color:#fff">${esc(inv.status || '-')}</span></td>
-            <td><strong>&euro;${fmt(inv.billed)}</strong></td>
-            <td style="color:var(--green)">&euro;${fmt(inv.paid)}</td>
-            <td style="${inv.balance > 0 ? 'color:#f59e0b;font-weight:600' : 'color:var(--muted)'}">&euro;${fmt(inv.balance)}</td>
-            <td>${fmtDate(inv.invoiceDate)}</td>
-            <td>${fmtDate(inv.dueDate)}</td>
-            <td style="white-space:nowrap">
-              ${inv.invoiceUrl ? `<a href="${esc(inv.invoiceUrl)}" target="_blank" style="color:var(--green);text-decoration:none;font-weight:600">View →</a>` : ''}
-              ${inv.pdfUrl && inv.invoiceUrl ? ' · ' : ''}
-              ${inv.pdfUrl ? `<a href="${esc(inv.pdfUrl)}" target="_blank" style="color:var(--muted);text-decoration:none;font-weight:600;font-size:12px">PDF</a>` : ''}
-            </td>
-          </tr>`;
-        }).join('');
-      } else {
+      const recentInvs = d.invoices.slice(0, DASH_LIMIT);
+      if (!recentInvs.length) {
         itbody.innerHTML = '<tr><td colspan="8" class="loading">No invoices yet</td></tr>';
+      } else {
+        itbody.innerHTML = recentInvs.map(renderInvoiceRow).join('');
       }
+      document.getElementById('invoiceViewMore').style.display = d.invoices.length > DASH_LIMIT ? 'block' : 'none';
 
       // Timestamp
       const lr = document.getElementById('lastRefresh');
@@ -1137,6 +1756,134 @@ tr:hover td { background: #fafaf8; }
     } finally {
       if (refreshBtn) { refreshBtn.disabled = false; refreshBtn.textContent = '⟳ Refresh'; }
     }
+  }
+
+  // Extracted so the History tab can reuse the exact same row shape
+  function renderInvoiceRow(inv) {
+    const statusColor = inv.status === 'paid' ? 'var(--green)'
+      : inv.status === 'voided' ? '#dc2626'
+      : inv.balance > 0 ? '#f59e0b' : 'var(--muted)';
+    return `<tr>
+      <td><strong>${esc(inv.number || inv.id)}</strong></td>
+      <td><span class="badge" style="background:${statusColor};color:#fff">${esc(inv.status || '-')}</span></td>
+      <td><strong>&euro;${fmt(inv.billed)}</strong></td>
+      <td style="color:var(--green)">&euro;${fmt(inv.paid)}</td>
+      <td style="${inv.balance > 0 ? 'color:#f59e0b;font-weight:600' : 'color:var(--muted)'}">&euro;${fmt(inv.balance)}</td>
+      <td>${fmtDate(inv.invoiceDate)}</td>
+      <td>${fmtDate(inv.dueDate)}</td>
+      <td style="white-space:nowrap;text-align:right">
+        ${inv.pdfUrl ? `<a href="${esc(inv.pdfUrl)}" target="_blank" style="color:var(--muted);text-decoration:none;font-weight:600;font-size:12px">PDF</a>` : ''}
+        ${inv.pdfUrl && inv.invoiceUrl ? ' · ' : ''}
+        ${inv.invoiceUrl ? `<a href="${esc(inv.invoiceUrl)}" target="_blank" style="color:var(--green);text-decoration:none;font-weight:600">View →</a>` : ''}
+      </td>
+    </tr>`;
+  }
+
+  // ── Documents tab — Zoho-signed partner contracts (mirrored, read-only) ──
+  async function loadDocuments() {
+    const list = document.getElementById('documentList');
+    list.innerHTML = '<div class="loading">Loading documents...</div>';
+    try {
+      const res = await fetch('/sis/partners/api/documents');
+      const d = await res.json();
+      if (!d.success) throw new Error(d.error || 'Failed to load');
+
+      if (!d.documents || !d.documents.length) {
+        list.innerHTML = '<div class="loading">No documents on file yet</div>';
+        return;
+      }
+
+      // Header
+      let html = `<div class="history-row" style="grid-template-columns: 1fr 160px 120px 120px 100px;font-size:10px;text-transform:uppercase;letter-spacing:0.04em;color:var(--muted);font-weight:700;border-bottom:2px solid var(--line)">
+        <div>Document</div><div>Signer</div><div>Status</div><div>Signed</div><div style="text-align:right">Actions</div>
+      </div>`;
+      html += d.documents.map(doc => {
+        const statusPill = doc.requestStatus === 'completed'
+          ? '<span class="type-pill" style="background:#d1fae5;color:#065f46">Signed</span>'
+          : `<span class="type-pill" style="background:#fef3c7;color:#92400e">${esc(doc.requestStatus || '-')}</span>`;
+        return `<div class="history-row" style="grid-template-columns: 1fr 160px 120px 120px 100px">
+          <div><strong>${esc(doc.requestName || '(untitled)')}</strong>${doc.folderName ? `<div style="font-size:11px;color:var(--muted)">${esc(doc.folderName)}</div>` : ''}</div>
+          <div><div>${esc(doc.signerName || '-')}</div><div style="font-size:11px;color:var(--muted)">${esc(doc.signerEmail || '')}</div></div>
+          <div>${statusPill}</div>
+          <div>${fmtDate(doc.signedAt)}</div>
+          <div style="text-align:right">
+            ${doc.hasPdf ? `<a href="/sis/partners/api/documents/${doc.id}/pdf" target="_blank" style="color:var(--green);text-decoration:none;font-weight:600;font-size:13px">View PDF →</a>` : '<span style="color:var(--muted);font-size:12px">No PDF</span>'}
+          </div>
+        </div>`;
+      }).join('');
+      list.innerHTML = html;
+    } catch (e) {
+      list.innerHTML = `<div class="loading">Failed to load: ${esc(String(e.message || e))}</div>`;
+    }
+  }
+
+  // ── History tab — combined/filterable list of all quotes + invoices ──
+  let historyFilter = 'all';
+  async function loadHistory() {
+    const list = document.getElementById('historyList');
+    const count = document.getElementById('historyCount');
+    if (!lastFinance) {
+      // Ensure we have data — typically we already do from Dashboard load
+      try {
+        const res = await fetch('/sis/partners/api/live-finance');
+        lastFinance = await res.json();
+      } catch (e) { list.innerHTML = '<div class="loading">Failed to load history</div>'; return; }
+    }
+    const d = lastFinance;
+
+    // Build a merged list of entries with a sortable date
+    const entries = [];
+    for (const q of d.quotes || []) entries.push({ kind: 'quote', date: q.createdAt || '', item: q });
+    for (const inv of d.invoices || []) entries.push({ kind: 'invoice', date: inv.invoiceDate || '', item: inv });
+    entries.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+    const filtered = historyFilter === 'all' ? entries
+      : entries.filter(e => (historyFilter === 'quotes' && e.kind === 'quote') || (historyFilter === 'invoices' && e.kind === 'invoice'));
+
+    count.textContent = `${filtered.length} ${filtered.length === 1 ? 'record' : 'records'}`;
+
+    if (!filtered.length) {
+      list.innerHTML = '<div class="loading">No records match this filter</div>';
+      return;
+    }
+
+    // Header row
+    let html = `<div class="history-row" style="font-size:10px;text-transform:uppercase;letter-spacing:0.04em;color:var(--muted);font-weight:700;border-bottom:2px solid var(--line)">
+      <div>Type</div><div>Number</div><div>Title / Ref</div><div>Amount</div><div>Status</div><div>Date</div><div style="text-align:right">Actions</div>
+    </div>`;
+
+    html += filtered.map(e => {
+      if (e.kind === 'quote') {
+        const q = e.item;
+        const statusLabel = q.partnerAction === 'ACCEPTED' ? 'Accepted' : q.partnerAction === 'QUERIED' ? 'Queried' : q.status;
+        return `<div class="history-row">
+          <div><span class="type-pill quote">Quote</span></div>
+          <div><strong>${esc(q.quoteNumber || q.id)}</strong></div>
+          <div>${esc(q.title || '-')}</div>
+          <div><strong>&euro;${fmt(q.amount)}</strong></div>
+          <div style="font-size:11px">${esc(statusLabel || '-')}</div>
+          <div>${fmtDate(q.createdAt)}</div>
+          <div style="text-align:right">${q.publicUrl ? `<a href="${esc(q.publicUrl)}" target="_blank" style="color:var(--green);text-decoration:none;font-weight:600;font-size:13px">View →</a>` : ''}</div>
+        </div>`;
+      } else {
+        const inv = e.item;
+        return `<div class="history-row">
+          <div><span class="type-pill invoice">Invoice</span></div>
+          <div><strong>${esc(inv.number || inv.id)}</strong></div>
+          <div style="color:var(--muted)">${esc(inv.balance > 0 ? 'Open balance' : 'Settled')}</div>
+          <div><strong>&euro;${fmt(inv.billed)}</strong><br><span style="font-size:11px;color:var(--green)">Paid: &euro;${fmt(inv.paid)}</span>${inv.balance > 0 ? `<br><span style="font-size:11px;color:#f59e0b">Due: &euro;${fmt(inv.balance)}</span>` : ''}</div>
+          <div style="font-size:11px">${esc(inv.status || '-')}</div>
+          <div>${fmtDate(inv.invoiceDate)}</div>
+          <div style="text-align:right;white-space:nowrap">
+            ${inv.pdfUrl ? `<a href="${esc(inv.pdfUrl)}" target="_blank" style="color:var(--muted);text-decoration:none;font-weight:600;font-size:11px">PDF</a>` : ''}
+            ${inv.pdfUrl && inv.invoiceUrl ? ' · ' : ''}
+            ${inv.invoiceUrl ? `<a href="${esc(inv.invoiceUrl)}" target="_blank" style="color:var(--green);text-decoration:none;font-weight:600;font-size:13px">View →</a>` : ''}
+          </div>
+        </div>`;
+      }
+    }).join('');
+
+    list.innerHTML = html;
   }
 
   // ── Students ──
@@ -1156,8 +1903,8 @@ tr:hover td { background: #fafaf8; }
         const b = s.bookings[0];
         const course = b?.courses?.[0];
         const age = s.birthday ? Math.floor((Date.now() - new Date(s.birthday).getTime()) / 31557600000) : '';
-        return `<tr>
-          <td><strong>${esc(s.firstName)} ${esc(s.lastName)}</strong>${age ? ' <span style="color:var(--muted);font-size:11px">('+age+')</span>' : ''}</td>
+        return `<tr onclick="openStudentDrawer(${s.id})" style="cursor:pointer">
+          <td><strong style="color:var(--green)">${esc(s.firstName)} ${esc(s.lastName)}</strong>${age ? ' <span style="color:var(--muted);font-size:11px">('+age+')</span>' : ''}</td>
           <td>${esc(s.nationality || '-')}</td>
           <td>${esc(s.currentLevel || course?.level || '-')}</td>
           <td>${esc(course?.name || '-')}</td>
@@ -1165,8 +1912,118 @@ tr:hover td { background: #fafaf8; }
           <td>${b ? badge(b.status) : '-'}</td>
         </tr>`;
       }).join('');
+      // Apply hover highlight — the class is style-only, no JS needed
+      document.querySelector('#sec-students table')?.classList.add('students-table');
     } catch (e) { console.error(e); }
   }
+
+  // ── Student detail drawer ──
+  window.openStudentDrawer = async function(studentId) {
+    const overlay = document.getElementById('studentDrawerOverlay');
+    const panel = document.getElementById('studentDrawer');
+    const body = document.getElementById('drawerBody');
+    const title = document.getElementById('drawerStudentName');
+    body.innerHTML = '<div class="loading">Loading...</div>';
+    title.textContent = 'Loading...';
+    overlay.classList.add('show');
+    panel.classList.add('show');
+    document.body.style.overflow = 'hidden';
+
+    try {
+      const res = await fetch('/sis/partners/api/students/' + studentId);
+      const d = await res.json();
+      if (!d.success) throw new Error(d.error || 'Not found');
+      const s = d.student;
+      title.textContent = `${s.firstName} ${s.lastName}`;
+
+      const initials = ((s.firstName?.[0] || '') + (s.lastName?.[0] || '')).toUpperCase();
+      const age = s.birthday ? Math.floor((Date.now() - new Date(s.birthday).getTime()) / 31557600000) : null;
+      const dob = s.birthday ? fmtDate(s.birthday) : '-';
+
+      // Header block
+      let html = `<div style="display:flex;gap:16px;align-items:center">
+        <div class="drawer-avatar">${s.profilePicture ? `<img src="${esc(s.profilePicture)}">` : esc(initials)}</div>
+        <div>
+          <div style="font-size:18px;font-weight:800;color:var(--navy);letter-spacing:-0.01em">${esc(s.firstName)} ${esc(s.lastName)}</div>
+          <div class="drawer-chips">
+            ${s.nationality ? `<span class="drawer-chip">${esc(s.nationality)}</span>` : ''}
+            ${age ? `<span class="drawer-chip">Age ${age}</span>` : ''}
+            ${s.currentLevel ? `<span class="drawer-chip" style="background:#dbeafe;color:#1e40af">${esc(s.currentLevel)}</span>` : ''}
+            ${s.studentType === 'JUNIOR' ? '<span class="drawer-chip" style="background:#fef3c7;color:#92400e">Junior</span>' : ''}
+          </div>
+        </div>
+      </div>`;
+
+      // Contact (if we have any)
+      if (s.email || s.phone || s.phoneMobile || s.birthday) {
+        html += `<div class="drawer-section">
+          <div class="drawer-section-title">Contact</div>
+          <div class="drawer-kv">
+            ${s.email ? `<div class="k">Email</div><div class="v">${esc(s.email)}</div>` : ''}
+            ${s.phone ? `<div class="k">Phone</div><div class="v">${esc(s.phone)}</div>` : ''}
+            ${s.phoneMobile ? `<div class="k">Mobile</div><div class="v">${esc(s.phoneMobile)}</div>` : ''}
+            ${s.birthday ? `<div class="k">Date of Birth</div><div class="v">${dob}</div>` : ''}
+          </div>
+        </div>`;
+      }
+
+      // Bookings — each with course, accommodation, financials
+      if (s.bookings && s.bookings.length) {
+        html += `<div class="drawer-section">
+          <div class="drawer-section-title">${s.bookings.length > 1 ? 'Bookings' : 'Booking'}</div>
+          ${s.bookings.map(b => {
+            const courseLines = (b.courses || []).map(c =>
+              `<div style="font-size:12px;color:var(--ink)">${esc(c.name || '-')}${c.level ? ' · ' + esc(c.level) : ''}${c.weeks ? ' · ' + c.weeks + ' wk' : ''}<br><span style="color:var(--muted);font-size:11px">${fmtDate(c.startDate)} → ${fmtDate(c.endDate)}</span></div>`
+            ).join('<div style="height:4px"></div>') || '<span style="color:var(--muted);font-size:12px">—</span>';
+
+            const accommLines = (b.accommodations || []).map(a =>
+              `<div style="font-size:12px;color:var(--ink)">${esc(a.accommodationType || '-')}${a.roomType ? ' · ' + esc(a.roomType) : ''}${a.weeks ? ' · ' + a.weeks + ' wk' : ''}<br><span style="color:var(--muted);font-size:11px">${fmtDate(a.startDate)} → ${fmtDate(a.endDate)}</span></div>`
+            ).join('<div style="height:4px"></div>') || '';
+
+            const open = Number(b.amountOpen || 0);
+            return `<div class="drawer-booking">
+              <div class="drawer-booking-title">
+                <span>Booking #${b.id}</span>
+                ${b.status ? badge(b.status) : ''}
+              </div>
+              <div class="drawer-booking-meta">
+                ${b.serviceStart ? fmtDate(b.serviceStart) : '?'} — ${b.serviceEnd ? fmtDate(b.serviceEnd) : '?'}
+              </div>
+              <div class="drawer-kv" style="grid-template-columns: 90px 1fr;gap:6px 10px;font-size:12px">
+                <div class="k">Course</div><div class="v">${courseLines}</div>
+                ${accommLines ? `<div class="k">Accommodation</div><div class="v">${accommLines}</div>` : ''}
+              </div>
+              <div class="drawer-fin-grid">
+                <div class="cell"><div class="label">Billed</div><div class="val">&euro;${fmt(b.amountTotal || 0)}</div></div>
+                <div class="cell"><div class="label">Paid</div><div class="val green">&euro;${fmt(b.amountPaid || 0)}</div></div>
+                <div class="cell"><div class="label">Balance</div><div class="val ${open > 0 ? 'amber' : ''}">&euro;${fmt(open)}</div></div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>`;
+      }
+
+      body.innerHTML = html;
+    } catch (e) {
+      body.innerHTML = `<div class="loading">Failed to load: ${esc(String(e.message || e))}</div>`;
+    }
+  };
+
+  function closeStudentDrawer() {
+    document.getElementById('studentDrawerOverlay')?.classList.remove('show');
+    document.getElementById('studentDrawer')?.classList.remove('show');
+    document.body.style.overflow = '';
+  }
+  // Event delegation — drawer HTML is declared after this script block, so
+  // direct addEventListener on those IDs fails at parse time. Listening on
+  // document and matching via id/class works regardless of DOM order.
+  document.addEventListener('click', (e) => {
+    const t = e.target;
+    if (!t) return;
+    if (t.id === 'drawerCloseBtn' || t.closest?.('#drawerCloseBtn')) { closeStudentDrawer(); return; }
+    if (t.id === 'studentDrawerOverlay') { closeStudentDrawer(); return; }
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeStudentDrawer(); });
 
   document.getElementById('studentSearch').addEventListener('input', (e) => {
     clearTimeout(studentSearchTimer);
@@ -1216,7 +2073,8 @@ tr:hover td { background: #fafaf8; }
           privateHours: fd.get('privateHours') || '',
           courseStart: fd.get('courseStart') || '',
           courseEnd: fd.get('courseEnd') || '',
-          courseWeeks: fd.get('courseWeeks') || '',
+          // LifePass is fixed at 24 months (~104 weeks) — substitute when that course type is selected
+          courseWeeks: courseType === 'lifepass' ? '104' : (fd.get('courseWeeks') || ''),
           accommType: fd.get('accommType') || 'none',
           accommRoom: fd.get('accommRoom') || '',
           accommStart: fd.get('accommStart') || '',
@@ -1267,5 +2125,28 @@ tr:hover td { background: #fafaf8; }
   init();
 })();
 </script>
+<!-- ═══ Student detail drawer ═══ -->
+<div class="drawer-overlay" id="studentDrawerOverlay"></div>
+<aside class="drawer-panel" id="studentDrawer" role="dialog" aria-modal="true" aria-label="Student detail">
+  <div class="drawer-header">
+    <h2 id="drawerStudentName" style="font-size:16px;font-weight:800;color:var(--navy);margin:0">Student</h2>
+    <button class="drawer-close" id="drawerCloseBtn" aria-label="Close">✕</button>
+  </div>
+  <div class="drawer-body" id="drawerBody">
+    <div class="loading">Loading...</div>
+  </div>
+</aside>
+
+<!-- ═══ Modal shell (branded confirm / alert) ═══ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-icon" id="modalIcon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h3 class="modal-title" id="modalTitle">Confirm</h3>
+    <p class="modal-body" id="modalBody">Are you sure?</p>
+    <div class="modal-actions" id="modalActions"></div>
+  </div>
+</div>
 </body>
 </html>

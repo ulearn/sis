@@ -75,5 +75,21 @@ export function bookingRoutes(prisma: PrismaClient) {
     catch (e) { res.status(400).json({ error: String(e) }); }
   });
 
+  // Booking extras
+  router.post('/:bookingId/extras', async (req, res) => {
+    try { res.status(201).json(await scripts.addExtra(parseInt(req.params.bookingId), req.body)); }
+    catch (e) { res.status(400).json({ error: String(e) }); }
+  });
+
+  router.patch('/extras/:id', async (req, res) => {
+    try { res.json(await scripts.updateExtra(parseInt(req.params.id), req.body)); }
+    catch (e) { res.status(400).json({ error: String(e) }); }
+  });
+
+  router.delete('/extras/:id', async (req, res) => {
+    try { await scripts.removeExtra(parseInt(req.params.id)); res.json({ deleted: true }); }
+    catch (e) { res.status(400).json({ error: String(e) }); }
+  });
+
   return router;
 }

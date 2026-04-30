@@ -75,8 +75,21 @@ function skuToAccommType(sku: string): string | null {
   return null;
 }
 
-// Strip pricing tier from HubSpot product name → clean SIS course name
-function cleanCourseName(hubspotName: string, category: string): string {
+// Strip pricing tier from HubSpot product name → clean SIS course name.
+// SKU is consulted so LifePass / AY products get the canonical SIS naming
+// even when HubSpot sends a marketing-flavoured name or no name at all.
+function cleanCourseName(hubspotName: string, category: string, sku?: string): string {
+  const s = (sku || '').toUpperCase();
+  // LifePass SKUs (LPMORN / LPAFT) → canonical "Life Pass Morning/Afternoon"
+  if (s.startsWith('LP')) {
+    return s.includes('AFT') ? 'Life Pass Afternoon' : 'Life Pass Morning';
+  }
+  // AY SKUs (AYMORN / AYAFT, with optional + suffix) → canonical "Academic Year ..."
+  if (s.startsWith('AY')) {
+    const aft = s.includes('AFT');
+    const plus = s.includes('+');
+    return `Academic Year ${aft ? 'Afternoon' : 'Morning'}${plus ? ' Plus' : ''}`;
+  }
   // "General English AM | 1 - 5 Weeks" → "General English AM"
   // "Academic Year Afternoon (375 Hours)" → "Academic Year Afternoon"
   let name = hubspotName.replace(/\s*\|.*$/, '').replace(/\s*\(.*\)$/, '').trim();
@@ -140,8 +153,18 @@ export function webhookRoutes(prisma: PrismaClient) {
         return res.json({ status: 'already_exists', bookingId: existingBooking.id });
       }
 
-      // Get deal details
-      const deal = await hsGet(`/crm/v3/objects/deals/${resolvedDealId}?properties=dealname,dealstage,amount,course_start,course_end,course_weeks`);
+      // Get deal details (expanded to cover course, accommodation, extras, territory)
+      const dealProps = [
+        'dealname', 'dealstage', 'amount', 'territory',
+        'course_type', 'course_start', 'course_end', 'course_weeks',
+        'private_hours', 'junior_pack',
+        'accomm_type', 'room_type', 'accomm_start', 'accomm_end', 'accomm_weeks',
+        'airport_pickup', 'airport_pickup_time',
+        'airport_dropoff', 'airport_dropoff_time',
+        'exam_fee', 'exam_type',
+        'insurance',
+      ].join(',');
+      const deal = await hsGet(`/crm/v3/objects/deals/${resolvedDealId}?properties=${dealProps}`);
 
       // Resolve the STUDENT contact and (for B2B) the AGENCY company on the deal.
       // B2C: deal has one contact (the student) — fast path, no label filtering needed.
@@ -239,7 +262,7 @@ export function webhookRoutes(prisma: PrismaClient) {
         return res.status(404).json({ error: 'No contact found on deal' });
       }
 
-      const contact = await hsGet(`/crm/v3/objects/contacts/${resolvedContactId}?properties=firstname,lastname,email,phone,mobilephone,country,date_of_birth`);
+      const contact = await hsGet(`/crm/v3/objects/contacts/${resolvedContactId}?properties=firstname,lastname,email,phone,mobilephone,country,date_of_birth,nationality,level,quiz_score`);
       const cp = contact.properties || {};
 
       // Get line items
@@ -268,6 +291,12 @@ export function webhookRoutes(prisma: PrismaClient) {
         student = await prisma.student.findFirst({ where: { email: cp.email } });
       }
 
+      // Parse quiz score from HubSpot — stored as string like "65%" or "65", we need an Int
+      const quizScoreRaw = String(cp.quiz_score || '').trim();
+      const quizScore = quizScoreRaw ? (parseInt(quizScoreRaw.replace(/[^0-9]/g, '')) || null) : null;
+      const nationality = (cp.nationality || '').trim() || null;
+      const level = (cp.level || '').trim() || null;
+
       if (!student) {
         student = await prisma.student.create({
           data: {
@@ -276,15 +305,28 @@ export function webhookRoutes(prisma: PrismaClient) {
             email: cp.email || '',
             phone: cp.phone || null,
             phoneMobile: cp.mobilephone || null,
+            nationality,
+            currentLevel: level,
+            quizScore,
+            quizDate: quizScore !== null ? new Date() : null,
             hubspotContactId: resolvedContactId,
             hubspotDealId: resolvedDealId,
           } as any,
         });
-      } else if (!student.hubspotContactId || !student.hubspotDealId) {
-        await prisma.student.update({
-          where: { id: student.id },
-          data: { hubspotContactId: resolvedContactId, hubspotDealId: resolvedDealId } as any,
-        });
+      } else {
+        // Update only the fields we just looked up; don't wipe existing data.
+        const updateData: any = {};
+        if (!student.hubspotContactId) updateData.hubspotContactId = resolvedContactId;
+        if (!student.hubspotDealId) updateData.hubspotDealId = resolvedDealId;
+        if (nationality && !student.nationality) updateData.nationality = nationality;
+        if (level && !student.currentLevel) updateData.currentLevel = level;
+        if (quizScore !== null && !student.quizScore) {
+          updateData.quizScore = quizScore;
+          updateData.quizDate = new Date();
+        }
+        if (Object.keys(updateData).length > 0) {
+          await prisma.student.update({ where: { id: student.id }, data: updateData });
+        }
       }
 
       // Map line items to courses and accommodation
@@ -306,7 +348,7 @@ export function webhookRoutes(prisma: PrismaClient) {
         const courseCategory = skuToCourseCategory(sku);
         if (courseCategory) {
           courses.push({
-            name: cleanCourseName(p.name || '', courseCategory),
+            name: cleanCourseName(p.name || '', courseCategory, sku),
             category: courseCategory,
             startDate: courseStart,
             endDate: courseEnd || courseStart,
@@ -329,6 +371,24 @@ export function webhookRoutes(prisma: PrismaClient) {
             active: true,
           });
         }
+      }
+
+      // If the SKU scan didn't find an accommodation but the deal explicitly has
+      // `accomm_type` set, create one from the deal properties directly. This is
+      // more reliable than SKU parsing and handles the accommodation types partners
+      // submit via the portal.
+      if (accommodations.length === 0 && dp.accomm_type) {
+        const accommStart = dp.accomm_start ? new Date(dp.accomm_start) : courseStart;
+        const accommEnd = dp.accomm_end ? new Date(dp.accomm_end) : (courseEnd || courseStart);
+        const accommWeeks = parseInt(dp.accomm_weeks) || null;
+        accommodations.push({
+          accommodationType: dp.accomm_type,
+          roomType: dp.room_type || null,
+          startDate: accommStart,
+          endDate: accommEnd,
+          weeks: accommWeeks || 1,
+          active: true,
+        });
       }
 
       // Create booking
@@ -354,6 +414,58 @@ export function webhookRoutes(prisma: PrismaClient) {
         agencyId = agency.id;
       }
 
+      // Build Extras from deal properties (airport transfers + exam fee + insurance).
+      // HubSpot stores booleans as 'true'/'false' strings.
+      const extras: any[] = [];
+      const isTrue = (v: any) => String(v ?? '').toLowerCase() === 'true';
+
+      // AY / LifePass auto-bundle — Exam Fee + PEL/Health Insurance are always
+      // included with these packs. The frontend hides the checkboxes for these
+      // courses, but if a deal arrives without the props set (manual creation,
+      // legacy workflow, drift), enrich defensively here so the SIS Booking
+      // still gets the right extras. Mirrors the partners.ts enroll() rule.
+      const courseTypeRaw = String(dp.course_type || '');
+      const isBundledCourse = /^ay_year_/i.test(courseTypeRaw) || /^lifepass\s*/i.test(courseTypeRaw);
+      const examFeeOn   = isTrue(dp.exam_fee)  || isBundledCourse;
+      const insuranceVal = isBundledCourse
+        ? 'PEL;Health'
+        : (String(dp.insurance || '').trim() || null);
+
+      // Airport Pickup
+      if (isTrue(dp.airport_pickup)) {
+        const ts = dp.airport_pickup_time ? new Date(parseInt(dp.airport_pickup_time) || dp.airport_pickup_time) : null;
+        extras.push({
+          extraType: 'AIRPORT_PICKUP',
+          scheduledAt: ts && !isNaN(ts.getTime()) ? ts : null,
+          active: true,
+        });
+      }
+      // Airport Dropoff
+      if (isTrue(dp.airport_dropoff)) {
+        const ts = dp.airport_dropoff_time ? new Date(parseInt(dp.airport_dropoff_time) || dp.airport_dropoff_time) : null;
+        extras.push({
+          extraType: 'AIRPORT_DROPOFF',
+          scheduledAt: ts && !isNaN(ts.getTime()) ? ts : null,
+          active: true,
+        });
+      }
+      // Exam Fee — exam_type left null for bundled courses (set later from level test)
+      if (examFeeOn) {
+        extras.push({
+          extraType: 'EXAM_FEE',
+          details: isBundledCourse ? null : ((dp.exam_type || '').trim() || null),
+          active: true,
+        });
+      }
+      // Insurance — multi-checkbox stored as semicolon-delimited (e.g. "PEL;Health")
+      if (insuranceVal) {
+        extras.push({
+          extraType: 'INSURANCE',
+          details: insuranceVal,
+          active: true,
+        });
+      }
+
       const booking = await prisma.booking.create({
         data: {
           studentId: student.id,
@@ -372,15 +484,16 @@ export function webhookRoutes(prisma: PrismaClient) {
           note: `HubSpot Deal: ${dp.dealname || resolvedDealId}`,
           courses: courses.length > 0 ? { create: courses } : undefined,
           accommodations: accommodations.length > 0 ? { create: accommodations } : undefined,
+          extras: extras.length > 0 ? { create: extras } : undefined,
           // No statusHistory entry on initial creation — there's no genuine "from" state.
           // History is appended on subsequent transitions (e.g. PENDING → PARTIAL → COMPLETE).
         } as any,
-        include: { student: true, courses: true, accommodations: true },
+        include: { student: true, courses: true, accommodations: true, extras: true },
       });
 
       const name = `${student.firstName} ${student.lastName}`;
       const channel = isB2B ? `B2B${resolvedCompanyName ? ' via ' + resolvedCompanyName : ''}` : 'B2C';
-      console.log(`[Invoice Created] ${name} (${channel}): booking #${booking.id} — €${hsAmount} (${courses.length} courses, ${accommodations.length} accomm)`);
+      console.log(`[Invoice Created] ${name} (${channel}): booking #${booking.id} — €${hsAmount} (${courses.length} courses, ${accommodations.length} accomm, ${extras.length} extras)`);
 
       res.json({
         status: 'ok',
@@ -393,6 +506,7 @@ export function webhookRoutes(prisma: PrismaClient) {
         amountTotal: hsAmount,
         courses: courses.length,
         accommodations: accommodations.length,
+        extras: extras.length,
       });
     } catch (e: any) {
       console.error('[Invoice Created] Error:', e.message);

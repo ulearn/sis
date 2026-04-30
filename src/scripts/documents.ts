@@ -71,10 +71,13 @@ export function documentScripts(prisma: PrismaClient) {
       const raw = data?.properties?.[HS_COMMISSION_PROP];
       if (raw == null || raw === '') return null;
       const n = Number(raw);
-      if (isNaN(n)) return null;
-      // HubSpot stores commission as a decimal (0.3 = 30%) — convert to percentage.
-      // Defensive: if someone enters "30" instead of "0.3", treat values >= 1 as already-percent.
-      return n < 1 ? n * 100 : n;
+      if (isNaN(n) || n <= 0) return null;
+      // HubSpot stores commission as a decimal (0.3 = 30%). Accept both formats
+      // and clamp the ×100 typo range so a mis-entered 2500 doesn't flow through
+      // as a real rate.
+      if (n < 1)   return n * 100;           // expected: 0.3 → 30
+      if (n >= 50) return n / 100;           // typo: 2500 → 25, 3000 → 30
+      return n;                              // legacy integer: 30 → 30
     } catch {
       return null;
     }
@@ -210,6 +213,8 @@ export function documentScripts(prisma: PrismaClient) {
 
       // Visa
       'student.visa_until': fmtDate(student.visaUntil),
+      'booking.ilep_code': (course as any)?.ilepCode || '',
+      'ilep_course_code': (course as any)?.ilepCode || '',  // legacy Fidelo placeholder name
 
       // Accommodation
       'accommodation.contact_name': accommProvider?.contactPerson || '',
@@ -236,15 +241,26 @@ export function documentScripts(prisma: PrismaClient) {
   }
 
   function renderTemplate(htmlTemplate: string, tokens: Record<string, string>): string {
-    return htmlTemplate.replace(/\{\{([^}]+)\}\}/g, (match, key) => {
+    let html = htmlTemplate;
+    // 1. Resolve Fidelo-style {if token}...{/if} blocks. Render the inner content if
+    //    the token has a truthy value, otherwise drop the entire block.
+    //    Tries the bare key first, then booking.* and student.* prefixes — covers both
+    //    legacy Fidelo placeholders ({if ilep_course_code}) and SIS dotted forms.
+    html = html.replace(/\{if\s+([a-z0-9_.]+)\}([\s\S]*?)\{\/if\}/gi, (_m, key, content) => {
+      const k = key.trim();
+      const v = tokens[k] || tokens['booking.' + k] || tokens['student.' + k] || '';
+      return v ? content : '';
+    });
+    // 2. Resolve {{token.name}} (SIS dotted) — empty string if missing.
+    html = html.replace(/\{\{([^}]+)\}\}/g, (match, key) => {
       const trimmed = key.trim();
       // Keep custom.* and document.* placeholders (resolved later or editable)
       if (trimmed.startsWith('custom.') || trimmed.startsWith('document.')) {
         return tokens[trimmed] !== undefined ? tokens[trimmed] : match;
       }
-      // For all other tokens: output value if set, empty string if missing/empty
       return tokens[trimmed] || '';
     });
+    return html;
   }
 
   // ── DOCUMENT RECORDS ──────────────────────

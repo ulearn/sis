@@ -5,6 +5,13 @@ const axios = require('axios');
 const fs = require('fs').promises;
 const path = require('path');
 
+// Module-level coordination to prevent the refresh-storm that got us
+// rate-limited by Zoho's OAuth endpoint on 2026-04-20. A single in-flight
+// refresh is shared across all concurrent callers and across all
+// ZohoPeopleAPI instances within this process.
+let refreshInFlight = null;
+let refreshCooldownUntil = 0; // timestamp; don't attempt refresh before this
+
 class ZohoPeopleAPI {
     constructor() {
         this.clientId = process.env.ZOHO_CLIENT_ID;
@@ -15,6 +22,7 @@ class ZohoPeopleAPI {
         this.baseUrl = 'https://people.zoho.eu/api'; // EU data center
         this.accessToken = null;
         this.refreshToken = null;
+        this.expiresAt = 0; // ms epoch; 0 == unknown/expired
     }
 
     /**
@@ -33,11 +41,40 @@ class ZohoPeopleAPI {
 
             this.accessToken = tokens.access_token;
             this.refreshToken = tokens.refresh_token;
+            this.expiresAt = tokens.expires_at ? Number(tokens.expires_at) : 0;
             return true;
         } catch (error) {
             console.log('No tokens found, need to authenticate');
             return false;
         }
+    }
+
+    /**
+     * Ensure we hold a non-expired access token before making a request.
+     * Refreshes pre-emptively with a 60s safety buffer. Shared across
+     * all concurrent callers via a module-level in-flight promise.
+     * Returns true if we have (or obtained) a usable access token.
+     */
+    async ensureValidToken() {
+        if (!this.accessToken || !this.refreshToken) {
+            const loaded = await this.loadTokens();
+            if (!loaded) return false;
+        }
+        // Valid with a 60s safety margin? Use as-is.
+        if (this.expiresAt && Date.now() < this.expiresAt - 60_000) {
+            return true;
+        }
+        // Respect cooldown after a rate-limit smack
+        if (Date.now() < refreshCooldownUntil) {
+            const waitMs = refreshCooldownUntil - Date.now();
+            console.warn(`[zoho] refresh cooldown active — ${Math.ceil(waitMs/1000)}s remaining. Skipping refresh.`);
+            return !!this.accessToken; // attempt with whatever we have; caller may get a 401
+        }
+        // Coalesce concurrent refreshes
+        if (!refreshInFlight) {
+            refreshInFlight = this.refreshAccessToken().finally(() => { refreshInFlight = null; });
+        }
+        return await refreshInFlight;
     }
 
     /**
@@ -99,11 +136,16 @@ class ZohoPeopleAPI {
     }
 
     /**
-     * Refresh access token using refresh token
+     * Refresh access token using refresh token.
+     * Concurrent callers should go through ensureValidToken() which dedupes.
+     * On rate-limit, sets a module-level cooldown so we stop hammering.
      */
     async refreshAccessToken() {
         if (!this.refreshToken) {
             console.error('No refresh token available');
+            return false;
+        }
+        if (Date.now() < refreshCooldownUntil) {
             return false;
         }
 
@@ -118,19 +160,30 @@ class ZohoPeopleAPI {
             });
 
             this.accessToken = response.data.access_token;
+            const ttlSeconds = Number(response.data.expires_in) || 3600;
+            this.expiresAt = Date.now() + ttlSeconds * 1000;
 
-            // Only save if we have valid tokens
             if (this.accessToken && this.refreshToken) {
                 await fs.writeFile(this.tokenFile, JSON.stringify({
                     access_token: this.accessToken,
                     refresh_token: this.refreshToken,
+                    expires_at: this.expiresAt,
                     updated_at: new Date().toISOString()
                 }, null, 2));
             }
 
             return true;
         } catch (error) {
-            console.error('Error refreshing token:', error.response?.data || error.message);
+            const data = error.response?.data;
+            const msg = (data?.error_description || data?.error || '').toLowerCase();
+            // Zoho's refresh rate-limit response: back off for 10 min. This breaks
+            // any runaway retry loop that caused the rate-limit in the first place.
+            if (msg.includes('too many requests') || data?.error === 'Access Denied') {
+                refreshCooldownUntil = Date.now() + 10 * 60 * 1000;
+                console.error('[zoho] refresh rate-limited — cooldown set for 10 min');
+            } else {
+                console.error('Error refreshing token:', data || error.message);
+            }
             return false;
         }
     }

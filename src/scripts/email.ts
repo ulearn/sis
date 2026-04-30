@@ -10,6 +10,7 @@ const ALLOWED_SENDERS = [
   'sales@ulearnschool.com',
   'accounts@ulearnschool.com',
   'partners@ulearnschool.com',
+  'success@ulearnschool.com',
 ];
 
 function getAuth(impersonateEmail: string): JWT {

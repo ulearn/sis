@@ -61,7 +61,7 @@ export function payrollScripts(prisma: PrismaClient) {
       },
       include: {
         class_: {
-          select: { id: true, name: true, level: true, session: true, startTime: true, endTime: true, breakMinutes: true },
+          select: { id: true, name: true, level: true, session: true, startTime: true, endTime: true, breakMinutes: true, isPrivate: true },
         },
         teacherAssignments: {
           include: {
@@ -82,6 +82,13 @@ export function payrollScripts(prisma: PrismaClient) {
       },
     });
 
+    // Payroll does not consult absence/leave tables. The schedule is the single
+    // source of truth: if the teacher is in the schedule (assignment, cover, or
+    // default), they're paid. If they were absent, the schedule needs to show
+    // it (cover added, assignment removed, etc.) — surface the discrepancy in
+    // the schedule view so it can be audited and fixed at source. Silent
+    // suppression here would just hide the problem.
+
     // Get covers
     const covers = await prisma.teacherCover.findMany({
       where: { date: { gte: fromDate, lte: toDate } },
@@ -89,6 +96,12 @@ export function payrollScripts(prisma: PrismaClient) {
         coverTeacher: { select: { id: true, firstName: true, lastName: true, email: true, hourlyRate: true, isSalaried: true } },
       },
     });
+
+    // Closures aren't read here — scheduling refuses to materialise occurrences
+    // inside an unpaid closure (and removeOccurrencesInClosure deletes any that
+    // slipped through when a closure was added later). Paid bank holidays keep
+    // their occurrences so the default teacher gets paid normally — that's just
+    // a regular occurrence to payroll. One source of truth: scheduling.
 
     // Get student counts per class (for the period)
     const assignments = await prisma.studentClassAssignment.findMany({
@@ -110,6 +123,11 @@ export function payrollScripts(prisma: PrismaClient) {
       weekFrom: Date; weekTo: Date; weekLabel: string;
       hours: number; studentCount: number; hourlyRate: number;
     }> = {};
+
+    // Normalize "09:00" and "09:00:00" to the same form so cover/class time
+    // comparisons (used to decide whether to deduct the class break) don't
+    // silently fail just because of trailing-seconds differences.
+    const normTime = (t: string) => (t || '').split(':').slice(0, 2).join(':');
 
     for (const occ of occurrences) {
       const cls = occ.class_;
@@ -143,7 +161,11 @@ export function payrollScripts(prisma: PrismaClient) {
         }];
       }
 
-      // Fallback to default class teacher
+      // Fallback to default class teacher. If the schedule says they're the
+      // default and there's no specific assignment or cover, they get paid —
+      // no extra rules. Absence/leave handling, private-class booking gating,
+      // and any other "should this teacher be on the schedule today" logic
+      // lives in scheduling, not here.
       if (teachers.length === 0) {
         const ct = classTeachers.find(ct =>
           ct.classId === cls.id &&
@@ -162,12 +184,16 @@ export function payrollScripts(prisma: PrismaClient) {
       for (const teacher of teachers) {
         if ((teacher as any).isSalaried) continue; // salaried staff don't generate payroll hours
 
-        // Only subtract the class break if the teacher's session spans the whole class
-        // (i.e. teacher times == class times). Covers/partial assignments with custom
-        // times are assumed to already exclude breaks.
-        const useBreak = teacher.startTime === cls.startTime && teacher.endTime === cls.endTime
-          ? (cls as any).breakMinutes || 0
-          : 0;
+        // Private/1-to-1 classes are paid exactly as booked — no break ever subtracted.
+        // For group classes, only subtract the class break when the teacher's session
+        // spans the whole class (i.e. teacher times == class times). Covers/partial
+        // assignments with custom times are assumed to already exclude breaks.
+        // Use normalized times — class.start_time is stored as "09:00" but cover.start_time
+        // as "09:00:00", and the raw === would always fail for full-class covers.
+        const isPrivate = (cls as any).isPrivate === true;
+        const fullSessionMatch = normTime(teacher.startTime) === normTime(cls.startTime)
+                              && normTime(teacher.endTime)   === normTime(cls.endTime);
+        const useBreak = (!isPrivate && fullSessionMatch) ? ((cls as any).breakMinutes || 0) : 0;
         const hours = hoursFromTimes(teacher.startTime, teacher.endTime, useBreak);
         const key = `${teacher.id}-${cls.id}-${monday.toISOString().split('T')[0]}`;
         const name = `${teacher.lastName}, ${teacher.firstName}`;
@@ -196,15 +222,47 @@ export function payrollScripts(prisma: PrismaClient) {
 
   /**
    * Refresh payroll entries for a date range — recalculate from scheduling data and upsert.
+   * Stale entries (those that no longer match the current schedule, e.g. because a cover
+   * was added or a class was deactivated) are deleted so the dashboard stays in sync.
+   * Manual fields on surviving rows (managerChecked, weeklyPay, hoursIncludedThisMonth,
+   * leaveTaken, sickDays, ppsNumber) are preserved across upsert.
    */
   async function refreshPayroll(from: string, to: string) {
-    // Safety net: make sure occurrences exist for the range before calculating
+    // Make sure occurrences exist for the range before calculating. Scheduling
+    // owns the rules (closures, private-class enrolment, day-of-week pattern) —
+    // we just trigger materialisation and consume whatever it produces.
     try {
       const { schedulingScripts } = await import('./scheduling');
       await schedulingScripts(prisma).generateOccurrences(new Date(from), new Date(to));
-    } catch (e) { console.error('generateOccurrences (pre-refresh) failed:', e); }
+    } catch (e) { console.error('refresh prep failed:', e); }
 
     const calculated = await calculateWeeklyHours(from, to);
+
+    // Delete entries that overlap the refreshed range and are no longer produced by
+    // the fresh calculation. Use *overlap* semantics (weekFrom <= to AND weekTo >= from)
+    // so straddling weeks at the period boundaries (e.g. WK 13 starts before the period,
+    // WK 18 ends after it) are checked too — otherwise old rows from a prior schedule
+    // sit forever and inflate the dashboard.
+    const expectedKeys = new Set(
+      calculated.map(e => `${e.teacherId}-${e.classId}-${e.weekFrom.toISOString().split('T')[0]}`)
+    );
+    const existing = await prisma.teacherPayrollEntry.findMany({
+      where: {
+        weekFrom: { lte: new Date(to) },
+        weekTo:   { gte: new Date(from) },
+      },
+      select: { compositeKey: true },
+    });
+    const stale = existing
+      .map(e => e.compositeKey)
+      .filter(k => !expectedKeys.has(k));
+    let removed = 0;
+    if (stale.length) {
+      const r = await prisma.teacherPayrollEntry.deleteMany({
+        where: { compositeKey: { in: stale } },
+      });
+      removed = r.count;
+    }
 
     let upserted = 0;
     for (const entry of calculated) {
@@ -241,7 +299,10 @@ export function payrollScripts(prisma: PrismaClient) {
       upserted++;
     }
 
-    return { upserted, message: `Refreshed ${upserted} payroll entries` };
+    return {
+      upserted, removed,
+      message: `Refreshed ${upserted} entries${removed ? ` (${removed} stale removed)` : ''}`,
+    };
   }
 
   /**
@@ -344,16 +405,47 @@ export function payrollScripts(prisma: PrismaClient) {
     });
   }
 
-  // Authorization
+  // ── LOCK / AUTHORIZATION ──────────────────────
+  // A period is currently LOCKED iff the latest payroll_authorizations row
+  // for (period, year) has unlockedAt = null. Each authorize inserts a new
+  // row; each unlock stamps the latest row's unlockedAt. No overwrites —
+  // full audit trail preserved.
+
+  async function getLatestAuthorization(period: number, year: number) {
+    return prisma.payrollAuthorization.findFirst({
+      where: { period, year },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async function isPeriodLocked(period: number, year: number): Promise<boolean> {
+    const latest = await getLatestAuthorization(period, year);
+    return !!latest && latest.unlockedAt == null;
+  }
+
   async function authorizePayroll(period: number, year: number, authorizedBy: string) {
+    if (await isPeriodLocked(period, year)) {
+      throw Object.assign(new Error('Period already authorized — unlock first'), { code: 'PERIOD_LOCKED' });
+    }
     const monthly = await getMonthlyData(period, year);
     const totalHours = monthly.teachers.reduce((s, t) => s + t.totalHours, 0);
     const totalPay = monthly.teachers.reduce((s, t) => s + t.totalPay + t.other + t.impactBonus, 0);
+    return prisma.payrollAuthorization.create({
+      data: {
+        period, year, month: monthly.period.month, authorizedBy,
+        totalHours, totalPay, snapshotJson: JSON.stringify(monthly),
+      },
+    });
+  }
 
-    return prisma.payrollAuthorization.upsert({
-      where: { period_year: { period, year } },
-      update: { authorizedBy, totalHours, totalPay, snapshotJson: JSON.stringify(monthly) },
-      create: { period, year, month: monthly.period.month, authorizedBy, totalHours, totalPay, snapshotJson: JSON.stringify(monthly) },
+  async function unlockPayroll(period: number, year: number, unlockedBy: string) {
+    const latest = await getLatestAuthorization(period, year);
+    if (!latest || latest.unlockedAt != null) {
+      throw Object.assign(new Error('Period is not currently authorized'), { code: 'PERIOD_NOT_LOCKED' });
+    }
+    return prisma.payrollAuthorization.update({
+      where: { id: latest.id },
+      data: { unlockedAt: new Date(), unlockedBy },
     });
   }
 
@@ -361,6 +453,7 @@ export function payrollScripts(prisma: PrismaClient) {
     calculateWeeklyHours, refreshPayroll,
     getWeeklyData, getMonthlyData,
     listPeriods, getCurrentPeriod,
-    saveAdjustment, authorizePayroll,
+    saveAdjustment,
+    authorizePayroll, unlockPayroll, isPeriodLocked, getLatestAuthorization,
   };
 }

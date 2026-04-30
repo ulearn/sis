@@ -8,7 +8,7 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script type="text/babel" src="/sis/public/payroll-month.js"></script>
+    <script type="text/babel" src="/sis/public/payroll-month.js?v=20260429e"></script>
     <style>
         * {
             margin: 0;
@@ -277,6 +277,35 @@
         .week-card.manager-checked {
             border-color: #8e44ad;
             background: #e8daef;
+        }
+
+        /* Forward-looking weeks (unearned/provisional) — overrides colour of any other status */
+        .week-card.future {
+            border-color: #c8cdd3 !important;
+            background: #f1f3f5 !important;
+            color: #94a3b8;
+            opacity: 0.75;
+            position: relative;
+        }
+        .week-card.future .week-title,
+        .week-card.future .week-hours,
+        .week-card.future .week-meta-value,
+        .week-card.future .week-reason {
+            color: #94a3b8 !important;
+        }
+        .week-card.future::after {
+            content: 'Provisional — not yet worked';
+            display: block;
+            margin-top: 6px;
+            padding: 3px 8px;
+            background: rgba(100, 116, 139, 0.15);
+            color: #64748b;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            text-align: center;
         }
 
         .week-title {
@@ -1162,10 +1191,21 @@
                                                 weekClass = 'manager-checked';
                                             }
 
+                                            // Detect forward-looking weeks (weekStart > today).
+                                            // Applies a "future" visual treatment on top of the status class —
+                                            // these hours are provisional (unearned), surfaced for planning only.
+                                            let isFuture = false;
+                                            const wkMatch = week.match(/(\d{2})\/(\d{2})\/(\d{4})\s*–\s*(\d{2})\/(\d{2})\/(\d{4})/);
+                                            if (wkMatch) {
+                                                const wkStart = new Date(`${wkMatch[3]}-${wkMatch[2]}-${wkMatch[1]}T00:00:00`);
+                                                const today = new Date(); today.setHours(0,0,0,0);
+                                                isFuture = wkStart > today;
+                                            }
+
                                             return (
                                                 <div
                                                     key={week}
-                                                    className={`week-card ${weekClass}`}
+                                                    className={`week-card ${weekClass}${isFuture ? ' future' : ''}`}
                                                 >
                                                     <div className="week-title">
                                                         {formatWeekDisplay(week)}

@@ -1,0 +1,18 @@
+[
+  { "code": "0318/0002", "title": "Academic Year Afternoon A2",       "session": "PM",  "entryLevel": "A1", "exitLevel": "A2", "award": "TIE",            "awardingBody": "ACELS" },
+  { "code": "0318/0003", "title": "Academic Year Afternoon B1",       "session": "PM",  "entryLevel": "A2", "exitLevel": "B1", "award": "PET",            "awardingBody": "CELA"  },
+  { "code": "0318/0004", "title": "Academic Year Afternoon B2",       "session": "PM",  "entryLevel": "B1", "exitLevel": "B2", "award": "FCE",            "awardingBody": "CELA"  },
+  { "code": "0318/0005", "title": "Academic Year Afternoon B2 IELTS", "session": "PM",  "entryLevel": "B1", "exitLevel": "B2", "award": "IELTS Academic", "awardingBody": "CELA"  },
+  { "code": "0318/0006", "title": "Academic Year Afternoon C1",       "session": "PM",  "entryLevel": "B2", "exitLevel": "C1", "award": "CAE",            "awardingBody": "CELA"  },
+  { "code": "0318/0007", "title": "Academic Year Afternoon C1 IELTS", "session": "PM",  "entryLevel": "B2", "exitLevel": "C1", "award": "IELTS Academic", "awardingBody": "CELA"  },
+  { "code": "0318/0009", "title": "Academic Year Morning A2",         "session": "AM",  "entryLevel": "A1", "exitLevel": "A2", "award": "TIE",            "awardingBody": "ACELS" },
+  { "code": "0318/0010", "title": "Academic Year Morning B1",         "session": "AM",  "entryLevel": "A2", "exitLevel": "B1", "award": "PET",            "awardingBody": "CELA"  },
+  { "code": "0318/0011", "title": "Academic Year Morning B2",         "session": "AM",  "entryLevel": "B1", "exitLevel": "B2", "award": "FCE",            "awardingBody": "CELA"  },
+  { "code": "0318/0012", "title": "Academic Year Morning B2 IELTS",   "session": "AM",  "entryLevel": "B1", "exitLevel": "B2", "award": "IELTS Academic", "awardingBody": "CELA"  },
+  { "code": "0318/0013", "title": "Academic Year Morning C1",         "session": "AM",  "entryLevel": "B2", "exitLevel": "C1", "award": "CAE",            "awardingBody": "CELA"  },
+  { "code": "0318/0014", "title": "Academic Year Morning C1 IELTS",   "session": "AM",  "entryLevel": "B2", "exitLevel": "C1", "award": "IELTS Academic", "awardingBody": "CELA"  },
+  { "code": "0318/0018", "title": "IELTS Premium",                    "session": null,  "entryLevel": "B1", "exitLevel": "B2", "award": "IELTS Premium",  "awardingBody": "IELTS" },
+  { "code": "0318/0019", "title": "IELTS Standard",                   "session": null,  "entryLevel": "B1", "exitLevel": "B2", "award": "IELTS Standard", "awardingBody": "IELTS" },
+  { "code": "0318/0020", "title": "Academic Year A2 AM",              "session": "AM",  "entryLevel": "A1", "exitLevel": "A2", "award": "KEY",            "awardingBody": "Cambridge English Language Assessment" },
+  { "code": "0318/0021", "title": "Academic Year A2 PM",              "session": "PM",  "entryLevel": "A1", "exitLevel": "A2", "award": "KEY",            "awardingBody": "Cambridge English Language Assessment" }
+]

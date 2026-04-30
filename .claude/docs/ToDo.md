@@ -1,3 +1,82 @@
+# 18.04.2026
+● Here's the regroup.                                                                                        
+                                                                 
+  Built last night (scaffold only, not wired to data):
+  - Overview / Challenges / Learning tabs on the student profile in admin.html                               
+  - Mobile student portal prototype at /sis/student (Carlos)                                                 
+                                                                                                             
+  Pending from the existing task list:                                                                       
+  - #10 — B2B quote template in HubSpot with "Commission" label (cosmetic, HubSpot-side)                     
+                                                                                                             
+  Not yet on the task list but logically next (from bd5.md plan, in dependency order):                       
+                                                                                                             
+  1. Student auth + permissions — real student login, record-level access control. Prerequisite for          
+  everything else.                                                                                           
+  2. Challenge engine data model — challenge_campaign, challenge_task, challenge_task_submission,            
+  challenge_task_review. Turns the scaffolded Challenges tab into a real campaign runner.                    
+  3. Events module — powers the "activity attended" checkbox. Needed before challenge v1 is complete.
+  4. Learning onboarding automation — auto-assign delta vs full placement on student creation based on quiz  
+  score.                                                                                                     
+                                                                                                             
+  Which do you want to tackle? My suggestion is (1) student auth first — without it nothing else matters —   
+  but if you want a visible win in the admin UI (i.e. staff-facing, no student login needed yet), we could do
+   (2) the challenge engine data model + wire the Challenges tab so Kelly can start logging real             
+  approvals/rejections.
+
+#   Student App: Book Next Course flow                                                                         
+                                                                                                             
+  - Student app currently has no financial section & no re-enrollment path — add one                         
+  - Especially relevant for rolling attendance (book next week / next month / next course without leaving the
+   app)                                                                                                      
+                                                                                                             
+  Reuse the partner portal enrollment flow for students                                                      
+                  
+  - Lift existing "+ New Enrollment" UX from partner portal into student app                                 
+  - Adapt for B2C: deal goes to B2C pipeline in HubSpot (not B2B), no agent attached, arrives in Contract
+  stage                                                                                                      
+                  
+  V1 flow (sales-rep-gated, deliberately manual)                                                             
+                  
+  - Student submits → deal created in B2C pipeline                                                           
+  - Sales Rep reviews → clicks Auto Quote → quote created in HubSpot
+  - Quote surfaces back in the app for the student to Accept                                                 
+  - Invoice generated → student pays in-app
+  - Same mechanism works for both partner portal and student app                                             
+                  
+  Why manual in v1 (don't automate yet)                                                                      
+                  
+  - The B2C pipeline is new and un-road-tested                                                               
+  - Auto-generated quotes without a human gate would be costly if miscalculated
+  - Road-test the manual cycle end-to-end first; automate later                                              
+                                                                                                             
+  V2 idea: client-side draft-quote (for later)                                                               
+                                                                                                             
+  - We already have the pricing JSON catalogue (aligned to HubSpot) in the codebase                          
+  - Could pre-render a draft quote inside the app/portal before ever touching HubSpot
+  - Student adjusts, hits send, THEN it goes through the manual gate                                         
+  - Reduces latency + staff friction                                                                         
+  - Only explore this once v1 is stable                                                                      
+                                                                                                             
+  Partner portal note                                                                                        
+                                                                                                             
+  - Extension bookings for partners are rare (~5%) — most agents aren't physically in Dublin with the student
+  - So full B2B quote/invoice rigmarole stays appropriate for partner portal
+  - The shared mechanism works cleanly for both audiences regardless                                         
+                                                                                                             
+# Create User Account invitations 
+For all Active Partners create 
+User:
+Password:
+Assign to an email:
+
+Add temporarily to HubSpot - then create email with personalizationTokens for the login info.
+
+
+
+## ######################################################################## ##
+
+
+
 # SIS — To Do / Future Items
 ## Font
 - Get rid of that horrible font which is outputting zero that looks like an 8 - super confusing 
@@ -7,6 +86,7 @@
 
 
 ## ACCOMM
+
 SEE: /home/sis/web/sis.ulearnschool.com/public_html/sis/.claude/docs/accomm/HostTasks.md
 
 - Repalce the Google Sheet for Accomm 
@@ -275,3 +355,29 @@ This is the clearly defined protocol for when a student enters SIS and Xero:
 - Same drag & drop engine, same timeline grid
 - Staff can filter to just Hosts or just Apartments if needed, but default shows everything
 - NOT a channel management system — keep it simple, just two types for now
+
+---
+
+## Refactor: break up `public/admin.html` (7,731 lines) into smaller files
+
+**Why:** single-file admin is harder to navigate, slower to read/edit, prone to merge conflicts, and forces the whole bundle to load on every request. Splitting reduces friction without forcing a build step.
+
+**Phased plan (low → high risk):**
+
+1. **CSS extract** — lift the ~600 lines of `<style>` into `public/admin.css`, link via `<link rel="stylesheet" href="/sis/admin.css">`. Zero behavior risk. Big readability win.
+2. **JS extract (single file first)** — move the entire `<script>` block to `public/admin.js`, link via `<script src="/sis/admin.js"></script>`. All inline `onclick="foo()"` handlers continue to work because functions stay globally scoped under classic script loading. Verify nothing breaks before going further.
+3. **Per-view JS split** — once #2 is stable, peel off domain views into their own files:
+   - `admin-students.js` (showStudentsList, openNewStudentModal, etc.)
+   - `admin-bookings.js`
+   - `admin-classes.js` (incl. closures + leave deductions)
+   - `admin-teachers.js`
+   - `admin-accommodation.js` (Hosts/Apartments/Matching)
+   - `admin-payroll.js`
+   - `admin-documents.js`
+   - `admin-core.js` (api, esc, formatDate, toast, navigate, openTab, sidebar wiring)
+   - Load order matters: core first, then views. Keep classic scripts (no module migration) to preserve global function exposure.
+
+**Out of scope for now:** moving to ES modules, adding a bundler (esbuild/vite), or migrating inline handlers to `addEventListener`. Those are useful later but not the bottleneck today.
+
+**Risk:** medium during phase 3 — view code touches shared globals, easy to miss a dependency. Start with low-traffic views (e.g. Documents) before touching Students/Classes.
+

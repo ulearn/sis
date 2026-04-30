@@ -4,6 +4,11 @@ require('dotenv').config();
 const ZohoPeopleAPI = require('./zoho-people-api');
 const axios = require('axios');
 
+// Module-level shared cache so concurrent requests across the process don't
+// each hit Zoho. Keyed by employeeId; entries hold raw records + balance.
+const _leaveCache = new Map(); // employeeId → { records, balance, ts }
+const _leaveCacheTTL = 60 * 60 * 1000; // 60 min — same as employee cache
+
 class ZohoLeaveSync {
     constructor(options = {}) {
         this.zohoAPI = new ZohoPeopleAPI();
@@ -13,6 +18,228 @@ class ZohoLeaveSync {
         this.cacheTimestamp = null;
         this.cacheTTL = 60 * 60 * 1000; // 60 minutes
         this.forceRefresh = options.forceRefresh || false;
+    }
+
+    // Pure helper: convert "01-Apr-2026" → "2026-04-01"
+    _parseZohoDate(dateStr) {
+        const parts = dateStr.split('-');
+        const months = {
+            'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
+            'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
+            'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+        };
+        return `${parts[2]}-${months[parts[1]]}-${parts[0]}`;
+    }
+
+    /**
+     * Fetch (and cache) all approved leave records + current balance for one employee.
+     * This is the single network entry point for leave data — every caller goes through here.
+     * Cache TTL prevents repeated calls within a 60-min window across the whole process.
+     */
+    async _loadEmployeeLeave(employeeId) {
+        const cached = _leaveCache.get(employeeId);
+        if (!this.forceRefresh && cached && (Date.now() - cached.ts < _leaveCacheTTL)) {
+            return cached;
+        }
+
+        // Use the coordinated token gate — never call loadTokens() directly.
+        const ok = await this.zohoAPI.ensureValidToken();
+        if (!ok) return { records: [], balance: 0, ts: Date.now() };
+
+        const baseUrl = this.zohoAPI.baseUrl.replace('/api', '/people/api');
+        const headers = { 'Authorization': `Zoho-oauthtoken ${this.zohoAPI.accessToken}` };
+
+        let records = [];
+        try {
+            const response = await axios.get(`${baseUrl}/forms/leave/getRecords`, {
+                params: { sEmpID: employeeId },
+                headers,
+            });
+            const raw = response.data?.response?.result || [];
+            for (const record of raw) {
+                const recordId = Object.keys(record)[0];
+                const leaveData = record[recordId][0];
+                const empId = leaveData.Employee_ID ? leaveData.Employee_ID.split(' ').pop() : null;
+                if (empId !== employeeId.toString() || leaveData.ApprovalStatus !== 'Approved') continue;
+                if (!leaveData.From) continue;
+                records.push({
+                    fromIso: this._parseZohoDate(leaveData.From),
+                    toIso: leaveData.To ? this._parseZohoDate(leaveData.To) : this._parseZohoDate(leaveData.From),
+                    type: leaveData.Leavetype,
+                    daysTaken: parseFloat(leaveData.Daystaken || 0),
+                });
+            }
+        } catch (error) {
+            if (error.response?.status === 401) {
+                // Coordinated refresh — ensureValidToken handles in-flight dedup.
+                await this.zohoAPI.ensureValidToken();
+                // One retry only — don't loop.
+                try {
+                    const retry = await axios.get(`${baseUrl}/forms/leave/getRecords`, {
+                        params: { sEmpID: employeeId },
+                        headers: { 'Authorization': `Zoho-oauthtoken ${this.zohoAPI.accessToken}` },
+                    });
+                    const raw = retry.data?.response?.result || [];
+                    for (const record of raw) {
+                        const recordId = Object.keys(record)[0];
+                        const leaveData = record[recordId][0];
+                        const empId = leaveData.Employee_ID ? leaveData.Employee_ID.split(' ').pop() : null;
+                        if (empId !== employeeId.toString() || leaveData.ApprovalStatus !== 'Approved') continue;
+                        if (!leaveData.From) continue;
+                        records.push({
+                            fromIso: this._parseZohoDate(leaveData.From),
+                            toIso: leaveData.To ? this._parseZohoDate(leaveData.To) : this._parseZohoDate(leaveData.From),
+                            type: leaveData.Leavetype,
+                            daysTaken: parseFloat(leaveData.Daystaken || 0),
+                        });
+                    }
+                } catch (e) {
+                    console.error(`[zoho-leave] retry failed for ${employeeId}:`, e.response?.data || e.message);
+                }
+            } else {
+                console.error(`[zoho-leave] fetch failed for ${employeeId}:`, error.response?.data || error.message);
+            }
+        }
+
+        let balance = 0;
+        try {
+            const balResp = await axios.get(`${baseUrl}/leave/getLeaveTypeDetails`, {
+                params: { userId: employeeId },
+                headers,
+            });
+            const leaveTypes = balResp.data?.response?.result || [];
+            const hourly = leaveTypes.find(lt => lt.Name === 'Hourly Leave');
+            if (hourly) balance = parseFloat(hourly.BalanceCount || 0);
+        } catch (e) {
+            // Balance is non-critical — log and continue.
+            console.log(`[zoho-leave] balance unavailable for ${employeeId}:`, e.message);
+        }
+
+        const entry = { records, balance, ts: Date.now() };
+        _leaveCache.set(employeeId, entry);
+        return entry;
+    }
+
+    /**
+     * In-memory summary of cached leave records for an arbitrary date range.
+     * Used by the various dashboard views — no network calls.
+     */
+    _summarizeForRange(records, balance, dateFrom, dateTo) {
+        // Pro-rate a multi-day Zoho leave block to the days that fall inside the period.
+        //
+        // The naive uniform split (daysTaken × overlap/total) breaks when the daily
+        // distribution isn't even — typical Zoho 'Hourly Leave' is full days at the
+        // start and a partial day at the end, e.g. 6+6+6+6+3 = 27. Uniform pro-rate
+        // over-allocates the partial day's shortness across all overlapping days.
+        // Instead, front-load full TYPICAL_DAY_HOURS days from the start of the leave,
+        // letting any leftover land on the trailing day.
+        // For genuinely uniform partial leave (rare here), fall back to uniform when
+        // the average per day is well below a full day.
+        const TYPICAL_DAY_HOURS = 6;
+        const allocate = (r, periodStart, periodEnd) => {
+            const leaveStart = new Date(r.fromIso);
+            const leaveEnd = new Date(r.toIso);
+            const totalDays = Math.floor((leaveEnd - leaveStart) / 86400000) + 1;
+            const avgPerDay = r.daysTaken / totalDays;
+            // Heuristic: if avg is close to a full day, assume full-day-then-partial
+            // pattern; otherwise treat as uniformly partial.
+            if (avgPerDay >= TYPICAL_DAY_HOURS * 0.5) {
+                let remaining = r.daysTaken;
+                let allocated = 0;
+                for (let i = 0; i < totalDays && remaining > 0; i++) {
+                    const d = new Date(leaveStart);
+                    d.setDate(d.getDate() + i);
+                    const dayHours = Math.min(TYPICAL_DAY_HOURS, remaining);
+                    if (d >= periodStart && d <= periodEnd) allocated += dayHours;
+                    remaining -= dayHours;
+                }
+                return allocated;
+            }
+            // Uniform fallback (each day was a small slice of the same size).
+            const overlapStart = leaveStart > periodStart ? leaveStart : periodStart;
+            const overlapEnd = leaveEnd < periodEnd ? leaveEnd : periodEnd;
+            const daysInOverlap = Math.floor((overlapEnd - overlapStart) / 86400000) + 1;
+            return avgPerDay * daysInOverlap;
+        };
+
+        let totalHourlyLeave = 0;
+        let totalSickLeave = 0;
+        const periodStart = new Date(dateFrom);
+        const periodEnd = new Date(dateTo);
+        for (const r of records) {
+            if (r.fromIso > dateTo || r.toIso < dateFrom) continue;
+            const allocated = allocate(r, periodStart, periodEnd);
+            if (r.type === 'Hourly Leave') totalHourlyLeave += allocated;
+            else if (r.type === this.sickLeaveTypeName) totalSickLeave += allocated;
+        }
+        return { leaveTaken: totalHourlyLeave, sickLeaveTaken: totalSickLeave, leaveBalance: balance };
+    }
+
+    /**
+     * Per-day leave breakdown for a single employee in [dateFrom, dateTo].
+     * Returns { 'YYYY-MM-DD': { hours, type } }. Front-loads typical full days
+     * for multi-day blocks (matches _summarizeForRange semantics).
+     */
+    async getDailyLeaveBreakdown(employeeId, dateFrom, dateTo) {
+        const { records } = await this._loadEmployeeLeave(employeeId);
+        const TYPICAL_DAY_HOURS = 6;
+        const result = {};
+        const periodStart = new Date(dateFrom);
+        const periodEnd = new Date(dateTo);
+        for (const r of records) {
+            if (r.fromIso > dateTo || r.toIso < dateFrom) continue;
+            const leaveStart = new Date(r.fromIso);
+            const leaveEnd = new Date(r.toIso);
+            const totalDays = Math.floor((leaveEnd - leaveStart) / 86400000) + 1;
+            const avgPerDay = r.daysTaken / totalDays;
+            if (avgPerDay >= TYPICAL_DAY_HOURS * 0.5) {
+                let remaining = r.daysTaken;
+                for (let i = 0; i < totalDays && remaining > 0; i++) {
+                    const d = new Date(leaveStart);
+                    d.setDate(d.getDate() + i);
+                    const dayHours = Math.min(TYPICAL_DAY_HOURS, remaining);
+                    if (d >= periodStart && d <= periodEnd) {
+                        const key = d.toISOString().slice(0,10);
+                        if (!result[key]) result[key] = { hours: 0, type: r.type };
+                        result[key].hours += dayHours;
+                    }
+                    remaining -= dayHours;
+                }
+            } else {
+                for (let i = 0; i < totalDays; i++) {
+                    const d = new Date(leaveStart);
+                    d.setDate(d.getDate() + i);
+                    if (d >= periodStart && d <= periodEnd) {
+                        const key = d.toISOString().slice(0,10);
+                        if (!result[key]) result[key] = { hours: 0, type: r.type };
+                        result[key].hours += avgPerDay;
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Used by the payroll engine: returns a Set of YYYY-MM-DD strings on which the
+     * employee has APPROVED Hourly Leave (or Sick Leave) overlapping [dateFrom, dateTo].
+     * Empty set on missing employee or no leave.
+     */
+    async getLeaveDates(email, dateFrom, dateTo) {
+        const result = new Set();
+        const employee = await this.getEmployeeByEmail(email);
+        if (!employee) return result;
+        const { records } = await this._loadEmployeeLeave(employee.employeeId);
+        for (const r of records) {
+            // Iterate every day in the leave window that intersects the range.
+            const start = r.fromIso > dateFrom ? r.fromIso : dateFrom;
+            const end = r.toIso < dateTo ? r.toIso : dateTo;
+            if (start > end) continue;
+            for (let d = new Date(start); d <= new Date(end); d.setDate(d.getDate() + 1)) {
+                result.add(d.toISOString().split('T')[0]);
+            }
+        }
+        return result;
     }
 
     /**
@@ -73,182 +300,34 @@ class ZohoLeaveSync {
     }
 
     /**
-     * Get leave records for employee within a date range
+     * Get leave records for employee within a date range — cache-backed.
+     * Falls through to _loadEmployeeLeave (one network call per employee per 60min)
+     * and re-summarizes in-memory for any number of distinct ranges.
      */
     async getEmployeeLeaveDataForPeriod(employeeId, dateFrom = null, dateTo = null) {
-        try {
-            await this.zohoAPI.loadTokens();
-
-            const response = await axios.get(`${this.zohoAPI.baseUrl.replace('/api', '/people/api')}/forms/leave/getRecords`, {
-                params: { sEmpID: employeeId },
-                headers: { 'Authorization': `Zoho-oauthtoken ${this.zohoAPI.accessToken}` }
-            });
-
-            const leaveRecords = response.data.response.result || [];
-            let totalHourlyLeaveTaken = 0;
-            let totalSickLeaveTaken = 0;
-
-            const parseZohoDate = (dateStr) => {
-                const parts = dateStr.split('-');
-                const months = {
-                    'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
-                    'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
-                    'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
-                };
-                return `${parts[2]}-${months[parts[1]]}-${parts[0]}`;
-            };
-
-            for (const record of leaveRecords) {
-                const recordId = Object.keys(record)[0];
-                const leaveData = record[recordId][0];
-                const employeeIdFromRecord = leaveData.Employee_ID ?
-                    leaveData.Employee_ID.split(' ').pop() : null;
-
-                if (employeeIdFromRecord === employeeId.toString() &&
-                    leaveData.ApprovalStatus === 'Approved') {
-                    const fromDate = leaveData.From;
-                    const toDate = leaveData.To;
-                    const leaveType = leaveData.Leavetype;
-
-                    if (fromDate) {
-                        const leaveStartISO = parseZohoDate(fromDate);
-                        const leaveEndISO = toDate ? parseZohoDate(toDate) : leaveStartISO;
-
-                        let hasOverlap = true;
-                        if (dateFrom && dateTo) {
-                            hasOverlap = leaveStartISO <= dateTo && leaveEndISO >= dateFrom;
-                        }
-
-                        if (hasOverlap) {
-                            const daysTaken = parseFloat(leaveData.Daystaken || 0);
-                            const periodStart = new Date(dateFrom);
-                            const periodEnd = new Date(dateTo);
-                            const leaveStart = new Date(leaveStartISO);
-                            const leaveEnd = new Date(leaveEndISO);
-
-                            const overlapStart = leaveStart > periodStart ? leaveStart : periodStart;
-                            const overlapEnd = leaveEnd < periodEnd ? leaveEnd : periodEnd;
-                            const daysInOverlap = Math.floor((overlapEnd - overlapStart) / (1000 * 60 * 60 * 24)) + 1;
-                            const totalDaysInLeave = Math.floor((leaveEnd - leaveStart) / (1000 * 60 * 60 * 24)) + 1;
-                            const proratedAmount = (daysInOverlap / totalDaysInLeave) * daysTaken;
-
-                            if (leaveType === 'Hourly Leave') {
-                                totalHourlyLeaveTaken += proratedAmount;
-                            } else if (leaveType === this.sickLeaveTypeName) {
-                                totalSickLeaveTaken += proratedAmount;
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Get current leave balance
-            let leaveBalance = 0;
-            try {
-                const balanceResponse = await axios.get(`${this.zohoAPI.baseUrl.replace('/api', '/people/api')}/leave/getLeaveTypeDetails`, {
-                    params: { userId: employeeId },
-                    headers: { 'Authorization': `Zoho-oauthtoken ${this.zohoAPI.accessToken}` }
-                });
-                if (balanceResponse.data && balanceResponse.data.response) {
-                    const leaveTypes = balanceResponse.data.response.result || [];
-                    const hourlyLeaveType = leaveTypes.find(lt => lt.Name === 'Hourly Leave');
-                    if (hourlyLeaveType) {
-                        leaveBalance = parseFloat(hourlyLeaveType.BalanceCount || 0);
-                    }
-                }
-            } catch (balanceError) {
-                console.log(`Could not fetch balance for employee ${employeeId}:`, balanceError.message);
-            }
-
-            return { leaveTaken: totalHourlyLeaveTaken, sickLeaveTaken: totalSickLeaveTaken, leaveBalance };
-        } catch (error) {
-            if (error.response?.status === 401) {
-                await this.zohoAPI.refreshAccessToken();
-                return await this.getEmployeeLeaveDataForPeriod(employeeId, dateFrom, dateTo);
-            }
-            console.error('Error getting leave data:', error.response?.data || error.message);
-            return { leaveTaken: 0, sickLeaveTaken: 0, leaveBalance: 0 };
+        const { records, balance } = await this._loadEmployeeLeave(employeeId);
+        if (!dateFrom || !dateTo) {
+            // Caller wants all-time totals — sum without date filtering.
+            return this._summarizeForRange(records, balance, '0000-01-01', '9999-12-31');
         }
+        return this._summarizeForRange(records, balance, dateFrom, dateTo);
     }
 
     /**
-     * Get year-to-date leave data for an employee
+     * Get year-to-date leave data for an employee — cache-backed.
      */
     async getEmployeeLeaveData(employeeId) {
-        try {
-            await this.zohoAPI.loadTokens();
-
-            const response = await axios.get(`${this.zohoAPI.baseUrl.replace('/api', '/people/api')}/forms/leave/getRecords`, {
-                params: { sEmpID: employeeId },
-                headers: { 'Authorization': `Zoho-oauthtoken ${this.zohoAPI.accessToken}` }
-            });
-
-            const leaveRecords = response.data.response.result || [];
-            let totalHourlyLeaveTaken = 0;
-            let totalSickDaysTaken = 0;
-            const currentYear = new Date().getFullYear().toString();
-
-            const parseZohoDate = (dateStr) => {
-                const parts = dateStr.split('-');
-                const months = {
-                    'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
-                    'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
-                    'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
-                };
-                return `${parts[2]}-${months[parts[1]]}-${parts[0]}`;
-            };
-
-            for (const record of leaveRecords) {
-                const recordId = Object.keys(record)[0];
-                const leaveData = record[recordId][0];
-                const employeeIdFromRecord = leaveData.Employee_ID ?
-                    leaveData.Employee_ID.split(' ').pop() : null;
-
-                if (employeeIdFromRecord === employeeId.toString() &&
-                    leaveData.ApprovalStatus === 'Approved') {
-                    const fromDate = leaveData.From;
-                    const leaveType = leaveData.Leavetype;
-
-                    if (fromDate && fromDate.includes(currentYear)) {
-                        const amountTaken = parseFloat(leaveData.Daystaken || 0);
-                        if (leaveType === 'Hourly Leave') {
-                            totalHourlyLeaveTaken += amountTaken;
-                        } else if (leaveType === this.sickLeaveTypeName) {
-                            totalSickDaysTaken += amountTaken;
-                        }
-                    }
-                }
-            }
-
-            let leaveBalance = 0;
-            let leaveTakenFromZoho = 0;
-            try {
-                const balanceResponse = await axios.get(`${this.zohoAPI.baseUrl.replace('/api', '/people/api')}/leave/getLeaveTypeDetails`, {
-                    params: { userId: employeeId },
-                    headers: { 'Authorization': `Zoho-oauthtoken ${this.zohoAPI.accessToken}` }
-                });
-                if (balanceResponse.data && balanceResponse.data.response) {
-                    const leaveTypes = balanceResponse.data.response.result || [];
-                    const hourlyLeaveType = leaveTypes.find(lt => lt.Name === 'Hourly Leave');
-                    if (hourlyLeaveType) {
-                        leaveBalance = parseFloat(hourlyLeaveType.BalanceCount || 0);
-                        leaveTakenFromZoho = parseFloat(hourlyLeaveType.AvailedCount || 0);
-                    }
-                }
-            } catch (balanceError) {
-                console.log(`Could not fetch balance for employee ${employeeId}:`, balanceError.message);
-            }
-
-            const finalLeaveTaken = leaveTakenFromZoho > 0 ? leaveTakenFromZoho : totalHourlyLeaveTaken;
-            return { leaveTaken: finalLeaveTaken, sickDaysTaken: totalSickDaysTaken, leaveBalance };
-        } catch (error) {
-            if (error.response?.status === 401) {
-                await this.zohoAPI.refreshAccessToken();
-                return await this.getEmployeeLeaveData(employeeId);
-            }
-            console.error('Error getting leave data:', error.response?.data || error.message);
-            return { leaveTaken: 0, sickDaysTaken: 0, leaveBalance: 0 };
+        const { records, balance } = await this._loadEmployeeLeave(employeeId);
+        const yearStart = `${new Date().getFullYear()}-01-01`;
+        const yearEnd = `${new Date().getFullYear()}-12-31`;
+        let totalHourlyLeaveTaken = 0;
+        let totalSickDaysTaken = 0;
+        for (const r of records) {
+            if (r.fromIso < yearStart || r.fromIso > yearEnd) continue;
+            if (r.type === 'Hourly Leave') totalHourlyLeaveTaken += r.daysTaken;
+            else if (r.type === this.sickLeaveTypeName) totalSickDaysTaken += r.daysTaken;
         }
+        return { leaveTaken: totalHourlyLeaveTaken, sickDaysTaken: totalSickDaysTaken, leaveBalance: balance };
     }
 
     // ── Dashboard methods (called by routes) ─────────────────────────────
@@ -275,52 +354,26 @@ class ZohoLeaveSync {
         const result = {};
         if (!weekLabels || weekLabels.length === 0 || !teachers || teachers.length === 0) return result;
 
-        // Get overall date range from week labels
-        let overallFrom = null;
-        let overallTo = null;
-        for (const label of weekLabels) {
-            const parsed = this.parseWeekLabel(label);
-            if (parsed) {
-                if (!overallFrom || parsed.from < overallFrom) overallFrom = parsed.from;
-                if (!overallTo || parsed.to > overallTo) overallTo = parsed.to;
-            }
-        }
-        if (!overallFrom || !overallTo) return result;
-
-        // Get unique emails
         const uniqueEmails = [...new Set(teachers.map(t => t.email).filter(Boolean))];
 
+        // ONE network call per teacher (cache-backed). All week summaries below are in-memory.
         for (const email of uniqueEmails) {
             try {
                 const employee = await this.getEmployeeByEmail(email);
                 if (!employee) continue;
-
-                // Get leave for the overall date range
-                const leaveData = await this.getEmployeeLeaveDataForPeriod(
-                    employee.employeeId, overallFrom, overallTo
-                );
-
-                // For now, distribute evenly across weeks (Zoho doesn't give per-week granularity easily)
-                // The dashboard just shows the total for the period in each week's column
+                const { records, balance } = await this._loadEmployeeLeave(employee.employeeId);
                 result[email] = {};
                 for (const label of weekLabels) {
                     const parsed = this.parseWeekLabel(label);
-                    if (parsed) {
-                        // Get leave specifically for this week
-                        const weekLeave = await this.getEmployeeLeaveDataForPeriod(
-                            employee.employeeId, parsed.from, parsed.to
-                        );
-                        result[email][label] = {
-                            leave: weekLeave.leaveTaken || 0,
-                            sick: weekLeave.sickLeaveTaken || 0
-                        };
-                    }
+                    if (!parsed) continue;
+                    const weekLeave = this._summarizeForRange(records, balance, parsed.from, parsed.to);
+                    result[email][label] = {
+                        leave: weekLeave.leaveTaken || 0,
+                        sick:  weekLeave.sickLeaveTaken || 0,
+                    };
                 }
-
-                // Rate limiting
-                await new Promise(resolve => setTimeout(resolve, 300));
             } catch (err) {
-                console.error(`Error getting leave for ${email}:`, err.message);
+                console.error(`[zoho-leave] week-summary failed for ${email}:`, err.message);
             }
         }
 

@@ -72,9 +72,18 @@ model Student {
   muslimDiet        Boolean  @default(false) @map("muslim_diet")  // legacy — use diet field
 
   // Placement test / Level
-  currentLevel      String?  @map("current_level")  // A1, A2, B1, B2, C1, C2 — from placement test
+  currentLevel      String?  @map("current_level")  // A1, A2, B1, B2, C1, C2 — from the latest completed test
+  // Public 20-question quiz — usually taken pre-enrolment on the website, pushed in from HubSpot
+  quizScore         Int?     @map("quiz_score")
+  quizDate          DateTime? @map("quiz_date")
+  // Full 40-question placement — either a direct 40-Q sit or Quiz + Delta combined
   placementTestDate DateTime? @map("placement_test_date") @db.Date
   placementTestScore Int?    @map("placement_test_score")
+
+  // Exam / certification track (LMS)
+  exam              String?   @map("exam")            // KEY, PET, FIRST, ADVANCED, IELTS
+  examDate          DateTime? @map("exam_date") @db.Date
+  learnerProtectionPolicy String? @map("learner_protection_policy")
 
   // Classification
   studentType       StudentType @default(ADULT) @map("student_type")
@@ -98,6 +107,7 @@ model Student {
   bookings            Booking[]
   classAssignments    StudentClassAssignment[]
   documents           StudentDocument[]
+  testTokens          TestAccessToken[]
 
   @@map("students")
 }
@@ -182,6 +192,7 @@ model Booking {
   // Relations
   courses            BookingCourse[]
   accommodations     BookingAccommodation[]
+  extras             BookingExtra[]
   holidays           BookingHoliday[]
   payments           Payment[]
   invoices           Invoice[]
@@ -242,10 +253,21 @@ model Agency {
   fideloAgencyId   Int?      @unique @map("fidelo_agency_id")
   hubspotCompanyId String?   @unique @map("hubspot_company_id")
 
+  // Primary HubSpot entity (Company if available, else Agent Employee Contact for sole traders)
+  primaryEntityId   String? @map("primary_entity_id")
+  primaryEntityType String? @map("primary_entity_type") // 'company' | 'contact'
+
+  // Primary Agent Employee contact (for email routing on deals where primary entity is a Company).
+  // HubSpot stores emails on Contacts, not Companies — this ensures deals always have an
+  // emailable contact associated alongside the company.
+  primaryContactId  String? @map("primary_contact_id")
+
   // Relations
   bookings         Booking[]
   groups           Group[]
   portalUsers      SisUser[]
+  quoteActions     PartnerQuoteAction[]
+  documents        PartnerDocument[]
 
   @@map("agencies")
 }
@@ -278,6 +300,9 @@ model BookingCourse {
   fee               Decimal?           @db.Decimal(10,2)
   discount          Decimal?           @db.Decimal(10,2)
   commission        Decimal?           @db.Decimal(10,2)
+
+  // ILEP programme reference (visa letters cite this)
+  ilepCode          String?            @map("ilep_code")
 
   // External IDs
   fideloCourseId    Int?               @unique @map("fidelo_course_id")
@@ -364,6 +389,7 @@ model Class {
   breakMinutes  Int          @default(0) @map("break_minutes") // unpaid break inside the session
   days          Int[]        // [1,2,3,4,5] = Mon-Fri
   active        Boolean      @default(true)
+  isPrivate     Boolean      @default(false) @map("is_private") // 1-to-1 / private class — accepts PRIVATE-category bookings only
 
   occurrences       ClassOccurrence[]
   studentAssignments StudentClassAssignment[]
@@ -420,6 +446,9 @@ model SchoolClosure {
   startDate DateTime @map("start_date") @db.Date
   endDate   DateTime @map("end_date")   @db.Date
   note      String?
+  // True for statutory bank holidays — school closes but teachers are paid as if working.
+  // False (default) for unpaid closures: Good Friday, Christmas break, etc.
+  isPaidHoliday Boolean @default(false) @map("is_paid_holiday")
 
   @@map("school_closures")
 }
@@ -434,6 +463,8 @@ model ClassOccurrence {
 
   teacherAssignments TeacherAssignment[]
   attendanceRecords  Attendance[]
+  absences           OccurrenceAbsence[]
+  presenceOverrides  OccurrencePresenceOverride[]
 
   @@unique([classId, date])
   @@map("class_occurrences")
@@ -523,7 +554,9 @@ model AccommodationProvider {
   allergies     String?    // provider's allergy info
   weeklyRate    Decimal?   @map("weekly_rate") @db.Decimal(8,2) // per-provider rate (not category)
   note          String?
-  active        Boolean    @default(true)
+  active        Boolean    @default(true)  // manual override — true forces effective active regardless of dates
+  activeFrom    DateTime?  @map("active_from") @db.Date
+  activeTo      DateTime?  @map("active_to")   @db.Date
 
   // Banking
   iban          String?
@@ -606,6 +639,29 @@ model BookingAccommodation {
   fee               Decimal? @db.Decimal(10,2)
 
   @@map("booking_accommodations")
+}
+
+// ============================================================
+// BOOKING EXTRAS — airport transfers, exam fees, etc.
+// ============================================================
+
+model BookingExtra {
+  id         Int      @id @default(autoincrement())
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  bookingId  Int      @map("booking_id")
+  booking    Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  extraType  String   @map("extra_type")    // 'AIRPORT_PICKUP' | 'AIRPORT_DROPOFF' | 'EXAM_FEE'
+  scheduledAt DateTime? @map("scheduled_at") // airport: arrival/departure datetime
+  details    String?                         // exam: 'IELTS' | 'FCE' | 'CAE' (future: other extras context)
+  fee        Decimal? @db.Decimal(10,2)      // per-item fee (from line item if available)
+  active     Boolean  @default(true)
+
+  @@index([bookingId])
+  @@index([extraType])
+  @@map("booking_extras")
 }
 
 // ============================================================
@@ -939,6 +995,40 @@ model TeacherPayrollEntry {
   @@map("teacher_payroll_entries")
 }
 
+// "Teacher was not in this room on this day" — the single source of truth used by
+// the scheduling UI and consumed read-only by the payroll engine. Two sources:
+//   - source='zoho'   → written by syncZohoLeaveToAbsences from Zoho approved leave
+//   - source='manual' → written by DOS via the class-detail UI (quick fix)
+// Sync only deletes/refreshes 'zoho' rows. Manual rows are never touched by sync.
+model OccurrenceAbsence {
+  id           Int      @id @default(autoincrement())
+  occurrenceId Int      @unique @map("occurrence_id")
+  occurrence   ClassOccurrence @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
+  teacherId    Int      @map("teacher_id")
+  source       String   @default("manual") // 'zoho' | 'manual'
+  reason       String?
+  createdBy    String?  @map("created_by")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("occurrence_absences")
+}
+
+// DOS exception: "I confirm teacher X was in the room despite Zoho marking them on leave."
+// Sync respects these — won't (re-)create OccurrenceAbsence for any (occurrence, teacher)
+// pair listed here. Engine treats them as default-present.
+model OccurrencePresenceOverride {
+  id           Int      @id @default(autoincrement())
+  occurrenceId Int      @map("occurrence_id")
+  occurrence   ClassOccurrence @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
+  teacherId    Int      @map("teacher_id")
+  reason       String?
+  createdBy    String?  @map("created_by")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@unique([occurrenceId, teacherId])
+  @@map("occurrence_presence_overrides")
+}
+
 model TeacherMonthlyAdjustment {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now()) @map("created_at")
@@ -980,7 +1070,13 @@ model PayrollAuthorization {
   totalPay     Decimal? @map("total_pay") @db.Decimal(10,2)
   snapshotJson String?  @map("snapshot_json")   // JSON snapshot of payroll at authorization time
 
-  @@unique([period, year])
+  // Lock audit. A period is CURRENTLY LOCKED iff the latest row for
+  // (period, year) has unlockedAt = null. Each authorize inserts a new row;
+  // each unlock updates the latest row's unlockedAt. Full history preserved.
+  unlockedAt DateTime? @map("unlocked_at")
+  unlockedBy String?   @map("unlocked_by")
+
+  @@index([period, year])
   @@map("payroll_authorizations")
 }
 
@@ -994,6 +1090,8 @@ model EmailLog {
 
   studentId      Int?     @map("student_id")
   bookingId      Int?     @map("booking_id")
+  providerId     Int?     @map("provider_id")  // accommodation provider context
+  teacherId      Int?     @map("teacher_id")
   fromEmail      String   @map("from_email")
   toEmail        String   @map("to_email")
   subject        String
@@ -1004,6 +1102,8 @@ model EmailLog {
   sentBy         String?  @map("sent_by")  // which SIS user triggered it
 
   @@index([studentId])
+  @@index([providerId])
+  @@index([teacherId])
   @@index([toEmail])
   @@map("email_log")
 }
@@ -1039,8 +1139,75 @@ model SisUser {
   userType          String    @default("staff") @map("user_type") // staff | partner
   agencyId          Int?      @map("agency_id")
   agency            Agency?   @relation(fields: [agencyId], references: [id])
+  hubspotContactId  String?   @map("hubspot_contact_id")  // the partner's own HubSpot Contact — used to attach them to Deals they submit
   portalPermissions String?   @map("portal_permissions") // JSON: { canSeeFinance, canSeeClasses, ... }
   lastLoginAt       DateTime? @map("last_login_at")
 
   @@map("sis_users")
+}
+
+// Zoho Sign contract documents — mirrored from Zoho Sign, matched to agencies
+model PartnerDocument {
+  id              Int       @id @default(autoincrement())
+  zohoRequestId   String    @unique @map("zoho_request_id")
+  zohoDocumentId  String?   @map("zoho_document_id")
+  requestName     String?   @map("request_name")
+  folderName      String?   @map("folder_name")
+  requestStatus   String?   @map("request_status")  // completed | inprogress | declined | etc
+  signedAt        DateTime? @map("signed_at")
+  createdAtZoho   DateTime? @map("created_at_zoho")
+  signerEmail     String?   @map("signer_email")
+  signerName      String?   @map("signer_name")
+  agencyId        Int?      @map("agency_id")
+  agency          Agency?   @relation(fields: [agencyId], references: [id])
+  pdfCachedPath   String?   @map("pdf_cached_path")
+  rawJson         Json?     @map("raw_json")
+  syncedAt        DateTime  @default(now()) @map("synced_at")
+
+  @@index([agencyId])
+  @@index([signerEmail])
+  @@map("partner_documents")
+}
+
+// Partner quote acceptance/query actions — recorded from the partner portal
+model PartnerQuoteAction {
+  id        Int      @id @default(autoincrement())
+  quoteId   String   @unique @map("quote_id")
+  dealId    String   @map("deal_id")
+  agencyId  Int      @map("agency_id")
+  agency    Agency   @relation(fields: [agencyId], references: [id])
+  action    String   // 'ACCEPTED' | 'QUERIED'
+  comments  String?  @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([agencyId])
+  @@map("partner_quote_actions")
+}
+
+// One-time tokenised URLs for placement / delta / quiz tests.
+// Students get a link like https://lms.ulearnschool.com/prototype/delta/?token=XXX
+// They complete the test → LMS app POSTs the score to /sis/api/tests/submit,
+// which validates the token and writes score to the Student record.
+model TestAccessToken {
+  id         Int       @id @default(autoincrement())
+  token      String    @unique                  // URL-safe, 32 bytes base64url
+  studentId  Int       @map("student_id")
+  student    Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  testType   String    @map("test_type")        // 'QUIZ' | 'PLACEMENT' | 'DELTA'
+  createdAt  DateTime  @default(now()) @map("created_at")
+  expiresAt  DateTime  @map("expires_at")
+  usedAt     DateTime? @map("used_at")
+
+  // Result (populated when student submits)
+  scorePct   Int?      @map("score_pct")
+  correct    Int?
+  wrong      Int?
+  cefrLevel  String?   @map("cefr_level")
+  rawResult  Json?     @map("raw_result")
+
+  createdBy  String?   @map("created_by")       // sis_users.username of staff who issued
+
+  @@index([studentId])
+  @@index([token])
+  @@map("test_access_tokens")
 }

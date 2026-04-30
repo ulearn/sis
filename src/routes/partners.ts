@@ -46,6 +46,16 @@ export function partnerRoutes(prisma: PrismaClient) {
     } catch (e) { res.status(500).json({ success: false, error: String(e) }); }
   });
 
+  // ── Student detail (agency-scoped) ──────────
+  router.get('/students/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (!id) return res.status(400).json({ success: false, error: 'Invalid id' });
+      const data = await scripts.studentDetail(req.session.agencyId!, id);
+      res.json(data);
+    } catch (e) { res.status(500).json({ success: false, error: String(e) }); }
+  });
+
   // ── Bookings ─────────────────────────────────
   router.get('/bookings', async (req, res) => {
     try {
@@ -72,6 +82,42 @@ export function partnerRoutes(prisma: PrismaClient) {
       const data = await scripts.liveFinance(req.session.agencyId!);
       res.json({ success: true, ...data });
     } catch (e) { res.status(500).json({ success: false, error: String(e) }); }
+  });
+
+  // ── Quote action (Accept / Query) ─────────────
+  router.post('/quote-action', async (req, res) => {
+    try {
+      const result = await scripts.recordQuoteAction(
+        req.session.agencyId!,
+        req.session.agencyName || '',
+        req.body,
+      );
+      res.json(result);
+    } catch (e) { res.status(500).json({ success: false, error: String(e) }); }
+  });
+
+  // ── Documents (Zoho-signed contracts) ─────────
+  router.get('/documents', async (req, res) => {
+    try {
+      const data = await scripts.documents(req.session.agencyId!);
+      res.json({ success: true, ...data });
+    } catch (e) { res.status(500).json({ success: false, error: String(e) }); }
+  });
+
+  // ── Serve cached PDF (agency-scoped) ──────────
+  router.get('/documents/:id/pdf', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (!id) return res.status(400).send('Invalid id');
+      const doc = await prisma.partnerDocument.findUnique({ where: { id } });
+      if (!doc || doc.agencyId !== req.session.agencyId) {
+        return res.status(404).send('Not found');
+      }
+      if (!doc.pdfCachedPath) return res.status(404).send('PDF not available');
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `inline; filename="${(doc.requestName || 'contract').replace(/[^a-z0-9_.-]/gi,'_')}.pdf"`);
+      res.sendFile(doc.pdfCachedPath);
+    } catch (e) { res.status(500).send(String(e)); }
   });
 
   // ── Enroll ─────────────────────────────────────

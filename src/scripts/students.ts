@@ -1,4 +1,5 @@
 import { PrismaClient } from '../generated/prisma/client';
+import { autoFillIlepForStudent } from './ilep-deriver';
 
 const DATE_FIELDS = [
   'birthday', 'visaFrom', 'visaUntil', 'passportValidFrom', 'passportValidUntil'
@@ -91,7 +92,13 @@ export function studentScripts(prisma: PrismaClient) {
   }
 
   async function update(id: number, data: Record<string, any>) {
-    return prisma.student.update({ where: { id }, data: parseDates(data) as any });
+    const levelTouched = Object.prototype.hasOwnProperty.call(data, 'currentLevel')
+                      || Object.prototype.hasOwnProperty.call(data, 'nationality');
+    const result = await prisma.student.update({ where: { id }, data: parseDates(data) as any });
+    if (levelTouched) {
+      try { await autoFillIlepForStudent(prisma, id); } catch (e) { console.error('autoFillIlep failed', e); }
+    }
+    return result;
   }
 
   async function remove(id: number) {

@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/png" href="/sis/public/favicon.ico?v=2">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#339900">
+<title>ULearn — Student Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --brand: #339900;
+    --brand-dark: #2d8600;
+    --bg: #f4f3f0;
+    --surface: #fff;
+    --text: #1a1d23;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --amber: #f59e0b;
+    --grey: #cbd5e1;
+    --blue: #3b82f6;
+  }
+  html, body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .scaffold-banner {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 8px 16px;
+    font-size: 12px;
+    text-align: center;
+    font-weight: 600;
+    border-bottom: 1px solid #fde68a;
+  }
+  header.topbar {
+    background: var(--surface);
+    padding: 16px 20px calc(16px + env(safe-area-inset-top));
+    padding-top: calc(16px + env(safe-area-inset-top));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .greeting {
+    display: flex;
+    flex-direction: column;
+  }
+  .greeting-hello {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .greeting-name {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--brand), #66cc33);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 16px;
+  }
+
+  main.tab-content {
+    padding: 20px 16px 88px;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  /* ─── Cards ───────────────────────────────── */
+  .card {
+    background: var(--surface);
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+  }
+  .card-title {
+    font-size: 15px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card-icon {
+    font-size: 18px;
+  }
+  .card-body {
+    padding: 0 18px 18px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .card.collapsed .card-body { display: none; }
+  .chevron {
+    color: var(--muted);
+    font-size: 14px;
+    transition: transform 0.2s;
+  }
+  .card.collapsed .chevron { transform: rotate(-90deg); }
+
+  .kv {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .kv:last-child { border-bottom: 0; }
+  .kv-label { color: var(--muted); }
+  .kv-value { color: var(--text); font-weight: 600; }
+
+  /* ─── Status pills ────────────────────────── */
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .pill-grey  { background: #f1f5f9; color: #64748b; }
+  .pill-blue  { background: #dbeafe; color: #1e40af; }
+  .pill-amber { background: #fef3c7; color: #92400e; }
+  .pill-green { background: #dcfce7; color: #166534; }
+
+  /* ─── Challenge task row ──────────────────── */
+  .task {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .task:last-child { border-bottom: 0; }
+  .task-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--grey);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .task-dot.done { background: var(--brand); }
+  .task-dot.review { background: var(--amber); }
+  .task-body {
+    flex: 1;
+    min-width: 0;
+  }
+  .task-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .task-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .task-action {
+    font-size: 12px;
+    color: var(--brand);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  /* ─── Progress meter ─────────────────────── */
+  .progress-wrap {
+    margin: 0 0 18px;
+    padding: 16px 18px;
+    background: linear-gradient(135deg, #e8f5e0, #f4f3f0);
+    border-radius: 16px;
+  }
+  .progress-head {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+  .progress-bar {
+    height: 8px;
+    background: #fff;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--brand);
+    border-radius: 999px;
+    transition: width 0.4s;
+  }
+  .progress-note {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+
+  /* ─── Bottom tab bar ─────────────────────── */
+  nav.tabbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
+    z-index: 20;
+  }
+  .tab {
+    flex: 1;
+    background: none;
+    border: 0;
+    padding: 8px 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+  .tab-icon { font-size: 22px; line-height: 1; }
+  .tab.active { color: var(--brand); }
+
+  .hidden { display: none !important; }
+
+  /* ─── Placement test CTA ─────────────────── */
+  .cta-box {
+    background: linear-gradient(135deg, var(--brand), #66cc33);
+    color: #fff;
+    padding: 20px 18px;
+    border-radius: 16px;
+    margin-bottom: 14px;
+  }
+  .cta-title {
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .cta-sub {
+    font-size: 13px;
+    opacity: 0.9;
+    margin-bottom: 14px;
+  }
+  .cta-btn {
+    background: #fff;
+    color: var(--brand);
+    border: 0;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  /* ─── Badge strip ────────────────────────── */
+  .badges {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 4px 0 8px;
+    margin-bottom: 10px;
+  }
+  .badge {
+    flex-shrink: 0;
+    width: 78px;
+    padding: 12px 6px;
+    background: var(--surface);
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .badge-emoji { font-size: 26px; display: block; }
+  .badge-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--muted);
+    margin-top: 4px;
+    line-height: 1.2;
+  }
+  .badge.locked { opacity: 0.35; filter: grayscale(1); }
+
+  @media (min-width: 768px) {
+    main.tab-content { padding: 28px 24px 100px; }
+    .card-title { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="scaffold-banner">
+  SCAFFOLD PREVIEW — auth not wired · data is stubbed · structure only
+</div>
+
+<header class="topbar">
+  <div class="greeting">
+    <span class="greeting-hello">Hi there,</span>
+    <span class="greeting-name" id="studentName">Carlos</span>
+  </div>
+  <div class="avatar" id="studentInitial">C</div>
+</header>
+
+<!-- ═══════════ TAB 1 — PROFILE ═══════════ -->
+<main class="tab-content" id="tab-profile">
+
+  <section class="card collapsed">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-title"><span class="card-icon">👤</span> Personal Details</div>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="card-body">
+      <div class="kv"><span class="kv-label">Full name</span><span class="kv-value">Carlos Martínez</span></div>
+      <div class="kv"><span class="kv-label">Nationality</span><span class="kv-value">Spain</span></div>
+      <div class="kv"><span class="kv-label">Date of birth</span><span class="kv-value">1998-06-14</span></div>
+      <div class="kv"><span class="kv-label">Email</span><span class="kv-value">carlos@example.com</span></div>
+      <div class="kv"><span class="kv-label">Phone</span><span class="kv-value">+34 600 123 456</span></div>
+    </div>
+  </section>
+
+  <section class="card collapsed">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-title"><span class="card-icon">🎓</span> Course Details</div>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="card-body">
+      <div class="kv"><span class="kv-label">Course</span><span class="kv-value">General English 25</span></div>
+      <div class="kv"><span class="kv-label">Level</span><span class="kv-value">B1</span></div>
+      <div class="kv"><span class="kv-label">Start / End</span><span class="kv-value">05 May — 30 May 2026</span></div>
+      <div class="kv"><span class="kv-label">Classroom</span><span class="kv-value">R204</span></div>
+      <div class="kv"><span class="kv-label">Teacher</span><span class="kv-value">Aoife Ní Bhroin</span></div>
+    </div>
+  </section>
+
+  <section class="card collapsed">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-title"><span class="card-icon">📅</span> Timetable</div>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="card-body">Monday to Friday · 09:00 – 12:30</div>
+  </section>
+
+  <section class="card collapsed">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-title"><span class="card-icon">🏠</span> Accommodation</div>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="card-body">Host Family — Dublin 8 · Single room · Half board</div>
+  </section>
+
+  <section class="card collapsed">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-title"><span class="card-icon">📄</span> Documents</div>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="card-body">Visa letter · Enrollment confirmation · Receipt</div>
+  </section>
+
+  <section class="card collapsed">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-title"><span class="card-icon">✅</span> Attendance</div>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="card-body">
+      <div class="kv"><span class="kv-label">This week</span><span class="kv-value">95%</span></div>
+      <div class="kv"><span class="kv-label">Overall</span><span class="kv-value">92%</span></div>
+    </div>
+  </section>
+
+  <section class="card collapsed">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-title"><span class="card-icon">💬</span> Support</div>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="card-body">success@ulearnschool.com · +353 1 234 5678</div>
+  </section>
+
+</main>
+
+<!-- ═══════════ TAB 2 — CHALLENGES ═══════════ -->
+<main class="tab-content hidden" id="tab-challenges">
+
+  <div class="progress-wrap">
+    <div class="progress-head">
+      <span>Kickstarter Challenge</span>
+      <span id="progressPct">2 of 6 complete</span>
+    </div>
+    <div class="progress-bar"><div class="progress-bar-fill" style="width:33%"></div></div>
+    <div class="progress-note">Promise made, promise kept — you're on your way 🦁</div>
+  </div>
+
+  <section class="card collapsed">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-title"><span class="card-icon">📱</span> Social Platform <span class="pill pill-green">Approved</span></div>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="card-body">
+      <div class="kv"><span class="kv-label">Instagram</span><span class="kv-value">@carlosmartinez</span></div>
+      <div class="kv"><span class="kv-label">Follow ULearn?</span><span class="kv-value">Yes! 🙌</span></div>
+    </div>
+  </section>
+
+  <section class="card collapsed">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-title"><span class="card-icon">🎬</span> Content Tasks</div>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="card-body">
+      <div class="task">
+        <div class="task-dot done">✓</div>
+        <div class="task-body">
+          <div class="task-title">Post 1 — Arrival in Dublin</div>
+          <div class="task-sub">Approved by Kelly · 2 days ago</div>
+        </div>
+        <div class="task-action">View</div>
+      </div>
+      <div class="task">
+        <div class="task-dot review">⏱</div>
+        <div class="task-body">
+          <div class="task-title">Post 2 — Classroom life</div>
+          <div class="task-sub">Under review</div>
+        </div>
+        <div class="task-action">Edit</div>
+      </div>
+      <div class="task">
+        <div class="task-dot">3</div>
+        <div class="task-body">
+          <div class="task-title">Post 3 — Activity highlight</div>
+          <div class="task-sub">Not started</div>
+        </div>
+        <div class="task-action">Start</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card collapsed">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-title"><span class="card-icon">🎉</span> Activity Attended <span class="pill pill-grey">Pending</span></div>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="card-body">
+      <div class="task">
+        <div class="task-dot">○</div>
+        <div class="task-body">
+          <div class="task-title">Guinness Storehouse tour</div>
+          <div class="task-sub">Wed · 18:00 · Meet at reception</div>
+        </div>
+        <div class="task-action">Mark</div>
+      </div>
+      <div class="task">
+        <div class="task-dot">○</div>
+        <div class="task-body">
+          <div class="task-title">Howth cliff walk</div>
+          <div class="task-sub">Sat · 10:00</div>
+        </div>
+        <div class="task-action">Mark</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card collapsed">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-title"><span class="card-icon">⭐</span> Google Review <span class="pill pill-grey">Pending</span></div>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="card-body">
+      Leave a 5-star review to unlock your final badge.
+    </div>
+  </section>
+
+  <section class="card collapsed">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-title"><span class="card-icon">🏅</span> Badges &amp; Rewards</div>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="card-body">
+      <div class="badges">
+        <div class="badge"><span class="badge-emoji">🚀</span><div class="badge-label">First Step</div></div>
+        <div class="badge"><span class="badge-emoji">📱</span><div class="badge-label">Social Starter</div></div>
+        <div class="badge locked"><span class="badge-emoji">🎬</span><div class="badge-label">Content Creator</div></div>
+        <div class="badge locked"><span class="badge-emoji">🗺️</span><div class="badge-label">Explorer</div></div>
+        <div class="badge locked"><span class="badge-emoji">⭐</span><div class="badge-label">Review Hero</div></div>
+        <div class="badge locked"><span class="badge-emoji">🏆</span><div class="badge-label">Champion</div></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══════════ TAB 3 — LEARNING ═══════════ -->
+<main class="tab-content hidden" id="tab-learning">
+
+  <div class="cta-box">
+    <div class="cta-title">Next up: Delta Test</div>
+    <div class="cta-sub">You completed the Quiz with 80%. Finish the 20 remaining questions to confirm your level.</div>
+    <button class="cta-btn">Start Delta →</button>
+  </div>
+
+  <section class="card collapsed">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-title"><span class="card-icon">📝</span> Placement Status</div>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="card-body">
+      <div class="kv"><span class="kv-label">Quiz</span><span class="kv-value"><span class="pill pill-green">Complete</span> 80%</span></div>
+      <div class="kv"><span class="kv-label">Delta</span><span class="kv-value"><span class="pill pill-amber">Pending</span></span></div>
+      <div class="kv"><span class="kv-label">Level suggested</span><span class="kv-value">B1</span></div>
+    </div>
+  </section>
+
+  <section class="card collapsed">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-title"><span class="card-icon">📊</span> Completed Tests</div>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="card-body">
+      <div class="kv"><span class="kv-label">Quiz (20 Q)</span><span class="kv-value">80% · 12 Apr</span></div>
+    </div>
+  </section>
+
+  <section class="card collapsed">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-title"><span class="card-icon">🎯</span> Class Level</div>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="card-body">
+      <div class="kv"><span class="kv-label">Current level</span><span class="kv-value">B1 (Intermediate)</span></div>
+      <div class="kv"><span class="kv-label">Class</span><span class="kv-value">R204 · Aoife Ní Bhroin</span></div>
+    </div>
+  </section>
+
+  <section class="card collapsed">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-title"><span class="card-icon">📚</span> Learning Tasks</div>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="card-body">
+      LMS modules will appear here once you're enrolled in the learning platform.
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══════════ BOTTOM TAB BAR ═══════════ -->
+<nav class="tabbar">
+  <button class="tab active" data-tab="profile">
+    <span class="tab-icon">👤</span>
+    <span>Profile</span>
+  </button>
+  <button class="tab" data-tab="challenges">
+    <span class="tab-icon">🏆</span>
+    <span>Challenges</span>
+  </button>
+  <button class="tab" data-tab="learning">
+    <span class="tab-icon">📚</span>
+    <span>Learning</span>
+  </button>
+</nav>
+
+<script>
+  // Tab switching
+  document.querySelectorAll('.tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
+      document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === btn));
+      ['profile','challenges','learning'].forEach(id => {
+        document.getElementById('tab-' + id).classList.toggle('hidden', id !== tab);
+      });
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    });
+  });
+
+  // Card collapse
+  function toggleCard(header) {
+    header.parentElement.classList.toggle('collapsed');
+  }
+
+  // Pull live student data (stubbed endpoint for now)
+  fetch('/sis/student/api/me')
+    .then(r => r.ok ? r.json() : null)
+    .then(d => {
+      if (!d?.student) return;
+      document.getElementById('studentName').textContent = d.student.firstName || 'Student';
+      document.getElementById('studentInitial').textContent = (d.student.firstName || 'S')[0].toUpperCase();
+    })
+    .catch(() => {});
+</script>
+
+</body>
+</html>
