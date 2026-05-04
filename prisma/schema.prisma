@@ -103,13 +103,105 @@ model Student {
   hubspotContactId  String?  @unique @map("hubspot_contact_id")
   hubspotDealId     String?  @map("hubspot_deal_id")
 
+  // Challenges / Ambassador
+  // Students self-report handle + review URL; staff verify via the admin UI.
+  // ambassadorCode is auto-set when googleReviewVerified flips to true.
+  instagramHandle          String?   @map("instagram_handle")
+  instagramFollowVerified  Boolean   @default(false) @map("instagram_follow_verified")
+  googleReviewUrl          String?   @map("google_review_url")
+  googleReviewVerified     Boolean   @default(false) @map("google_review_verified")
+  trustpilotReviewUrl      String?   @map("trustpilot_review_url")
+  ambassadorCode           String?   @unique @map("ambassador_code")
+  ambassadorApprovedAt     DateTime? @map("ambassador_approved_at")
+
   // Relations
   bookings            Booking[]
   classAssignments    StudentClassAssignment[]
   documents           StudentDocument[]
   testTokens          TestAccessToken[]
+  challengeContent    StudentChallengeContent[]
+  activityRsvps       ActivityAttendee[]
 
   @@map("students")
+}
+
+// Out-of-class activities ULearn runs (~3 per week — pub crawls, cliff
+// walks, museum tours). Used to:
+//   - Schedule and publish the social-side calendar
+//   - Surface in /sis/student so students RSVP and we know head-counts
+//   - Drive the "Activity Attended" challenge unlock
+//
+// Image upload reuses the same multer pattern as attendance certs.
+// IG/FB publish is wireframed (boolean flags + URL fields) but the real
+// API call is deferred until the access tokens are in env.
+model Activity {
+  id             Int      @id @default(autoincrement())
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  date           DateTime @db.Date
+  startTime      String?  @map("start_time")   // "18:00" — display only
+  endTime        String?  @map("end_time")
+  title          String
+  description    String?
+  cost           Decimal? @db.Decimal(10,2)
+  location       String?
+  imageFilename  String?  @map("image_filename")  // stored under uploads/activities/
+
+  publishedToIg  Boolean  @default(false) @map("published_to_ig")
+  publishedToFb  Boolean  @default(false) @map("published_to_fb")
+  publishedAt    DateTime? @map("published_at")
+  igPostUrl      String?  @map("ig_post_url")
+  fbPostUrl      String?  @map("fb_post_url")
+
+  createdBy      String?  @map("created_by")
+
+  attendees      ActivityAttendee[]
+
+  @@index([date])
+  @@map("activities")
+}
+
+model ActivityAttendee {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  activityId  Int      @map("activity_id")
+  activity    Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  studentId   Int      @map("student_id")
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  // Two states the row tracks:
+  //   - the row exists at all → student RSVP'd "yes"
+  //   - attended=true → Kelly confirmed they showed up (drives challenge unlock)
+  attended    Boolean  @default(false)
+  attendedAt  DateTime? @map("attended_at")
+
+  @@unique([activityId, studentId])
+  @@index([studentId])
+  @@map("activity_attendees")
+}
+
+// Student-submitted content for the "Content Tasks" challenge
+// (video/post URLs the student creates as part of their stay).
+// Staff verify each submission via the admin UI before it counts.
+model StudentChallengeContent {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  studentId   Int      @map("student_id")
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  url         String
+  kind        String   @default("VIDEO")  // VIDEO | POST
+  note        String?
+
+  verified    Boolean  @default(false)
+  verifiedBy  String?  @map("verified_by")
+  verifiedAt  DateTime? @map("verified_at")
+
+  @@index([studentId])
+  @@map("student_challenge_content")
 }
 
 enum StudentType {
@@ -172,6 +264,8 @@ model Booking {
   amountPaid     Decimal? @map("amount_paid") @db.Decimal(10,2)
   amountOpen     Decimal? @map("amount_open") @db.Decimal(10,2)
   amountRefund   Decimal? @map("amount_refund") @db.Decimal(10,2)
+  regFee         Decimal? @map("reg_fee") @db.Decimal(10,2)
+  placementFee   Decimal? @map("placement_fee") @db.Decimal(10,2)
   paymentMethod  String?  @map("payment_method")
   discountCode   String?  @map("discount_code")
 
@@ -530,6 +624,52 @@ enum AttendanceStatus {
   EXCUSED
 }
 
+// Captures a student-supplied reason for an absence on a given date. Decoupled
+// from Attendance so a reason can be recorded before the teacher inputs the
+// register. Joined to Attendance at read time on (studentId, occurrence.date).
+//
+// Important: a recorded reason NEVER flips an absence to present — it's an
+// annotation only, used in exit-letter compilation when attendance < 85% and
+// (potentially) by IRP renewal interviewers reading the school's records.
+model AbsenceReason {
+  id               Int      @id @default(autoincrement())
+  studentId        Int      @map("student_id")
+  date             DateTime @db.Date
+  reason           String   // SICK | IRP_APPT | PPS_APPT | EXAM | TRANSPORT | WEATHER | OTHER
+  noteText         String?  @map("note_text")
+  submittedBy      String   @map("submitted_by")  // username (student or admin override)
+  submittedAt      DateTime @default(now()) @map("submitted_at")
+  reviewedBy       String?  @map("reviewed_by")
+  reviewedAt       DateTime?@map("reviewed_at")
+  accepted         Boolean  @default(true)        // auto-accept; admin can flip if needed
+
+  // Legacy single-cert columns — kept for safety during transition; new code
+  // reads/writes via the AbsenceCertFile relation (multi-file, capped at 5).
+  certFilename     String?  @map("cert_filename")
+  certOriginalName String?  @map("cert_original_name")
+
+  certFiles        AbsenceCertFile[]
+
+  @@unique([studentId, date])
+  @@index([date])
+  @@map("absence_reasons")
+}
+
+// Multiple medical certs / supporting docs per absence (e.g. multi-page sick
+// notes). Capped at 5 in the application layer; no DB-level limit.
+model AbsenceCertFile {
+  id              Int           @id @default(autoincrement())
+  absenceReasonId Int           @map("absence_reason_id")
+  reason          AbsenceReason @relation(fields: [absenceReasonId], references: [id], onDelete: Cascade)
+  filename        String        // on-disk filename under uploads/medical-certs/
+  originalName    String?       @map("original_name")
+  uploadedAt      DateTime      @default(now()) @map("uploaded_at")
+  uploadedBy      String?       @map("uploaded_by")
+
+  @@index([absenceReasonId])
+  @@map("absence_cert_files")
+}
+
 // ============================================================
 // ACCOMMODATION
 // ============================================================
@@ -679,6 +819,10 @@ model BookingHoliday {
   endDate   DateTime @map("end_date") @db.Date
   weeks     Int?
   type      String?  // "student", "school"
+  // How many weekdays the course endDate was actually pushed when this row
+  // was inserted. Zero when the holiday falls entirely after the course end
+  // (recorded for the paper trail but no schedule effect).
+  weekdaysPushed Int? @map("weekdays_pushed")
 
   @@map("booking_holidays")
 }

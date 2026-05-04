@@ -263,6 +263,86 @@
 
   .hidden { display: none !important; }
 
+  /* ─── Absence list ────────────────────────── */
+  .absence-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+  }
+  .absence-row:first-of-type { border-top: 0; }
+  .absence-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .absence-date { font-weight: 600; font-size: 14px; }
+  .absence-meta { font-size: 11px; color: var(--muted); }
+  .absence-row select, .absence-row input[type="text"] {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    background: #fff;
+    font-family: inherit;
+  }
+  .reason-saved {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #ecfdf5;
+    color: #065f46;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .reason-saved button {
+    background: transparent;
+    border: 0;
+    color: #065f46;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0 0 0 4px;
+    line-height: 1;
+  }
+  .attendance-stats {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .attendance-help {
+    font-size: 11px;
+    color: var(--muted);
+    margin: 8px 0 4px;
+    line-height: 1.4;
+  }
+
+  /* ─── Camera modal ────────────────────────── */
+  .cam-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999; padding: 20px;
+  }
+  .cam-box {
+    background: #111; color: #fff;
+    border-radius: 12px; max-width: 480px; width: 100%;
+    display: flex; flex-direction: column; gap: 10px; padding: 12px;
+  }
+  .cam-box video, .cam-box canvas { width: 100%; border-radius: 8px; background: #000; }
+  .cam-actions { display: flex; gap: 8px; justify-content: space-between; }
+  .cam-btn {
+    flex: 1; padding: 10px;
+    border: 0; border-radius: 8px; font-weight: 700; cursor: pointer; font-family: inherit; font-size: 14px;
+  }
+  .cam-btn.primary { background: var(--brand); color: #fff; }
+  .cam-btn.secondary { background: #333; color: #fff; }
+  .cam-error { color: #fca5a5; font-size: 13px; padding: 6px 4px; }
+
   /* ─── Placement test CTA ─────────────────── */
   .cta-box {
     background: linear-gradient(135deg, var(--brand), #66cc33);
@@ -328,16 +408,15 @@
 </head>
 <body>
 
-<div class="scaffold-banner">
-  SCAFFOLD PREVIEW — auth not wired · data is stubbed · structure only
-</div>
-
 <header class="topbar">
   <div class="greeting">
     <span class="greeting-hello">Hi there,</span>
-    <span class="greeting-name" id="studentName">Carlos</span>
+    <span class="greeting-name" id="studentName">…</span>
   </div>
-  <div class="avatar" id="studentInitial">C</div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <a href="/sis/auth/logout" style="font-size:12px;color:var(--muted);text-decoration:none;font-weight:600">Log out</a>
+    <div class="avatar" id="studentInitial">·</div>
+  </div>
 </header>
 
 <!-- ═══════════ TAB 1 — PROFILE ═══════════ -->
@@ -348,13 +427,7 @@
       <div class="card-title"><span class="card-icon">👤</span> Personal Details</div>
       <span class="chevron">▾</span>
     </div>
-    <div class="card-body">
-      <div class="kv"><span class="kv-label">Full name</span><span class="kv-value">Carlos Martínez</span></div>
-      <div class="kv"><span class="kv-label">Nationality</span><span class="kv-value">Spain</span></div>
-      <div class="kv"><span class="kv-label">Date of birth</span><span class="kv-value">1998-06-14</span></div>
-      <div class="kv"><span class="kv-label">Email</span><span class="kv-value">carlos@example.com</span></div>
-      <div class="kv"><span class="kv-label">Phone</span><span class="kv-value">+34 600 123 456</span></div>
-    </div>
+    <div class="card-body" id="card-personal">…</div>
   </section>
 
   <section class="card collapsed">
@@ -362,13 +435,7 @@
       <div class="card-title"><span class="card-icon">🎓</span> Course Details</div>
       <span class="chevron">▾</span>
     </div>
-    <div class="card-body">
-      <div class="kv"><span class="kv-label">Course</span><span class="kv-value">General English 25</span></div>
-      <div class="kv"><span class="kv-label">Level</span><span class="kv-value">B1</span></div>
-      <div class="kv"><span class="kv-label">Start / End</span><span class="kv-value">05 May — 30 May 2026</span></div>
-      <div class="kv"><span class="kv-label">Classroom</span><span class="kv-value">R204</span></div>
-      <div class="kv"><span class="kv-label">Teacher</span><span class="kv-value">Aoife Ní Bhroin</span></div>
-    </div>
+    <div class="card-body" id="card-course">…</div>
   </section>
 
   <section class="card collapsed">
@@ -376,7 +443,7 @@
       <div class="card-title"><span class="card-icon">📅</span> Timetable</div>
       <span class="chevron">▾</span>
     </div>
-    <div class="card-body">Monday to Friday · 09:00 – 12:30</div>
+    <div class="card-body" id="card-timetable">…</div>
   </section>
 
   <section class="card collapsed">
@@ -384,7 +451,7 @@
       <div class="card-title"><span class="card-icon">🏠</span> Accommodation</div>
       <span class="chevron">▾</span>
     </div>
-    <div class="card-body">Host Family — Dublin 8 · Single room · Half board</div>
+    <div class="card-body" id="card-accom">…</div>
   </section>
 
   <section class="card collapsed">
@@ -392,7 +459,7 @@
       <div class="card-title"><span class="card-icon">📄</span> Documents</div>
       <span class="chevron">▾</span>
     </div>
-    <div class="card-body">Visa letter · Enrollment confirmation · Receipt</div>
+    <div class="card-body" id="card-docs">…</div>
   </section>
 
   <section class="card collapsed">
@@ -400,10 +467,7 @@
       <div class="card-title"><span class="card-icon">✅</span> Attendance</div>
       <span class="chevron">▾</span>
     </div>
-    <div class="card-body">
-      <div class="kv"><span class="kv-label">This week</span><span class="kv-value">95%</span></div>
-      <div class="kv"><span class="kv-label">Overall</span><span class="kv-value">92%</span></div>
-    </div>
+    <div class="card-body" id="card-attendance">…</div>
   </section>
 
   <section class="card collapsed">
@@ -419,110 +483,30 @@
 <!-- ═══════════ TAB 2 — CHALLENGES ═══════════ -->
 <main class="tab-content hidden" id="tab-challenges">
 
+  <!-- Badge strip — pinned at top, shows progression at-a-glance -->
+  <section class="card" style="margin-bottom:14px">
+    <div class="card-body" style="padding:14px 18px">
+      <div class="badges" id="badgeStrip">
+        <div class="badge locked"><span class="badge-emoji">📱</span><div class="badge-label">Social</div></div>
+        <div class="badge locked"><span class="badge-emoji">🎬</span><div class="badge-label">Creator</div></div>
+        <div class="badge locked"><span class="badge-emoji">🎯</span><div class="badge-label">Attended</div></div>
+        <div class="badge locked"><span class="badge-emoji">🎉</span><div class="badge-label">Activity</div></div>
+        <div class="badge locked"><span class="badge-emoji">⭐</span><div class="badge-label">Review</div></div>
+        <div class="badge locked"><span class="badge-emoji">🏆</span><div class="badge-label">Ambassador</div></div>
+      </div>
+    </div>
+  </section>
+
   <div class="progress-wrap">
     <div class="progress-head">
-      <span>Kickstarter Challenge</span>
-      <span id="progressPct">2 of 6 complete</span>
+      <span>Challenge progress</span>
+      <span id="progressPct">— of 6 complete</span>
     </div>
-    <div class="progress-bar"><div class="progress-bar-fill" style="width:33%"></div></div>
-    <div class="progress-note">Promise made, promise kept — you're on your way 🦁</div>
+    <div class="progress-bar"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <div class="progress-note" id="progressNote">Loading…</div>
   </div>
 
-  <section class="card collapsed">
-    <div class="card-header" onclick="toggleCard(this)">
-      <div class="card-title"><span class="card-icon">📱</span> Social Platform <span class="pill pill-green">Approved</span></div>
-      <span class="chevron">▾</span>
-    </div>
-    <div class="card-body">
-      <div class="kv"><span class="kv-label">Instagram</span><span class="kv-value">@carlosmartinez</span></div>
-      <div class="kv"><span class="kv-label">Follow ULearn?</span><span class="kv-value">Yes! 🙌</span></div>
-    </div>
-  </section>
-
-  <section class="card collapsed">
-    <div class="card-header" onclick="toggleCard(this)">
-      <div class="card-title"><span class="card-icon">🎬</span> Content Tasks</div>
-      <span class="chevron">▾</span>
-    </div>
-    <div class="card-body">
-      <div class="task">
-        <div class="task-dot done">✓</div>
-        <div class="task-body">
-          <div class="task-title">Post 1 — Arrival in Dublin</div>
-          <div class="task-sub">Approved by Kelly · 2 days ago</div>
-        </div>
-        <div class="task-action">View</div>
-      </div>
-      <div class="task">
-        <div class="task-dot review">⏱</div>
-        <div class="task-body">
-          <div class="task-title">Post 2 — Classroom life</div>
-          <div class="task-sub">Under review</div>
-        </div>
-        <div class="task-action">Edit</div>
-      </div>
-      <div class="task">
-        <div class="task-dot">3</div>
-        <div class="task-body">
-          <div class="task-title">Post 3 — Activity highlight</div>
-          <div class="task-sub">Not started</div>
-        </div>
-        <div class="task-action">Start</div>
-      </div>
-    </div>
-  </section>
-
-  <section class="card collapsed">
-    <div class="card-header" onclick="toggleCard(this)">
-      <div class="card-title"><span class="card-icon">🎉</span> Activity Attended <span class="pill pill-grey">Pending</span></div>
-      <span class="chevron">▾</span>
-    </div>
-    <div class="card-body">
-      <div class="task">
-        <div class="task-dot">○</div>
-        <div class="task-body">
-          <div class="task-title">Guinness Storehouse tour</div>
-          <div class="task-sub">Wed · 18:00 · Meet at reception</div>
-        </div>
-        <div class="task-action">Mark</div>
-      </div>
-      <div class="task">
-        <div class="task-dot">○</div>
-        <div class="task-body">
-          <div class="task-title">Howth cliff walk</div>
-          <div class="task-sub">Sat · 10:00</div>
-        </div>
-        <div class="task-action">Mark</div>
-      </div>
-    </div>
-  </section>
-
-  <section class="card collapsed">
-    <div class="card-header" onclick="toggleCard(this)">
-      <div class="card-title"><span class="card-icon">⭐</span> Google Review <span class="pill pill-grey">Pending</span></div>
-      <span class="chevron">▾</span>
-    </div>
-    <div class="card-body">
-      Leave a 5-star review to unlock your final badge.
-    </div>
-  </section>
-
-  <section class="card collapsed">
-    <div class="card-header" onclick="toggleCard(this)">
-      <div class="card-title"><span class="card-icon">🏅</span> Badges &amp; Rewards</div>
-      <span class="chevron">▾</span>
-    </div>
-    <div class="card-body">
-      <div class="badges">
-        <div class="badge"><span class="badge-emoji">🚀</span><div class="badge-label">First Step</div></div>
-        <div class="badge"><span class="badge-emoji">📱</span><div class="badge-label">Social Starter</div></div>
-        <div class="badge locked"><span class="badge-emoji">🎬</span><div class="badge-label">Content Creator</div></div>
-        <div class="badge locked"><span class="badge-emoji">🗺️</span><div class="badge-label">Explorer</div></div>
-        <div class="badge locked"><span class="badge-emoji">⭐</span><div class="badge-label">Review Hero</div></div>
-        <div class="badge locked"><span class="badge-emoji">🏆</span><div class="badge-label">Champion</div></div>
-      </div>
-    </div>
-  </section>
+  <div id="challengeCards"></div>
 
 </main>
 
@@ -614,15 +598,596 @@
     header.parentElement.classList.toggle('collapsed');
   }
 
-  // Pull live student data (stubbed endpoint for now)
+  // ── Live data ─────────────────────────────────
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const kv = (label, value) => `<div class="kv"><span class="kv-label">${esc(label)}</span><span class="kv-value">${esc(value || '—')}</span></div>`;
+  const fmtDate = d => d ? new Date(d).toLocaleDateString('en-IE', { day:'2-digit', month:'short', year:'numeric' }) : '';
+  const empty = msg => `<div style="color:var(--muted);font-size:13px">${esc(msg)}</div>`;
+
   fetch('/sis/student/api/me')
-    .then(r => r.ok ? r.json() : null)
+    .then(r => {
+      if (r.status === 401) { window.location.href = '/sis/login'; return null; }
+      return r.ok ? r.json() : null;
+    })
     .then(d => {
       if (!d?.student) return;
-      document.getElementById('studentName').textContent = d.student.firstName || 'Student';
-      document.getElementById('studentInitial').textContent = (d.student.firstName || 'S')[0].toUpperCase();
+      const s = d.student;
+      const fullName = [s.firstName, s.lastName].filter(Boolean).join(' ');
+      document.getElementById('studentName').textContent = s.firstName || 'Student';
+      document.getElementById('studentInitial').textContent = (s.firstName || 'S')[0].toUpperCase();
+
+      document.getElementById('card-personal').innerHTML =
+        kv('Full name', fullName) +
+        kv('Nationality', s.nationality) +
+        kv('Date of birth', s.birthday ? fmtDate(s.birthday) : '') +
+        kv('Email', s.email) +
+        kv('Phone', s.phone);
+
+      const c = d.course;
+      document.getElementById('card-course').innerHTML = c
+        ? kv('Course', c.name) +
+          kv('Level', c.level || s.level) +
+          kv('Start / End', c.startDate ? `${fmtDate(c.startDate)} — ${fmtDate(c.endDate)}` : '') +
+          kv('Weeks', c.weeks) +
+          kv('Hours / week', c.hoursPerWeek)
+        : empty('No active course');
+
+      document.getElementById('card-timetable').innerHTML = c?.hoursPerWeek
+        ? `Monday to Friday · ${c.hoursPerWeek} hrs/week`
+        : empty('No timetable yet');
+
+      const a = d.accommodation;
+      document.getElementById('card-accom').innerHTML = a
+        ? kv('Type', a.type) +
+          kv('Room', a.roomType) +
+          kv('Board', a.board) +
+          kv('Provider', a.provider?.name) +
+          kv('Location', a.provider?.city) +
+          kv('Start / End', a.startDate ? `${fmtDate(a.startDate)} — ${fmtDate(a.endDate)}` : '')
+        : empty('No accommodation booked');
+
+      const docs = d.documents || [];
+      document.getElementById('card-docs').innerHTML = docs.length
+        ? docs.map(doc => `<div class="kv"><span class="kv-label">${esc(doc.template?.name || doc.documentType)}</span><span class="kv-value">${fmtDate(doc.issuedAt)}</span></div>`).join('')
+        : empty('No documents issued yet');
+
+      const att = d.attendance || {};
+      document.getElementById('card-attendance').innerHTML =
+        `<div class="attendance-stats">` +
+        kv('This week', att.weekPct != null ? att.weekPct + '%' : '—') +
+        kv('Overall', att.overallPct != null ? att.overallPct + '%' : '—') +
+        kv('Records on file', att.totalRecords ?? 0) +
+        `</div><div id="absences-list">Loading absences…</div>`;
+      loadAbsences();
+      loadChallenges();
     })
     .catch(() => {});
+
+  // ── Absences (last 60 days) ───────────────────
+  const REASON_LABELS = {
+    SICK: 'Sick',
+    IRP_APPT: 'IRP / visa appointment',
+    PPS_APPT: 'PPS appointment',
+    EXAM: 'Exam / academic',
+    TRANSPORT: 'Public transport disruption',
+    WEATHER: 'Weather warning',
+    OTHER: 'Other (please specify)',
+  };
+
+  async function loadAbsences() {
+    const wrap = document.getElementById('absences-list');
+    if (!wrap) return;
+    try {
+      const [pastRes, plannedRes] = await Promise.all([
+        fetch('/sis/student/api/absences?days=60'),
+        fetch('/sis/student/api/planned-absences?days=60'),
+      ]);
+      const past = pastRes.ok ? await pastRes.json() : [];
+      const planned = plannedRes.ok ? await plannedRes.json() : [];
+
+      const helpHtml = '<div class="attendance-help">If you have a reason for an absence (sickness, IRP/visa appointment, etc.), record it here. <strong>Reasons do not change your attendance %</strong> — they\'re kept on file for the school and for any later review of your visa renewal.</div>';
+
+      const plannedSection = `
+        <div style="margin-top:8px;padding-top:8px">
+          <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px">Planned absences <span style="font-weight:400;color:var(--muted)">— let us know in advance</span></div>
+          ${planned.length ? planned.map(a => renderAbsenceRow(a, true)).join('') : '<div style="font-size:12px;color:var(--muted);margin-bottom:6px">None tagged.</div>'}
+          <div id="plan-form-slot"></div>
+          <button type="button" onclick="openPlanForm()" id="plan-add-btn" style="margin-top:4px;background:transparent;border:1px dashed var(--brand);color:var(--brand);padding:6px 10px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">+ Tag a planned absence</button>
+        </div>`;
+
+      const pastSection = past.length
+        ? `<div style="margin-top:14px;padding-top:8px;border-top:1px solid var(--border)">
+             <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px">Recorded absences <span style="font-weight:400;color:var(--muted)">— last 60 days</span></div>
+             ${past.map(a => renderAbsenceRow(a, false)).join('')}
+           </div>`
+        : '<div style="margin-top:8px;font-size:12px;color:var(--muted)">No absences recorded in the last 60 days. 🎉</div>';
+
+      wrap.innerHTML = helpHtml + plannedSection + pastSection;
+    } catch {
+      wrap.innerHTML = empty('Could not load absences');
+    }
+  }
+
+  function openPlanForm() {
+    const slot = document.getElementById('plan-form-slot');
+    const btn = document.getElementById('plan-add-btn');
+    if (!slot || !btn) return;
+    btn.style.display = 'none';
+    const today = new Date();
+    const minDate = today.toISOString().slice(0, 10);
+    const max = new Date(today); max.setDate(max.getDate() + 60);
+    const maxDate = max.toISOString().slice(0, 10);
+    const opts = ['<option value="">— select reason —</option>']
+      .concat(Object.entries(REASON_LABELS).map(([k, v]) => `<option value="${k}">${esc(v)}</option>`))
+      .join('');
+    slot.innerHTML = `
+      <div class="absence-row" style="background:#fffbeb;border-radius:8px;padding:10px;border:1px solid #fde68a">
+        <div class="absence-date">Add a planned absence</div>
+        <input type="date" id="plan-date" min="${minDate}" max="${maxDate}" style="margin-top:4px">
+        <select id="plan-reason">${opts}</select>
+        <input type="text" id="plan-note" placeholder="Brief detail (optional)" maxlength="500" style="margin-top:4px">
+        <div style="display:flex;gap:6px;margin-top:4px">
+          <button type="button" onclick="cancelPlanForm()" class="cam-btn secondary" style="flex:0 0 auto;padding:6px 10px;font-size:12px;border-radius:6px">Cancel</button>
+          <button type="button" onclick="savePlanForm()" class="cam-btn primary" style="flex:1;padding:6px 10px;font-size:12px;border-radius:6px">Save</button>
+        </div>
+      </div>`;
+  }
+
+  function cancelPlanForm() {
+    const slot = document.getElementById('plan-form-slot');
+    const btn = document.getElementById('plan-add-btn');
+    if (slot) slot.innerHTML = '';
+    if (btn) btn.style.display = '';
+  }
+
+  async function savePlanForm() {
+    const date = document.getElementById('plan-date')?.value;
+    const reason = document.getElementById('plan-reason')?.value;
+    const noteText = document.getElementById('plan-note')?.value || '';
+    if (!date) { alert('Pick a date.'); return; }
+    if (!reason) { alert('Pick a reason.'); return; }
+    try {
+      const r = await fetch('/sis/student/api/absence-reason', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date, reason, noteText }),
+      });
+      if (!r.ok) {
+        let msg = 'Save failed';
+        try { const j = await r.json(); if (j?.error) msg = j.error; } catch {}
+        alert(msg);
+        return;
+      }
+      cancelPlanForm();
+      loadAbsences();
+    } catch (e) {
+      alert('Save failed: ' + e.message);
+    }
+  }
+
+  function renderAbsenceRow(a, isPlanned) {
+    const d = new Date(a.date + 'T00:00:00');
+    const dateLabel = d.toLocaleDateString('en-IE', { weekday:'short', day:'2-digit', month:'short' });
+    const cls = a.className ? ` · ${esc(a.className)}` : (isPlanned ? ' · upcoming' : '');
+    const opts = ['<option value="">— select reason —</option>']
+      .concat(Object.entries(REASON_LABELS).map(([k, v]) =>
+        `<option value="${k}"${a.reason === k ? ' selected' : ''}>${esc(v)}</option>`))
+      .join('');
+    const noteVisible = a.reason === 'OTHER' ? '' : 'display:none';
+    const certVisible = a.reason === 'SICK' ? '' : 'display:none';
+    const certs = a.certs || [];
+    const CERT_MAX = 5;
+    const certListHtml = certs.length
+      ? `<div style="display:flex;flex-direction:column;gap:4px">${certs.map(c =>
+          `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+             <a href="/sis/student/api/absence-reason/${a.date}/cert/${c.id}" target="_blank" class="reason-saved" style="text-decoration:none;background:#dbeafe;color:#1e40af">📎 ${esc(c.name)}</a>
+             <button onclick="removeCert('${a.date}',${c.id})" style="background:transparent;border:0;color:var(--muted);font-size:11px;cursor:pointer;text-decoration:underline">remove</button>
+           </div>`
+        ).join('')}</div>`
+      : '';
+    const uploadButtonsHtml = certs.length < CERT_MAX
+      ? `<div style="display:flex;gap:6px;flex-wrap:wrap">
+           <button type="button" onclick="openCamera('${a.date}')" style="cursor:pointer;font-size:12px;font-weight:600;color:var(--brand);padding:6px 10px;border:1px solid var(--brand);border-radius:6px;background:#fff">📷 Take Photo</button>
+           <label style="cursor:pointer;font-size:12px;font-weight:600;color:var(--brand);padding:6px 10px;border:1px solid var(--brand);border-radius:6px">📁 Upload Image / PDF
+             <input type="file" accept="image/*,.pdf" hidden onchange="uploadCert('${a.date}', this.files); this.value=''">
+           </label>
+         </div>`
+      : `<div style="font-size:11px;color:var(--muted)">Maximum ${CERT_MAX} files reached.</div>`;
+    const intro = certs.length === 0
+      ? `<div style="font-size:11px;color:var(--muted)">Would you like to attach a medical cert for this illness? <em>(optional, up to ${CERT_MAX} pages/files)</em></div>`
+      : `<div style="font-size:11px;color:var(--muted)">Add another page if your cert spans multiple sheets (${certs.length} of ${CERT_MAX}):</div>`;
+    const certBlock = `<div style="display:flex;flex-direction:column;gap:8px">${certListHtml}${intro}${uploadButtonsHtml}</div>`;
+    return `
+      <div class="absence-row" data-date="${a.date}">
+        <div class="absence-head">
+          <div>
+            <div class="absence-date">${dateLabel}</div>
+            <div class="absence-meta">${isPlanned ? 'Planned' : esc(a.status || 'Absent')}${cls}</div>
+          </div>
+          ${a.reason ? `<span class="reason-saved">Reason on file<button onclick="clearAbsenceReason('${a.date}')" title="Remove">×</button></span>` : ''}
+        </div>
+        <select onchange="onReasonChange(this)" data-date="${a.date}">${opts}</select>
+        <input type="text" placeholder="Brief detail (optional)" maxlength="500" value="${esc(a.noteText || '')}" data-note="${a.date}" style="${noteVisible}">
+        <div data-cert-block="${a.date}" style="${certVisible}">${certBlock}</div>
+      </div>`;
+  }
+
+  async function uploadCert(date, files) {
+    if (!files || !files.length) return;
+    const file = files[0];
+    const fd = new FormData();
+    fd.append('file', file);
+    try {
+      const r = await fetch('/sis/student/api/absence-reason/' + encodeURIComponent(date) + '/cert', { method: 'POST', body: fd });
+      if (!r.ok) {
+        let msg = 'Upload failed';
+        try { const j = await r.json(); if (j?.error) msg = j.error; } catch {}
+        alert(msg);
+        return;
+      }
+      loadAbsences();
+    } catch (e) {
+      alert('Upload failed: ' + e.message);
+    }
+  }
+
+  async function removeCert(date, fileId) {
+    if (!confirm('Remove this file?')) return;
+    try {
+      await fetch('/sis/student/api/absence-reason/' + encodeURIComponent(date) + '/cert/' + fileId, { method: 'DELETE' });
+      loadAbsences();
+    } catch {
+      alert('Could not remove the cert');
+    }
+  }
+
+  // ── Camera capture (getUserMedia) ─────────────
+  // Falls back to the file picker with capture="environment" if getUserMedia
+  // is unavailable or the user denies camera access.
+  let _camStream = null;
+  async function openCamera(date) {
+    if (!navigator.mediaDevices?.getUserMedia) return openCameraFallback(date);
+    const overlay = document.createElement('div');
+    overlay.className = 'cam-overlay';
+    overlay.innerHTML = `
+      <div class="cam-box">
+        <video autoplay playsinline></video>
+        <canvas style="display:none"></canvas>
+        <div class="cam-error" id="cam-err" style="display:none"></div>
+        <div class="cam-actions">
+          <button class="cam-btn secondary" type="button" data-act="cancel">Cancel</button>
+          <button class="cam-btn primary" type="button" data-act="snap">📷 Capture</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    const video = overlay.querySelector('video');
+    const canvas = overlay.querySelector('canvas');
+    const errEl = overlay.querySelector('#cam-err');
+    const close = () => {
+      if (_camStream) { _camStream.getTracks().forEach(t => t.stop()); _camStream = null; }
+      overlay.remove();
+    };
+    overlay.querySelector('[data-act="cancel"]').onclick = close;
+    overlay.querySelector('[data-act="snap"]').onclick = async () => {
+      const w = video.videoWidth, h = video.videoHeight;
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(video, 0, 0, w, h);
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+        const file = new File([blob], `cert-${date}.jpg`, { type: 'image/jpeg' });
+        close();
+        await uploadCert(date, [file]);
+      }, 'image/jpeg', 0.9);
+    };
+    try {
+      _camStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' } },
+        audio: false,
+      });
+      video.srcObject = _camStream;
+    } catch (e) {
+      errEl.style.display = '';
+      errEl.textContent = 'Camera not available: ' + (e.message || 'permission denied') + '. Falling back to file picker.';
+      setTimeout(() => { close(); openCameraFallback(date); }, 1500);
+    }
+  }
+
+  // Fallback for browsers without getUserMedia (or denied permission)
+  function openCameraFallback(date) {
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = 'image/*'; inp.setAttribute('capture', 'environment');
+    inp.onchange = () => uploadCert(date, inp.files);
+    inp.click();
+  }
+
+  async function onReasonChange(sel) {
+    const date = sel.dataset.date;
+    const reason = sel.value;
+    const noteInput = sel.parentElement.querySelector('input[data-note]');
+    if (reason === 'OTHER') {
+      noteInput.style.display = '';
+      noteInput.focus();
+      // Save once they blur the note field, or immediately if they pick a non-Other reason
+      noteInput.onblur = () => saveReason(date, reason, noteInput.value);
+      return;
+    }
+    noteInput.style.display = 'none';
+    if (!reason) return; // empty selection — do nothing
+    await saveReason(date, reason, '');
+  }
+
+  async function saveReason(date, reason, noteText) {
+    try {
+      const r = await fetch('/sis/student/api/absence-reason', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date, reason, noteText }),
+      });
+      if (!r.ok) throw new Error('save failed');
+      loadAbsences();  // refresh to show "Reason on file" badge
+    } catch {
+      alert('Could not save the reason. Please try again.');
+    }
+  }
+
+  async function clearAbsenceReason(date) {
+    if (!confirm('Remove the reason for this absence?')) return;
+    try {
+      await fetch('/sis/student/api/absence-reason/' + encodeURIComponent(date), { method: 'DELETE' });
+      loadAbsences();
+    } catch {
+      alert('Could not remove the reason.');
+    }
+  }
+
+  // ── Challenges ─────────────────────────────────────────────────
+  // The /challenges endpoint returns six items with `done` + `state` and
+  // type-specific `data`. Each card renders the same way; per-type bodies
+  // diverge for inputs (handles, URLs, content tasks).
+  async function loadChallenges() {
+    try {
+      const res = await fetch('/sis/student/api/challenges');
+      if (!res.ok) return;
+      const d = await res.json();
+      const items = d.items || [];
+
+      // Progress bar
+      const done = d.progress?.done ?? 0;
+      const total = d.progress?.total ?? items.length;
+      const pct = total ? Math.round((done / total) * 100) : 0;
+      document.getElementById('progressPct').textContent = `${done} of ${total} complete`;
+      document.getElementById('progressBar').style.width = `${pct}%`;
+      document.getElementById('progressNote').textContent = pct === 100 ? 'All done — you\'re a Champion 🏆' : (pct >= 50 ? 'You\'re on your way 🦁' : 'Get going — easy wins below.');
+
+      // Badge strip — light up the ones that are done
+      const badgeOrder = ['social','content','course_attended','activity_attended','review','ambassador'];
+      const badgeHtml = badgeOrder.map(k => {
+        const it = items.find(i => i.key === k);
+        const cls = it && it.done ? 'badge' : 'badge locked';
+        const emoji = ({social:'📱',content:'🎬',course_attended:'🎯',activity_attended:'🎉',review:'⭐',ambassador:'🏆'})[k];
+        const label = ({social:'Social',content:'Creator',course_attended:'Attended',activity_attended:'Activity',review:'Review',ambassador:'Ambassador'})[k];
+        return `<div class="${cls}"><span class="badge-emoji">${emoji}</span><div class="badge-label">${label}</div></div>`;
+      }).join('');
+      document.getElementById('badgeStrip').innerHTML = badgeHtml;
+
+      // Detail cards
+      const cardsWrap = document.getElementById('challengeCards');
+      cardsWrap.innerHTML = items.map(it => renderChallengeCard(it)).join('');
+      // Once the activity-attended card is in the DOM, hydrate its feed
+      loadActivitiesFeed();
+    } catch {
+      // silent — challenge tab will just stay in skeleton state
+    }
+  }
+
+  async function loadActivitiesFeed() {
+    const wrap = document.getElementById('activitiesFeed');
+    if (!wrap) return;
+    try {
+      const list = await fetch('/sis/student/api/activities').then(r => r.ok ? r.json() : []);
+      // Show the next 8 (upcoming + recent past 7d)
+      const today = new Date(); today.setHours(0,0,0,0);
+      const upcoming = list.filter(a => new Date(a.date) >= today).slice(0, 8);
+      if (!upcoming.length) {
+        wrap.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 0">Nothing scheduled right now — Kelly will post new activities soon.</div>';
+        return;
+      }
+      wrap.innerHTML = upcoming.map(renderActivityRow).join('');
+    } catch {
+      wrap.innerHTML = '<div style="font-size:12px;color:var(--muted)">Could not load activities.</div>';
+    }
+  }
+
+  function renderActivityRow(a) {
+    const dt = new Date(a.date);
+    const dateLabel = dt.toLocaleDateString('en-IE', { weekday:'short', day:'numeric', month:'short' });
+    const timeLabel = a.startTime ? ` · ${a.startTime}` : '';
+    const cost = (a.cost && Number(a.cost) > 0) ? `€${Number(a.cost).toFixed(2)}` : 'Free';
+    const imgUrl = a.imageFilename ? `/sis/api/activities/image/${encodeURIComponent(a.imageFilename)}` : null;
+    const placeholder = `<div style="width:64px;height:64px;border-radius:8px;background:linear-gradient(135deg,#a7f3d0,#7dd3fc);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px">🎉</div>`;
+    const imgHtml = imgUrl ? `<img src="${imgUrl}" style="width:64px;height:64px;border-radius:8px;object-fit:cover;flex-shrink:0">` : placeholder;
+    const isGoing = !!a.myRsvp;
+
+    return `<div class="activity-row" data-aid="${a.id}" style="display:flex;gap:12px;align-items:center;padding:10px;border:1px solid var(--border);border-radius:10px;background:#fff">
+      ${imgHtml}
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:14px;color:var(--text)">${esc(a.title)}</div>
+        <div style="font-size:12px;color:var(--muted)">${dateLabel}${timeLabel} · ${cost}${a.location ? ' · ' + esc(a.location) : ''}</div>
+        ${a.description ? `<div style="font-size:12px;color:var(--text);margin-top:4px;line-height:1.4">${esc(a.description)}</div>` : ''}
+      </div>
+      <button onclick="toggleActivityRsvp(${a.id}, ${isGoing}, this)" class="rsvp-btn ${isGoing?'rsvp-on':''}" style="flex-shrink:0;border:0;border-radius:50%;width:44px;height:44px;cursor:pointer;font-size:20px;background:${isGoing?'#10b981':'#e5e7eb'};color:${isGoing?'#fff':'#6b7280'};transition:transform 0.15s ease, background 0.15s ease" title="${isGoing?'You\\'re going!':'Tap to RSVP'}">${isGoing?'✓':'+'}</button>
+    </div>`;
+  }
+
+  async function toggleActivityRsvp(id, currentlyOn, btn) {
+    try {
+      if (currentlyOn) {
+        await fetch('/sis/student/api/activities/' + id + '/rsvp', { method: 'DELETE' });
+      } else {
+        await fetch('/sis/student/api/activities/' + id + '/rsvp', { method: 'POST' });
+        // Celebration burst
+        if (btn) celebrate(btn);
+      }
+      loadActivitiesFeed();
+    } catch { alert('Could not update RSVP.'); }
+  }
+
+  // Quick CSS particle burst on RSVP — emoji confetti rising and fading.
+  function celebrate(anchor) {
+    const rect = anchor.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const emojis = ['🎉','✨','🎊','⭐','🥳'];
+    for (let i = 0; i < 12; i++) {
+      const span = document.createElement('span');
+      span.textContent = emojis[i % emojis.length];
+      span.style.cssText = `position:fixed;left:${cx}px;top:${cy}px;font-size:18px;pointer-events:none;z-index:9999;transition:transform 0.9s ease-out, opacity 0.9s ease-out;will-change:transform`;
+      document.body.appendChild(span);
+      const angle = (Math.PI * 2 * i) / 12;
+      const dist = 60 + Math.random() * 40;
+      const tx = Math.cos(angle) * dist;
+      const ty = Math.sin(angle) * dist - 40;
+      requestAnimationFrame(() => {
+        span.style.transform = `translate(${tx}px, ${ty}px) scale(${1 + Math.random()})`;
+        span.style.opacity = '0';
+      });
+      setTimeout(() => span.remove(), 950);
+    }
+  }
+
+  function renderChallengeCard(it) {
+    const pillCls = it.done ? 'pill-green' : (it.state && it.state.toLowerCase().includes('await') ? 'pill-grey' : 'pill-grey');
+    const pillTxt = it.done ? 'Approved' : it.state;
+    const body = (() => {
+      switch (it.key) {
+        case 'social': return socialBody(it.data);
+        case 'content': return contentBody(it.data);
+        case 'course_attended': return courseAttendedBody(it.data);
+        case 'activity_attended': return activityAttendedBody(it.data);
+        case 'review': return reviewBody(it.data);
+        case 'ambassador': return ambassadorBody(it.data);
+        default: return '';
+      }
+    })();
+    return `
+      <section class="card collapsed">
+        <div class="card-header" onclick="toggleCard(this)">
+          <div class="card-title"><span class="card-icon">${it.icon}</span> ${esc(it.label)} <span class="pill ${pillCls}">${esc(pillTxt)}</span></div>
+          <span class="chevron">▾</span>
+        </div>
+        <div class="card-body">${body}</div>
+      </section>`;
+  }
+
+  function socialBody(d) {
+    const handle = d?.instagramHandle || '';
+    return `
+      <div class="kv"><span class="kv-label">Instagram</span><span class="kv-value">
+        <input id="igHandle" type="text" placeholder="@yourhandle" value="${esc(handle ? '@' + handle : '')}" style="width:160px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-family:inherit;font-size:13px">
+      </span></div>
+      <div class="kv"><span class="kv-label">Followed ULearn?</span><span class="kv-value">
+        ${d?.followVerified ? 'Yes! 🙌 (verified)' : (handle ? 'Awaiting verification by Kelly' : 'Add your handle first')}
+      </span></div>
+      <div style="margin-top:10px"><button onclick="saveSocial()" style="background:var(--brand);color:white;border:0;padding:6px 14px;border-radius:4px;font-family:inherit;font-size:13px;cursor:pointer">Save handle</button></div>`;
+  }
+
+  function contentBody(d) {
+    const items = d?.content || [];
+    const target = d?.target || 3;
+    const verified = d?.verified || 0;
+    let rows = items.map(c => {
+      const dot = c.verified ? '<div class="task-dot done">✓</div>' : '<div class="task-dot review">⏱</div>';
+      const sub = c.verified ? 'Approved' : 'Under review';
+      const action = c.verified ? '' : `<div class="task-action" onclick="removeContent(${c.id})">Remove</div>`;
+      return `<div class="task">${dot}<div class="task-body"><div class="task-title"><a href="${esc(c.url)}" target="_blank" style="color:var(--brand);text-decoration:none">${esc(c.url.length>40?c.url.slice(0,40)+'…':c.url)}</a></div><div class="task-sub">${sub}</div></div>${action}</div>`;
+    }).join('');
+    if (items.length < target) {
+      rows += `<div class="task"><div class="task-dot">+</div><div class="task-body">
+        <div class="task-title"><input id="contentUrl" type="text" placeholder="Paste your post/video URL" style="width:100%;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-family:inherit;font-size:13px"></div>
+        <div class="task-sub">${verified} of ${target} verified</div>
+      </div><div class="task-action" onclick="addContent()">Submit</div></div>`;
+    }
+    return rows;
+  }
+
+  function courseAttendedBody(d) {
+    if (d?.periodPct === null) return 'No attendance data yet — once class records start, this will reflect your most-recent week or month.';
+    const period = d?.periodKind === 'WEEK' ? 'this week' : 'this month';
+    if (d?.periodPct === 100) return `🎯 100% attendance ${period}. Keep it up — every full-attendance period unlocks this.`;
+    return `Your attendance ${period}: <strong>${d?.periodPct}%</strong>. Get to 100% (no absences Mon–Fri) to unlock this challenge.`;
+  }
+
+  function activityAttendedBody(d) {
+    const attended = d?.attended || [];
+    const attendedHtml = attended.length
+      ? attended.map(a => `<div class="task" style="padding:6px 0"><div class="task-dot done">✓</div><div class="task-body"><div class="task-title">${esc(a.title)}</div><div class="task-sub">${esc(new Date(a.date).toLocaleDateString('en-IE', {day:'numeric',month:'short'}))}</div></div></div>`).join('')
+      : '';
+    return `
+      ${attended.length ? `<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px">You showed up ✨</div>${attendedHtml}<hr style="margin:14px 0;border:0;border-top:1px solid var(--border)">` : ''}
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">Upcoming activities</div>
+      <div id="activitiesFeed" style="display:flex;flex-direction:column;gap:10px">Loading…</div>`;
+  }
+
+  function reviewBody(d) {
+    const gUrl = d?.googleUrl || '';
+    const tpUrl = d?.trustpilotUrl || '';
+    return `
+      <div class="kv"><span class="kv-label">Google review URL</span><span class="kv-value">
+        <input id="googleUrl" type="text" placeholder="https://…" value="${esc(gUrl)}" style="width:200px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-family:inherit;font-size:13px">
+      </span></div>
+      <div class="kv"><span class="kv-label">Status</span><span class="kv-value">${d?.googleVerified ? '⭐ Verified 5-star' : (gUrl ? 'Awaiting verification by Kelly' : 'Add your link')}</span></div>
+      <div class="kv"><span class="kv-label">Trustpilot URL <span style="color:var(--muted);font-weight:400">(optional)</span></span><span class="kv-value">
+        <input id="trustpilotUrl" type="text" placeholder="https://…" value="${esc(tpUrl)}" style="width:200px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-family:inherit;font-size:13px">
+      </span></div>
+      <div style="margin-top:10px"><button onclick="saveReview()" style="background:var(--brand);color:white;border:0;padding:6px 14px;border-radius:4px;font-family:inherit;font-size:13px;cursor:pointer">Save</button></div>
+      <div style="margin-top:8px;font-size:12px;color:var(--muted);line-height:1.5">A 5★ Google review unlocks your Ambassador badge and code. Trustpilot is optional — usually captured during your booking.</div>`;
+  }
+
+  function ambassadorBody(d) {
+    if (!d?.code) {
+      return '<div style="font-size:13px;color:var(--muted);line-height:1.5">Submit a 5★ Google Review (above). Once Kelly verifies it, your unique Ambassador code will appear here. Use it on any content you create — anyone who books with that code gets 10% off, and you get a 10% reward.</div>';
+    }
+    return `
+      <div class="kv"><span class="kv-label">Your code</span><span class="kv-value" style="font-family:var(--font-mono,monospace);font-weight:700;color:var(--brand);font-size:15px">${esc(d.code)}</span></div>
+      <div style="margin-top:10px;font-size:12px;color:var(--muted);line-height:1.5">Add this code to any content you create about ULearn. Bookings using it get 10% off; you receive a 10% reward.</div>`;
+  }
+
+  async function saveSocial() {
+    const handle = document.getElementById('igHandle')?.value?.trim() || '';
+    try {
+      await fetch('/sis/student/api/social', { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ instagramHandle: handle }) });
+      loadChallenges();
+    } catch { alert('Could not save handle.'); }
+  }
+  async function saveReview() {
+    const gUrl = document.getElementById('googleUrl')?.value?.trim() || '';
+    const tpUrl = document.getElementById('trustpilotUrl')?.value?.trim() || '';
+    try {
+      await fetch('/sis/student/api/social', {
+        method: 'PATCH',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ googleReviewUrl: gUrl, trustpilotReviewUrl: tpUrl }),
+      });
+      loadChallenges();
+    } catch { alert('Could not save review URLs.'); }
+  }
+  async function addContent() {
+    const url = document.getElementById('contentUrl')?.value?.trim() || '';
+    if (!url) return;
+    try {
+      const r = await fetch('/sis/student/api/content', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ url, kind: 'VIDEO' }) });
+      if (!r.ok) { const j = await r.json().catch(()=>({})); alert(j.error || 'Could not submit'); return; }
+      loadChallenges();
+    } catch { alert('Could not submit.'); }
+  }
+  async function removeContent(id) {
+    if (!confirm('Remove this submission?')) return;
+    try {
+      const r = await fetch('/sis/student/api/content/' + id, { method: 'DELETE' });
+      if (!r.ok) { const j = await r.json().catch(()=>({})); alert(j.error || 'Could not remove'); return; }
+      loadChallenges();
+    } catch { alert('Could not remove.'); }
+  }
 </script>
 
 </body>

@@ -5,6 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../generated/prisma/client';
+import { extractFees } from './fidelo-fee-extractor';
 
 dotenv.config();
 
@@ -125,7 +126,7 @@ async function main() {
   const entries = Object.entries(listData.entries || {});
   console.log(`Found ${entries.length} bookings`);
 
-  const stats = { students: 0, studentsUpdated: 0, bookings: 0, bookingsSkipped: 0, territorySkipped: 0, courses: 0, accommodations: 0, holidays: 0, agencies: 0, errors: 0 };
+  const stats = { students: 0, studentsUpdated: 0, bookings: 0, bookingsSkipped: 0, territorySkipped: 0, courses: 0, coursesWithFee: 0, accommodations: 0, accommsWithFee: 0, holidays: 0, agencies: 0, errors: 0 };
 
   for (let i = 0; i < entries.length; i++) {
     const [bookingIdStr, listEntry] = entries[i] as [string, any];
@@ -147,7 +148,7 @@ async function main() {
 
     try {
       // Fetch full booking detail
-      const detail = await fideloGet(`/api/1.1/ts/booking/${fideloBookingId}`);
+      const detail = await fideloGet(`/api/1.1/ts/booking/${fideloBookingId}?include_inactive_services=1`);
       const student = detail.data?.student;
       const booking = detail.data?.booking;
       if (!student || !booking) { console.log(`  [${i+1}] No student/booking data for ${fideloBookingId}, skipping`); stats.errors++; continue; }
@@ -237,9 +238,11 @@ async function main() {
 
       // Phase 4: Map courses
       const coursesData: any[] = [];
+      const courseFeeInputs: { name: string; from: string | null; until: string | null; weeks: number | null; hoursPerWeek: number | null }[] = [];
       if (booking.courses) {
         for (const [courseId, course] of Object.entries(booking.courses) as [string, any][]) {
           const category = mapCourseCategory(course.category);
+          const hpw = getHoursPerWeek(category);
           coursesData.push({
             name: course.name || 'Unknown Course',
             category,
@@ -247,18 +250,29 @@ async function main() {
             startDate: parseDate(course.from),
             endDate: parseDate(course.until),
             weeks: course.weeks || null,
-            hoursPerWeek: getHoursPerWeek(category),
+            hoursPerWeek: hpw,
             active: course.active === 1,
             fideloCourseId: parseInt(courseId),
+          });
+          courseFeeInputs.push({
+            name: course.name || '',
+            from: course.from || null,
+            until: course.until || null,
+            weeks: course.weeks ? Number(course.weeks) : null,
+            hoursPerWeek: hpw,
           });
           stats.courses++;
         }
       }
 
-      // Map accommodation
+      // Map accommodation. Fidelo returns the array under `accommodations` (plural)
+      // — earlier code looked for `accommodation` (singular) which silently dropped
+      // every accom row across all 17,816 historical Fidelo imports. Fixed here.
       const accommData: any[] = [];
-      if (booking.accommodation) {
-        for (const [accommId, accomm] of Object.entries(booking.accommodation || {}) as [string, any][]) {
+      const accomFeeInputs: { from: string | null; until: string | null; weeks: number | null }[] = [];
+      const accomSource = (booking as any).accommodations || (booking as any).accommodation;
+      if (accomSource) {
+        for (const [accommId, accomm] of Object.entries(accomSource || {}) as [string, any][]) {
           accommData.push({
             accommodationType: accomm.category || null,
             roomType: accomm.roomtype || null,
@@ -268,9 +282,25 @@ async function main() {
             weeks: accomm.weeks || null,
             active: accomm.active === 1,
           });
+          accomFeeInputs.push({
+            from: accomm.from || null,
+            until: accomm.until || null,
+            weeks: accomm.weeks ? Number(accomm.weeks) : null,
+          });
           stats.accommodations++;
         }
       }
+
+      // Extract per-course / per-accommodation fees from invoice line items.
+      // Fidelo exposes these on detail.invoices[].items[] — see fidelo-fee-extractor.ts.
+      const invoices = (detail as any)?.data?.invoices || (detail as any)?.invoices || [];
+      const fees = extractFees({ courses: courseFeeInputs, accommodations: accomFeeInputs, invoices });
+      coursesData.forEach((c, i) => {
+        if (fees.courseFees[i] > 0) { c.fee = fees.courseFees[i]; stats.coursesWithFee++; }
+      });
+      accommData.forEach((a, i) => {
+        if (fees.accommodationFees[i] > 0) { a.fee = fees.accommodationFees[i]; stats.accommsWithFee++; }
+      });
 
       // Map holidays
       const holidaysData: any[] = [];
@@ -321,7 +351,7 @@ async function main() {
   console.log('\n\n=== Import Complete ===');
   console.log(`Students: ${stats.students} created, ${stats.studentsUpdated} updated`);
   console.log(`Bookings: ${stats.bookings} created, ${stats.bookingsSkipped} skipped (already imported), ${stats.territorySkipped} skipped (unsupported territory)`);
-  console.log(`Courses: ${stats.courses}, Accommodation: ${stats.accommodations}, Holidays: ${stats.holidays}`);
+  console.log(`Courses: ${stats.courses} (${stats.coursesWithFee} with fee), Accommodation: ${stats.accommodations} (${stats.accommsWithFee} with fee), Holidays: ${stats.holidays}`);
   console.log(`Agencies matched/created: ${stats.agencies}`);
   console.log(`Errors: ${stats.errors}`);
 

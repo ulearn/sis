@@ -158,6 +158,16 @@ export function classRoutes(prisma: PrismaClient) {
     catch (e) { res.status(500).json({ error: String(e) }); }
   });
 
+  // Admin-only — gated client-side by hiding the button; server-side gate
+  // here belt-and-braces in case the URL is hit directly.
+  router.get('/profit-margin', async (req, res) => {
+    if ((req as any).session?.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin only' });
+    }
+    try { res.json(await scripts.profitMargin(req.query)); }
+    catch (e) { res.status(500).json({ error: String(e) }); }
+  });
+
   // Student assignments
   router.post('/assign', async (req, res) => {
     try { res.status(201).json(await scripts.assignStudent(req.body)); }

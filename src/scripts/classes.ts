@@ -54,7 +54,18 @@ export function classScripts(prisma: PrismaClient) {
             bookingCourse: {
               include: {
                 booking: {
-                  include: { student: { select: { id: true, firstName: true, lastName: true, currentLevel: true } } }
+                  include: {
+                    student: { select: { id: true, firstName: true, lastName: true, currentLevel: true } },
+                    // Holidays needed by the frontend so the class roster can mark students
+                    // as 🏖️ on-holiday during their absence window. Only those overlapping
+                    // the requested week range are loaded — keeps payload small.
+                    holidays: {
+                      where: {
+                        startDate: { lte: rangeEnd },
+                        endDate: { gte: rangeStart },
+                      },
+                    },
+                  }
                 }
               }
             }
@@ -76,7 +87,7 @@ export function classScripts(prisma: PrismaClient) {
             bookingCourse: {
               include: {
                 booking: {
-                  include: { student: true }
+                  include: { student: true, holidays: true }
                 }
               }
             }
@@ -657,12 +668,215 @@ export function classScripts(prisma: PrismaClient) {
     return prisma.teacher.delete({ where: { id } });
   }
 
+  // ── PROFIT MARGIN DASHBOARD ─────────────────
+  // Per-class gross profit / gross margin over a date range, bucketed by week.
+  // Cost = teacher hours × Teacher.hourlyRate (salaried teachers contribute 0,
+  //   matching the Cover Dashboard convention).
+  // Revenue = sum across active students of (BookingCourse.fee / (weeks * hoursPerWeek))
+  //   × class block hours run that week.
+  // V1 intentionally ignores cover overrides — the default ClassTeacher's rate is
+  //   used for the whole window. Good enough for the broad-strokes view; refine later.
+  async function profitMargin(query: Record<string, any>) {
+    const today = new Date();
+    const fromIso = query.from || new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0, 10);
+    const toIso = query.to || new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().slice(0, 10);
+    const from = new Date(fromIso + 'T00:00:00Z');
+    const to = new Date(toIso + 'T23:59:59Z');
+
+    // Build week buckets (Monday-anchored) covering [from, to].
+    const startMon = new Date(from);
+    startMon.setUTCDate(startMon.getUTCDate() - ((startMon.getUTCDay() + 6) % 7));
+    const buckets: { weekStart: Date; weekEnd: Date }[] = [];
+    let cur = new Date(startMon);
+    while (cur <= to) {
+      const wEnd = new Date(cur);
+      wEnd.setUTCDate(wEnd.getUTCDate() + 4); // Mon→Fri
+      buckets.push({ weekStart: new Date(cur), weekEnd: wEnd });
+      cur.setUTCDate(cur.getUTCDate() + 7);
+    }
+
+    // School closures within range
+    const closures = await prisma.schoolClosure.findMany({
+      where: { startDate: { lte: to }, endDate: { gte: from } },
+      select: { startDate: true, endDate: true, isPaidHoliday: true },
+    });
+    const isClosed = (d: Date) => closures.some(c => d >= c.startDate && d <= c.endDate);
+
+    // All active classes — we'll filter to those with activity in range
+    const classes = await prisma.class.findMany({
+      where: { active: true },
+      include: {
+        classroom: { select: { name: true } },
+        classTeachers: { include: { teacher: true } },
+      },
+    });
+
+    // For each class: compute block hours, then per-week cost + revenue.
+    const out: any[] = [];
+    for (const cls of classes) {
+      // Block hours per day = (end - start - break)/60
+      const [sh, sm] = (cls.startTime || '00:00').split(':').map(Number);
+      const [eh, em] = (cls.endTime || '00:00').split(':').map(Number);
+      const grossMin = (eh * 60 + (em || 0)) - (sh * 60 + (sm || 0));
+      const blockHours = Math.max(0, (grossMin - (cls.breakMinutes || 0)) / 60);
+
+      // Days the class runs (1=Mon..7=Sun stored as numbers in cls.days)
+      const runDays = new Set<number>(cls.days || [1, 2, 3, 4, 5]);
+
+      const weeks: any[] = [];
+      let totalHours = 0, totalCost = 0, totalRevenue = 0;
+
+      for (const b of buckets) {
+        // Skip weeks entirely outside [from,to]
+        if (b.weekEnd < from || b.weekStart > to) continue;
+
+        // Determine teacher for this week (first ClassTeacher whose window overlaps)
+        const ct = cls.classTeachers.find(ct =>
+          ct.startDate <= b.weekEnd && (ct.endDate == null || ct.endDate >= b.weekStart)
+        );
+        const teacher = ct?.teacher;
+        const tRate = teacher?.isSalaried ? 0 : Number(teacher?.hourlyRate || 0);
+
+        // Days the class actually ran this week (excluding closures and cancelled occurrences)
+        let daysRun = 0;
+        for (let i = 0; i < 5; i++) {
+          const d = new Date(b.weekStart);
+          d.setUTCDate(d.getUTCDate() + i);
+          // class.days uses 1=Mon..7=Sun; JS getUTCDay() 0=Sun..6=Sat → convert
+          const dow = ((d.getUTCDay() + 6) % 7) + 1;
+          if (!runDays.has(dow)) continue;
+          if (d < from || d > to) continue;
+          if (isClosed(d)) continue;
+          daysRun++;
+        }
+        if (daysRun === 0) continue;
+
+        // Subtract any cancelled ClassOccurrence rows in this week
+        const cancelledCount = await prisma.classOccurrence.count({
+          where: {
+            classId: cls.id,
+            cancelled: true,
+            date: { gte: b.weekStart, lte: b.weekEnd },
+          },
+        });
+        const effectiveDaysRun = Math.max(0, daysRun - cancelledCount);
+        if (effectiveDaysRun === 0) continue;
+
+        const hoursThisWeek = blockHours * effectiveDaysRun;
+
+        // Cost: teacher rate × hours
+        const cost = tRate * hoursThisWeek;
+
+        // Revenue: sum of (each student's hourly rate × hours) for students assigned this week
+        const assignments = await prisma.studentClassAssignment.findMany({
+          where: {
+            classId: cls.id,
+            weekStart: { lte: b.weekEnd },
+            OR: [{ weekEnd: null }, { weekEnd: { gte: b.weekStart } }],
+          },
+          include: {
+            bookingCourse: { select: { fee: true, weeks: true, hoursPerWeek: true } },
+          },
+        });
+        let studentCount = 0;
+        let revenue = 0;
+        for (const a of assignments) {
+          const bc = a.bookingCourse;
+          if (!bc || !bc.fee || !bc.weeks || !bc.hoursPerWeek) continue;
+          const totalCourseHours = Number(bc.weeks) * Number(bc.hoursPerWeek);
+          if (totalCourseHours <= 0) continue;
+          const studentHourlyRate = Number(bc.fee) / totalCourseHours;
+          revenue += studentHourlyRate * hoursThisWeek;
+          studentCount++;
+        }
+
+        const profit = revenue - cost;
+        const marginPct = revenue > 0 ? (profit / revenue) * 100 : null;
+        weeks.push({
+          weekStart: b.weekStart.toISOString().slice(0, 10),
+          weekEnd: b.weekEnd.toISOString().slice(0, 10),
+          hours: round2(hoursThisWeek),
+          studentCount,
+          revenue: round2(revenue),
+          cost: round2(cost),
+          profit: round2(profit),
+          marginPct: marginPct == null ? null : round2(marginPct),
+          teacherName: teacher ? `${teacher.firstName} ${teacher.lastName}` : null,
+          teacherRate: round2(tRate),
+        });
+        totalHours += hoursThisWeek;
+        totalCost += cost;
+        totalRevenue += revenue;
+      }
+
+      if (!weeks.length) continue; // class had no activity in range — skip
+
+      // Pull a representative teacher for the row header (most recent in window)
+      const repTeacher = cls.classTeachers
+        .filter(ct => ct.startDate <= to && (ct.endDate == null || ct.endDate >= from))
+        .sort((a, b) => b.startDate.getTime() - a.startDate.getTime())[0]?.teacher;
+
+      out.push({
+        classId: cls.id,
+        className: cls.name,
+        level: cls.level,
+        session: cls.session,
+        classroom: cls.classroom?.name || null,
+        teacherName: repTeacher ? `${repTeacher.firstName} ${repTeacher.lastName}` : null,
+        teacherRate: repTeacher?.isSalaried ? 0 : round2(Number(repTeacher?.hourlyRate || 0)),
+        teacherSalaried: !!repTeacher?.isSalaried,
+        weeks,
+        totals: {
+          hours: round2(totalHours),
+          revenue: round2(totalRevenue),
+          cost: round2(totalCost),
+          profit: round2(totalRevenue - totalCost),
+          marginPct: totalRevenue > 0 ? round2(((totalRevenue - totalCost) / totalRevenue) * 100) : null,
+        },
+      });
+    }
+
+    // Sort: lowest margin first (operationally most useful — surfaces problem classes)
+    out.sort((a, b) => {
+      const am = a.totals.marginPct ?? 999;
+      const bm = b.totals.marginPct ?? 999;
+      return am - bm;
+    });
+
+    // School-level rollup
+    const schoolTotals = out.reduce((acc, c) => ({
+      hours: acc.hours + c.totals.hours,
+      revenue: acc.revenue + c.totals.revenue,
+      cost: acc.cost + c.totals.cost,
+      profit: acc.profit + c.totals.profit,
+    }), { hours: 0, revenue: 0, cost: 0, profit: 0 });
+
+    return {
+      from: fromIso,
+      to: toIso,
+      classes: out,
+      school: {
+        hours: round2(schoolTotals.hours),
+        revenue: round2(schoolTotals.revenue),
+        cost: round2(schoolTotals.cost),
+        profit: round2(schoolTotals.profit),
+        marginPct: schoolTotals.revenue > 0
+          ? round2((schoolTotals.profit / schoolTotals.revenue) * 100)
+          : null,
+      },
+    };
+  }
+
+  function round2(n: number) {
+    return Math.round(n * 100) / 100;
+  }
+
   return {
     listClassrooms,
     listClasses, getClassById, createClass, updateClass, deleteClass,
     assignStudent, removeAssignment, endAssignment, unassignedStudents,
     getClassTeachers, assignClassTeacher, removeClassTeacher,
-    getCovers, createCover, removeCover, coverDashboard,
+    getCovers, createCover, removeCover, coverDashboard, profitMargin,
     listTeachers, getTeacherById, createTeacher, updateTeacher, deleteTeacher,
   };
 }

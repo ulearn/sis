@@ -151,6 +151,11 @@ ${FOOTER}`,
 
   <p>{{student.salutation}} {{student.last_name}} completed {{student.pronoun_possessive}} {{booking.weeks}}-week course with an attendance rate of {{student.attendance_rate}}.</p>
 
+  {if absences_list}
+  <p style="margin-top:16px"><strong>Documented absences:</strong> The following absences were recorded during {{student.pronoun_possessive}} course, with reasons supplied by the student where given:</p>
+  {{absences_list}}
+  {/if}
+
   <div data-editable="exam_info">{{custom.exam_info}}</div>
 
   <p>{{student.salutation}} {{student.last_name}} lives at the address listed above.</p>

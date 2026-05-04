@@ -76,6 +76,28 @@ export function attendanceScripts(prisma: PrismaClient) {
       where: { occurrenceId: { in: occIds } },
     });
 
+    // Pull any student-recorded absence reasons covering the same week, so the
+    // admin grid can show a small badge on absences that have a reason on file.
+    const studentIdsInWeek = (classData.studentAssignments || [])
+      .map(sa => sa.bookingCourse?.booking?.student?.id || (sa as any).student?.id)
+      .filter(Boolean);
+    const reasonRows = studentIdsInWeek.length
+      ? await prisma.absenceReason.findMany({
+          where: {
+            studentId: { in: studentIdsInWeek },
+            date: { in: days },
+          },
+          select: {
+            studentId: true, date: true, reason: true, noteText: true,
+            _count: { select: { certFiles: true } },
+          },
+        })
+      : [];
+    const reasonByKey = new Map(reasonRows.map(r => [
+      `${r.studentId}|${r.date.toISOString().slice(0, 10)}`,
+      { reason: r.reason, noteText: r.noteText, certCount: r._count.certFiles },
+    ]));
+
     // Build student rows with daily attendance.
     // Student can come from two paths:
     //   1. bookingCourse → booking → student (when assignment is linked to a booking course)
@@ -87,13 +109,18 @@ export function attendanceScripts(prisma: PrismaClient) {
       const dailyData = days.map((d, i) => {
         const occ = occurrences[i];
         const record = records.find(r => r.studentId === student.id && r.occurrenceId === occ.id);
+        const iso = d.toISOString().split('T')[0];
+        const rsn = reasonByKey.get(`${student.id}|${iso}`);
         return {
-          date: d.toISOString().split('T')[0],
+          date: iso,
           occurrenceId: occ.id,
           cancelled: occ.cancelled,
           status: record?.status || null,
           hours: record ? parseFloat(String((record as any).hours || blockHours)) : null,
           note: record?.note || null,
+          studentReason: rsn?.reason || null,
+          studentReasonNote: rsn?.noteText || null,
+          studentReasonCertCount: rsn?.certCount || 0,
         };
       });
 
@@ -276,7 +303,12 @@ export function attendanceScripts(prisma: PrismaClient) {
   }
 
   // ── Student attendance summary (for a booking/student) ──
+  // Holiday-aware: rows whose occurrence.date falls inside any BookingHoliday
+  // window are flagged onHoliday=true and excluded from the rate calculation.
+  // The full record list is still returned (with onHoliday flag) so the UI
+  // can display them with a 🏖️ badge.
   async function studentSummary(studentId: number) {
+    const { fetchStudentHolidays, filterOutHolidayDates } = await import('./attendance-pct');
     const records = await prisma.attendance.findMany({
       where: { studentId },
       include: {
@@ -289,14 +321,31 @@ export function attendanceScripts(prisma: PrismaClient) {
       orderBy: { occurrence: { date: 'desc' } },
     });
 
-    const total = records.length;
-    const present = records.filter(r => r.status === 'PRESENT' || r.status === 'LATE').length;
-    const absent = records.filter(r => r.status === 'ABSENT_UNCERTIFIED').length;
-    const absentCertified = records.filter(r => r.status === 'ABSENT_CERTIFIED').length;
-    const excused = records.filter(r => r.status === 'EXCUSED').length;
+    const holidays = await fetchStudentHolidays(prisma, studentId);
+    const ranges = holidays.map(h => {
+      const s = new Date(h.startDate); s.setHours(0,0,0,0);
+      const e = new Date(h.endDate); e.setHours(0,0,0,0);
+      return [s.getTime(), e.getTime()] as const;
+    });
+    const onHolidayDate = (dateLike: Date | null) => {
+      if (!dateLike) return false;
+      const d = new Date(dateLike); d.setHours(0,0,0,0);
+      const t = d.getTime();
+      return ranges.some(([s, e]) => t >= s && t <= e);
+    };
+
+    const flagged = records.map(r => ({ ...r, onHoliday: onHolidayDate(r.occurrence?.date || null) }));
+    const counted = filterOutHolidayDates(records, holidays);
+
+    const total = counted.length;
+    const present = counted.filter(r => r.status === 'PRESENT' || r.status === 'LATE').length;
+    const absent = counted.filter(r => r.status === 'ABSENT_UNCERTIFIED').length;
+    const absentCertified = counted.filter(r => r.status === 'ABSENT_CERTIFIED').length;
+    const excused = counted.filter(r => r.status === 'EXCUSED').length;
+    const onHolidayCount = records.length - counted.length;
     const rate = total > 0 ? Math.round((present / total) * 100) : 0;
 
-    return { total, present, absent, absentCertified, excused, rate, records };
+    return { total, present, absent, absentCertified, excused, onHoliday: onHolidayCount, rate, records: flagged };
   }
 
   return {

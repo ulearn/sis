@@ -447,6 +447,14 @@ tr:last-child td { border-bottom: none; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
           Attendance
         </div>
+        <div class="sidebar-item" onclick="window.open('https://lms.ulearnschool.com/prototype/login/staff','_blank','noopener')" title="Open the LMS in a new tab">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          LMS
+        </div>
+        <div class="sidebar-item" data-view="activities" onclick="openTab('activities','Social')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a3 3 0 1 0-2.83-4H15a2 2 0 0 0-2 2v.17"/><path d="M9 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M18 22a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><line x1="11.5" y1="10.5" x2="15.5" y2="6.5"/><line x1="11.5" y1="13.5" x2="15.5" y2="17.5"/></svg>
+          Social
+        </div>
         <div class="sidebar-item" data-view="payroll" onclick="openTab('payroll','Payroll')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
           Payroll
@@ -588,7 +596,7 @@ let tabCounter = 0;
 // Labels for view types
 const viewLabels = {
   students: 'Students', bookings: 'Bookings', classes: 'Classes', teachers: 'Teachers',
-  attendance: 'Attendance', cover: 'Cover', payroll: 'Payroll', accommodation: 'Hosts', apartments: 'Apartments', 'host-matching': 'Host Matching', 'apartment-matching': 'Apt Matching', matching: 'Matching', 'host-payments': 'Payments', documents: 'Documents',
+  attendance: 'Attendance', activities: 'Social', cover: 'Cover', payroll: 'Payroll', accommodation: 'Hosts', apartments: 'Apartments', 'host-matching': 'Host Matching', 'apartment-matching': 'Apt Matching', matching: 'Matching', 'host-payments': 'Payments', documents: 'Documents',
   'student-detail': 'Student', 'booking-detail': 'Booking', 'class-detail': 'Class',
   'accommodation-detail': 'Accommodation', 'document-detail': 'Document',
   'document-templates': 'Templates', 'document-generate': 'Generate Doc',
@@ -807,7 +815,9 @@ function loadView(view, opts = {}) {
   else if (view === 'teacher-detail') showTeacherDetail(opts.id);
   else if (view === 'teacher-detail') showTeacherDetail(opts.id);
   else if (view === 'attendance') showAttendance();
+  else if (view === 'activities') showActivities();
   else if (view === 'cover') showCoverDashboard();
+  else if (view === 'profit') showProfitMargin();
   else if (view === 'payroll') showPayroll();
   else if (view === 'accommodation') showAccommodationList();
   else if (view === 'accommodation-detail') showAccommodationDetail(opts.id);
@@ -818,7 +828,10 @@ function loadView(view, opts = {}) {
   else if (view === 'host-payments') showHostPayments();
   else if (view === 'documents') showDocumentsList();
   else if (view === 'document-detail') showDocumentDetail(opts.id);
-  else if (view === 'document-templates') showTemplatesList();
+  else if (view === 'document-templates') {
+    if (currentUser.role !== 'admin') { toast('Templates are admin-managed', true); return navigate('documents'); }
+    showTemplatesList();
+  }
   else if (view === 'document-generate') showDocumentGenerate(opts);
 }
 
@@ -1396,7 +1409,7 @@ async function showStudentDetail(id) {
                   <input type="file" multiple accept="image/*,.pdf,.doc,.docx" style="display:none" onchange="uploadStudentDocs(${s.id},this.files)">
                 </label>
               </div>
-              <div id="studentDocsList" style="display:flex;flex-direction:column;gap:4px"></div>
+              <div id="studentVisaDocsList" style="display:flex;flex-direction:column;gap:4px"></div>
             </div>
           </div>
         </div>
@@ -1687,87 +1700,11 @@ async function showStudentDetail(id) {
     html += `</div></div>`;   // close right col + detail-grid
     html += `</div>`;          // close #stTabOverview
 
-    // ── CHALLENGES TAB (scaffold) ──────────────────
+    // ── CHALLENGES TAB (live data) ─────────────────
+    // Container only — populated by loadStudentChallenges(s.id) below.
     html += `
     <div id="stTabChallenges" style="display:none">
-      <div class="detail-grid">
-        <div>
-          <div class="card" style="margin-bottom:12px">
-            <div class="card-body" style="padding:16px 18px">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-                <div style="font-size:13px;font-weight:600">Kickstarter Challenge</div>
-                <div style="font-size:12px;color:var(--text-muted)">2 of 6 complete</div>
-              </div>
-              <div style="height:6px;background:var(--bg-subtle);border-radius:999px;overflow:hidden">
-                <div style="height:100%;background:var(--accent);width:33%"></div>
-              </div>
-              <div style="font-size:11px;color:var(--text-muted);margin-top:8px">Short-course template · Week 1 of 1</div>
-            </div>
-          </div>
-
-          <div class="card" style="margin-bottom:8px">
-            <div class="card-header collapse-header open" onclick="toggleCollapse(this)" style="padding:10px 18px"><h3 style="font-size:13px">Social Platform</h3></div>
-            <div class="card-body collapse-body" style="padding:12px 18px">
-              <div class="form-grid">
-                <div class="form-group"><label class="form-label">Platform</label><div class="form-input" style="background:var(--bg-subtle);cursor:default">Instagram</div></div>
-                <div class="form-group"><label class="form-label">Handle</label><div class="form-input" style="background:var(--bg-subtle);cursor:default">@sofiamartinez</div></div>
-                <div class="form-group"><label class="form-label">Status</label><div class="form-input" style="background:var(--bg-subtle);cursor:default"><span class="badge badge-confirmed">Approved</span></div></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card" style="margin-bottom:8px">
-            <div class="card-header collapse-header open" onclick="toggleCollapse(this)" style="padding:10px 18px"><h3 style="font-size:13px">Content Tasks</h3></div>
-            <div class="card-body collapse-body" style="padding:0">
-              <div style="padding:12px 18px;border-bottom:1px solid var(--card-border);display:flex;gap:12px;align-items:center">
-                <div style="flex:1"><div style="font-size:13px;font-weight:600">Post 1 — Arrival in Dublin</div><div style="font-size:11px;color:var(--text-muted)">https://instagram.com/p/abc123 · approved by Kelly</div></div>
-                <span class="badge badge-confirmed">Approved</span>
-              </div>
-              <div style="padding:12px 18px;border-bottom:1px solid var(--card-border);display:flex;gap:12px;align-items:center">
-                <div style="flex:1"><div style="font-size:13px;font-weight:600">Post 2 — Classroom life</div><div style="font-size:11px;color:var(--text-muted)">https://instagram.com/p/def456 · submitted 2h ago</div></div>
-                <span class="badge" style="background:#fef3c7;color:#92400e">Under review</span>
-                <button class="btn btn-sm btn-primary">Approve</button>
-                <button class="btn btn-sm btn-ghost">Reject</button>
-              </div>
-              <div style="padding:12px 18px;display:flex;gap:12px;align-items:center">
-                <div style="flex:1"><div style="font-size:13px;font-weight:600">Post 3 — Activity highlight</div><div style="font-size:11px;color:var(--text-muted)">not started</div></div>
-                <span class="badge" style="background:#f1f5f9;color:#64748b">Pending</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="card" style="margin-bottom:8px">
-            <div class="card-header collapse-header" onclick="toggleCollapse(this)" style="padding:10px 18px"><h3 style="font-size:13px">Activity Attended</h3></div>
-            <div class="card-body collapse-body" style="padding:12px 18px;color:var(--text-muted);font-size:13px">No activities claimed yet · events module pending</div>
-          </div>
-
-          <div class="card" style="margin-bottom:8px">
-            <div class="card-header collapse-header" onclick="toggleCollapse(this)" style="padding:10px 18px"><h3 style="font-size:13px">Google Review</h3></div>
-            <div class="card-body collapse-body" style="padding:12px 18px;color:var(--text-muted);font-size:13px">No review submitted</div>
-          </div>
-        </div>
-
-        <div>
-          <div class="card" style="margin-bottom:12px">
-            <div class="card-header" style="padding:10px 18px"><h3 style="font-size:13px">Campaign</h3></div>
-            <div class="card-body" style="padding:12px 18px;font-size:13px">
-              <div class="kv" style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--card-border)"><span style="color:var(--text-muted)">Template</span><span>Short Course Kickstarter</span></div>
-              <div class="kv" style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--card-border)"><span style="color:var(--text-muted)">Incentive</span><span>30% Kickstarter discount</span></div>
-              <div class="kv" style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--card-border)"><span style="color:var(--text-muted)">Assigned</span><span>12 Apr 2026</span></div>
-              <div class="kv" style="display:flex;justify-content:space-between;padding:6px 0"><span style="color:var(--text-muted)">Deadline</span><span>30 May 2026</span></div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-header" style="padding:10px 18px"><h3 style="font-size:13px">Staff Actions</h3></div>
-            <div class="card-body" style="padding:12px 18px;display:flex;flex-direction:column;gap:8px">
-              <button class="btn btn-sm btn-secondary">Send reminder</button>
-              <button class="btn btn-sm btn-secondary">Mark all pending</button>
-              <button class="btn btn-sm btn-ghost" style="color:var(--text-muted)">Remove from campaign</button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div id="studentChallengesPane" style="font-size:13px;color:var(--text-muted);padding:16px 18px">Loading challenges…</div>
     </div>`;
 
     // ── LEARNING TAB (scaffold) ────────────────────
@@ -1830,8 +1767,10 @@ async function showStudentDetail(id) {
     </div>`;
 
     document.getElementById('content').innerHTML = html;
+    _stCurrentStudentId = s.id;  // so switchStudentTab('challenges') can lazy-load
     loadCommsHistory(s.id);
     loadStudentDocs(s.id);
+    loadStudentVisaDocs(s.id);
     loadCommsAttachmentOptions(s.id);
     loadEmailTemplateOptions();
     {
@@ -1842,6 +1781,7 @@ async function showStudentDetail(id) {
 }
 
 // ── STUDENT PROFILE TAB SWITCHER ──────────────
+let _stCurrentStudentId = null;
 function switchStudentTab(name) {
   const tabs = { overview: 'stTabOverview', challenges: 'stTabChallenges', learning: 'stTabLearning' };
   document.querySelectorAll('[data-st-tab]').forEach(el => {
@@ -1851,6 +1791,113 @@ function switchStudentTab(name) {
     const el = document.getElementById(id);
     if (el) el.style.display = key === name ? '' : 'none';
   });
+  if (name === 'challenges' && _stCurrentStudentId) loadStudentChallenges(_stCurrentStudentId);
+}
+
+// ── STUDENT CHALLENGES (admin verify pane) ─────
+async function loadStudentChallenges(studentId) {
+  _stCurrentStudentId = studentId;
+  const wrap = document.getElementById('studentChallengesPane');
+  if (!wrap) return;
+  try {
+    const d = await api('/students/' + studentId + '/challenges');
+    if (!d || d.error) { wrap.innerHTML = '<div style="color:var(--danger)">' + esc(d?.error || 'Could not load') + '</div>'; return; }
+    const items = d.items || [];
+    const done = d.progress?.done ?? 0;
+    const total = d.progress?.total ?? items.length;
+    const pct = total ? Math.round((done / total) * 100) : 0;
+
+    let html = `
+      <div class="card" style="margin-bottom:12px">
+        <div class="card-body" style="padding:14px 18px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div style="font-size:13px;font-weight:600">Challenge progress</div>
+            <div style="font-size:12px;color:var(--text-muted)">${done} of ${total} complete</div>
+          </div>
+          <div style="height:6px;background:var(--bg-subtle);border-radius:999px;overflow:hidden">
+            <div style="height:100%;background:var(--accent);width:${pct}%"></div>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:6px">Period: ${esc(d.periodKind || 'WEEK')}</div>
+        </div>
+      </div>`;
+
+    for (const it of items) {
+      const badgeCls = it.done ? 'badge-confirmed' : 'badge-pending';
+      const badgeTxt = it.done ? 'Done' : 'Pending';
+      html += `<div class="card" style="margin-bottom:8px">
+        <div class="card-header" style="padding:10px 18px;display:flex;align-items:center;justify-content:space-between">
+          <h3 style="font-size:13px;margin:0">${it.icon} ${esc(it.label)}</h3>
+          <span class="badge ${badgeCls}" style="font-size:10px">${badgeTxt}</span>
+        </div>
+        <div class="card-body" style="padding:12px 18px">${renderAdminChallengeBody(studentId, it)}</div>
+      </div>`;
+    }
+    wrap.innerHTML = html;
+  } catch (e) {
+    wrap.innerHTML = '<div style="color:var(--danger)">' + esc(String(e.message || e)) + '</div>';
+  }
+}
+
+function renderAdminChallengeBody(studentId, it) {
+  const d = it.data || {};
+  switch (it.key) {
+    case 'social': {
+      const handle = d.instagramHandle ? '@' + d.instagramHandle : '— not provided —';
+      return `
+        <div class="kv" style="display:flex;justify-content:space-between;padding:4px 0"><span style="color:var(--text-muted)">Handle</span><span>${esc(handle)}</span></div>
+        <div class="kv" style="display:flex;justify-content:space-between;padding:4px 0"><span style="color:var(--text-muted)">Follow verified</span><span>
+          <label style="cursor:pointer"><input type="checkbox" ${d.followVerified?'checked':''} ${!d.instagramHandle?'disabled':''} onchange="adminToggleVerify(${studentId},'instagramFollowVerified',this.checked)"> Yes</label>
+        </span></div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:6px">Tick when you've confirmed they actually follow @ulearn.</div>`;
+    }
+    case 'content': {
+      const list = (d.content || []).map(c => `
+        <div style="display:flex;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--card-border);font-size:12px">
+          <a href="${esc(c.url)}" target="_blank" style="flex:1;color:var(--brand);text-decoration:none">${esc(c.url)}</a>
+          ${c.verified
+            ? `<span class="badge badge-confirmed" style="font-size:10px">Approved</span><button class="btn btn-ghost btn-sm" onclick="adminVerifyContent(${c.id},${studentId},false)">Unverify</button>`
+            : `<button class="btn btn-sm btn-primary" onclick="adminVerifyContent(${c.id},${studentId},true)">Approve</button>`}
+        </div>`).join('');
+      return list ? `${list}<div style="font-size:11px;color:var(--text-muted);margin-top:6px">${d.verified} of ${d.target} approved.</div>` : '<div style="font-size:13px;color:var(--text-muted)">No submissions yet.</div>';
+    }
+    case 'course_attended':
+      return d.periodPct === null
+        ? '<div style="font-size:13px;color:var(--text-muted)">No attendance records yet.</div>'
+        : `<div style="font-size:13px">Attendance ${d.periodKind === 'WEEK' ? 'this week' : 'this month'}: <strong>${d.periodPct}%</strong> ${d.periodPct===100?'— ✅ unlocked':'(needs 100%)'}</div>`;
+    case 'review': {
+      const gUrl = d.googleUrl || '';
+      const tpUrl = d.trustpilotUrl || '';
+      return `
+        <div class="kv" style="display:flex;justify-content:space-between;padding:4px 0"><span style="color:var(--text-muted)">Google review URL</span><span>${gUrl ? `<a href="${esc(gUrl)}" target="_blank" style="color:var(--brand)">${esc(gUrl)}</a>` : '<em>— not provided —</em>'}</span></div>
+        <div class="kv" style="display:flex;justify-content:space-between;padding:4px 0"><span style="color:var(--text-muted)">5★ verified</span><span>
+          <label style="cursor:pointer"><input type="checkbox" ${d.googleVerified?'checked':''} ${!gUrl?'disabled':''} onchange="adminToggleVerify(${studentId},'googleReviewVerified',this.checked)"> Yes</label>
+        </span></div>
+        <div class="kv" style="display:flex;justify-content:space-between;padding:4px 0"><span style="color:var(--text-muted)">Trustpilot URL <span style="font-weight:400">(backend)</span></span><span>${tpUrl ? `<a href="${esc(tpUrl)}" target="_blank" style="color:var(--brand)">${esc(tpUrl)}</a>` : '<em>— not provided —</em>'}</span></div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:6px">Verifying the 5★ Google review mints an Ambassador code automatically.</div>`;
+    }
+    case 'ambassador':
+      return d.code
+        ? `<div class="kv" style="display:flex;justify-content:space-between;padding:4px 0"><span style="color:var(--text-muted)">Code</span><span style="font-family:var(--font-mono);font-weight:700">${esc(d.code)}</span></div>
+           <div style="font-size:11px;color:var(--text-muted);margin-top:6px">Approved ${d.approvedAt ? formatDate(d.approvedAt) : ''}</div>`
+        : '<div style="font-size:13px;color:var(--text-muted)">Unlocks when the Google Review is verified above.</div>';
+    default: return '';
+  }
+}
+
+async function adminToggleVerify(studentId, field, value) {
+  try {
+    await api('/students/' + studentId + '/challenges/verify', { method: 'PATCH', body: { [field]: value } });
+    toast('Saved');
+    loadStudentChallenges(studentId);
+  } catch (e) { toast(e.message, true); }
+}
+
+async function adminVerifyContent(contentId, studentId, verified) {
+  try {
+    await api('/students/challenges/content/' + contentId + '/verify', { method: 'PATCH', body: { verified } });
+    toast(verified ? 'Approved' : 'Unverified');
+    loadStudentChallenges(studentId);
+  } catch (e) { toast(e.message, true); }
 }
 
 // ── STUDENT DOCUMENTS PANE ────────────────────
@@ -1889,11 +1936,15 @@ async function loadStudentDocs(studentId) {
         const typeName = d.template?.name || d.documentType;
         const statusCls = d.status === 'ISSUED' ? 'badge-confirmed' : d.status === 'DRAFT' ? 'badge-enquiry' : d.status === 'SUPERSEDED' ? 'badge-pending' : 'badge-cancelled';
         const dateStr = d.issuedAt ? formatDate(d.issuedAt) : d.createdAt ? formatDate(d.createdAt) : '';
+        const delBtn = d.status === 'DRAFT'
+          ? '<button onclick="event.stopPropagation();quickDeleteDoc(' + d.id + ',' + (d.studentId || 'null') + ')" style="background:none;border:0;color:var(--danger);cursor:pointer;padding:2px 6px;font-size:14px;line-height:1" title="Delete draft">×</button>'
+          : '';
         html += '<div style="display:flex;align-items:center;gap:8px;padding:6px 18px;cursor:pointer;border-bottom:1px solid var(--bg-subtle)" onclick="navigate(\'document-detail\',{id:' + d.id + '})">'
           + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>'
           + '<span style="flex:1;font-size:13px">' + esc(typeName) + ' <span style="color:var(--text-muted);font-size:11px">v' + d.versionNo + '.0</span></span>'
           + '<span class="badge ' + statusCls + '" style="font-size:10px">' + d.status + '</span>'
           + '<span style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono)">' + dateStr + '</span>'
+          + delBtn
           + '</div>';
       }
     }
@@ -1925,8 +1976,18 @@ async function quickGenerateDoc(studentId) {
     const other = templates.filter(t => !treeKeys.has(t.category || 'other'));
     if (other.length) { tplOpts += '<optgroup label="Other">'; for (const t of other) tplOpts += '<option value="' + t.id + '">' + esc(t.name) + '</option>'; tplOpts += '</optgroup>'; }
 
-    let bkOpts = '<option value="">No booking (student-level)</option>';
-    for (const b of bookings) bkOpts += '<option value="' + b.id + '">Booking #' + b.id + ' — ' + (b.status || '') + ' (' + (b.courses?.[0]?.name || 'no course') + ')</option>';
+    // Pick a sensible default booking — most recent CONFIRMED, else most recent.
+    // /bookings already returns most-recent first.
+    const defaultBk = bookings.find(b => b.status === 'CONFIRMED') || bookings[0];
+    let bkOpts = '';
+    for (const b of bookings) {
+      const sel = (defaultBk && b.id === defaultBk.id) ? ' selected' : '';
+      bkOpts += '<option value="' + b.id + '"' + sel + '>Booking #' + b.id + ' — ' + (b.status || '') + ' (' + (b.courses?.[0]?.name || 'no course') + ')</option>';
+    }
+    bkOpts += '<option value="">No booking (student-level)</option>';
+
+    // Stash the selected template's HTML so the warning logic can scan it for booking.* tokens.
+    window.__qdocTemplates = templates;
 
     const modal = document.createElement('div');
     modal.id = 'quickDocModal';
@@ -1949,6 +2010,18 @@ async function submitQuickDoc(studentId) {
   const templateId = parseInt(document.getElementById('qdocTpl')?.value);
   const bookingId = parseInt(document.getElementById('qdocBk')?.value) || null;
   if (!templateId) { toast('Select a template', true); return; }
+
+  // Guard: if the template references booking.* / accommodation.* tokens but no
+  // booking was selected, the resulting draft will have empty dates/course/etc.
+  // Warn explicitly so staff don't ship a half-empty letter unnoticed.
+  if (!bookingId) {
+    const tpl = (window.__qdocTemplates || []).find(t => t.id === templateId);
+    const usesBooking = tpl && /\{\{(booking|accommodation|agency)\./.test(tpl.htmlTemplate || '');
+    if (usesBooking) {
+      const ok = confirm('This template uses booking/course fields (start date, end date, course name, hours, etc.) but you have not selected a booking. Those fields will be blank in the draft.\n\nGenerate anyway?');
+      if (!ok) return;
+    }
+  }
   try {
     const result = await api('/documents/generate', { method: 'POST', body: { templateId, studentId, bookingId } });
     document.getElementById('quickDocModal')?.remove();
@@ -2388,8 +2461,11 @@ async function deleteStudent(id) {
 }
 
 // ─── STUDENT DOCUMENTS (visa/passport uploads) ────────
-async function loadStudentDocs(studentId) {
-  const el = document.getElementById('studentDocsList');
+// Renamed from `loadStudentDocs` — that name collided with the generated-docs
+// loader above and silently overrode it, so newly generated LOAs etc. never
+// appeared in the docs pane after creation.
+async function loadStudentVisaDocs(studentId) {
+  const el = document.getElementById('studentVisaDocsList');
   if (!el) return;
   try {
     const docs = await api('/students/' + studentId + '/documents');
@@ -2418,7 +2494,7 @@ async function uploadStudentDocs(studentId, files) {
   try {
     await fetch(API + '/students/' + studentId + '/documents', { method: 'POST', body: form });
     toast('Uploaded ' + files.length + ' file(s)');
-    loadStudentDocs(studentId);
+    loadStudentVisaDocs(studentId);
   } catch (e) { toast('Upload failed', true); }
 }
 
@@ -2426,7 +2502,7 @@ async function deleteStudentDoc(studentId, docId) {
   try {
     await api('/students/' + studentId + '/documents/' + docId, { method: 'DELETE' });
     toast('Deleted');
-    loadStudentDocs(studentId);
+    loadStudentVisaDocs(studentId);
   } catch (e) { toast(e.message, true); }
 }
 
@@ -2640,6 +2716,36 @@ async function showBookingDetail(id) {
     }
     html += `</div></div>`;
 
+    // Holidays (left column, below Payments). Inserting a holiday pushes the
+    // course end-date by the count of weekdays (Mon-Fri) in the range, but
+    // only for the portion of the holiday that falls during the course.
+    // Collapsed by default — staff opens when needed; the count in the
+    // header surfaces whether anything is on file at a glance.
+    html += `<div class="card" style="margin-bottom:16px">
+      <div class="card-header collapse-header" onclick="toggleCollapse(this)" style="cursor:pointer">
+        <h3>Holidays (${b.holidays?.length || 0})</h3>
+        <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();openAddHolidayModal(${b.id})">+ Add</button>
+      </div>
+      <div class="card-body collapse-body" style="padding:12px 18px">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;line-height:1.5">
+          Holidays extend Course End Date. Students appear but are subtracted from Class and no affect on Attendance %. Hols after Course End need not be recorded - no effect on dates.
+        </div>`;
+    if (b.holidays && b.holidays.length > 0) {
+      for (const h of b.holidays) {
+        const sd = new Date(h.startDate).toISOString().slice(0,10);
+        const ed = new Date(h.endDate).toISOString().slice(0,10);
+        const pushed = h.weekdaysPushed != null ? h.weekdaysPushed : null;
+        const pushedLabel = pushed === 0 ? `<span style="color:var(--text-muted);font-size:11px;margin-left:6px">(after course end — no push)</span>` : (pushed != null ? `<span style="color:var(--text-muted);font-size:11px;margin-left:6px">(+${pushed} weekday${pushed===1?'':'s'})</span>` : '');
+        html += `<div style="padding:10px 0;border-bottom:1px solid #f0efec;display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:13px"><strong>${esc(sd)}</strong> → <strong>${esc(ed)}</strong>${h.weeks ? ` <span style="color:var(--text-muted)">(${h.weeks} wk${h.weeks===1?'':'s'})</span>` : ''}${pushedLabel}${h.type ? ` <span style="color:var(--text-muted);font-size:11px;margin-left:6px">${esc(h.type)}</span>` : ''}</div>
+          <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="deleteBookingHoliday(${h.id},${b.id})">Del</button>
+        </div>`;
+      }
+    } else {
+      html += `<div style="color:var(--text-muted);font-size:13px;padding:6px 0">No holidays</div>`;
+    }
+    html += `</div></div>`;
+
     // Status History
     html += `<div class="card">
       <div class="card-header collapse-header" onclick="toggleCollapse(this)"><h3>Status History</h3></div>
@@ -2725,6 +2831,65 @@ async function showBookingDetail(id) {
 
     html += `</div></div>`;
     document.getElementById('content').innerHTML = html;
+  } catch (e) { toast(e.message, true); }
+}
+
+async function openAddHolidayModal(bookingId) {
+  const html = `<div class="modal-overlay" onclick="if(event.target===this)this.remove()">
+    <div class="modal" style="max-width:480px">
+      <div class="modal-header"><h2>Add Holiday</h2><button class="btn btn-ghost" onclick="this.closest('.modal-overlay').remove()">&times;</button></div>
+      <div class="modal-body">
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px;line-height:1.5">
+          Course end-date will be pushed forward by the number of weekdays (Mon–Fri) in this range. Weekends don't count. Accommodation and extras are unchanged.
+        </div>
+        <div class="form-group">
+          <label class="form-label">Start date</label>
+          <input type="date" class="form-input" id="holStart">
+        </div>
+        <div class="form-group">
+          <label class="form-label">End date</label>
+          <input type="date" class="form-input" id="holEnd">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Type</label>
+          <select class="form-select" id="holType">
+            <option value="student">Student holiday</option>
+            <option value="school">School closure</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+        <button class="btn btn-primary" onclick="submitAddHoliday(${bookingId})">Add Holiday</button>
+      </div>
+    </div>
+  </div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+async function submitAddHoliday(bookingId) {
+  const startDate = document.getElementById('holStart').value;
+  const endDate = document.getElementById('holEnd').value;
+  const type = document.getElementById('holType').value;
+  if (!startDate || !endDate) return toast('Both dates required', true);
+  try {
+    const r = await api(`/bookings/${bookingId}/holidays`, { method: 'POST', body: { startDate, endDate, type } });
+    if (r.weekdaysPushed > 0) {
+      toast(`Holiday added — course end-date pushed by ${r.weekdaysPushed} weekday(s)`);
+    } else {
+      toast(`Holiday recorded — falls after course end, no schedule change (${r.totalWeekdays} weekdays in range)`);
+    }
+    document.querySelector('.modal-overlay')?.remove();
+    showBookingDetail(bookingId);
+  } catch (e) { toast(e.message, true); }
+}
+
+async function deleteBookingHoliday(holidayId, bookingId) {
+  if (!confirm('Remove this holiday and roll the course end-date back?')) return;
+  try {
+    const r = await api(`/bookings/holidays/${holidayId}`, { method: 'DELETE' });
+    toast(`Holiday removed — course end-date rolled back by ${r.weekdaysRolledBack} weekday(s)`);
+    showBookingDetail(bookingId);
   } catch (e) { toast(e.message, true); }
 }
 
@@ -3309,8 +3474,12 @@ function isoDate(d) { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart
 function isCurrentWeek(mon) { const now = getMonday(new Date()); return isoDate(mon) === isoDate(now); }
 
 async function showClassesList() {
+  const profitMarginBtn = (currentUser?.role === 'admin')
+    ? `<button class="btn btn-secondary" onclick="navigate('profit')" style="margin-right:8px" title="Per-class gross profit and margin (admin only)">Profit Margin</button>`
+    : '';
   setTopbar('Classes', '', `
     <button class="btn btn-secondary" onclick="navigate('cover')" style="margin-right:8px" title="Monthly leave-cover dashboard — who is out and what cover costs">Cover Dashboard</button>
+    ${profitMarginBtn}
     <button class="btn btn-secondary" onclick="refreshLeaveFromZoho()" style="margin-right:8px" title="Pull approved leave from Zoho People into the class schedule">Refresh Leave</button>
     <button class="btn btn-secondary" onclick="openClosuresModal()" style="margin-right:8px">School Hols</button>
     <button class="btn btn-primary" onclick="openNewClassModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> New Class</button>
@@ -3399,12 +3568,26 @@ async function showClassesList() {
     });
 
     let totalStudents = 0, totalVacant = 0;
+    // For holiday-aware capacity: students with a BookingHoliday overlapping the
+    // displayed week are still assigned but won't be there. Subtract them from
+    // the displayed Students count and add them back as vacant seats.
+    const _wkMon = classListWeek;
+    const _wkFri = getFriday(_wkMon);
+    const onHolidayThisWeek = (a) => {
+      const hols = a.bookingCourse?.booking?.holidays || [];
+      return hols.some(h => {
+        const hs = new Date(h.startDate);
+        const he = new Date(h.endDate);
+        return hs <= _wkFri && he >= _wkMon;
+      });
+    };
     if (filtered.length === 0) {
       html += `<tr><td colspan="8" class="table-empty">No classes found</td></tr>`;
     } else {
       for (const c of filtered) {
         const room = c.classroom?.name || '—';
-        const studentCount = c.studentAssignments?.length || 0;
+        const onHolCount = (c.studentAssignments || []).filter(onHolidayThisWeek).length;
+        const studentCount = (c.studentAssignments?.length || 0) - onHolCount;
         const vacant = CLASS_MAX - studentCount;
         totalStudents += studentCount;
         totalVacant += Math.max(0, vacant);
@@ -3422,7 +3605,7 @@ async function showClassesList() {
           <td>${esc(room)}</td>
           <td style="font-family:var(--font-mono);font-size:12px">${c.startTime?.slice(0,5)} — ${c.endTime?.slice(0,5)}${c.breakMinutes ? ` <span style="color:var(--text-muted);font-size:11px" title="Unpaid break — subtracted from payroll">(−${c.breakMinutes}m)</span>` : ''}</td>
           <td style="font-size:12px">${teacherNames ? esc(teacherNames) : '<span style="color:var(--text-muted)">—</span>'}</td>
-          <td style="font-family:var(--font-mono)">${studentCount}</td>
+          <td style="font-family:var(--font-mono)">${studentCount}${onHolCount > 0 ? ` <span style="color:var(--text-muted);font-size:10px" title="${onHolCount} on holiday this week">(+${onHolCount}🏖️)</span>` : ''}</td>
           <td style="font-family:var(--font-mono);${vacantStyle}">${vacant}</td>
         </tr>`;
       }
@@ -3513,8 +3696,10 @@ function renderWeekStudentsTableBody() {
     const sName = student ? `${student.firstName} ${student.lastName || ''}` : '—';
     const sId = student?.id || 0;
     const level = student?.currentLevel || a.bookingCourse?.level || '?';
-    html += `<tr>
-      <td>${sId ? `<span style="cursor:pointer;color:var(--accent);font-weight:500" onclick="navigate('student-detail',{id:${sId}})">${esc(sName)}</span>` : esc(sName)}</td>
+    const holBadge = a.onHoliday ? ` <span style="background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:6px;font-size:10px;font-weight:600;vertical-align:middle" title="On holiday ${a.holidayInfo?.startDate?.slice(0,10)} → ${a.holidayInfo?.endDate?.slice(0,10)}">🏖️ holiday</span>` : '';
+    const rowStyle = a.onHoliday ? 'opacity:0.55' : '';
+    html += `<tr style="${rowStyle}">
+      <td>${sId ? `<span style="cursor:pointer;color:var(--accent);font-weight:500" onclick="navigate('student-detail',{id:${sId}})">${esc(sName)}</span>` : esc(sName)}${holBadge}</td>
       <td>${levelBadge(level)}</td>
       <td style="font-size:12px;font-family:var(--font-mono)">${a.createdAt ? formatDate(a.createdAt) : '—'}</td>
       <td style="font-size:12px;font-family:var(--font-mono)">${a.bookingCourse?.startDate ? formatDate(a.bookingCourse.startDate) : '—'}</td>
@@ -3737,14 +3922,27 @@ async function showClassDetail(id, weekOverride) {
     ]);
     if (!cls) { toast('Class not found', true); return navigate('classes'); }
 
-    // Filter assigned students to the selected week
+    // Filter assigned students to the selected week, then tag each with
+    // an `onHoliday` flag if their booking has a BookingHoliday overlapping
+    // [mon, fri]. Roster still shows them but doesn't count them toward
+    // capacity — they "won't be there" per the holiday spec.
     const mon = classDetailWeek;
     const fri = getFriday(mon);
-    const weekStudents = (cls.studentAssignments || []).filter(a => {
-      const ws = new Date(a.weekStart);
-      const we = a.weekEnd ? new Date(a.weekEnd) : new Date('2099-12-31');
-      return ws <= fri && we >= mon;
-    });
+    const weekStudents = (cls.studentAssignments || [])
+      .filter(a => {
+        const ws = new Date(a.weekStart);
+        const we = a.weekEnd ? new Date(a.weekEnd) : new Date('2099-12-31');
+        return ws <= fri && we >= mon;
+      })
+      .map(a => {
+        const hols = a.bookingCourse?.booking?.holidays || [];
+        const overlap = hols.find(h => {
+          const hs = new Date(h.startDate);
+          const he = new Date(h.endDate);
+          return hs <= fri && he >= mon;
+        });
+        return { ...a, onHoliday: !!overlap, holidayInfo: overlap || null };
+      });
 
     // Private flag is the operative signal — name is a free-form label.
     const isPrivateClass = !!cls.isPrivate;
@@ -3950,10 +4148,16 @@ async function showClassDetail(id, weekOverride) {
 
     html += `</div></div>
 
-    </div><div>
+    </div><div>`;
+    const onHolCount = weekStudents.filter(s => s.onHoliday).length;
+    const presentCount = weekStudents.length - onHolCount;
+    const countLabel = onHolCount > 0
+      ? `Students This Week (${presentCount} attending<span style="color:var(--text-muted);font-weight:400"> · ${onHolCount} on holiday</span>)`
+      : `Students This Week (${weekStudents.length})`;
+    html += `
       <div class="card" style="margin-bottom:16px">
         <div class="card-header collapse-header open" onclick="toggleCollapse(this)" style="cursor:pointer">
-          <h3>Students This Week (${weekStudents.length})</h3>
+          <h3>${countLabel}</h3>
         </div>
         <div class="card-body collapse-body open" id="weekStudentsSection"></div>
       </div>`;
@@ -4838,6 +5042,18 @@ async function loadWeeklyAttendance() {
               <input type="checkbox" ${isPresent ? 'checked' : ''} onchange="toggleDayCell(this,${data.blockHours})" style="accent-color:var(--success);cursor:pointer">
               <input type="number" value="${hours != null ? hours : ''}" step="0.5" min="0" max="${data.blockHours}" style="width:42px;font-size:11px;padding:2px 4px;border:1px solid var(--card-border);border-radius:3px;text-align:center;font-family:var(--font-mono)" placeholder="${data.blockHours}">
             </div>`;
+            // Show a clickable badge when a reason is on file, OR a small "+ reason"
+            // link on absences without one — both open the same admin editor.
+            const isAbsentLike = day.status && day.status.startsWith('ABSENT') || day.status === 'EXCUSED';
+            if (day.studentReason) {
+              const rsnLabel = ({SICK:'Sick',IRP_APPT:'IRP appt',PPS_APPT:'PPS appt',EXAM:'Exam',TRANSPORT:'Transport',WEATHER:'Weather',OTHER:'Other'})[day.studentReason] || day.studentReason;
+              const tip = day.studentReasonNote ? `${rsnLabel} — ${day.studentReasonNote}` : rsnLabel;
+              const cn = day.studentReasonCertCount || 0;
+              const clip = cn > 0 ? ` 📎${cn > 1 ? '×'+cn : ''}` : '';
+              html += `<div onclick="openReasonEditor(${s.studentId},'${day.date}','${esc(s.firstName + ' ' + (s.lastName||''))}')" title="${esc(tip)} — click to edit" style="margin-top:2px;display:inline-block;background:#ecfdf5;color:#065f46;padding:1px 5px;border-radius:6px;font-size:9px;font-weight:600;cursor:pointer">📝 ${esc(rsnLabel)}${clip}</div>`;
+            } else if (isAbsentLike && !cancelled) {
+              html += `<div onclick="openReasonEditor(${s.studentId},'${day.date}','${esc(s.firstName + ' ' + (s.lastName||''))}')" title="Add a reason for this absence" style="margin-top:2px;display:inline-block;color:var(--text-muted);font-size:9px;cursor:pointer;text-decoration:underline">+ reason</div>`;
+            }
           }
           html += `</td>`;
         }
@@ -4859,10 +5075,16 @@ async function loadWeeklyAttendance() {
     html += `<div class="card" style="margin-top:12px">
       <div class="card-header">
         <h3>Attendance Sheets</h3>
-        <label class="btn btn-sm btn-secondary" style="cursor:pointer;margin:0">
-          Upload Image / PDF
-          <input type="file" accept="image/*,.pdf" multiple hidden onchange="uploadAttendanceFiles(this.files)">
-        </label>
+        <div style="display:flex;gap:6px">
+          <label class="btn btn-sm btn-secondary" style="cursor:pointer;margin:0">
+            Take Photo
+            <input type="file" accept="image/*" capture="environment" hidden onchange="uploadAttendanceFiles(this.files); this.value=''">
+          </label>
+          <label class="btn btn-sm btn-secondary" style="cursor:pointer;margin:0">
+            Upload Image / PDF
+            <input type="file" accept="image/*,.pdf" multiple hidden onchange="uploadAttendanceFiles(this.files); this.value=''">
+          </label>
+        </div>
       </div>
       <div class="card-body" id="attendanceUploads" style="min-height:40px">
         <div style="color:var(--text-muted);font-size:13px">Loading...</div>
@@ -4902,14 +5124,25 @@ async function loadAttendanceUploads() {
 
 async function uploadAttendanceFiles(fileList) {
   if (!attendanceClassId) { toast('Select a class first', true); return; }
+  if (!fileList || !fileList.length) return;
+  let okCount = 0;
   for (const file of fileList) {
     const form = new FormData();
     form.append('file', file);
     try {
-      await fetch(API + '/attendance/upload/' + attendanceClassId + '/' + isoDate(attendanceWeek), { method: 'POST', body: form });
-    } catch (e) { toast('Upload failed: ' + e.message, true); return; }
+      const res = await fetch(API + '/attendance/upload/' + attendanceClassId + '/' + isoDate(attendanceWeek), { method: 'POST', body: form });
+      if (!res.ok) {
+        let msg = 'HTTP ' + res.status;
+        try { const j = await res.json(); if (j?.error) msg = j.error; } catch {}
+        toast(file.name + ' failed: ' + msg, true);
+        continue;
+      }
+      okCount++;
+    } catch (e) {
+      toast(file.name + ' failed: ' + e.message, true);
+    }
   }
-  toast('Uploaded ' + fileList.length + ' file(s)');
+  if (okCount) toast('Uploaded ' + okCount + ' of ' + fileList.length + ' file(s)');
   loadAttendanceUploads();
 }
 
@@ -4920,6 +5153,124 @@ async function deleteAttendanceFile(filename) {
     toast('File deleted');
     loadAttendanceUploads();
   } catch (e) { toast(e.message, true); }
+}
+
+// ── Admin override of student absence reasons ──
+const REASON_OPTS = [
+  ['SICK','Sick'],['IRP_APPT','IRP / visa appointment'],['PPS_APPT','PPS appointment'],
+  ['EXAM','Exam / academic'],['TRANSPORT','Public transport disruption'],
+  ['WEATHER','Weather warning'],['OTHER','Other (see note)']
+];
+
+async function openReasonEditor(studentId, dateIso, studentName) {
+  let existing = null;
+  try {
+    existing = await api('/attendance/absence-reason/' + studentId + '/' + dateIso);
+  } catch {}
+  const opts = '<option value="">— select reason —</option>' + REASON_OPTS.map(([k,v]) =>
+    `<option value="${k}"${existing?.reason===k?' selected':''}>${v}</option>`
+  ).join('');
+  const CERT_MAX = 5;
+  const certs = existing?.certFiles || [];
+  const certListHtml = certs.length
+    ? `<div style="display:flex;flex-direction:column;gap:4px;margin-bottom:6px">${certs.map(f =>
+        `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+           <a href="${API}/attendance/absence-reason/${studentId}/${dateIso}/cert/${f.id}" target="_blank" style="font-size:12px;color:#1e40af;text-decoration:underline">📎 ${esc(f.originalName || f.filename)}</a>
+           <button type="button" class="btn btn-ghost btn-sm" style="font-size:11px;color:#991b1b" onclick="removeReasonCertFile(${studentId},'${dateIso}',${f.id},'${esc(studentName)}')">remove</button>
+         </div>`).join('')}</div>`
+    : '';
+  const uploadHtml = certs.length < CERT_MAX
+    ? `<label class="btn btn-secondary btn-sm" style="cursor:pointer;margin:0">📁 ${certs.length === 0 ? 'Upload cert' : 'Add another'}
+         <input type="file" accept="image/*,.pdf" hidden onchange="uploadReasonCert(${studentId},'${dateIso}','${esc(studentName)}',this.files); this.value=''">
+       </label>
+       <span style="font-size:11px;color:var(--text-muted)">${certs.length} of ${CERT_MAX} files</span>`
+    : `<div style="font-size:11px;color:var(--text-muted)">Maximum ${CERT_MAX} files reached.</div>`;
+  const certBlock = certListHtml + `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">${uploadHtml}</div>`;
+
+  const submittedInfo = existing?.submittedBy
+    ? `<div style="font-size:11px;color:var(--text-muted);margin-top:4px">Submitted by ${esc(existing.submittedBy)}${existing.submittedAt?' · '+new Date(existing.submittedAt).toLocaleString('en-IE'):''}</div>`
+    : '';
+
+  const html = `<div class="modal-overlay" onclick="if(event.target===this)this.remove()">
+    <div class="modal" style="max-width:480px">
+      <div class="modal-header"><h2>Reason — ${esc(studentName)} · ${esc(dateIso)}</h2><button class="btn btn-ghost" onclick="this.closest('.modal-overlay').remove()">&times;</button></div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Reason</label>
+          <select class="form-select" id="rsnEditReason">${opts}</select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Note <span style="color:var(--text-muted);font-weight:400">(optional context, e.g. "cert mailed in later", "IRP letter on file")</span></label>
+          <textarea class="form-input" id="rsnEditNote" rows="3" maxlength="500" placeholder="Free-text context...">${esc(existing?.noteText||'')}</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Medical cert</label>
+          <div id="rsnCertSlot" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">${certBlock}</div>
+        </div>
+        ${submittedInfo}
+      </div>
+      <div class="modal-footer" style="display:flex;justify-content:space-between;gap:8px">
+        ${existing ? `<button class="btn btn-ghost" style="color:#991b1b" onclick="deleteReason(${studentId},'${dateIso}')">Remove reason</button>` : '<span></span>'}
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+          <button class="btn btn-primary" onclick="saveReason(${studentId},'${dateIso}')">Save</button>
+        </div>
+      </div>
+    </div></div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+async function saveReason(studentId, dateIso) {
+  const reason = document.getElementById('rsnEditReason').value;
+  const noteText = document.getElementById('rsnEditNote').value;
+  if (!reason) { toast('Pick a reason first', true); return; }
+  try {
+    await api('/attendance/absence-reason/' + studentId + '/' + dateIso, {
+      method: 'POST', body: { reason, noteText },
+    });
+    document.querySelector('.modal-overlay')?.remove();
+    toast('Reason saved');
+    if (typeof loadWeeklyAttendance === 'function') loadWeeklyAttendance();
+  } catch (e) { toast(e.message || 'Save failed', true); }
+}
+
+async function deleteReason(studentId, dateIso) {
+  if (!confirm('Remove the reason and any attached cert?')) return;
+  try {
+    await api('/attendance/absence-reason/' + studentId + '/' + dateIso, { method: 'DELETE' });
+    document.querySelector('.modal-overlay')?.remove();
+    toast('Reason removed');
+    if (typeof loadWeeklyAttendance === 'function') loadWeeklyAttendance();
+  } catch (e) { toast(e.message || 'Delete failed', true); }
+}
+
+async function uploadReasonCert(studentId, dateIso, studentName, files) {
+  if (!files?.length) return;
+  const fd = new FormData();
+  fd.append('file', files[0]);
+  try {
+    const res = await fetch(API + '/attendance/absence-reason/' + studentId + '/' + dateIso + '/cert', { method: 'POST', body: fd });
+    if (!res.ok) {
+      let msg = 'Upload failed';
+      try { const j = await res.json(); if (j?.error) msg = j.error; } catch {}
+      toast(msg, true); return;
+    }
+    toast('Cert uploaded');
+    document.querySelector('.modal-overlay')?.remove();
+    openReasonEditor(studentId, dateIso, studentName);
+    if (typeof loadWeeklyAttendance === 'function') loadWeeklyAttendance();
+  } catch (e) { toast(String(e), true); }
+}
+
+async function removeReasonCertFile(studentId, dateIso, fileId, studentName) {
+  if (!confirm('Remove this file?')) return;
+  try {
+    await api('/attendance/absence-reason/' + studentId + '/' + dateIso + '/cert/' + fileId, { method: 'DELETE' });
+    toast('File removed');
+    document.querySelector('.modal-overlay')?.remove();
+    openReasonEditor(studentId, dateIso, studentName);
+    if (typeof loadWeeklyAttendance === 'function') loadWeeklyAttendance();
+  } catch (e) { toast(e.message || 'Remove failed', true); }
 }
 
 function toggleDayCell(checkbox, blockHours) {
@@ -5016,6 +5367,156 @@ function coverMonthIsCurrent() {
 }
 function coverMonthLabel() {
   return new Date(coverMonth.y, coverMonth.m - 1, 1).toLocaleString('en-IE', { month: 'long', year: 'numeric' });
+}
+
+// ── Profit Margin (admin only) ─────────────────────
+let profitMonth = (() => { const d = new Date(); return { y: d.getFullYear(), m: d.getMonth() + 1 }; })();
+
+function profitMonthShift(delta) {
+  let y = profitMonth.y, m = profitMonth.m + delta;
+  if (m < 1) { m = 12; y--; } else if (m > 12) { m = 1; y++; }
+  profitMonth = { y, m };
+  showProfitMargin();
+}
+function profitMonthIsCurrent() {
+  const t = new Date();
+  return profitMonth.y === t.getFullYear() && profitMonth.m === (t.getMonth() + 1);
+}
+function profitMonthLabel() {
+  return new Date(profitMonth.y, profitMonth.m - 1, 1).toLocaleString('en-IE', { month: 'long', year: 'numeric' });
+}
+function profitMonthRange() {
+  const from = new Date(Date.UTC(profitMonth.y, profitMonth.m - 1, 1)).toISOString().slice(0, 10);
+  const to = new Date(Date.UTC(profitMonth.y, profitMonth.m, 0)).toISOString().slice(0, 10);
+  return { from, to };
+}
+
+async function showProfitMargin() {
+  if (currentUser?.role !== 'admin') {
+    toast('Admin only', true);
+    return navigate('classes');
+  }
+  setTopbar('Profit Margin', '<span style="cursor:pointer;color:var(--accent)" onclick="navigate(\'classes\')">Classes</span> / Profit Margin', '');
+  const todayTag = profitMonthIsCurrent() ? ' <span style="background:var(--accent);color:#fff;padding:1px 6px;border-radius:8px;font-size:10px;vertical-align:middle">THIS MONTH</span>' : '';
+
+  document.getElementById('content').innerHTML = `
+    <div class="toolbar">
+      <div style="display:flex;align-items:center;gap:6px">
+        <button class="btn btn-secondary btn-sm" onclick="profitMonthShift(-1)">&larr;</button>
+        <span style="font-weight:600;font-size:14px;min-width:220px;text-align:center">${profitMonthLabel()}${todayTag}</span>
+        <button class="btn btn-secondary btn-sm" onclick="profitMonthShift(1)">&rarr;</button>
+        ${!profitMonthIsCurrent() ? '<button class="btn btn-ghost btn-sm" onclick="profitMonth={y:new Date().getFullYear(),m:new Date().getMonth()+1};showProfitMargin()">Today</button>' : ''}
+      </div>
+    </div>
+    <div id="profitContent"><div class="table-wrap"><div class="table-empty">Loading…</div></div></div>
+  `;
+
+  const r = profitMonthRange();
+  try {
+    const data = await api(`/classes/profit-margin?from=${r.from}&to=${r.to}`);
+    document.getElementById('profitContent').innerHTML = renderProfitMargin(data);
+  } catch (e) {
+    document.getElementById('profitContent').innerHTML = '<div class="table-wrap"><div class="table-empty">Failed to load: ' + esc(e.message) + '</div></div>';
+  }
+}
+
+function renderProfitMargin(d) {
+  const fmtEur = (n) => n == null ? '—' : '€' + Number(n).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmtPct = (n) => n == null ? '—' : Number(n).toFixed(1) + '%';
+  const marginColor = (pct) => {
+    if (pct == null) return '#6b7280';
+    if (pct < 0) return '#991b1b';
+    if (pct < 30) return '#b45309';
+    if (pct < 50) return '#0369a1';
+    return '#065f46';
+  };
+  const s = d.school || {};
+  let html = '';
+
+  // School-level KPI strip
+  html += `<div class="card" style="margin-bottom:12px">
+    <div class="card-body" style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;font-family:var(--font-mono)">
+      <div><div style="font-size:11px;color:var(--text-muted);font-family:inherit">Hours run</div><div style="font-size:18px;font-weight:700">${(s.hours||0).toFixed(0)}</div></div>
+      <div><div style="font-size:11px;color:var(--text-muted);font-family:inherit">Revenue</div><div style="font-size:18px;font-weight:700">${fmtEur(s.revenue)}</div></div>
+      <div><div style="font-size:11px;color:var(--text-muted);font-family:inherit">Cost</div><div style="font-size:18px;font-weight:700">${fmtEur(s.cost)}</div></div>
+      <div><div style="font-size:11px;color:var(--text-muted);font-family:inherit">Gross profit</div><div style="font-size:18px;font-weight:700;color:${s.profit >= 0 ? '#065f46' : '#991b1b'}">${fmtEur(s.profit)}</div></div>
+      <div><div style="font-size:11px;color:var(--text-muted);font-family:inherit">Gross margin</div><div style="font-size:18px;font-weight:700;color:${marginColor(s.marginPct)}">${fmtPct(s.marginPct)}</div></div>
+    </div>
+  </div>`;
+
+  if (!d.classes?.length) {
+    html += '<div class="table-wrap"><div class="table-empty">No class activity in this range.</div></div>';
+    return html;
+  }
+
+  // Per-class table
+  html += `<div class="table-wrap"><table class="data-table">
+    <thead><tr>
+      <th style="text-align:left">Class</th>
+      <th style="text-align:left">Teacher</th>
+      <th style="text-align:right">Rate</th>
+      <th style="text-align:right">Hours</th>
+      <th style="text-align:right">Revenue</th>
+      <th style="text-align:right">Cost</th>
+      <th style="text-align:right">Profit</th>
+      <th style="text-align:right">Margin</th>
+      <th></th>
+    </tr></thead><tbody>`;
+  for (const c of d.classes) {
+    const t = c.totals;
+    const sessionTag = c.session === 'MORNING' ? 'AM' : c.session === 'AFTERNOON' ? 'PM' : '+5';
+    html += `<tr style="border-bottom:1px solid var(--card-border)">
+      <td><strong>${esc(c.className)}</strong> <span style="color:var(--text-muted);font-size:11px">${sessionTag}</span></td>
+      <td>${c.teacherName ? esc(c.teacherName) : '<span style="color:var(--text-muted)">—</span>'} ${c.teacherSalaried ? '<span style="background:#d4edda;color:#155724;padding:1px 5px;border-radius:6px;font-size:9px;margin-left:4px">SAL</span>' : ''}</td>
+      <td style="text-align:right;font-family:var(--font-mono)">${c.teacherSalaried ? '—' : fmtEur(c.teacherRate) + '/hr'}</td>
+      <td style="text-align:right;font-family:var(--font-mono)">${(t.hours||0).toFixed(0)}</td>
+      <td style="text-align:right;font-family:var(--font-mono)">${fmtEur(t.revenue)}</td>
+      <td style="text-align:right;font-family:var(--font-mono)">${fmtEur(t.cost)}</td>
+      <td style="text-align:right;font-family:var(--font-mono);color:${t.profit >= 0 ? '#065f46' : '#991b1b'}">${fmtEur(t.profit)}</td>
+      <td style="text-align:right;font-family:var(--font-mono);color:${marginColor(t.marginPct)};font-weight:700">${fmtPct(t.marginPct)}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="toggleProfitWeeks(${c.classId})" id="prof-toggle-${c.classId}" style="font-size:11px">▾</button></td>
+    </tr>`;
+    // Hidden per-week breakdown row
+    html += `<tr id="prof-weeks-${c.classId}" style="display:none"><td colspan="9" style="background:#f8f7f4;padding:0">
+      <table class="data-table" style="margin:8px 14px;width:auto;font-size:12px">
+        <thead><tr>
+          <th style="text-align:left">Week of</th>
+          <th style="text-align:left">Teacher</th>
+          <th style="text-align:right">Rate</th>
+          <th style="text-align:right">Students</th>
+          <th style="text-align:right">Hours</th>
+          <th style="text-align:right">Revenue</th>
+          <th style="text-align:right">Cost</th>
+          <th style="text-align:right">Profit</th>
+          <th style="text-align:right">Margin</th>
+        </tr></thead><tbody>
+        ${c.weeks.map(w => `<tr>
+          <td>${w.weekStart}</td>
+          <td>${w.teacherName ? esc(w.teacherName) : '—'}</td>
+          <td style="text-align:right;font-family:var(--font-mono)">${fmtEur(w.teacherRate)}/hr</td>
+          <td style="text-align:right;font-family:var(--font-mono)">${w.studentCount}</td>
+          <td style="text-align:right;font-family:var(--font-mono)">${(w.hours||0).toFixed(1)}</td>
+          <td style="text-align:right;font-family:var(--font-mono)">${fmtEur(w.revenue)}</td>
+          <td style="text-align:right;font-family:var(--font-mono)">${fmtEur(w.cost)}</td>
+          <td style="text-align:right;font-family:var(--font-mono);color:${w.profit >= 0 ? '#065f46' : '#991b1b'}">${fmtEur(w.profit)}</td>
+          <td style="text-align:right;font-family:var(--font-mono);color:${marginColor(w.marginPct)};font-weight:700">${fmtPct(w.marginPct)}</td>
+        </tr>`).join('')}
+      </tbody></table>
+    </td></tr>`;
+  }
+  html += `</tbody></table></div>`;
+  html += `<div style="font-size:11px;color:var(--text-muted);margin-top:10px;line-height:1.5">
+    <strong>Notes</strong> · Cost = teacher hours × hourly rate (salaried teachers contribute €0 — marked <span style="background:#d4edda;color:#155724;padding:1px 5px;border-radius:6px;font-size:9px">SAL</span>). Revenue = sum of (student fee ÷ total course hours) × hours run, for students assigned that week. Cover overrides are not yet applied — weeks with substitute teachers will reflect the default teacher's rate.
+  </div>`;
+  return html;
+}
+
+function toggleProfitWeeks(classId) {
+  const row = document.getElementById('prof-weeks-' + classId);
+  const btn = document.getElementById('prof-toggle-' + classId);
+  if (!row) return;
+  if (row.style.display === 'none') { row.style.display = ''; btn.textContent = '▴'; }
+  else { row.style.display = 'none'; btn.textContent = '▾'; }
 }
 
 async function showCoverDashboard() {
@@ -6927,10 +7428,19 @@ function countryName(code) { return code ? (COUNTRIES[code.toUpperCase()] || cod
 // ─── DATE CALCULATORS ───────────────────────────
 // Course: Start (Monday) + Weeks → End (Friday of last week)
 function calcCourseEnd(trigger) {
-  const form = trigger.closest('.form-grid') || trigger.closest('.modal-body');
-  const startInput = form.querySelector('[data-field="startDate"]');
-  const weeksInput = form.querySelector('[data-field="weeks"]');
-  const endInput = form.querySelector('[data-field="endDate"]');
+  // Find the surrounding form. Modal forms use .form-grid / .modal-body; inline
+  // course rows on the booking detail use [data-course-id]. Fall back to any
+  // ancestor that contains the date/weeks inputs.
+  const form = trigger.closest('.form-grid')
+    || trigger.closest('.modal-body')
+    || trigger.closest('[data-course-id]')
+    || trigger.parentElement?.parentElement?.parentElement;
+  if (!form) return;
+  // Inline editor uses data-cfield; modal form uses data-field. Try both.
+  const q = (name) => form.querySelector('[data-field="' + name + '"]') || form.querySelector('[data-cfield="' + name + '"]');
+  const startInput = q('startDate');
+  const weeksInput = q('weeks');
+  const endInput = q('endDate');
   if (!startInput?.value || !weeksInput?.value || !endInput) return;
   const start = new Date(startInput.value);
   const weeks = parseInt(weeksInput.value);
@@ -7206,7 +7716,12 @@ function paginationHtml(res, pageVar, fn) {
 // ─── DOCUMENTS ──────────────────────────────────
 
 async function showDocumentsList() {
-  setTopbar('Documents', '', '<button class="btn btn-secondary btn-sm" onclick="navigate(\'document-templates\')">Manage Templates</button>');
+  // Template management is admin-only. Hide the button for other roles so they
+  // never accidentally land in the templates editor.
+  const tplBtn = currentUser.role === 'admin'
+    ? '<button class="btn btn-secondary btn-sm" onclick="navigate(\'document-templates\')">Manage Templates</button>'
+    : '';
+  setTopbar('Documents', '', tplBtn);
 
   try {
     const docs = await api('/documents');
@@ -7363,6 +7878,7 @@ async function showDocumentDetail(id) {
     html += `<div style="display:flex;gap:8px;margin-bottom:16px">`;
     if (isDraft) {
       html += `<button class="btn btn-primary" onclick="issueDocument(${doc.id})">Issue Document</button>`;
+      html += `<button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="deleteDocument(${doc.id}, ${doc.studentId})">Delete Draft</button>`;
     }
     if (isIssued) {
       html += `<a class="btn btn-primary" href="/sis/api/documents/${doc.id}/pdf" target="_blank" style="text-decoration:none">Download PDF</a>`;
@@ -7372,15 +7888,28 @@ async function showDocumentDetail(id) {
     }
     html += `</div>`;
 
-    // Content preview
+    // Content preview / inline WYSIWYG editor
     html += `<div class="card"><div class="card-header"><h3>Document Preview</h3>
-      ${isDraft ? '<button class="btn btn-sm btn-secondary" onclick="toggleDocEdit()">Edit Content</button>' : ''}
+      ${isDraft ? '<button id="docEditToggleBtn" class="btn btn-sm btn-secondary" onclick="toggleDocEdit()">Edit Content</button>' : ''}
     </div>
     <div class="card-body">
       <div id="docPreview" style="border:1px solid var(--card-border);border-radius:6px;padding:24px;background:#fff;max-height:600px;overflow-y:auto">${doc.contentHtml || '<em>No content</em>'}</div>
       ${isDraft ? `<div id="docEditWrap" style="display:none;margin-top:12px">
-        <textarea id="docEditArea" style="width:100%;height:300px;font-family:var(--font-mono);font-size:12px;padding:10px;border:1px solid var(--card-border);border-radius:6px">${esc(doc.contentHtml || '')}</textarea>
-        <div style="margin-top:8px;display:flex;gap:8px">
+        <div style="display:flex;gap:4px;margin-bottom:6px;padding:6px 8px;background:#f8f9fa;border:1px solid var(--card-border);border-bottom:0;border-radius:6px 6px 0 0">
+          <button type="button" class="btn btn-ghost btn-sm" onclick="document.execCommand('bold')" title="Bold (Ctrl+B)" style="font-weight:700">B</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="document.execCommand('italic')" title="Italic (Ctrl+I)" style="font-style:italic">I</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="document.execCommand('underline')" title="Underline" style="text-decoration:underline">U</button>
+          <span style="width:1px;background:var(--card-border);margin:0 4px"></span>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="document.execCommand('insertUnorderedList')" title="Bullet list">• List</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="document.execCommand('insertOrderedList')" title="Numbered list">1. List</button>
+          <span style="width:1px;background:var(--card-border);margin:0 4px"></span>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="document.execCommand('formatBlock',false,'h2')" title="Heading">H2</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="document.execCommand('formatBlock',false,'p')" title="Paragraph">P</button>
+          <span style="width:1px;background:var(--card-border);margin:0 4px"></span>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="document.execCommand('removeFormat')" title="Clear formatting">Clear</button>
+        </div>
+        <div id="docEditArea" contenteditable="true" style="border:1px solid var(--card-border);border-top:0;border-radius:0 0 6px 6px;padding:18px 24px;background:#fff;min-height:300px;max-height:600px;overflow-y:auto;outline:none;font-family:Verdana,sans-serif;font-size:14px;line-height:1.5"></div>
+        <div style="margin-top:10px;display:flex;gap:8px">
           <button class="btn btn-primary btn-sm" onclick="saveDocContent(${doc.id})">Save Changes</button>
           <button class="btn btn-ghost btn-sm" onclick="toggleDocEdit()">Cancel</button>
         </div>
@@ -7412,15 +7941,51 @@ async function showDocumentDetail(id) {
 
 function toggleDocEdit() {
   const wrap = document.getElementById('docEditWrap');
-  if (wrap) wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
+  const preview = document.getElementById('docPreview');
+  const editor = document.getElementById('docEditArea');
+  const btn = document.getElementById('docEditToggleBtn');
+  if (!wrap || !preview || !editor) return;
+  const opening = wrap.style.display === 'none';
+  if (opening) {
+    // Seed the editor with the preview's current HTML so staff edit what they see.
+    editor.innerHTML = preview.innerHTML;
+    preview.style.display = 'none';
+    wrap.style.display = 'block';
+    if (btn) btn.textContent = 'Hide Editor';
+    editor.focus();
+  } else {
+    wrap.style.display = 'none';
+    preview.style.display = '';
+    if (btn) btn.textContent = 'Edit Content';
+  }
 }
 
 async function saveDocContent(id) {
-  const html = document.getElementById('docEditArea')?.value;
+  const html = document.getElementById('docEditArea')?.innerHTML;
+  if (html == null) return;
   try {
     await api('/documents/' + id, { method: 'PUT', body: { contentHtml: html } });
     toast('Content saved');
     showDocumentDetail(id);
+  } catch (e) { toast(e.message, true); }
+}
+
+async function deleteDocument(id, studentId) {
+  if (!confirm('Delete this draft? This cannot be undone.')) return;
+  try {
+    await api('/documents/' + id, { method: 'DELETE' });
+    toast('Draft deleted');
+    if (studentId) navigate('student-detail', { id: studentId });
+    else navigate('documents');
+  } catch (e) { toast(e.message, true); }
+}
+
+async function quickDeleteDoc(id, studentId) {
+  if (!confirm('Delete this draft?')) return;
+  try {
+    await api('/documents/' + id, { method: 'DELETE' });
+    toast('Draft deleted');
+    if (studentId) loadStudentDocs(studentId);
   } catch (e) { toast(e.message, true); }
 }
 
@@ -7975,6 +8540,491 @@ async function saveTemplate(id) {
       toast('Template created');
     }
     navigate('document-templates');
+  } catch (e) { toast(e.message, true); }
+}
+
+// ─── ACTIVITIES MODULE ───────────────────────────
+// Monthly calendar grid. First Monday of the month → walks forward to the
+// last Sunday on/after the month end (so a Wed-ending month spills Thu/Fri
+// into next month's row, per spec). Click any day → modal to add or edit.
+let _actMonth = (() => { const d = new Date(); return { year: d.getFullYear(), month: d.getMonth() + 1 }; })();
+
+async function showActivities() {
+  setTopbar('Social', '', `
+    <button class="btn btn-secondary btn-sm" onclick="actMonthShift(-1)">&larr;</button>
+    <span style="font-weight:600;font-size:14px;margin:0 8px;display:inline-block;min-width:130px;text-align:center" id="actMonthLabel">…</span>
+    <button class="btn btn-secondary btn-sm" onclick="actMonthShift(1)">&rarr;</button>
+    <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="actGoToday()">Today</button>
+  `);
+  document.getElementById('content').innerHTML = '<div id="actCalendar" style="padding:20px">Loading…</div>';
+  await renderActivitiesCalendar();
+}
+
+function actMonthShift(delta) {
+  let { year, month } = _actMonth;
+  month += delta;
+  if (month < 1) { month = 12; year--; }
+  if (month > 12) { month = 1; year++; }
+  _actMonth = { year, month };
+  renderActivitiesCalendar();
+}
+function actGoToday() {
+  const d = new Date();
+  _actMonth = { year: d.getFullYear(), month: d.getMonth() + 1 };
+  renderActivitiesCalendar();
+}
+
+async function renderActivitiesCalendar() {
+  const { year, month } = _actMonth;
+  const monthLabel = new Date(year, month - 1, 1).toLocaleDateString('en-IE', { month: 'long', year: 'numeric' });
+  const lbl = document.getElementById('actMonthLabel');
+  if (lbl) lbl.textContent = monthLabel;
+
+  let data;
+  try { data = await api(`/activities/month?year=${year}&month=${month}`); }
+  catch (e) { document.getElementById('actCalendar').innerHTML = '<div style="color:var(--danger)">' + esc(e.message) + '</div>'; return; }
+
+  const from = new Date(data.from);
+  const to = new Date(data.to);
+  // Group activities by ISO date string
+  const byDate = {};
+  for (const a of (data.items || [])) {
+    const key = new Date(a.date).toISOString().slice(0, 10);
+    if (!byDate[key]) byDate[key] = [];
+    byDate[key].push(a);
+  }
+
+  // Build a flat list of days from `from` to `to` (inclusive), then render in 7-col rows.
+  const days = [];
+  const cur = new Date(from); cur.setHours(0,0,0,0);
+  const end = new Date(to); end.setHours(0,0,0,0);
+  while (cur <= end) { days.push(new Date(cur)); cur.setDate(cur.getDate() + 1); }
+
+  const monthIdx = month - 1;
+  let html = `
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--card-border);border:1px solid var(--card-border);border-radius:6px;overflow:hidden">
+      ${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => `<div style="background:var(--bg-subtle);padding:8px 10px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--text-muted)">${d}</div>`).join('')}`;
+  for (const d of days) {
+    const iso = d.toISOString().slice(0,10);
+    const isCurMonth = d.getMonth() === monthIdx;
+    const isToday = (new Date()).toISOString().slice(0,10) === iso;
+    const dayActs = byDate[iso] || [];
+    const cellBg = isCurMonth ? 'var(--card-bg)' : 'var(--bg-muted, #f8f7f4)';
+    const dim = isCurMonth ? '' : 'opacity:0.55;';
+    html += `<div style="background:${cellBg};${dim}min-height:96px;padding:6px 8px;cursor:pointer;display:flex;flex-direction:column;gap:4px" onclick="openActivityModal('${iso}')">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:12px;font-weight:600;${isToday?'color:var(--accent)':''}">${d.getDate()}${isToday?' •':''}</div>
+        <div style="font-size:10px;color:var(--text-muted)">${dayActs.length || ''}</div>
+      </div>`;
+    for (const a of dayActs.slice(0, 3)) {
+      const pubBadge = (a.publishedToIg || a.publishedToFb) ? '<span style="font-size:9px;color:var(--success);margin-left:4px">●</span>' : '';
+      html += `<div onclick="event.stopPropagation();openActivityModal('${iso}',${a.id})" style="background:#dbeafe;color:#1e3a8a;padding:2px 6px;border-radius:4px;font-size:11px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(a.title)}">${esc(a.title)}${pubBadge}</div>`;
+    }
+    if (dayActs.length > 3) html += `<div style="font-size:10px;color:var(--text-muted)">+${dayActs.length - 3} more</div>`;
+    html += `</div>`;
+  }
+  html += `</div>
+    <div style="margin-top:14px;font-size:12px;color:var(--text-muted)">Click any day to add a new activity. Click a coloured chip to edit.</div>`;
+  document.getElementById('actCalendar').innerHTML = html;
+}
+
+// Modal — supports "new for date X" (no activityId) and "edit existing" (activityId set).
+// Image: Search / Generate / Upload — all available pre-save. Filename is staged
+// client-side and committed alongside the activity record on Save.
+async function openActivityModal(dateIso, activityId) {
+  let a = null;
+  if (activityId) {
+    try { a = await api('/activities/' + activityId); }
+    catch (e) { return toast(e.message, true); }
+  }
+
+  const isNew = !a;
+  // Track staged image filename in window scope; cleared when modal closes.
+  window._actStagedFilename = a?.imageFilename || null;
+  window._actIgStagedFilename = null;  // ephemeral — only set after Add Logo runs in this session
+
+  const igPublished = a?.publishedToIg;
+  const fbPublished = a?.publishedToFb;
+
+  const html = `<div class="modal-overlay" onclick="if(event.target===this){window._actStagedFilename=null;this.remove();}">
+    <div class="modal" style="max-width:620px">
+      <div class="modal-header">
+        <h2>${isNew ? 'New activity — ' + esc(dateIso) : 'Edit activity'}</h2>
+        <button class="btn btn-ghost" onclick="window._actStagedFilename=null;this.closest('.modal-overlay').remove()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Title</label>
+          <input type="text" id="actTitle" class="form-input" value="${esc(a?.title || '')}" placeholder="e.g. Howth cliff walk">
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Date</label>
+            <input type="date" id="actDate" class="form-input" value="${esc(a?.date ? new Date(a.date).toISOString().slice(0,10) : dateIso)}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Cost (€) <span style="color:var(--text-muted);font-weight:400">— blank = free</span></label>
+            <input type="number" step="0.01" id="actCost" class="form-input" value="${a?.cost ?? ''}" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Start time</label>
+            <input type="time" id="actStart" class="form-input" value="${esc(a?.startTime || '')}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">End time</label>
+            <input type="time" id="actEnd" class="form-input" value="${esc(a?.endTime || '')}">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Location</label>
+          <input type="text" id="actLocation" class="form-input" value="${esc(a?.location || '')}" placeholder="e.g. Meet at reception, 18:00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea id="actDescription" class="form-input" rows="3" placeholder="Tell students what to expect">${esc(a?.description || '')}</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Image</label>
+          <div id="actImagePreview" style="margin-bottom:8px"></div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+            <button type="button" class="btn btn-sm btn-secondary" onclick="actShowImageMode('search')">🔍 Search</button>
+            <button type="button" class="btn btn-sm btn-secondary" onclick="actShowImageMode('generate')">✨ Generate</button>
+            <button type="button" class="btn btn-sm btn-secondary" onclick="actShowImageMode('upload')">📁 Upload</button>
+            <button type="button" class="btn btn-sm btn-ghost" onclick="actClearImage()" style="color:var(--text-muted)">Clear</button>
+          </div>
+          <div id="actImageMode" style="font-size:12px"></div>
+        </div>
+        ${a?.attendees?.length ? `
+          <div class="form-group">
+            <label class="form-label">RSVPs (${a.attendees.length})</label>
+            <div style="max-height:160px;overflow:auto;border:1px solid var(--card-border);border-radius:6px;padding:6px">
+              ${a.attendees.map(att => `
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 6px;font-size:13px;border-bottom:1px solid var(--bg-subtle)">
+                  <span>${esc(att.student.firstName)} ${esc(att.student.lastName || '')}</span>
+                  <label style="font-size:12px;cursor:pointer"><input type="checkbox" ${att.attended?'checked':''} onchange="markAttended(${att.id}, this.checked, ${a.id})"> Attended</label>
+                </div>`).join('')}
+            </div>
+          </div>` : ''}
+      </div>
+      <div class="modal-footer" style="justify-content:space-between">
+        <button class="btn btn-primary" id="actSaveBtn" onclick="saveActivity(${a?.id || 'null'})">Save</button>
+        <div style="display:flex;gap:6px;align-items:center">
+          ${a?.id ? `<button class="btn btn-ghost" style="color:var(--danger)" onclick="deleteActivity(${a.id})">Delete</button>` : ''}
+          <button class="btn btn-secondary" id="actPublishBtn" ${isNew?'disabled':''} onclick="publishActivity(${a?.id || 'null'})" title="${isNew?'Save first':'Send draft to Meta — review in Business Suite'}">Publish Draft</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
+  actRenderImagePreview();
+}
+
+// ── Image staging (pre-save) ────────────────────────────
+function actRenderImagePreview() {
+  const wrap = document.getElementById('actImagePreview');
+  if (!wrap) return;
+  const fn = window._actStagedFilename;
+  if (!fn) {
+    wrap.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:16px;border:1px dashed var(--card-border);border-radius:6px;text-align:center">No image yet — pick one below.</div>';
+    return;
+  }
+  const url = '/sis/api/activities/image/' + encodeURIComponent(fn);
+  wrap.innerHTML = `<div style="display:flex;gap:10px;align-items:flex-start">
+      <div style="position:relative;flex:1;min-width:0">
+        <img src="${url}" style="display:block;width:100%;max-height:340px;object-fit:contain;border-radius:6px;border:1px solid var(--card-border);background:#0f172a;cursor:zoom-in" onclick="actOpenLightbox('${url}')" title="Click to view full size" onerror="this.style.display='none'">
+        <div style="position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,0.55);color:#fff;font-size:10px;padding:2px 6px;border-radius:3px;pointer-events:none">FB · click to zoom</div>
+      </div>
+      <div style="width:160px;flex-shrink:0">
+        <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;font-weight:600;letter-spacing:0.3px;text-transform:uppercase">IG preview</div>
+        <canvas id="actIgPreviewCanvas" width="320" height="320" style="display:block;width:160px;max-height:160px;border-radius:6px;border:1px solid var(--card-border);background:#0f172a;cursor:zoom-in" onclick="actOpenLightbox(document.getElementById('actIgPreviewCanvas').toDataURL('image/jpeg',0.95))" title="Click to view IG-bound version full size"></canvas>
+        <div id="actIgPreviewNote" style="font-size:10px;color:var(--text-muted);margin-top:3px;line-height:1.3"></div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:8px">
+      <div style="font-size:11px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(fn)}</div>
+      <button class="btn btn-sm btn-secondary" id="actLogoBtn" onclick="actAddLogo()" title="Apply ULearn logo watermark (top-right)">+ Add Logo</button>
+    </div>`;
+  // IG preview: if hub already prepared a cropped+logod variant, show it
+  // directly (1:1 visual will faithfully match what IG receives); otherwise
+  // simulate the IG-safe minimal crop client-side from the FB version.
+  const igFn = window._actIgStagedFilename;
+  if (igFn) {
+    actRenderIgPreviewCanvasFromUrl('/sis/api/activities/image/' + encodeURIComponent(igFn));
+  } else {
+    actRenderIgPreviewCanvas(url);
+  }
+}
+
+// Direct-display variant — used when hub has already prepared the IG image
+// (cropped + logod). Just renders it onto the canvas at native aspect.
+function actRenderIgPreviewCanvasFromUrl(srcUrl) {
+  const canvas = document.getElementById('actIgPreviewCanvas');
+  const note = document.getElementById('actIgPreviewNote');
+  if (!canvas) return;
+  const img = new Image();
+  img.onload = () => {
+    const scale = Math.min(canvas.width / img.naturalWidth, canvas.height / img.naturalHeight);
+    const drawW = Math.round(img.naturalWidth * scale);
+    const drawH = Math.round(img.naturalHeight * scale);
+    const dx = Math.floor((canvas.width - drawW) / 2);
+    const dy = Math.floor((canvas.height - drawH) / 2);
+    canvas.style.height = (drawH * (160 / canvas.width)) + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight, dx, dy, drawW, drawH);
+    if (note) note.textContent = `Cropped + logod (${(img.naturalWidth/img.naturalHeight).toFixed(2)}:1)`;
+  };
+  img.onerror = () => {
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (note) note.textContent = 'preview unavailable';
+  };
+  img.src = srcUrl;
+}
+
+// Mirror hub's cropToIgSafe() in publish-adhoc.js so what's shown is exactly
+// what IG receives. Pass-through if the source is already in [4:5, 1.91:1];
+// minimal centre-crop only when outside the band.
+const IG_MIN_RATIO = 4 / 5;     // 0.8  — portrait limit
+const IG_MAX_RATIO = 1.91;      // 1.91 — landscape limit
+function actRenderIgPreviewCanvas(srcUrl) {
+  const canvas = document.getElementById('actIgPreviewCanvas');
+  const note = document.getElementById('actIgPreviewNote');
+  if (!canvas) return;
+  const img = new Image();
+  img.onload = () => {
+    const ratio = img.naturalWidth / img.naturalHeight;
+    let cropW = img.naturalWidth, cropH = img.naturalHeight;
+    let label = '';
+    if (ratio > IG_MAX_RATIO) {
+      cropW = Math.floor(img.naturalHeight * IG_MAX_RATIO);
+      label = `Trimmed to 1.91:1 (source ${ratio.toFixed(2)}:1 too wide)`;
+    } else if (ratio < IG_MIN_RATIO) {
+      cropH = Math.floor(img.naturalWidth / IG_MIN_RATIO);
+      label = `Trimmed to 4:5 (source ${ratio.toFixed(2)}:1 too tall)`;
+    } else {
+      label = `IG-safe as-is (${ratio.toFixed(2)}:1)`;
+    }
+    const sx = Math.floor((img.naturalWidth - cropW) / 2);
+    const sy = Math.floor((img.naturalHeight - cropH) / 2);
+    // Render onto a fixed-pixel canvas, scaling down to fit inside 320×320.
+    const scale = Math.min(canvas.width / cropW, canvas.height / cropH);
+    const drawW = Math.round(cropW * scale);
+    const drawH = Math.round(cropH * scale);
+    const dx = Math.floor((canvas.width - drawW) / 2);
+    const dy = Math.floor((canvas.height - drawH) / 2);
+    canvas.style.height = (drawH * (160 / canvas.width)) + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, sx, sy, cropW, cropH, dx, dy, drawW, drawH);
+    if (note) note.textContent = label;
+  };
+  img.onerror = () => {
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('preview unavailable', canvas.width / 2, canvas.height / 2);
+    if (note) note.textContent = '';
+  };
+  img.src = srcUrl;
+}
+
+async function actAddLogo() {
+  const fn = window._actStagedFilename;
+  if (!fn) return;
+  const btn = document.getElementById('actLogoBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Applying…'; }
+  try {
+    // Hub returns BOTH a FB-logod (original aspect) and an IG-logod (cropped first,
+    // then logod) variant. Track them separately so each platform gets its own
+    // version on publish.
+    const j = await api('/activities/overlay-logo', { method: 'POST', body: { filename: fn } });
+    window._actStagedFilename = j.filename;        // FB version
+    window._actIgStagedFilename = j.igFilename;    // IG version (cropped + logod)
+    actRenderImagePreview();
+    toast('Logo applied');
+  } catch (e) { toast(e.message, true); if (btn) { btn.disabled = false; btn.textContent = '+ Add Logo'; } }
+}
+
+function actOpenLightbox(url) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:10000;display:flex;align-items:center;justify-content:center;cursor:zoom-out;padding:24px';
+  overlay.onclick = () => overlay.remove();
+  overlay.innerHTML = `<img src="${url}" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:4px">
+    <div style="position:absolute;top:14px;right:18px;color:#fff;font-size:24px;cursor:pointer;font-weight:300" onclick="this.parentElement.remove()">&times;</div>`;
+  document.body.appendChild(overlay);
+}
+
+function actClearImage() {
+  window._actStagedFilename = null;
+  window._actIgStagedFilename = null;
+  actRenderImagePreview();
+  document.getElementById('actImageMode').innerHTML = '';
+}
+
+function actShowImageMode(mode) {
+  const el = document.getElementById('actImageMode');
+  if (mode === 'upload') {
+    el.innerHTML = `<input type="file" id="actUploadFile" accept="image/*" capture="environment">
+      <button class="btn btn-sm btn-secondary" onclick="actDoUpload()">Use this file</button>`;
+  } else if (mode === 'search') {
+    el.innerHTML = `<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
+        <input type="text" id="actSearchQ" class="form-input" style="flex:1" placeholder="e.g. Dublin pub, cliff walk, museum" onkeydown="if(event.key==='Enter')actDoSearch()">
+        <select id="actSearchSrc" class="form-input" style="width:110px"><option value="pexels">Pexels</option><option value="unsplash">Unsplash</option></select>
+        <button class="btn btn-sm btn-secondary" onclick="actDoSearch()">Search</button>
+      </div>
+      <div id="actSearchResults" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px;max-height:240px;overflow:auto"></div>`;
+  } else if (mode === 'generate') {
+    const seed = document.getElementById('actTitle')?.value || '';
+    el.innerHTML = `<div style="display:flex;gap:6px;align-items:flex-start">
+        <textarea id="actGenPrompt" class="form-input" rows="2" style="flex:1" placeholder="Describe the scene — e.g. Students enjoying a Dublin pub night, candid">${esc(seed)}</textarea>
+        <button class="btn btn-sm btn-secondary" onclick="actDoGenerate()" id="actGenBtn">Generate</button>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Uses AI image gen on hub.foxfix.ai. ~10–20s.</div>`;
+  } else { el.innerHTML = ''; }
+}
+
+async function actDoUpload() {
+  const file = document.getElementById('actUploadFile')?.files?.[0];
+  if (!file) return toast('Pick a file first', true);
+  const fd = new FormData(); fd.append('file', file);
+  try {
+    const r = await fetch('/sis/api/activities/upload-image', { method: 'POST', body: fd });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || 'Upload failed');
+    window._actStagedFilename = j.filename;
+    window._actIgStagedFilename = null;  // new source → drop any prior IG-logod variant
+    actRenderImagePreview();
+    document.getElementById('actImageMode').innerHTML = '';
+    toast('Image attached');
+  } catch (e) { toast(e.message, true); }
+}
+
+async function actDoSearch() {
+  const q = document.getElementById('actSearchQ').value.trim();
+  const source = document.getElementById('actSearchSrc').value;
+  if (!q) return toast('Enter a search term', true);
+  const grid = document.getElementById('actSearchResults');
+  grid.innerHTML = '<div style="grid-column:1/-1;font-size:12px;color:var(--text-muted)">Searching…</div>';
+  try {
+    const results = await api('/activities/search-image?q=' + encodeURIComponent(q) + '&source=' + source);
+    if (!results.length) { grid.innerHTML = '<div style="grid-column:1/-1;font-size:12px;color:var(--text-muted)">No results.</div>'; return; }
+    grid.innerHTML = results.map(r => `
+      <div style="cursor:pointer;border-radius:6px;overflow:hidden;border:1px solid var(--card-border)" onclick="actAttachUrl('${r.fullUrl.replace(/'/g,"\\'")}')" title="${esc(r.attribution)}">
+        <img src="${r.thumbUrl}" style="width:100%;height:80px;object-fit:cover;display:block">
+      </div>`).join('');
+  } catch (e) { grid.innerHTML = '<div style="grid-column:1/-1;color:var(--danger);font-size:12px">' + esc(e.message) + '</div>'; }
+}
+
+async function actAttachUrl(url) {
+  try {
+    const j = await api('/activities/attach-from-url', { method: 'POST', body: { url } });
+    window._actStagedFilename = j.filename;
+    window._actIgStagedFilename = null;
+    actRenderImagePreview();
+    document.getElementById('actImageMode').innerHTML = '';
+    toast('Image attached');
+  } catch (e) { toast(e.message, true); }
+}
+
+async function actDoGenerate() {
+  const prompt = document.getElementById('actGenPrompt').value.trim();
+  if (!prompt) return toast('Add a prompt', true);
+  const btn = document.getElementById('actGenBtn');
+  btn.disabled = true; btn.textContent = 'Generating…';
+  try {
+    const j = await api('/activities/generate-image', { method: 'POST', body: { prompt } });
+    window._actStagedFilename = j.filename;
+    window._actIgStagedFilename = null;
+    actRenderImagePreview();
+    document.getElementById('actImageMode').innerHTML = '';
+    toast('Image generated');
+  } catch (e) { toast(e.message, true); }
+  finally { if (btn) { btn.disabled = false; btn.textContent = 'Generate'; } }
+}
+
+async function saveActivity(id) {
+  const body = {
+    title: document.getElementById('actTitle').value.trim(),
+    date: document.getElementById('actDate').value,
+    cost: document.getElementById('actCost').value,
+    startTime: document.getElementById('actStart').value,
+    endTime: document.getElementById('actEnd').value,
+    location: document.getElementById('actLocation').value.trim(),
+    description: document.getElementById('actDescription').value.trim(),
+    imageFilename: window._actStagedFilename || null,
+  };
+  if (!body.title) return toast('Title required', true);
+  if (!body.date) return toast('Date required', true);
+  try {
+    const saved = id ? await api('/activities/' + id, { method: 'PATCH', body }) : await api('/activities', { method: 'POST', body });
+    toast(id ? 'Saved' : 'Activity created');
+    window._actStagedFilename = null;
+    document.querySelector('.modal-overlay')?.remove();
+    renderActivitiesCalendar();
+    // Reopen in edit mode so the Publish button is enabled
+    if (!id) setTimeout(() => openActivityModal(body.date, saved.id), 150);
+  } catch (e) { toast(e.message, true); }
+}
+
+async function deleteActivity(id) {
+  if (!confirm('Delete this activity? RSVPs will also be removed.')) return;
+  try {
+    await api('/activities/' + id, { method: 'DELETE' });
+    toast('Deleted');
+    document.querySelector('.modal-overlay')?.remove();
+    renderActivitiesCalendar();
+  } catch (e) { toast(e.message, true); }
+}
+
+async function publishActivity(id) {
+  if (!id) return toast('Save first', true);
+  // Persist any in-modal edits (especially a freshly staged image) before publishing,
+  // otherwise the DB record may still be missing the imageFilename and Meta gets text-only.
+  try {
+    const body = {
+      title: document.getElementById('actTitle').value.trim(),
+      date: document.getElementById('actDate').value,
+      cost: document.getElementById('actCost').value,
+      startTime: document.getElementById('actStart').value,
+      endTime: document.getElementById('actEnd').value,
+      location: document.getElementById('actLocation').value.trim(),
+      description: document.getElementById('actDescription').value.trim(),
+      imageFilename: window._actStagedFilename || null,
+    };
+    if (body.title && body.date) {
+      await api('/activities/' + id, { method: 'PATCH', body });
+    }
+  } catch (e) { return toast('Save before publish failed: ' + e.message, true); }
+  try {
+    const r = await api('/activities/' + id + '/publish', {
+      method: 'POST',
+      body: { igImageFilename: window._actIgStagedFilename || null },
+    });
+    if (r.errors && r.errors.length) {
+      toast('Some platforms failed: ' + r.errors.join(' | '), true);
+    } else {
+      toast('✓ Sent to Meta — drafts ready for review in Business Suite');
+    }
+    window._actStagedFilename = null;
+    document.querySelector('.modal-overlay')?.remove();
+    renderActivitiesCalendar();
+  } catch (e) { toast(e.message, true); }
+}
+
+async function markAttended(attendeeId, attended, activityId) {
+  try {
+    await api('/activities/attendees/' + attendeeId, { method: 'PATCH', body: { attended } });
+    toast(attended ? 'Marked attended' : 'Unmarked');
+    // Refresh modal so the attendee list reflects the change
+    document.querySelector('.modal-overlay')?.remove();
+    openActivityModal(null, activityId);
   } catch (e) { toast(e.message, true); }
 }
 

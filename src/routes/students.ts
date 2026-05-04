@@ -4,6 +4,7 @@ import fs from 'fs';
 import multer from 'multer';
 import { PrismaClient } from '../generated/prisma/client';
 import { studentScripts } from '../scripts/students';
+import { studentScripts as portalScripts } from '../scripts/student';
 
 const uploadDir = path.join(__dirname, '..', '..', 'uploads', 'students');
 const storage = multer.diskStorage({
@@ -26,6 +27,7 @@ const upload = multer({
 export function studentRoutes(prisma: PrismaClient) {
   const router = Router();
   const scripts = studentScripts(prisma);
+  const portal = portalScripts(prisma);
 
   router.get('/', async (req, res) => {
     try {
@@ -115,6 +117,28 @@ export function studentRoutes(prisma: PrismaClient) {
       res.setHeader('Content-Type', doc.mimeType);
       fs.createReadStream(filePath).pipe(res);
     } catch (e) { res.status(500).json({ error: String(e) }); }
+  });
+
+  // ── Challenges (admin verify) ──
+  // Returns the same payload the student sees, so admin UI can mirror state.
+  router.get('/:id/challenges', async (req, res) => {
+    try { res.json(await portal.challenges(parseInt(req.params.id, 10))); }
+    catch (e: any) { res.status(500).json({ error: String(e?.message || e) }); }
+  });
+
+  router.patch('/:id/challenges/verify', async (req, res) => {
+    try {
+      const by = (req as any).session?.user || null;
+      res.json(await portal.adminSetVerify(parseInt(req.params.id, 10), req.body || {}, by));
+    } catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }
+  });
+
+  router.patch('/challenges/content/:contentId/verify', async (req, res) => {
+    try {
+      const by = (req as any).session?.user || null;
+      const verified = !!(req.body && req.body.verified);
+      res.json(await portal.adminVerifyContent(parseInt(req.params.contentId, 10), verified, by));
+    } catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }
   });
 
   // Delete a document

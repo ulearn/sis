@@ -2,8 +2,42 @@ import { PrismaClient, DocumentStatus } from '../generated/prisma/client';
 import crypto from 'crypto';
 import QRCode from 'qrcode';
 import puppeteer from 'puppeteer';
+import fs from 'fs';
+import path from 'path';
 
 const BASE_URL = process.env.BASE_URL || 'https://sis.ulearnschool.com';
+const PUBLIC_DIR = path.resolve(__dirname, '../../public');
+
+// Inline local /sis/public/* and /public/* image refs as data URIs so puppeteer's
+// setContent() (which has no base URL) can render them. Without this, header,
+// signature, and footer images silently drop from PDFs.
+const _imageCache = new Map<string, string>();
+function inlineLocalImages(html: string): string {
+  return html.replace(/<img\b([^>]*?)\bsrc=(["'])([^"']+)\2([^>]*)>/gi, (full, before, _q, src, after) => {
+    const m = src.match(/^(?:https?:\/\/[^/]*)?\/(?:sis\/)?public\/(.+)$/);
+    if (!m) return full;
+    const rel = m[1].split('?')[0].split('#')[0];
+    const cached = _imageCache.get(rel);
+    if (cached) return `<img${before} src="${cached}"${after}>`;
+    try {
+      const abs = path.resolve(PUBLIC_DIR, rel);
+      if (!abs.startsWith(PUBLIC_DIR)) return full;
+      const buf = fs.readFileSync(abs);
+      const ext = path.extname(rel).slice(1).toLowerCase();
+      const mime = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg'
+        : ext === 'png' ? 'image/png'
+        : ext === 'gif' ? 'image/gif'
+        : ext === 'svg' ? 'image/svg+xml'
+        : ext === 'webp' ? 'image/webp'
+        : 'application/octet-stream';
+      const dataUri = `data:${mime};base64,${buf.toString('base64')}`;
+      _imageCache.set(rel, dataUri);
+      return `<img${before} src="${dataUri}"${after}>`;
+    } catch {
+      return full;
+    }
+  });
+}
 
 export function documentScripts(prisma: PrismaClient) {
 
@@ -119,6 +153,81 @@ export function documentScripts(prisma: PrismaClient) {
 
     const fmtDate = (d: any) => d ? new Date(d).toLocaleDateString('en-IE', { day: '2-digit', month: 'long', year: 'numeric' }) : '';
 
+    // ── Attendance rate + absences list ──────────────────
+    // The Exit Letter (and Holiday Letter) cite an attendance percentage. Until
+    // now the token was an empty string with a TODO comment. We compute it from
+    // the Attendance table — PRESENT/LATE count as attended, anything else as
+    // absent. When < 85% (the ILEP threshold) we additionally render an
+    // `absences_list` block: a bulleted list of every absence with its date,
+    // any student-recorded reason, optional note, and a "(medical cert on file)"
+    // tag. This is what gets pulled into the {if absences_list} block in the
+    // Exit Letter so IRP renewal interviewers have the paper trail.
+    const ABSENT_STATUSES = new Set(['ABSENT_CERTIFIED', 'ABSENT_UNCERTIFIED', 'EXCUSED']);
+    const REASON_LABELS: Record<string, string> = {
+      SICK: 'Sick',
+      IRP_APPT: 'IRP / visa appointment',
+      PPS_APPT: 'PPS appointment',
+      EXAM: 'Exam / academic',
+      TRANSPORT: 'Public transport disruption',
+      WEATHER: 'Weather warning',
+      OTHER: 'Other',
+    };
+    let attendanceRateStr = '';
+    let absencesListHtml = '';
+    try {
+      const { fetchStudentHolidays, filterOutHolidayDates } = await import('./attendance-pct');
+      const attRowsAll = await prisma.attendance.findMany({
+        where: { studentId },
+        select: { status: true, occurrence: { select: { date: true } } },
+      });
+      // Holiday-overlap days are excluded from the rate calculation entirely
+      // (they aren't supposed to be at school, so they shouldn't drag the
+      // percentage down). Same row set then drives the absences list below.
+      const studentHolidays = await fetchStudentHolidays(prisma, studentId);
+      const attRows = filterOutHolidayDates(attRowsAll, studentHolidays);
+      const total = attRows.length;
+      if (total > 0) {
+        const presentLike = attRows.filter(r => r.status === 'PRESENT' || r.status === 'LATE').length;
+        const pct = Math.round((presentLike / total) * 100);
+        attendanceRateStr = `${pct}%`;
+
+        if (pct < 85) {
+          // Pull absences with any reason+cert metadata. Order chronologically
+          // for readability in the letter.
+          const absentRows = attRows
+            .filter(r => ABSENT_STATUSES.has(r.status))
+            .sort((a, b) => (a.occurrence.date.getTime() - b.occurrence.date.getTime()));
+
+          if (absentRows.length) {
+            const dates = absentRows.map(r => r.occurrence.date);
+            const reasons = await prisma.absenceReason.findMany({
+              where: { studentId, date: { in: dates } },
+              select: {
+                date: true, reason: true, noteText: true,
+                _count: { select: { certFiles: true } },
+              },
+            });
+            const reasonByIso = new Map(
+              reasons.map(r => [r.date.toISOString().slice(0, 10), r])
+            );
+            const items = absentRows.map(r => {
+              const iso = r.occurrence.date.toISOString().slice(0, 10);
+              const rsn = reasonByIso.get(iso);
+              const dateLabel = fmtDate(r.occurrence.date);
+              const label = rsn?.reason ? REASON_LABELS[rsn.reason] || rsn.reason : 'No reason recorded';
+              const note = rsn?.noteText ? ` — ${rsn.noteText}` : '';
+              const cert = rsn?._count?.certFiles ? ' (medical cert on file)' : '';
+              return `<li><strong>${dateLabel}</strong>: ${label}${note}${cert}</li>`;
+            }).join('');
+            absencesListHtml = `<ul style="margin:8px 0 16px 20px;padding:0">${items}</ul>`;
+          }
+        }
+      }
+    } catch {
+      // If the attendance query blows up for any reason, leave the tokens empty
+      // — the letter still renders, just without the % and the absences block.
+    }
+
     const tokens: Record<string, string> = {
       // Student
       'student.full_name': `${student.firstName} ${student.lastName || ''}`,
@@ -141,7 +250,8 @@ export function documentScripts(prisma: PrismaClient) {
       'student.emergency_phone': student.emergencyPhone || '',
       'student.age': student.birthday ? String(Math.floor((Date.now() - new Date(student.birthday).getTime()) / (365.25 * 24 * 60 * 60 * 1000))) : '',
       'student.language': (student as any).language || (student as any).contactLanguage || '',
-      'student.attendance_rate': '', // computed at render time from attendance records
+      'student.attendance_rate': attendanceRateStr,
+      'absences_list': absencesListHtml, // populated only when attendance < 85% — drives {if absences_list}
 
       // Gender pronouns (replaces Fidelo {if gender} blocks)
       'student.pronoun_subject': isMale ? 'he' : 'she',
@@ -248,14 +358,27 @@ export function documentScripts(prisma: PrismaClient) {
     //    legacy Fidelo placeholders ({if ilep_course_code}) and SIS dotted forms.
     html = html.replace(/\{if\s+([a-z0-9_.]+)\}([\s\S]*?)\{\/if\}/gi, (_m, key, content) => {
       const k = key.trim();
-      const v = tokens[k] || tokens['booking.' + k] || tokens['student.' + k] || '';
+      // Try the bare key, then namespaced fallbacks. accommodation.* added so
+      // legacy Fidelo conditionals like {if accommodation_phone} still resolve.
+      const v = tokens[k]
+        || tokens['booking.' + k]
+        || tokens['student.' + k]
+        || tokens['accommodation.' + k]
+        || tokens[k.replace(/^accommodation_/, 'accommodation.')]
+        || '';
       return v ? content : '';
     });
     // 2. Resolve {{token.name}} (SIS dotted) — empty string if missing.
+    //    `document.*` placeholders are preserved as literals so issueDocument()
+    //    can fill them in at issue time (qr, version, number, verification_url).
+    //    `custom.*` placeholders used to be preserved too, but that left visible
+    //    {{custom.x}} text in drafts when staff didn't fill in the editable
+    //    block (e.g. accommodation_details for a student with no accommodation).
+    //    We now render them empty by default; the editor can still inject
+    //    content via editableFields, which is merged in at edit time.
     html = html.replace(/\{\{([^}]+)\}\}/g, (match, key) => {
       const trimmed = key.trim();
-      // Keep custom.* and document.* placeholders (resolved later or editable)
-      if (trimmed.startsWith('custom.') || trimmed.startsWith('document.')) {
+      if (trimmed.startsWith('document.')) {
         return tokens[trimmed] !== undefined ? tokens[trimmed] : match;
       }
       return tokens[trimmed] || '';
@@ -455,10 +578,11 @@ export function documentScripts(prisma: PrismaClient) {
     });
     try {
       const page = await browser.newPage();
+      const inlinedHtml = inlineLocalImages(contentHtml);
       const fullHtml = `<!DOCTYPE html><html><head>
         <meta charset="UTF-8">
         <style>body{margin:0;padding:40px;font-family:Verdana,sans-serif;font-size:14px;line-height:1.7;color:#1a1d23}img{max-width:100%}</style>
-      </head><body>${contentHtml}</body></html>`;
+      </head><body>${inlinedHtml}</body></html>`;
       await page.setContent(fullHtml, { waitUntil: 'networkidle0' });
       const pdf = await page.pdf({
         format: 'A4',

@@ -91,5 +91,21 @@ export function bookingRoutes(prisma: PrismaClient) {
     catch (e) { res.status(400).json({ error: String(e) }); }
   });
 
+  // Booking holidays — inserting/removing pushes course end-dates by weekdays
+  router.get('/:bookingId/holidays', async (req, res) => {
+    try { res.json(await scripts.listHolidays(parseInt(req.params.bookingId))); }
+    catch (e) { res.status(400).json({ error: String(e) }); }
+  });
+
+  router.post('/:bookingId/holidays', async (req, res) => {
+    try { res.status(201).json(await scripts.addHoliday(parseInt(req.params.bookingId), req.body)); }
+    catch (e) { res.status(400).json({ error: String(e) }); }
+  });
+
+  router.delete('/holidays/:id', async (req, res) => {
+    try { res.json(await scripts.removeHoliday(parseInt(req.params.id))); }
+    catch (e) { res.status(400).json({ error: String(e) }); }
+  });
+
   return router;
 }

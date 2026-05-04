@@ -30,6 +30,7 @@ import { payrollRoutes } from './routes/payroll';
 import { partnerRoutes } from './routes/partners';
 import { studentRoutesPortal } from './routes/student';
 import { zohoAuthRoutes } from './routes/zoho-auth';
+import { activitiesRoutes } from './routes/activities';
 import { validateIBAN } from './scripts/iban-validator';
 import { documentScripts } from './scripts/documents';
 import { testRoutesStaff, testRoutesPublic } from './routes/tests';
@@ -46,20 +47,27 @@ declare module 'express-session' {
     user?: string;
     role?: string;
     displayName?: string;
-    userType?: string;       // 'staff' | 'partner'
+    userType?: string;       // 'staff' | 'partner' | 'student' | 'teacher'
     agencyId?: number;
     agencyName?: string;
     partnerHubspotContactId?: string;  // HubSpot contact ID of the logged-in partner (Agent Employee)
     portalPermissions?: Record<string, boolean>;
+    studentId?: number;      // resolved at login time for userType='student'
   }
 }
 
-// Permission definitions per role
+// Permission definitions per role.
+//
+// Note on documents vs document-templates: staff (DOS / sales / accomm) CAN
+// create + edit document drafts (per-student LOAs, exit letters, etc.) but
+// CANNOT touch the underlying templates. Template editing is admin-only,
+// guarded separately below — keeps the template library clean (the previous
+// SIS ended up with ~450 unmanaged "templates" that were really saved emails).
 const ROLE_PERMISSIONS: Record<string, { deny: string[]; viewOnly: string[] }> = {
   admin: { deny: [], viewOnly: [] },
-  dos: { deny: [], viewOnly: ['documents'] },
-  sales: { deny: ['payroll'], viewOnly: ['classes', 'documents'] },
-  accomm: { deny: ['payroll'], viewOnly: ['classes', 'documents'] },
+  dos: { deny: [], viewOnly: ['document-templates'] },
+  sales: { deny: ['payroll'], viewOnly: ['classes', 'document-templates'] },
+  accomm: { deny: ['payroll'], viewOnly: ['classes', 'document-templates'] },
   // Unified-app roles — ZERO SIS API access by default (GDPR / payroll / student PII).
   // Student-self routes (own profile, own bookings) will be added later;
   // teachers must never see SIS data. See TODO inside /sis/auth/login.
@@ -99,21 +107,55 @@ app.post('/sis/auth/login', async (req, res) => {
     // Partner users should use the partner login, not the SIS login
     if (user.userType === 'partner') return res.json({ success: false, error: 'Please use the partner portal to log in' });
 
-    // TODO(unified-app): handle userType === 'student' and 'teacher' here.
-    //   Students log in via the LMS app (lms.ulearnschool.com) but auth
-    //   resolves against the same SisUser table. Teachers should never see
-    //   SIS-side UI; their session exists only to satisfy the LMS API.
-    //   Until those flows are built, only staff and partner can log in here.
-
     req.session.user = username;
     req.session.role = user.role;
     req.session.userType = user.userType || 'staff';
     req.session.displayName = user.displayName || username;
-    res.json({ success: true });
+
+    // Student auth: resolve the SisUser → Student row by email at login time.
+    // Email uniqueness isn't enforced (intentional — see CLAUDE.md), so on
+    // collision we tiebreak by `id desc` (most recently created wins).
+    let redirectTo = '/sis/admin';
+    if (user.userType === 'student') {
+      const matches = user.email
+        ? await prisma.student.findMany({
+            where: { email: { equals: user.email, mode: 'insensitive' } },
+            orderBy: { id: 'desc' },
+            select: { id: true },
+            take: 1,
+          })
+        : [];
+      if (!matches.length) return res.json({ success: false, error: 'No student record found for this account' });
+      req.session.studentId = matches[0].id;
+      redirectTo = '/sis/student';
+    } else if (user.userType === 'teacher') {
+      // Teachers route to the LMS — SIS UI exposes payroll/finance/PII. The session
+      // exists only so LMS calls back to /sis/auth/me succeed.
+      // Land on the staff login (the bare LMS root currently 302s to the
+      // deprecated Directus admin login).
+      redirectTo = 'https://lms.ulearnschool.com/prototype/login/staff';
+    }
+
+    res.json({ success: true, redirectTo });
   } catch (e) { res.json({ success: false, error: 'Login error' }); }
 });
 
+// CORS for cross-subdomain SSO probes. The LMS / hub apps fetch this endpoint
+// with `credentials: 'include'` to detect an existing SIS session and skip
+// their own login form. Same registrable domain → cookie ships automatically;
+// the headers below let the LMS read the JSON response.
+const SSO_ORIGINS = new Set([
+  'https://lms.ulearnschool.com',
+  'https://hub.ulearnschool.com',
+]);
+
 app.get('/sis/auth/me', (req, res) => {
+  const origin = req.headers.origin as string | undefined;
+  if (origin && SSO_ORIGINS.has(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Vary', 'Origin');
+  }
   if (!req.session.user) return res.status(401).json({ success: false });
   const role = req.session.role || 'staff';
   const perms = ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.sales;
@@ -124,6 +166,21 @@ app.get('/sis/auth/me', (req, res) => {
     role,
     permissions: perms,
   });
+});
+
+// Preflight for /sis/auth/me — browsers send OPTIONS before a credentialed GET
+// when the request includes non-simple headers (e.g. custom Accept).
+app.options('/sis/auth/me', (req, res) => {
+  const origin = req.headers.origin as string | undefined;
+  if (origin && SSO_ORIGINS.has(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept');
+    res.setHeader('Access-Control-Max-Age', '600');
+    res.setHeader('Vary', 'Origin');
+  }
+  res.sendStatus(204);
 });
 
 app.get('/sis/auth/logout', (req, res) => {
@@ -350,15 +407,20 @@ app.use('/sis/partners/api', requirePartnerAuth, partnerRoutes(prisma));
 // Serve static assets for partner portal (favicon etc)
 app.use('/sis/partners/public', express.static(path.join(__dirname, '..', 'public')));
 
-// ── Student Portal (scaffold) ──────────────────
-// Mobile-first portal at /sis/student with 3 tabs: Profile, Challenges, Learning.
-// Auth is NOT yet wired — shell currently renders in preview/demo mode so the
-// structure can be iterated on. Phase 1 work is students table + login.
-app.get('/sis/student', (_req, res) => {
+// ── Student Portal ─────────────────────────────
+// Mobile-first portal at /sis/student with 3 tabs: SIS / Challenges / LMS.
+// Auth: SisUser with userType='student' resolves to a Student row at login
+// (see /sis/auth/login). The page itself requires a session; static assets
+// under /sis/student/public/* stay public for the launch screen.
+app.use('/sis/student/public', express.static(path.join(__dirname, '..', 'public')));
+app.get('/sis/student', (req, res) => {
+  if (!req.session.user) return res.redirect('/sis/login');
+  if (req.session.userType && req.session.userType !== 'student' && req.session.userType !== 'staff') {
+    return res.redirect('/sis/login');
+  }
   res.sendFile(path.join(__dirname, '..', 'public', 'student.html'));
 });
 app.use('/sis/student/api', studentRoutesPortal(prisma));
-app.use('/sis/student/public', express.static(path.join(__dirname, '..', 'public')));
 
 // ── Teacher / LMS-bound login (mirrors partner pattern but redirects to LMS, not SIS UI) ──
 // Teachers should never see the SIS UI (GDPR / payroll exposure). This page POSTs to the
@@ -373,7 +435,7 @@ app.get('/sis/teachers/auth/logout', (req, res) => {
 
 // ── Auth middleware ────────────────────────────
 // Public routes that skip auth:
-const publicPaths = ['/sis/login', '/sis/forgot', '/sis/reset', '/sis/auth/', '/sis/health', '/sis/verify/', '/sis/api/webhooks', '/sis/api/email/quiz-result', '/sis/api/tests/public/', '/sis/public/favicon.ico', '/sis/public/launch/', '/sis/partners/login', '/sis/partners/auth/', '/sis/partners/public/', '/sis/student', '/sis/teachers/login', '/sis/teachers/auth/'];
+const publicPaths = ['/sis/login', '/sis/forgot', '/sis/reset', '/sis/auth/', '/sis/health', '/sis/verify/', '/sis/api/webhooks', '/sis/api/email/quiz-result', '/sis/api/tests/public/', '/sis/api/activities/image/', '/sis/public/favicon.ico', '/sis/public/launch/', '/sis/partners/login', '/sis/partners/auth/', '/sis/partners/public/', '/sis/student/public/', '/sis/teachers/login', '/sis/teachers/auth/'];
 
 function requireAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
   // Skip auth for public paths
@@ -399,24 +461,28 @@ function requireAuth(req: express.Request, res: express.Response, next: express.
 app.use(requireAuth);
 
 // ── Role-based API restrictions ───────────────
+// Map a request URL path to its logical "section" for permission checks.
+// The default is the first path segment (e.g. /students → students), but
+// `/documents/templates*` is treated as its own section so we can gate
+// template editing separately from document-record CRUD.
+function pathToSection(p: string): string {
+  if (p.startsWith('/documents/templates')) return 'document-templates';
+  const m = p.match(/^\/([^/?#]+)/);
+  return m ? m[1] : '';
+}
+
 app.use('/sis/api', (req, res, next) => {
   const role = req.session.role || 'staff';
   const perms = ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.sales;
+  const section = pathToSection(req.path);
 
-  // Check denied sections
-  for (const section of perms.deny) {
-    if (req.path.startsWith(`/${section}`)) {
-      return res.status(403).json({ success: false, error: 'Access denied' });
-    }
+  if (perms.deny.includes(section)) {
+    return res.status(403).json({ success: false, error: 'Access denied' });
   }
 
-  // Check view-only sections (block POST/PUT/DELETE)
-  if (req.method !== 'GET') {
-    for (const section of perms.viewOnly) {
-      if (req.path.startsWith(`/${section}`)) {
-        return res.status(403).json({ success: false, error: 'View-only access' });
-      }
-    }
+  // viewOnly: GET allowed, writes blocked.
+  if (req.method !== 'GET' && perms.viewOnly.includes(section)) {
+    return res.status(403).json({ success: false, error: 'View-only access' });
   }
 
   next();
@@ -456,6 +522,7 @@ app.use('/sis/api/documents', documentRoutes(prisma));
 app.use('/sis/api/email', emailRoutes(prisma));
 app.use('/sis/api/host-payments', hostPaymentRoutes(prisma));
 app.use('/sis/api/payroll', payrollRoutes(prisma));
+app.use('/sis/api/activities', activitiesRoutes(prisma));
 app.use('/sis/zoho/auth', zohoAuthRoutes());
 
 // Scheduling (closures CRUD) + startup occurrence top-up

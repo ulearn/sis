@@ -229,6 +229,152 @@ export function bookingScripts(prisma: PrismaClient) {
     return prisma.bookingAccommodation.delete({ where: { id } });
   }
 
+  // ── Booking Holidays ────────────────────────
+  // Inserting a holiday on a booking pushes BookingCourse.endDate (and
+  // Booking.serviceEnd) forward by the number of WEEKDAYS in the holiday
+  // window. Weekends don't extend the course because students only attend
+  // Mon–Fri. Accommodation and extras are untouched per spec.
+
+  function countWeekdays(start: Date, end: Date): number {
+    // Inclusive range, Mon=1..Fri=5
+    const s = new Date(start); s.setHours(0,0,0,0);
+    const e = new Date(end); e.setHours(0,0,0,0);
+    if (e < s) return 0;
+    let days = 0;
+    const cur = new Date(s);
+    while (cur <= e) {
+      const d = cur.getDay();
+      if (d >= 1 && d <= 5) days++;
+      cur.setDate(cur.getDate() + 1);
+    }
+    return days;
+  }
+
+  function addWeekdays(date: Date, weekdays: number): Date {
+    // Skip past weekends so the new end-date lands on a working day.
+    const d = new Date(date); d.setHours(0,0,0,0);
+    let added = 0;
+    while (added < weekdays) {
+      d.setDate(d.getDate() + 1);
+      const dow = d.getDay();
+      if (dow >= 1 && dow <= 5) added++;
+    }
+    return d;
+  }
+
+  function subWeekdays(date: Date, weekdays: number): Date {
+    const d = new Date(date); d.setHours(0,0,0,0);
+    let removed = 0;
+    while (removed < weekdays) {
+      d.setDate(d.getDate() - 1);
+      const dow = d.getDay();
+      if (dow >= 1 && dow <= 5) removed++;
+    }
+    return d;
+  }
+
+  // Effective push: number of holiday weekdays that fall ON OR BEFORE the
+  // course endDate. Days after the original endDate are "free time" — they
+  // don't extend the schedule. (Per spec: holidays after course end are a
+  // natural gap requiring no action.)
+  function effectiveWeekdays(holStart: Date, holEnd: Date, courseEnd: Date | null): number {
+    if (!courseEnd) return 0;
+    if (holStart > courseEnd) return 0;
+    const cap = holEnd <= courseEnd ? holEnd : courseEnd;
+    return countWeekdays(holStart, cap);
+  }
+
+  async function addHoliday(bookingId: number, data: Record<string, any>) {
+    const startDate = new Date(data.startDate);
+    const endDate = new Date(data.endDate);
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) throw new Error('Invalid dates');
+    if (endDate < startDate) throw new Error('endDate cannot be before startDate');
+
+    const totalWeekdays = countWeekdays(startDate, endDate);
+    if (totalWeekdays === 0) throw new Error('Holiday range contains no weekdays');
+    const weeks = Math.ceil(totalWeekdays / 5);
+
+    return prisma.$transaction(async (tx) => {
+      const courses = await tx.bookingCourse.findMany({
+        where: { bookingId },
+        select: { id: true, endDate: true },
+      });
+
+      // Compute effective push per course. Per the user's 35-week-per-course
+      // rule, holidays only ever overlap one course at a time, so the values
+      // converge to either 0 or the same N. We track the max for storage.
+      let maxPush = 0;
+      for (const c of courses) {
+        const push = effectiveWeekdays(startDate, endDate, c.endDate);
+        if (push > maxPush) maxPush = push;
+        if (push > 0) {
+          const newEnd = addWeekdays(c.endDate!, push);
+          await tx.bookingCourse.update({ where: { id: c.id }, data: { endDate: newEnd } });
+        }
+      }
+
+      // Mirror on the booking's serviceEnd
+      if (maxPush > 0) {
+        const booking = await tx.booking.findUnique({ where: { id: bookingId }, select: { serviceEnd: true } });
+        if (booking?.serviceEnd) {
+          const newServiceEnd = addWeekdays(booking.serviceEnd, maxPush);
+          await tx.booking.update({ where: { id: bookingId }, data: { serviceEnd: newServiceEnd } });
+        }
+      }
+
+      const holiday = await tx.bookingHoliday.create({
+        data: {
+          bookingId,
+          startDate,
+          endDate,
+          weeks,
+          type: data.type || 'student',
+          weekdaysPushed: maxPush,
+        } as any,
+      });
+
+      return { holiday, weekdaysPushed: maxPush, totalWeekdays };
+    });
+  }
+
+  async function removeHoliday(holidayId: number) {
+    const holiday = await prisma.bookingHoliday.findUnique({ where: { id: holidayId } });
+    if (!holiday) throw new Error('Holiday not found');
+    // Stored value first; fall back to recompute for legacy rows. Recompute
+    // is conservative — it counts every weekday in the range, which matches
+    // the old (pre-fix) behaviour.
+    const weekdays = (holiday as any).weekdaysPushed ?? countWeekdays(holiday.startDate, holiday.endDate);
+
+    return prisma.$transaction(async (tx) => {
+      if (weekdays > 0) {
+        const courses = await tx.bookingCourse.findMany({
+          where: { bookingId: holiday.bookingId },
+          select: { id: true, endDate: true },
+        });
+        for (const c of courses) {
+          if (!c.endDate) continue;
+          const newEnd = subWeekdays(c.endDate, weekdays);
+          await tx.bookingCourse.update({ where: { id: c.id }, data: { endDate: newEnd } });
+        }
+        const booking = await tx.booking.findUnique({ where: { id: holiday.bookingId }, select: { serviceEnd: true } });
+        if (booking?.serviceEnd) {
+          const newServiceEnd = subWeekdays(booking.serviceEnd, weekdays);
+          await tx.booking.update({ where: { id: holiday.bookingId }, data: { serviceEnd: newServiceEnd } });
+        }
+      }
+
+      await tx.bookingHoliday.delete({ where: { id: holidayId } });
+      return { deleted: true, weekdaysRolledBack: weekdays };
+    });
+  }
+
+  async function listHolidays(bookingId: number) {
+    return prisma.bookingHoliday.findMany({
+      where: { bookingId },
+      orderBy: { startDate: 'asc' },
+    });
+  }
+
   // ── Booking Extras ──────────────────────────
   async function addExtra(bookingId: number, data: Record<string, any>) {
     parseDates(data, ['scheduledAt']);
@@ -253,5 +399,6 @@ export function bookingScripts(prisma: PrismaClient) {
     addCourse, updateCourse, removeCourse,
     addAccommodation, updateAccommodation, removeAccommodation,
     addExtra, updateExtra, removeExtra,
+    addHoliday, removeHoliday, listHolidays,
   };
 }

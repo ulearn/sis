@@ -75,6 +75,23 @@ function skuToAccommType(sku: string): string | null {
   return null;
 }
 
+// Classify line items that don't match a course/accom SKU.
+// Mirrors the description-keyword logic in fidelo-fee-extractor.ts so HubSpot
+// and Fidelo invoice line items end up in the same conceptual buckets.
+type AuxKind = 'registration' | 'placement_fee' | 'pickup' | 'dropoff' | 'transfer' | 'exam' | 'insurance' | 'accommodation' | 'other';
+function classifyAuxItem(name: string, description: string): AuxKind {
+  const d = `${name || ''} ${description || ''}`.toLowerCase();
+  if (/\bregistration\b/.test(d)) return 'registration';
+  if (/\b(placement\s*fee|admission)\b/.test(d)) return 'placement_fee';
+  if (/\b(pick[\s-]?up|arrival\s*transfer)\b/.test(d)) return 'pickup';
+  if (/\b(drop[\s-]?off|departure\s*transfer)\b/.test(d)) return 'dropoff';
+  if (/\b(transfer|airport)\b/.test(d)) return 'transfer';
+  if (/\b(exam\s*fee|exam\b|test\s*fee|ielts|cambridge|fce|cae)\b/.test(d)) return 'exam';
+  if (/\b(insurance|pel\b|health\s*cover)\b/.test(d)) return 'insurance';
+  if (/\b(accomm|host\s*family|hotel|residence|apartment|homestay|room|lodging|board)\b/.test(d)) return 'accommodation';
+  return 'other';
+}
+
 // Strip pricing tier from HubSpot product name → clean SIS course name.
 // SKU is consulted so LifePass / AY products get the canonical SIS naming
 // even when HubSpot sends a marketing-flavoured name or no name at all.
@@ -339,6 +356,19 @@ export function webhookRoutes(prisma: PrismaClient) {
       const courseEnd = dp.course_end ? new Date(dp.course_end) : null;
       const courseWeeks = parseInt(dp.course_weeks) || null;
 
+      // Per-classification accumulators for non-course/non-accom SKU line items.
+      // These get applied to Booking.regFee/placementFee and BookingExtra.fee
+      // after the loop. Mirrors the buckets in fidelo-fee-extractor.ts so the
+      // two import paths produce comparable shape.
+      let regFeeTotal = 0;
+      let placementFeeTotal = 0;
+      let pickupFeeTotal = 0;
+      let dropoffFeeTotal = 0;
+      let transferFeeTotal = 0;   // ambiguous "transfer" / "airport" — split to pickup/dropoff later
+      let examFeeTotal = 0;
+      let insuranceFeeTotal = 0;
+      let accomFallbackFee = 0;   // description-matched accom rows when SKU scan misses
+
       for (const li of lineItems) {
         const p = li.properties;
         const sku = p.hs_sku || '';
@@ -357,11 +387,11 @@ export function webhookRoutes(prisma: PrismaClient) {
             fee: amount,
             active: true,
           });
+          continue;
         }
 
         const accommType = skuToAccommType(sku);
         if (accommType) {
-          courses.push; // skip — wrong array
           accommodations.push({
             accommodationType: accommType,
             startDate: courseStart,
@@ -370,6 +400,22 @@ export function webhookRoutes(prisma: PrismaClient) {
             fee: amount,
             active: true,
           });
+          continue;
+        }
+
+        // No SKU match — classify by name/description so reg fees, placement
+        // fees, and extras stop getting silently merged into amountTotal.
+        const kind = classifyAuxItem(p.name || '', p.description || '');
+        switch (kind) {
+          case 'registration':   regFeeTotal       += amount; break;
+          case 'placement_fee':  placementFeeTotal += amount; break;
+          case 'pickup':         pickupFeeTotal    += amount; break;
+          case 'dropoff':        dropoffFeeTotal   += amount; break;
+          case 'transfer':       transferFeeTotal  += amount; break;
+          case 'exam':           examFeeTotal      += amount; break;
+          case 'insurance':      insuranceFeeTotal += amount; break;
+          case 'accommodation':  accomFallbackFee  += amount; break;
+          // 'other' — already counted in totalAmount, no per-row destination
         }
       }
 
@@ -387,8 +433,29 @@ export function webhookRoutes(prisma: PrismaClient) {
           startDate: accommStart,
           endDate: accommEnd,
           weeks: accommWeeks || 1,
+          fee: accomFallbackFee > 0 ? accomFallbackFee : null,
           active: true,
         });
+      }
+
+      // Split ambiguous "transfer" / "airport" line items between pickup/dropoff
+      // based on which deal flags are set. If both flags are set, halve it; if
+      // only one is set, attribute it to that side.
+      if (transferFeeTotal > 0) {
+        const isTrueLocal = (v: any) => String(v ?? '').toLowerCase() === 'true';
+        const wantPickup = isTrueLocal(dp.airport_pickup);
+        const wantDropoff = isTrueLocal(dp.airport_dropoff);
+        if (wantPickup && wantDropoff) {
+          pickupFeeTotal  += transferFeeTotal / 2;
+          dropoffFeeTotal += transferFeeTotal / 2;
+        } else if (wantPickup) {
+          pickupFeeTotal += transferFeeTotal;
+        } else if (wantDropoff) {
+          dropoffFeeTotal += transferFeeTotal;
+        } else {
+          // No deal flag — drop into pickup as a default. Better than losing it.
+          pickupFeeTotal += transferFeeTotal;
+        }
       }
 
       // Create booking
@@ -437,6 +504,7 @@ export function webhookRoutes(prisma: PrismaClient) {
         extras.push({
           extraType: 'AIRPORT_PICKUP',
           scheduledAt: ts && !isNaN(ts.getTime()) ? ts : null,
+          fee: pickupFeeTotal > 0 ? pickupFeeTotal : null,
           active: true,
         });
       }
@@ -446,6 +514,7 @@ export function webhookRoutes(prisma: PrismaClient) {
         extras.push({
           extraType: 'AIRPORT_DROPOFF',
           scheduledAt: ts && !isNaN(ts.getTime()) ? ts : null,
+          fee: dropoffFeeTotal > 0 ? dropoffFeeTotal : null,
           active: true,
         });
       }
@@ -454,6 +523,7 @@ export function webhookRoutes(prisma: PrismaClient) {
         extras.push({
           extraType: 'EXAM_FEE',
           details: isBundledCourse ? null : ((dp.exam_type || '').trim() || null),
+          fee: examFeeTotal > 0 ? examFeeTotal : null,
           active: true,
         });
       }
@@ -462,6 +532,7 @@ export function webhookRoutes(prisma: PrismaClient) {
         extras.push({
           extraType: 'INSURANCE',
           details: insuranceVal,
+          fee: insuranceFeeTotal > 0 ? insuranceFeeTotal : null,
           active: true,
         });
       }
@@ -480,6 +551,8 @@ export function webhookRoutes(prisma: PrismaClient) {
           amountTotal: hsAmount,
           amountPaid: 0,
           amountOpen: hsAmount,
+          regFee:       regFeeTotal       > 0 ? regFeeTotal       : null,
+          placementFee: placementFeeTotal > 0 ? placementFeeTotal : null,
           dataSource: 'HUBSPOT',
           note: `HubSpot Deal: ${dp.dealname || resolvedDealId}`,
           courses: courses.length > 0 ? { create: courses } : undefined,

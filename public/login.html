@@ -112,7 +112,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     });
     const data = await res.json();
     if (data.success) {
-      window.location.href = '/sis/admin';
+      window.location.href = data.redirectTo || '/sis/admin';
     } else {
       errEl.textContent = data.error || 'Invalid credentials';
       errEl.style.display = 'block';
