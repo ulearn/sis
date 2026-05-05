@@ -701,7 +701,11 @@
       })();
       const timeRange = (tt?.startTime && tt?.endTime) ? `${tt.startTime}–${tt.endTime}` : '';
       const room = tt?.classroomName || '';
-      const mapsUrl = 'https://maps.google.com/?q=Harcourt+Centre+Dublin';
+      // Direct pin to ULearn English School Dublin — kept the place data
+      // hash (lat/lng + Google place CID) so it lands on the school marker
+      // rather than a generic "Harcourt Centre" search result. Tracking
+      // params (entry/g_ep) trimmed.
+      const mapsUrl = 'https://www.google.com/maps/place/ULearn+English+School+Dublin/@53.3366283,-6.2682407,17z/data=!3m1!4b1!4m6!3m5!1s0x48670e9ee283df19:0x630b320db9bcb438!8m2!3d53.3366252!4d-6.2633752!16s%2Fg%2F1vxcvv8f';
       const ttLine = (dayLabel || timeRange || room)
         ? `<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);font-size:12px;color:var(--muted);line-height:1.5">
              ${[dayLabel, timeRange, room ? `${esc(room)}, <a href="${mapsUrl}" target="_blank" rel="noopener" style="color:var(--brand);text-decoration:none;font-weight:600">Harcourt Centre ↗</a>` : `<a href="${mapsUrl}" target="_blank" rel="noopener" style="color:var(--brand);text-decoration:none;font-weight:600">Harcourt Centre ↗</a>`].filter(Boolean).join(' · ')}
