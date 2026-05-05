@@ -108,7 +108,8 @@ export function accommodationRoutes(prisma: PrismaClient) {
     try {
       const { bookingAccommodationId, bedId } = req.body;
       if (!bookingAccommodationId || !bedId) return res.status(400).json({ error: 'bookingAccommodationId and bedId required' });
-      res.json(await scripts.placeStudent(bookingAccommodationId, bedId));
+      const role = (req as any).session?.role;
+      res.json(await scripts.placeStudent(bookingAccommodationId, bedId, role));
     } catch (e) { res.status(400).json({ error: String(e) }); }
   });
 

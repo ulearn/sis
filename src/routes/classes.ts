@@ -170,8 +170,11 @@ export function classRoutes(prisma: PrismaClient) {
 
   // Student assignments
   router.post('/assign', async (req, res) => {
-    try { res.status(201).json(await scripts.assignStudent(req.body)); }
-    catch (e) { res.status(400).json({ error: String(e) }); }
+    try {
+      const role = (req as any).session?.role;
+      res.status(201).json(await scripts.assignStudent(req.body, role));
+    }
+    catch (e: any) { res.status(400).json({ error: e?.message || String(e) }); }
   });
 
   router.delete('/assign/:id', async (req, res) => {

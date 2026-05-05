@@ -8,6 +8,7 @@
  * live on the hub, not here. Caption + image selection are SIS-side.
  */
 import type { PrismaClient } from '../generated/prisma/client';
+import { notifyChallenge } from '../lib/challenge-notify';
 
 export function activitiesScripts(prisma: PrismaClient) {
 
@@ -67,9 +68,25 @@ export function activitiesScripts(prisma: PrismaClient) {
     });
   }
 
+  // Coerce caller-supplied date strings to UTC-midnight matching the local
+  // wall-clock day. The activities table's `date` column is `@db.Date`, so
+  // any sub-day component drifts the stored date back by a tz offset (BST
+  // local-midnight serialises to the previous UTC date). Form posts come in
+  // as `YYYY-MM-DD` and that's the safe parse path; we normalise other
+  // shapes by extracting Y/M/D from a temporary local Date.
+  const normaliseDate = (raw: any): Date => {
+    if (!raw) return new Date(NaN);
+    const s = String(raw);
+    const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (m) return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+    const local = new Date(s);
+    if (isNaN(local.getTime())) return local;
+    return new Date(Date.UTC(local.getFullYear(), local.getMonth(), local.getDate()));
+  };
+
   async function create(data: any, byUser: string | null) {
     const payload: any = {
-      date: new Date(data.date),
+      date: normaliseDate(data.date),
       startTime: data.startTime || null,
       endTime: data.endTime || null,
       title: (data.title || '').trim(),
@@ -86,7 +103,7 @@ export function activitiesScripts(prisma: PrismaClient) {
 
   async function update(id: number, data: any) {
     const patch: any = {};
-    if ('date' in data) patch.date = new Date(data.date);
+    if ('date' in data) patch.date = normaliseDate(data.date);
     if ('startTime' in data) patch.startTime = data.startTime || null;
     if ('endTime' in data) patch.endTime = data.endTime || null;
     if ('title' in data) patch.title = (data.title || '').trim();
@@ -196,10 +213,26 @@ export function activitiesScripts(prisma: PrismaClient) {
   }
 
   async function markAttended(attendeeId: number, attended: boolean) {
-    return prisma.activityAttendee.update({
+    const updated = await prisma.activityAttendee.update({
       where: { id: attendeeId },
       data: { attended, attendedAt: attended ? new Date() : null },
+      include: { activity: { select: { title: true, date: true } } },
     });
+    // Only notify on the positive transition (Kelly marking present), not when
+    // un-ticking a mistake. The Slack thread is a confirmation that the
+    // Attended Social badge has unlocked for this student.
+    if (attended && updated.studentId && (updated as any).activity) {
+      const a: any = (updated as any).activity;
+      void notifyChallenge(prisma, updated.studentId, {
+        title: '🎉 Attended Social — confirmed',
+        body: [
+          `Activity: *${a.title}*`,
+          `Date: ${a.date?.toISOString().slice(0, 10) || '—'}`,
+          `Auto-verified by Kelly's roll-call. Badge unlocked.`,
+        ].join('\n'),
+      });
+    }
+    return updated;
   }
 
   // Student-facing list: upcoming + past 7 days, with the student's own RSVP state.

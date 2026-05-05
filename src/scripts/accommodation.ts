@@ -159,13 +159,27 @@ export function accommodationScripts(prisma: PrismaClient) {
 
   // Get all unplaced students (have accomm booking but no bed assigned)
   async function getUnplacedStudents(providerType?: string) {
-    const where: any = { active: true, bedId: null };
+    // Filtration rules (owner directive 2026-05-04):
+    //  1. Hide bookings whose accommodation end-date is in the past — the
+    //     student has already left, no point matching them.
+    //  2. Hide bookings with zero payment received — placing students before
+    //     ANY money has come in creates downstream cost (host fees, hotel)
+    //     for a booking that may never confirm. Hard exclude.
+    //  3. Surface partially-paid bookings (paid > 0 but balance > 0) so staff
+    //     see them — but the placement endpoint blocks non-admin users from
+    //     actually placing them; admins can override after escalation.
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const where: any = {
+      active: true,
+      bedId: null,
+      endDate: { gte: today },
+    };
     if (providerType === 'Host Family') {
       where.accommodationType = 'Host Family';
     } else if (providerType === 'Apartment') {
       where.accommodationType = { not: 'Host Family' }; // City Centre Apartment, Apartment, etc.
     }
-    return prisma.bookingAccommodation.findMany({
+    const rows = await prisma.bookingAccommodation.findMany({
       where,
       include: {
         booking: {
@@ -183,6 +197,37 @@ export function accommodationScripts(prisma: PrismaClient) {
       },
       orderBy: { startDate: 'asc' },
     });
+    // Drop zero-payment bookings entirely; tag partial-payment ones so the
+    // client can render them differently and lock placement for non-admins.
+    //
+    // Classification (paid = amountPaid, total = amountTotal):
+    //   paid <= 0                  → 'unpaid'  (filtered out — never shown)
+    //   paid > 0  && paid < total  → 'partial' (shown, orange, locked)
+    //   paid > 0  && paid >= total → 'paid'    (shown, normal colours)
+    //   paid > 0  && total <= 0    → 'paid'    (total unknown but they paid
+    //                                            something — trust it)
+    //
+    // We deliberately don't lean on `amountOpen` because it's a derived field
+    // that has been observed to lag behind paid/total in the Fidelo import,
+    // which would mislabel fully-paid bookings as 'partial'.
+    const EPS = 0.01; // €0.01 wiggle room for currency rounding
+    return rows
+      .map(r => {
+        const paid  = Number((r as any).booking?.amountPaid  || 0);
+        const total = Number((r as any).booking?.amountTotal || 0);
+        let paymentStatus: 'paid' | 'partial' | 'unpaid' = 'unpaid';
+        let paymentBalance = 0;
+        if (paid > 0) {
+          if (total > 0 && (total - paid) > EPS) {
+            paymentStatus = 'partial';
+            paymentBalance = total - paid;
+          } else {
+            paymentStatus = 'paid';
+          }
+        }
+        return { ...r, paymentStatus, paymentBalance };
+      })
+      .filter(r => (r as any).paymentStatus !== 'unpaid');
   }
 
   // Get host timeline data: hosts with rooms, beds, and current placements in a date range
@@ -257,8 +302,27 @@ export function accommodationScripts(prisma: PrismaClient) {
     return hosts;
   }
 
-  // Place a student: assign a bed to a booking accommodation
-  async function placeStudent(bookingAccommodationId: number, bedId: number) {
+  // Place a student: assign a bed to a booking accommodation. The caller's
+  // role decides whether partially-paid bookings can be placed — only admins
+  // can override that gate (forces escalation for the accommodation team
+  // when there's an outstanding balance, instead of silently incurring host
+  // fees against an unpaid booking).
+  async function placeStudent(bookingAccommodationId: number, bedId: number, callerRole?: string) {
+    const ba = await prisma.bookingAccommodation.findUnique({
+      where: { id: bookingAccommodationId },
+      include: { booking: { select: { amountPaid: true, amountTotal: true } } },
+    });
+    if (!ba) throw new Error('Booking accommodation not found');
+    const paid  = Number(ba.booking?.amountPaid  || 0);
+    const total = Number(ba.booking?.amountTotal || 0);
+    if (paid <= 0) throw new Error('Cannot place: no payment has been received on this booking.');
+    // Match getUnplacedStudents: only flag partial when total is positive and
+    // there's a meaningful gap (€0.01+) — avoids tripping on cent-rounding
+    // and on bookings with unknown totals.
+    const partial = total > 0 && (total - paid) > 0.01;
+    if (partial && callerRole !== 'admin') {
+      throw new Error('Cannot place: outstanding balance on this booking. Escalate to admin to place.');
+    }
     return prisma.bookingAccommodation.update({
       where: { id: bookingAccommodationId },
       data: { bedId },

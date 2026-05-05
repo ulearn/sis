@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>ULearn — No class available</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #6FB42C;
+    --green-dark: #4F8A1B;
+    --ink: #2B2B2B;
+    --ink-soft: #4B4B4B;
+    --mute: #777;
+    --line: #E5E5E5;
+    --warn-bg: #FFF7D6;
+    --warn-border: #E8C84B;
+    --warn-ink: #6B5300;
+  }
+  *,*::before,*::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: linear-gradient(180deg, #F4F8EC 0%, #EAF0DD 100%);
+    font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px 16px;
+  }
+  .stack { width: 100%; max-width: 420px; }
+  .brand { text-align: center; margin-bottom: 24px; }
+  .brand .logo { font-size: 30px; font-weight: 900; letter-spacing: -.02em; }
+  .brand .logo .u { color: var(--green); }
+  .brand .sub {
+    margin-top: 4px;
+    font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--mute);
+  }
+  .card {
+    background: #fff;
+    border-radius: 24px;
+    padding: 28px 26px 26px;
+    box-shadow: 0 8px 40px rgba(40, 60, 20, .08);
+    text-align: center;
+  }
+  .icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: var(--warn-bg);
+    color: var(--warn-ink);
+    font-size: 30px; font-weight: 900;
+    margin-bottom: 16px;
+  }
+  h1 { font-size: 22px; font-weight: 900; margin: 0 0 10px; letter-spacing: -.005em; }
+  p {
+    font-size: 14px; line-height: 1.55; font-weight: 600; color: var(--ink-soft);
+    margin: 0 0 14px;
+  }
+  .who {
+    margin-top: 14px; padding: 12px 14px;
+    background: #F7F9F2; border-radius: 12px;
+    font-size: 13px; font-weight: 700; color: var(--ink-soft);
+  }
+  .actions {
+    margin-top: 20px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .btn {
+    display: block; width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-family: inherit; font-size: 15px; font-weight: 800;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: transform .06s ease, opacity .12s ease;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn.primary { background: var(--green); color: #fff; }
+  .btn.primary:hover { background: var(--green-dark); }
+  .btn.ghost {
+    background: #fff; color: var(--ink-soft); border: 2px solid var(--line);
+  }
+  .btn.ghost:hover { border-color: var(--mute); }
+</style>
+</head>
+<body>
+
+<div class="stack">
+
+  <div class="brand">
+    <div class="logo"><span class="u">U</span>Learn</div>
+    <div class="sub">Student App</div>
+  </div>
+
+  <div class="card">
+    <div class="icon">!</div>
+    <h1>No class available</h1>
+    <p>
+      We couldn't find an active class on your account. This usually means your
+      booking, level, or class assignment hasn't been set up yet.
+    </p>
+    <p>
+      Please contact the school office and we'll get you sorted.
+    </p>
+
+    <div class="who" id="whoBox" hidden>
+      Signed in as <span id="whoName">…</span>
+    </div>
+
+    <div class="actions">
+      <a class="btn primary" href="mailto:office@ulearnschool.com?subject=No%20class%20on%20my%20ULearn%20account">Email the office</a>
+      <a class="btn ghost" href="/sis/auth/logout">Sign out</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Show who's logged in so the office staff can identify the account quickly
+// when the student emails / phones in.
+fetch('/sis/auth/me', { credentials: 'include' })
+  .then(r => r.ok ? r.json() : null)
+  .then(data => {
+    if (!data || !data.success) return;
+    const name = data.displayName || data.user || '';
+    if (!name) return;
+    document.getElementById('whoName').textContent = name;
+    document.getElementById('whoBox').hidden = false;
+  })
+  .catch(() => { /* silent */ });
+</script>
+</body>
+</html>

@@ -127,13 +127,38 @@ app.post('/sis/auth/login', async (req, res) => {
         : [];
       if (!matches.length) return res.json({ success: false, error: 'No student record found for this account' });
       req.session.studentId = matches[0].id;
-      redirectTo = '/sis/student';
+
+      // Resolve the student's current class so the unified app lands on THEIR
+      // (level, session). StudentClassAssignment is week-scoped; the joined
+      // Class carries the canonical level + ClassSession enum. We REQUIRE a
+      // current assignment with a fully-defined class — otherwise the student
+      // would land on a default (A1 / MORNING) and start consuming class data
+      // they aren't enrolled in. Bounce them to the block screen instead.
+      const today = new Date();
+      const assignment = await prisma.studentClassAssignment.findFirst({
+        where: {
+          studentId: matches[0].id,
+          weekStart: { lte: today },
+          OR: [{ weekEnd: null }, { weekEnd: { gte: today } }],
+        },
+        orderBy: { weekStart: 'desc' },
+        include: { class_: { select: { level: true, session: true, active: true } } },
+      });
+      const cls = assignment?.class_;
+      if (!cls || !cls.active || !cls.level || !cls.session) {
+        redirectTo = '/sis/student/no-class';
+      } else {
+        // Unified student app — 3 tabs: Profile (SIS) / Challenges / Learning.
+        // Same screen on desktop and (eventually) the mobile app shell. The
+        // ?level= and ?session= are picked up by the Learning tab when it
+        // deep-links into today.html for the per-session rating UI.
+        redirectTo = `/sis/student?level=${encodeURIComponent(cls.level)}&session=${encodeURIComponent(cls.session)}`;
+      }
     } else if (user.userType === 'teacher') {
-      // Teachers route to the LMS — SIS UI exposes payroll/finance/PII. The session
-      // exists only so LMS calls back to /sis/auth/me succeed.
-      // Land on the staff login (the bare LMS root currently 302s to the
-      // deprecated Directus admin login).
-      redirectTo = 'https://lms.ulearnschool.com/prototype/login/staff';
+      // Teachers land on the LMS weekly plan — SIS UI exposes payroll / finance /
+      // PII so they have no business there. The session is set only so LMS
+      // callbacks to /sis/auth/me succeed.
+      redirectTo = '/prototype/lms/plan.html';
     }
 
     res.json({ success: true, redirectTo });
@@ -420,17 +445,23 @@ app.get('/sis/student', (req, res) => {
   }
   res.sendFile(path.join(__dirname, '..', 'public', 'student.html'));
 });
+// "No class" block screen — students who lack a booking / level / class
+// assignment land here instead of /sis/student so they can't browse class
+// data they're not enrolled in. Login handler routes them here.
+app.get('/sis/student/no-class', (req, res) => {
+  if (!req.session.user) return res.redirect('/sis/login');
+  res.sendFile(path.join(__dirname, '..', 'public', 'student-no-class.html'));
+});
 app.use('/sis/student/api', studentRoutesPortal(prisma));
 
 // ── Teacher / LMS-bound login (mirrors partner pattern but redirects to LMS, not SIS UI) ──
-// Teachers should never see the SIS UI (GDPR / payroll exposure). This page POSTs to the
-// existing /sis/auth/login endpoint, then on success the form JS redirects to lms.ulearnschool.com.
-// Admin/DOS may also use it when they want to land directly in the LMS rather than the SIS dash.
-app.get('/sis/teachers/login', (_req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'public', 'teachers-login.html'));
-});
+// /sis/teachers/login was a separate teacher-only login form before the
+// 2026-05-04 consolidation. Now everyone goes through /sis/login (single
+// unified entry point that role-routes after sign-in). Redirect any old
+// bookmarks to the canonical URL.
+app.get('/sis/teachers/login', (_req, res) => res.redirect(302, '/sis/login'));
 app.get('/sis/teachers/auth/logout', (req, res) => {
-  req.session.destroy(() => res.redirect('/sis/teachers/login'));
+  req.session.destroy(() => res.redirect('/sis/login'));
 });
 
 // ── Auth middleware ────────────────────────────

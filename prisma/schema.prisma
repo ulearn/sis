@@ -204,6 +204,30 @@ model StudentChallengeContent {
   @@map("student_challenge_content")
 }
 
+// One Slack thread per student per challenge cycle. The first event of the
+// cycle (whichever badge unlocks first) creates the parent message and we
+// store the returned `ts` here; every subsequent notify in the same cycle
+// posts as a thread reply via `thread_ts`. Cycle defaults to one week,
+// keyed by the Mon-of-week ISO date.
+model StudentChallengeThread {
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  studentId     Int      @map("student_id")
+  cycleStart    DateTime @db.Date @map("cycle_start")
+  cycleKind     String   @default("WEEK") @map("cycle_kind") // WEEK | MONTH
+
+  channel       String   // resolved channel id Slack returned (we may have asked by name)
+  threadTs      String   @map("thread_ts") // the parent message timestamp
+
+  // One-shot flags so we don't re-notify the same milestone in the same cycle
+  notifiedCourse100 Boolean @default(false) @map("notified_course_100")
+
+  @@unique([studentId, cycleStart])
+  @@index([studentId])
+  @@map("student_challenge_threads")
+}
+
 enum StudentType {
   ADULT
   JUNIOR

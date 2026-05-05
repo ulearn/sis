@@ -7,6 +7,8 @@
  */
 import type { PrismaClient } from '../generated/prisma/client';
 import { fetchStudentHolidays, filterOutHolidayDates, pctFromRows } from './attendance-pct';
+import { kellyMention } from '../lib/slack';
+import { notifyChallenge } from '../lib/challenge-notify';
 
 export function studentScripts(prisma: PrismaClient) {
 
@@ -67,6 +69,36 @@ export function studentScripts(prisma: PrismaClient) {
     const wkRows = attRows.filter(r => r.occurrence?.date && r.occurrence.date >= monday);
     const weekPct = pctFromRows(wkRows);
 
+    // Class timetable footnote — pulled from the student's current
+    // StudentClassAssignment so we can show "Mon-Fri · 09:00-12:20 · Room 1
+    // @ Harcourt Centre" inside Course Details. Uses the most recent open
+    // assignment as the source of truth.
+    const todayD = new Date(); todayD.setHours(0, 0, 0, 0);
+    const assignment: any = await prisma.studentClassAssignment.findFirst({
+      where: {
+        studentId,
+        weekStart: { lte: todayD },
+        OR: [{ weekEnd: null }, { weekEnd: { gte: todayD } }],
+      },
+      orderBy: { weekStart: 'desc' },
+      include: {
+        class_: {
+          select: {
+            name: true, level: true, session: true,
+            startTime: true, endTime: true, days: true,
+            classroom: { select: { name: true } } as any,
+          } as any,
+        },
+      } as any,
+    });
+    const cls = assignment?.class_ || null;
+    const timetable = cls ? {
+      days: (cls.days as number[]) || [],
+      startTime: cls.startTime,
+      endTime: cls.endTime,
+      classroomName: cls.classroom?.name || null,
+    } : null;
+
     // Documents — issued only (drafts aren't shown to students)
     const documents = await prisma.documentRecord.findMany({
       where: { studentId, status: 'ISSUED' },
@@ -104,6 +136,7 @@ export function studentScripts(prisma: PrismaClient) {
         weeks: course.weeks,
         hoursPerWeek: course.hoursPerWeek,
       } : null,
+      timetable,
       accommodation: accom ? {
         type: accom.accommodationType,
         roomType: accom.roomType,
@@ -365,7 +398,10 @@ export function studentScripts(prisma: PrismaClient) {
     const booking = await prisma.booking.findFirst({
       where: { studentId },
       orderBy: { id: 'desc' },
-      select: { courses: { select: { weeks: true }, orderBy: { id: 'desc' }, take: 1 } },
+      select: {
+        serviceStart: true, serviceEnd: true,
+        courses: { select: { weeks: true }, orderBy: { id: 'desc' }, take: 1 },
+      },
     });
     const wks = booking?.courses?.[0]?.weeks ?? null;
     const periodKind: 'WEEK' | 'MONTH' = (wks && wks >= 12) ? 'MONTH' : 'WEEK';
@@ -389,7 +425,24 @@ export function studentScripts(prisma: PrismaClient) {
     const hols = await fetchStudentHolidays(prisma, studentId);
     const attRows = filterOutHolidayDates(attRowsAll, hols);
     const periodPct = pctForWindow(attRows, from);
+    // Overall % across the student's whole booking — used as a fallback in
+    // the Course Attended challenge when the current week/month hasn't
+    // accumulated any attendance rows yet (otherwise the card reads
+    // "No attendance yet" even though the student clearly has historical
+    // data showing on the Profile tab).
+    const overallPct = pctFromRows(attRows);
     const courseAttendedDone = periodPct !== null && periodPct === 100;
+
+    // Auto-notify Kelly the first time a student hits 100 % in the cycle.
+    // The thread row's `notifiedCourse100` flag dedupes within the cycle, so
+    // visiting the Challenges tab again on Friday won't re-fire the message.
+    if (courseAttendedDone) {
+      void notifyChallenge(prisma, studentId, {
+        title: '🎯 Attended Course — 100 % unlocked',
+        body: `Auto-verified by attendance records. No action needed.`,
+        setOnceFlag: 'notifiedCourse100',
+      });
+    }
 
     // Content tasks: 3 verified video posts to clear it
     const content = await (prisma as any).studentChallengeContent.findMany({
@@ -403,9 +456,11 @@ export function studentScripts(prisma: PrismaClient) {
     const review = (s as any).googleReviewVerified;
     const ambassador = !!(s as any).ambassadorCode;
 
-    // Activity Attended — Kelly marks `attended=true` on a row after the event,
-    // and the student earns the unlock once they've attended at least one in
-    // the current period. (Could raise the bar to 3 later if needed.)
+    // Attended Social — Kelly marks `attended=true` after the event, and the
+    // student earns the unlock once they've attended at least one social
+    // activity in the current period (week/month). The card body surfaces a
+    // calendar icon so students can browse the wider monthly programme even
+    // when this week's slate is light.
     const attendedRows = await (prisma as any).activityAttendee.findMany({
       where: {
         studentId,
@@ -422,7 +477,7 @@ export function studentScripts(prisma: PrismaClient) {
         label: 'Social Platform',
         icon: '📱',
         done: social,
-        state: social ? 'Approved' : ((s as any).instagramHandle ? 'Awaiting verification' : 'Add your handle'),
+        state: social ? 'Unlocked' : ((s as any).instagramHandle ? 'Awaiting verification' : 'Add your handle'),
         data: {
           instagramHandle: (s as any).instagramHandle,
           followVerified: (s as any).instagramFollowVerified,
@@ -438,15 +493,17 @@ export function studentScripts(prisma: PrismaClient) {
       },
       {
         key: 'course_attended',
-        label: 'Course Attended',
+        label: 'Attended Course',
         icon: '🎯',
         done: courseAttendedDone,
-        state: periodPct === null ? 'No attendance yet' : `${periodPct}% this ${periodKind === 'WEEK' ? 'week' : 'month'}`,
-        data: { periodKind, periodPct },
+        state: periodPct !== null
+          ? `${periodPct}% this ${periodKind === 'WEEK' ? 'week' : 'month'}`
+          : (overallPct !== null ? `${overallPct}% overall` : 'No attendance yet'),
+        data: { periodKind, periodPct, overallPct },
       },
       {
         key: 'activity_attended',
-        label: 'Activity Attended',
+        label: 'Attended Social',
         icon: '🎉',
         done: activityAttendedDone,
         state: activityAttendedDone
@@ -516,13 +573,59 @@ export function studentScripts(prisma: PrismaClient) {
     }
     if (Object.keys(allowed).length === 0) return { ok: true, noop: true };
     await prisma.student.update({ where: { id: studentId }, data: allowed as any });
+
+    // Notify Kelly when the student submits/updates a Google review URL —
+    // she needs to verify the rating before the Ambassador badge auto-mints.
+    if (allowed.googleReviewUrl) {
+      void notifyChallenge(prisma, studentId, {
+        title: '⭐ Review — link submitted',
+        body: [
+          `URL: ${allowed.googleReviewUrl}`,
+          `${kellyMention()} please confirm it's a 5★ review (anything less = no unlock).`,
+        ].join('\n'),
+      });
+    }
     return { ok: true };
+  }
+
+  // Self-certified follow confirmation. The student clicks "I followed" after
+  // visiting Instagram; we mark followVerified=true immediately (no API can
+  // verify a follower since Meta retired that endpoint) and ping Slack so a
+  // staff member can spot-check and revoke if needed. Trust-by-default —
+  // friction kills challenge participation, and Kelly can revoke through the
+  // admin endpoint if someone games it.
+  async function confirmFollow(studentId: number) {
+    const s = await prisma.student.findUnique({
+      where: { id: studentId },
+      select: { id: true, firstName: true, lastName: true, instagramHandle: true } as any,
+    }) as any;
+    if (!s) throw new Error('Student not found');
+    if (!s.instagramHandle) throw new Error('Add your Instagram handle first');
+
+    // Idempotent — multiple confirms just stay verified.
+    await prisma.student.update({
+      where: { id: studentId },
+      data: { instagramFollowVerified: true } as any,
+    });
+
+    // Slack notify (best-effort). Posts as a reply on the student's cycle
+    // thread (creates the thread if this is their first event of the week).
+    const handle = String(s.instagramHandle).replace(/^@/, '');
+    void notifyChallenge(prisma, studentId, {
+      title: '📱 Social Platform — follow claimed',
+      body: [
+        `Handle: <https://instagram.com/${handle}|@${handle}>`,
+        `${kellyMention()} please spot-check the followers list; revoke via admin if false.`,
+      ].join('\n'),
+    });
+
+    return { ok: true, verified: true };
   }
 
   async function addContentSubmission(studentId: number, body: any) {
     const url = (body.url || '').toString().trim();
     if (!url) throw new Error('URL required');
-    return (prisma as any).studentChallengeContent.create({
+    const row = await (prisma as any).studentChallengeContent.create({
       data: {
         studentId,
         url,
@@ -530,6 +633,17 @@ export function studentScripts(prisma: PrismaClient) {
         note: body.note || null,
       },
     });
+    // How many of the 3 has the student now submitted? Drives the body text
+    // so Kelly knows at a glance whether they've finished the set.
+    const total = await (prisma as any).studentChallengeContent.count({ where: { studentId } });
+    void notifyChallenge(prisma, studentId, {
+      title: `🎬 Content Tasks — video ${total}/3 submitted`,
+      body: [
+        `URL: ${url}`,
+        `${kellyMention()} please review and verify.`,
+      ].join('\n'),
+    });
+    return row;
   }
 
   async function removeContentSubmission(studentId: number, id: number) {
@@ -590,7 +704,7 @@ export function studentScripts(prisma: PrismaClient) {
     recordAbsenceReason, clearAbsenceReason,
     attachAbsenceCert, removeAbsenceCertFile, getAbsenceCertFile,
     challenges, learning,
-    updateSocial, addContentSubmission, removeContentSubmission,
+    updateSocial, confirmFollow, addContentSubmission, removeContentSubmission,
     adminSetVerify, adminVerifyContent,
   };
 }

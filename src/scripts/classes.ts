@@ -148,7 +148,7 @@ export function classScripts(prisma: PrismaClient) {
   }
 
   // ── Student ↔ Class assignments ─────────────
-  async function assignStudent(data: { bookingCourseId: number; classId: number; weekStart: string; weekEnd?: string }) {
+  async function assignStudent(data: { bookingCourseId: number; classId: number; weekStart: string; weekEnd?: string }, callerRole?: string) {
     // Resolve studentId from booking_course -> booking and denormalize at write time.
     // Both booking_course_id (provenance) and student_id (query convenience) need to
     // be populated: historic rows had only student_id, UI-created rows previously had
@@ -162,18 +162,45 @@ export function classScripts(prisma: PrismaClient) {
     // class of bug.
     const bc = await prisma.bookingCourse.findUnique({
       where: { id: data.bookingCourseId },
-      select: { endDate: true, booking: { select: { studentId: true } } },
+      select: {
+        startDate: true, endDate: true,
+        booking: { select: { studentId: true, amountPaid: true, amountTotal: true } },
+      },
     });
     const studentId = bc?.booking?.studentId ?? null;
     const fallbackEnd = bc?.endDate ?? null;
     const weekEnd = data.weekEnd ? new Date(data.weekEnd) : fallbackEnd;
+    // Clamp weekStart to the booking course's startDate. Prevents the
+    // "Adriana shows up in B2 from 02 Mar even though her course starts
+    // 27 Apr" failure mode — that happened because callers were passing the
+    // booking serviceStart (Mar 1) rather than the course startDate (Apr 27)
+    // and nothing here checked. We clamp instead of throwing because the
+    // request is valid, just dated too early.
+    const requestedStart = new Date(data.weekStart);
+    const courseStart = bc?.startDate ?? null;
+    const weekStart = (courseStart && requestedStart < courseStart) ? courseStart : requestedStart;
+
+    // Payment-status gate (matches the accommodation matching engine semantics).
+    // Zero-paid bookings shouldn't even reach this endpoint via the UI, but the
+    // belt-and-braces server check here closes the URL-direct hole.  Partial-
+    // paid bookings can still be assigned, but only by an admin or DOS — every
+    // other role sees an explanatory error so they escalate.
+    const paid  = Number(bc?.booking?.amountPaid  || 0);
+    const total = Number(bc?.booking?.amountTotal || 0);
+    if (paid <= 0) {
+      throw new Error('Cannot assign: no payment has been received on this booking.');
+    }
+    const partial = total > 0 && (total - paid) > 0.01;
+    if (partial && callerRole !== 'admin' && callerRole !== 'dos') {
+      throw new Error('Cannot assign: outstanding balance on this booking. Escalate to admin or DOS.');
+    }
 
     const created = await prisma.studentClassAssignment.create({
       data: {
         bookingCourseId: data.bookingCourseId,
         studentId,
         classId: data.classId,
-        weekStart: new Date(data.weekStart),
+        weekStart,
         weekEnd,
       } as any,
     });
@@ -277,6 +304,11 @@ export function classScripts(prisma: PrismaClient) {
         active: true,
         category: { in: sessionCategories as any },
         ...dateWhere,
+        // Hide unpaid bookings outright — the staff directive is "if they
+        // haven't paid anything, don't even surface them for assignment".
+        // Partial-paid bookings (paid > 0 but not in full) are still surfaced
+        // here and tagged below so the UI can render an orange warning + lock
+        // for non-admin staff. (Mirrors getUnplacedStudents in accommodation.)
         booking: { amountPaid: { gt: 0 }, status: { notIn: ['ESCROW', 'CANCELLED'] } },
       },
       include: {
@@ -292,12 +324,30 @@ export function classScripts(prisma: PrismaClient) {
       },
     });
 
+    // Tag payment status so the UI can paint partial-paid rows orange and
+    // gate the assign action for non-admin staff. We deliberately don't lean
+    // on `amountOpen` because it's a derived field that's been observed to
+    // lag behind paid/total in the Fidelo import — same reasoning as the
+    // accommodation matching engine. EPS=€0.01 wiggle for cent rounding.
+    const EPS = 0.01;
+    const tagged = bookingCourses.map((bc: any) => {
+      const paid  = Number(bc.booking?.amountPaid  || 0);
+      const total = Number(bc.booking?.amountTotal || 0);
+      let paymentStatus: 'paid' | 'partial' = 'paid';
+      let paymentBalance = 0;
+      if (total > 0 && (total - paid) > EPS) {
+        paymentStatus = 'partial';
+        paymentBalance = total - paid;
+      }
+      return { ...bc, paymentStatus, paymentBalance };
+    });
+
     // When a range is bound, filter to bookings with no overlapping assignment in that range.
     // When unbounded, return all (caller filters client-side per class context).
     if (rangeStart || rangeEnd) {
-      return bookingCourses.filter(bc => bc.classAssignments.length === 0);
+      return tagged.filter((bc: any) => bc.classAssignments.length === 0);
     }
-    return bookingCourses;
+    return tagged;
   }
 
   // ── Class teachers (default assignment) ─────

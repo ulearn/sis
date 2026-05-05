@@ -148,10 +148,68 @@ export function bookingScripts(prisma: PrismaClient) {
     await prisma.bookingStatusHistory.deleteMany({ where: { bookingId: id } });
     await prisma.bookingHoliday.deleteMany({ where: { bookingId: id } });
     await prisma.payment.deleteMany({ where: { bookingId: id } });
-    // Courses — need to clear class assignments first
+    // Courses — need to clear class assignments first, plus the attendance
+    // rows those assignments produced. Without the attendance sweep, deleting
+    // a booking left orphan rows behind in the attendance table that still
+    // counted toward the student's overall %.
+    const booking = await prisma.booking.findUnique({ where: { id }, select: { studentId: true } });
     const courses = await prisma.bookingCourse.findMany({ where: { bookingId: id }, select: { id: true } });
     if (courses.length) {
+      // Snapshot the (classId, weekStart, weekEnd) windows we're about to
+      // tear down so we can scope the attendance delete precisely. Anything
+      // outside these windows belongs to a different booking and stays put.
+      const assignsToRemove = await prisma.studentClassAssignment.findMany({
+        where: { bookingCourseId: { in: courses.map(c => c.id) } },
+        select: { id: true, studentId: true, classId: true, weekStart: true, weekEnd: true },
+      });
       await prisma.studentClassAssignment.deleteMany({ where: { bookingCourseId: { in: courses.map(c => c.id) } } });
+
+      // For each removed window, drop attendance rows for that student in
+      // that class — but only if no remaining assignment for the same student
+      // and class still covers the date. That preserves rows from a parallel
+      // booking on the same class (rare, but possible for re-bookings).
+      for (const a of assignsToRemove) {
+        if (!a.studentId || !a.classId) continue;
+        const stillCovered = await prisma.studentClassAssignment.findFirst({
+          where: {
+            studentId: a.studentId,
+            classId: a.classId,
+            weekStart: { lte: a.weekEnd ?? new Date('2099-12-31') },
+            OR: [{ weekEnd: null }, { weekEnd: { gte: a.weekStart } }],
+          },
+          select: { id: true },
+        });
+        if (stillCovered) continue;
+        await prisma.attendance.deleteMany({
+          where: {
+            studentId: a.studentId,
+            occurrence: {
+              classId: a.classId,
+              date: {
+                gte: a.weekStart,
+                ...(a.weekEnd ? { lte: a.weekEnd } : {}),
+              },
+            },
+          },
+        });
+      }
+    }
+    // Absence reasons + cert files for this student that fall on dates this
+    // booking covered. Tied to (studentId, date) without a booking FK, so we
+    // sweep based on any course's date range. Same student-isolation rule.
+    if (booking?.studentId) {
+      for (const c of courses) {
+        const bc = await prisma.bookingCourse.findUnique({ where: { id: c.id }, select: { startDate: true, endDate: true } });
+        if (!bc?.startDate || !bc?.endDate) continue;
+        const reasons = await prisma.absenceReason.findMany({
+          where: { studentId: booking.studentId, date: { gte: bc.startDate, lte: bc.endDate } },
+          select: { id: true },
+        });
+        if (reasons.length) {
+          await prisma.absenceCertFile.deleteMany({ where: { absenceReasonId: { in: reasons.map(r => r.id) } } });
+          await prisma.absenceReason.deleteMany({ where: { id: { in: reasons.map(r => r.id) } } });
+        }
+      }
     }
     await prisma.bookingCourse.deleteMany({ where: { bookingId: id } });
     await prisma.bookingAccommodation.deleteMany({ where: { bookingId: id } });

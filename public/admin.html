@@ -447,7 +447,7 @@ tr:last-child td { border-bottom: none; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
           Attendance
         </div>
-        <div class="sidebar-item" onclick="window.open('https://lms.ulearnschool.com/prototype/login/staff','_blank','noopener')" title="Open the LMS in a new tab">
+        <div class="sidebar-item" onclick="window.open('/prototype/staff/','_blank','noopener')" title="Open the LMS in a new tab">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
           LMS
         </div>
@@ -3850,19 +3850,35 @@ function renderUnassignedTableBody() {
     tbody.innerHTML = '<tr><td colspan="6" class="table-empty">No students match the current filters</td></tr>';
     return;
   }
+  // Admin & DOS can override the partial-paid lock; everyone else sees a
+  // disabled Assign button on those rows. The server enforces the same rule
+  // (see scripts/classes.ts assignStudent) — this is just UX.
+  const canOverridePartial = (currentUser?.role === 'admin' || currentUser?.role === 'dos');
   let html = '';
   for (const bc of rows) {
     const student = bc.booking?.student;
     const sName = student ? `${student.firstName} ${student.lastName || ''}` : '—';
     const sId = student?.id;
     const level = student?.currentLevel || bc.level || '?';
-    html += `<tr>
-      <td>${sId ? `<span style="cursor:pointer;color:var(--accent);font-weight:600" onclick="event.stopPropagation();navigate('student-detail',{id:${sId}})">${esc(sName)}</span>` : `<strong>${esc(sName)}</strong>`}</td>
+    const isPartial = bc.paymentStatus === 'partial';
+    const lockBtn = isPartial && !canOverridePartial;
+    const balance = Number(bc.paymentBalance || 0);
+    // Row tinted soft amber for partial; left border the brighter orange so
+    // it's still skimmable even when the row's not the focus.
+    const rowStyle = isPartial ? 'background:#fff7ed;border-left:3px solid #f97316' : '';
+    const balPill = isPartial
+      ? `<span title="Outstanding balance — escalate to admin/DOS to assign" style="display:inline-flex;align-items:center;gap:4px;background:#fff7ed;color:#c2410c;border:1px solid #fdba74;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700;margin-left:8px">⚠ €${balance.toFixed(2)}</span>`
+      : '';
+    const assignBtn = lockBtn
+      ? `<button class="btn btn-sm" disabled title="Outstanding balance — escalate to admin or DOS" style="background:#fed7aa;color:#9a3412;cursor:not-allowed;border:0">🔒 Locked</button>`
+      : `<button class="btn btn-sm btn-primary" onclick="quickAssign(${bc.id},${_unassignedClassId})">${isPartial ? '⚠ Assign' : 'Assign'}</button>`;
+    html += `<tr style="${rowStyle}">
+      <td>${sId ? `<span style="cursor:pointer;color:var(--accent);font-weight:600" onclick="event.stopPropagation();navigate('student-detail',{id:${sId}})">${esc(sName)}</span>` : `<strong>${esc(sName)}</strong>`}${balPill}</td>
       <td>${levelBadge(level)}</td>
       <td>${esc(bc.name)}</td>
       <td style="font-size:12px;font-family:var(--font-mono)">${formatDate(bc.startDate)}</td>
       <td style="font-size:12px;font-family:var(--font-mono)">${formatDate(bc.endDate)}</td>
-      <td><button class="btn btn-sm btn-primary" onclick="quickAssign(${bc.id},${_unassignedClassId})">Assign</button></td>
+      <td>${assignBtn}</td>
     </tr>`;
   }
   tbody.innerHTML = html;
@@ -5738,8 +5754,9 @@ async function showUnifiedMatching() {
     });
 
     // Group unplaced
-    const twoWeekEnd = new Date(now.getTime() + 3 * 7 * 86400000);
-    const sixWeekEnd = new Date(now.getTime() + 6 * 7 * 86400000);
+    // "2 Weeks" = next 14 days, "6 Weeks" = days 15-42, "Later" = day 43+
+    const twoWeekEnd = new Date(now.getTime() + 14 * 86400000);
+    const sixWeekEnd = new Date(now.getTime() + 42 * 86400000);
     const twoWeeks_ = filtered.filter(u => new Date(u.startDate) <= twoWeekEnd);
     const sixWeeks_ = filtered.filter(u => { const s = new Date(u.startDate); return s > twoWeekEnd && s <= sixWeekEnd; });
     const later = filtered.filter(u => new Date(u.startDate) > sixWeekEnd);
@@ -5749,7 +5766,12 @@ async function showUnifiedMatching() {
     function renderDot(u) {
       const s = u.booking?.student; if (!s) return '';
       const isMale = s.gender === 1;
-      const color = isMale ? '#3b82f6' : s.gender === 2 ? '#ec4899' : '#9ca3af';
+      // Partial-payment students render in orange with a balance label so the
+      // accommodation team can see at a glance that placement is locked
+      // (server rejects placement unless the caller is admin). Default
+      // colours are by gender as before.
+      const isPartial = u.paymentStatus === 'partial';
+      const color = isPartial ? '#f97316' : (isMale ? '#3b82f6' : s.gender === 2 ? '#ec4899' : '#9ca3af');
       const selected = matchingSelectedDot === u.id;
       const age = s.birthday ? Math.floor((Date.now() - new Date(s.birthday).getTime()) / (365.25*24*60*60*1000)) : null;
       const gLabel = s.gender === 1 ? 'M' : s.gender === 2 ? 'F' : '?';
@@ -5772,6 +5794,7 @@ async function showUnifiedMatching() {
             <span style="background:${accommBg};color:${accommFont};padding:1px 5px;border-radius:4px;font-size:10px">${esc(u.accommodationType||'')}</span>
           </div>
           ${diet ? '<div style="font-size:10px;color:#fde68a;margin-top:3px;font-weight:600">Diet: '+esc(diet)+'</div>' : ''}
+          ${isPartial ? '<div style="font-size:10px;color:#fed7aa;margin-top:3px;font-weight:700">⚠ Balance €'+Number(u.paymentBalance||0).toFixed(2)+' — placement locked (admin only)</div>' : ''}
           <div style="font-family:var(--font-mono);font-size:10px;margin-top:4px;color:#fff">${(() => {
             const sd = new Date(u.startDate), ed = new Date(u.endDate), pad = n => String(n).padStart(2,'0');
             const sameYear = sd.getFullYear() === ed.getFullYear();
@@ -5909,6 +5932,7 @@ async function showUnifiedMatching() {
           <span style="font-weight:700">(${weeks} Weeks)</span>
         </div>
         <div style="padding:4px 10px;border-radius:12px;font-size:11px;font-weight:700;${selStudent.accommodationType==='Host Family'?'background:#00ff9d;color:#000':'background:#642de1;color:#fff'}">${esc(selStudent.accommodationType||'')}</div>
+        ${selStudent.paymentStatus === 'partial' ? '<div title="Outstanding balance — placement locked unless admin overrides" style="padding:4px 10px;border-radius:12px;font-size:11px;font-weight:700;background:#f97316;color:#fff;display:flex;align-items:center;gap:4px"><span>⚠</span><span>Balance €'+Number(selStudent.paymentBalance||0).toFixed(2)+'</span></div>' : ''}
         ${(dietLabel||allergies) ? '<div style="display:flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid var(--card-border);border-radius:20px;background:var(--card-bg);font-size:12px">'+(dietLabel?'<span style="color:var(--warning);font-weight:600">'+esc(dietLabel)+'</span>':'')+(allergies?'<span style="color:var(--danger)">'+esc(allergies)+'</span>':'')+'</div>' : ''}
         <button class="btn btn-ghost btn-sm" onclick="matchingSelectedDot=null;showUnifiedMatching()" style="margin-left:auto">&times;</button>
       </div>`;
@@ -5997,12 +6021,14 @@ async function showAccommMatching(providerType) {
     if (selStart) selStart.setHours(0,0,0,0);
     if (selEnd) selEnd.setHours(0,0,0,0);
 
-    // Group unplaced
-    // "2 Weeks" = start date is within this week + next 2 full weeks (up to end of Sunday week+2)
-    // "6 Weeks" = start date is weeks 3-6
-    // "Later" = 6+ weeks out
-    const twoWeekEnd = new Date(now.getTime() + 3 * 7 * 86400000); // ~21 days
-    const sixWeekEnd = new Date(now.getTime() + 6 * 7 * 86400000); // ~42 days
+    // Group unplaced by start-date proximity. Default focus is the next 2
+    // weeks — anything beyond that is parked under "6 Weeks" or "Later" so
+    // the immediate work isn't drowned by long-lead arrivals.
+    //   "2 Weeks" = arriving in the next 14 days (today → +14)
+    //   "6 Weeks" = arriving in days 15–42
+    //   "Later"   = arriving day 43+
+    const twoWeekEnd = new Date(now.getTime() + 14 * 86400000);
+    const sixWeekEnd = new Date(now.getTime() + 42 * 86400000);
     const twoWeeks_ = unplaced.filter(u => new Date(u.startDate) <= twoWeekEnd);
     const sixWeeks_ = unplaced.filter(u => { const s = new Date(u.startDate); return s > twoWeekEnd && s <= sixWeekEnd; });
     const later = unplaced.filter(u => new Date(u.startDate) > sixWeekEnd);
@@ -6017,7 +6043,10 @@ async function showAccommMatching(providerType) {
         const s = u.booking?.student;
         if (!s) continue;
         const isMale = s.gender === 1;
-        const color = isMale ? '#3b82f6' : s.gender === 2 ? '#ec4899' : '#9ca3af';
+        // Partial-payment → orange (placement locked unless admin). Default
+        // colours are by gender (M=blue, F=pink, ?=gray).
+        const isPartial = u.paymentStatus === 'partial';
+        const color = isPartial ? '#f97316' : (isMale ? '#3b82f6' : s.gender === 2 ? '#ec4899' : '#9ca3af');
         const selected = matchingSelectedDot === u.id;
         const age = s.birthday ? Math.floor((Date.now() - new Date(s.birthday).getTime()) / (365.25*24*60*60*1000)) : null;
         const gLabel = s.gender === 1 ? 'M' : s.gender === 2 ? 'F' : '?';
@@ -6036,6 +6065,7 @@ async function showAccommMatching(providerType) {
               ${s.nationality ? '<span>'+countryName(s.nationality)+'</span>' : ''}
             </div>
             ${diet ? '<div style="font-size:10px;color:#fde68a;margin-top:3px;font-weight:600">Diet: '+esc(diet)+'</div>' : ''}
+            ${isPartial ? '<div style="font-size:10px;color:#fed7aa;margin-top:3px;font-weight:700">⚠ Balance €'+Number(u.paymentBalance||0).toFixed(2)+' — placement locked (admin only)</div>' : ''}
             <div style="font-family:var(--font-mono);font-size:10px;margin-top:4px;color:#fff">${(() => {
             const sd = new Date(u.startDate), ed = new Date(u.endDate), pad = n => String(n).padStart(2,'0');
             const sameYear = sd.getFullYear() === ed.getFullYear();
@@ -6104,6 +6134,7 @@ async function showAccommMatching(providerType) {
             <span>${startFmt} - ${endFmt}</span>
             <span style="font-weight:700">(${weeks} Weeks)</span>
           </div>
+          ${selStudent.paymentStatus === 'partial' ? '<div title="Outstanding balance — placement locked unless admin overrides" style="padding:4px 10px;border-radius:12px;font-size:11px;font-weight:700;background:#f97316;color:#fff;display:flex;align-items:center;gap:4px"><span>⚠</span><span>Balance €'+Number(selStudent.paymentBalance||0).toFixed(2)+'</span></div>' : ''}
           ${hasDietInfo ? '<div style="display:flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid var(--card-border);border-radius:20px;background:var(--card-bg);font-size:12px">' +
             (dietLabel ? '<span style="color:var(--warning);font-weight:600">'+esc(dietLabel)+'</span>' : '') +
             (allergies ? '<span style="color:var(--danger)">'+esc(allergies)+'</span>' : '') +
@@ -7519,7 +7550,16 @@ function field(name, label, value, type = 'text') {
 }
 
 function selectField(name, label, value, options) {
-  const opts = options.map(([v, l]) => `<option value="${v}" ${String(value) === String(v) ? 'selected' : ''}>${l}</option>`).join('');
+  // If the current value isn't present in the options list, prepend it as a
+  // preserved option so the form round-trips. Without this, the browser
+  // auto-selects the first option (usually "—") and a subsequent save silently
+  // overwrites the field to empty — which is what was happening for new
+  // Host Family bookings whose default Room/Board values weren't in the
+  // SIS_CONFIG list (e.g. "Individual" / "Half Board").
+  const v = value == null ? '' : String(value);
+  const present = options.some(([ov]) => String(ov) === v);
+  const finalOpts = (v && !present) ? [[v, v + ' (current)'], ...options] : options;
+  const opts = finalOpts.map(([ov, l]) => `<option value="${ov}" ${v === String(ov) ? 'selected' : ''}>${l}</option>`).join('');
   return `<div class="form-group">
     <label class="form-label">${label}</label>
     <select class="form-select" data-field="${name}">${opts}</select>
@@ -8586,10 +8626,16 @@ async function renderActivitiesCalendar() {
 
   const from = new Date(data.from);
   const to = new Date(data.to);
-  // Group activities by ISO date string
+  // Local YYYY-MM-DD — both sides of the cell-vs-activity match must use the
+  // same wall-clock day, otherwise BST (UTC+1) puts cells off by one day:
+  // a cell labelled "5" from `d.getDate()` would have `toISOString()` slice
+  // "2026-05-04", and would silently bucket against a different key than the
+  // activity. Same helper below also drives the openActivityModal prefill.
+  const localISOAdmin = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  // Group activities by local day-key
   const byDate = {};
   for (const a of (data.items || [])) {
-    const key = new Date(a.date).toISOString().slice(0, 10);
+    const key = localISOAdmin(new Date(a.date));
     if (!byDate[key]) byDate[key] = [];
     byDate[key].push(a);
   }
@@ -8605,9 +8651,9 @@ async function renderActivitiesCalendar() {
     <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--card-border);border:1px solid var(--card-border);border-radius:6px;overflow:hidden">
       ${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => `<div style="background:var(--bg-subtle);padding:8px 10px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--text-muted)">${d}</div>`).join('')}`;
   for (const d of days) {
-    const iso = d.toISOString().slice(0,10);
+    const iso = localISOAdmin(d);
     const isCurMonth = d.getMonth() === monthIdx;
-    const isToday = (new Date()).toISOString().slice(0,10) === iso;
+    const isToday = localISOAdmin(new Date()) === iso;
     const dayActs = byDate[iso] || [];
     const cellBg = isCurMonth ? 'var(--card-bg)' : 'var(--bg-muted, #f8f7f4)';
     const dim = isCurMonth ? '' : 'opacity:0.55;';
@@ -8618,14 +8664,71 @@ async function renderActivitiesCalendar() {
       </div>`;
     for (const a of dayActs.slice(0, 3)) {
       const pubBadge = (a.publishedToIg || a.publishedToFb) ? '<span style="font-size:9px;color:var(--success);margin-left:4px">●</span>' : '';
-      html += `<div onclick="event.stopPropagation();openActivityModal('${iso}',${a.id})" style="background:#dbeafe;color:#1e3a8a;padding:2px 6px;border-radius:4px;font-size:11px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(a.title)}">${esc(a.title)}${pubBadge}</div>`;
+      // Chip layout: title (clicks → edit dialog) + tiny "A" pill that opens
+      // the roll-call panel below. stopPropagation on the A so the chip's
+      // edit handler doesn't also fire.
+      html += `<div style="display:flex;align-items:center;gap:4px">
+        <div onclick="event.stopPropagation();openActivityModal('${iso}',${a.id})" style="flex:1;background:#dbeafe;color:#1e3a8a;padding:2px 6px;border-radius:4px;font-size:11px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(a.title)}">${esc(a.title)}${pubBadge}</div>
+        <div onclick="event.stopPropagation();openRollCall(${a.id})" title="Take attendance" style="background:#fde68a;color:#92400e;font-size:10px;font-weight:700;padding:1px 5px;border-radius:4px;cursor:pointer">A</div>
+      </div>`;
     }
     if (dayActs.length > 3) html += `<div style="font-size:10px;color:var(--text-muted)">+${dayActs.length - 3} more</div>`;
     html += `</div>`;
   }
   html += `</div>
-    <div style="margin-top:14px;font-size:12px;color:var(--text-muted)">Click any day to add a new activity. Click a coloured chip to edit.</div>`;
+    <div style="margin-top:14px;font-size:12px;color:var(--text-muted)">Click a day to add. Click a chip to edit. Click <strong>A</strong> for roll-call.</div>
+    <div id="actRollCall" style="margin-top:18px"></div>`;
   document.getElementById('actCalendar').innerHTML = html;
+}
+
+// Roll-call panel: lists everyone who has RSVPed for the activity, with a
+// green tick beside each. Clicking the tick PATCHes the attendee row and
+// flips a local copy so Kelly can scan a queue without round-trips.
+async function openRollCall(activityId) {
+  const wrap = document.getElementById('actRollCall');
+  if (!wrap) return;
+  wrap.innerHTML = '<div style="color:var(--text-muted);font-size:12px">Loading roll-call…</div>';
+  let a;
+  try { a = await api('/activities/' + activityId); }
+  catch (e) { wrap.innerHTML = '<div style="color:var(--danger)">' + esc(e.message) + '</div>'; return; }
+  const dateLbl = a.date ? new Date(a.date).toLocaleDateString('en-IE', { weekday:'long', day:'numeric', month:'short' }) : '';
+  const attendees = (a.attendees || []).slice().sort((x, y) => {
+    const ax = (x.student?.firstName || '') + ' ' + (x.student?.lastName || '');
+    const ay = (y.student?.firstName || '') + ' ' + (y.student?.lastName || '');
+    return ax.localeCompare(ay);
+  });
+  const left = `<div style="flex:0 0 220px">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);letter-spacing:0.3px">Roll call</div>
+    <div style="font-size:15px;font-weight:700;color:var(--text);margin-top:4px">${esc(a.title)}</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-top:2px">${esc(dateLbl)}${a.startTime ? ' · ' + esc(a.startTime) : ''}</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-top:8px">${attendees.length} RSVP${attendees.length === 1 ? '' : 's'}</div>
+    <button onclick="document.getElementById('actRollCall').innerHTML=''" style="margin-top:10px;background:transparent;border:1px solid var(--card-border);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer">Close</button>
+  </div>`;
+  const rows = attendees.length
+    ? attendees.map(att => {
+        const name = ((att.student?.firstName || '') + ' ' + (att.student?.lastName || '')).trim() || `Student #${att.studentId}`;
+        const on = !!att.attended;
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border:1px solid var(--card-border);border-radius:8px;background:var(--card-bg);margin-bottom:6px">
+          <div style="font-size:13px;color:var(--text)">${esc(name)}</div>
+          <button id="rc-${att.id}" onclick="toggleRollCall(${att.id}, ${on}, ${activityId})" style="border:0;width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:18px;background:${on?'#10b981':'#e5e7eb'};color:${on?'#fff':'#6b7280'};transition:background 0.15s ease" title="${on?'Attended — click to undo':'Mark attended'}">${on?'✓':'·'}</button>
+        </div>`;
+      }).join('')
+    : '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No RSVPs yet — students who tap to RSVP will appear here on the day.</div>';
+  const right = `<div style="flex:1">${rows}</div>`;
+  wrap.innerHTML = `<div style="border:1px solid var(--card-border);border-radius:8px;background:var(--bg-subtle);padding:14px 16px;display:flex;gap:18px;align-items:flex-start">${left}${right}</div>`;
+}
+
+async function toggleRollCall(attendeeId, currentlyOn, activityId) {
+  try {
+    await api('/activities/attendees/' + attendeeId, {
+      method: 'PATCH',
+      body: { attended: !currentlyOn },
+    });
+    // Re-render the panel so the Slack notify on the server side has had a
+    // chance to fire (it's fire-and-forget, but the green-tick state is the
+    // signal we care about).
+    openRollCall(activityId);
+  } catch (e) { toast(e.message || 'Could not update', true); }
 }
 
 // Modal — supports "new for date X" (no activityId) and "edit existing" (activityId set).
@@ -8660,7 +8763,7 @@ async function openActivityModal(dateIso, activityId) {
         <div class="form-grid">
           <div class="form-group">
             <label class="form-label">Date</label>
-            <input type="date" id="actDate" class="form-input" value="${esc(a?.date ? new Date(a.date).toISOString().slice(0,10) : dateIso)}">
+            <input type="date" id="actDate" class="form-input" value="${esc(a?.date ? (function(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;})(new Date(a.date)) : dateIso)}">
           </div>
           <div class="form-group">
             <label class="form-label">Cost (€) <span style="color:var(--text-muted);font-weight:400">— blank = free</span></label>

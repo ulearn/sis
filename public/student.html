@@ -195,7 +195,10 @@
     color: var(--brand);
     font-weight: 700;
     white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
   }
+  .task-action:hover { text-decoration: underline; }
 
   /* ─── Progress meter ─────────────────────── */
   .progress-wrap {
@@ -258,8 +261,69 @@
     cursor: pointer;
     transition: color 0.15s;
   }
-  .tab-icon { font-size: 22px; line-height: 1; }
+  .tab-icon { font-size: 22px; line-height: 1; position: relative; }
   .tab.active { color: var(--brand); }
+
+  /* Pulse the Challenges tab when there are unseen unlocks. Counter pip
+     sits top-right of the icon and shakes once per increment. */
+  @keyframes tabPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
+  @keyframes tabShake {
+    0%, 100% { transform: translateX(0) rotate(0); }
+    25% { transform: translateX(-2px) rotate(-6deg); }
+    75% { transform: translateX(2px) rotate(6deg); }
+  }
+  .tab.has-unlocks .tab-icon { animation: tabPulse 1.4s ease-in-out infinite; }
+  .tab.has-unlocks { color: var(--brand); }
+  .tab-pip {
+    position: absolute;
+    top: -4px;
+    right: -10px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 8px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .tab-pip.show { display: inline-flex; }
+  .tab-pip.bump { animation: tabShake 0.45s ease-in-out; }
+
+  /* Centre-screen unlock toast — rises and fades. */
+  @keyframes unlockRise {
+    0%   { opacity: 0; transform: translate(-50%, 20px) scale(0.92); }
+    15%  { opacity: 1; transform: translate(-50%, 0)    scale(1.02); }
+    85%  { opacity: 1; transform: translate(-50%, 0)    scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -10px) scale(0.96); }
+  }
+  .unlock-toast {
+    position: fixed;
+    top: 22%;
+    left: 50%;
+    z-index: 1000;
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #78350f;
+    padding: 18px 22px;
+    border-radius: 16px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.18);
+    text-align: center;
+    pointer-events: none;
+    animation: unlockRise 4s cubic-bezier(0.2, 0.6, 0.2, 1) forwards;
+    min-width: 260px;
+    max-width: 320px;
+  }
+  .unlock-toast .ut-emoji { font-size: 44px; line-height: 1; display:block; margin-bottom: 6px; }
+  .unlock-toast .ut-title { font-size: 14px; font-weight: 700; letter-spacing: 0.3px; text-transform: uppercase; opacity: 0.7; }
+  .unlock-toast .ut-label { font-size: 18px; font-weight: 800; margin-top: 2px; }
+  .unlock-toast .ut-sub   { font-size: 12px; margin-top: 4px; opacity: 0.85; }
 
   .hidden { display: none !important; }
 
@@ -389,16 +453,27 @@
     border-radius: 12px;
     text-align: center;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    color: #fff;
   }
+  /* Per-challenge background tints — chosen so the unlocked-state badge has its
+     own identity instead of all white.  The .locked rule below desaturates &
+     dims the colour for greyscale until the student earns it. */
+  .badge.b-social    { background: linear-gradient(135deg,#f9a8d4,#a78bfa); } /* Insta pink → purple */
+  .badge.b-content   { background: linear-gradient(135deg,#34d399,#059669); } /* mid green */
+  .badge.b-course    { background: linear-gradient(135deg,#60a5fa,#2563eb); } /* steady blue */
+  .badge.b-activity  { background: linear-gradient(135deg,#fb923c,#f97316); } /* festive orange */
+  .badge.b-review    { background: linear-gradient(135deg,#fde047,#facc15); color:#7c5400; } /* trophy yellow */
+  .badge.b-ambassador{ background: linear-gradient(135deg,#bef264,#84cc16); color:#1a2e05; } /* yellow-green */
   .badge-emoji { font-size: 26px; display: block; }
   .badge-label {
     font-size: 10px;
     font-weight: 700;
-    color: var(--muted);
+    color: inherit;
     margin-top: 4px;
     line-height: 1.2;
   }
-  .badge.locked { opacity: 0.35; filter: grayscale(1); }
+  .badge.locked { filter: grayscale(0.85) brightness(0.95); opacity: 0.55; }
+  .badge.locked .badge-label { color: var(--muted); }
 
   @media (min-width: 768px) {
     main.tab-content { padding: 28px 24px 100px; }
@@ -440,10 +515,10 @@
 
   <section class="card collapsed">
     <div class="card-header" onclick="toggleCard(this)">
-      <div class="card-title"><span class="card-icon">📅</span> Timetable</div>
+      <div class="card-title"><span class="card-icon">✅</span> Attendance</div>
       <span class="chevron">▾</span>
     </div>
-    <div class="card-body" id="card-timetable">…</div>
+    <div class="card-body" id="card-attendance">…</div>
   </section>
 
   <section class="card collapsed">
@@ -462,12 +537,18 @@
     <div class="card-body" id="card-docs">…</div>
   </section>
 
-  <section class="card collapsed">
-    <div class="card-header" onclick="toggleCard(this)">
-      <div class="card-title"><span class="card-icon">✅</span> Attendance</div>
+  <section class="card collapsed" id="profile-social-card">
+    <div class="card-header" onclick="toggleCard(this); ensureProfileSocialLoaded();">
+      <div class="card-title"><span class="card-icon">🎉</span> Social</div>
       <span class="chevron">▾</span>
     </div>
-    <div class="card-body" id="card-attendance">…</div>
+    <div class="card-body" id="card-profile-social">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:12px;font-weight:700;color:var(--text)">Upcoming activities</div>
+        <button onclick="event.stopPropagation(); openActivitiesCalendar()" title="Browse all activities by month" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:13px;cursor:pointer">📅</button>
+      </div>
+      <div id="profileActivitiesFeed" style="display:flex;flex-direction:column;gap:10px">Loading…</div>
+    </div>
   </section>
 
   <section class="card collapsed">
@@ -475,7 +556,7 @@
       <div class="card-title"><span class="card-icon">💬</span> Support</div>
       <span class="chevron">▾</span>
     </div>
-    <div class="card-body">success@ulearnschool.com · +353 1 234 5678</div>
+    <div class="card-body">success@ulearnschool.com · +353 1 475 1222 · <span style="color:#dc2626;font-weight:600">Emergency:</span> +353 85 157 4801</div>
   </section>
 
 </main>
@@ -487,12 +568,12 @@
   <section class="card" style="margin-bottom:14px">
     <div class="card-body" style="padding:14px 18px">
       <div class="badges" id="badgeStrip">
-        <div class="badge locked"><span class="badge-emoji">📱</span><div class="badge-label">Social</div></div>
-        <div class="badge locked"><span class="badge-emoji">🎬</span><div class="badge-label">Creator</div></div>
-        <div class="badge locked"><span class="badge-emoji">🎯</span><div class="badge-label">Attended</div></div>
-        <div class="badge locked"><span class="badge-emoji">🎉</span><div class="badge-label">Activity</div></div>
-        <div class="badge locked"><span class="badge-emoji">⭐</span><div class="badge-label">Review</div></div>
-        <div class="badge locked"><span class="badge-emoji">🏆</span><div class="badge-label">Ambassador</div></div>
+        <div class="badge b-social locked"><span class="badge-emoji">📱</span><div class="badge-label">Social</div></div>
+        <div class="badge b-content locked"><span class="badge-emoji">🎬</span><div class="badge-label">Creator</div></div>
+        <div class="badge b-course locked"><span class="badge-emoji">🎯</span><div class="badge-label">Attended</div></div>
+        <div class="badge b-activity locked"><span class="badge-emoji">🎉</span><div class="badge-label">Activity</div></div>
+        <div class="badge b-review locked"><span class="badge-emoji">⭐</span><div class="badge-label">Review</div></div>
+        <div class="badge b-ambassador locked"><span class="badge-emoji">🏆</span><div class="badge-label">Ambassador</div></div>
       </div>
     </div>
   </section>
@@ -511,57 +592,15 @@
 </main>
 
 <!-- ═══════════ TAB 3 — LEARNING ═══════════ -->
-<main class="tab-content hidden" id="tab-learning">
-
-  <div class="cta-box">
-    <div class="cta-title">Next up: Delta Test</div>
-    <div class="cta-sub">You completed the Quiz with 80%. Finish the 20 remaining questions to confirm your level.</div>
-    <button class="cta-btn">Start Delta →</button>
-  </div>
-
-  <section class="card collapsed">
-    <div class="card-header" onclick="toggleCard(this)">
-      <div class="card-title"><span class="card-icon">📝</span> Placement Status</div>
-      <span class="chevron">▾</span>
-    </div>
-    <div class="card-body">
-      <div class="kv"><span class="kv-label">Quiz</span><span class="kv-value"><span class="pill pill-green">Complete</span> 80%</span></div>
-      <div class="kv"><span class="kv-label">Delta</span><span class="kv-value"><span class="pill pill-amber">Pending</span></span></div>
-      <div class="kv"><span class="kv-label">Level suggested</span><span class="kv-value">B1</span></div>
-    </div>
-  </section>
-
-  <section class="card collapsed">
-    <div class="card-header" onclick="toggleCard(this)">
-      <div class="card-title"><span class="card-icon">📊</span> Completed Tests</div>
-      <span class="chevron">▾</span>
-    </div>
-    <div class="card-body">
-      <div class="kv"><span class="kv-label">Quiz (20 Q)</span><span class="kv-value">80% · 12 Apr</span></div>
-    </div>
-  </section>
-
-  <section class="card collapsed">
-    <div class="card-header" onclick="toggleCard(this)">
-      <div class="card-title"><span class="card-icon">🎯</span> Class Level</div>
-      <span class="chevron">▾</span>
-    </div>
-    <div class="card-body">
-      <div class="kv"><span class="kv-label">Current level</span><span class="kv-value">B1 (Intermediate)</span></div>
-      <div class="kv"><span class="kv-label">Class</span><span class="kv-value">R204 · Aoife Ní Bhroin</span></div>
-    </div>
-  </section>
-
-  <section class="card collapsed">
-    <div class="card-header" onclick="toggleCard(this)">
-      <div class="card-title"><span class="card-icon">📚</span> Learning Tasks</div>
-      <span class="chevron">▾</span>
-    </div>
-    <div class="card-body">
-      LMS modules will appear here once you're enrolled in the learning platform.
-    </div>
-  </section>
-
+<!-- Embeds today.html (the canonical lesson view) so students see their actual
+     class with day-pills + per-session inline ratings. today.html is the source
+     of truth — don't duplicate its render here. The level/session URL params
+     come from the login handler (resolved from StudentClassAssignment). -->
+<main class="tab-content hidden" id="tab-learning" style="padding:0">
+  <iframe id="learning-frame"
+          title="Today's lesson"
+          style="display:block; width:100%; height:calc(100vh - 60px); border:0; background:#fff;"
+          loading="lazy"></iframe>
 </main>
 
 <!-- ═══════════ BOTTOM TAB BAR ═══════════ -->
@@ -571,7 +610,7 @@
     <span>Profile</span>
   </button>
   <button class="tab" data-tab="challenges">
-    <span class="tab-icon">🏆</span>
+    <span class="tab-icon">🏆<span class="tab-pip" id="challengesPip">0</span></span>
     <span>Challenges</span>
   </button>
   <button class="tab" data-tab="learning">
@@ -589,6 +628,18 @@
       ['profile','challenges','learning'].forEach(id => {
         document.getElementById('tab-' + id).classList.toggle('hidden', id !== tab);
       });
+      // Lazy-load the today.html iframe on first Learning-tab visit. The
+      // level/session params come from /sis/student?level=…&session=… set by
+      // the login handler from StudentClassAssignment.
+      if (tab === 'learning') {
+        const frame = document.getElementById('learning-frame');
+        if (frame && !frame.src) {
+          const qs = new URLSearchParams(location.search);
+          const level   = qs.get('level')   || 'A1';
+          const session = qs.get('session') || 'MORNING';
+          frame.src = `/prototype/lms/today.html?level=${encodeURIComponent(level)}&session=${encodeURIComponent(session)}&embedded=1`;
+        }
+      }
       window.scrollTo({ top: 0, behavior: 'instant' });
     });
   });
@@ -601,6 +652,19 @@
   // ── Live data ─────────────────────────────────
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const kv = (label, value) => `<div class="kv"><span class="kv-label">${esc(label)}</span><span class="kv-value">${esc(value || '—')}</span></div>`;
+  // Country: ISO 3166 alpha-2 codes (e.g. "IT") expand to full names ("Italy")
+  // via the browser-native Intl.DisplayNames. Fallback to the raw code if the
+  // API isn't supported or the code isn't recognised.
+  const COUNTRY_NAMES = (() => {
+    try { return new Intl.DisplayNames(['en'], { type: 'region' }); }
+    catch { return null; }
+  })();
+  const countryName = code => {
+    if (!code) return '';
+    const c = String(code).trim().toUpperCase();
+    if (c.length !== 2 || !COUNTRY_NAMES) return code;
+    try { return COUNTRY_NAMES.of(c) || code; } catch { return code; }
+  };
   const fmtDate = d => d ? new Date(d).toLocaleDateString('en-IE', { day:'2-digit', month:'short', year:'numeric' }) : '';
   const empty = msg => `<div style="color:var(--muted);font-size:13px">${esc(msg)}</div>`;
 
@@ -618,23 +682,39 @@
 
       document.getElementById('card-personal').innerHTML =
         kv('Full name', fullName) +
-        kv('Nationality', s.nationality) +
+        kv('Nationality', countryName(s.nationality)) +
         kv('Date of birth', s.birthday ? fmtDate(s.birthday) : '') +
         kv('Email', s.email) +
         kv('Phone', s.phone);
 
       const c = d.course;
+      // Footnote with timetable info — pulled from the StudentClassAssignment
+      // → Class. Days are ISO weekday numbers (1=Mon..7=Sun); collapse a
+      // contiguous Mon-Fri run to "Mon-Fri", otherwise list the day codes.
+      const tt = d.timetable;
+      const dayLabel = (() => {
+        if (!tt?.days?.length) return '';
+        const sorted = [...tt.days].sort((a,b)=>a-b);
+        const isMonFri = sorted.length === 5 && sorted[0] === 1 && sorted[4] === 5;
+        if (isMonFri) return 'Mon–Fri';
+        return sorted.map(n => ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][n] || '').filter(Boolean).join(', ');
+      })();
+      const timeRange = (tt?.startTime && tt?.endTime) ? `${tt.startTime}–${tt.endTime}` : '';
+      const room = tt?.classroomName || '';
+      const mapsUrl = 'https://maps.google.com/?q=Harcourt+Centre+Dublin';
+      const ttLine = (dayLabel || timeRange || room)
+        ? `<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);font-size:12px;color:var(--muted);line-height:1.5">
+             ${[dayLabel, timeRange, room ? `${esc(room)}, <a href="${mapsUrl}" target="_blank" rel="noopener" style="color:var(--brand);text-decoration:none;font-weight:600">Harcourt Centre ↗</a>` : `<a href="${mapsUrl}" target="_blank" rel="noopener" style="color:var(--brand);text-decoration:none;font-weight:600">Harcourt Centre ↗</a>`].filter(Boolean).join(' · ')}
+           </div>`
+        : '';
       document.getElementById('card-course').innerHTML = c
         ? kv('Course', c.name) +
           kv('Level', c.level || s.level) +
           kv('Start / End', c.startDate ? `${fmtDate(c.startDate)} — ${fmtDate(c.endDate)}` : '') +
           kv('Weeks', c.weeks) +
-          kv('Hours / week', c.hoursPerWeek)
+          kv('Hours / week', c.hoursPerWeek) +
+          ttLine
         : empty('No active course');
-
-      document.getElementById('card-timetable').innerHTML = c?.hoursPerWeek
-        ? `Monday to Friday · ${c.hoursPerWeek} hrs/week`
-        : empty('No timetable yet');
 
       const a = d.accommodation;
       document.getElementById('card-accom').innerHTML = a
@@ -647,8 +727,19 @@
         : empty('No accommodation booked');
 
       const docs = d.documents || [];
+      // Each issued doc gets a 👁 (preview HTML in a new tab) and a 📄
+      // (download PDF) action — mirrors what the SIS admin sees so students
+      // can pull their own letters without going through office staff.
+      const docIconBtn = 'background:none;border:0;cursor:pointer;padding:2px 4px;font-size:16px;line-height:1;border-radius:4px';
       document.getElementById('card-docs').innerHTML = docs.length
-        ? docs.map(doc => `<div class="kv"><span class="kv-label">${esc(doc.template?.name || doc.documentType)}</span><span class="kv-value">${fmtDate(doc.issuedAt)}</span></div>`).join('')
+        ? docs.map(doc => `<div class="kv">
+            <span class="kv-label">${esc(doc.template?.name || doc.documentType)}</span>
+            <span class="kv-value" style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
+              <span>${fmtDate(doc.issuedAt)}</span>
+              <button title="Preview document" onclick="previewDocument(${doc.id})" style="${docIconBtn}">👁</button>
+              <button title="Download PDF" onclick="downloadDocumentPdf(${doc.id})" style="${docIconBtn}">📄</button>
+            </span>
+          </div>`).join('')
         : empty('No documents issued yet');
 
       const att = d.attendance || {};
@@ -944,12 +1035,137 @@
   // The /challenges endpoint returns six items with `done` + `state` and
   // type-specific `data`. Each card renders the same way; per-type bodies
   // diverge for inputs (handles, URLs, content tasks).
+  // ── Unlock notifications (in-app push) ─────────
+  // We compare the current `done` set against the last set we saw (kept in
+  // localStorage so it survives reloads) and surface a centred toast +
+  // tabbar pip every time a new badge flips to done. Background polling at
+  // 45 s keeps this live even when the staff side is what flipped the bit
+  // (instagramFollowVerified, googleReviewVerified, attended). The first
+  // session ever just baselines silently — we don't celebrate the badges
+  // the student already had.
+  const LS_DONE_KEY = 'ulearnSeenChallengesDone:v1';
+  const LS_PIP_KEY  = 'ulearnChallengeUnseen:v1'; // per-key array of unseen unlocks
+  function readSet(key) {
+    try { return new Set(JSON.parse(localStorage.getItem(key) || '[]')); }
+    catch { return new Set(); }
+  }
+  function writeSet(key, set) {
+    try { localStorage.setItem(key, JSON.stringify(Array.from(set))); } catch {}
+  }
+  const BADGE_LABEL = { social:'Social Platform', content:'Content Tasks', course_attended:'Attended Course', activity_attended:'Attended Social', review:'Review', ambassador:'Ambassador' };
+  const BADGE_EMOJI = { social:'📱', content:'🎬', course_attended:'🎯', activity_attended:'🎉', review:'⭐', ambassador:'🏆' };
+
+  function refreshChallengePip() {
+    const unseen = readSet(LS_PIP_KEY);
+    const pip = document.getElementById('challengesPip');
+    const tab = document.querySelector('.tab[data-tab="challenges"]');
+    if (!pip || !tab) return;
+    const n = unseen.size;
+    if (n > 0) {
+      pip.textContent = String(n);
+      pip.classList.add('show');
+      tab.classList.add('has-unlocks');
+    } else {
+      pip.classList.remove('show');
+      tab.classList.remove('has-unlocks');
+    }
+  }
+
+  function bumpChallengePip() {
+    const pip = document.getElementById('challengesPip');
+    if (!pip) return;
+    pip.classList.remove('bump');
+    // restart animation
+    void pip.offsetWidth;
+    pip.classList.add('bump');
+  }
+
+  function showUnlockToast(key) {
+    const wrap = document.createElement('div');
+    wrap.className = 'unlock-toast';
+    wrap.innerHTML = `
+      <div class="ut-emoji">${BADGE_EMOJI[key] || '🎉'}</div>
+      <div class="ut-title">Unlocked</div>
+      <div class="ut-label">${BADGE_LABEL[key] || key}</div>
+      <div class="ut-sub">Tap Challenges to see it light up.</div>`;
+    document.body.appendChild(wrap);
+    setTimeout(() => wrap.remove(), 4200);
+    // Reuse the existing confetti burst if available
+    if (typeof confetti === 'function') {
+      try {
+        confetti({ particleCount: 80, spread: 70, origin: { y: 0.4 } });
+      } catch {}
+    }
+    // Best-effort browser push when the page isn't focused. Stays silent if
+    // permission was denied or never granted — we don't pester for it.
+    if (typeof Notification !== 'undefined' && Notification.permission === 'granted' && document.hidden) {
+      try { new Notification(`Unlocked: ${BADGE_LABEL[key] || key}`, { body: 'You earned a new badge in your ULearn challenges.' }); } catch {}
+    }
+  }
+
+  // First-paint vs subsequent diffs. On first call we baseline without firing
+  // anything; thereafter we fire toasts for newly-done keys.
+  let _challengesBaselined = false;
+  function diffAndCelebrate(currentDoneSet) {
+    const prev = readSet(LS_DONE_KEY);
+    if (!_challengesBaselined && prev.size === 0) {
+      // First-ever load on this device — baseline silently
+      writeSet(LS_DONE_KEY, currentDoneSet);
+      _challengesBaselined = true;
+      return;
+    }
+    _challengesBaselined = true;
+    const newlyDone = [];
+    currentDoneSet.forEach(k => { if (!prev.has(k)) newlyDone.push(k); });
+    if (newlyDone.length) {
+      const unseen = readSet(LS_PIP_KEY);
+      newlyDone.forEach((k, i) => {
+        unseen.add(k);
+        // stagger toasts so they don't overlap when several flips arrive at once
+        setTimeout(() => showUnlockToast(k), i * 1200);
+      });
+      writeSet(LS_PIP_KEY, unseen);
+      bumpChallengePip();
+      refreshChallengePip();
+    }
+    writeSet(LS_DONE_KEY, currentDoneSet);
+  }
+
+  // When the student lands on the Challenges tab, mark all unseen as seen.
+  document.querySelector('.tab[data-tab="challenges"]').addEventListener('click', () => {
+    writeSet(LS_PIP_KEY, new Set());
+    refreshChallengePip();
+  });
+
+  // Ask once for browser-notification permission on the first explicit user
+  // gesture (any tap on the page). Browsers reject silent prompts.
+  let _notifyAsked = false;
+  function maybeAskNotifyPermission() {
+    if (_notifyAsked) return;
+    _notifyAsked = true;
+    if (typeof Notification === 'undefined') return;
+    if (Notification.permission === 'default') {
+      try { Notification.requestPermission(); } catch {}
+    }
+  }
+  document.addEventListener('click', maybeAskNotifyPermission, { once: true });
+
+  refreshChallengePip();
+  // Background poll — every 45 s. Slack still gets the canonical notify; the
+  // poll is just so the student's screen reflects the new state without F5.
+  setInterval(() => { loadChallenges(); }, 45000);
+  // Also catch up on focus (laptop wakes, tab regains visibility, etc.)
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) loadChallenges(); });
+
   async function loadChallenges() {
     try {
       const res = await fetch('/sis/student/api/challenges');
       if (!res.ok) return;
       const d = await res.json();
       const items = d.items || [];
+      // Diff the done-set vs last seen — fires unlock toast(s) on transitions.
+      const doneNow = new Set(items.filter(i => i.done).map(i => i.key));
+      diffAndCelebrate(doneNow);
 
       // Progress bar
       const done = d.progress?.done ?? 0;
@@ -961,18 +1177,29 @@
 
       // Badge strip — light up the ones that are done
       const badgeOrder = ['social','content','course_attended','activity_attended','review','ambassador'];
+      // Tint class per badge — same scheme as the static strip.
+      const badgeTint = {social:'b-social',content:'b-content',course_attended:'b-course',activity_attended:'b-activity',review:'b-review',ambassador:'b-ambassador'};
       const badgeHtml = badgeOrder.map(k => {
         const it = items.find(i => i.key === k);
-        const cls = it && it.done ? 'badge' : 'badge locked';
+        const cls = `badge ${badgeTint[k]}` + (it && it.done ? '' : ' locked');
         const emoji = ({social:'📱',content:'🎬',course_attended:'🎯',activity_attended:'🎉',review:'⭐',ambassador:'🏆'})[k];
         const label = ({social:'Social',content:'Creator',course_attended:'Attended',activity_attended:'Activity',review:'Review',ambassador:'Ambassador'})[k];
         return `<div class="${cls}"><span class="badge-emoji">${emoji}</span><div class="badge-label">${label}</div></div>`;
       }).join('');
       document.getElementById('badgeStrip').innerHTML = badgeHtml;
 
-      // Detail cards
+      // Detail cards. Preserve which cards are currently expanded so a state-
+      // changing action (addContent / saveSocial / saveReview / removeContent)
+      // doesn't snap the active card shut and lose the user's place.
       const cardsWrap = document.getElementById('challengeCards');
+      const expandedKeys = Array.from(cardsWrap.querySelectorAll('.card[data-key]'))
+        .filter(c => !c.classList.contains('collapsed'))
+        .map(c => c.dataset.key);
       cardsWrap.innerHTML = items.map(it => renderChallengeCard(it)).join('');
+      expandedKeys.forEach(k => {
+        const c = cardsWrap.querySelector(`.card[data-key="${k}"]`);
+        if (c) c.classList.remove('collapsed');
+      });
       // Once the activity-attended card is in the DOM, hydrate its feed
       loadActivitiesFeed();
     } catch {
@@ -981,24 +1208,48 @@
   }
 
   async function loadActivitiesFeed() {
-    const wrap = document.getElementById('activitiesFeed');
-    if (!wrap) return;
+    // Renders into every wrapper that currently exists (challenges card + the
+    // Profile Social card). Keeping a single fetch + dual paint avoids a stale
+    // copy when the user RSVPs from one place and switches to the other.
+    const wraps = [document.getElementById('activitiesFeed'), document.getElementById('profileActivitiesFeed')].filter(Boolean);
+    if (!wraps.length) return;
     try {
       const list = await fetch('/sis/student/api/activities').then(r => r.ok ? r.json() : []);
-      // Show the next 8 (upcoming + recent past 7d)
-      const today = new Date(); today.setHours(0,0,0,0);
-      const upcoming = list.filter(a => new Date(a.date) >= today).slice(0, 8);
-      if (!upcoming.length) {
-        wrap.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 0">Nothing scheduled right now — Kelly will post new activities soon.</div>';
-        return;
-      }
-      wrap.innerHTML = upcoming.map(renderActivityRow).join('');
+      // Compute the activity date in *local* time before comparing — slicing the
+      // server's ISO string takes the UTC date, which can be the day before in
+      // BST/IST and would silently drop today's evening activity. Building both
+      // sides from local YYYY-MM-DD makes the >= comparison stable across
+      // any timezone the student is viewing from.
+      const t = new Date();
+      const todayStr = localISO(t);
+      const upcoming = list.filter(a => localISO(new Date(a.date)) >= todayStr).slice(0, 8);
+      // Highlight today's row with a small "TODAY" tag — students mostly just
+      // need to know what's on today and turn up.
+      const html = upcoming.length
+        ? upcoming.map(a => renderActivityRow(a, localISO(new Date(a.date)) === todayStr)).join('')
+        : '<div style="font-size:12px;color:var(--muted);padding:8px 0">Nothing scheduled right now — Kelly will post new activities soon.</div>';
+      wraps.forEach(w => { w.innerHTML = html; });
     } catch {
-      wrap.innerHTML = '<div style="font-size:12px;color:var(--muted)">Could not load activities.</div>';
+      wraps.forEach(w => { w.innerHTML = '<div style="font-size:12px;color:var(--muted)">Could not load activities.</div>'; });
     }
   }
 
-  function renderActivityRow(a) {
+  // Local-tz YYYY-MM-DD — used by both the upcoming feed and the calendar grid
+  // so they agree on which day "today" is regardless of UTC offset.
+  function localISO(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  // Profile-side Social card lazy-loads on first expand; subsequent expands are
+  // no-ops because loadActivitiesFeed paints whatever wrappers exist.
+  let _profileSocialLoaded = false;
+  function ensureProfileSocialLoaded() {
+    if (_profileSocialLoaded) return;
+    _profileSocialLoaded = true;
+    loadActivitiesFeed();
+  }
+
+  function renderActivityRow(a, isToday = false) {
     const dt = new Date(a.date);
     const dateLabel = dt.toLocaleDateString('en-IE', { weekday:'short', day:'numeric', month:'short' });
     const timeLabel = a.startTime ? ` · ${a.startTime}` : '';
@@ -1007,15 +1258,19 @@
     const placeholder = `<div style="width:64px;height:64px;border-radius:8px;background:linear-gradient(135deg,#a7f3d0,#7dd3fc);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px">🎉</div>`;
     const imgHtml = imgUrl ? `<img src="${imgUrl}" style="width:64px;height:64px;border-radius:8px;object-fit:cover;flex-shrink:0">` : placeholder;
     const isGoing = !!a.myRsvp;
+    // Subtle highlight on today's row + a small TODAY tag — students mostly
+    // skim for "what's on tonight" so this earns its space.
+    const rowExtra = isToday ? 'background:#fff7ed;border-color:#fdba74;box-shadow:0 1px 6px rgba(249,115,22,0.18)' : 'background:#fff';
+    const todayTag = isToday ? `<span style="background:#f97316;color:#fff;font-size:10px;font-weight:800;letter-spacing:0.4px;padding:2px 6px;border-radius:4px;margin-right:6px">TODAY</span>` : '';
 
-    return `<div class="activity-row" data-aid="${a.id}" style="display:flex;gap:12px;align-items:center;padding:10px;border:1px solid var(--border);border-radius:10px;background:#fff">
+    return `<div class="activity-row" data-aid="${a.id}" style="display:flex;gap:12px;align-items:center;padding:10px;border:1px solid var(--border);border-radius:10px;${rowExtra}">
       ${imgHtml}
       <div style="flex:1;min-width:0">
-        <div style="font-weight:700;font-size:14px;color:var(--text)">${esc(a.title)}</div>
+        <div style="font-weight:700;font-size:14px;color:var(--text)">${todayTag}${esc(a.title)}</div>
         <div style="font-size:12px;color:var(--muted)">${dateLabel}${timeLabel} · ${cost}${a.location ? ' · ' + esc(a.location) : ''}</div>
         ${a.description ? `<div style="font-size:12px;color:var(--text);margin-top:4px;line-height:1.4">${esc(a.description)}</div>` : ''}
       </div>
-      <button onclick="toggleActivityRsvp(${a.id}, ${isGoing}, this)" class="rsvp-btn ${isGoing?'rsvp-on':''}" style="flex-shrink:0;border:0;border-radius:50%;width:44px;height:44px;cursor:pointer;font-size:20px;background:${isGoing?'#10b981':'#e5e7eb'};color:${isGoing?'#fff':'#6b7280'};transition:transform 0.15s ease, background 0.15s ease" title="${isGoing?'You\\'re going!':'Tap to RSVP'}">${isGoing?'✓':'+'}</button>
+      <button onclick="toggleActivityRsvp(${a.id}, ${isGoing}, this)" class="rsvp-btn ${isGoing?'rsvp-on':''}" style="flex-shrink:0;border:0;border-radius:50%;width:44px;height:44px;cursor:pointer;font-size:20px;background:${isGoing?'#10b981':'#e5e7eb'};color:${isGoing?'#fff':'#6b7280'};transition:transform 0.15s ease, background 0.15s ease" title="${isGoing?'You\'re going!':'Tap to RSVP'}">${isGoing?'✓':'+'}</button>
     </div>`;
   }
 
@@ -1029,6 +1284,8 @@
         if (btn) celebrate(btn);
       }
       loadActivitiesFeed();
+      // Keep the calendar modal in sync if it happens to be open
+      if (document.getElementById('stuActModal')) renderStuActCalendar();
     } catch { alert('Could not update RSVP.'); }
   }
 
@@ -1057,7 +1314,7 @@
 
   function renderChallengeCard(it) {
     const pillCls = it.done ? 'pill-green' : (it.state && it.state.toLowerCase().includes('await') ? 'pill-grey' : 'pill-grey');
-    const pillTxt = it.done ? 'Approved' : it.state;
+    const pillTxt = it.done ? 'Unlocked' : it.state;
     const body = (() => {
       switch (it.key) {
         case 'social': return socialBody(it.data);
@@ -1070,7 +1327,7 @@
       }
     })();
     return `
-      <section class="card collapsed">
+      <section class="card collapsed" data-key="${esc(it.key)}">
         <div class="card-header" onclick="toggleCard(this)">
           <div class="card-title"><span class="card-icon">${it.icon}</span> ${esc(it.label)} <span class="pill ${pillCls}">${esc(pillTxt)}</span></div>
           <span class="chevron">▾</span>
@@ -1081,14 +1338,34 @@
 
   function socialBody(d) {
     const handle = d?.instagramHandle || '';
+    const verified = !!d?.followVerified;
+    // Two buttons side-by-side, same size, primary = visit IG, ghost = confirm.
+    // `flex:1` on each gives them equal width; matching padding + font sizes
+    // keep the visual weight balanced.
+    const sharedBtn  = 'flex:1;text-align:center;padding:12px 16px;border-radius:8px;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;letter-spacing:0.01em;line-height:1;display:inline-flex;align-items:center;justify-content:center;gap:6px';
+    const primaryBtn = sharedBtn + ';background:var(--brand);color:#fff;border:0;text-decoration:none';
+    const ghostBtn   = sharedBtn + ';background:#fff;color:var(--brand);border:1.5px solid var(--brand)';
+
+    let actions = '';
+    if (verified) {
+      actions = `
+        <div style="margin-top:8px;font-size:13px;color:var(--brand);font-weight:700">Followed ✓</div>
+        <div style="margin-top:4px;font-size:12px;color:var(--muted)">Thanks! Kelly may spot-check from time to time — keep that follow active.</div>`;
+    } else if (handle) {
+      actions = `
+        <div style="margin-top:12px;display:flex;gap:10px;align-items:stretch">
+          <a href="https://www.instagram.com/ulearnschool/" target="_blank" rel="noopener" style="${primaryBtn}">Follow ULearn ↗</a>
+          <button onclick="confirmFollow()" style="${ghostBtn}">I followed 👍</button>
+        </div>`;
+    }
+
+    // Handle input auto-saves on blur via onchange. No manual Save / Update
+    // buttons — keeping it as terse as possible.
     return `
       <div class="kv"><span class="kv-label">Instagram</span><span class="kv-value">
-        <input id="igHandle" type="text" placeholder="@yourhandle" value="${esc(handle ? '@' + handle : '')}" style="width:160px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-family:inherit;font-size:13px">
+        <input id="igHandle" type="text" placeholder="@yourhandle" value="${esc(handle ? '@' + handle : '')}" onchange="saveSocial()" style="width:160px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-family:inherit;font-size:13px"${verified ? ' disabled' : ''}>
       </span></div>
-      <div class="kv"><span class="kv-label">Followed ULearn?</span><span class="kv-value">
-        ${d?.followVerified ? 'Yes! 🙌 (verified)' : (handle ? 'Awaiting verification by Kelly' : 'Add your handle first')}
-      </span></div>
-      <div style="margin-top:10px"><button onclick="saveSocial()" style="background:var(--brand);color:white;border:0;padding:6px 14px;border-radius:4px;font-family:inherit;font-size:13px;cursor:pointer">Save handle</button></div>`;
+      ${actions}`;
   }
 
   function contentBody(d) {
@@ -1111,10 +1388,15 @@
   }
 
   function courseAttendedBody(d) {
-    if (d?.periodPct === null) return 'No attendance data yet — once class records start, this will reflect your most-recent week or month.';
     const period = d?.periodKind === 'WEEK' ? 'this week' : 'this month';
     if (d?.periodPct === 100) return `🎯 100% attendance ${period}. Keep it up — every full-attendance period unlocks this.`;
-    return `Your attendance ${period}: <strong>${d?.periodPct}%</strong>. Get to 100% (no absences Mon–Fri) to unlock this challenge.`;
+    if (d?.periodPct != null) {
+      return `Your attendance ${period}: <strong>${d.periodPct}%</strong>. Get to 100% (no absences Mon–Fri) to unlock this challenge.`;
+    }
+    if (d?.overallPct != null) {
+      return `No attendance recorded ${period} yet. Overall to date: <strong>${d.overallPct}%</strong>. Hit 100% in any ${d?.periodKind === 'WEEK' ? 'week' : 'month'} to unlock.`;
+    }
+    return 'No attendance data yet — once class records start, this will reflect your most-recent week or month.';
   }
 
   function activityAttendedBody(d) {
@@ -1124,23 +1406,121 @@
       : '';
     return `
       ${attended.length ? `<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px">You showed up ✨</div>${attendedHtml}<hr style="margin:14px 0;border:0;border-top:1px solid var(--border)">` : ''}
-      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">Upcoming activities</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:12px;font-weight:700;color:var(--text)">Upcoming activities</div>
+        <button onclick="openActivitiesCalendar()" title="Browse all activities by month" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:13px;cursor:pointer">📅</button>
+      </div>
       <div id="activitiesFeed" style="display:flex;flex-direction:column;gap:10px">Loading…</div>`;
+  }
+
+  // ── Monthly calendar browse ─────────
+  // Lightbox-style overlay surfacing the same month grid the admin uses but
+  // read-only for the student, with one-click RSVP on each cell. Lets students
+  // peek ahead to next month's slate when this week's feed is light.
+  let _stuActMonth = null;
+  function openActivitiesCalendar() {
+    const d = new Date();
+    _stuActMonth = { year: d.getFullYear(), month: d.getMonth() + 1 };
+    let overlay = document.getElementById('stuActModal');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'stuActModal';
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px';
+      overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+      overlay.innerHTML = `
+        <div style="background:#fff;border-radius:12px;width:100%;max-width:880px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border)">
+            <div style="display:flex;gap:8px;align-items:center">
+              <button onclick="stuActNav(-1)" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:4px 10px;cursor:pointer">‹</button>
+              <button onclick="stuActNav(0)" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:4px 10px;cursor:pointer">Today</button>
+              <button onclick="stuActNav(1)" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:4px 10px;cursor:pointer">›</button>
+              <div id="stuActLabel" style="font-weight:700;font-size:15px;margin-left:8px"></div>
+            </div>
+            <button onclick="document.getElementById('stuActModal').remove()" style="background:transparent;border:0;font-size:22px;cursor:pointer;color:#6b7280">×</button>
+          </div>
+          <div id="stuActBody" style="padding:14px 16px;overflow:auto">Loading…</div>
+        </div>`;
+      document.body.appendChild(overlay);
+    }
+    renderStuActCalendar();
+  }
+  function stuActNav(delta) {
+    if (delta === 0) {
+      const d = new Date();
+      _stuActMonth = { year: d.getFullYear(), month: d.getMonth() + 1 };
+    } else {
+      let { year, month } = _stuActMonth;
+      month += delta;
+      if (month < 1) { month = 12; year--; }
+      if (month > 12) { month = 1; year++; }
+      _stuActMonth = { year, month };
+    }
+    renderStuActCalendar();
+  }
+  async function renderStuActCalendar() {
+    const { year, month } = _stuActMonth;
+    const lbl = document.getElementById('stuActLabel');
+    if (lbl) lbl.textContent = new Date(year, month - 1, 1).toLocaleDateString('en-IE', { month: 'long', year: 'numeric' });
+    const body = document.getElementById('stuActBody');
+    if (!body) return;
+    body.textContent = 'Loading…';
+    let data;
+    try { data = await fetch(`/sis/student/api/activities/month?year=${year}&month=${month}`).then(r => r.ok ? r.json() : Promise.reject(r)); }
+    catch { body.textContent = 'Could not load month.'; return; }
+    // Use *local* YYYY-MM-DD for both keying activities and matching cells —
+    // ISO `slice(0,10)` would take the UTC date, which is one day off in BST
+    // and would put today's evening activity in yesterday's cell.
+    const byDate = {};
+    for (const a of (data.items || [])) {
+      const k = localISO(new Date(a.date));
+      (byDate[k] = byDate[k] || []).push(a);
+    }
+    const from = new Date(data.from); from.setHours(0,0,0,0);
+    const to = new Date(data.to); to.setHours(0,0,0,0);
+    const days = [];
+    for (let cur = new Date(from); cur <= to; cur.setDate(cur.getDate() + 1)) days.push(new Date(cur));
+    const monthIdx = month - 1;
+    const todayIso = localISO(new Date());
+    let html = `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+      ${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => `<div style="background:#f8f7f4;padding:6px 8px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:#6b7280">${d}</div>`).join('')}`;
+    for (const d of days) {
+      const iso = localISO(d);
+      const isCur = d.getMonth() === monthIdx;
+      const isToday = todayIso === iso;
+      const cell = byDate[iso] || [];
+      const dim = isCur ? '' : 'opacity:0.45;';
+      html += `<div style="background:#fff;${dim}min-height:78px;padding:5px 6px;display:flex;flex-direction:column;gap:3px">
+        <div style="font-size:11px;font-weight:600;${isToday?'color:#10b981':''}">${d.getDate()}${isToday?' •':''}</div>`;
+      for (const a of cell.slice(0, 3)) {
+        const going = !!a.myRsvp;
+        const bg = going ? '#10b981' : '#dbeafe';
+        const fg = going ? '#fff' : '#1e3a8a';
+        html += `<div onclick="stuToggleRsvpFromCal(${a.id}, ${going})" title="${esc(a.title)}${a.startTime?' · '+a.startTime:''}" style="background:${bg};color:${fg};padding:2px 6px;border-radius:4px;font-size:10px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${going?'✓ ':''}${esc(a.title)}</div>`;
+      }
+      if (cell.length > 3) html += `<div style="font-size:10px;color:#6b7280">+${cell.length - 3}</div>`;
+      html += `</div>`;
+    }
+    html += `</div><div style="margin-top:10px;font-size:11px;color:#6b7280">Tap a coloured chip to toggle your RSVP. Green = you're going.</div>`;
+    body.innerHTML = html;
+  }
+  async function stuToggleRsvpFromCal(id, currentlyOn) {
+    try {
+      if (currentlyOn) await fetch('/sis/student/api/activities/' + id + '/rsvp', { method: 'DELETE' });
+      else await fetch('/sis/student/api/activities/' + id + '/rsvp', { method: 'POST' });
+      renderStuActCalendar();
+      loadActivitiesFeed();
+    } catch { alert('Could not update RSVP.'); }
   }
 
   function reviewBody(d) {
     const gUrl = d?.googleUrl || '';
-    const tpUrl = d?.trustpilotUrl || '';
     return `
       <div class="kv"><span class="kv-label">Google review URL</span><span class="kv-value">
         <input id="googleUrl" type="text" placeholder="https://…" value="${esc(gUrl)}" style="width:200px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-family:inherit;font-size:13px">
       </span></div>
       <div class="kv"><span class="kv-label">Status</span><span class="kv-value">${d?.googleVerified ? '⭐ Verified 5-star' : (gUrl ? 'Awaiting verification by Kelly' : 'Add your link')}</span></div>
-      <div class="kv"><span class="kv-label">Trustpilot URL <span style="color:var(--muted);font-weight:400">(optional)</span></span><span class="kv-value">
-        <input id="trustpilotUrl" type="text" placeholder="https://…" value="${esc(tpUrl)}" style="width:200px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-family:inherit;font-size:13px">
-      </span></div>
       <div style="margin-top:10px"><button onclick="saveReview()" style="background:var(--brand);color:white;border:0;padding:6px 14px;border-radius:4px;font-family:inherit;font-size:13px;cursor:pointer">Save</button></div>
-      <div style="margin-top:8px;font-size:12px;color:var(--muted);line-height:1.5">A 5★ Google review unlocks your Ambassador badge and code. Trustpilot is optional — usually captured during your booking.</div>`;
+      <div style="margin-top:8px;font-size:12px;color:var(--muted);line-height:1.5">A 5★ Google review unlocks your Ambassador badge and code.</div>`;
   }
 
   function ambassadorBody(d) {
@@ -1152,6 +1532,33 @@
       <div style="margin-top:10px;font-size:12px;color:var(--muted);line-height:1.5">Add this code to any content you create about ULearn. Bookings using it get 10% off; you receive a 10% reward.</div>`;
   }
 
+  // ── Document preview + PDF download ─────────────
+  function previewDocument(id) {
+    // Use a centred lightbox-style overlay with an iframe pointing at the
+    // student-portal preview endpoint so the rendered HTML letter is shown
+    // exactly as the admin would see it (and respects same-origin auth).
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px';
+    overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
+    overlay.innerHTML = `
+      <div style="background:#fff;width:100%;max-width:820px;height:90vh;border-radius:12px;display:flex;flex-direction:column;overflow:hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);background:#f8fafc">
+          <strong style="font-size:14px">Document preview</strong>
+          <div style="display:flex;gap:8px">
+            <button onclick="downloadDocumentPdf(${id})" style="background:var(--brand);color:#fff;border:0;padding:6px 12px;border-radius:6px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer">Download PDF</button>
+            <button onclick="this.closest('[data-doc-overlay]').remove()" style="background:none;border:1px solid var(--border);padding:6px 10px;border-radius:6px;font-family:inherit;font-size:13px;cursor:pointer">Close</button>
+          </div>
+        </div>
+        <iframe src="/sis/student/api/documents/${id}/preview" style="flex:1;border:0;background:#fff"></iframe>
+      </div>`;
+    overlay.setAttribute('data-doc-overlay', '1');
+    document.body.appendChild(overlay);
+  }
+  function downloadDocumentPdf(id) {
+    // Plain navigation — browser handles the Content-Disposition: attachment.
+    window.location.href = `/sis/student/api/documents/${id}/pdf`;
+  }
+
   async function saveSocial() {
     const handle = document.getElementById('igHandle')?.value?.trim() || '';
     try {
@@ -1159,17 +1566,38 @@
       loadChallenges();
     } catch { alert('Could not save handle.'); }
   }
+  async function confirmFollow() {
+    try {
+      const r = await fetch('/sis/student/api/social/confirm-follow', { method: 'POST' });
+      if (!r.ok) { const j = await r.json().catch(()=>({})); alert(j.error || 'Could not confirm.'); return; }
+      celebrate();
+      loadChallenges();
+    } catch { alert('Could not confirm.'); }
+  }
+  // Confetti burst on first challenge unlock — gives the student a real "I
+  // did it" moment so they're motivated to do the others. Library is loaded
+  // from a CDN at the bottom of the page.
+  function celebrate() {
+    if (typeof confetti !== 'function') return;
+    const burst = (origin) => confetti({
+      particleCount: 80, spread: 70, startVelocity: 45,
+      origin, ticks: 200,
+      colors: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'],
+    });
+    burst({ x: 0.2, y: 0.7 });
+    setTimeout(() => burst({ x: 0.8, y: 0.7 }), 150);
+    setTimeout(() => burst({ x: 0.5, y: 0.5 }), 300);
+  }
   async function saveReview() {
     const gUrl = document.getElementById('googleUrl')?.value?.trim() || '';
-    const tpUrl = document.getElementById('trustpilotUrl')?.value?.trim() || '';
     try {
       await fetch('/sis/student/api/social', {
         method: 'PATCH',
         headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ googleReviewUrl: gUrl, trustpilotReviewUrl: tpUrl }),
+        body: JSON.stringify({ googleReviewUrl: gUrl }),
       });
       loadChallenges();
-    } catch { alert('Could not save review URLs.'); }
+    } catch { alert('Could not save review URL.'); }
   }
   async function addContent() {
     const url = document.getElementById('contentUrl')?.value?.trim() || '';
@@ -1189,6 +1617,10 @@
     } catch { alert('Could not remove.'); }
   }
 </script>
+
+<!-- Confetti for challenge unlocks. Tiny library (~5KB), loaded async so
+     it doesn't block first paint. If the CDN is blocked, celebrate() no-ops. -->
+<script async src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
 </body>
 </html>

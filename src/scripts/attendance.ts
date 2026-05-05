@@ -3,12 +3,28 @@ import { PrismaClient } from '../generated/prisma/client';
 export function attendanceScripts(prisma: PrismaClient) {
 
   // ── Get or create class occurrence for a date ──
+  // Two normalisations on the way in:
+  //   1) Snap the date to UTC-midnight via Date.UTC(y,m,d) using the local
+  //      Y/M/D. Without this, a local-midnight Date in BST (UTC+1) serialises
+  //      as `…T23:00:00Z` and Postgres truncates to the *previous* day in a
+  //      `@db.Date` column — that's how phantom Sunday occurrences leaked in
+  //      (Apr 26 / May 3 etc.). The scheduling regenerator already does this;
+  //      attendance paths must do it too.
+  //   2) If the class has a `days` whitelist (Mon=1..Fri=5) and the requested
+  //      date is not in it, refuse — second line of defence in case a UI loop
+  //      ever asks for a Saturday/Sunday by mistake.
   async function ensureOccurrence(classId: number, date: Date) {
+    const cls = await prisma.class.findUnique({ where: { id: classId }, select: { days: true } });
+    const dayCodes: number[] = ((cls?.days as any) || []) as number[];
+    if (dayCodes.length && !dayCodes.includes(date.getDay())) {
+      throw new Error(`Class ${classId} doesn't run on ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][date.getDay()]} — refusing to create occurrence for ${date.toISOString().slice(0,10)}`);
+    }
+    const dateOnly = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
     const existing = await prisma.classOccurrence.findUnique({
-      where: { classId_date: { classId, date } },
+      where: { classId_date: { classId, date: dateOnly } },
     });
     if (existing) return existing;
-    return prisma.classOccurrence.create({ data: { classId, date } as any });
+    return prisma.classOccurrence.create({ data: { classId, date: dateOnly } as any });
   }
 
   // ── Get attendance for a class for a full week ──

@@ -112,7 +112,12 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     });
     const data = await res.json();
     if (data.success) {
-      window.location.href = data.redirectTo || '/sis/admin';
+      // Honour ?next=… (set by the LMS auth-guard when bouncing unauthenticated
+      // visitors here) over the role-default returned by the server. Restrict
+      // to same-origin paths so a hostile next= can't redirect off-site.
+      const next = new URLSearchParams(location.search).get('next');
+      const safeNext = next && /^\/[a-zA-Z0-9_\-./?=&%]*$/.test(next) ? next : null;
+      window.location.href = safeNext || data.redirectTo || '/sis/admin';
     } else {
       errEl.textContent = data.error || 'Invalid credentials';
       errEl.style.display = 'block';
