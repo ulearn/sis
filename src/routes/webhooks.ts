@@ -3,9 +3,9 @@ import https from 'https';
 import { PrismaClient } from '../generated/prisma/client';
 
 const HS_TOKEN = process.env.ACCESS_TOKEN!;
-// Custom HubSpot Contact property used to classify contacts (Student-B2C / Student-B2B / Agent Employee).
-// Override the property internal name via env var if it differs from the default.
-const HS_CONTACT_TYPE_PROPERTY = process.env.HUBSPOT_CONTACT_TYPE_PROPERTY || 'contact_type';
+// HubSpot Contact property used to classify contacts (Student-B2C / Student-B2B / Employee / Agent Employee).
+// Internal name in this portal is `type` (label "Type"). Override via env var only if the property is renamed.
+const HS_CONTACT_TYPE_PROPERTY = process.env.HUBSPOT_CONTACT_TYPE_PROPERTY || 'type';
 
 function hsGet(path: string): Promise<any> {
   return new Promise((resolve, reject) => {
@@ -142,8 +142,7 @@ export function webhookRoutes(prisma: PrismaClient) {
   // Triggered by HubSpot workflow when quote is converted to invoice
   router.post('/invoice-created', async (req, res) => {
     try {
-      const { invoiceId, dealId, type } = req.body;
-      const isB2B = String(type || '').toUpperCase() === 'B2B';
+      const { invoiceId, dealId } = req.body;
 
       if (!invoiceId && !dealId) {
         return res.status(400).json({ error: 'invoiceId or dealId required' });
@@ -183,96 +182,100 @@ export function webhookRoutes(prisma: PrismaClient) {
       ].join(',');
       const deal = await hsGet(`/crm/v3/objects/deals/${resolvedDealId}?properties=${dealProps}`);
 
-      // Resolve the STUDENT contact and (for B2B) the AGENCY company on the deal.
-      // B2C: deal has one contact (the student) — fast path, no label filtering needed.
-      // B2B: deal has multiple contacts (student + partner order desk + maybe more).
-      //      Use v4 associations API which exposes labels, and pick the contact
-      //      labelled "Student-B2B". Also resolve the associated Company → agency.
+      // Resolve the STUDENT contact on the deal — same logic for B2B and B2C.
+      // Family-style B2C deals (parent + child) and B2B deals (student + partner staff)
+      // both have multiple contacts, so the workflow's `type` flag isn't a reliable
+      // proxy for "single vs multiple contacts on the deal".
+      //   1. ONE contact → take it.
+      //   2. Multiple contacts → batch-fetch the `type` property and:
+      //        - exclude any whose type contains "employee" (parents, agents, staff)
+      //        - prefer any whose type starts with "student"
+      //        - fall back to the Student-B2B / Student-B2C association label
+      //        - last resort: first non-excluded contact
+      //   The student doesn't need to be tagged for this to work — only the
+      //   non-students do. Handles cases like Imelda-the-aunt paying for
+      //   Margherita & Francesca where Imelda is `Employee` and the kids are
+      //   `Student-B2B` / `Student-B2C`.
       let resolvedContactId: string | null = null;
       let resolvedCompanyId: string | null = null;
       let resolvedCompanyName: string | null = null;
+      // Sole-trader agent: an Employee-typed contact on the deal who's effectively
+      // the agency for this enrolment, even when no Company is associated. Captured
+      // here so the agency lookup below can fall back to a contact-primary agency.
+      let agentContactId: string | null = null;
 
-      if (isB2B) {
-        // Find the student contact on the deal.
-        //   1. If only ONE contact on the deal → take it (unambiguous, no extra calls).
-        //   2. Otherwise, batch-fetch contacts with the `contact_type` property and
-        //      EXCLUDE any tagged as "Agent Employee". Pick whatever's left:
-        //        - exactly one non-employee → that's the student
-        //        - multiple non-employees → prefer one tagged Student-*, else label, else first
-        //        - zero non-employees → log loudly (all contacts tagged Agent Employee = broken state)
-        //   This subtractive approach works even on partially-categorized contacts:
-        //   the student doesn't need to be tagged, only the employees do.
-        const contactAssocV4 = await hsGet(`/crm/v4/objects/deals/${resolvedDealId}/associations/contacts`);
-        const contactAssocs: any[] = contactAssocV4.results || [];
+      const contactAssocV4 = await hsGet(`/crm/v4/objects/deals/${resolvedDealId}/associations/contacts`);
+      const contactAssocs: any[] = contactAssocV4.results || [];
 
-        if (contactAssocs.length === 1) {
-          resolvedContactId = String(contactAssocs[0].toObjectId);
-        } else if (contactAssocs.length > 1) {
-          let candidates = contactAssocs.slice();
+      if (contactAssocs.length === 1) {
+        resolvedContactId = String(contactAssocs[0].toObjectId);
+      } else if (contactAssocs.length > 1) {
+        let candidates = contactAssocs.slice();
 
-          // Exclude employees by contact_type
-          try {
-            const ids = contactAssocs.map(a => ({ id: String(a.toObjectId) }));
-            const batch = await hsPost('/crm/v3/objects/contacts/batch/read', {
-              inputs: ids,
-              properties: [HS_CONTACT_TYPE_PROPERTY],
-            });
-            const typeById = new Map<string, string>();
-            for (const c of batch.results || []) {
-              typeById.set(String(c.id), String(c.properties?.[HS_CONTACT_TYPE_PROPERTY] || '').toLowerCase());
-            }
-            const nonEmployees = candidates.filter(a => typeById.get(String(a.toObjectId)) !== 'agent employee');
-            if (nonEmployees.length > 0) candidates = nonEmployees;
-            else console.warn(`[Invoice Created] B2B deal ${resolvedDealId}: all ${contactAssocs.length} contacts tagged as Agent Employee — skipping exclusion`);
-
-            // If still multiple, prefer one explicitly tagged Student-*
-            if (candidates.length > 1) {
-              const explicitStudent = candidates.find(a => (typeById.get(String(a.toObjectId)) || '').startsWith('student'));
-              if (explicitStudent) resolvedContactId = String(explicitStudent.toObjectId);
-            } else if (candidates.length === 1) {
-              resolvedContactId = String(candidates[0].toObjectId);
-            }
-          } catch (e: any) {
-            console.warn(`[Invoice Created] contact_type fetch failed for deal ${resolvedDealId}: ${e.message}`);
-          }
-
-          // Fallback: "Student-B2B" association label (aligned with contact_type naming)
-          if (!resolvedContactId) {
-            for (const a of candidates) {
-              const labels = (a.associationTypes || []).map((t: any) => (t.label || '').toLowerCase());
-              if (labels.includes('student-b2b')) {
-                resolvedContactId = String(a.toObjectId);
-                break;
-              }
-            }
-          }
-
-          // Last-resort fallback
-          if (!resolvedContactId) {
-            resolvedContactId = String(candidates[0].toObjectId);
-            console.warn(`[Invoice Created] B2B deal ${resolvedDealId}: no employee exclusion / student tag / label match worked — falling back to first non-employee contact ${resolvedContactId}`);
-          }
-        }
-
-        // Resolve the agency company. The quote builder can only bill one company,
-        // so there should only ever be one associated. Per the agency-data rule in
-        // CLAUDE.md, we store only id/name/hubspotCompanyId locally — commission
-        // rate stays in HubSpot.
         try {
-          const companyAssocV4 = await hsGet(`/crm/v4/objects/deals/${resolvedDealId}/associations/companies`);
-          const companyAssocs: any[] = companyAssocV4.results || [];
-          if (companyAssocs.length > 0) {
-            resolvedCompanyId = String(companyAssocs[0].toObjectId);
-            const company = await hsGet(`/crm/v3/objects/companies/${resolvedCompanyId}?properties=name`);
-            resolvedCompanyName = company?.properties?.name || null;
+          const ids = contactAssocs.map(a => ({ id: String(a.toObjectId) }));
+          const batch = await hsPost('/crm/v3/objects/contacts/batch/read', {
+            inputs: ids,
+            properties: [HS_CONTACT_TYPE_PROPERTY],
+          });
+          const typeById = new Map<string, string>();
+          for (const c of batch.results || []) {
+            typeById.set(String(c.id), String(c.properties?.[HS_CONTACT_TYPE_PROPERTY] || '').toLowerCase());
+          }
+          // Substring match — covers "Employee", "Agent Employee", any future "*-employee" variant.
+          const employees = candidates.filter(a => /employee/.test(typeById.get(String(a.toObjectId)) || ''));
+          const nonEmployees = candidates.filter(a => !/employee/.test(typeById.get(String(a.toObjectId)) || ''));
+          // Remember the first employee — this becomes the sole-trader agent if no
+          // Company is associated to the deal.
+          if (employees.length > 0) agentContactId = String(employees[0].toObjectId);
+          if (nonEmployees.length > 0) candidates = nonEmployees;
+          else console.warn(`[Invoice Created] deal ${resolvedDealId}: all ${contactAssocs.length} contacts tagged as employee — skipping exclusion`);
+
+          // If still multiple, prefer one explicitly tagged Student-*
+          if (candidates.length > 1) {
+            const explicitStudent = candidates.find(a => (typeById.get(String(a.toObjectId)) || '').startsWith('student'));
+            if (explicitStudent) resolvedContactId = String(explicitStudent.toObjectId);
+          } else if (candidates.length === 1) {
+            resolvedContactId = String(candidates[0].toObjectId);
           }
         } catch (e: any) {
-          console.warn(`[Invoice Created] Failed to resolve company on deal ${resolvedDealId}: ${e.message}`);
+          console.warn(`[Invoice Created] contact type fetch failed for deal ${resolvedDealId}: ${e.message}`);
         }
-      } else {
-        // B2C: simple, single contact on the deal
-        const contactAssoc = await hsGet(`/crm/v3/objects/deals/${resolvedDealId}/associations/contacts`);
-        resolvedContactId = contactAssoc.results?.[0]?.id || null;
+
+        // Fallback: Student-B2B / Student-B2C association label
+        if (!resolvedContactId) {
+          for (const a of candidates) {
+            const labels = (a.associationTypes || []).map((t: any) => (t.label || '').toLowerCase());
+            if (labels.includes('student-b2b') || labels.includes('student-b2c')) {
+              resolvedContactId = String(a.toObjectId);
+              break;
+            }
+          }
+        }
+
+        // Last-resort fallback
+        if (!resolvedContactId) {
+          resolvedContactId = String(candidates[0].toObjectId);
+          console.warn(`[Invoice Created] deal ${resolvedDealId}: no employee exclusion / student tag / label match worked — falling back to ${resolvedContactId}`);
+        }
+      }
+
+      // Resolve the agency company on the deal (if any). The workflow's `type`
+      // flag isn't reliable for routing — many B2B agents are individual contacts
+      // with no associated company — so always try the lookup. Empty results just
+      // means it's a direct B2C and `agencyId` stays null. Per the agency-data
+      // rule in CLAUDE.md, we store only id/name/hubspotCompanyId locally —
+      // commission rate stays in HubSpot.
+      try {
+        const companyAssocV4 = await hsGet(`/crm/v4/objects/deals/${resolvedDealId}/associations/companies`);
+        const companyAssocs: any[] = companyAssocV4.results || [];
+        if (companyAssocs.length > 0) {
+          resolvedCompanyId = String(companyAssocs[0].toObjectId);
+          const company = await hsGet(`/crm/v3/objects/companies/${resolvedCompanyId}?properties=name`);
+          resolvedCompanyName = company?.properties?.name || null;
+        }
+      } catch (e: any) {
+        console.warn(`[Invoice Created] Failed to resolve company on deal ${resolvedDealId}: ${e.message}`);
       }
 
       if (!resolvedContactId) {
@@ -464,6 +467,12 @@ export function webhookRoutes(prisma: PrismaClient) {
       // Upsert the agency for B2B bookings.
       // Per CLAUDE.md agency rule: only id/name/hubspotCompanyId are stored locally.
       // Commission rate stays in HubSpot and is fetched on-demand by the document layer.
+      // Two paths, mirroring the SIS data model (Agency.primaryEntityType):
+      //   (a) Deal has a Company  → company-primary agency
+      //   (b) Deal has only a sole-trader Agent (Employee-typed contact, no company)
+      //       → contact-primary agency. The deal is the functional link between the
+      //       Employee and the Student; we use that signal to record the agency.
+      // Mirrors registerPartner() in partners.ts.
       let agencyId: number | null = null;
       if (resolvedCompanyId) {
         let agency = await prisma.agency.findUnique({ where: { hubspotCompanyId: resolvedCompanyId } });
@@ -472,11 +481,38 @@ export function webhookRoutes(prisma: PrismaClient) {
             data: {
               name: resolvedCompanyName || `HubSpot Company ${resolvedCompanyId}`,
               hubspotCompanyId: resolvedCompanyId,
+              primaryEntityId: resolvedCompanyId,
+              primaryEntityType: 'company',
             } as any,
           });
         } else if (resolvedCompanyName && agency.name !== resolvedCompanyName) {
           // Refresh display name if HubSpot has updated it
           await prisma.agency.update({ where: { id: agency.id }, data: { name: resolvedCompanyName } });
+        }
+        agencyId = agency.id;
+      } else if (agentContactId) {
+        let agency = await prisma.agency.findFirst({
+          where: { primaryEntityId: agentContactId, primaryEntityType: 'contact' } as any,
+        });
+        if (!agency) {
+          // Look up the agent contact for a display name
+          let agentName = `HubSpot Contact ${agentContactId}`;
+          try {
+            const ac = await hsGet(`/crm/v3/objects/contacts/${agentContactId}?properties=firstname,lastname,email`);
+            const acp = ac.properties || {};
+            const fullName = `${acp.firstname || ''} ${acp.lastname || ''}`.trim();
+            agentName = fullName || acp.email || agentName;
+          } catch (e: any) {
+            console.warn(`[Invoice Created] sole-trader agent name lookup failed for contact ${agentContactId}: ${e.message}`);
+          }
+          agency = await prisma.agency.create({
+            data: {
+              name: agentName,
+              primaryEntityId: agentContactId,
+              primaryEntityType: 'contact',
+            } as any,
+          });
+          console.log(`[Invoice Created] Auto-created sole-trader agency #${agency.id} "${agentName}" for contact ${agentContactId}`);
         }
         agencyId = agency.id;
       }
@@ -565,17 +601,26 @@ export function webhookRoutes(prisma: PrismaClient) {
       });
 
       const name = `${student.firstName} ${student.lastName}`;
-      const channel = isB2B ? `B2B${resolvedCompanyName ? ' via ' + resolvedCompanyName : ''}` : 'B2C';
+      // Channel is derived from what we actually resolved, not the workflow's `type` hint.
+      // B2B covers both company-primary agencies and sole-trader (contact-primary) agencies.
+      const resolvedChannel = agencyId ? 'B2B' : 'B2C';
+      const agencyDisplayName = await (async () => {
+        if (!agencyId) return null;
+        if (resolvedCompanyName) return resolvedCompanyName;
+        const a = await prisma.agency.findUnique({ where: { id: agencyId }, select: { name: true } });
+        return a?.name || null;
+      })();
+      const channel = agencyDisplayName ? `${resolvedChannel} via ${agencyDisplayName}` : resolvedChannel;
       console.log(`[Invoice Created] ${name} (${channel}): booking #${booking.id} — €${hsAmount} (${courses.length} courses, ${accommodations.length} accomm, ${extras.length} extras)`);
 
       res.json({
         status: 'ok',
-        channel: isB2B ? 'B2B' : 'B2C',
+        channel: resolvedChannel,
         student: name,
         studentId: student.id,
         bookingId: booking.id,
         agencyId: agencyId || null,
-        agencyName: resolvedCompanyName || null,
+        agencyName: agencyDisplayName,
         amountTotal: hsAmount,
         courses: courses.length,
         accommodations: accommodations.length,

@@ -13,6 +13,7 @@ import fs from 'fs';
 import multer from 'multer';
 import type { PrismaClient } from '../generated/prisma/client';
 import { activitiesScripts } from '../scripts/activities';
+import { compressUploads } from '../lib/compress';
 
 const uploadDir = path.join(__dirname, '..', '..', 'uploads', 'activities');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
@@ -101,7 +102,7 @@ export function activitiesRoutes(prisma: PrismaClient) {
   // Pre-save staged upload — no activity ID required. Lets Kelly attach an
   // image before saving the activity record. The returned filename is
   // submitted with the activity create/update body as `imageFilename`.
-  router.post('/upload-image', uploadImage, async (req, res) => {
+  router.post('/upload-image', uploadImage, compressUploads(), async (req, res) => {
     try {
       if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
       res.json({ filename: req.file.filename });
@@ -109,7 +110,7 @@ export function activitiesRoutes(prisma: PrismaClient) {
   });
 
   // Backwards-compat: existing activity upload still supported.
-  router.post('/:id/image', uploadImage, async (req, res) => {
+  router.post('/:id/image', uploadImage, compressUploads(), async (req, res) => {
     try {
       if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
       const updated = await scripts.update(parseInt(req.params.id, 10), { imageFilename: req.file.filename });

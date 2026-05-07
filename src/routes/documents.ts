@@ -77,7 +77,8 @@ export function documentRoutes(prisma: PrismaClient) {
     try {
       const { templateId, studentId, bookingId } = req.body;
       if (!templateId || !studentId) return res.status(400).json({ error: 'templateId and studentId required' });
-      res.json(await scripts.generateDraft(templateId, studentId, bookingId));
+      const role = (req as any).session?.role;
+      res.json(await scripts.generateDraft(templateId, studentId, bookingId, role));
     } catch (e) { res.status(400).json({ error: String(e) }); }
   });
 
@@ -101,8 +102,9 @@ export function documentRoutes(prisma: PrismaClient) {
   // Issue document (lock + generate QR + verification token)
   router.post('/:id/issue', async (req, res) => {
     try {
-      const issuedBy = req.body.issuedBy || 'admin';
-      res.json(await scripts.issueDocument(parseInt(req.params.id as string), issuedBy));
+      const issuedBy = req.body.issuedBy || (req as any).session?.user || 'admin';
+      const role = (req as any).session?.role;
+      res.json(await scripts.issueDocument(parseInt(req.params.id as string), issuedBy, role));
     } catch (e) { res.status(400).json({ error: String(e) }); }
   });
 

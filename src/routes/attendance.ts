@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { PrismaClient } from '../generated/prisma/client';
 import { attendanceScripts } from '../scripts/attendance';
+import { compressUploads } from '../lib/compress';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -92,7 +93,7 @@ export function attendanceRoutes(prisma: PrismaClient) {
       next();
     });
   };
-  router.post('/upload/:classId/:weekOf', uploadOne, async (req, res) => {
+  router.post('/upload/:classId/:weekOf', uploadOne, compressUploads(), async (req, res) => {
     try {
       if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
       const meta = {
@@ -227,7 +228,7 @@ export function attendanceRoutes(prisma: PrismaClient) {
   };
   // Admin upload cert — appends a new AbsenceCertFile row (capped at 5).
   const CERT_MAX = 5;
-  router.post('/absence-reason/:studentId/:date/cert', adminUploadCert, async (req, res) => {
+  router.post('/absence-reason/:studentId/:date/cert', adminUploadCert, compressUploads(), async (req, res) => {
     try {
       const studentId = parseInt(req.params.studentId, 10);
       if (!/^\d{4}-\d{2}-\d{2}$/.test(req.params.date)) return res.status(400).json({ error: 'Bad date' });

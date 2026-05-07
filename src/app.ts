@@ -438,10 +438,26 @@ app.use('/sis/partners/public', express.static(path.join(__dirname, '..', 'publi
 // (see /sis/auth/login). The page itself requires a session; static assets
 // under /sis/student/public/* stay public for the launch screen.
 app.use('/sis/student/public', express.static(path.join(__dirname, '..', 'public')));
-app.get('/sis/student', (req, res) => {
+app.get('/sis/student', async (req, res) => {
   if (!req.session.user) return res.redirect('/sis/login');
   if (req.session.userType && req.session.userType !== 'student' && req.session.userType !== 'staff') {
     return res.redirect('/sis/login');
+  }
+  // Staff users (admin/dos/sales/accomm/staff) have no session.studentId, so
+  // student API endpoints would 401 and the page would bounce to /sis/login.
+  // Auto-pin them to the test.student record so /sis/student renders as a
+  // live sample without any URL gymnastics. Real students keep their own
+  // studentId from login; this branch is a no-op for them.
+  if (!req.session.studentId) {
+    const testUser = await prisma.sisUser.findUnique({ where: { username: 'test.student' } });
+    if (testUser?.email) {
+      const sample = await prisma.student.findFirst({
+        where: { email: { equals: testUser.email, mode: 'insensitive' } },
+        orderBy: { id: 'desc' },
+        select: { id: true },
+      });
+      if (sample) req.session.studentId = sample.id;
+    }
   }
   res.sendFile(path.join(__dirname, '..', 'public', 'student.html'));
 });
@@ -464,9 +480,58 @@ app.get('/sis/teachers/auth/logout', (req, res) => {
   req.session.destroy(() => res.redirect('/sis/login'));
 });
 
+// ── Public Social Calendar embed ───────────────
+// Iframe-friendly month grid for marketing pages on ulearnschool.com.
+// Returns publish-safe Activity fields only (no attendees, no IG/FB).
+// Static page served from /sis/embed/social-calendar; data from
+// /sis/api/social-calendar/month. Both deliberately bypass requireAuth
+// (added to publicPaths below). 5-minute in-memory cache keeps load down
+// when the page is hit by site crawlers / shared widely.
+app.get('/sis/embed/social-calendar', (_req, res) => {
+  res.setHeader('Content-Security-Policy', "frame-ancestors *");
+  res.removeHeader('X-Frame-Options');
+  res.sendFile(path.join(__dirname, '..', 'public', 'social-calendar-embed.html'));
+});
+
+const socialCalCache = new Map<string, { at: number; data: any }>();
+const SOCIAL_CAL_TTL_MS = 5 * 60 * 1000;
+app.get('/sis/api/social-calendar/month', async (req, res) => {
+  try {
+    const year  = parseInt(String(req.query.year  || new Date().getFullYear()), 10);
+    const month = parseInt(String(req.query.month || (new Date().getMonth() + 1)), 10);
+    const key = `${year}-${month}`;
+    const hit = socialCalCache.get(key);
+    if (hit && (Date.now() - hit.at) < SOCIAL_CAL_TTL_MS) {
+      res.setHeader('Cache-Control', 'public, max-age=300');
+      return res.json(hit.data);
+    }
+    const { activitiesScripts } = await import('./scripts/activities');
+    const scripts = activitiesScripts(prisma);
+    const raw = await scripts.listForMonth(year, month - 1);
+    // Strip everything that isn't safe for a public marketing page.
+    const items = (raw.items || []).map((a: any) => ({
+      id:            a.id,
+      date:          a.date,
+      startTime:     a.startTime,
+      endTime:       a.endTime,
+      title:         a.title,
+      description:   a.description,
+      cost:          a.cost,
+      location:      a.location,
+      imageFilename: a.imageFilename,
+    }));
+    const data = { from: raw.from, to: raw.to, items };
+    socialCalCache.set(key, { at: Date.now(), data });
+    res.setHeader('Cache-Control', 'public, max-age=300');
+    res.json(data);
+  } catch (e: any) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
 // ── Auth middleware ────────────────────────────
 // Public routes that skip auth:
-const publicPaths = ['/sis/login', '/sis/forgot', '/sis/reset', '/sis/auth/', '/sis/health', '/sis/verify/', '/sis/api/webhooks', '/sis/api/email/quiz-result', '/sis/api/tests/public/', '/sis/api/activities/image/', '/sis/public/favicon.ico', '/sis/public/launch/', '/sis/partners/login', '/sis/partners/auth/', '/sis/partners/public/', '/sis/student/public/', '/sis/teachers/login', '/sis/teachers/auth/'];
+const publicPaths = ['/sis/login', '/sis/forgot', '/sis/reset', '/sis/auth/', '/sis/health', '/sis/verify/', '/sis/api/webhooks', '/sis/api/email/quiz-result', '/sis/api/tests/public/', '/sis/api/activities/image/', '/sis/api/social-calendar/', '/sis/embed/', '/sis/public/favicon.ico', '/sis/public/launch/', '/sis/partners/login', '/sis/partners/auth/', '/sis/partners/public/', '/sis/student/public/', '/sis/teachers/login', '/sis/teachers/auth/'];
 
 function requireAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
   // Skip auth for public paths

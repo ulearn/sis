@@ -160,11 +160,21 @@ export function classRoutes(prisma: PrismaClient) {
 
   // Admin-only — gated client-side by hiding the button; server-side gate
   // here belt-and-braces in case the URL is hit directly.
+  // Financial views are gated to admin / accounts / dos only.
+  const FINANCE_ROLES = ['admin', 'accounts', 'dos'];
   router.get('/profit-margin', async (req, res) => {
-    if ((req as any).session?.role !== 'admin') {
-      return res.status(403).json({ error: 'Admin only' });
+    if (!FINANCE_ROLES.includes((req as any).session?.role)) {
+      return res.status(403).json({ error: 'Forbidden' });
     }
     try { res.json(await scripts.profitMargin(req.query)); }
+    catch (e) { res.status(500).json({ error: String(e) }); }
+  });
+
+  router.get('/balances', async (req, res) => {
+    if (!FINANCE_ROLES.includes((req as any).session?.role)) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    try { res.json(await scripts.balances()); }
     catch (e) { res.status(500).json({ error: String(e) }); }
   });
 

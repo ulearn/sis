@@ -322,7 +322,14 @@ export function documentScripts(prisma: PrismaClient) {
       })(),
 
       // Visa
+      'student.visa_from':  fmtDate(student.visaFrom),
       'student.visa_until': fmtDate(student.visaUntil),
+      // Visa-aware course-window dates for letters that need the embassy/INIS
+      // to see the full Stamp-2 window (LoA, ISD). Falls back to course dates
+      // when visa dates haven't been entered yet, so the doc never renders an
+      // empty cell. NonEU LoA template uses these in place of booking.start/end.
+      'booking.visa_start_date': fmtDate((student as any).visaFrom || course?.startDate),
+      'booking.visa_end_date':   fmtDate((student as any).visaUntil || course?.endDate),
       'booking.ilep_code': (course as any)?.ilepCode || '',
       'ilep_course_code': (course as any)?.ilepCode || '',  // legacy Fidelo placeholder name
 
@@ -388,9 +395,39 @@ export function documentScripts(prisma: PrismaClient) {
 
   // ── DOCUMENT RECORDS ──────────────────────
 
-  async function generateDraft(templateId: number, studentId: number, bookingId?: number | null) {
+  // Helper: enforce the LoA payment gate. Returns silently when the caller
+  // is allowed to proceed; throws a human-readable error otherwise. Admin
+  // role bypasses the gate entirely. Used by both generateDraft (block
+  // creation) and issueDocument (block issuance) so a sales user can never
+  // round-trip an LoA out to a student with an outstanding balance.
+  async function assertLoaPaymentGate(templateSlug: string | null, bookingId: number | null | undefined, callerRole?: string) {
+    if (!templateSlug || !/^lo?a[-_]/i.test(templateSlug)) return;
+    if (callerRole === 'admin') return;
+    if (!bookingId) {
+      throw new Error('Cannot create LoA: document is not linked to a booking');
+    }
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      select: { amountPaid: true, amountTotal: true },
+    });
+    const paid  = Number(booking?.amountPaid  || 0);
+    const total = Number(booking?.amountTotal || 0);
+    const EPS = 0.01;
+    if (total <= 0 || (total - paid) > EPS) {
+      const balance = Math.max(0, total - paid);
+      throw new Error(
+        `LoA blocked: full payment required first ` +
+        `(paid €${paid.toFixed(2)} of €${total.toFixed(2)}, balance €${balance.toFixed(2)}). ` +
+        `Admin override available.`
+      );
+    }
+  }
+
+  async function generateDraft(templateId: number, studentId: number, bookingId?: number | null, callerRole?: string) {
     const template = await prisma.documentTemplate.findUnique({ where: { id: templateId } });
     if (!template) throw new Error('Template not found');
+
+    await assertLoaPaymentGate(template.slug, bookingId ?? null, callerRole);
 
     const { tokens } = await resolveTokens(studentId, bookingId);
     const rendered = renderTemplate(template.htmlTemplate, tokens);
@@ -416,10 +453,27 @@ export function documentScripts(prisma: PrismaClient) {
   }
 
   async function getDocument(id: number) {
-    return prisma.documentRecord.findUnique({
+    const doc = await prisma.documentRecord.findUnique({
       where: { id },
       include: { template: true, dispatches: true, supersededBy: true },
     });
+    if (!doc) return null;
+    // Surface booking payment state on the doc payload so the UI can render
+    // the LoA payment gate (red warning + disabled Issue button for non-admin)
+    // without an extra round-trip. Cheap join — single Booking row.
+    let bookingPayment: { amountPaid: number; amountTotal: number; balance: number } | null = null;
+    if (doc.bookingId) {
+      const b = await prisma.booking.findUnique({
+        where: { id: doc.bookingId },
+        select: { amountPaid: true, amountTotal: true },
+      });
+      if (b) {
+        const paid  = Number(b.amountPaid  || 0);
+        const total = Number(b.amountTotal || 0);
+        bookingPayment = { amountPaid: paid, amountTotal: total, balance: Math.max(0, total - paid) };
+      }
+    }
+    return { ...doc, bookingPayment };
   }
 
   async function listDocuments(filters: { studentId?: number; bookingId?: number; status?: DocumentStatus } = {}) {
@@ -458,10 +512,17 @@ export function documentScripts(prisma: PrismaClient) {
     });
   }
 
-  async function issueDocument(id: number, issuedBy: string) {
+  async function issueDocument(id: number, issuedBy: string, callerRole?: string) {
     const doc = await prisma.documentRecord.findUnique({ where: { id } });
     if (!doc) throw new Error('Document not found');
     if (doc.status !== 'DRAFT') throw new Error('Only drafts can be issued');
+
+    // LoA payment gate (same rule as draft creation). Admin override applies.
+    const tpl = await prisma.documentTemplate.findUnique({
+      where: { id: doc.templateId },
+      select: { slug: true },
+    });
+    await assertLoaPaymentGate(tpl?.slug || null, doc.bookingId, callerRole);
 
     const token = crypto.randomBytes(16).toString('base64url');
     const verificationUrl = `${BASE_URL}/sis/verify/${token}`;

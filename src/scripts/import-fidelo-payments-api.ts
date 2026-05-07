@@ -13,8 +13,14 @@
  *   - Compound dedup key: (receiptNumber, bookingId)
  *
  * Usage:
- *   node dist/scripts/import-fidelo-payments-api.js --from=2024-01-01 --to=2024-12-31
- *   node dist/scripts/import-fidelo-payments-api.js --from=2024-01-01 --to=2024-06-30 --apply
+ *   Backfill a historical window (manual):
+ *     node dist/scripts/import-fidelo-payments-api.js --from=2024-01-01 --to=2024-12-31 --apply
+ *   Daily incremental (cron — default 7-day rolling window with overlap for late entries):
+ *     node dist/scripts/import-fidelo-payments-api.js --days=7 --apply
+ *
+ * After importing, the script reconciles `bookings.amount_paid` and
+ * `bookings.amount_open` for every booking that received a new payment, so the
+ * booking-level aggregates stay in sync with the discrete payment rows.
  *
  * Dates are inclusive on both ends. Default is dry-run.
  */
@@ -28,11 +34,29 @@ import { PrismaClient } from '../generated/prisma/client';
 dotenv.config();
 
 const APPLY = process.argv.includes('--apply');
-const fromArg = process.argv.find(a => a.startsWith('--from='))?.split('=')[1];
-const toArg = process.argv.find(a => a.startsWith('--to='))?.split('=')[1];
+const daysArg = process.argv.find(a => a.startsWith('--days='))?.split('=')[1];
+let fromArg = process.argv.find(a => a.startsWith('--from='))?.split('=')[1];
+let toArg = process.argv.find(a => a.startsWith('--to='))?.split('=')[1];
+
+// --days=N → compute (today - N) → today inclusive. The overlap window means
+// late-arriving / back-dated payments are picked up on the next run, since the
+// (receiptNumber, bookingId) compound key dedups any already-imported rows.
+if (daysArg) {
+  const days = parseInt(daysArg, 10);
+  if (!Number.isFinite(days) || days < 1) {
+    console.error('--days must be a positive integer');
+    process.exit(1);
+  }
+  const today = new Date();
+  const from = new Date(today);
+  from.setDate(today.getDate() - days);
+  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  fromArg = fromArg || iso(from);
+  toArg = toArg || iso(today);
+}
 
 if (!fromArg || !toArg) {
-  console.error('Usage: node import-fidelo-payments-api.js --from=YYYY-MM-DD --to=YYYY-MM-DD [--apply]');
+  console.error('Usage: node import-fidelo-payments-api.js (--from=YYYY-MM-DD --to=YYYY-MM-DD | --days=N) [--apply]');
   process.exit(1);
 }
 
@@ -143,6 +167,7 @@ async function main() {
   console.log(`Existing (receipt,booking) combos already in SIS: ${existingSet.size}\n`);
 
   const stats = { existing: 0, matchedSingle: 0, matchedClosest: 0, noStudent: 0, noBookingInRange: 0, created: 0, failed: 0 };
+  const touchedBookingIds = new Set<number>();
 
   for (const e of entries) {
     const customerNum = String(e['ip.customerNumber'] || '');
@@ -195,10 +220,34 @@ async function main() {
         } as any,
       });
       stats.created++;
+      touchedBookingIds.add(bookingId);
     } catch (err: any) {
       stats.failed++;
       if (stats.failed <= 3) console.log('  ERR:', e.receipt_number, '→', err.message?.substring(0, 120));
     }
+  }
+
+  // Reconcile booking-level aggregates for every booking that received a new
+  // payment in this run. Without this, `bookings.amount_paid` / `amount_open`
+  // drift away from the truth (sum of payment rows), since the nightly
+  // import-fidelo cron skips existing bookings and never refreshes the totals.
+  let aggregatesUpdated = 0;
+  if (APPLY && touchedBookingIds.size > 0) {
+    const ids = Array.from(touchedBookingIds);
+    const rollup = await prisma.$executeRaw`
+      UPDATE bookings b
+      SET amount_paid = COALESCE(s.paid, 0),
+          amount_open = COALESCE(b.amount_total, 0) - COALESCE(s.paid, 0),
+          updated_at  = CURRENT_TIMESTAMP
+      FROM (
+        SELECT booking_id, SUM(amount) AS paid
+        FROM payments
+        WHERE booking_id = ANY(${ids}::int[])
+        GROUP BY booking_id
+      ) s
+      WHERE b.id = s.booking_id
+    `;
+    aggregatesUpdated = Number(rollup);
   }
 
   console.log('\n=== Results ===');
@@ -209,6 +258,7 @@ async function main() {
   console.log(`Student has no booking in ±180d:   ${stats.noBookingInRange}`);
   console.log(`${APPLY ? 'Created' : 'Would create'}:                    ${stats.created}`);
   if (stats.failed) console.log(`Failed:                            ${stats.failed}`);
+  if (APPLY) console.log(`Aggregates rolled up:              ${aggregatesUpdated} booking(s)`);
 
   await prisma.$disconnect();
   await pool.end();

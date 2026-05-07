@@ -560,6 +560,7 @@ function toggleSidebar() {
 let currentView = 'students';
 let studentPage = 1, bookingPage = 1;
 let studentSearch = '', studentNatFilter = '', bookingSearch = '', bookingStatusFilter = '';
+let studentSortBy = 'onboarded', studentSortDir = 'desc';
 let bookingStartFrom = '', bookingStartTo = '', bookingEndFrom = '', bookingEndTo = '';
 let bookingDatePanel = ''; // '' | 'start' | 'end'
 let bookingSortCol = '', bookingSortDir = 'asc';
@@ -817,7 +818,9 @@ function loadView(view, opts = {}) {
   else if (view === 'attendance') showAttendance();
   else if (view === 'activities') showActivities();
   else if (view === 'cover') showCoverDashboard();
+  else if (view === 'financial') showFinancialHub();
   else if (view === 'profit') showProfitMargin();
+  else if (view === 'balances') showBalances();
   else if (view === 'payroll') showPayroll();
   else if (view === 'accommodation') showAccommodationList();
   else if (view === 'accommodation-detail') showAccommodationDetail(opts.id);
@@ -884,17 +887,49 @@ function statusBadge(status) {
 
 function setTopbar(title, breadcrumb = '', rightHtml = '') {
   document.getElementById('topbarTitle').textContent = title;
+  // If a return target was set by the caller (e.g. user clicked into a booking
+  // from the Balances list), prefix the breadcrumb with a back-link so they
+  // can pop back without losing context. Consumed on use.
+  const ret = consumePendingReturn();
+  if (ret) {
+    breadcrumb = `<span style="cursor:pointer;color:var(--accent);font-weight:600" onclick="navigate('${ret.view}')">← ${esc(ret.label)}</span>${breadcrumb ? ' &nbsp;·&nbsp; ' + breadcrumb : ''}`;
+  }
   document.getElementById('topbarBreadcrumb').innerHTML = breadcrumb;
   document.getElementById('topbarRight').innerHTML = rightHtml;
 }
 
+// Lightweight one-hop return-link mechanism. Source views call
+// setPendingReturn(view, label) just before navigate(); the destination's
+// setTopbar() consumes it and prepends a "← Back to {label}" link.
+let __pendingReturn = null;
+function setPendingReturn(view, label) { __pendingReturn = { view, label }; }
+function consumePendingReturn() { const r = __pendingReturn; __pendingReturn = null; return r; }
+
 // ─── STUDENTS LIST ──────────────────────────────
 let studentPreviewId = null;
+
+function sortableTh(label, key) {
+  const active = studentSortBy === key;
+  const arrow = !active ? '<span style="opacity:.25">↕</span>' : (studentSortDir === 'asc' ? '▲' : '▼');
+  return `<th style="cursor:pointer;user-select:none;white-space:nowrap" onclick="setStudentSort('${key}')">${label} <span style="font-size:10px">${arrow}</span></th>`;
+}
+
+function setStudentSort(key) {
+  if (studentSortBy === key) {
+    studentSortDir = studentSortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    studentSortBy = key;
+    // Onboarded defaults to desc (newest first); alphabetical columns default to asc.
+    studentSortDir = key === 'onboarded' ? 'desc' : 'asc';
+  }
+  studentPage = 1;
+  showStudentsList();
+}
 
 async function showStudentsList() {
   setTopbar('Students', '', `<button class="btn btn-primary" onclick="openNewStudentModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> New Student</button>`);
 
-  const params = new URLSearchParams({ page: studentPage, limit: 25 });
+  const params = new URLSearchParams({ page: studentPage, limit: 25, sortBy: studentSortBy, sortDir: studentSortDir });
   if (studentSearch) params.set('search', studentSearch);
   if (studentNatFilter) params.set('nationality', studentNatFilter);
 
@@ -918,7 +953,7 @@ async function showStudentsList() {
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th>Name</th><th>Email</th><th>Nationality</th><th>Phone</th><th>Onboarded</th>
+            ${sortableTh('Name','name')}${sortableTh('Email','email')}${sortableTh('Nationality','nationality')}<th>Phone</th>${sortableTh('Onboarded','onboarded')}
           </tr></thead>
           <tbody>`;
 
@@ -1345,6 +1380,7 @@ async function showStudentDetail(id) {
               ${field('contactLanguage','Contact Lang',s.contactLanguage)}
               ${field('phone','Phone',s.phone)}
               ${field('phoneMobile','Mobile',s.phoneMobile)}
+              ${field('instagramHandle','Instagram',s.instagramHandle)}
             </div>
           </div>
         </div>
@@ -1821,17 +1857,29 @@ async function loadStudentChallenges(studentId) {
         </div>
       </div>`;
 
-    for (const it of items) {
+    // Compact 2-column layout. Left column: Social + Content (the bits staff
+    // actively curate). Right column: Attended Course / Attended Social /
+    // Review / Ambassador (mostly auto/verify-only). Each section is a native
+    // <details> so it collapses with a click; default open so nothing is
+    // hidden on first paint.
+    const renderTile = (it) => {
       const badgeCls = it.done ? 'badge-confirmed' : 'badge-pending';
       const badgeTxt = it.done ? 'Done' : 'Pending';
-      html += `<div class="card" style="margin-bottom:8px">
-        <div class="card-header" style="padding:10px 18px;display:flex;align-items:center;justify-content:space-between">
+      return `<details open class="card" style="margin-bottom:8px">
+        <summary class="card-header" style="padding:8px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;list-style:none">
           <h3 style="font-size:13px;margin:0">${it.icon} ${esc(it.label)}</h3>
           <span class="badge ${badgeCls}" style="font-size:10px">${badgeTxt}</span>
-        </div>
-        <div class="card-body" style="padding:12px 18px">${renderAdminChallengeBody(studentId, it)}</div>
-      </div>`;
-    }
+        </summary>
+        <div class="card-body" style="padding:10px 14px">${renderAdminChallengeBody(studentId, it)}</div>
+      </details>`;
+    };
+    const leftKeys = new Set(['social', 'content']);
+    const left  = items.filter(i => leftKeys.has(i.key));
+    const right = items.filter(i => !leftKeys.has(i.key));
+    html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start">
+      <div>${left.map(renderTile).join('')}</div>
+      <div>${right.map(renderTile).join('')}</div>
+    </div>`;
     wrap.innerHTML = html;
   } catch (e) {
     wrap.innerHTML = '<div style="color:var(--danger)">' + esc(String(e.message || e)) + '</div>';
@@ -1864,6 +1912,14 @@ function renderAdminChallengeBody(studentId, it) {
       return d.periodPct === null
         ? '<div style="font-size:13px;color:var(--text-muted)">No attendance records yet.</div>'
         : `<div style="font-size:13px">Attendance ${d.periodKind === 'WEEK' ? 'this week' : 'this month'}: <strong>${d.periodPct}%</strong> ${d.periodPct===100?'— ✅ unlocked':'(needs 100%)'}</div>`;
+    case 'activity_attended': {
+      const list = (d.attended || []);
+      if (!list.length) return '<div style="font-size:13px;color:var(--text-muted)">RSVP and show up to an activity to unlock.</div>';
+      return list.map(a => `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid var(--card-border)">
+        <span>${esc(a.title || '')}</span>
+        <span style="color:var(--text-muted);font-family:var(--font-mono);font-size:11px">${a.date ? String(a.date).slice(0,10) : ''}</span>
+      </div>`).join('');
+    }
     case 'review': {
       const gUrl = d.googleUrl || '';
       const tpUrl = d.trustpilotUrl || '';
@@ -1988,22 +2044,61 @@ async function quickGenerateDoc(studentId) {
 
     // Stash the selected template's HTML so the warning logic can scan it for booking.* tokens.
     window.__qdocTemplates = templates;
+    window.__qdocBookings = bookings;
 
     const modal = document.createElement('div');
     modal.id = 'quickDocModal';
     modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center';
     modal.innerHTML = '<div style="background:var(--card-bg);border-radius:12px;padding:24px;width:440px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.3)">'
       + '<h3 style="margin:0 0 16px;font-size:16px">Generate Document</h3>'
-      + '<div style="margin-bottom:12px"><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Template</label><select id="qdocTpl" class="filter-select" style="width:100%">' + tplOpts + '</select></div>'
-      + '<div style="margin-bottom:16px"><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Booking</label><select id="qdocBk" class="filter-select" style="width:100%">' + bkOpts + '</select></div>'
+      + '<div style="margin-bottom:12px"><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Template</label><select id="qdocTpl" class="filter-select" style="width:100%" onchange="refreshLoaPaymentGate()">' + tplOpts + '</select></div>'
+      + '<div style="margin-bottom:16px"><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Booking</label><select id="qdocBk" class="filter-select" style="width:100%" onchange="refreshLoaPaymentGate()">' + bkOpts + '</select></div>'
+      + '<div id="qdocLoaWarn" style="display:none;margin-bottom:14px;padding:10px 12px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;font-size:12px;color:#991b1b;line-height:1.5"></div>'
       + '<div style="display:flex;gap:8px;justify-content:flex-end">'
       + '<button class="btn btn-ghost" onclick="document.getElementById(\'quickDocModal\').remove()">Cancel</button>'
-      + '<button class="btn btn-primary" onclick="submitQuickDoc(' + studentId + ')">Generate Draft</button>'
+      + '<button class="btn btn-primary" id="qdocGenBtn" onclick="submitQuickDoc(' + studentId + ')">Generate Draft</button>'
       + '</div></div>';
     document.body.appendChild(modal);
     makeSearchable(document.getElementById('qdocTpl'));
     modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+    refreshLoaPaymentGate();
   } catch (e) { toast(e.message, true); }
+}
+
+// Visual gate for LoA-style templates. Shows a red warning panel + disables
+// the Generate button when the selected booking has an outstanding balance,
+// unless the current user is admin (who can override). Server enforces the
+// same rule independently — this is purely UX so staff see the block before
+// they click.
+function refreshLoaPaymentGate() {
+  const tplSel = document.getElementById('qdocTpl');
+  const bkSel  = document.getElementById('qdocBk');
+  const warn   = document.getElementById('qdocLoaWarn');
+  const btn    = document.getElementById('qdocGenBtn');
+  if (!tplSel || !warn || !btn) return;
+  const tpl = (window.__qdocTemplates || []).find(t => String(t.id) === String(tplSel.value));
+  const isLoa = tpl && /^lo?a[-_]/i.test(tpl.slug || '');
+  const bookingId = parseInt(bkSel?.value) || null;
+  const booking = bookingId ? (window.__qdocBookings || []).find(b => b.id === bookingId) : null;
+  const balance = booking ? Math.max(0, Number(booking.amountTotal || 0) - Number(booking.amountPaid || 0)) : 0;
+  const blocked = isLoa && balance > 0.01;
+  const isAdmin = (window.currentUser?.role === 'admin') || (typeof currentUser !== 'undefined' && currentUser.role === 'admin');
+  if (blocked) {
+    warn.style.display = 'block';
+    warn.innerHTML = '<strong>🔒 LoA blocked — outstanding balance €' + balance.toFixed(2) + '</strong><br>'
+      + 'This Student has a Balance and LoA cannot be issued. Please escalate to Accounts/Sales/Executive Departments.'
+      + (isAdmin ? '<br><em style="color:#7f1d1d">Admin override available — you can still proceed.</em>' : '');
+    btn.disabled = !isAdmin;
+    btn.style.opacity = isAdmin ? '1' : '0.5';
+    btn.style.cursor = isAdmin ? 'pointer' : 'not-allowed';
+    btn.title = isAdmin ? 'Admin override' : 'Blocked: outstanding balance';
+  } else {
+    warn.style.display = 'none';
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+    btn.title = '';
+  }
 }
 
 async function submitQuickDoc(studentId) {
@@ -2473,17 +2568,95 @@ async function loadStudentVisaDocs(studentId) {
       el.innerHTML = '<div style="font-size:11px;color:var(--text-muted)">No documents uploaded</div>';
       return;
     }
-    el.innerHTML = docs.map(d => {
+    // Stash for the in-app viewer (which navigates by index across the same
+    // student's docs). Re-fetched on every open so deletes/uploads reflect.
+    window.__studentDocs = { studentId, docs };
+    el.innerHTML = docs.map((d, idx) => {
       const sizeKb = (d.size / 1024).toFixed(0);
       const icon = d.mimeType.startsWith('image/') ? '🖼' : d.mimeType.includes('pdf') ? '📄' : '📎';
+      const downloadUrl = `/sis/api/students/${studentId}/documents/${d.id}/download`;
       return `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--bg-subtle);border-radius:4px;font-size:12px">
         <span>${icon}</span>
-        <a href="/sis/api/students/${studentId}/documents/${d.id}/download" style="flex:1;color:var(--accent);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(d.originalName)}">${esc(d.originalName)}</a>
+        <a href="javascript:void(0)" onclick="openDocViewer(${idx})" style="flex:1;color:var(--accent);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer" title="Preview ${esc(d.originalName)}">${esc(d.originalName)}</a>
         <span style="color:var(--text-muted);font-size:10px">${sizeKb}kB</span>
+        <a href="${downloadUrl}" title="Download" style="padding:2px 4px;font-size:11px;color:var(--text-muted);text-decoration:none">⬇</a>
         <button class="btn btn-ghost btn-sm" onclick="deleteStudentDoc(${studentId},${d.id})" style="padding:2px 4px;font-size:10px;color:var(--danger)">✕</button>
       </div>`;
     }).join('');
   } catch (e) { el.innerHTML = '<div style="font-size:11px;color:var(--danger)">Error loading docs</div>'; }
+}
+
+// In-app document viewer — modal with prev/next, ESC to close, ←/→ to nav.
+// Renders images natively and PDFs in an <iframe> using the browser's
+// built-in PDF viewer. Heavier formats fall through to a download link.
+let _docViewerIdx = 0;
+
+function openDocViewer(startIdx) {
+  if (!window.__studentDocs?.docs?.length) return;
+  _docViewerIdx = startIdx || 0;
+  let modal = document.getElementById('docViewerModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'docViewerModal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:10000;display:flex;align-items:center;justify-content:center;padding:24px';
+    modal.addEventListener('click', e => { if (e.target === modal) closeDocViewer(); });
+    document.body.appendChild(modal);
+    document.addEventListener('keydown', _docViewerKey);
+  }
+  renderDocViewer();
+}
+
+function _docViewerKey(e) {
+  if (!document.getElementById('docViewerModal')) return;
+  if (e.key === 'Escape') { closeDocViewer(); e.preventDefault(); }
+  else if (e.key === 'ArrowLeft')  { docViewerNav(-1); e.preventDefault(); }
+  else if (e.key === 'ArrowRight') { docViewerNav(1);  e.preventDefault(); }
+}
+
+function docViewerNav(delta) {
+  const total = window.__studentDocs?.docs?.length || 0;
+  if (!total) return;
+  _docViewerIdx = Math.max(0, Math.min(total - 1, _docViewerIdx + delta));
+  renderDocViewer();
+}
+
+function renderDocViewer() {
+  const modal = document.getElementById('docViewerModal');
+  if (!modal) return;
+  const { studentId, docs } = window.__studentDocs;
+  const d = docs[_docViewerIdx];
+  if (!d) { closeDocViewer(); return; }
+  const previewUrl  = `/sis/api/students/${studentId}/documents/${d.id}/download?inline=1`;
+  const downloadUrl = `/sis/api/students/${studentId}/documents/${d.id}/download`;
+  const isImage = d.mimeType.startsWith('image/');
+  const isPdf   = d.mimeType.includes('pdf');
+  const content = isImage
+    ? `<img src="${previewUrl}" alt="${esc(d.originalName)}" style="max-width:100%;max-height:100%;object-fit:contain;display:block;margin:0 auto;background:#fff;border-radius:4px;box-shadow:0 8px 32px rgba(0,0,0,0.4)">`
+    : isPdf
+    ? `<iframe src="${previewUrl}" style="width:100%;height:100%;border:none;background:#fff;border-radius:4px"></iframe>`
+    : `<div style="background:var(--card-bg);padding:40px;border-radius:8px;text-align:center;color:var(--text)"><p>Preview not available for this file type.</p><a href="${downloadUrl}" class="btn btn-primary">Download</a></div>`;
+  const total = docs.length;
+  modal.innerHTML = `
+    <div style="width:min(1200px,95vw);height:min(900px,95vh);display:flex;flex-direction:column;gap:8px" onclick="event.stopPropagation()">
+      <div style="display:flex;align-items:center;gap:12px;color:#fff;font-size:13px;padding:0 4px">
+        <span style="background:var(--accent);color:#000;padding:2px 8px;border-radius:10px;font-weight:700;font-size:11px;text-transform:uppercase">${esc(d.category || '')}</span>
+        <span style="font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(d.originalName)}</span>
+        <span style="color:#9aa0a6;font-family:var(--font-mono);font-size:11px">${_docViewerIdx + 1} / ${total}</span>
+        <a href="${downloadUrl}" title="Download" style="color:#fff;text-decoration:none;padding:4px 10px;border:1px solid rgba(255,255,255,0.3);border-radius:4px;font-size:11px">⬇ Download</a>
+        <button onclick="closeDocViewer()" title="Close (Esc)" style="background:transparent;color:#fff;border:1px solid rgba(255,255,255,0.3);width:32px;height:28px;border-radius:4px;cursor:pointer;font-size:14px">✕</button>
+      </div>
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative">
+        ${total > 1 && _docViewerIdx > 0 ? `<button onclick="docViewerNav(-1)" title="Previous (←)" style="position:absolute;left:-8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.6);color:#fff;border:none;width:44px;height:44px;border-radius:50%;cursor:pointer;font-size:20px;z-index:1">‹</button>` : ''}
+        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center">${content}</div>
+        ${total > 1 && _docViewerIdx < total - 1 ? `<button onclick="docViewerNav(1)" title="Next (→)" style="position:absolute;right:-8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.6);color:#fff;border:none;width:44px;height:44px;border-radius:50%;cursor:pointer;font-size:20px;z-index:1">›</button>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function closeDocViewer() {
+  document.getElementById('docViewerModal')?.remove();
+  document.removeEventListener('keydown', _docViewerKey);
 }
 
 async function uploadStudentDocs(studentId, files) {
@@ -2769,15 +2942,24 @@ async function showBookingDetail(id) {
       <div class="card-header"><h3>Accommodation (${b.accommodations?.length || 0})</h3><button class="btn btn-sm btn-secondary" onclick="openAddAccomModal(${b.id})">+ Add</button></div>
       <div class="card-body" style="padding:12px 18px">`;
     if (b.accommodations && b.accommodations.length > 0) {
+      // Option lists come from SIS_CONFIG (school_config table) so the
+      // inline edit dropdowns stay aligned with the new-booking form.
+      // Canonical-only — legacy values are normalised by the DB cleanup
+      // (see migrate-canonicalise-accom.ts), so we don't surface non-canonical
+      // values as extra options here.
+      const buildAccomOpts = (canonical, current) => {
+        const list = ['', ...canonical];
+        return list.map(v => `<option value="${esc(v)}" ${v===(current||'')?'selected':''}>${v||'—'}</option>`).join('');
+      };
       for (const a of b.accommodations) {
-        const typeOpts = ['','Host Family','Apartment','Hostel','Hotel','Other'].map(v => `<option value="${v}" ${v===(a.accommodationType||'')?'selected':''}>${v||'—'}</option>`).join('');
-        const roomOpts = ['','Single','Double','Twin','Triple','Dorm'].map(v => `<option value="${v}" ${v===(a.roomType||'')?'selected':''}>${v||'—'}</option>`).join('');
-        const boardOpts = ['','Self catering','Breakfast','Half-board','Full-board'].map(v => `<option value="${v}" ${v===(a.board||'')?'selected':''}>${v||'—'}</option>`).join('');
+        const typeOpts  = buildAccomOpts(SIS_CONFIG.accomm_types       || [], a.accommodationType);
+        const roomOpts  = buildAccomOpts(SIS_CONFIG.accomm_room_types  || [], a.roomType);
+        const boardOpts = buildAccomOpts(SIS_CONFIG.accomm_board_types || [], a.board);
 
         html += `<div style="padding:10px 0;border-bottom:1px solid #f0efec" data-accom-id="${a.id}">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
             <div style="display:flex;gap:6px;align-items:center;flex:1">
-              <select class="form-select" data-afield="accommodationType" style="font-size:12px;padding:4px 6px;flex:1">${typeOpts}</select>
+              <select class="form-select" data-afield="accommodationType" onchange="onAccomTypeChange(this)" style="font-size:12px;padding:4px 6px;flex:1">${typeOpts}</select>
               <select class="form-select" data-afield="roomType" style="font-size:12px;padding:4px 6px;width:80px">${roomOpts}</select>
               <select class="form-select" data-afield="board" style="font-size:12px;padding:4px 6px;width:100px">${boardOpts}</select>
             </div>
@@ -3130,16 +3312,42 @@ async function deleteBookingCourse(courseId, bookingId) {
 }
 
 // ─── BOOKING ACCOMMODATION CRUD ─────────────────
+// All three selects default to '—' (no pre-selection). When the user picks
+// Host Family or City Centre Apartment from Type, wireAccomTypeAutoFill below
+// fills Room + Board with the standard combo only if those are still blank
+// — never overwriting a deliberate manual choice.
 function accomFormFields(a = {}) {
   return `
-    ${selectField('accommodationType','Type',a.accommodationType||'Host Family',getAccommTypes())}
-    ${selectField('roomType','Room',a.roomType||(a.accommodationType==='Host Family'?'Individual':''),getAccommRoomTypes())}
-    ${selectField('board','Board',a.board||(a.accommodationType==='Host Family'?'Half Board':a.accommodationType==='Apartment'?'Self Catering':''),getAccommBoardTypes())}
+    ${selectField('accommodationType','Type',a.accommodationType||'',getAccommTypes())}
+    ${selectField('roomType','Room',a.roomType||'',getAccommRoomTypes())}
+    ${selectField('board','Board',a.board||'',getAccommBoardTypes())}
     <div class="form-group"><label class="form-label">Check-in</label><input class="form-input" type="date" data-field="startDate" value="${a.startDate?.split('T')[0]||''}" onchange="calcAccommEnd(this)"></div>
     <div class="form-group"><label class="form-label">Weeks</label><input class="form-input" type="number" data-field="weeks" value="${a.weeks||''}" min="1" onchange="calcAccommEnd(this)"></div>
     <div class="form-group"><label class="form-label">Check-out</label><input class="form-input" type="date" data-field="endDate" value="${a.endDate?.split('T')[0]||''}"></div>
     ${field('fee','Fee',a.fee||'')}
     <div class="form-group full"><label class="form-label">Note</label><textarea class="form-textarea" data-field="note">${esc(a.note||'')}</textarea></div>`;
+}
+
+// Wire the Host-Family / Apartment auto-fill to the type select inside any
+// container. Host Family has only one valid combo (Individual + Half Board),
+// so re-selecting it always force-sets those — including after deselect/
+// re-select. Apartment forces Board to Self Catering (only option) but
+// leaves Room alone since apartments have multiple legitimate room types.
+function wireAccomTypeAutoFill(rootSelector) {
+  const root = typeof rootSelector === 'string' ? document.querySelector(rootSelector) : rootSelector;
+  if (!root) return;
+  const typeSel  = root.querySelector('[data-field="accommodationType"]');
+  const roomSel  = root.querySelector('[data-field="roomType"]');
+  const boardSel = root.querySelector('[data-field="board"]');
+  if (!typeSel) return;
+  typeSel.addEventListener('change', () => {
+    if (typeSel.value === 'Host Family') {
+      if (roomSel)  roomSel.value  = 'Individual';
+      if (boardSel) boardSel.value = 'Half Board';
+    } else if (typeSel.value === 'City Centre Apartment' || typeSel.value === 'Apartment') {
+      if (boardSel) boardSel.value = 'Self Catering';
+    }
+  });
 }
 
 function openAddAccomModal(bookingId) {
@@ -3154,6 +3362,7 @@ function openAddAccomModal(bookingId) {
     </div>
   </div>`;
   document.body.insertAdjacentHTML('beforeend', html);
+  wireAccomTypeAutoFill('#accomModalForm');
 }
 
 function openEditAccomModal(bookingId, a) {
@@ -3168,6 +3377,7 @@ function openEditAccomModal(bookingId, a) {
     </div>
   </div>`;
   document.body.insertAdjacentHTML('beforeend', html);
+  wireAccomTypeAutoFill('#accomModalForm');
 }
 
 async function saveAccomModal(bookingId, accomId) {
@@ -3338,19 +3548,29 @@ async function openNewBookingModal(presetStudentId) {
   wireAutoEndDate('newBookingCourse', true);
   wireAutoEndDate('newBookingAccom', false);
 
-  // Auto-set board to "Half Board" when Host Family is selected
-  const accommType = document.querySelector('#newBookingAccom [data-field="accommodationType"]');
-  if (accommType) {
-    accommType.addEventListener('change', function() {
-      const board = document.querySelector('#newBookingAccom [data-field="board"]');
-      const room = document.querySelector('#newBookingAccom [data-field="roomType"]');
-      if (this.value === 'Host Family') {
-        if (board) board.value = 'Half Board';
-        if (room && !room.value) room.value = 'Individual';
-      } else if (this.value === 'City Centre Apartment' || this.value === 'Apartment') {
-        if (board) board.value = 'Self Catering';
-      }
-    });
+  // Auto-set Room/Board when Host Family or Apartment is picked. Host Family
+  // has only one valid combo so always force-set; Apartment force-sets just
+  // Board (Self Catering) but leaves Room alone since apartments have several
+  // valid room types.
+  wireAccomTypeAutoFill('#newBookingAccom');
+}
+
+// Inline accommodation row in the booking detail view: when a user flips the
+// type to Host Family, fill in Individual + Half Board (the only combo we
+// offer for host families). Mirrors the new-booking modal behaviour. Scoped
+// to the same row via the [data-afield] siblings — both inline and modal
+// could in principle move to a single helper, but the modal uses
+// [data-field] (no 'a' prefix) so they stay separate for now.
+function onAccomTypeChange(typeSel) {
+  const row = typeSel.closest('[data-accom-id]');
+  if (!row) return;
+  const room  = row.querySelector('[data-afield="roomType"]');
+  const board = row.querySelector('[data-afield="board"]');
+  if (typeSel.value === 'Host Family') {
+    if (room)  room.value  = 'Individual';
+    if (board) board.value = 'Half Board';
+  } else if (typeSel.value === 'City Centre Apartment' || typeSel.value === 'Apartment') {
+    if (board) board.value = 'Self Catering';
   }
 }
 
@@ -3474,12 +3694,13 @@ function isoDate(d) { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart
 function isCurrentWeek(mon) { const now = getMonday(new Date()); return isoDate(mon) === isoDate(now); }
 
 async function showClassesList() {
-  const profitMarginBtn = (currentUser?.role === 'admin')
-    ? `<button class="btn btn-secondary" onclick="navigate('profit')" style="margin-right:8px" title="Per-class gross profit and margin (admin only)">Profit Margin</button>`
+  const isFinanceRole = ['admin', 'accounts', 'dos'].includes(currentUser?.role);
+  const financialBtn = isFinanceRole
+    ? `<button class="btn btn-secondary" onclick="navigate('financial')" style="margin-right:8px" title="Balances, outstandings, profit margin">Financial</button>`
     : '';
   setTopbar('Classes', '', `
     <button class="btn btn-secondary" onclick="navigate('cover')" style="margin-right:8px" title="Monthly leave-cover dashboard — who is out and what cover costs">Cover Dashboard</button>
-    ${profitMarginBtn}
+    ${financialBtn}
     <button class="btn btn-secondary" onclick="refreshLeaveFromZoho()" style="margin-right:8px" title="Pull approved leave from Zoho People into the class schedule">Refresh Leave</button>
     <button class="btn btn-secondary" onclick="openClosuresModal()" style="margin-right:8px">School Hols</button>
     <button class="btn btn-primary" onclick="openNewClassModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> New Class</button>
@@ -5385,6 +5606,391 @@ function coverMonthLabel() {
   return new Date(coverMonth.y, coverMonth.m - 1, 1).toLocaleString('en-IE', { month: 'long', year: 'numeric' });
 }
 
+// ── Balances (admin only) ─────────────────────
+let balancesPageData = null;
+const balancesSortState = {};   // dataKey -> { col, dir }
+
+async function showBalances() {
+  if (!['admin', 'accounts', 'dos'].includes(currentUser?.role)) {
+    toast('Not authorised', true);
+    return navigate('classes');
+  }
+  setTopbar('Balances', '<span style="cursor:pointer;color:var(--accent)" onclick="navigate(\'classes\')">Classes</span> / <span style="cursor:pointer;color:var(--accent)" onclick="navigate(\'financial\')">Financial</span> / Balances', '');
+  document.getElementById('content').innerHTML = '<div class="table-wrap"><div class="table-empty">Loading…</div></div>';
+  try {
+    balancesPageData = await api('/classes/balances');
+    document.getElementById('content').innerHTML = renderBalances(balancesPageData);
+  } catch (e) {
+    document.getElementById('content').innerHTML = '<div class="table-wrap"><div class="table-empty">Failed to load: ' + esc(e.message) + '</div></div>';
+  }
+}
+
+function sortBalances(dataKey, col) {
+  const state = balancesSortState[dataKey] || { col: null, dir: 'asc' };
+  if (state.col === col) state.dir = state.dir === 'asc' ? 'desc' : 'asc';
+  else { state.col = col; state.dir = ['open', 'total', 'paid'].includes(col) ? 'desc' : 'asc'; }
+  balancesSortState[dataKey] = state;
+  const arr = (balancesPageData?.balances?.[dataKey] || balancesPageData?.outstandings?.[dataKey] || []);
+  const sign = state.dir === 'asc' ? 1 : -1;
+  const getters = {
+    student:  r => (r.student?.name || '').toLowerCase(),
+    agency:   r => (r.agency?.name  || '~~~').toLowerCase(),
+    date:     r => r.serviceStart || '',
+    departed: r => r.serviceEnd   || '',
+    start:    r => r.serviceStart || '',
+    end:      r => r.serviceEnd   || '',
+    total:    r => Number(r.amountTotal || 0),
+    paid:     r => Number(r.amountPaid  || 0),
+    open:     r => Number(r.amountOpen  || 0),
+  };
+  const get = getters[col] || (() => 0);
+  arr.sort((a, b) => { const va = get(a), vb = get(b); return va < vb ? -1 * sign : va > vb ? 1 * sign : 0; });
+  document.getElementById('content').innerHTML = renderBalances(balancesPageData);
+}
+
+function toggleBalancesSection(section, el) {
+  const target = document.getElementById('section-' + section);
+  if (!target) return;
+  const on = el.dataset.on !== '0';
+  const next = !on;
+  el.dataset.on = next ? '1' : '0';
+  target.style.display = next ? '' : 'none';
+  // Restyle pill
+  const color = section === 'outstandings' ? '#991b1b' : '#1d4ed8';
+  el.style.background    = next ? color : 'var(--card-bg)';
+  el.style.color         = next ? '#fff' : 'var(--text-muted)';
+  el.style.borderColor   = next ? color : '#d4d4d8';
+  const mark = document.getElementById('pill-' + section + '-mark');
+  if (mark) mark.textContent = next ? '●' : '○';
+}
+
+function toggleBalanceTable(sectionId, btnEl) {
+  const t = document.getElementById(sectionId);
+  if (!t) return;
+  const collapsed = t.dataset.collapsed === '1';
+  const next = !collapsed;
+  t.dataset.collapsed = next ? '1' : '0';
+  t.style.display = next ? 'none' : '';
+  if (btnEl) btnEl.innerHTML = next ? '▸' : '▾';
+}
+
+function balancesSortArrow(dataKey, col) {
+  const s = balancesSortState[dataKey];
+  if (!s || s.col !== col) return '<span style="color:#9ca3af;font-size:10px;margin-left:3px">↕</span>';
+  return s.dir === 'asc'
+    ? '<span style="color:var(--accent);font-size:10px;margin-left:3px">↑</span>'
+    : '<span style="color:var(--accent);font-size:10px;margin-left:3px">↓</span>';
+}
+
+let bookingPreviewId = null;
+async function showBookingPreview(bookingId, srcEl) {
+  bookingPreviewId = bookingId;
+  const pane = document.getElementById('bookingPreviewPane');
+  if (!pane) return;
+  // Highlight active row
+  document.querySelectorAll('tr.preview-active').forEach(r => r.classList.remove('preview-active'));
+  srcEl?.closest?.('tr')?.classList?.add('preview-active');
+  pane.style.width = '45vw';
+  pane.style.minWidth = '45vw';
+  pane.innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-muted);font-size:12px">Loading…</div>';
+  try {
+    const b = await api('/bookings/' + bookingId);
+    pane.innerHTML = renderBookingPreview(b);
+  } catch (e) {
+    pane.innerHTML = '<div style="padding:20px;color:var(--danger);font-size:12px">Error loading preview</div>';
+  }
+}
+
+function closeBookingPreview() {
+  bookingPreviewId = null;
+  const pane = document.getElementById('bookingPreviewPane');
+  if (pane) { pane.style.width = '0'; pane.style.minWidth = '0'; }
+  document.querySelectorAll('tr.preview-active').forEach(r => r.classList.remove('preview-active'));
+}
+
+function renderBookingPreview(b) {
+  if (!b) return '<div style="padding:20px;color:var(--danger)">Booking not found</div>';
+  const fmtEur = n => '€' + Number(n||0).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const total = Number(b.amountTotal || 0), paid = Number(b.amountPaid || 0), open = Number(b.amountOpen || 0);
+  const studentName = b.student ? `${b.student.firstName} ${b.student.lastName}` : 'Unknown';
+  const payments = b.payments || [];
+  const courses = b.courses || [];
+
+  let html = `<div style="overflow-y:auto;height:100%">
+    <div style="position:sticky;top:0;z-index:1;background:var(--card-bg);display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid var(--card-border)">
+      <div style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono)">Booking #${b.id}</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeBookingPreview()" style="font-size:16px;padding:2px 8px">&times;</button>
+    </div>
+
+    <div style="padding:14px 18px;border-bottom:1px solid var(--card-border)">
+      <div style="font-size:16px;font-weight:700">
+        <a href="#" onclick="event.preventDefault();setPendingReturn('balances','Balances');navigate('student-detail',{id:${b.student?.id || 0}})" style="color:var(--accent);text-decoration:none">${esc(studentName)}</a>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:2px">
+        ${b.agency ? esc(b.agency.name) : 'Direct'}
+        ${b.status ? ' · ' + esc(b.status) : ''}
+        ${b.serviceStart ? ' · ' + b.serviceStart.slice(0,10) + ' → ' + (b.serviceEnd ? b.serviceEnd.slice(0,10) : '?') : ''}
+      </div>
+    </div>
+
+    <div style="padding:14px 18px;border-bottom:1px solid var(--card-border)">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center">
+        <div><div style="font-size:10px;color:var(--text-muted);text-transform:uppercase">Total</div><div style="font-size:16px;font-weight:700;font-family:var(--font-mono)">${fmtEur(total)}</div></div>
+        <div><div style="font-size:10px;color:var(--text-muted);text-transform:uppercase">Paid</div><div style="font-size:16px;font-weight:700;font-family:var(--font-mono);color:#065f46">${fmtEur(paid)}</div></div>
+        <div><div style="font-size:10px;color:var(--text-muted);text-transform:uppercase">Open</div><div style="font-size:16px;font-weight:700;font-family:var(--font-mono);color:${open > 0 ? '#991b1b' : '#6b7280'}">${fmtEur(open)}</div></div>
+      </div>
+    </div>`;
+
+  if (courses.length) {
+    html += `<div style="padding:12px 18px;border-bottom:1px solid var(--card-border)">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);margin-bottom:6px">Courses</div>`;
+    for (const c of courses) {
+      html += `<div style="font-size:12px;margin-bottom:4px;display:flex;justify-content:space-between;gap:8px">
+        <div>${esc(c.name || '')} <span style="color:var(--text-muted)">${c.weeks || ''}w · ${c.hoursPerWeek || ''}h/w</span></div>
+        <div style="font-family:var(--font-mono)">${c.fee != null ? fmtEur(c.fee) : '<span style="color:var(--text-muted)">no fee</span>'}</div>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+
+  html += `<div style="padding:12px 18px">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted)">Payments (${payments.length})</div>
+      <a href="#" onclick="event.preventDefault();setPendingReturn('balances','Balances');navigate('booking-detail',{id:${b.id}})" style="font-size:11px;color:var(--accent);text-decoration:none">open booking ›</a>
+    </div>`;
+  if (payments.length === 0) {
+    html += `<div style="font-size:12px;color:var(--text-muted);font-style:italic">No payments recorded.</div>`;
+  } else {
+    html += `<table style="width:100%;font-size:12px;border-collapse:collapse">
+      <thead><tr style="border-bottom:1px solid var(--card-border)">
+        <th style="text-align:left;padding:4px 0;font-weight:600;color:var(--text-muted);font-size:10px;text-transform:uppercase">Date</th>
+        <th style="text-align:left;padding:4px 0;font-weight:600;color:var(--text-muted);font-size:10px;text-transform:uppercase">Method</th>
+        <th style="text-align:left;padding:4px 0;font-weight:600;color:var(--text-muted);font-size:10px;text-transform:uppercase">Source</th>
+        <th style="text-align:right;padding:4px 0;font-weight:600;color:var(--text-muted);font-size:10px;text-transform:uppercase">Amount</th>
+      </tr></thead><tbody>`;
+    for (const p of payments) {
+      const src = p.dataSource ? `<span style="font-size:10px;color:var(--text-muted)">${esc(p.dataSource)}</span>` : '';
+      html += `<tr style="border-bottom:1px solid #eef0f2">
+        <td style="padding:4px 0">${p.paymentDate ? p.paymentDate.slice(0,10) : '—'}</td>
+        <td style="padding:4px 0">${esc(p.method || '—')}</td>
+        <td style="padding:4px 0">${src}</td>
+        <td style="text-align:right;padding:4px 0;font-family:var(--font-mono)">${fmtEur(p.amount)}</td>
+      </tr>`;
+    }
+    html += `</tbody></table>`;
+  }
+  html += `</div></div>`;
+  return html;
+}
+
+function renderBalances(d) {
+  const fmtEur = n => '€' + Number(n||0).toLocaleString('en-IE', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  const fmtEur2 = n => '€' + Number(n||0).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const b = d.balances, o = d.outstandings;
+
+  const kpi = (label, count, eur, color, sub) => `
+    <div style="flex:1;background:var(--card-bg);border:1px solid var(--card-border);border-radius:6px;padding:10px 12px;border-left:4px solid ${color}">
+      <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px">${esc(label)}</div>
+      <div style="font-size:20px;font-weight:700;line-height:1.2">${fmtEur(eur)}</div>
+      <div style="font-size:11px;color:var(--text-secondary)">${count} booking${count===1?'':'s'}${sub ? ' · ' + sub : ''}</div>
+    </div>`;
+
+  // Wrap page in a flex container with a fixed-on-right preview pane.
+  // Pane is 0-width by default, opens to ~45vw when a row's Preview button
+  // is clicked (mirrors the students-list pattern).
+  let html = '<div style="display:flex;gap:14px;align-items:flex-start"><div style="flex:1;min-width:0">';
+
+  // Toggle pills at the top — both on by default, click to hide a section.
+  const pillStyle = (on, color) => `display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;user-select:none;border:1.5px solid ${on ? color : '#d4d4d8'};background:${on ? color : 'var(--card-bg)'};color:${on ? '#fff' : 'var(--text-muted)'};transition:all 120ms ease`;
+  html += `<div style="display:flex;gap:8px;margin-bottom:14px">
+    <span id="pill-outstandings" data-on="1" onclick="toggleBalancesSection('outstandings',this)" style="${pillStyle(true, '#991b1b')}">
+      <span id="pill-outstandings-mark">●</span> Outstandings
+      <span style="font-size:11px;font-weight:500;opacity:.85">${o.totals.inSchoolNow.count + o.totals.departed.count + o.totals.noArrivalDate.count}</span>
+    </span>
+    <span id="pill-balances" data-on="1" onclick="toggleBalancesSection('balances',this)" style="${pillStyle(true, '#1d4ed8')}">
+      <span id="pill-balances-mark">●</span> Balances
+      <span style="font-size:11px;font-weight:500;opacity:.85">${b.totals.all.count}</span>
+    </span>
+  </div>`;
+
+  // Outstandings — pill at top serves as the section title.
+  html += '<div id="section-outstandings">';
+  html += '<div style="display:flex;gap:8px;margin-bottom:14px">';
+  html += kpi('In school now',     o.totals.inSchoolNow.count,   o.totals.inSchoolNow.eur,   '#dc2626', 'do not let walk out unpaid');
+  html += kpi('Departed',          o.totals.departed.count,      o.totals.departed.eur,      '#7c2d12', 'mostly historical');
+  if (o.totals.noArrivalDate.count > 0) html += kpi('No arrival date', o.totals.noArrivalDate.count, o.totals.noArrivalDate.eur, '#6b7280');
+  html += '</div>';
+
+  html += renderBalanceSection('In school now', o.inSchoolNow, { highlight: true, showStartEnd: true, dataKey: 'inSchoolNow' });
+  html += renderBalanceSection('Departed (last 12mo)', o.departed, { showStartEnd: true, collapsedAfter: 20, dataKey: 'departed' });
+  if (o.noArrivalDate?.length) html += renderBalanceSection('No arrival date', o.noArrivalDate, { showStartEnd: true, dataKey: 'noArrivalDate' });
+  html += '</div>';
+
+  // Balances — pill at top serves as the section title.
+  html += '<div id="section-balances" style="margin-top:18px">';
+  html += '<div style="display:flex;gap:8px;margin-bottom:14px">';
+  html += kpi('Arriving this week', b.totals.arrivingThisWeek.count, b.totals.arrivingThisWeek.eur, '#dc2626', 'cross Mon-AM threshold');
+  html += kpi('Next 4 weeks',       b.totals.arrivingNext4Weeks.count, b.totals.arrivingNext4Weeks.eur, '#d97706');
+  html += kpi('Later',              b.totals.arrivingLater.count,      b.totals.arrivingLater.eur,      '#0369a1');
+  html += '</div>';
+
+  html += renderBalanceSection('Arriving this week', b.arrivingThisWeek, { highlight: true, dateLabel: 'Arrives', dataKey: 'arrivingThisWeek' });
+  html += renderBalanceSection('Arriving 4 Weeks', b.arrivingNext4Weeks, { dateLabel: 'Arrives', collapsedAfter: 10, dataKey: 'arrivingNext4Weeks' });
+  html += renderBalanceSection('Arriving later', b.arrivingLater, { dateLabel: 'Arrives', collapsedAfter: 10, dataKey: 'arrivingLater' });
+  html += '</div>';
+
+  html += `<div style="font-size:11px;color:var(--text-muted);margin-top:14px;line-height:1.5">
+    <strong>Notes</strong> · "Open" = <code>amount_total − amount_paid</code> as recorded on the booking (Fidelo/HubSpot/manual entries combined). Cancelled bookings are excluded. Open balances under €5 are ignored as rounding noise. Departed bucket is capped to the last 12 months — older Fidelo ledger residue is filtered out.
+  </div>`;
+  // Close main column + add the preview pane.
+  html += '</div><div id="bookingPreviewPane" style="width:0;min-width:0;overflow:hidden;transition:width 350ms cubic-bezier(0.16, 1, 0.3, 1), min-width 350ms cubic-bezier(0.16, 1, 0.3, 1);border:1px solid var(--card-border);background:var(--card-bg);border-radius:8px;align-self:stretch;position:sticky;top:8px;max-height:calc(100vh - 80px);overflow-y:auto"></div></div>';
+  return html;
+}
+
+function renderBalanceSection(title, rows, opts = {}) {
+  if (!rows || !rows.length) return '';
+  const { highlight, dateLabel = 'Date', collapsedAfter, departed, dataKey, showStartEnd } = opts;
+  const dateCol = departed ? 'departed' : 'date';
+  const sortableTh = (col, label, align = 'left') =>
+    `<th onclick="sortBalances('${dataKey}','${col}')" style="text-align:${align};cursor:pointer;user-select:none" title="Sort by ${esc(label)}">${esc(label)}${balancesSortArrow(dataKey, col)}</th>`;
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+
+  // Badge for the End-date cell on Outstandings rows: shows urgency of chase
+  // (leaves in Nd → amber/red as it approaches; left Nd ago → grey-red).
+  const endBadge = (r) => {
+    if (!r.serviceEnd) return '';
+    const end = new Date(r.serviceEnd);
+    const days = Math.round((end.getTime() - today.getTime()) / 86400000);
+    if (days < 0)  return `<span style="background:#fee2e2;color:#7c2d12;padding:1px 5px;border-radius:6px;font-size:10px">left ${-days}d ago</span>`;
+    if (days === 0) return `<span style="background:#dc2626;color:#fff;padding:1px 5px;border-radius:6px;font-size:10px;font-weight:700">LEAVES TODAY</span>`;
+    if (days <= 7)  return `<span style="background:#fee2e2;color:#991b1b;padding:1px 5px;border-radius:6px;font-size:10px;font-weight:600">leaves in ${days}d</span>`;
+    if (days <= 30) return `<span style="background:#fef3c7;color:#92400e;padding:1px 5px;border-radius:6px;font-size:10px">leaves in ${days}d</span>`;
+    return `<span style="background:#dbeafe;color:#1e40af;padding:1px 5px;border-radius:6px;font-size:10px">in ${days}d</span>`;
+  };
+  const startBadge = (r) => {
+    if (!r.serviceStart) return '';
+    const start = new Date(r.serviceStart);
+    const days = Math.round((today.getTime() - start.getTime()) / 86400000);
+    if (days < 0)  return '';  // shouldn't happen in Outstandings
+    if (days === 0) return `<span style="background:#fef3c7;color:#92400e;padding:1px 5px;border-radius:6px;font-size:10px">arrived today</span>`;
+    return `<span style="background:#fef3c7;color:#92400e;padding:1px 5px;border-radius:6px;font-size:10px">${days}d ago</span>`;
+  };
+  const fmtEur = n => '€' + Number(n||0).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const total = rows.reduce((n, r) => n + r.amountOpen, 0);
+  const sectionId = 'bal-' + title.replace(/[^a-z0-9]/gi, '');
+  // Hard cap on rows actually rendered into the DOM. "Show all" used to
+  // build 4000+ <tr> nodes and crashed the page; the 12-month server cutoff
+  // brings worst-case to a few hundred, but this cap is the belt-and-braces
+  // guarantee that the UI never blows up regardless of future data growth.
+  const RENDER_CAP = 300;
+  const totalRows = rows.length;
+  const truncated = totalRows > RENDER_CAP;
+  if (truncated) rows = rows.slice(0, RENDER_CAP);
+  const collapse = collapsedAfter && rows.length > collapsedAfter;
+
+  const dayBadge = (r) => {
+    if (departed && r.serviceEnd) {
+      const days = Math.round((Date.now() - new Date(r.serviceEnd).getTime()) / 86400000);
+      return `<span style="background:#fee2e2;color:#991b1b;padding:1px 5px;border-radius:6px;font-size:10px">${days}d ago</span>`;
+    }
+    if (r.daysUntilArrival != null && r.daysUntilArrival >= 0) {
+      const cls = r.daysUntilArrival === 0 ? '#dc2626;color:#fff' : r.daysUntilArrival <= 7 ? '#fef3c7;color:#92400e' : '#dbeafe;color:#1e40af';
+      const lbl = r.daysUntilArrival === 0 ? 'TODAY' : (r.daysUntilArrival === 1 ? 'tomorrow' : 'in ' + r.daysUntilArrival + 'd');
+      return `<span style="background:${cls};padding:1px 5px;border-radius:6px;font-size:10px;font-weight:600">${lbl}</span>`;
+    }
+    if (r.daysSinceArrival != null && r.daysSinceArrival >= 0) {
+      return `<span style="background:#fef3c7;color:#92400e;padding:1px 5px;border-radius:6px;font-size:10px">arrived ${r.daysSinceArrival}d ago</span>`;
+    }
+    return '';
+  };
+
+  let html = `<div style="margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 10px;background:${highlight ? '#fef2f2' : '#f8f7f4'};border:1px solid ${highlight ? '#fecaca' : 'var(--card-border)'};border-radius:6px 6px 0 0">
+      <div style="font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px">
+        <button onclick="toggleBalanceTable('${sectionId}',this)" title="Collapse / expand" style="border:none;background:transparent;color:var(--text-muted);cursor:pointer;font-size:13px;padding:0;width:14px;line-height:1">▾</button>
+        ${esc(title)} <span style="color:var(--text-muted);font-weight:400;font-size:12px">· ${totalRows} · ${fmtEur(total)}${truncated ? ' · <em style=\"color:#b45309\">first ' + RENDER_CAP + ' shown</em>' : ''}</span>
+      </div>
+      ${collapse ? `<button class="btn btn-ghost btn-sm" onclick="document.getElementById('${sectionId}').classList.toggle('expanded');this.textContent=document.getElementById('${sectionId}').classList.contains('expanded')?'Show less':'Show all ' + ${rows.length}" style="font-size:11px">Show all ${rows.length}</button>` : ''}
+    </div>
+    <div class="table-wrap" id="${sectionId}" style="border-top:0;border-radius:0 0 6px 6px">
+    <style>#${sectionId}:not(.expanded) tr.bal-extra { display:none; }</style>
+    <table class="data-table">
+      <thead><tr>
+        ${sortableTh('student', 'Student')}
+        ${sortableTh('agency', 'Agency')}
+        <th style="text-align:left">Course</th>
+        ${showStartEnd
+          ? sortableTh('start', 'Start') + sortableTh('end', 'End')
+          : sortableTh(dateCol, dateLabel)}
+        ${sortableTh('total', 'Total', 'right')}
+        ${sortableTh('paid', 'Paid', 'right')}
+        ${sortableTh('open', 'Open', 'right')}
+      </tr></thead>
+      <tbody>`;
+  rows.forEach((r, i) => {
+    const extra = collapse && i >= collapsedAfter ? ' bal-extra' : '';
+    const courseTag = r.course ? `${esc(r.course.name || '')} <span style="color:var(--text-muted);font-size:10px">${r.course.weeks || ''}w</span>` : '<span style="color:var(--text-muted)">—</span>';
+    // Student name links to the offending booking directly (the booking with
+    // the balance), with a hover-revealed Preview button next to it that
+    // pops the side pane — same pattern as students list.
+    // Match the students-list Preview pattern exactly: name in the cell with
+    // position:relative + padding-right reserved for the absolute-positioned
+    // .preview-btn (hover-revealed by the global rule).
+    const studentCellInner = r.student
+      ? `<a href="#" onclick="event.preventDefault();setPendingReturn('balances','Balances');navigate('booking-detail',{id:${r.bookingId}})" style="color:var(--accent);text-decoration:none">${esc(r.student.name)}</a>
+         <span class="preview-btn" onclick="event.stopPropagation();showBookingPreview(${r.bookingId},this)" title="Quick preview">
+           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+           Preview
+         </span>`
+      : '<span style="color:var(--text-muted)">—</span>';
+    const agencyName = r.agency ? esc(r.agency.name) : '<span style="color:var(--text-muted)">direct</span>';
+    const dateCells = showStartEnd
+      ? `<td style="font-size:12px;white-space:nowrap">${r.serviceStart || '—'} ${startBadge(r)}</td>
+         <td style="font-size:12px;white-space:nowrap">${r.serviceEnd   || '—'} ${endBadge(r)}</td>`
+      : `<td style="font-size:12px">${(departed ? r.serviceEnd : r.serviceStart) || '—'} ${dayBadge(r)}</td>`;
+    html += `<tr class="${extra}">
+      <td style="position:relative;padding-right:80px">${studentCellInner}</td>
+      <td style="font-size:12px">${agencyName}</td>
+      <td style="font-size:12px">${courseTag}</td>
+      ${dateCells}
+      <td style="text-align:right;font-family:var(--font-mono);font-size:12px">${fmtEur(r.amountTotal)}</td>
+      <td style="text-align:right;font-family:var(--font-mono);font-size:12px">${fmtEur(r.amountPaid)}</td>
+      <td style="text-align:right;font-family:var(--font-mono);font-size:13px;font-weight:700;color:#991b1b">${fmtEur(r.amountOpen)}</td>
+    </tr>`;
+  });
+  html += `</tbody></table></div></div>`;
+  return html;
+}
+
+// ── Financial hub (admin only) ─────────────────────
+async function showFinancialHub() {
+  if (!['admin', 'accounts', 'dos'].includes(currentUser?.role)) {
+    toast('Not authorised', true);
+    return navigate('classes');
+  }
+  setTopbar('Financial', '<span style="cursor:pointer;color:var(--accent)" onclick="navigate(\'classes\')">Classes</span> / Financial', '');
+  document.getElementById('content').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;max-width:900px;margin-top:8px">
+      <div class="card" style="cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 14px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow=''" onclick="navigate('balances')">
+        <div class="card-body">
+          <div style="font-size:18px;font-weight:700;margin-bottom:4px">Balances</div>
+          <div style="font-size:12px;color:var(--text-muted);line-height:1.5">
+            Money owed before students arrive (chased by Sales) and money owed once they're in school or have left (chased by Accounts). No student should cross a Monday-morning threshold without full payment.
+          </div>
+        </div>
+      </div>
+      <div class="card" style="cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 14px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow=''" onclick="navigate('profit')">
+        <div class="card-body">
+          <div style="font-size:18px;font-weight:700;margin-bottom:4px">Profit Margin</div>
+          <div style="font-size:12px;color:var(--text-muted);line-height:1.5">
+            Per-class gross profit and margin: revenue (booked fees pro-rated to hours run) minus cost (teacher hours × rate). Surfaces problem classes by lowest margin first.
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 // ── Profit Margin (admin only) ─────────────────────
 let profitMonth = (() => { const d = new Date(); return { y: d.getFullYear(), m: d.getMonth() + 1 }; })();
 
@@ -5408,11 +6014,11 @@ function profitMonthRange() {
 }
 
 async function showProfitMargin() {
-  if (currentUser?.role !== 'admin') {
-    toast('Admin only', true);
+  if (!['admin', 'accounts', 'dos'].includes(currentUser?.role)) {
+    toast('Not authorised', true);
     return navigate('classes');
   }
-  setTopbar('Profit Margin', '<span style="cursor:pointer;color:var(--accent)" onclick="navigate(\'classes\')">Classes</span> / Profit Margin', '');
+  setTopbar('Profit Margin', '<span style="cursor:pointer;color:var(--accent)" onclick="navigate(\'classes\')">Classes</span> / <span style="cursor:pointer;color:var(--accent)" onclick="navigate(\'financial\')">Financial</span> / Profit Margin', '');
   const todayTag = profitMonthIsCurrent() ? ' <span style="background:var(--accent);color:#fff;padding:1px 6px;border-radius:8px;font-size:10px;vertical-align:middle">THIS MONTH</span>' : '';
 
   document.getElementById('content').innerHTML = `
@@ -5718,6 +6324,14 @@ let matchingProviderType = 'Host Family';
 
 let unifiedFilterHosts = true;
 let unifiedFilterApts = true;
+// Session-only set of bookingAccommodation IDs that sales/admin/accomm have
+// pulled into the pool via the "Hold" search (zero-paid bookings). Replayed
+// to the server on every refresh so the row keeps surfacing until placed.
+// Cleared when the page is reloaded — by design, holds are not persisted as
+// pool membership; once placed they're stamped as a 48h hold and live on
+// the placement row itself.
+let unifiedHoldIds = new Set();
+let unifiedHoldSearchOpen = false;
 
 async function showUnifiedMatching() {
   matchingProviderType = '_all';
@@ -5725,8 +6339,9 @@ async function showUnifiedMatching() {
   if (!matchingFrom) matchingFrom = getMonday2(new Date()).toISOString().split('T')[0];
 
   try {
+    const holdsParam = unifiedHoldIds.size ? '?holds=' + Array.from(unifiedHoldIds).join(',') : '';
     const [allUnplaced, aptHosts, famHosts] = await Promise.all([
-      api('/accommodation/matching/unplaced'),
+      api('/accommodation/matching/unplaced' + holdsParam),
       api('/accommodation/matching/timeline?from=' + matchingFrom + '&weeks=6&type=Apartment'),
       api('/accommodation/matching/timeline?from=' + matchingFrom + '&weeks=6&type=Host+Family'),
     ]);
@@ -5766,13 +6381,18 @@ async function showUnifiedMatching() {
     function renderDot(u) {
       const s = u.booking?.student; if (!s) return '';
       const isMale = s.gender === 1;
-      // Partial-payment students render in orange with a balance label so the
-      // accommodation team can see at a glance that placement is locked
-      // (server rejects placement unless the caller is admin). Default
-      // colours are by gender as before.
+      // Payment-state ring around the gender-coloured pill (NOT a fill — the
+      // gender colour stays visible inside).
+      //   partial → orange ring (paid > 0 but balance outstanding)
+      //   hold    → red ring   (zero-paid, surfaced via the Hold search; 48h
+      //                          pre-payment grace before staff bounce them)
       const isPartial = u.paymentStatus === 'partial';
-      const color = isPartial ? '#f97316' : (isMale ? '#3b82f6' : s.gender === 2 ? '#ec4899' : '#9ca3af');
+      const isHold    = u.paymentStatus === 'hold';
+      const color = isMale ? '#3b82f6' : s.gender === 2 ? '#ec4899' : '#9ca3af';
+      const ringColor = isHold ? '#dc2626' : isPartial ? '#f97316' : null;
       const selected = matchingSelectedDot === u.id;
+      const borderColor = selected ? '#84cc16' : (ringColor || 'transparent');
+      const borderWidth = (selected || ringColor) ? '3px' : '2px';
       const age = s.birthday ? Math.floor((Date.now() - new Date(s.birthday).getTime()) / (365.25*24*60*60*1000)) : null;
       const gLabel = s.gender === 1 ? 'M' : s.gender === 2 ? 'F' : '?';
       const diet = [s.diet || '', s.allergies || ''].filter(Boolean).join(', ');
@@ -5783,7 +6403,7 @@ async function showUnifiedMatching() {
         onclick="selectMatchingDot(${u.id})"
         onmouseenter="showMatchTooltip(this)" onmouseleave="hideMatchTooltip(this)"
         class="match-dot${selected ? ' selected' : ''}"
-        style="min-width:60px;height:30px;border-radius:15px;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;padding:0 10px;gap:4px;font-size:11px;font-weight:600;cursor:grab;user-select:none;border:2px solid ${selected ? '#84cc16' : 'transparent'};box-shadow:${selected ? '0 0 0 2px #84cc16' : 'none'};transition:all 150ms ease;position:relative">
+        style="min-width:60px;height:30px;border-radius:15px;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;padding:0 10px;gap:4px;font-size:11px;font-weight:600;cursor:grab;user-select:none;border:${borderWidth} solid ${borderColor};box-shadow:${selected ? '0 0 0 2px #84cc16' : 'none'};transition:all 150ms ease;position:relative">
         ${esc(s.firstName)}<span style="font-size:9px;background:${accommBg};color:${accommFont};padding:1px 4px;border-radius:6px;font-weight:700">${accommLabel}</span>
         <div class="match-tooltip">
           <div style="font-weight:700;margin-bottom:4px">${esc(s.firstName)} ${esc(s.lastName)}</div>
@@ -5794,7 +6414,8 @@ async function showUnifiedMatching() {
             <span style="background:${accommBg};color:${accommFont};padding:1px 5px;border-radius:4px;font-size:10px">${esc(u.accommodationType||'')}</span>
           </div>
           ${diet ? '<div style="font-size:10px;color:#fde68a;margin-top:3px;font-weight:600">Diet: '+esc(diet)+'</div>' : ''}
-          ${isPartial ? '<div style="font-size:10px;color:#fed7aa;margin-top:3px;font-weight:700">⚠ Balance €'+Number(u.paymentBalance||0).toFixed(2)+' — placement locked (admin only)</div>' : ''}
+          ${isHold ? '<div style="font-size:10px;color:#fecaca;margin-top:3px;font-weight:700">⚠ Zero paid — 48h hold (place to start clock)</div>' : ''}
+          ${isPartial ? '<div style="font-size:10px;color:#fed7aa;margin-top:3px;font-weight:700">⚠ Balance €'+Number(u.paymentBalance||0).toFixed(2)+' — outstanding</div>' : ''}
           <div style="font-family:var(--font-mono);font-size:10px;margin-top:4px;color:#fff">${(() => {
             const sd = new Date(u.startDate), ed = new Date(u.endDate), pad = n => String(n).padStart(2,'0');
             const sameYear = sd.getFullYear() === ed.getFullYear();
@@ -5882,10 +6503,35 @@ async function showUnifiedMatching() {
                   const isMale = st?.gender === 1;
                   const barColor = isMale ? '#93c5fd' : st?.gender === 2 ? '#f9a8d4' : '#d1d5db';
                   const textColor = isMale ? '#1e3a5f' : st?.gender === 2 ? '#831843' : '#374151';
+                  // Outstanding balance → orange outline only on the OUTSIDE
+                  // edges of the whole bar (top + bottom on every cell, left
+                  // on the start cell, right on the end cell). Per-day cells
+                  // never get vertical orange seams. box-sizing:border-box so
+                  // the 3px border eats into the 22px height instead of
+                  // pushing the bar bigger than its cell footprint.
+                  const bPaid  = Number(placement.booking?.amountPaid  || 0);
+                  const bTotal = Number(placement.booking?.amountTotal || 0);
+                  const placedPartial = bPaid > 0 && bTotal > 0 && (bTotal - bPaid) > 0.01;
+                  const placedHold    = !!placement.holdPlacedAt;
+                  // Hold ring (red, takes precedence over partial since it's
+                  // the more urgent state) → 48h pre-payment grace placement.
+                  // Partial ring (orange) → outstanding balance on a paid-something booking.
+                  const ringColor = placedHold ? '#ef4444' : placedPartial ? '#fb923c' : null;
+                  const ringFrame = ringColor
+                    ? 'box-sizing:border-box;border-top:3px solid '+ringColor+';border-bottom:3px solid '+ringColor+';'
+                      + (pStart ? 'border-left:3px solid '+ringColor+';' : '')
+                      + (pEnd   ? 'border-right:3px solid '+ringColor+';' : '')
+                    : '';
                   const radius = (pStart && pEnd) ? '11px' : pStart ? '11px 0 0 11px' : pEnd ? '0 11px 11px 0' : '0';
+                  let holdTitle = '';
+                  if (placedHold) {
+                    const ph = new Date(placement.holdPlacedAt);
+                    const phStr = ph.toLocaleDateString('en-IE',{day:'2-digit',month:'short'})+' '+String(ph.getHours()).padStart(2,'0')+':'+String(ph.getMinutes()).padStart(2,'0');
+                    holdTitle = '🔴 48h hold — placed by '+(placement.holdPlacedBy||'?')+' on '+phStr+' · ';
+                  }
                   html += '<td style="padding:0;height:28px;'+(cellBg?'background:'+cellBg+';':'')+(isSun?'border-right:2px solid var(--card-border);':'')+'position:relative" ondragover="event.preventDefault();matchHighlightRow(this)" data-orig-bg="'+cellBg+'" ondrop="matchDrop(event,'+bed.id+')">';
                   const hasSibling = splitBookings.has(placement.bookingId);
-                  html += '<div data-placement-id="'+placement.id+'" draggable="true" ondragstart="matchDragStart(event,'+placement.id+')" onclick="event.stopPropagation();if(splitModeId==='+placement.id+'){splitAtDate('+placement.id+',\''+dStr+'\')}else{showPlacementMenu(event,'+placement.id+',\''+placement.startDate.split('T')[0]+'\',\''+placement.endDate.split('T')[0]+'\','+hasSibling+')}" style="background:'+barColor+';height:22px;margin:3px 0;border-radius:'+radius+';'+(pStart?'padding-left:6px;':'')+'cursor:grab;display:flex;align-items:center;overflow:visible;position:relative;z-index:1" title="Click for options · Drag to move">';
+                  html += '<div data-placement-id="'+placement.id+'" draggable="true" ondragstart="matchDragStart(event,'+placement.id+')" onclick="event.stopPropagation();if(splitModeId==='+placement.id+'){splitAtDate('+placement.id+',\''+dStr+'\')}else{showPlacementMenu(event,'+placement.id+',\''+placement.startDate.split('T')[0]+'\',\''+placement.endDate.split('T')[0]+'\','+hasSibling+')}" style="background:'+barColor+';'+ringFrame+'height:22px;margin:3px 0;border-radius:'+radius+';'+(pStart?'padding-left:6px;':'')+'cursor:grab;display:flex;align-items:center;overflow:visible;position:relative;z-index:1" title="'+holdTitle+(placedPartial?'⚠ Outstanding balance €'+(bTotal-bPaid).toFixed(2)+' · ':'')+'Click for options · Drag to move">';
                   html += pStart ? '<span style="font-size:10px;font-weight:700;color:'+textColor+';white-space:nowrap">'+esc(st?.firstName||'')+'</span>' : '';
                   html += '</div></td>';
                 } else {
@@ -5950,10 +6596,20 @@ async function showUnifiedMatching() {
         <span style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;padding:0 4px">Show</span>
         <button class="btn btn-sm" onclick="unifiedFilterHosts=!unifiedFilterHosts;showUnifiedMatching()" style="font-size:12px;font-weight:700;border-radius:14px;padding:5px 14px;${unifiedFilterHosts ? 'background:#00ff9d;color:#000;border:2px solid #00ff9d' : 'background:transparent;color:var(--text-muted);border:2px solid var(--card-border)'}">Hosts${unifiedFilterHosts ? ' ✕' : ''}</button>
         <button class="btn btn-sm" onclick="unifiedFilterApts=!unifiedFilterApts;showUnifiedMatching()" style="font-size:12px;font-weight:700;border-radius:14px;padding:5px 14px;${unifiedFilterApts ? 'background:#642de1;color:#fff;border:2px solid #642de1' : 'background:transparent;color:var(--text-muted);border:2px solid var(--card-border)'}">Apartments${unifiedFilterApts ? ' ✕' : ''}</button>
+        <button class="btn btn-sm" onclick="toggleHoldSearch()" title="Place a zero-paid student under a 48h hold" style="font-size:12px;font-weight:700;border-radius:14px;padding:5px 14px;${unifiedHoldSearchOpen || unifiedHoldIds.size ? 'background:#dc2626;color:#fff;border:2px solid #dc2626' : 'background:transparent;color:var(--text-muted);border:2px solid var(--card-border)'}">Hold${unifiedHoldIds.size ? ' · '+unifiedHoldIds.size : ''}</button>
       </div>
       <span style="flex:1"></span>
       <span style="font-size:12px;color:var(--text-muted)">${allUnplaced.length} unplaced</span>
     </div>
+
+    ${unifiedHoldSearchOpen ? `
+    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:var(--radius);padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span style="font-size:11px;font-weight:700;color:#991b1b;text-transform:uppercase;letter-spacing:0.5px">Hold search</span>
+      <input type="text" id="holdSearchInput" placeholder="Search zero-paid bookings by student name…" oninput="runHoldSearch(this.value)" autofocus style="flex:1;min-width:240px;padding:6px 10px;border:1px solid #fecaca;border-radius:14px;font-size:12px;outline:none;background:#fff">
+      <span style="font-size:11px;color:#991b1b">Click a result to add a 48h hold candidate to the pool.</span>
+      <button class="btn btn-ghost btn-sm" onclick="unifiedHoldSearchOpen=false;showUnifiedMatching()" style="font-size:11px;color:#991b1b">close</button>
+      <div id="holdSearchResults" style="width:100%"></div>
+    </div>` : ''}
 
     <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);padding:5px;margin-bottom:0;display:flex;flex-wrap:wrap;min-height:50px">
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;width:100%">
@@ -6043,11 +6699,16 @@ async function showAccommMatching(providerType) {
         const s = u.booking?.student;
         if (!s) continue;
         const isMale = s.gender === 1;
-        // Partial-payment → orange (placement locked unless admin). Default
-        // colours are by gender (M=blue, F=pink, ?=gray).
+        // Gender colour stays as the fill; payment state rides as a ring.
+        //   partial → orange ring (paid > 0, balance outstanding)
+        //   hold    → red ring   (zero-paid, surfaced via Hold search)
         const isPartial = u.paymentStatus === 'partial';
-        const color = isPartial ? '#f97316' : (isMale ? '#3b82f6' : s.gender === 2 ? '#ec4899' : '#9ca3af');
+        const isHold    = u.paymentStatus === 'hold';
+        const color = isMale ? '#3b82f6' : s.gender === 2 ? '#ec4899' : '#9ca3af';
+        const ringColor = isHold ? '#dc2626' : isPartial ? '#f97316' : null;
         const selected = matchingSelectedDot === u.id;
+        const borderColor = selected ? '#84cc16' : (ringColor || 'transparent');
+        const borderWidth = (selected || ringColor) ? '3px' : '2px';
         const age = s.birthday ? Math.floor((Date.now() - new Date(s.birthday).getTime()) / (365.25*24*60*60*1000)) : null;
         const gLabel = s.gender === 1 ? 'M' : s.gender === 2 ? 'F' : '?';
         const diet = [s.diet || '', s.allergies || ''].filter(Boolean).join(', ');
@@ -6055,7 +6716,7 @@ async function showAccommMatching(providerType) {
           onclick="selectMatchingDot(${u.id})"
           onmouseenter="showMatchTooltip(this)" onmouseleave="hideMatchTooltip(this)"
           class="match-dot${selected ? ' selected' : ''}"
-          style="min-width:60px;height:30px;border-radius:15px;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;padding:0 10px;font-size:11px;font-weight:600;cursor:grab;user-select:none;border:2px solid ${selected ? '#84cc16' : 'transparent'};box-shadow:${selected ? '0 0 0 2px #84cc16' : 'none'};transition:all 150ms ease;position:relative">
+          style="min-width:60px;height:30px;border-radius:15px;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;padding:0 10px;font-size:11px;font-weight:600;cursor:grab;user-select:none;border:${borderWidth} solid ${borderColor};box-shadow:${selected ? '0 0 0 2px #84cc16' : 'none'};transition:all 150ms ease;position:relative">
           ${esc(s.firstName)}
           <div class="match-tooltip">
             <div style="font-weight:700;margin-bottom:4px">${esc(s.firstName)} ${esc(s.lastName)}</div>
@@ -6065,7 +6726,8 @@ async function showAccommMatching(providerType) {
               ${s.nationality ? '<span>'+countryName(s.nationality)+'</span>' : ''}
             </div>
             ${diet ? '<div style="font-size:10px;color:#fde68a;margin-top:3px;font-weight:600">Diet: '+esc(diet)+'</div>' : ''}
-            ${isPartial ? '<div style="font-size:10px;color:#fed7aa;margin-top:3px;font-weight:700">⚠ Balance €'+Number(u.paymentBalance||0).toFixed(2)+' — placement locked (admin only)</div>' : ''}
+            ${isHold ? '<div style="font-size:10px;color:#fecaca;margin-top:3px;font-weight:700">⚠ Zero paid — 48h hold (place to start clock)</div>' : ''}
+            ${isPartial ? '<div style="font-size:10px;color:#fed7aa;margin-top:3px;font-weight:700">⚠ Balance €'+Number(u.paymentBalance||0).toFixed(2)+' — outstanding</div>' : ''}
             <div style="font-family:var(--font-mono);font-size:10px;margin-top:4px;color:#fff">${(() => {
             const sd = new Date(u.startDate), ed = new Date(u.endDate), pad = n => String(n).padStart(2,'0');
             const sameYear = sd.getFullYear() === ed.getFullYear();
@@ -6134,7 +6796,7 @@ async function showAccommMatching(providerType) {
             <span>${startFmt} - ${endFmt}</span>
             <span style="font-weight:700">(${weeks} Weeks)</span>
           </div>
-          ${selStudent.paymentStatus === 'partial' ? '<div title="Outstanding balance — placement locked unless admin overrides" style="padding:4px 10px;border-radius:12px;font-size:11px;font-weight:700;background:#f97316;color:#fff;display:flex;align-items:center;gap:4px"><span>⚠</span><span>Balance €'+Number(selStudent.paymentBalance||0).toFixed(2)+'</span></div>' : ''}
+          ${selStudent.paymentStatus === 'partial' ? '<div title="Outstanding balance" style="padding:4px 10px;border-radius:12px;font-size:11px;font-weight:700;background:#f97316;color:#fff;display:flex;align-items:center;gap:4px"><span>⚠</span><span>Balance €'+Number(selStudent.paymentBalance||0).toFixed(2)+'</span></div>' : ''}
           ${hasDietInfo ? '<div style="display:flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid var(--card-border);border-radius:20px;background:var(--card-bg);font-size:12px">' +
             (dietLabel ? '<span style="color:var(--warning);font-weight:600">'+esc(dietLabel)+'</span>' : '') +
             (allergies ? '<span style="color:var(--danger)">'+esc(allergies)+'</span>' : '') +
@@ -6186,18 +6848,31 @@ async function showAccommMatching(providerType) {
     const unifSplitBookings = new Set(Object.entries(unifBookingCounts).filter(([,c]) => c > 1).map(([id]) => parseInt(id)));
 
     // Host rows
+    // For Apartment matching, draw a subtle 1px divider between consecutive
+    // properties on the same host (e.g. Capel St → A1 vs A2) so the room
+    // groupings are visually distinct without adding vertical gaps.
+    const propDivide = matchingProviderType === 'Apartment';
     for (const host of hosts) {
-      for (const prop of host.properties) {
-        for (const room of prop.rooms) {
-          for (const bed of room.beds) {
-            const roomLabel = prop.rooms.length > 1 ? room.name : '';
-            const bedLabel = room.beds.length > 1 ? bed.name : '';
-            const label = host.name + (roomLabel ? ' / ' + roomLabel : '') + (bedLabel ? ' / ' + bedLabel : '');
+      for (let pi = 0; pi < host.properties.length; pi++) {
+        const prop = host.properties[pi];
+        // Flatten so we know which bed-row is the property's first row
+        const propBeds = [];
+        for (const room of prop.rooms) for (const bed of room.beds) propBeds.push({ room, bed });
+        for (let bi = 0; bi < propBeds.length; bi++) {
+          const { room, bed } = propBeds[bi];
+          const roomLabel = prop.rooms.length > 1 ? room.name : '';
+          const bedLabel = room.beds.length > 1 ? bed.name : '';
+          const label = host.name + (roomLabel ? ' / ' + roomLabel : '') + (bedLabel ? ' / ' + bedLabel : '');
 
-            html += `<tr data-host-name="${esc(host.name.toLowerCase())}">
-              <td style="position:sticky;left:0;z-index:1;background:var(--card-bg);padding:6px 8px;border-right:2px solid var(--card-border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:220px;max-width:220px;font-size:11px" title="${esc(label)}">
-                <strong>${esc(host.name)}</strong>${roomLabel || bedLabel ? '<span style="color:var(--text-muted)"> / '+esc(roomLabel||bedLabel)+'</span>' : ''}
-              </td>`;
+          // Subtle horizontal line on the first row of every non-first property
+          const propDividerStyle = (propDivide && pi > 0 && bi === 0)
+            ? 'border-top:1px solid #94a3b8;'
+            : '';
+
+          html += `<tr data-host-name="${esc(host.name.toLowerCase())}">
+            <td style="position:sticky;left:0;z-index:1;background:var(--card-bg);padding:6px 8px;border-right:2px solid var(--card-border);${propDividerStyle}white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:220px;max-width:220px;font-size:11px" title="${esc(label)}">
+              <strong>${esc(host.name)}</strong>${roomLabel || bedLabel ? '<span style="color:var(--text-muted)"> / '+esc(roomLabel||bedLabel)+'</span>' : ''}
+            </td>`;
 
             for (let i = 0; i < 42; i++) {
               const d = days[i];
@@ -6233,21 +6908,43 @@ async function showAccommMatching(providerType) {
                 const isMale = st?.gender === 1;
                 const barColor = isMale ? '#93c5fd' : st?.gender === 2 ? '#f9a8d4' : '#d1d5db';
                 const textColor = isMale ? '#1e3a5f' : st?.gender === 2 ? '#831843' : '#374151';
+                // Outstanding balance → orange outline only on the OUTSIDE
+                // edges of the whole bar (top + bottom on every cell, left on
+                // start cell, right on end cell). No vertical seams between
+                // day cells. box-sizing:border-box keeps the bar footprint
+                // close to identical (gender colour area shrinks by 4px).
+                const bPaid  = Number(placement.booking?.amountPaid  || 0);
+                const bTotal = Number(placement.booking?.amountTotal || 0);
+                const placedPartial = bPaid > 0 && bTotal > 0 && (bTotal - bPaid) > 0.01;
+                const placedHold    = !!placement.holdPlacedAt;
+                const ringColor2 = placedHold ? '#ef4444' : placedPartial ? '#fb923c' : null;
+                const partialFrame = ringColor2
+                  ? 'box-sizing:border-box;border-top:3px solid '+ringColor2+';border-bottom:3px solid '+ringColor2+';'
+                    + (pStart ? 'border-left:3px solid '+ringColor2+';' : '')
+                    + (pEnd   ? 'border-right:3px solid '+ringColor2+';' : '')
+                  : '';
+                let holdTitle2 = '';
+                if (placedHold) {
+                  const ph = new Date(placement.holdPlacedAt);
+                  const phStr = ph.toLocaleDateString('en-IE',{day:'2-digit',month:'short'})+' '+String(ph.getHours()).padStart(2,'0')+':'+String(ph.getMinutes()).padStart(2,'0');
+                  holdTitle2 = '🔴 48h hold — placed by '+(placement.holdPlacedBy||'?')+' on '+phStr+' · ';
+                }
+                const padLeft = pStart ? 'padding-left:6px;' : '';
                 const radius = (pStart && pEnd) ? '11px' : pStart ? '11px 0 0 11px' : pEnd ? '0 11px 11px 0' : '0';
                 const unifHasSibling = unifSplitBookings.has(placement.bookingId);
-                html += `<td style="padding:0;height:28px;${cellBg ? 'background:'+cellBg+';' : ''}${isSun ? 'border-right:2px solid var(--card-border);' : ''}position:relative"
+                html += `<td style="padding:0;height:28px;${cellBg ? 'background:'+cellBg+';' : ''}${isSun ? 'border-right:2px solid var(--card-border);' : ''}${propDividerStyle}position:relative"
                   ondragover="event.preventDefault();matchHighlightRow(this)"
                   data-orig-bg="${cellBg}"
                   ondrop="matchDrop(event,${bed.id})">
                   <div data-placement-id="${placement.id}" draggable="true" ondragstart="matchDragStart(event,${placement.id})"
                     onclick="event.stopPropagation();if(splitModeId===${placement.id}){splitAtDate(${placement.id},'${dStr}')}else{showPlacementMenu(event,${placement.id},'${placement.startDate.split('T')[0]}','${placement.endDate.split('T')[0]}',${unifHasSibling})}"
-                    style="background:${barColor};height:22px;margin:3px 0;border-radius:${radius};${pStart ? 'padding-left:6px;' : ''}cursor:grab;display:flex;align-items:center;overflow:visible;position:relative;z-index:1"
-                    title="Click for options · Drag to move">
+                    style="background:${barColor};${partialFrame}height:22px;margin:3px 0;border-radius:${radius};${padLeft}cursor:grab;display:flex;align-items:center;overflow:visible;position:relative;z-index:1"
+                    title="${holdTitle2}${placedPartial?'⚠ Outstanding balance €'+(bTotal-bPaid).toFixed(2)+' · ':''}Click for options · Drag to move">
                     ${pStart ? '<span style="font-size:10px;font-weight:700;color:'+textColor+';white-space:nowrap">'+esc(st?.firstName || '')+'</span>' : ''}
                   </div>
                 </td>`;
               } else {
-                html += `<td style="padding:0;height:28px;${cellBg ? 'background:'+cellBg+';' : ''}${isSun ? 'border-right:2px solid var(--card-border);' : ''}${matchingSelectedDot ? 'cursor:pointer;' : ''}"
+                html += `<td style="padding:0;height:28px;${cellBg ? 'background:'+cellBg+';' : ''}${isSun ? 'border-right:2px solid var(--card-border);' : ''}${propDividerStyle}${matchingSelectedDot ? 'cursor:pointer;' : ''}"
                   ondragover="event.preventDefault();matchHighlightRow(this)"
                   data-orig-bg="${cellBg}"
                   onclick="matchClickPlace(${bed.id})"
@@ -6259,7 +6956,6 @@ async function showAccommMatching(providerType) {
           }
         }
       }
-    }
 
     html += `</tbody></table></div>`;
     document.getElementById('content').innerHTML = html;
@@ -6367,9 +7063,11 @@ document.addEventListener('dragend', matchClearHighlight);
 async function matchDrop(event, bedId) {
   event.preventDefault();
   if (!matchDragId) return;
+  const asHold = unifiedHoldIds.has(matchDragId);
   try {
-    await api('/accommodation/matching/place', { method: 'POST', body: { bookingAccommodationId: matchDragId, bedId } });
-    toast('Placed');
+    await api('/accommodation/matching/place', { method: 'POST', body: { bookingAccommodationId: matchDragId, bedId, asHold } });
+    if (asHold) { unifiedHoldIds.delete(matchDragId); toast('Placed under 48h hold'); }
+    else toast('Placed');
     matchDragId = null;
     matchingSelectedDot = null;
     refreshMatching();
@@ -6378,12 +7076,54 @@ async function matchDrop(event, bedId) {
 
 async function matchClickPlace(bedId) {
   if (!matchingSelectedDot) return;
+  const asHold = unifiedHoldIds.has(matchingSelectedDot);
   try {
-    await api('/accommodation/matching/place', { method: 'POST', body: { bookingAccommodationId: matchingSelectedDot, bedId } });
-    toast('Placed');
+    await api('/accommodation/matching/place', { method: 'POST', body: { bookingAccommodationId: matchingSelectedDot, bedId, asHold } });
+    if (asHold) { unifiedHoldIds.delete(matchingSelectedDot); toast('Placed under 48h hold'); }
+    else toast('Placed');
     matchingSelectedDot = null;
     refreshMatching();
   } catch (e) { toast(e.message, true); }
+}
+
+// ── Hold search (48h pre-payment hold) ───────────────────────────────────
+function toggleHoldSearch() {
+  unifiedHoldSearchOpen = !unifiedHoldSearchOpen;
+  showUnifiedMatching();
+}
+
+let _holdSearchDebounce = null;
+async function runHoldSearch(q) {
+  clearTimeout(_holdSearchDebounce);
+  _holdSearchDebounce = setTimeout(async () => {
+    const box = document.getElementById('holdSearchResults');
+    if (!box) return;
+    const trimmed = (q || '').trim();
+    if (trimmed.length < 2) { box.innerHTML = ''; return; }
+    try {
+      const rows = await api('/accommodation/matching/holds-search?q=' + encodeURIComponent(trimmed));
+      if (!rows.length) { box.innerHTML = '<div style="font-size:11px;color:#991b1b;padding:6px 0">No zero-paid bookings match "'+esc(trimmed)+'".</div>'; return; }
+      box.innerHTML = '<div style="display:flex;flex-direction:column;gap:4px;margin-top:6px">'
+        + rows.map(r => {
+            const s = r.student || {}; const sd = new Date(r.startDate), ed = new Date(r.endDate);
+            const pad = n => String(n).padStart(2,'0');
+            const dateRange = pad(sd.getDate())+'/'+pad(sd.getMonth()+1)+' – '+pad(ed.getDate())+'/'+pad(ed.getMonth()+1);
+            const already = unifiedHoldIds.has(r.id);
+            return `<div onclick="${already?'':'addHoldCandidate('+r.id+')'}" style="background:#fff;border:1px solid #fecaca;border-radius:8px;padding:6px 10px;font-size:12px;display:flex;align-items:center;gap:8px;${already?'opacity:0.5':'cursor:pointer'}">
+              <span style="font-weight:700">${esc(s.firstName||'')} ${esc(s.lastName||'')}</span>
+              <span style="color:#6b7280">${esc(r.accommodationType||'')}</span>
+              <span style="color:#6b7280;font-family:var(--font-mono);font-size:11px">${dateRange}</span>
+              ${already ? '<span style="margin-left:auto;color:#991b1b;font-size:10px;font-weight:700">IN POOL</span>' : '<span style="margin-left:auto;color:#dc2626;font-size:10px;font-weight:700">+ ADD</span>'}
+            </div>`;
+          }).join('')
+        + '</div>';
+    } catch (e) { box.innerHTML = '<div style="font-size:11px;color:#991b1b">'+esc(e.message)+'</div>'; }
+  }, 200);
+}
+
+function addHoldCandidate(bookingAccommodationId) {
+  unifiedHoldIds.add(bookingAccommodationId);
+  showUnifiedMatching();
 }
 
 function showPlacementMenu(event, placementId, startDate, endDate, hasSibling) {
@@ -7914,10 +8654,20 @@ async function showDocumentDetail(id) {
       ${doc.verificationToken ? `<div><strong>Verification:</strong> <a href="/sis/verify/${doc.verificationToken}" target="_blank" style="color:var(--accent)">/sis/verify/${doc.verificationToken.slice(0,8)}...</a></div>` : ''}
     </div></div>`;
 
+    // LoA payment gate (mirrored server-side). Block the Issue button when
+    // the booking has an outstanding balance, except for admin who can override.
+    const isLoaTpl = /^lo?a[-_]/i.test(doc.template?.slug || '');
+    const bp = doc.bookingPayment;
+    const loaBlocked = isLoaTpl && bp && bp.balance > 0.01;
+    const isAdmin = currentUser?.role === 'admin';
+
     // Actions
     html += `<div style="display:flex;gap:8px;margin-bottom:16px">`;
     if (isDraft) {
-      html += `<button class="btn btn-primary" onclick="issueDocument(${doc.id})">Issue Document</button>`;
+      const issueBtnAttrs = (loaBlocked && !isAdmin)
+        ? 'disabled style="opacity:0.5;cursor:not-allowed" title="Blocked: outstanding balance — escalate to admin"'
+        : '';
+      html += `<button class="btn btn-primary" onclick="issueDocument(${doc.id})" ${issueBtnAttrs}>Issue Document${(loaBlocked && isAdmin) ? ' (override)' : ''}</button>`;
       html += `<button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="deleteDocument(${doc.id}, ${doc.studentId})">Delete Draft</button>`;
     }
     if (isIssued) {
@@ -7927,6 +8677,14 @@ async function showDocumentDetail(id) {
       html += `<button class="btn btn-danger btn-sm" onclick="revokeDocument(${doc.id})">Revoke</button>`;
     }
     html += `</div>`;
+
+    if (loaBlocked) {
+      html += `<div style="margin-bottom:16px;padding:12px 14px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;font-size:13px;color:#991b1b;line-height:1.5">
+        <strong>🔒 LoA blocked — outstanding balance €${bp.balance.toFixed(2)}</strong> (paid €${bp.amountPaid.toFixed(2)} of €${bp.amountTotal.toFixed(2)})<br>
+        This Student has a Balance and LoA cannot be issued. Please escalate to Accounts/Sales/Executive Departments.
+        ${isAdmin ? '<br><em style="color:#7f1d1d">Admin override available — Issue button is enabled for you.</em>' : ''}
+      </div>`;
+    }
 
     // Content preview / inline WYSIWYG editor
     html += `<div class="card"><div class="card-header"><h3>Document Preview</h3>

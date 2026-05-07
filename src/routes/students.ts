@@ -5,6 +5,7 @@ import multer from 'multer';
 import { PrismaClient } from '../generated/prisma/client';
 import { studentScripts } from '../scripts/students';
 import { studentScripts as portalScripts } from '../scripts/student';
+import { compressUploads } from '../lib/compress';
 
 const uploadDir = path.join(__dirname, '..', '..', 'uploads', 'students');
 const storage = multer.diskStorage({
@@ -78,8 +79,10 @@ export function studentRoutes(prisma: PrismaClient) {
     } catch (e) { res.status(500).json({ error: String(e) }); }
   });
 
-  // Upload one or more files
-  router.post('/:id/documents', upload.array('files', 10), async (req, res) => {
+  // Upload one or more files. compressUploads() shrinks each file in place
+  // (PDF → /printer 300dpi · image → 2200px/q92) before the DB row is written
+  // so size on disk and StudentDocument.size match.
+  router.post('/:id/documents', upload.array('files', 10), compressUploads(), async (req, res) => {
     try {
       const studentId = parseInt(String(req.params.id));
       const files = req.files as Express.Multer.File[];
@@ -106,14 +109,17 @@ export function studentRoutes(prisma: PrismaClient) {
     } catch (e) { res.status(400).json({ error: String(e) }); }
   });
 
-  // Download a document
+  // Serve a document. Default disposition is `attachment` (download). Pass
+  // `?inline=1` to render in-browser instead — used by the admin Documents
+  // list so staff can quick-preview a passport/photo without saving locally.
   router.get('/:id/documents/:docId/download', async (req, res) => {
     try {
       const doc = await prisma.studentDocument.findUnique({ where: { id: parseInt(req.params.docId) } });
       if (!doc || doc.studentId !== parseInt(req.params.id)) return res.status(404).json({ error: 'Not found' });
       const filePath = path.join(uploadDir, String(doc.studentId), doc.filename);
       if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'File missing from disk' });
-      res.setHeader('Content-Disposition', `attachment; filename="${doc.originalName}"`);
+      const inline = req.query.inline === '1' || req.query.inline === 'true';
+      res.setHeader('Content-Disposition', `${inline ? 'inline' : 'attachment'}; filename="${doc.originalName}"`);
       res.setHeader('Content-Type', doc.mimeType);
       fs.createReadStream(filePath).pipe(res);
     } catch (e) { res.status(500).json({ error: String(e) }); }

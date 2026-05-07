@@ -9,6 +9,49 @@ import { extractFees } from './fidelo-fee-extractor';
 
 dotenv.config();
 
+// Canonicalise accommodation values from Fidelo's native naming to the
+// canonical SIS values (school_config.accomm_types / accomm_room_types /
+// accomm_board_types). The mapping mirrors migrate-canonicalise-accom.ts —
+// keep the two in sync if values are added. Unknown inputs pass through
+// unchanged so we don't silently drop new Fidelo categories; they'd surface
+// as legacy values for staff to map next time.
+const FIDELO_TYPE_MAP: Record<string, string> = {
+  'Homestay': 'Host Family',
+  'Apartment': 'City Centre Apartment',
+  'Hostel': 'City Centre Apartment',
+};
+const FIDELO_ROOM_MAP: Record<string, string> = {
+  'Individual room': 'Individual',
+  'Shared Room': 'Twin/Shared',
+  'Apt Premium Single': 'Premium',
+  'Twin Room': 'Twin/Shared',
+  'Apt Single Standard': 'Standard',
+  'Apt Superior Single': 'Superior',
+  'Double room': 'Double',
+  'Single': 'Individual',
+};
+const FIDELO_BOARD_MAP: Record<string, string> = {
+  'Full-board': 'Full Board',
+  'Half-board': 'Half Board',
+  'Self catering': 'Self Catering',
+  'Half-board Christmas & New Year': 'Half Board',
+};
+function canonicaliseAccomType(v: any): string | null {
+  if (!v) return null;
+  const s = String(v).trim();
+  return FIDELO_TYPE_MAP[s] || s;
+}
+function canonicaliseAccomRoom(v: any): string | null {
+  if (!v) return null;
+  const s = String(v).trim();
+  return FIDELO_ROOM_MAP[s] || s;
+}
+function canonicaliseAccomBoard(v: any): string | null {
+  if (!v) return null;
+  const s = String(v).trim();
+  return FIDELO_BOARD_MAP[s] || s;
+}
+
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool as any);
 const prisma = new PrismaClient({ adapter });
@@ -192,6 +235,23 @@ async function main() {
       const rawEmail = student.email || le.email || '';
       const normEmail = Array.isArray(rawEmail) ? (rawEmail[0] || '') : String(rawEmail);
 
+      // Fidelo's Visa & Passport block is exposed via the visum_* fields on
+      // the bookings-list entry (NOT the booking-detail endpoint, which has
+      // no passport/visa data). Coverage is ~65% on recent bookings.
+      // Map:  visum_passport_number_original → passportNumber
+      //       visum_date_of_issue_original   → passportValidFrom
+      //       visum_due_date_original        → passportValidUntil
+      //       visum_date_from_original       → visaFrom
+      //       visum_date_until_original      → visaUntil
+      //       visa_required                  → visaRequired
+      // Empty values are dropped from the upsert so we never blank a
+      // hand-entered SIS value just because Fidelo's blank.
+      const visumPass = (le.visum_passport_number_original || '').toString().trim() || null;
+      const visumPassFrom = parseDate(le.visum_date_of_issue_original);
+      const visumPassUntil = parseDate(le.visum_due_date_original);
+      const visumVisaFrom = parseDate(le.visum_date_from_original);
+      const visumVisaUntil = parseDate(le.visum_date_until_original);
+
       const studentData: any = {
         firstName: student.firstname || le.customer_firstname || 'Unknown',
         lastName: student.surname || le.customer_lastname || 'Unknown',
@@ -208,6 +268,13 @@ async function main() {
         countryIso: (le.customer_country_original || '').substring(0, 2) || null,
         fideloContactId,
         fideloCustomerNum: le.customer_number?.toString() || null,
+        // Visa/Passport — only set on the upsert when Fidelo has a value.
+        ...(visumPass       ? { passportNumber:     visumPass       } : {}),
+        ...(visumPassFrom   ? { passportValidFrom:  visumPassFrom   } : {}),
+        ...(visumPassUntil  ? { passportValidUntil: visumPassUntil  } : {}),
+        ...(visumVisaFrom   ? { visaFrom:           visumVisaFrom   } : {}),
+        ...(visumVisaUntil  ? { visaUntil:          visumVisaUntil  } : {}),
+        ...(typeof le.visa_required === 'boolean' ? { visaRequired: le.visa_required } : {}),
       };
 
       // Auto-set student type from DOB
@@ -274,9 +341,9 @@ async function main() {
       if (accomSource) {
         for (const [accommId, accomm] of Object.entries(accomSource || {}) as [string, any][]) {
           accommData.push({
-            accommodationType: accomm.category || null,
-            roomType: accomm.roomtype || null,
-            board: accomm.board || null,
+            accommodationType: canonicaliseAccomType(accomm.category),
+            roomType: canonicaliseAccomRoom(accomm.roomtype),
+            board: canonicaliseAccomBoard(accomm.board),
             startDate: parseDate(accomm.from),
             endDate: parseDate(accomm.until),
             weeks: accomm.weeks || null,

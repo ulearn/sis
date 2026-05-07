@@ -680,12 +680,20 @@
       document.getElementById('studentName').textContent = s.firstName || 'Student';
       document.getElementById('studentInitial').textContent = (s.firstName || 'S')[0].toUpperCase();
 
+      // Instagram handle is the same column the Challenges Social card edits
+      // (Student.instagramHandle) — single source of truth, surfaced here as
+      // a read-only @link. Edits still happen on the Challenges → Social card.
+      const igHandle = s.instagramHandle ? String(s.instagramHandle).replace(/^@/, '') : '';
+      const igRow = igHandle
+        ? `<div class="kv"><span class="kv-label">Instagram</span><span class="kv-value"><a href="https://instagram.com/${encodeURIComponent(igHandle)}" target="_blank" rel="noopener" style="color:var(--brand);text-decoration:none;font-weight:600">@${esc(igHandle)}</a></span></div>`
+        : kv('Instagram', '');
       document.getElementById('card-personal').innerHTML =
         kv('Full name', fullName) +
         kv('Nationality', countryName(s.nationality)) +
         kv('Date of birth', s.birthday ? fmtDate(s.birthday) : '') +
         kv('Email', s.email) +
-        kv('Phone', s.phone);
+        kv('Phone', s.phone) +
+        igRow;
 
       const c = d.course;
       // Footnote with timetable info — pulled from the StudentClassAssignment
@@ -708,7 +716,7 @@
       const mapsUrl = 'https://www.google.com/maps/place/ULearn+English+School+Dublin/@53.3366283,-6.2682407,17z/data=!3m1!4b1!4m6!3m5!1s0x48670e9ee283df19:0x630b320db9bcb438!8m2!3d53.3366252!4d-6.2633752!16s%2Fg%2F1vxcvv8f';
       const ttLine = (dayLabel || timeRange || room)
         ? `<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);font-size:12px;color:var(--muted);line-height:1.5">
-             ${[dayLabel, timeRange, room ? `${esc(room)}, <a href="${mapsUrl}" target="_blank" rel="noopener" style="color:var(--brand);text-decoration:none;font-weight:600">Harcourt Centre ↗</a>` : `<a href="${mapsUrl}" target="_blank" rel="noopener" style="color:var(--brand);text-decoration:none;font-weight:600">Harcourt Centre ↗</a>`].filter(Boolean).join(' · ')}
+             ${[dayLabel, timeRange, `${room ? esc(room) + ' ' : ''}ULearn @ <a href="${mapsUrl}" target="_blank" rel="noopener" style="color:var(--brand);text-decoration:none;font-weight:600">Harcourt Centre ↗</a>`].filter(Boolean).join(' · ')}
            </div>`
         : '';
       document.getElementById('card-course').innerHTML = c

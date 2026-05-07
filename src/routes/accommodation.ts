@@ -82,11 +82,31 @@ export function accommodationRoutes(prisma: PrismaClient) {
 
   // ── Matching Engine ────────────────────────────
 
-  // Get unplaced students (optionally filtered by accommodation type)
+  // Get unplaced students (optionally filtered by accommodation type).
+  // ?holds=12,17 re-includes those zero-paid bookingAccommodation rows for
+  // the 48h hold path; the client maintains a session-only set and replays
+  // it on every refresh so a held student stays in the pool until placed.
   router.get('/matching/unplaced', async (_req, res) => {
     try {
       const accommType = _req.query.type as string | undefined;
-      res.json(await scripts.getUnplacedStudents(accommType));
+      const holdsRaw = (_req.query.holds as string | undefined) || '';
+      const holds = holdsRaw
+        ? holdsRaw.split(',').map(s => parseInt(s, 10)).filter(Number.isFinite)
+        : [];
+      res.json(await scripts.getUnplacedStudents(accommType, holds));
+    } catch (e) { res.status(500).json({ error: String(e) }); }
+  });
+
+  // Search zero-paid bookings to surface in the pool under a 48h hold.
+  // Sales/admin/accomm only — the placement endpoint enforces the same.
+  router.get('/matching/holds-search', async (req, res) => {
+    try {
+      const role = (req as any).session?.role;
+      if (!(role === 'sales' || role === 'admin' || role === 'accomm')) {
+        return res.status(403).json({ error: 'Hold search is restricted to sales/admin/accomm.' });
+      }
+      const q = (req.query.q as string) || '';
+      res.json(await scripts.searchHoldCandidates(q));
     } catch (e) { res.status(500).json({ error: String(e) }); }
   });
 
@@ -103,13 +123,16 @@ export function accommodationRoutes(prisma: PrismaClient) {
     } catch (e) { res.status(500).json({ error: String(e) }); }
   });
 
-  // Place student
+  // Place student. asHold=true is the 48-hour hold path for zero-paid bookings —
+  // the sales/admin/accomm user surfaces them via /matching/holds-search and
+  // we stamp hold_placed_at + hold_placed_by for the audit tooltip.
   router.post('/matching/place', async (req, res) => {
     try {
-      const { bookingAccommodationId, bedId } = req.body;
+      const { bookingAccommodationId, bedId, asHold } = req.body;
       if (!bookingAccommodationId || !bedId) return res.status(400).json({ error: 'bookingAccommodationId and bedId required' });
       const role = (req as any).session?.role;
-      res.json(await scripts.placeStudent(bookingAccommodationId, bedId, role));
+      const user = (req as any).session?.user || null;
+      res.json(await scripts.placeStudent(bookingAccommodationId, bedId, role, asHold === true, user));
     } catch (e) { res.status(400).json({ error: String(e) }); }
   });
 

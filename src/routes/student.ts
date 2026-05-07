@@ -10,6 +10,7 @@ import type { PrismaClient } from '../generated/prisma/client';
 import { studentScripts } from '../scripts/student';
 import { activitiesScripts } from '../scripts/activities';
 import { documentScripts } from '../scripts/documents';
+import { compressUploads } from '../lib/compress';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -105,7 +106,7 @@ export function studentRoutesPortal(prisma: PrismaClient) {
       next();
     });
   };
-  router.post('/absence-reason/:date/cert', uploadCert, async (req, res) => {
+  router.post('/absence-reason/:date/cert', uploadCert, compressUploads(), async (req, res) => {
     try {
       const studentId = req.session.studentId;
       if (!studentId) return res.status(401).json({ error: 'No student session' });

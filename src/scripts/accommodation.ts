@@ -26,10 +26,14 @@ export function accommodationScripts(prisma: PrismaClient) {
       where,
       include: {
         properties: {
+          orderBy: { id: 'asc' },
           include: {
-            rooms: { include: { beds: true } }
-          }
-        }
+            rooms: {
+              orderBy: { id: 'asc' },
+              include: { beds: { orderBy: { id: 'asc' } } },
+            },
+          },
+        },
       },
       orderBy: { name: 'asc' },
     });
@@ -43,10 +47,13 @@ export function accommodationScripts(prisma: PrismaClient) {
       where: { id },
       include: {
         properties: {
+          orderBy: { id: 'asc' },
           include: {
             rooms: {
+              orderBy: { id: 'asc' },
               include: {
                 beds: {
+                  orderBy: { id: 'asc' },
                   include: {
                     placements: {
                       include: {
@@ -157,8 +164,13 @@ export function accommodationScripts(prisma: PrismaClient) {
 
   // ── Matching Engine ────────────────────────────
 
-  // Get all unplaced students (have accomm booking but no bed assigned)
-  async function getUnplacedStudents(providerType?: string) {
+  // Get all unplaced students (have accomm booking but no bed assigned).
+  //
+  // includeHoldIds: bookingAccommodation IDs the caller has explicitly opted
+  // into the pool via the "Hold" search (zero-paid bookings). Those rows are
+  // re-included on top of the normal filter and tagged paymentStatus:'hold'
+  // so the chip renders red. Anything else with paid<=0 stays excluded.
+  async function getUnplacedStudents(providerType?: string, includeHoldIds: number[] = []) {
     // Filtration rules (owner directive 2026-05-04):
     //  1. Hide bookings whose accommodation end-date is in the past — the
     //     student has already left, no point matching them.
@@ -211,11 +223,12 @@ export function accommodationScripts(prisma: PrismaClient) {
     // that has been observed to lag behind paid/total in the Fidelo import,
     // which would mislabel fully-paid bookings as 'partial'.
     const EPS = 0.01; // €0.01 wiggle room for currency rounding
+    const holdSet = new Set(includeHoldIds || []);
     return rows
       .map(r => {
         const paid  = Number((r as any).booking?.amountPaid  || 0);
         const total = Number((r as any).booking?.amountTotal || 0);
-        let paymentStatus: 'paid' | 'partial' | 'unpaid' = 'unpaid';
+        let paymentStatus: 'paid' | 'partial' | 'unpaid' | 'hold' = 'unpaid';
         let paymentBalance = 0;
         if (paid > 0) {
           if (total > 0 && (total - paid) > EPS) {
@@ -224,10 +237,68 @@ export function accommodationScripts(prisma: PrismaClient) {
           } else {
             paymentStatus = 'paid';
           }
+        } else if (holdSet.has(r.id)) {
+          // Caller has explicitly surfaced this zero-paid booking via the
+          // Hold search. Tag for red rendering; placement endpoint will
+          // stamp the audit columns when actually placed.
+          paymentStatus = 'hold';
+          paymentBalance = total > 0 ? total : 0;
         }
         return { ...r, paymentStatus, paymentBalance };
       })
       .filter(r => (r as any).paymentStatus !== 'unpaid');
+  }
+
+  // Search zero-paid bookings (active, unplaced, end-date in future) so a
+  // sales/admin user can drag a not-yet-paid student into the matching pool
+  // for a 48-hour pre-payment hold. Returns up to 20 rows ranked by
+  // first-name match. Wraps both sides in Postgres unaccent() so accent
+  // variants match (e.g. "Jose" → "José").
+  async function searchHoldCandidates(q: string) {
+    const trimmed = (q || '').trim();
+    if (trimmed.length < 2) return [];
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const rows = await prisma.bookingAccommodation.findMany({
+      where: {
+        active: true,
+        bedId: null,
+        endDate: { gte: today },
+        booking: {
+          OR: [
+            { amountPaid: null },
+            { amountPaid: { lte: 0 } },
+          ],
+          student: {
+            OR: [
+              { firstName: { contains: trimmed, mode: 'insensitive' } },
+              { lastName:  { contains: trimmed, mode: 'insensitive' } },
+            ],
+          },
+        },
+      },
+      include: {
+        booking: {
+          include: {
+            student: {
+              select: {
+                id: true, firstName: true, lastName: true,
+                gender: true, nationality: true,
+              }
+            }
+          }
+        }
+      },
+      orderBy: { startDate: 'asc' },
+      take: 20,
+    });
+    return rows.map(r => ({
+      id: r.id,
+      bookingId: r.bookingId,
+      accommodationType: r.accommodationType,
+      startDate: r.startDate,
+      endDate: r.endDate,
+      student: (r as any).booking?.student || null,
+    }));
   }
 
   // Get host timeline data: hosts with rooms, beds, and current placements in a date range
@@ -240,10 +311,17 @@ export function accommodationScripts(prisma: PrismaClient) {
       where: { active: true, type: typeFilter },
       include: {
         properties: {
+          orderBy: { id: 'asc' },
           include: {
             rooms: {
+              // Insertion order = creation order = natural "Room 1, Room 2, Room 3"
+              // sequence (numeric, no double-digit-sort surprises). Without this
+              // Postgres returns rows in heap order which on Capel St rendered
+              // rooms reversed inside each apartment.
+              orderBy: { id: 'asc' },
               include: {
                 beds: {
+                  orderBy: { id: 'asc' },
                   include: {
                     placements: {
                       where: {
@@ -253,7 +331,14 @@ export function accommodationScripts(prisma: PrismaClient) {
                       },
                       include: {
                         booking: {
-                          include: {
+                          select: {
+                            id: true,
+                            // amountPaid + amountTotal let the timeline render
+                            // an orange frame around placed bars whose balance
+                            // is still outstanding (gender colour stays visible
+                            // inside the frame).
+                            amountPaid: true,
+                            amountTotal: true,
                             student: {
                               select: {
                                 id: true, firstName: true, lastName: true,
@@ -302,30 +387,45 @@ export function accommodationScripts(prisma: PrismaClient) {
     return hosts;
   }
 
-  // Place a student: assign a bed to a booking accommodation. The caller's
-  // role decides whether partially-paid bookings can be placed — only admins
-  // can override that gate (forces escalation for the accommodation team
-  // when there's an outstanding balance, instead of silently incurring host
-  // fees against an unpaid booking).
-  async function placeStudent(bookingAccommodationId: number, bedId: number, callerRole?: string) {
+  // Place a student: assign a bed to a booking accommodation. Zero-payment
+  // bookings stay blocked (those don't even surface in the matching pool);
+  // partial-payment bookings are allowed in — they keep an orange frame around
+  // the placed bar so accommodation/finance can spot them, and the Wed-6am
+  // T-3 cron will Slack-notify + auto-bounce any still-unpaid the week of
+  // arrival (see scripts/cron-accomm-balance-warn.ts).
+  async function placeStudent(
+    bookingAccommodationId: number,
+    bedId: number,
+    callerRole?: string,
+    asHold?: boolean,
+    callerUser?: string | null,
+  ) {
     const ba = await prisma.bookingAccommodation.findUnique({
       where: { id: bookingAccommodationId },
-      include: { booking: { select: { amountPaid: true, amountTotal: true } } },
+      include: { booking: { select: { amountPaid: true } } },
     });
     if (!ba) throw new Error('Booking accommodation not found');
-    const paid  = Number(ba.booking?.amountPaid  || 0);
-    const total = Number(ba.booking?.amountTotal || 0);
-    if (paid <= 0) throw new Error('Cannot place: no payment has been received on this booking.');
-    // Match getUnplacedStudents: only flag partial when total is positive and
-    // there's a meaningful gap (€0.01+) — avoids tripping on cent-rounding
-    // and on bookings with unknown totals.
-    const partial = total > 0 && (total - paid) > 0.01;
-    if (partial && callerRole !== 'admin') {
-      throw new Error('Cannot place: outstanding balance on this booking. Escalate to admin to place.');
+    const paid = Number(ba.booking?.amountPaid || 0);
+
+    // Default rule: must have paid > 0. Override is the 48-hour hold path:
+    // sales/admin/accomm can place a zero-paid student, in which case we
+    // stamp the audit columns. Outside that override the existing block
+    // stays — no other role/path lets a zero-paid student into a bed.
+    if (paid <= 0) {
+      const allowed = asHold === true && (callerRole === 'sales' || callerRole === 'admin' || callerRole === 'accomm');
+      if (!allowed) {
+        throw new Error('Cannot place: no payment has been received on this booking.');
+      }
+    }
+
+    const data: any = { bedId };
+    if (asHold === true && paid <= 0) {
+      data.holdPlacedAt = new Date();
+      data.holdPlacedBy = callerUser || callerRole || 'unknown';
     }
     return prisma.bookingAccommodation.update({
       where: { id: bookingAccommodationId },
-      data: { bedId },
+      data,
     });
   }
 
@@ -452,6 +552,7 @@ export function accommodationScripts(prisma: PrismaClient) {
     addProperty, updateProperty, deleteProperty,
     addRoom, updateRoom, deleteRoom,
     addBed, deleteBed,
-    getUnplacedStudents, getHostTimeline, placeStudent, unplaceStudent, splitPlacement, rejoinPlacement,
+    getUnplacedStudents, searchHoldCandidates, getHostTimeline,
+    placeStudent, unplaceStudent, splitPlacement, rejoinPlacement,
   };
 }

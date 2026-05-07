@@ -860,6 +860,11 @@ export function classScripts(prisma: PrismaClient) {
       }
 
       if (!weeks.length) continue; // class had no activity in range — skip
+      // Skip classes with no students in any week of the range. Even if a
+      // teacher was rostered, an empty class isn't useful in a profit report
+      // (it'll just show a flat negative cost line). Surface those elsewhere
+      // if/when we want a "rostered but unenrolled" alert.
+      if (!weeks.some(w => w.studentCount > 0)) continue;
 
       // Pull a representative teacher for the row header (most recent in window)
       const repTeacher = cls.classTeachers
@@ -921,12 +926,161 @@ export function classScripts(prisma: PrismaClient) {
     return Math.round(n * 100) / 100;
   }
 
+  // ── Balances + Outstandings ─────────────────────
+  // Two operationally distinct pools:
+  //   - Balances:    money owed on bookings whose serviceStart > today
+  //                  (Sales pursues — student hasn't arrived yet)
+  //   - Outstandings: money owed on bookings already in school or departed
+  //                  (Accounts pursues — student is here / has been)
+  //
+  // Goal: nobody crosses a Monday-morning threshold without full payment.
+  // Departed bookings are mostly historical Fidelo ledger noise — included
+  // but pre-summarised so the UI can collapse them.
+  async function balances() {
+    const today = new Date(); today.setUTCHours(0, 0, 0, 0);
+    const monday = new Date(today);
+    monday.setUTCDate(monday.getUTCDate() - ((today.getUTCDay() + 6) % 7));
+    const sunday = new Date(monday); sunday.setUTCDate(sunday.getUTCDate() + 6);
+    const fourWeeks = new Date(monday); fourWeeks.setUTCDate(fourWeeks.getUTCDate() + 28);
+    const twelveMonthsAgo = new Date(today); twelveMonthsAgo.setUTCMonth(twelveMonthsAgo.getUTCMonth() - 12);
+
+    // Narrow at DB-level: pre-arrival, currently in-school, departed in last
+    // 12 months only, or no arrival date. Excludes the long Fidelo tail of
+    // 4+ year-old "departed" bookings whose ledger noise inflates totals
+    // and slows page-load.
+    const bookings = await prisma.booking.findMany({
+      where: {
+        // Ignore trivial residuals (rounding noise, €0.50 reconciliation
+        // dust, etc) — only surface balances that are worth chasing.
+        amountOpen: { gte: 5 },
+        status: { not: 'CANCELLED' },
+        OR: [
+          { serviceStart: { gt: today } },                           // future arrivals
+          { AND: [                                                   // in school now
+            { serviceStart: { lte: today } },
+            { OR: [{ serviceEnd: null }, { serviceEnd: { gte: today } }] },
+          ]},
+          { AND: [                                                   // departed in last 12mo
+            { serviceEnd: { lt: today } },
+            { serviceEnd: { gte: twelveMonthsAgo } },
+          ]},
+          { serviceStart: null },                                    // no arrival date
+        ],
+      },
+      include: {
+        student: { select: { id: true, firstName: true, lastName: true, nationality: true, currentLevel: true } },
+        agency:  { select: { id: true, name: true } },
+        courses: { select: { name: true, category: true, level: true, startDate: true, endDate: true, weeks: true, hoursPerWeek: true, fee: true } },
+      },
+      orderBy: [{ serviceStart: 'asc' }],
+    });
+
+    const buckets: Record<string, any[]> = {
+      arrivingThisWeek: [],   // serviceStart in [monday, sunday] — most urgent
+      arrivingNext4Weeks: [], // (sunday, +4 weeks]
+      arrivingLater: [],      // > +4 weeks
+      inSchoolNow: [],        // serviceStart <= today AND serviceEnd >= today
+      departed: [],           // serviceEnd < today
+      noArrivalDate: [],      // serviceStart NULL
+    };
+
+    for (const b of bookings) {
+      const open  = Number(b.amountOpen  || 0);
+      const total = Number(b.amountTotal || 0);
+      const paid  = Number(b.amountPaid  || 0);
+      // Pick the longest course as the "main" course (renewals+side-courses confuse rows)
+      const mainCourse = b.courses.slice().sort((a, b) => Number(b.weeks || 0) - Number(a.weeks || 0))[0];
+      const row = {
+        bookingId: b.id,
+        fideloBookingId: b.fideloBookingId,
+        hubspotDealId:   b.hubspotDealId,
+        student: b.student ? {
+          id: b.student.id,
+          name: `${b.student.firstName} ${b.student.lastName}`.trim(),
+          nationality: b.student.nationality,
+          level: b.student.currentLevel,
+        } : null,
+        agency: b.agency ? { id: b.agency.id, name: b.agency.name } : null,
+        status: b.status,
+        amountTotal: round2(total),
+        amountPaid:  round2(paid),
+        amountOpen:  round2(open),
+        currency:    b.currency,
+        serviceStart: b.serviceStart ? b.serviceStart.toISOString().slice(0, 10) : null,
+        serviceEnd:   b.serviceEnd   ? b.serviceEnd.toISOString().slice(0, 10)   : null,
+        course: mainCourse ? {
+          name: mainCourse.name,
+          category: mainCourse.category,
+          level: mainCourse.level,
+          weeks: mainCourse.weeks,
+        } : null,
+        // For sorting: days until arrival (pre) or days since arrival (post)
+        daysUntilArrival: b.serviceStart ? Math.round((b.serviceStart.getTime() - today.getTime()) / 86400000) : null,
+        daysSinceArrival: b.serviceStart ? Math.round((today.getTime() - b.serviceStart.getTime()) / 86400000) : null,
+      };
+
+      if (!b.serviceStart) {
+        buckets.noArrivalDate.push(row);
+      } else if (b.serviceStart > today) {
+        if (b.serviceStart <= sunday) buckets.arrivingThisWeek.push(row);
+        else if (b.serviceStart <= fourWeeks) buckets.arrivingNext4Weeks.push(row);
+        else buckets.arrivingLater.push(row);
+      } else {
+        // already arrived
+        const ended = b.serviceEnd && b.serviceEnd < today;
+        if (ended) buckets.departed.push(row);
+        else buckets.inSchoolNow.push(row);
+      }
+    }
+
+    // Default sort: departed by serviceEnd DESC (newest leavers first — most
+    // actionable for accounts chasing recent walk-outs). Other buckets keep
+    // the DB-level serviceStart ASC ordering.
+    buckets.departed.sort((a, b) => (b.serviceEnd || '').localeCompare(a.serviceEnd || ''));
+
+    const total = (rows: any[]) => round2(rows.reduce((n, r) => n + r.amountOpen, 0));
+    return {
+      asOf: today.toISOString().slice(0, 10),
+      mondayThisWeek: monday.toISOString().slice(0, 10),
+      // Balances = pre-arrival (Sales chases)
+      balances: {
+        arrivingThisWeek: buckets.arrivingThisWeek,
+        arrivingNext4Weeks: buckets.arrivingNext4Weeks,
+        arrivingLater: buckets.arrivingLater,
+        totals: {
+          arrivingThisWeek: { count: buckets.arrivingThisWeek.length, eur: total(buckets.arrivingThisWeek) },
+          arrivingNext4Weeks: { count: buckets.arrivingNext4Weeks.length, eur: total(buckets.arrivingNext4Weeks) },
+          arrivingLater: { count: buckets.arrivingLater.length, eur: total(buckets.arrivingLater) },
+          all: {
+            count: buckets.arrivingThisWeek.length + buckets.arrivingNext4Weeks.length + buckets.arrivingLater.length,
+            eur: round2(total(buckets.arrivingThisWeek) + total(buckets.arrivingNext4Weeks) + total(buckets.arrivingLater)),
+          },
+        },
+      },
+      // Outstandings = post-arrival (Accounts chases)
+      outstandings: {
+        inSchoolNow: buckets.inSchoolNow,
+        departed: buckets.departed,
+        noArrivalDate: buckets.noArrivalDate,
+        totals: {
+          inSchoolNow: { count: buckets.inSchoolNow.length, eur: total(buckets.inSchoolNow) },
+          departed: { count: buckets.departed.length, eur: total(buckets.departed) },
+          noArrivalDate: { count: buckets.noArrivalDate.length, eur: total(buckets.noArrivalDate) },
+          all: {
+            count: buckets.inSchoolNow.length + buckets.departed.length + buckets.noArrivalDate.length,
+            eur: round2(total(buckets.inSchoolNow) + total(buckets.departed) + total(buckets.noArrivalDate)),
+          },
+        },
+      },
+    };
+  }
+
   return {
     listClassrooms,
     listClasses, getClassById, createClass, updateClass, deleteClass,
     assignStudent, removeAssignment, endAssignment, unassignedStudents,
     getClassTeachers, assignClassTeacher, removeClassTeacher,
-    getCovers, createCover, removeCover, coverDashboard, profitMargin,
+    getCovers, createCover, removeCover, coverDashboard, profitMargin, balances,
     listTeachers, getTeacherById, createTeacher, updateTeacher, deleteTeacher,
   };
 }

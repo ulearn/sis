@@ -802,6 +802,20 @@ model BookingAccommodation {
   // Financial
   fee               Decimal? @db.Decimal(10,2)
 
+  // T-3 balance-warning cron (cron-accomm-balance-warn) sets this when it
+  // auto-bounces a placed-but-unpaid student out of their bed. Populated once,
+  // never reset — guarantees the bounce only ever fires a single time per
+  // booking, so if Kelly puts the student back in deliberately the cron won't
+  // keep ejecting them.
+  t3BouncedAt       DateTime? @map("t3_bounced_at")
+
+  // 48-hour pre-payment hold. When a sales user places a zero-paid student
+  // via the "Hold" search path, these are stamped at placement time. Pure
+  // audit trail — no cron clears them, no auto-eviction. Staff resolve from
+  // the red-outlined chip + tooltip showing who placed and when.
+  holdPlacedAt      DateTime? @map("hold_placed_at")
+  holdPlacedBy      String?   @map("hold_placed_by")
+
   @@map("booking_accommodations")
 }
 

@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ULearn Social Calendar</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-muted: #f8f7f4;
+    --border: #e7e5e0;
+    --border-strong: #d4d0c8;
+    --text: #1f2937;
+    --text-muted: #6b7280;
+    --accent: #642de1;
+    --accent-soft: #ede4ff;
+    --apt: #642de1;
+    --hf: #00ff9d;
+    --today: #84cc16;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 14px; line-height: 1.4; }
+  .wrap { max-width: none; margin: 0; padding: 8px 12px; }
+  header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  header h1 { margin: 0; font-size: 18px; font-weight: 700; flex: 1; }
+  button.nav { background: var(--bg-muted); border: 1px solid var(--border);
+    color: var(--text); padding: 6px 10px; border-radius: 6px;
+    font-size: 13px; cursor: pointer; }
+  button.nav:hover { background: var(--accent-soft); border-color: var(--accent); }
+  .month-label { font-weight: 600; min-width: 130px; text-align: center; }
+  .grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-auto-rows: 1fr; gap: 1px;
+    background: var(--border); border: 1px solid var(--border); border-radius: 8px;
+    overflow: hidden; }
+  .dow { background: var(--bg-muted); padding: 8px 6px; font-size: 10px;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    color: var(--text-muted); text-align: center; }
+  .day { background: var(--bg); min-height: 120px; padding: 8px 8px;
+    display: flex; flex-direction: column; gap: 4px;
+    cursor: default; transition: background 100ms; }
+  .day.has-acts { cursor: pointer; }
+  .day.has-acts:hover { background: var(--accent-soft); }
+  .day.outside { background: var(--bg-muted); opacity: 0.55; }
+  .day.today .num { color: var(--accent); font-weight: 700; }
+  .day .num { font-size: 11px; font-weight: 600; }
+  .day.today .num::after { content: ' •'; color: var(--accent); }
+  .chip { background: var(--accent-soft); color: var(--accent); padding: 2px 6px;
+    border-radius: 4px; font-size: 11px; font-weight: 500;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .day.selected { background: var(--accent-soft); outline: 2px solid var(--accent);
+    outline-offset: -2px; }
+  .day.empty .num { color: var(--text-muted); }
+  .more { font-size: 10px; color: var(--text-muted); }
+  .panel { margin-top: 14px; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg); padding: 14px; }
+  .panel.hidden { display: none; }
+  .panel h2 { margin: 0 0 10px 0; font-size: 14px; font-weight: 700;
+    color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .activity { display: flex; gap: 12px; padding: 10px 0;
+    border-top: 1px solid var(--border); }
+  .activity:first-of-type { border-top: 0; padding-top: 0; }
+  .activity img { width: 90px; height: 90px; border-radius: 6px;
+    object-fit: cover; flex: 0 0 90px; background: var(--bg-muted); }
+  .activity-body { flex: 1; min-width: 0; }
+  .activity-body h3 { margin: 0 0 4px 0; font-size: 15px; font-weight: 600; }
+  .activity-meta { display: flex; flex-wrap: wrap; gap: 6px 12px;
+    font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+  .activity-meta .pill { background: var(--bg-muted); border: 1px solid var(--border);
+    padding: 2px 8px; border-radius: 10px; }
+  .activity-desc { font-size: 13px; color: var(--text); white-space: pre-wrap; }
+  .empty-state { text-align: center; padding: 40px 16px; color: var(--text-muted);
+    font-size: 13px; }
+  .err { color: #b91c1c; padding: 14px; border: 1px solid #fecaca;
+    border-radius: 6px; background: #fef2f2; font-size: 13px; }
+  .footer { text-align: center; font-size: 11px; color: var(--text-muted);
+    padding: 12px 0 4px 0; }
+  .footer a { color: var(--text-muted); text-decoration: none; }
+  @media (max-width: 600px) {
+    .day { min-height: 80px; padding: 5px 5px; }
+    .day .num { font-size: 10px; }
+    .chip { font-size: 10px; padding: 1px 4px; }
+    .activity img { width: 64px; height: 64px; flex-basis: 64px; }
+    header h1 { font-size: 15px; }
+    .month-label { min-width: 100px; font-size: 13px; }
+    .wrap { padding: 6px 8px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>What's on at ULearn</h1>
+    <button class="nav" id="prev" aria-label="Previous month">←</button>
+    <div class="month-label" id="monthLabel">…</div>
+    <button class="nav" id="next" aria-label="Next month">→</button>
+    <button class="nav" id="today" style="margin-left:4px">Today</button>
+  </header>
+  <div id="content"><div class="empty-state">Loading…</div></div>
+  <div class="panel hidden" id="panel"></div>
+  <div class="footer">ULearn School Dublin · <a href="https://www.ulearnschool.com" target="_blank" rel="noopener">ulearnschool.com</a></div>
+</div>
+
+<script>
+  // ─── State ────────────────────────────────────
+  const today = new Date();
+  let year  = today.getFullYear();
+  let month = today.getMonth() + 1;   // 1-indexed
+  let selectedKey = null;             // YYYY-MM-DD of the day whose detail panel is open
+  let monthData = null;
+
+  const $ = (id) => document.getElementById(id);
+  const isoLocal = (d) =>
+    `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
+  function fmtCost(c) {
+    if (c == null) return null;
+    const n = Number(c);
+    if (!isFinite(n) || n === 0) return 'Free';
+    return '€' + n.toFixed(n % 1 === 0 ? 0 : 2);
+  }
+
+  function fmtTimeRange(s, e) {
+    if (!s) return null;
+    return s + (e ? '–' + e : '');
+  }
+
+  // ─── Parent-frame height postMessage ──────────
+  // Marketing page can listen for this and resize the iframe so there's no
+  // inner scrollbar. Throttled via rAF so layout reads aren't N-per-frame.
+  let _lastH = 0, _hScheduled = false;
+  function reportHeight() {
+    if (_hScheduled) return; _hScheduled = true;
+    requestAnimationFrame(() => {
+      _hScheduled = false;
+      const h = document.documentElement.scrollHeight;
+      if (h !== _lastH) {
+        _lastH = h;
+        try { window.parent && window.parent.postMessage({ type: 'ulearn-embed-height', h }, '*'); }
+        catch (_) {}
+      }
+    });
+  }
+  new ResizeObserver(reportHeight).observe(document.documentElement);
+
+  // ─── Fetch + render ───────────────────────────
+  async function load() {
+    $('content').innerHTML = '<div class="empty-state">Loading…</div>';
+    $('monthLabel').textContent = new Date(year, month-1, 1)
+      .toLocaleDateString('en-IE', { month: 'long', year: 'numeric' });
+    try {
+      const r = await fetch(`/sis/api/social-calendar/month?year=${year}&month=${month}`);
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      monthData = await r.json();
+      renderGrid();
+    } catch (e) {
+      $('content').innerHTML = `<div class="err">Couldn't load the calendar (${e.message}). Please try again shortly.</div>`;
+      $('panel').classList.add('hidden');
+      reportHeight();
+    }
+  }
+
+  function renderGrid() {
+    const from = new Date(monthData.from);
+    const to   = new Date(monthData.to);
+
+    const byDate = {};
+    for (const a of (monthData.items || [])) {
+      const k = isoLocal(new Date(a.date));
+      (byDate[k] = byDate[k] || []).push(a);
+    }
+
+    let html = '';
+    ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(d => html += `<div class="dow">${d}</div>`);
+
+    const cur = new Date(from); cur.setHours(0,0,0,0);
+    const end = new Date(to);   end.setHours(0,0,0,0);
+    const todayISO = isoLocal(new Date());
+    while (cur <= end) {
+      const k = isoLocal(cur);
+      const inMonth = cur.getMonth() === (month - 1);
+      const acts = byDate[k] || [];
+      const cls = ['day'];
+      if (!inMonth) cls.push('outside');
+      if (acts.length) cls.push('has-acts');
+      if (k === todayISO) cls.push('today');
+      if (k === selectedKey) cls.push('selected');
+      if (!acts.length) cls.push('empty');
+      html += `<div class="${cls.join(' ')}" data-key="${k}">`;
+      html += `<div class="num">${cur.getDate()}</div>`;
+      for (const a of acts.slice(0, 2)) {
+        html += `<div class="chip" title="${escapeHtml(a.title)}">${escapeHtml(a.title)}</div>`;
+      }
+      if (acts.length > 2) html += `<div class="more">+${acts.length - 2}</div>`;
+      html += `</div>`;
+      cur.setDate(cur.getDate() + 1);
+    }
+
+    $('content').innerHTML = `<div class="grid">${html}</div>`;
+
+    // Click day → toggle detail panel
+    $('content').addEventListener('click', (e) => {
+      const cell = e.target.closest('.day.has-acts');
+      if (!cell) return;
+      const k = cell.dataset.key;
+      selectedKey = (selectedKey === k) ? null : k;
+      renderGrid();
+      renderPanel(byDate[selectedKey] || []);
+    }, { once: true });
+
+    if (selectedKey) renderPanel(byDate[selectedKey] || []);
+    else { $('panel').classList.add('hidden'); $('panel').innerHTML = ''; }
+    reportHeight();
+  }
+
+  function renderPanel(acts) {
+    if (!acts || !acts.length) { $('panel').classList.add('hidden'); $('panel').innerHTML = ''; return; }
+    const dt = new Date(acts[0].date);
+    const heading = dt.toLocaleDateString('en-IE', { weekday: 'long', day: 'numeric', month: 'long' });
+    let html = `<h2>${escapeHtml(heading)}</h2>`;
+    for (const a of acts) {
+      const time = fmtTimeRange(a.startTime, a.endTime);
+      const cost = fmtCost(a.cost);
+      const meta = [];
+      if (time) meta.push(`<span class="pill">${escapeHtml(time)}</span>`);
+      if (cost) meta.push(`<span class="pill">${escapeHtml(cost)}</span>`);
+      if (a.location) meta.push(`<span class="pill">${escapeHtml(a.location)}</span>`);
+      const img = a.imageFilename
+        ? `<img src="/sis/api/activities/image/${encodeURIComponent(a.imageFilename)}" alt="" loading="lazy">`
+        : '';
+      html += `<div class="activity">
+        ${img}
+        <div class="activity-body">
+          <h3>${escapeHtml(a.title)}</h3>
+          ${meta.length ? `<div class="activity-meta">${meta.join('')}</div>` : ''}
+          ${a.description ? `<div class="activity-desc">${escapeHtml(a.description)}</div>` : ''}
+        </div>
+      </div>`;
+    }
+    $('panel').innerHTML = html;
+    $('panel').classList.remove('hidden');
+    reportHeight();
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  // ─── Nav ──────────────────────────────────────
+  $('prev').addEventListener('click', () => { month--; if (month < 1) { month = 12; year--; } selectedKey = null; load(); });
+  $('next').addEventListener('click', () => { month++; if (month > 12) { month = 1; year++; } selectedKey = null; load(); });
+  $('today').addEventListener('click', () => { const d = new Date(); year = d.getFullYear(); month = d.getMonth()+1; selectedKey = null; load(); });
+
+  load();
+</script>
+</body>
+</html>
