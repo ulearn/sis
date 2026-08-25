@@ -1,0 +1,56 @@
+[
+  {
+    "range": "J2:K2",
+    "values": [
+      [
+        "Jun22 hrly x2: UNCHANGED (confirmed fresh DB). pmt16988+16989 bookingId=null xeroId=null (55d orphaned since Apr28). bk17856+17857 CONF conf=false amtPaid=339.9 (updAt=Jun04=18d). HS pmts 1204827374829+1204846469317 still live. bc24630+24631 start Jun29=7d fee=null active. SQL NOT RUN. NEIL URGENT: link payments before Jun29.",
+        "7d to Jun29; URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "J23:K23",
+    "values": [
+      [
+        "Jun22 hrly x2: UNCHANGED (confirmed fresh DB). bk18158 CONF 740/740 (updAt=Jun15=7d). bc24933+bc24934 BOTH active=true Jun15-Jul10 (updAt=Jun11=11d). 0 SCAs (fresh DB check). D9 in school, 0 class assignment. SQL NOT RUN: (1) SET bc24934 active=false; (2) INSERT SCA bc24933 (Neil to choose A1-AM class).",
+        "D9; 0SCA; OVERDUE"
+      ]
+    ]
+  },
+  {
+    "range": "J25:K25",
+    "values": [
+      [
+        "Jun22 hrly x2: DECIDE TODAY. bc1797 Morning General ends Fri Jun26=4d (updAt=May03). sca229 cls12 expired Apr26. bc24686 Jul20-Sep18 fee=null. bk1611 CONF 1280.12. 0 att (s1052). NEIL NOW: Is Alberto returning this week? YES: INSERT SCA bc1797 cls12 Jun22-Jun26 (NOT RUN). Then set bc24686.fee before Jul20.",
+        "Jun26; 4d; DECIDE NOW"
+      ]
+    ]
+  },
+  {
+    "range": "J26:K26",
+    "values": [
+      [
+        "Jun22 hrly x2: UNCHANGED (confirmed fresh DB). s917 visaStatus=null hubspotContactId=null (updAt=May21=32d). bk1467 CONF 2405/2405 (updAt=Jun11=11d). bc1613 AY-Morning Apr27-Oct16. 0 SCAs (fresh DB). D57 in school, 0 class assignment. NEIL CRITICAL: SIS bk1467/bc1613 assign class weekStart=Jun22 weekEnd=Oct16.",
+        "D57; 0SCA; CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "J30:K30",
+    "values": [
+      [
+        "Jun22 hrly x2: UNCHANGED (confirmed fresh DB). sca255 cls11 weekStart=Jan12 weekEnd=Jul03 NOT FIXED. bc24925 AY-Afternoon Mar09-Sep11 (updAt=Jun16=6d). Jul03=11d then 10 weeks uncovered to Sep11. SQL NOT RUN: UPDATE student_class_assignments SET week_start=2026-03-09, week_end=2026-09-11 WHERE id=255.",
+        "sca255 fix; Jul03=11d"
+      ]
+    ]
+  },
+  {
+    "range": "J31:K31",
+    "values": [
+      [
+        "Jun22 hrly x2: UNCHANGED (confirmed fresh DB). bk18044 STILL CONFIRMED amtPaid=1106.5 (updAt=Jun07=15d). pmt17607 EUR1151.5 xeroId=null hsId=1239529228498 NOT voided. bc24836 ends Fri Jun26=4d active. sca270 cls12 Jun15-Jun26 via bk94 (correct). NEIL DEADLINE Fri Jun26=4d: cancel bk18044 SIS UI + void pmt17607 HS (ID 1239529228498).",
+        "Jun26; 4d; deadline"
+      ]
+    ]
+  }
+]

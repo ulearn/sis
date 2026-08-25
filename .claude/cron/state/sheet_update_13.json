@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "extra96 INSURANCE PEL;Health fee=NULL->not billed. EUR100 gap=confirmed hs_order_level_discount (intentional, not underbilling). Student in class Jun1, no HI arranged.",
+        "URGENT: arrange HI for Lizbeth (Jun1 uninsured, day5). Set extra96.fee=agreed cost; supplementary HS invoice. see recipe: issue-13-lizbeth-health-insurance.md",
+        "Jun05 run: HS INV-1158 hs_order_level_discounts_total=100 confirmed intentional discount (not missing revenue). Insurance separate; extra96.fee=NULL, never billed. Monica(979) diff agency(328 not 466). WORLD2GO PEL;Health: bk1548/1431=EUR30 bk18149=EUR150(Jun5). Neil: HI provider+cost+who pays?",
+        "HI urgent"
+      ]
+    ]
+  }
+]

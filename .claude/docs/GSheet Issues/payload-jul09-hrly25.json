@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student class assignment 255 (student 1001 Saikhantes Shagdarsuren, class 11 B1 Afternoon): week end = 3 July 2026 — expired 6 days ago, 5 school days missed (Mon 6 Jul to Fri 10 Jul, full week)\n• Active booking course 24925 (Academic Year Afternoon, booking 18151, 9 March to 2 October 2026, fee = EUR 1102.20)\n• Booking 18151: Confirmed, EUR 1339.20 / 1339.20 fully paid\n• NEW (9 Jul 2026): Holiday record 2500 on booking 18151 — student type, 20 July to 21 August 2026 (5 weeks, 25 weekdays pushed to course end Oct 2) — not captured in any prior recipe or H column\n• Fix SQL unchanged: extend class assignment 255 week end to 2 October 2026 — correct even with holiday; booking holiday record handles absence suppression separately\n• Cross-reference: Issue 36c holiday display bug — weekly attendance grid may show live checkboxes during Jul 20–Aug 21",
+        "Extend class assignment 255 week end to 2026-10-02 URGENTLY (5 school days missed); holiday record hol2500 Jul20–Aug21 does not change the fix SQL; see recipe: issue-15-saikhantes-course-dates.md",
+        "9 Jul UTC (this run). NEW: holiday record 2500 on bk18151 Jul20-Aug21 5wks 25d weekdays pushed — not in prior recipe or H. SCA255 weekEnd=Jul03 STILL expired. 5 school days missed Mon Jul6-Fri Jul10 (full week). Fix unchanged: UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255. Holiday Jul20-Aug21 handled by booking_holiday record — fix SQL still correct. Issue36c: staff may see checkboxes Jul20-Aug21.",
+        "OVERDUE: week missed"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Verónica Martín (student 278, booking course 24931 General English AM, 6 to 10 July 2026): 1-week course ENDED TODAY — zero class assignments ever assigned — MISSED ENTIRELY\n• Ettore Iovinella (student 14564, booking course 24968 General English AM Plus, 6 to 13 July 2026): class assignment 281 links to old booking course 24941 (ended 3 July), zero class assignments for current booking course 24968 — 2 school days remain (Friday 10 July + Monday 13 July = last day). CORRECTION: 13 July 2026 is a Monday, not Friday as previously noted in this column\n• Pietro Colombo (student 72, booking course 81 Morning General Plus, 6 July to 24 July 2026): zero class assignments ever — 11 school days remain (deadline 24 July)\n• Renewals not shown in arrivals view by design — not an arrivals-list bug",
+        "Assign Ettore (booking course 24968, deadline Mon 13 Jul) and Pietro (booking course 81, deadline 24 Jul) to classes via SIS admin — URGENT; recipe: issue-45-renewal-arrivals.md",
+        "9 Jul UTC (this run). CONFIRMED UNCHANGED (fresh DB). CORRECTION: 13 July 2026 = MONDAY not Friday (prior H incorrect; K updated). s278 Verónica bc24931 GE-AM Jul6-10 ENDED TODAY ZERO class assignments ever — MISSED ENTIRELY. s14564 Ettore bc24968 GE-AM-Plus Jul6-13 SCA281 for old bc24941 (ended Jul3) ZERO for current course — 2 school days remain (Fri Jul10 + Mon Jul13 last day). s72 Pietro bc81 MG-Plus Jul6-Jul24 ZERO assignments — 11 school days remain. NEIL: Assign Ettore (deadline Mon Jul13) + Pietro (deadline Jul24) in SIS admin immediately.",
+        "Ettore Mon13; Pietro Jul24"
+      ]
+    ]
+  }
+]

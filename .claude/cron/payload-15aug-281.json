@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• 54th check Sat 15 Aug 2026 UTC — no change since 53rd check\n• 552 students without + prefix (unchanged)\n• 419 students with + prefix but spaces or dashes (unchanged)\n• Total non-E.164: 971 of 14,462+ students (unchanged)\n• Day 38 — fix not applied",
+        "Strip spaces; normalise to E.164. See recipe: issue-6-addendum-15aug.md",
+        "54th hrly Sat 15 Aug UTC. Day 38. Non-E.164: 971 (unchanged). Fix NOT RUN.",
+        "~971 phones; 38d"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 118th check Sat 15 Aug 2026 UTC — no change since 117th check\n• Booking 18151 (Saikhantes Shagdarsuren, student 1001): CONFIRMED, confirmed = true, service_end = 7 Aug 2026 (8 days past)\n• Booking Course 24925 (Academic Year Afternoon): 9 Mar – 2 Oct 2026, active = true, 1 class assignment, last class assignment week ended 3 Jul 2026 (43 days stale)\n• service_end expired — verify if student is still attending",
+        "Verify with KC/TB if student still attending; if yes create new class assignment from 4 Jul 2026; if finished deactivate Booking Course 24925. See recipe: issue-15-addendum-15aug.md",
+        "118th Sat 15 Aug UTC. No change. Class Assignment weekEnd Jul 3 (43d stale). service_end Aug 7 (8d past). Fix NOT RUN.",
+        "SCA expired 43d; svc_end 8d exp"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• 27th check Sat 15 Aug 2026 UTC — no change since 26th check\n• Student 983 (Flavia Nascimento Mariano): visa_required = false, visa dates 1 Jun 2026 – 1 Feb 2027\n• Booking 1534: CONFIRMED, confirmed = true, EUR 1,308 paid, EUR 0 open (fully settled)\n• Payment 17035: EUR 250, Bank Transfer, 17 Feb 2026 — xeroPaymentId = null (179 days unreconciled)\n• Payment 17527: EUR 1,058, Bank, 19 May 2026 — xeroPaymentId = null (88 days unreconciled)\n• Day 76 — visa UI save issue not re-tested; booking confirmed and fully paid",
+        "Reconcile payments 17035 + 17527 in Xero; verify visa UI save works. See recipe: issue-18-addendum-15aug.md",
+        "27th hrly Sat 15 Aug UTC. Day 76. Pmts 17035 (EUR 250, 179d) + 17527 (EUR 1,058, 88d) xeroPaymentId null. Fix NOT RUN.",
+        "visa null; day 76; Xero unconfirmed"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 82nd check Sat 15 Aug 2026 UTC — no change since 81st check (1 hour ago)\n• Booking Accommodation 11357: bed 178, ended today (Aug 15), fee = EUR 1,250, active = true — DEACTIVATE NOW\n• Booking Accommodation 11396: bed 44, Aug 15–Aug 22, fee = null, active = true — URGENT: student in host family today, fee unset\n• Booking Accommodation 11397: bed 89, Aug 22–Sep 6, fee = null, active = true — fee needed before Aug 22\n• Booking Accommodation 11392: bed = null, Sep 6–Sep 14, fee = EUR 415, active = true — no bed assigned\n• Booking 18180: CONFIRMED, EUR 2,584.96 paid, EUR 0 open (fully settled)",
+        "Set fee on Booking Accommodation 11396 NOW; deactivate Booking Accommodation 11357 (ended today); set fee Booking Accommodation 11397 before Aug 22; assign bed Booking Accommodation 11392 before Sep 6. See recipe: issue-41-addendum-15aug.md",
+        "82nd Sat 15 Aug UTC. URGENT day 3: fee null BA 11396 (student in host family today). BA 11357 ended today still active. BA 11397 fee null. BA 11392 no bed. Fix NOT RUN.",
+        "URGENT: fees null check-in TODAY"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 96th check Sat 15 Aug 2026 UTC — no change since 95th check (1 hour ago)\n• Active Booking Courses ended before 15 Aug 2026 (stale): 24,497 — unchanged\n• Booking Courses with end_date = 15 Aug 2026 (entering stale today): 0 — none\n• Active Booking Courses ending today or later (live): 268",
+        "Mass deactivation script required (3 staged SQL updates). See recipe: issue-45-addendum-15aug.md",
+        "96th hrly Sat 15 Aug UTC. Stale count STABLE: 24,497. No new stale today (0 ending Aug 15). Live: 268. Fix NOT RUN.",
+        "24,497 stale; fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 129th check Sat 15 Aug 2026 UTC — no change since 128th check (1 hour ago)\n• Booking 1624 (Telmuun Enkhsaikhan, student 293): status = PARTIAL, confirmed = false, EUR 1,406 paid, EUR 250 open\n• Booking Course 1810 (Academic Year Renewal Morning): 29 Jun 2026 – 1 Jan 2027, active = true, 0 class assignments (47 days without assignment)\n• Payment 17956: EUR 100, Bank, 31 Mar 2026 — xeroPaymentId = null (note: amountPaid = EUR 1,406 exceeds this single linked payment — additional payments may be unlinked)",
+        "Assign Booking Course 1810 to AM class; collect EUR 250 open balance; reconcile Payment 17956 in Xero. See recipe: issue-48-addendum-15aug.md",
+        "129th Sat 15 Aug UTC. No change. BC1810 0 class assignments (47d). EUR 250 open. Payment discrepancy: paid=EUR 1,406 but only EUR 100 linked. Fix NOT RUN.",
+        "payment gap; BC1810 47d; bk PARTIAL"
+      ]
+    ]
+  }
+]

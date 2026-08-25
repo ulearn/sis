@@ -1,0 +1,57 @@
+[
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Student 14443 visaStatus = null (last DB update 17 Jul, 8 days ago) — blocks class-to-be-assigned queue\n• Booking 17831: CONFIRMED, fully paid EUR 1,396.90\n• Booking course 24609 (Morning General, 13 Jul to 31 Jul): active = true\n• Booking accommodation 11358: Jul 12 to Aug 2, bed 180 (host family), active = true\n• Class assignments: 0 — student has NEVER been assigned to any class\n• 10 school days elapsed (weeks Jul 13 + Jul 20); 5 remain Mon 27 to Fri 31 Jul\n• Mon 27 Jul 2026 = FINAL window; course ends Fri 31 Jul\n• UNCHANGED — 91st hourly check Sat 25 Jul 2026 UTC",
+        "Set visaStatus student 14443; assign Morning General wb Mon 27 Jul. See recipe: issue-39-addendum-25jul-g.md",
+        "91st hrly Sat 25 Jul UTC. UNCHANGED. 0 SCAs still. visaStatus null 8d (Jul 17). Mon 27 Jul = FINAL window (2 days). Course ends Fri 31 Jul. Fix NOT RUN.",
+        "CRITICAL; Mon 27 Jul final window"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Aug 3 Bank Holiday = 9 calendar days away — confirmed NOT in school_closure table\n• 17 BCs start Aug 3, 1 starts Aug 4 (already correct) — count unchanged from prior check\n• AY BCs (no start-date shunt needed for bank holidays — BH does not extend course end per code; first class naturally falls on Aug 4): BC 97, 1766, 24958, 24959, 24970\n• Non-AY BCs starting Aug 3 needing manual shunt to Aug 4: BC 88, 1755, 24627, 24908, 24956 (Giampaolo Russo / Issue 41), 24964 (Luana Salzano), 24984 (Deva Sofia Onorato), 24999 (Soumaya Bourguiba), 25002 (Aleix Cervera — keep), 25010 (Alin Merticariu), 25016 (Anderson da Silva Martins, Life Pass)\n• Duplicate: BC 25002 + 25003 (Aleix Cervera BK18225) both Aug 3-Sep 18, both active — deactivate BC 25003 FIRST, then shunt BC 25002\n• Oct Bank Holiday (Oct 26 2026) also absent from school_closure\n• 95th hourly check Sat 25 Jul 2026 UTC",
+        "Deactivate BC 25003 (Aleix dup); shunt 11 non-AY BCs from Aug 3 to Aug 4. See recipe: issue-38-addendum-25jul-f.md",
+        "95th hrly Sat 25 Jul UTC. Aug BH 9d. Aug 3 confirmed not in school_closure. AY BCs need no start-date shunt. Non-AY: 11 BCs to shunt (incl Aleix 25002 after deactivating 25003). Oct BH also absent. Fix NOT RUN.",
+        "Aug BH; 9d; 11 non-AY BCs + Aleix dup"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• Student 14571 visaStatus = null (last DB update 11 Jul, 14 days ago)\n• Booking 18180: CONFIRMED, fully paid EUR 2,584.96\n• Booking course 24956 (General English AM, Aug 3 to Sep 11): starts on Bank Holiday — needs shunt per Issue 38\n• Booking accommodation 11357: Aug 2 to Sep 6, bed 178 (Patty McSweeney, Glasnevin), EUR 1,250, active = true\n• Capel Street apartment accommodation: STILL MISSING — only 1 BA record for BK 18180\n• Amount gap: EUR 2,584.96 paid minus EUR 2,054.96 accounted (EUR 804.96 course + EUR 1,250 host family) = EUR 529.96 unaccounted — likely Capel fee Sep 6 to Sep 14\n• Payment 17954: EUR 2,584.96 Bank, 29 Jun; xeroPaymentId = null, transactionId = null (26 days unreconciled)\n• HOST FAMILY CHECK-IN: Aug 2 2026 = 8 calendar days away\n• UNCHANGED — 91st hourly check Sat 25 Jul 2026 UTC",
+        "Confirm Capel details with Diego; create missing BA (BK 18180, Capel St, Sep 6-Sep 14, EUR 530); reconcile Xero payment 17954. See recipe: issue-41-addendum-25jul-f.md",
+        "91st hrly Sat 25 Jul UTC. Capel BA STILL missing. Xero null 26d. Check-in Aug 2 = 8 days. visaStatus null 14d. Fix NOT RUN.",
+        "Capel missing; check-in 8d"
+      ]
+    ]
+  },
+  {
+    "range": "H8:K8",
+    "values": [
+      [
+        "• 12th check Sat 25 Jul 2026 UTC (95th hourly overall)\n• Booking 17909 (Sofiia Korkishchenko): CANCELLED — confirmed = true (anomaly)\n• Booking 17909: amountOpen = EUR 727.50, amountPaid = EUR 0 — phantom balance on cancelled booking (38 days since 17 Jun)\n• Booking course 24693 (Renewal Academic Year PM, ends 13 Nov 2026): active = true on cancelled booking\n• Document 94 (Letter of Acceptance, ISSUED version 2): still live on cancelled booking — should be revoked\n• Booking 1310: 5 stale booking courses (IDs 1352-1356, ended Dec 2025 to Apr 2026): all still active\n• UNCHANGED from prior checks",
+        "Set confirmed = false on BK 17909; close EUR 727.50 phantom balance; revoke document 94; deactivate BCs 24693 + 1352-1356. See recipe: issue-7-addendum-25jul.md",
+        "12th check Sat 25 Jul UTC (95th hrly overall). UNCHANGED. BK17909 CANCELLED confirmed=STILL true, amtOpen=EUR727.50 (38d). BC24693 active=STILL true. Fix NOT RUN.",
+        "bk17909 anomaly; 38d"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• 51st hourly check Sat 25 Jul 2026 UTC (166th total)\n• Booking 1605 (Ariunsarnai Batbayar, student 1047): status = PENDING, confirmed = false — Day 103 since 13 Apr 2026\n• Amount paid: EUR 0; amount total: EUR 1,509 — no payments received; 0 payment records\n• Booking course 1791 (Academic Year Renewal Morning, Apr 13 to Oct 23 2026): active = true\n• Last database update: 23 Jun 2026 (32 days ago)\n• UNCHANGED from prior checks",
+        "Confirm or cancel booking 1605; chase EUR 1,509 payment or close. See recipe: issue-20-addendum-25jul-c.md",
+        "51st hrly 166th check Sat 25 Jul UTC. UNCHANGED. BK1605 STILL PENDING Day 103 (since 13 Apr). EUR 0 / EUR 1,509. Last updated 23 Jun. Fix NOT RUN.",
+        "Day 103; EUR 0 / 1509"
+      ]
+    ]
+  }
+]

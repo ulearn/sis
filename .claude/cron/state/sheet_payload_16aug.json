@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 104th check Sun 16 Aug 2026 UTC\n• SCA 424 (class 12, Aug 17–Sep 11): still present — overlaps SCA 426 (class 12, Aug 10–Sep 11), both on BC 24956 — DUPLICATE, student appears twice in class from Mon 17 Aug\n• BA 11357 (bed 178, Host Family, ended 15 Aug): active = true — 1 day stale, deactivate\n• BA 11396 (bed 44, Host Family, Aug 15–22): fee = null — student currently in bed, 6 days to check-out\n• BA 11397 (bed 89, Host Family, Aug 22–Sep 6): fee = null — NEW, 2-week stay not previously reported\n• BA 11392 (bed null, Apartment, Sep 6–14): fee = EUR 415, bed not yet assigned",
+        "Delete SCA 424 before Mon 17 Aug; set fees on BA 11396 + BA 11397 before 22 Aug; deactivate BA 11357; assign bed to BA 11392. See recipe: issue-41-addendum-16aug-d.md",
+        "104th Sun 16 Aug UTC. NEW: BA 11397 (bed 89, HF, Aug 22–Sep 6, fee null) not previously reported. SCA 424 still present — overlaps SCA 426. BA 11396 fee null (student active). BA 11357 1d stale. BA 11392 bed unassigned. Fix NOT RUN.",
+        "URGENT: SCA424 overlaps Mon; BA11396+11397 fee null"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 205th check Sun 16 Aug 2026 UTC — no change since 204th check\n• Booking Accommodation 11393 (bed 88, Bed A): fee = null, active = true\n• Start date: 22 Aug 2026 (6 days), end date: 13 Sep 2026\n• No fee set on this segment; student Pietro Caccianiga (booking 17980) fully confirmed, EUR 5,331 paid",
+        "Set fee on Booking Accommodation 11393 before 22 Aug. See recipe: issue-36b-addendum-16aug-b.md",
+        "205th Sun 16 Aug UTC. BA 11393 fee still null, check-in 22 Aug (6d). No change. Fix NOT RUN.",
+        "fee null BA11393; check-in Aug22 (6d)"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 139th check Sun 16 Aug 2026 UTC — no change since 138th check\n• Booking 1624 (Telmuun Enkhsaikhan, student 293): PARTIAL, amount paid = EUR 1,406, amount total = EUR 1,656 (EUR 250 outstanding)\n• Booking Course 1810 (Academic Year Renewal Morning, Jun 29 2026–Jan 1 2027): active = true, 0 class assignments — 48 days without class\n• Note: booking shows 1 payment (ID 17956, EUR 100 Bank, Jun 29), but amountPaid = 1,406 — possible legacy migration artefact; amountPaid field may have been manually set",
+        "Assign class to Booking Course 1810; chase EUR 250 balance. See recipe: issue-48-addendum-16aug-b.md",
+        "139th Sun 16 Aug UTC. BC 1810 still 0 SCAs, 48d without class. EUR 250 open. Single payment 17956 EUR 100 Bank vs amountPaid 1,406 — data anomaly, likely legacy migration. Fix NOT RUN.",
+        "payment gap; BC1810 48d; SCA 0"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 175th check Sun 16 Aug 2026 UTC — no change since 174th check\n• Booking Course 25043 (General English PM, booking 18265, student Eduardo Roche Diaz): ended 14 Aug 2026, active = true\n• Now 2 days past end — not deactivated\n• Part of 24,497 total stale Booking Courses (see Issue 45)",
+        "Set active = false on Booking Course 25043. See recipe: issue-38-addendum-16aug.md",
+        "175th Sun 16 Aug UTC. BC 25043 now 2 days past end (ended Aug 14). Part of bulk stale BC problem (Issue 45). Fix NOT RUN.",
+        "BC25043 2d past end"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 103rd check Sun 16 Aug 2026 UTC — no change since 102nd check\n• Stale active Booking Courses (end date before 16 Aug 2026): 24,497 — unchanged\n• 18 Booking Courses ended 14–15 Aug 2026 — counted in 24,497\n• Booking Course 25043 (Issue 38) also stale (ended 14 Aug) — included in count\n• Fix script prepared; not yet run",
+        "Run bulk deactivation of 24,497 stale Booking Courses. See recipe: issue-45-addendum-16aug-b.md",
+        "103rd Sun 16 Aug UTC. 24,497 stale Booking Courses unchanged. 18 ended 14–15 Aug included. Fix NOT RUN.",
+        "24,497 stale; fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• 41st check Sun 16 Aug 2026 UTC — no change since 40th check\n• Bed 83: 5 stale Booking Accommodations (all ended, still active = true)\n• Booking Accommodation 11239 (Ivan Rodriguez, booking 22): May 3–24, fee EUR 1,050 — 84 days stale\n• Booking Accommodation 11168 (Diego Da Silva Saldanha, booking 92): Jun 6–20, fee EUR 700 — 57 days stale\n• Booking Accommodation 11285 (Jesus Ramirez, booking 17825): Jun 21–Jul 5, fee = null — 42 days stale\n• Booking Accommodation 11352 (Veronica Martin): Jul 4–11, fee EUR 360 — 36 days stale\n• Booking Accommodation 11179 (Africa Mera Bachir): Jul 12–Aug 9, fee EUR 1,360 — 7 days stale",
+        "Deactivate Booking Accommodations 11239, 11168, 11352, 11179; set fee on 11285 then deactivate. See recipe: issue-37-43-addendum-16aug.md",
+        "41st Sun 16 Aug UTC. 5 stale BAs on bed 83, all unchanged. BA 11285 fee still null. Current occupant (BA 11173) check-out Aug 30 (14d). Fix NOT RUN.",
+        "5 stale BAs; bed83; fix pending"
+      ]
+    ]
+  }
+]

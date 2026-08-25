@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 164th check Fri 14 Aug 2026 UTC — cert now ISSUED (status changed this hour)\n• Certificate 566: ISSUED (version 1) — cert concern resolved\n• Booking Course 25043 (General English PM): ended 2026-08-14 (today), active = true (stale — deactivate)\n• 0 class assignments remain — no attendance recorded for Eduardo Roche Diaz during Aug 10–14",
+        "Deactivate BC 25043 (stale, ended today). Cert 566 now ISSUED. See recipe: issue-38-addendum-14aug-c.md",
+        "164th Fri 14 Aug UTC. Cert 566 changed DRAFT to ISSUED this hour (likely manual by Neil). BC 25043 active=true but ended. 0 SCAs.",
+        "cert ISSUED; BC25043 stale"
+      ]
+    ]
+  }
+]

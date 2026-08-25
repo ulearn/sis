@@ -1,0 +1,37 @@
+[
+  {
+    "range": "J2",
+    "values": [
+      [
+        "4 Jul UTC (203rd check, fresh DB): pmts 16988+16989 bookingId=STILL null xeroId=null. bk17856 (Margherita) CONFIRMED confirmed=false paid=339.9/339.9. bk17857 (Francesca) CONFIRMED confirmed=false paid=339.9/339.9. bc24630+24631 fee=STILL null active=true endDate=Jul10=6d. 4-step SQL NOT RUN 203+ checks."
+      ]
+    ]
+  },
+  {
+    "range": "J23",
+    "values": [
+      [
+        "4 Jul UTC (58th check, fresh DB): bk18158 CONF confirmed=true EUR740/740. bc24933 GE-AM Jun15-Jul10 EUR380 active=true (valid). bc24934 GE-AM Jun15-Jul10 EUR360 STILL active (dup). SCA check: 0 SCAs on bc24933+bc24934. 0 docs on bk18158. SCA146 cls7 expired May15=50d. Courses end Jul10=6d. NOT RUN: deactivate bc24934 + assign s1015 to class 7."
+      ]
+    ]
+  },
+  {
+    "range": "J41",
+    "values": [
+      [
+        "4 Jul UTC (24th check, fresh DB): bk17831 STILL PARTIAL confirmed=false amtPaid=965/1396.90 (EUR431.90 open). pmt17963 (EUR965 Jul1 HS1273784562922): xeroId=null. pmt17180 (EUR431.90 Apr27 TransferMate): xeroId=null hsId=null. ba11358 bed180 Jul12-Aug2=8d. bc24609 Morning-General Jul13-Jul31. 24 checks, both payments unreconciled. Neil: reconcile both in Xero then confirm bk17831 before Jul12."
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Kayque Lopes Coelho (student 852, booking course 1821): Academic Year Renewal Afternoon Jun 29 to Dec 18 — 5 days in, last class assignment id 26 expired Apr 24, zero class assignments\n• Sophia Gallo Borim (student 853, booking course 1820): Academic Year Renewal Afternoon Jun 29 to Dec 18 — 5 days in, last class assignment id 23 expired Apr 24, zero class assignments\n• Tuguldurtugs Enkhtugs (student 858, booking course 1786): Academic Year Renewal Morning Jul 6 to Dec 25 — starts Monday, last class assignment id 55 expired May 1; booking 1601 confirmed = true, EUR 1356.50/1606.50 (EUR 250 outstanding)\n• Ettore Iovinella (student 14564): booking course 24941 (AM Plus Jun 29 to Jul 3) ended yesterday, still active = true — needs deactivation; booking course 24968 (AM Plus Jul 6 to Jul 13) starts Monday, last class assignment id 281 expired Jul 3, no new assignment\n• Gustavo Da Silva (student 14570): booking course 24955 (AM Plus Jul 6 to Aug 7, EUR 996.84) and booking course 24967 (AM Jul 6 to Aug 7, EUR 137.60) both active on booking 18179 — duplicate; zero class assignments; deactivate 24967 then assign to AM Plus 24955\n• Telmuun Enkhsaikhan (student 293, booking course 1810): Academic Year Renewal Morning Jun 29 to Dec 18 — 5 days in, booking 1624 is Partial (confirmed = false, EUR 0 paid) — zero class assignments on booking course 1810\n• 10 migration and new starters Jul 6, zero class assignments: Aitana Lopez (s7 bc7 Morning General EUR380); Pietro Colombo (s72 bc81 Morning General Plus EUR705); Veronica Martin (s278 bc24931 General English AM EUR148.20); Sarah Venturini (s1055 bc24945 General English AM EUR561); Zeyad Alharbi (s32 bc38 Morning General Plus EUR2070); Sulaiman Alkulaib (s7309 bc24930 Intensive GE EUR1584); Kiyoshi Fujino (s14445 bc24907 General English AM EUR152); Mario Roggi (s14528 bc24776 General English AM EUR427.50); Hugo Lopez Tamayo (s14572 bc24960 General English AM EUR296.40); Yuxi Ke (s14577 bc24965 General English PM EUR742.56)\n• Root cause: renewal students excluded from arrivals list — is_renewal flag not set by webhook for RNW-* booking courses; migration students excluded because globally-earliest course date is Oct 2025",
+        "(1) Assign Kayque (student 852, booking course 1821) to AY Afternoon class TODAY — 5 days overdue. (2) Assign Sophia (student 853, booking course 1820) to AY Afternoon class TODAY — 5 days overdue. (3) Assign Tuguldurtugs (student 858, booking course 1786) to AY Morning class before Monday. (4) Deactivate booking course 24967 for Gustavo (student 14570), then assign to AM Plus booking course 24955. (5) Deactivate ended booking course 24941 for Ettore (student 14564), then assign to booking course 24968. (6) Assign all 10 new/migration starters via SIS Classes > To Be Assigned before Monday Jul 6. (7) Chase EUR 250 outstanding on booking 1601. (8) Assign Telmuun Enkhsaikhan (student 293) to AY Morning class once booking 1624 is confirmed. See recipe: issue-45-renewal-arrivals.md",
+        "4 Jul UTC (25th check, fresh DB): UNCHANGED. s852 SCA26 Apr24 expired (bc1821 AY-Aft Jun29 0SCA). s853 SCA23 Apr24 expired (bc1820 AY-Aft Jun29 0SCA). s858 SCA55 May1 expired (bc1786 AY-Morn Jul6 starts Mon 0SCA). NEW: s293 bk1624 PARTIAL confirmed=false bc1810 AY-Morn Jun29=5d 0SCA on bc1810 (not previously tracked). bc24941 + bc24967 STILL active. bk1601 EUR1356.5/1606.5 EUR250 outstanding. 15+ Jul6 starters unassigned. NEIL: assign ALL before Mon Jul6 morning.",
+        "Mon=2d; 0SCA; CRITICAL"
+      ]
+    ]
+  }
+]

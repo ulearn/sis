@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "bk18151 AFT CONF 1339.2. bk1605 MORN PEND 0/1509 D77. c1791 AY-Morn Apr13-Oct02 running. att=0(see#29).",
+        "WIN deal 502951083215 EUR1509 MORN. recipe: issue-15-saikhantes-course-dates.md",
+        "Jun15-UTC hrly(cron): bk18151 CONF 1339.2 AFT OK. sca255 B1PM bc24925 Jan12-Jul03 active. att=0 s1001. bk1605 PEND 0/1509 deal 502951083215 NOT WON (bk1605.student_id=1047=Ariunsarnai not Saikhantes; ISS20 overlap). MORN renewal unresolved.",
+        "aft sca ok; morn D78"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "bk1605 PENDING 0/1509 D74. HS deal 502951083215 B2B-Sales ENROLMENT not WON.",
+        "Move HS deal 502951083215 to WON stage to trigger webhook. see recipe: issue-20-ariunsarnai-payment-due.md",
+        "Jun15-UTC hrly(cron): bk1605 PEND 0/1509 updAt=Jun11 D78+. deal 502951083215 NOT WON. c1791 AY-Ren-Morn Apr13-Oct02 active. 0SCAs. UNCHANGED.",
+        "D78 pending"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "bk18158 PEND 0/740 bc24933+bc24934(DUP) GE-AM Jun15-Jul10. bk18131(CONF 1185)+bk18133(CONF 648) NOT cancelled.",
+        "(NOT RUN) 1)CANCEL bk18131+18133; 2)void pmt17852+17730 via HS; 3)DELETE bc24934; 4)assign cls7 c24933 after bk18158 paid. see recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun15-UTC hrly(cron): DAY1. bk18158 PEND 0/740 UNCHANGED. bc24933+bc24934 DUP both Jun15-Jul10. bk18131 CONF 1185+bk18133 CONF 648 NOT cancelled. s1015 0 SCAs. Steps 1-4 NOT RUN.",
+        "STARTED 0SCA urgent"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "s14532 Ernesto 0SCA ENTIRE COURSE. bc24826 INTENSIVE Jun08-Jun19. bk18034 PARTIAL 845/1095 conf=false",
+        "(NOT RUN) get Ernesto level from teacher; INSERT 2 SCAs AM+PM bc24826 ws=Jun15 we=Jun19. see recipe: issue-26-intensive-class-assign-once.md",
+        "Jun15-UTC hrly(cron): WK2 DAY1. Ernesto s14532 level=null 0SCAs CONFIRMED. bc24826 INTENSIVE ends Jun19=4d. WK1 MISSED. bk18034 PARTIAL 845/1095. SQL NOT RUN. NEIL: get level from teacher NOW. Pairs: A2=cls8/9,B1=cls5+12/11,B2-C1=cls4/6,C1=cls13/14.",
+        "WK2 DAY1 4d"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "s88 Giulia JUNIOR 0SCA. bk94 CONF 1151.5 c104 MORN-GEN-PLUS Jun15-Jun26. bk18044 DUP CONF 1106.5 NOT cancelled.",
+        "(1)get level; (2)assign SCA cls[?] bk94/c104 ws=Jun15 we=Jun26; (3)CANCEL bk18044+handle pmt17607 EUR44.5; (4)CANCEL bk18152+del s14557. see recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun15-UTC hrly(cron): DAY1 ACTIVE. s88 Giulia JUNIOR 0SCAs CONFIRMED. bk94 CONF 1151.5/1151.5 c104 Jun15-26 ACTIVE. bk18044 DUP CONF 1106.5/1106.5 NOT cancelled (pmt17607 EUR1151.5 dbl-import Mar13 xeroId=null DELETE not refund). bk18152 Milena PEND 0/1151.5. Steps 1-4 NOT RUN.",
+        "DAY1 0SCA NOW"
+      ]
+    ]
+  },
+  {
+    "range": "H32:K32",
+    "values": [
+      [
+        "TZ NOT SET .env. 43 SCAs week_end=null. Att sheet date bug active.",
+        "FIX1(NOT RUN): append TZ=UTC to .env then touch tmp/restart.txt. FIX2(NOT RUN): UPDATE 43 SCA rows SET week_end. see recipe: issue-31-attendance-sheet-week-bug.md",
+        "Jun15-UTC hrly(cron): TZ absent .env CONFIRMED. 43 SCAs week_end=null UNCHANGED. att sheets broken. FIX1(NOT RUN): echo TZ=UTC >> .env; touch tmp/restart.txt. FIX2(NOT RUN): UPDATE student_class_assignments SET week_end=date(week_start)+6 WHERE week_end IS NULL (43 rows). NEIL: FIX1=10sec APPLY NOW.",
+        "APPLY NOW"
+      ]
+    ]
+  }
+]

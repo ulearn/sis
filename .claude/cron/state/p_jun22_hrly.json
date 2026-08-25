@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Two payments are unlinked — bookingId = null and xeroPaymentId = null\n• Payment 16988 maps to Booking 17856 (Margherita Galbusera) — EUR 339.90, created 28 Apr (55 days orphaned)\n• Payment 16989 maps to Booking 17857 (Francesca Fassina) — EUR 339.90, created 28 Apr (55 days orphaned)\n• Both bookings are Confirmed (status), confirmed = false, amountPaid = 339.90 — payment audit trail broken\n• Booking courses 24630 + 24631 (General English AM Plus) start 29 Jun — 7 days away; fee = null (updated Jun 19 — touched but not set)",
+        "UPDATE payments SET booking_id=17856 WHERE id=16988; UPDATE payments SET booking_id=17857 WHERE id=16989. See recipe: issue-1-orphan-payments.md",
+        "Jun22 hrly x9: pmt16988+16989 bookingId=null xeroId=null (UNCHANGED, 55d orphaned). bk17856+17857 CONF conf=false amtPaid=339.9. bc24630+24631 starts Jun29=7d fee=null. SQL NOT RUN. NEIL URGENT: link pmts + set bc fees BEFORE Jun29.",
+        "Jun29=7d; URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 is Confirmed, paid EUR 740 / 740 (since 15 Jun)\n• Two duplicate booking courses: bc24933 (General English AM, fee = EUR 380) and bc24934 (General English AM, fee = EUR 360) — both Jun 15 to Jul 10\n• Zero class assignments for student Edith Nunes (student 1015, level A1) — in school since 15 Jun; Day 8 (Week 2 started Mon 22 Jun)\n• Duplicate booking course bc24934 not yet deleted (active = true, last updated Jun 11)\n• OVERDUE — student in school 8 days with no class assignment (live DB check Jun22: still 0 SCAs)",
+        "Deactivate bc24934 in SIS + INSERT SCA for bc24933 class A1-AM from ws=Jun22 we=Jul10. see recipe: issue-22-edith-nunes-dup-bc.md",
+        "Jun22 hrly x11 (Week2 Mon Day8): bc24934 STILL active=true dup (Jun11=11d). 0 SCAs both BCs live Jun22. bk18158 CONF 740/740. NEIL URGENT: deactivate bc24934 + INSERT SCA bc24933 cls7 A1-AM ws=Jun22 we=Jul10 (NOT RUN).",
+        "D8; 0SCA; URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking 1611 is Confirmed, paid EUR 1280.12 / 1280.12\n• Booking course 1797 (Morning General) runs 6 Apr to 26 Jun — FINAL WEEK; course ends Fri 26 Jun (4 days)\n• sca229 (class 12, B1 AM 2) expired Apr 26 — no active class assignment this final week (live check Jun22: still 0 SCAs on bk1611)\n• Booking course 24686 (Morning General, 20 Jul to 18 Sep) exists with fee = null — needs fee before Jul 20\n• Neil decision needed today: Is Alberto in school Mon 22 to Fri 26 Jun?",
+        "If in school: INSERT SCA for bc1797 cls12 ws=Jun22 we=Jun26 (NOT RUN). Set bc24686.fee for renewal. See recipe: issue-24-alberto-final-week.md",
+        "Jun22 hrly x11 (FINAL WEEK Mon; Jun26=4d): bc1797 active ends Jun26. sca229 expired Apr26 (57d). 0 active SCAs live Jun22. bc24686 Jul20 fee=null. NEIL ACTION MON: confirm Alberto IN/OUT this week. If attending: INSERT SCA bc1797 cls12 ws=Jun22 we=Jun26 (NOT RUN). Renewal bc24686 fee still null.",
+        "Jun26=LAST DAY; DECIDE"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• Student 917 (Uyanga Tungalag) has been Confirmed in school since 27 Apr — 57 calendar days with zero class assignments (live check Jun22: still 0 SCAs on bc1613)\n• Booking 1467 is Confirmed, paid EUR 2405 / 2405 — data source = Fidelo, no HubSpot Deal ID linked\n• Booking course 1613 (Academic Year Morning, 27 Apr to 16 Oct) is active with no class assignment\n• Student visa status = null and HubSpot contact ID = null — no HubSpot link established (record last updated 21 May)",
+        "Assign class for bc1613 via SIS UI (no SQL needed). Set visaStatus on student 917. See recipe: issue-25-uyanga-class-critical.md",
+        "Jun22 hrly x10: s917 visaStatus=null (UNCHANGED since May21=32d). bc1613 AY-Morn Apr27-Oct16. 0 SCAs 57 cal days live Jun22. NEIL CRITICAL: SIS UI assign class bc1613 ws=now we=Oct16 + set visaStatus (NOT RUN).",
+        "D57; 0SCA; CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Booking 18044 is a duplicate of original booking 94 for Giulia Avallone (student 88) — created by HubSpot webhook\n• Original booking 94 is correct: class assignment sca270 (class 12, B1 AM 2, Jun 15 to Jun 26) active — Giulia is in class\n• Duplicate booking 18044 still Confirmed (not yet cancelled) — last updated Jun 07 (15 days stale)\n• Payment 17607: EUR 1151.50 on booking 18044, HubSpot payment ID 1239529228498, xeroPaymentId = null — duplicate of pmt17102 on bk94\n• Course bc24836 on duplicate (Jun 15 to Jun 26, fee = EUR 301.50) ends Fri 26 Jun — 4 days away — DEADLINE\n• bk18044 amountPaid = EUR 1106.50 vs pmt17607 = EUR 1151.50 — EUR 45 excess on duplicate",
+        "Cancel bk18044 via SIS UI + void pmt17607 via HubSpot Commerce. See recipe: issue-30-giulia-duplicate-booking.md",
+        "Jun22 hrly x10 (Jun26=4d DEADLINE): bk18044 STILL CONFIRMED (Jun07=15d stale). bc24836 ends Fri Jun26 active=true. pmt17607 EUR1151.5 xeroId=null live. sca270 bk94 OK (Giulia in class). NEIL: cancel bk18044 SIS UI + void pmt17607 HS Commerce BEFORE Fri Jun26 (NOT RUN). DEADLINE.",
+        "Jun26; 4d; deadline"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Student 356 (Shih-Wei Huang) has gender = null — never set in personal details (last updated Jun 03, 19 days stale)\n• Exit letter (document 238, template 4, booking 560) is STILL ISSUED since Jun 18 08:53 UTC — wrong Ms./she/her pronouns\n• Document encoding: gender null → isMale=false → salutation=Ms, pronoun=she/her — no null guard in code\n• Code fix needed in documents.ts for null-gender handling (all null-gender docs will silently use Ms./she/her)",
+        "1) Set gender=Male on student 356 via SIS personal details; 2) revoke document 238; 3) regenerate exit letter for booking 560. See recipe: issue-32-shih-wei-gender-default.md",
+        "Jun22 hrly x4: UNCHANGED. doc238 STILL ISSUED (updAt=Jun18T08:53 UTC, 4d stale). s356 gender=null (Jun03=19d). Wrong Ms./she/her exit letter bk560. NEIL: (1) SIS s356 Personal Details → Gender=Male; (2) revoke doc238; (3) regen exit letter bk560 (NOT RUN).",
+        "urgent; revoke doc238"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,38 @@
+[
+  {
+    "range": "J23:K23",
+    "values": [
+      [
+        "33rd check Mon 20 Jul (3rd hrly). BC24991 Edith Nunes STILL 0 class assignments — DB confirmed. Week 2 underway — 3 weeks remain (ends 7 Aug). BC24933+24934 (ended 10 Jul) still active = true — 10d stale. Fix NOT RUN.",
+        "CRITICAL; assign NOW"
+      ]
+    ]
+  },
+  {
+    "range": "J40:K40",
+    "values": [
+      [
+        "81st check Mon 20 Jul (3rd hrly). Aug Bank Holiday Mon 3 Aug 2026: STILL absent from school_closures — 14 days (prev J had 13 — corrected). Oct Bank Holiday Mon 26 Oct 2026: STILL absent. 9 closures in DB (Good Fridays 2026-2030, Christmas 2026-2029) — no bank holidays. Fix NOT RUN.",
+        "Aug BH; 14d URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "J41:K41",
+    "values": [
+      [
+        "33rd check Mon 20 Jul (3rd hrly). BC24609 Xuezhen Huang STILL 0 class assignments — DB confirmed. Week 1 (13-17 Jul) permanently missed. Week 2 underway — 2 weeks remain (ends 31 Jul). Fix NOT RUN.",
+        "CRITICAL; assign NOW"
+      ]
+    ]
+  },
+  {
+    "range": "J47:K47",
+    "values": [
+      [
+        "34th check Mon 20 Jul (3rd hrly). All 7 Mon 20 Jul confirmed starters STILL 0 SCAs: BC1630 Saranzaya, BC24616 Mia, BC24686 Alberto, BC24942 Lorena, BC24966 Filippo, BC24989 Marcos (1wk ends 24 Jul), BC25000 Giorgio. 9 Jul-13 actives also STILL 0 SCAs (BCs 1619,1788,1814,24820,24988,24990,24998,24609,24991). Stale ended 17 Jul: BC24946,24992,24994 still active. Fix NOT RUN.",
+        "CRITICAL; assign NOW"
+      ]
+    ]
+  }
+]

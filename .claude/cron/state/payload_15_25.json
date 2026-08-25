@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 22nd check Mon 3 Aug 2026 UTC (1st today) — student on holiday until 21 Aug, returns Mon 24 Aug (21 days)\n• Last SCA: id 255, class 11, week_end 3 Jul 2026 — expired 31 days ago\n• Holiday 2500: Jul 20 to Aug 21 2026 — student currently on holiday\n• Booking course 24925 (Academic Year Afternoon, Mar 9 to Oct 2 2026): active, 0 new SCAs since Jul 3\n• Booking course 1982 (Academic Year Morning, Jun 30 to Dec 19 2025): active — 227 days stale\n• Fix: create SCA class 11 week of Aug 24 on BC 24925; deactivate BC 1982. See recipe: issue-15-addendum-3aug.md",
+        "Create SCA class 11 week starting Aug 24 on BC 24925; deactivate BC 1982. Returns Mon 24 Aug. See recipe issue-15-addendum-3aug.md",
+        "22nd hrly Mon 3 Aug UTC (1st today). Returns Mon Aug 24 (21d). Holiday Jul20-Aug21 active. Last SCA 255 ended Jul3 (31d). BC1982 stale 227d. Fix NOT RUN.",
+        "SCA needed; returns 24 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• 139th check Mon 3 Aug 2026 UTC (1st today) — Day 98 without class assignment\n• Student 917 (Uyanga Tungalag): visa_status = null, hubspot_contact_id = null\n• Booking course 1613 (Academic Year Morning, Apr 27 to Oct 30 2026): active, 0 class assignments\n• Booking 1467: CONFIRMED, amount paid = EUR 2,405, amount open = EUR 0\n• Payment 17258: EUR 3,066 paid 8 May 2026 — xero_payment_id = null (87 days unreconciled)\n• EUR 661 discrepancy: payment shows EUR 3,066 but booking shows EUR 2,405 (likely agency deduction)\n• Fix: see recipe issue-25-addendum-3aug.md",
+        "Set visa_status=Approved; backfill hubspot_contact_id; create SCA; reconcile EUR 661. See recipe issue-25-addendum-3aug.md",
+        "139th hrly Mon 3 Aug UTC (1st today). Day 98. visa=null, hubspot=null. BC1613 0 SCAs (Apr 27 start). Pmt17258 EUR3066 xero=null 87d. EUR661 discrepancy. Escalated. Fix NOT RUN.",
+        "visa null; 0 SCAs; day 98"
+      ]
+    ]
+  }
+]

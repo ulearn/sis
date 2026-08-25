@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• Student 983 (Flávia Nascimento Mariano) visaStatus = null — never saved, Prisma save error still unresolved\n• Booking 1534 is CONFIRMED, paid EUR 1308 / 1308, confirmed = true\n• Class assignment active: class 11 (B1 PM) from Jun 15 to Nov 20 — student is in class\n• Prior assignment: class 9 (A2 PM) Jun 01 – Jun 14 — completed normally\n• Visa null no longer blocking class assignment — issue resolved via alternate path",
+        "Set visaStatus = Approved via SIS personal details (low priority). See recipe: issue-18-flavia-visa-save-error.md",
+        "Jun19 hrly: s983 visaStatus=null (updAt=Jun15). sca265 B1-PM Jun15-Nov20 ACTIVE. Cosmetic only — set visaStatus=Approved via SIS personal details when convenient. No operational impact.",
+        "in class; visa fix"
+      ]
+    ]
+  },
+  {
+    "range": "H24:K24",
+    "values": [
+      [
+        "• Course 828 (Morning General, booking 787) has end_date Feb 27 — 3 days BEFORE its start_date Mar 02 (backwards)\n• Legacy DST off-by-one bug from issue 2 — one of 56 unfixed oddities from migration\n• Course 829 (Mar 30 – Jun 05) has ended — no active courses for student 397 (Enshi Lu)\n• Student holiday 52 ran Mar 23 – Mar 29 — correct end_date for course 828 = Mar 20\n• Low-priority data-hygiene only — student term finished",
+        "(NOT RUN) UPDATE booking_courses SET end_date=2026-03-20 WHERE id=828. Low priority. See recipe: issue-23-enshi-lu-backwards-course.md",
+        "Jun19 hrly: bc828 STILL BACKWARDS startDate=Mar02 endDate=Feb27 (updAt=May11=39d stale). Low-priority cosmetic — course ended, no active students. Fix NOT RUN.",
+        "ended;date bug"
+      ]
+    ]
+  },
+  {
+    "range": "H29:K29",
+    "values": [
+      [
+        "• Booking 17850 is PENDING, confirmed = false\n• Amount paid = null despite payment 17519 (EUR 321.35) being linked (bookingId = 17850)\n• Course 24624 (Morning General) ended Jun 05 — this is now a historical data-integrity cleanup",
+        "(NOT RUN) UPDATE bookings SET status=CONFIRMED, confirmed=true, amount_paid=321.35 WHERE id=17850. See recipe: issue-28-paola-pending-won-deal.md",
+        "Jun19 hrly: bk17850 UNCHANGED — PENDING conf=false amtPaid=null (updAt=Jun04=15d stale). bc24624 ended Jun05 (14d). Historical data-integrity. Fix NOT RUN.",
+        "historical; low-pri"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Booking course 24925 (Afternoon Academic Year) dates fixed to Mar 09 to Sep 11 — confirmed by Neil Jun 16\n• ILEP code set to 0318/0003 on booking course 24925 — confirmed Jun 16\n• Booking 18151 is CONFIRMED, paid 1339.20 / 1339.20 — confirmed Jun 16\n• Class assignment 255 (class 11, B1 PM) still has week start = Jan 12 and week end = Jul 03 — NOT updated yet",
+        "UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255 (NOT RUN). See recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun19 hrly: sca255 weekStart=Jan12 weekEnd=Jul03 classId=11 STILL WRONG (fresh DB). bc24925 confirmed Mar09-Sep11 (Jun16). bk18151 CONF 1339.2/1339.2. SCA fix NOT RUN — same status as Issue 15 row16.",
+        "sca fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H32:K32",
+    "values": [
+      [
+        "• Week calculation in src/routes/attendance.ts lines 213-214 uses local-time getDay() and setHours() on UTC-midnight dates — shows Sunday Jun 14 instead of Monday Jun 15 as week start\n• src/scripts/attendance.ts lines 36-37 already use UTC methods (correct)\n• Bug affects attendance sheet print week-start day for all users",
+        "Change src/routes/attendance.ts L213-214: getDate() to getUTCDate(), getDay() to getUTCDay(), setHours() to setUTCHours(). See recipe: issue-31-attendance-sheet-week-bug.md",
+        "Jun19 hrly (fresh code): L213 getDay()/getDate() + L214 setHours() STILL local-time (NOT fixed). scripts/attendance.ts L36-37 already UTC (correct). 2-line fix NOT applied.",
+        "route fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Bug in sendBulkEmail() (admin.html line 1494) reads live bulkSelectedStudents instead of frozen snapshot\n• showStudentsInSchoolReport() clears bulkSelectedStudents on every reload (line 2219) — including while modal is open\n• _bulkEmailRecipientIds declared at line 1349 as the intended frozen snapshot — never set in openBulkEmailModal()\n• Net effect: report view reload between checkbox-tick and Send wipes recipients — 0 students sent\n• Paul (Jun 2026) reported same bug — comment at line 1348 describes the fix but it was not implemented\n• 2-line fix in public/admin.html: set _bulkEmailRecipientIds in openBulkEmailModal (after L1367) + read it in sendBulkEmail (L1494)",
+        "Set _bulkEmailRecipientIds=ids in openBulkEmailModal + read it in sendBulkEmail. See recipe: issue-33-khulan-reports-email-send.md",
+        "Jun19 hrly (fresh code): _bulkEmailRecipientIds declared L1349 — NOT set in openBulkEmailModal (L1365). sendBulkEmail L1494 reads live bulkSelectedStudents — bug CONFIRMED unfixed. 2-line fix NOT applied.",
+        "code fix pending"
+      ]
+    ]
+  }
+]

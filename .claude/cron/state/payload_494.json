@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 494th check Mon 24 Aug 2026 UTC — no change since 493rd; SCA still missing\n• Student Class Assignment 255 (class 11 B1 PM): weekEnd 2026-07-03 — expired 52 days ago\n• Booking Course 24925 (Academic Year Afternoon): active, ends 2 Oct 2026 — 39 days remaining\n• Booking Course 1982 (Academic Year Morning): ended 19 Dec 2025, still active — 248 days stale\n• Holiday ended 2026-08-21 — Saikhantes due back Mon 24 Aug (today); in school with no SCA\n• Fix NOT RUN — URGENT TODAY",
+        "Insert new Student Class Assignment (class 11) from 2026-08-24 to 2026-10-02 for Booking Course 24925 (student 1001); deactivate Booking Course 1982. Recipe: issue-15-addendum-24aug-b.md",
+        "494th Mon 24 Aug UTC. CRITICAL — classes running NOW. SCA 255 expired Jul 3 (52d ago). 39 days left on BC24925 (to Oct 2). Fix NOT RUN — URGENT TODAY.",
+        "CRITICAL: SCA needed NOW"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• 494th check Mon 24 Aug 2026 UTC — CRITICAL: Saikhantes in school today with no class assignment\n• Student Class Assignment 255: class 11, weekEnd 3 Jul 2026 — expired 52 days ago, no new assignment\n• Booking Course 24925 (Academic Year Afternoon): active, 9 Mar to 2 Oct 2026 — 39 days remaining\n• Booking Course 1982 (Academic Year Morning): ended 19 Dec 2025, still active — 248 days stale\n• Fix NOT RUN — URGENT TODAY",
+        "Create Student Class Assignment on Booking Course 24925, class 11, weekStart 6 Jul, weekEnd 2 Oct; deactivate Booking Course 1982. See recipe: issue-29-15-addendum-24aug.md",
+        "494th Mon 24 Aug UTC. Saikhantes in school today with no SCA (expired 52d). Booking Course 24925 active to 2 Oct. BC 1982 248d stale.",
+        "CRITICAL: class today, no SCA; 39d left"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 494th check Mon 24 Aug 2026 UTC — no change since 493rd\n• Booking Accommodation 11311 (bed 84, 28 Jun to 22 Aug 2026): 2 days stale, fee EUR 3,850, active = true — deactivate\n• Booking Accommodation 11393 (bed 88, 22 Aug to 13 Sep 2026): current stay, day 3, fee null — fee missing\n• Booking Course 24772 (General English AM): ends 11 Sep 2026 — 18 days remaining\n• Fix NOT RUN",
+        "Deactivate Booking Accommodation 11311; set fee on Booking Accommodation 11393 (est EUR 1,050 for 3 wks). See recipe: issue-36b-addendum-24aug-b.md",
+        "494th Mon 24 Aug UTC. No change. BA11311 2d stale. BA11393 fee null day 3. Course ends Sep 11 (18d). Fix NOT RUN.",
+        "BA11311 2d stale; BA11393 fee null"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• 494th check Mon 24 Aug 2026 UTC — no change since 492nd\n• Bed 83: 5 stale Booking Accommodations — fix NOT RUN\n• Booking Accommodation 11239 (Ivan Rodriguez Solares): ended 24 May 2026 — 92 days stale, fee EUR 1,050\n• Booking Accommodation 11168 (Diego Da Silva Saldanha): ended 20 Jun 2026 — 65 days stale, fee EUR 700\n• Booking Accommodation 11285 (Jesus Manuel Ramirez Diaz): ended 5 Jul 2026 — 50 days stale, fee null\n• Booking Accommodation 11352: ended 11 Jul 2026 — 44 days stale, fee EUR 360\n• Booking Accommodation 11179: ended 9 Aug 2026 — 15 days stale, fee EUR 1,360\n• Next occupant (BA25) starts bed 83 on 30 Aug — 6 DAYS; must deactivate stale BAs before then",
+        "Deactivate Booking Accommodations 11239, 11168, 11285, 11352, 11179 (all ended). Do NOT touch BA11173 or BA25. See recipe: issue-37-addendum-23aug-f.md",
+        "494th Mon 24 Aug UTC. Aug 30 = 6d. 5 stale BAs on bed 83 unchanged. Fix NOT RUN.",
+        "5 stale BAs; DEADLINE Aug30 = 6d"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• 494th check Mon 24 Aug 2026 UTC — no DB change since 477th\n• Booking Accommodation 11285 (Jesus Manuel Ramirez Diaz, bed 83): ended 5 Jul 2026, active = true — 50 days stale, fee = null\n• One of 5 stale Booking Accommodations on bed 83 (see issue-37-addendum-23aug-f.md for full list)\n• Next occupant (BA25) starts bed 83 on 30 Aug — 6 DAYS",
+        "Deactivate Booking Accommodation 11285 (part of 5-item fix on bed 83). See recipe: issue-37-addendum-23aug-f.md",
+        "494th Mon 24 Aug UTC. Booking Accommodation 11285 still active. Aug 30 = 6d. Fix NOT RUN.",
+        "5 stale BAs; Aug30 = 6d"
+      ]
+    ]
+  },
+  {
+    "range": "H54:K54",
+    "values": [
+      [
+        "• 494th check Mon 24 Aug 2026 UTC — no change since 493rd; arrival in 5 days (29 Aug)\n• Booking Accommodation 11267 (bed 23, 29 Aug to 4 Oct 2026): fee EUR 3,840, active = true — OK; student arrives 29 Aug\n• Booking Accommodation 11399 (bed 54, 4 Oct to 19 Dec 2026): fee null, active = true — 41 days until this stay\n• Booking 17843: CONFIRMED, confirmed = true, fully paid EUR 5,595.16\n• Fix NOT RUN — set fee on BA11399 before Oct 4",
+        "Set fee on Booking Accommodation 11399 (bed 54, 4 Oct to 19 Dec). See recipe: issue-52-addendum-24aug-b.md",
+        "494th Mon 24 Aug UTC. Arrival 5 days (29 Aug). BA11267 OK (EUR 3,840). BA11399 fee null — 41 days to Oct 4. Fix NOT RUN.",
+        "ARRIVE Aug29 5d; BA11399 fee null"
+      ]
+    ]
+  }
+]

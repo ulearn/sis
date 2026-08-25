@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 279th check Thu 20 Aug 2026 (evening) — no change since 278th (same day)\n• Payment 4781: EUR 380, Flywire 2019 — booking id = null (legacy orphan, low priority)\n• Payment 16988: EUR 339.90, Bank, 28 Apr 2026 — booking id = null (likely Booking 17856, Margherita Galbusera)\n• Payment 16989: EUR 339.90, Bank, 28 Apr 2026 — booking id = null (likely Booking 17857, Francesca Fassina)\n• Payment 17187: EUR 6,151, TransferMate Escrow, 1 May 2026 — booking id = null; leave as-is\n• Booking 17856 (Margherita Galbusera): CONFIRMED, confirmed = false, paid EUR 339.90\n• Booking 17857 (Francesca Fassina): CONFIRMED, confirmed = false, paid EUR 339.90\n• Booking Courses 24630 + 24631 (General English AM Plus): ended 10 Jul 2026 — 41 days stale, active = true",
+        "Link Payments 16988/16989 to Bookings 17856/17857; set confirmed = true on both; deactivate Booking Courses 24630+24631. See recipe: issue-1-addendum-19aug.md",
+        "279th Thu 20 Aug evening. No change. Booking Courses 24630+24631 now 41d stale. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 183rd check Thu 20 Aug 2026 (evening) — no change since 182nd (afternoon)\n• Student Class Assignment 255: booking course 24925, week start 12 Jan 2026, week end 3 Jul 2026, class 11 — 48 days since coverage ended, not covering current period\n• Booking Course 24925 (Academic Year Afternoon): active, ends 2 Oct 2026 — correct course exists\n• Booking Course 1982 (Academic Year Morning): active, ended 19 Dec 2025 — 244 days stale\n• New assignment needed: week 24–28 Aug 2026 on booking course 24925, class 11\n• Fix NOT RUN — student returns Tue 25 Aug; deadline Mon 24 Aug (4 days)",
+        "Insert Student Class Assignment for week 24–28 Aug on booking course 24925; deactivate booking course 1982. See recipe: issue-15-addendum-20aug-c.md",
+        "183rd Thu 20 Aug evening. Fix NOT RUN — student returns Tue 25 Aug. Deadline Mon 24 Aug.",
+        "URGENT: no SCA; 4d"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 248th check Thu 20 Aug 2026 (evening) — no change since 247th (afternoon)\n• Booking Accommodation 11393 (bed 88): starts Sat 22 Aug, ends 13 Sep 2026, active, fee = null — not yet set\n• Booking Accommodation 11311: ends Sat 22 Aug, active, fee = EUR 3,850 (deactivate after checkout)\n• Fee to set on Booking Accommodation 11393: EUR 1,481 (total EUR 5,331 minus EUR 3,850 charged on BA 11311)\n• Fix NOT RUN — accommodation starts Sat 22 Aug in 2 days",
+        "Set fee EUR 1,481 on booking accommodation 11393; deactivate booking accommodation 11311 after checkout Sat 22 Aug. See recipe: issue-36b-addendum-20aug-d.md",
+        "248th Thu 20 Aug evening. Fix NOT RUN. Booking accommodation 11393 starts Sat 22 Aug — 2 days.",
+        "URGENT: Sat22 2d"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 192nd check Thu 20 Aug 2026 (evening) — no change since 191st (same day)\n• Booking Course 25043 (General English PM): active = true, ended 14 Aug 2026 — 6 days stale",
+        "Deactivate Booking Course 25043. See recipe: issue-38-addendum-18aug.md",
+        "192nd Thu 20 Aug evening. Booking Course 25043 still active, 6 days after end date. Fix pending.",
+        "BC25043 6d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 145th check Thu 20 Aug 2026 (evening) — no change since 144th (afternoon)\n• Booking Accommodation 11357 (ended 15 Aug 2026): still active — 5 days stale, deactivate today\n• Booking Accommodation 11396 (15–22 Aug 2026): active, fee = null — set fee today\n• Booking Accommodation 11397 (22 Aug – 6 Sep 2026): active, fee = null — set fee today before Sat 22\n• Booking Accommodation 11392 (6–14 Sep 2026): fee = EUR 415 — no action yet\n• Total paid EUR 2,584.96: EUR 1,250 (BA 11357) + EUR 415 (BA 11392) = EUR 1,665 accounted; EUR 919.96 remaining for BAs 11396 + 11397 combined\n• Fix NOT RUN — accommodation transition Sat 22 Aug in 2 days",
+        "Deactivate booking accommodation 11357; set fees on BAs 11396+11397 (EUR 919.96 combined); deactivate BA 11396 after Sat 22. See recipe: issue-41-addendum-20aug-c.md",
+        "145th Thu 20 Aug evening. Fix NOT RUN. BA 11357 5d stale. Sat 22 = 2 days.",
+        "URGENT: Sat22 2d"
+      ]
+    ]
+  },
+  {
+    "range": "H52:K52",
+    "values": [
+      [
+        "• 16th check Thu 20 Aug 2026 (evening) — new finding: prior SQL wrong, corrected counts\n• All prior recipes used camelCase table names (BookingAccommodation, endDate) — wrong; correct table is booking_accommodations with snake_case columns\n• Stale active Booking Accommodations (end_date < now, all time): 11,194 total\n• 2026 vintage stale BAs (end_date >= 1 Jan 2026): 149 — prior 61 estimate was from wrong SQL\n• Pre-2026 historical legacy: 11,045 (oldest: 1899 — migration artefact)\n• Checkout error likely caused by 2026 stale BAs inflating weekly count",
+        "Deactivate 149 stale 2026 Booking Accommodations (preview first); investigate checkout error. See recipe: issue-50-addendum-20aug-d.md",
+        "16th Thu 20 Aug evening. SQL corrected to snake_case. 2026 stale BAs = 149 (not 61). Total 11,194 incl. legacy.",
+        "149 stale BAs; fix pending"
+      ]
+    ]
+  }
+]

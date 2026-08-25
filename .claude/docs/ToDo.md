@@ -1,3 +1,15 @@
+# Parked work plans (linked specs)
+
+- **[Migration Cleanup — Dupe & Course naming](MigrationCleanup/)** — post-Fidelo backfill cleanup, specs in `MigrationCleanup/`. (1) **Dupe** [`dupes.md`](MigrationCleanup/dupes.md): booking/payment reconnect (83 done, ~11 payment-differs left), unassigned-pool escrow/shadow flips, literal duplicate students. (2) **Course naming** [`course-canon.md`](MigrationCleanup/course-canon.md): Fidelo course names → canonical "General English…"; recipe + mapping locked, parked ready (lockstep: ILEP deriver Sets + `isRenewal=true` on renewals + webhook source). 93.7% of affected rows are historical → low current-ops impact.
+- **[Fidelo gross-vs-net booking-fee cleanup (Jan 2025+)](ToDo/fidelo-gross-net-cleanup.md)** — 474 Fidelo bookings, ~€388k drift between gross course rack-rate (in `booking_course.fee`) and net amount banked (in `booking.amount_total`). Two algorithm candidates documented, decision pending. **2025 year-end accounts depend on this.**
+- **[Centralise the WYSIWYG editors](MigrationCleanup/editor-centralisation.md)** — 5 duplicated rich-text editors in `admin.html` (divergence + maintenance risk; doc editor already differs). Font/colour controls already centralised (`rtControls()`); finish the job with a single `richEditor(id, opts)` helper emitting toolbar + contenteditable. CRITICAL: keep each editor's existing id or sends break. Low-risk, own focused task.
+- **[Student-app translation — go app-wide (Phase 2)](mobile-app/translate.md)** — Phase 1 DONE & live (KickStart €500 challenge + leaderboard translated into PT/ES/IT/FR/DE/TR/JA/KO/ZH/RU+EN via static dictionary `public/challenge-i18n.js`, auto-resolved from `Student.language`→nationality via the hub lang-map, flag toggle). Phase 2 = translate the app **chrome only** (tab/nav names, section/card headers, key buttons — ~40–60 stable strings) for "feels native" at low cost; hoist the toggle to a global spot; skip long-form + dynamic/staff-written content (needs live machine-translate, not the static model). Full mechanism + cookbook in the linked doc.
+
+---
+
+# 18.05.2026
+in the assessment. day. You know obviously most of them are gonna be just class wide assessment. They've all gone through the same experience. So they should roughly speaking at the same assessment as informed by the goals set out in the can do statements and the vocabulary in the Pearson GSE things, etcetera. The usual canonical context having said that, it would be good if there is a umm, if there were a specific section specifically tailored to any errors that that Individual Student showed either during the class as recorded by the teacher, or in their homework submissions that probably that could be corrected either by the teacher or by AII would imagine, just three questions would be fine just at the end like Personal assessment section so PAS - 3 qstns
+
 # 18.04.2026
 ● Here's the regroup.                                                                                        
                                                                  
@@ -380,4 +392,78 @@ This is the clearly defined protocol for when a student enters SIS and Xero:
 **Out of scope for now:** moving to ES modules, adding a bundler (esbuild/vite), or migrating inline handlers to `addEventListener`. Those are useful later but not the bottleneck today.
 
 **Risk:** medium during phase 3 — view code touches shared globals, easy to miss a dependency. Start with low-traffic views (e.g. Documents) before touching Students/Classes.
+
+---
+
+## Transport (was: Airport Transfer)
+
+**Renamed Transport** because the section will eventually cover several travel types — airport transfers, group bus bookings, activity/excursion shuttles, and Leap-card procurement — not just airport runs. Section lives in the SIS admin left nav, below Social.
+
+### V1 — Airport Pickup/Dropoff (in build now)
+- Data source: existing `BookingExtra` rows where `extra_type` ∈ {`AIRPORT_PICKUP`, `AIRPORT_DROPOFF`} and `scheduled_at` is within the next 4 weeks
+- UI mirrors the **Cleaning queue at Capel Street** — weekly cards (Mon–Sun), compact table inside
+- No data model changes needed; `scheduled_at` and `details` already on BookingExtra
+- Manual Link Taxis booking — staff flips a status flag once booked
+- Slack #success notification on new request (Phase 2)
+
+### V2 — Group bus bookings (deferred until Groups functionality exists)
+- Group model exists in schema but is minimal (`name`, `agency`, dates, default accom rate). No bus/transport surface yet.
+- Group quotations often include line items for bus transport (large coach booking, well in advance)
+- Surface group bus jobs in the Transport view regardless of 4-week cutoff — bus bookings need long lead time
+- Group transport types may include: airport↔accom, activity shuttles, excursion shuttles
+
+### V3 — Activity / Excursion transport
+- City-centre or accom → activity (within Dublin) or → excursion (outside Dublin)
+- Often part of a packaged trip; staff need to know who's on which bus
+- May overlap with Activities module
+
+### V4 — Leap Card procurement
+- Bulk Leap Card buy for groups (~€32/week × N students)
+- Not a scheduling problem — a procurement/task problem
+- Sub-flow: receive group student list → check if office has spare cards → recharge or buy fresh online/in person at Dublin Bus
+- When group quotes don't include a real student manifest, placeholder names ("Child 1", "Child 2", etc.) get used with age + gender only
+
+### Group functionality gap (separate from Transport)
+- Current Group model is bare bones — needs:
+  - Per-group enrolment with student manifest (real names OR placeholder rows)
+  - Per-group quotation/extras (Leap cards, bus, group accom rate)
+  - Tie-in to Bookings so transport extras inherit group context
+
+**Out of scope (anywhere on this list):** Link Taxis API integration, in-app payment, dropoff billing reconciliation.
+
+**Connects to:** Mobile app spec (`lms/.claude/1.plan/mobile-app/spec.md`) — student-facing Transport card on Profile tab pulls from the same data.
+
+---
+
+## Host Outreach — multi-channel switchers (V2; email shipped)
+
+**Shipped + LIVE (2026-07-02):** weekly email nudge — `.claude/cron/host-outreach.js`, scheduled **Mon 16:00** (crontab, `--apply`). Gate = existing matching pool, **Host Family only, any arrival date (no time horizon)** — kept identical to the portal Section-A query. Editable template `host-outreach-weekly` (Accommodation → Confirm Provider), from accomm@ with the "Accomm Team" signature. See [[project-host-portal-v1]].
+- **Future — surface cron in the admin UI** (Neil: "ultimately we're going to need it in the UI"): on/off, day/time picker, A/B slots, last-run + would-send count. For now it's code-only; edit the crontab line in the terminal to retime.
+
+**V2 — add WhatsApp / SMS channels** (Neil, 2026-07-02). Not urgent; email first, then layer these on. Expected to lift response rates.
+- **SMS is the easiest to build first** — we likely already have an SMS provider in the **bird.com** setup. But it incurs standard telephony/per-message charges → avoid unless the uplift justifies it.
+- **WhatsApp vs SMS are MUTUALLY EXCLUSIVE per host** — never send both formats. WhatsApp is effectively free to send, so prefer it *where available*; fall back to SMS otherwise.
+- **WhatsApp blocker:** we do NOT have an accomm@ **WhatsApp Cloud API** (programmatic send). We only have **WhatsApp for Business** — the *handset app* (deployable on ~5 devices), which is a different thing and can't be driven by the cron. Standing up the Cloud API (or a bird.com WhatsApp channel) is a prerequisite before any automated WhatsApp send.
+- **Open question to clarify before building:** should there be a **time delay between the email and the second channel**? e.g. send email Tue 9am, then only WhatsApp/SMS the non-responders (no portal visit / no claim) N hours/days later — vs firing all channels at once. Decide the cadence + the "did they engage?" signal that suppresses the follow-up.
+- Design the sender as a **channel switcher** (per-host preferred channel + global on/off per channel) so the same gate/recipient logic drives whichever channel(s) are enabled.
+
+### Host-portal Communications Preferences (self-serve) — future (Neil brain-dump 2026-07-02)
+Give hosts control of their own comms prefs so we stop guessing and stop staff-tracking holidays. NOT scheduled — capture only; may build later.
+
+**Entry point — profile menu (top-right):**
+- Today the portal top-right is just the ULearn logo. Add a profile affordance there: an avatar showing the host's **initials** (no photos yet). Identity isn't secret anyway — they can already see their Earnings + open invoice/bill PDFs, so the name is discoverable. No login stays (click-to-view, zero friction).
+- Click avatar → dropdown → **Communications**, living under a **Preferences** area.
+
+**Preferences → Communications:**
+- Default = everything ON (opted in). A series of simple yes/no switches.
+- Channel switches: **Email · WhatsApp · SMS** to start. Open question: collapse WhatsApp+SMS into one **"Text"** toggle (covers both texting types) vs three separate switches — decide at build. Ties into the mutually-exclusive WhatsApp-vs-SMS note above.
+
+**Snooze-for-holidays (the important UX):**
+- Surface snooze **up front** as a first-class button beside the on/off — NOT buried behind "turn off". Rationale: people won't switch comms off if it feels permanent/forever, and a permanent off means they must *remember* to switch back on. A dated snooze removes both the fear and the remembering.
+- Two paths when a host wants to stop:
+  - **Snooze for holidays** → immediately flips comms off AND surfaces a calendar (**Snooze from / Snooze until**); the end date auto-returns them to the fold (comms back on) with no action from them.
+  - **Permanent off** → stays off until they re-enable.
+- This is the host self-serve replacement for the deleted staff-set `activeFrom`/`activeTo` — the host declares their own away-window; we don't track holidays. (A host claiming a student is itself a live "I'm available" signal.)
+
+**Rollout:** start minimal — surface the Communications area with just **Email** toggled on; layer WhatsApp/SMS + the snooze as those channels come online.
 

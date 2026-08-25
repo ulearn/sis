@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H12:K12",
+    "values": [
+      [
+        "• 6th check Mon 27 Jul 2026 UTC — UNCHANGED\n• Student 1063 (Valeriya Salauyova): hubspotContactId = null — 48 days since last update (9 Jun 2026)\n• Booking 17912: Confirmed, EUR 1,938 / 1,938 fully paid, confirmed = true (last updated 8 Jul 2026)\n• Fix: search HubSpot for Valeriya Salauyova and backfill contact ID on student record",
+        "Backfill hubspotContactId for student 1063. See recipe: issue-11-addendum-27jul.md",
+        "6th check Mon 27 Jul UTC. Student 1063 hubspotContactId=STILL null (48d since Jun09). BK17912 Confirmed EUR1938/1938. Fix NOT RUN.",
+        "hubspot link null; 48d"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• 58th hourly check Mon 27 Jul 2026 UTC — unchanged\n• Booking 1605 (Ariunsarnai Batbayar, student 1047): status PENDING, confirmed = false — Day 112 since 6 Apr 2026\n• Amount paid EUR 0; amount total EUR 1,509 — 0 payment records confirmed (fresh DB)\n• Booking last updated 23 Jun 2026 (34 days ago)\n• Booking course 1791 (Academic Year Renewal Morning, Apr 13–Oct 23 2026): active = true",
+        "Investigate why booking 1605 has 0 payments after 112 days; cancel or chase. See recipe: issue-20-addendum-27jul.md",
+        "58th hrly Mon 27 Jul UTC. Booking 1605 PENDING Day 112 (since Apr 06). EUR 0 / EUR 1,509. 0 payments confirmed fresh. Fix NOT RUN.",
+        "Day 112; EUR 0 / 1509"
+      ]
+    ]
+  },
+  {
+    "range": "H37:K37",
+    "values": [
+      [
+        "• Mon 27 Jul 2026 UTC (code check 19) — unchanged, B/F/G hash updated\n• Git HEAD: 9008d10 (Classes/Financial 17 Jul 2026) — no attendance commits since Jul 17\n• Homework section: renderSheetHtml() in src/routes/attendance.ts (lines 36-128) — no homework block present — awaiting layout spec from Neil and Paul\n• Holiday display bug: getWeekAttendance() in src/scripts/attendance.ts (line 31) — students on holiday still appear with live checkboxes\n• Fix NOT RUN — awaiting layout spec",
+        "Fix holiday filter in getWeekAttendance(); add homework block after spec confirmed. See recipe: issue-36-attendance-homework-section.md",
+        "Mon 27 Jul UTC (code check 19). B/F/G hash updated (G-column reformatted by staff — same false-positive pattern). Code unchanged since commit 9008d10. 2 open bugs: homework block absent, holiday not filtered. Fix NOT RUN.",
+        "code open; awaiting spec"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 135th check Mon 27 Jul 2026 UTC — Aug Bank Holiday STILL ABSENT, DEADLINE Fri 31 Jul (4 days left)\n• School closures: 9 entries confirmed fresh — Aug 3 2026 absent\n• 17 active booking courses start Aug 3 2026 — auto-shunt blocked until closure record added\n• All 17 Booking Course IDs: 88, 97, 1755, 1766, 24627, 24908, 24956, 24958, 24959, 24964, 24970, 24984, 24999, 25002, 25003, 25010, 25016",
+        "Insert Aug BH closure; shunt 17 Booking Courses to Aug 4. Deadline Fri 31 Jul. See recipe: issue-38-addendum-27jul-e.md",
+        "135th hrly Mon 27 Jul UTC. Aug Bank Holiday still absent confirmed fresh (9 closures only). 17 Booking Courses start Aug 3. DEADLINE Fri Jul 31 (4 days). Fix NOT RUN.",
+        "Aug BH; DEADLINE Fri; 4 days"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• 135th check Mon 27 Jul 2026 UTC — 0 class assignments confirmed fresh, COURSE ENDS FRI 31 JUL\n• Booking course 24609 (Morning General, Jul 13–Jul 31 2026): active = true, 0 class assignments\n• Accommodation booking 11358 (bed 180, Jul 12–Aug 2): active = true, bed assigned\n• Xuezhen Huang (student 14443), booking 17831, EUR 570 paid\n• 4 school days remain: Tue 28 – Fri 31 Jul\n• ASSIGN TONIGHT: last chance before course ends Friday",
+        "Assign Booking Course 24609 to Morning General class tonight. See recipe: issue-39-addendum-27jul-f.md",
+        "135th hrly Mon 27 Jul UTC. Booking Course 24609: 0 class assignments confirmed fresh. Course ends Fri Jul 31 (4 days remain). Accommodation present (bed 180). ASSIGN TONIGHT. Fix NOT RUN.",
+        "CRITICAL; 4d left; assign tonight"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 135th check Mon 27 Jul 2026 UTC — Capel Street accommodation still absent — CHECK-IN SUN AUG 2 (6 days)\n• Booking 18180 (Giampaolo Russo, student 14571): confirmed, EUR 2,584.96 fully paid\n• Booking accommodation 11357 (bed 178, host family): present, active, Aug 2–Sep 6 confirmed fresh\n• Capel Street booking accommodation (Sep 6–Sep 14 2026): ABSENT — 1 booking accommodation only confirmed fresh\n• Booking course 24956 (General English AM, Aug 3–Sep 11): 0 class assignments; blocked by Issue 38",
+        "Create Capel accommodation booking; assign Booking Course 24956 after Issue 38 fix. See recipe: issue-41-addendum-27jul-d.md",
+        "135th hrly Mon 27 Jul UTC. Capel accommodation still absent (1 booking accommodation confirmed: bed 178 host family Aug 2–Sep 6). Booking Course 24956: 0 class assignments. Check-in Aug 2 (6 days). Fix NOT RUN.",
+        "Capel missing; check-in 6d"
+      ]
+    ]
+  }
+]

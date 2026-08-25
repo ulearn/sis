@@ -1,0 +1,50 @@
+[
+  {
+    "range": "J23",
+    "values": [
+      [
+        "Jun12 hrly(cron): UNCHANGED. bk18131 CONF 1185+bk18133 CONF 648 NOT cancelled. pmt17728/17730/17852 all xeroId=null NOT deleted. bk18158 PEND 0/740. c24933(fee=380)+c24934(DUP fee=360) active. s1015 0 new SCAs. STARTS MON JUN15. All 4 steps not run."
+      ]
+    ]
+  },
+  {
+    "range": "J25",
+    "values": [
+      [
+        "Jun12 hrly(cron) D48 14d left: UNCHANGED. bk1611 CONF 1280.12 updAt=Jun11. bc1797 MORN Apr06-Jun26 ACTIVE. sca229 cls12 expired Apr26(48d). att=0 ALL TIME. c24686 Jul20-Sep18 0SCAs. 0 hols. Window closes Jun26. If returning(NOT RUN): INSERT sca bci=1797 cls12 ws=Jun12 we=Jun26 sid=1052."
+      ]
+    ]
+  },
+  {
+    "range": "J27",
+    "values": [
+      [
+        "Jun12 hrly(cron): UNCHANGED. s14532 Ernesto 0SCAs ALL TIME. bc24826 INTENSIVE Jun08-19(WK2 Mon-Fri). bk18034 PARTIAL 845/1095 conf=false. currentLevel=null DB+HS(id=3344151). WK1 MISSED. Level pairs: A2=cls8/9,B1=cls5or12/11,B2-C1=cls4/6,C1=cls13/14. SQL NOT RUN. NEIL: get level from staff NOW."
+      ]
+    ]
+  },
+  {
+    "range": "J30",
+    "values": [
+      [
+        "Jun12 hrly(cron) D155 21d: UNCHANGED. s1001 Saikhantes B1 visaStatus=null. att=0 ALL TIME(COUNT=0). sca255 cls11-B1PM we=Jul03(21d). bk18151 CONF 1339.2. 152+d enrolled 0att. Not in cls11 register. NEIL: ask B1PM teacher in person TODAY. If absent: IRP compliance escalation urgently."
+      ]
+    ]
+  },
+  {
+    "range": "J31",
+    "values": [
+      [
+        "Jun12 hrly(cron) CRITICAL: UNCHANGED. s88 Giulia JUNIOR level=null 0SCAs. bk94 CONF 1151.5 c104 Jun15-26. bk18044 CONF DUP NOT CANCELLED. bk18152 Milena(s14557) PEND NOT CANCELLED. pmt17607 dbl-import xeroId=null. ALL 4 STEPS NOT RUN. TODAY=LAST BUSINESS DAY. STARTS MON JUN15."
+      ]
+    ]
+  },
+  {
+    "range": "J32",
+    "values": [
+      [
+        "Jun12 hrly(cron): UNCHANGED. BST bug NOT FIXED. 9 stale SCAs week_end=null(ids:39,40,65,66,74,75,81,87,100)—all courses now ended(3 ended TODAY:bc1539/1641/1683). Mon Jun15 att sheet WILL show Sun Jun14. SQL+code fix BOTH NOT RUN. NEIL: BOTH FIXES TONIGHT."
+      ]
+    ]
+  }
+]

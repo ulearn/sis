@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H17:K17",
+    "values": [
+      [
+        "• 33rd check Sat 22 Aug 2026 UTC — no change since 32nd (Thu 20 Aug)\n• Booking Accommodation 11216 (booking 46, bed 66): ended 9 May 2026 — 105 days stale, active = true\n• Booking Accommodation 11158 (booking 100, bed 66): ended 17 May 2026 — 97 days stale, active = true\n• Booking Accommodation 11282 (booking 17897, bed 66): ended 5 Jun 2026 — 78 days stale, active = true\n• Booking Accommodation 11361 (booking 18190, bed 66): ended 9 Aug 2026 — 13 days stale, active = true\n• Bed 66 free since 9 Aug 2026\n• Fix NOT RUN",
+        "CORRECTED recipe: see issue-16-addendum-19aug.md (table name bug fixed). Main recipe: issue-16-stale-bas.md.",
+        "33rd Sat 22 Aug UTC. No change. BA 11216 now 105d stale (max). Fix NOT RUN.",
+        "4 BAs stale; 105d max"
+      ]
+    ]
+  },
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "• 40th check Sat 22 Aug 2026 UTC — NEW: BC 1350 end date extended 13 Nov → 27 Nov 2026 (updated 21 Aug 12:46 UTC)\n• Booking Course 1350 (Ana Jessica Rosa de Paula Santos, booking 1308, Academic Year Afternoon): active = true, ends 27 Nov 2026, 0 class assignments\n• Booking 1308: status = CANCELLED, confirmed = false, amount paid = EUR 1,530, amount open = null\n• BC 1350 end date extended on a CANCELLED booking — anomaly (investigate who changed it)\n• Clarification needed: is EUR 1,530 refunded or applied to another booking?\n• Fix NOT RUN",
+        "Deactivate BC 1350 (0 class assignments); confirm EUR 1,530 refund status. See recipe: issue-17-addendum-22aug.md",
+        "40th Sat 22 Aug UTC. BC 1350 end date extended Nov 13→27 on CANCELLED bk1308 (updated 21 Aug 12:46). Still 0 SCAs. Fix NOT RUN.",
+        "BC1350 active; EUR 1,530 cancelled"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• 39th check Sat 22 Aug 2026 UTC — no change since 38th (Fri 21 Aug)\n• Student 983 (Flávia Nascimento Mariano): visa status = null, last updated 19 Aug 2026\n• Booking 1534: CONFIRMED, confirmed = true, amount paid = EUR 1,308, amount open = EUR 0 — fully paid\n• Payment 17035: EUR 250, Bank Transfer, 5 May 2026 — Xero payment ID = null (unreconciled)\n• Payment 17527: EUR 1,058, Bank, 28 May 2026 — Xero payment ID = null (unreconciled)\n• Booking Course 1710 (Academic Year Afternoon): active = true, ends 27 Nov 2026, 2 class assignments\n• Visa must be set to approved before student can be class-assigned\n• Fix NOT RUN",
+        "Set visa status on student 983; reconcile payments 17035 + 17527 in Xero. See recipe: issue-18-addendum-19aug.md",
+        "39th Sat 22 Aug UTC. Student 983 last updated 19 Aug. Visa still null. Payments 17035+17527 Xero ID null. Booking Course 1710 active with 2 class assignments. Fix NOT RUN.",
+        "visa null; pmts unreconciled"
+      ]
+    ]
+  },
+  {
+    "range": "H24:K24",
+    "values": [
+      [
+        "• 18th check Sat 22 Aug 2026 UTC — no change since 17th (Thu 20 Aug)\n• Student 397 (Enshi Lu), booking 787: CONFIRMED, fully paid EUR 2,147.50\n• Booking Course 826 (Academic Year Morning): ended 28 Nov 2025 — 265 days stale, active = true, 0 class assignments\n• Booking Course 827 (Academic Year Morning): ended 30 Jan 2026 — 202 days stale, active = true, 0 class assignments\n• Booking Course 828 (Academic Year Morning): start 2 Mar 2026, end 27 Feb 2026 — BACKWARDS dates, active = true, 0 class assignments\n• Booking Course 829 (Academic Year Morning): ended 5 Jun 2026 — 78 days stale, active = true, 1 class assignment (historical)\n• Fix NOT RUN",
+        "Fix Booking Course 828 backwards end date; deactivate Booking Courses 826, 827, 829. See recipe: issue-23-addendum-20aug.md",
+        "18th Sat 22 Aug UTC. No change. BC 826 now 265d stale. BC 829 now 78d stale (1 class assignment — verify before deactivating). Fix NOT RUN.",
+        "backwards dates; low-pri"
+      ]
+    ]
+  },
+  {
+    "range": "H28:K28",
+    "values": [
+      [
+        "• 56th check Sat 22 Aug 2026 UTC — no change since 55th (Thu 20 Aug)\n• Booking 17909 (Sofiia Korkishchenko, student 768): status = CANCELLED, confirmed = true (anomaly)\n• Amount paid = EUR 0, amount open = EUR 727.50 — zero payment records\n• Last updated 17 Jun 2026 — 66 days since last change\n• Booking Course 24693 (Renewal - Academic Year PM, ends 13 Nov 2026): active = true, 0 class assignments\n• Duplicate tracking of Issue 7 (row 8) — same fix required\n• Fix NOT RUN",
+        "Set Booking 17909 confirmed = false; deactivate Booking Course 24693. See recipe: issue-27-addendum-16aug.md",
+        "56th Sat 22 Aug UTC. Unchanged 66 days. Same fix as Issue 7 (row 8). Fix NOT RUN.",
+        "bk17909 CANCELLED+confirmed; 66d"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 126th check Sat 22 Aug 2026 UTC — no change since 125th (Fri 21 Aug ~17:00 UTC)\n• Stale active Booking Courses (end date before 22 Aug 2026): 24,515 — confirmed (matches Fri projection)\n• Oldest stale entries: Booking Courses 24047, 24090, 24131 with end date 1899-12-31 (likely migration artefacts)\n• Renewal students with stale active Booking Courses do not appear correctly on arrivals list\n• Fix NOT RUN",
+        "Run bulk deactivation of 24,515 stale Booking Courses. Recipe: issue-45-addendum-21aug-c.md",
+        "126th Sat 22 Aug UTC. 24,515 stale confirmed. Oldest BCs (id 24047/24090/24131) have epoch date 1899-12-31 (migration artefacts — handle separately). Fix NOT RUN.",
+        "24,515 stale; fix pending"
+      ]
+    ]
+  }
+]

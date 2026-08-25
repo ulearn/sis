@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• 60th hourly check Tue 28 Jul 2026 UTC — unchanged\n• Booking 1605 (Ariunsarnai Batbayar, student 1047): status PENDING, confirmed = false — Day 113 since 6 Apr 2026\n• Amount paid EUR 0; amount total EUR 1,509 — no payments recorded on booking\n• No class assignments for student 1047\n• Student has been inactive for 113 days — possible dropout or non-starter",
+        "Confirm with staff whether student 1047 is dropout or delayed. If dropout: cancel booking 1605. See recipe: issue-20-addendum-28jul.md",
+        "60th hrly Tue 28 Jul UTC. UNCHANGED. Booking 1605 PENDING EUR 0/1509. Day 113. No payments, no SCAs. Fix NOT RUN.",
+        "Day 113; EUR 0 / 1509"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• 139th check Tue 28 Jul 2026 UTC — 0 class assignments confirmed\n• Student 1015 (Edith Nunes): BC 24991 (General English AM, 13 Jul-7 Aug 2026): active=true, 0 class assignments\n• Course ends 7 Aug 2026 — 10 days remain\n• Duplicate booking courses 24933+24934 on booking 18158: both active, same Jun 15 start date — anomaly unresolved",
+        "Resolve duplicate BCs 24933/24934 on bk18158; assign student 1015 to class on BC 24991. See recipe: issue-22-addendum-28jul-c.md",
+        "139th hrly Tue 28 Jul UTC. BC24991 0 SCAs. 10d remain (ends Aug 7). Dup BCs 24933+24934 (bk18158) both active. URGENT. Fix NOT RUN.",
+        "CRITICAL; 10d left"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• 138th check Tue 28 Jul 2026 UTC — 0 class assignments, fee null, 9 days lost\n• Student 1052 (Alberto Squillace): booking 1611 Confirmed, EUR 1280.12/1280.12 fully paid\n• Booking course 24686 (Morning General, 20 Jul-18 Sep 2026): active=true, fee=null, 0 class assignments\n• 9 teaching days lost since Jul 20; 52 days remain to course end",
+        "Assign student 1052 to Morning General class on BC 24686; set BC fee. See recipe: issue-24-addendum-28jul-b.md",
+        "138th hrly Tue 28 Jul UTC. BC24686 0 SCAs fee=null. 9d lost since Jul20; 52d remain (ends Sep18). Fix NOT RUN.",
+        "URGENT; 9d lost; 52d remain"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 145th check Tue 28 Jul 2026 UTC — DEADLINE Fri 31 Jul (3 days), Aug Bank Holiday STILL absent\n• School closures: 9 entries (Good Fridays 2026-2030, Christmas 2026-2029) — August BH 2026-08-03 absent from DB\n• 19 active booking courses start Aug 3 — unchanged\n• Duplicate BCs 25002+25003: both General English AM, both active=true, 0 class assignments, same booking 18225 (Aleix Cervera Gonzalez) — deactivate one\n• Pending bookings 18249 (Edgar Gilabert Mata, BC25028) + 18250 (Monica Breier Fiametti, BC25029) still pending",
+        "Add Aug BH closure; shunt 19 BCs to Aug 4; deactivate BC25003. See recipe: issue-38-addendum-28jul-f.md",
+        "145th hrly Tue 28 Jul UTC. 19 BCs Aug3 unchanged. Dup BC25002+25003 (Aleix bk18225): both active 0 SCAs — deactivate 25003. BKs 18249+18250 still pending. DEADLINE Fri 31 Jul. Fix NOT RUN.",
+        "Aug BH; DEADLINE Fri; 3 days"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• 144th check Tue 28 Jul 2026 UTC — CRITICAL, course ends Thu 31 Jul (3 days), 0 class assignments\n• Student 14443 (Xuezhen Huang): booking 17831 Confirmed, EUR 1396.90/1396.90 fully paid\n• Booking course 24609 (Morning General, 12 Jul-31 Jul 2026): active=true, 0 class assignments (18 days in)\n• Booking accommodation 11358: bed 180, 12 Jul-2 Aug 2026, active=true (runs 2 days past course end)\n• TODAY is last practical window — 2 teaching days remain (Wed 29, Thu 30 Jul)",
+        "Assign student 14443 to Morning General class on BC 24609 immediately. See recipe: issue-39-addendum-28jul-d.md",
+        "144th hrly Tue 28 Jul UTC. BC24609 0 SCAs (0/18d). Ends Thu Jul31 (3d). BA11358 bed180 ends Aug2 (2d past course). ABSOLUTE LAST CHANCE. Fix NOT RUN.",
+        "CRITICAL; 3d left; assign today"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 144th check Tue 28 Jul 2026 UTC — Capel apartment still absent, host family check-in Sun Aug 2 (5 days)\n• Booking 18180 (Giampaolo Russo, student 14571): Confirmed, EUR 2584.96/2584.96 fully paid\n• Booking accommodation 11357: bed 178, host family, 2 Aug-6 Sep 2026, active=true, fee EUR 1250 — confirmed\n• Capel apartment booking accommodation: ABSENT — only 1 BA on this booking\n• Booking course 24956 (General English AM, 3 Aug-22 Aug 2026): starts on Aug Bank Holiday — blocked by Issue 38",
+        "Fix Issue 38 first (Aug3 BH shunt); create Capel apartment BA on booking 18180. See recipe: issue-41-addendum-28jul-d.md",
+        "144th hrly Tue 28 Jul UTC. 1 BA only (BA11357 host family bed178 Aug2-Sep6 EUR1250). Capel BA absent. BC24956 starts Aug3 (Aug BH, see issue 38). Check-in Sun Aug2 (5d). Fix NOT RUN.",
+        "Capel missing; check-in 5d"
+      ]
+    ]
+  }
+]

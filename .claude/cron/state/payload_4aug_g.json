@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H17:K17",
+    "values": [
+      [
+        "• 12th check Tue 4 Aug 2026 UTC — no change\n• Booking accommodation 11282 (Melie Villard, bed 66, booking 17897): ended 2026-06-05 — 60 days stale, active = true, fee = EUR 720\n• Bed 66 currently occupied by Filippo Corazzini (booking accommodation 11361, Jul 19–Aug 9) — BA 11282 is cosmetic only\n• Additional stale BAs on bed 66: 11158 (Hugo Tavernier, ended May 17) and 11216 (Erii Takigawa, ended May 9) — also active, same deactivation batch",
+        "Deactivate BAs 11282, 11158, 11216 on bed 66. See recipe: issue-16-addendum-4aug.md",
+        "12th hrly Tue 4 Aug UTC. BA 11282 60d stale. Bed 66 occupied by Filippo (BA11361 Jul19-Aug9). Also stale: BAs 11158+11216 (same bed). Cosmetic. Fix NOT RUN.",
+        "60d stale; cosmetic"
+      ]
+    ]
+  },
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "• 22nd check Tue 4 Aug 2026 UTC — unchanged\n• Booking 1308 (Ana Jessica Rosa de Paula Santos): CANCELLED, confirmed = false, last updated 7 Jun 2026 (58 days)\n• Amount paid = EUR 1,530, amount open = null — full amount on a cancelled booking\n• Booking course 1350 (Academic Year Afternoon, ends 13 Nov 2026): active = true — stale on cancelled booking\n• Payment 17186: EUR 1,280, transactionId = D2026101, xeroPaymentId = null — unreconciled\n• Payment 17050: EUR 250, transactionId = D2026101, xeroPaymentId = null — unreconciled (same transaction ID as 17186 — possible split import)",
+        "Reinstate booking 1308 or confirm cancellation; deactivate BC 1350; reconcile pmts 17186+17050 in Xero. See recipe: issue-17-addendum-4aug.md",
+        "22nd hrly Tue 4 Aug UTC. Booking 1308 CANCELLED 58d. BC 1350 stale (ends Nov 13). Pmts 17186+17050 both xero=null, same transactionId D2026101. Neil: reinstate or confirm cancel? Fix NOT RUN.",
+        "pmts unreconciled; 58d"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• 5th check Tue 4 Aug 2026 UTC — unchanged\n• Student 983 (Flavia Nascimento Mariano): visa_status = null, last student update 28 Jul 2026\n• Booking course 1710 (Academic Year Afternoon, Jun 1 to Nov 20 2026): 2 class assignments — SCA 256 (A2 PM, Jun 1 to 14) + SCA 265 (B1 PM, Jun 15 to Nov 20)\n• Student attending class (B1 PM). Visa null blocks UI class-assignment view only — student otherwise operational",
+        "Set visa_status = Approved on student 983 (UI: Student Edit > Visa dropdown). See recipe: issue-18-addendum-4aug.md",
+        "5th hrly Tue 4 Aug UTC. Visa still null (unchanged since first flag). 2 SCAs active. Student attending B1 PM. Low-priority. Fix NOT RUN.",
+        "visa null; class OK"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• 50th check Tue 4 Aug 2026 UTC — no change since 49th check (Mon 3 Aug)\n• Booking course 23 (Intensive General 30, ended 22 May 2026, booking 22): active = true — 74 days stale\n• Booking course 24826 (2 weeks Intensive General 30, ended 19 Jun 2026, booking 18034): active = true — 46 days stale\n• Booking 18034 (student 14532): PARTIAL, confirmed = false, amount total = EUR 1,095, amount open = EUR 250\n• Payment 17683 (EUR 845): Bank, payment date 23 Apr 2026, booking 18034, xeroPaymentId = null — 103 days since payment date",
+        "Deactivate booking courses 23+24826; chase EUR 250 on booking 18034; link payment 17683 in Xero. See recipe: issue-26-addendum-4aug.md",
+        "50th hrly Tue 4 Aug UTC. UNCHANGED. BCs 23+24826 stale 74d/46d. EUR 250 open. Pmt 17683 xeroPaymentId=null 103d (since Apr 23). Fix NOT RUN.",
+        "2 BCs stale; EUR250 open; 74d"
+      ]
+    ]
+  },
+  {
+    "range": "H28:K28",
+    "values": [
+      [
+        "• 39th check Tue 4 Aug 2026 UTC — unchanged since 38th check (Mon 3 Aug)\n• Booking 17909 (Sofiia Korkishchenko, student 768): status = CANCELLED, confirmed = true — anomaly, last updated 17 Jun 2026 (48 days)\n• Booking course 24693 (Renewal Academic Year PM, 25 May to 13 Nov 2026): active = true on cancelled booking\n• Amount open = EUR 727.50, amount paid = EUR 0 — no payments received",
+        "Set confirmed = false on booking 17909; deactivate booking course 24693. See recipe: issue-27-addendum-4aug.md",
+        "39th hrly Tue 4 Aug UTC. UNCHANGED (48 days, since Jun 17). Bk17909 CANCELLED + confirmed = true. BC 24693 still active on cancelled booking. Fix NOT RUN.",
+        "bk17909 anomaly; 48d"
+      ]
+    ]
+  },
+  {
+    "range": "H37:K37",
+    "values": [
+      [
+        "• Tue 4 Aug 2026 UTC (code check 27) — unchanged from check 26 (Sun 2 Aug)\n• Last commit touching attendance files: 9008d10 (Classes/Financial — compressUploads middleware only; holiday and homework logic untouched)\n• Bug A — homework block: still absent from renderSheetHtml() in src/routes/attendance.ts — awaiting spec from Neil and Paul\n• Bug B — holiday filter: getWeekAttendance() in src/scripts/attendance.ts still has no BookingHoliday filter — students on holiday appear on sheet with live checkboxes (studentSummary is holiday-aware; getWeekAttendance is not)\n• 88 days since last attendance logic change",
+        "Fix BookingHoliday filter in getWeekAttendance() (no spec needed); add homework block after spec confirmed. See recipe: issue-36-addendum-4aug.md",
+        "Tue 4 Aug UTC (code check 27). Unchanged. Bug A awaiting spec from Neil+Paul. Bug B (holiday filter) ready to fix — no spec needed.",
+        "code open; awaiting spec"
+      ]
+    ]
+  }
+]

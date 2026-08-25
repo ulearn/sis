@@ -1,0 +1,13 @@
+{
+  "_comment": "MANUAL COHORT EXCEPTIONS. Standard (0 order-level-discount) invoices that DataSync is failing to sync properly, so OUR code owns them instead — builds/maintains the Xero invoice AND mirrors payments back to HubSpot, exactly like a real cohort (discount>0) invoice. Temporary safety net: remove an entry once DataSync handles it cleanly. A match on EITHER dealId OR invoiceNumber is enough. Keep this file in sync with the hub copy at fins/scripts/xero/cohort-exceptions.json (the payment-sync cron reads that one).",
+  "dealIds": [
+    "500883363036",
+    "505385359567",
+    "503570020542"
+  ],
+  "invoiceNumbers": [
+    "INV-1352",
+    "INV-1355",
+    "INV-1358"
+  ]
+}

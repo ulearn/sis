@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• 5 students have bad mobile-number data\n• Email in phone field — Dolgormaa (1897): saraa.tpb@gmail.com; Aki (8567): aki-hinaaki1116@ezudo.he.jp\n• Annotation in phone field — Jieun Lee (1194): 00821097366523 (home contry); Lisa Li (5345): 0864645297 (Husband)\n• Invisible unicode trailing chars — Alessandra Saito de Araujo (10343): +353 (83) 885 9162 + U+202C chars\n• All 5 UNCHANGED since first reported (day 72+)",
+        "Clean per recipe; 1194/5345/10343 fixable now (strip annotation/unicode); 1897/8567 need real# from HubSpot/staff. See recipe: issue-5-mobile-numbers.md",
+        "Jun21 hrly: all 5 UNCHANGED (fresh DB). s1897 phone=email saraa.tpb@gmail.com (Apr28=54d). s8567 phone=email aki-hinaaki1116@ezudo.he.jp (Apr10=72d). s1194 annotated (home contry) (May07=45d). s5345 annotated (Husband) (Apr10=72d). s10343 unicode U+202C (Apr28=54d). 3 self-fixable (1194/5345/10343); 2 need real# from staff (1897/8567). Max stale 72 days. Await Neil.",
+        "info needed"
+      ]
+    ]
+  },
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "• Booking 1498 is CONFIRMED (status), but confirmed = false and amount paid = null\n• Document 171 is a DRAFT certificate (template 82) — stale since Jun 05\n• Booking course 1660 ended Jun 05 — cert was never issued after course ended",
+        "(NOT RUN) Issue cert via SIS student 947 booking 1498 Documents — Issue button. See recipe: issue-8-suvderdene-cert-dates.md",
+        "Jun21 hrly: doc171 STILL DRAFT tmpl82 (cert), updAt=Jun05 — 16 days stale (unchanged). bk1498 CONFIRMED conf=false amtPaid=null (updAt=May21=31d stale). Course ended Jun05. NEIL: SIS → student 947 → booking 1498 → Documents → Issue button.",
+        "cert DRAFT 16d"
+      ]
+    ]
+  },
+  {
+    "range": "H11:K11",
+    "values": [
+      [
+        "• Booking 97 is CONFIRMED, paid 1741 / 1741\n• Documents 63 and 64 are INVOICES (template 78), not certificates\n• Booking 97 has 0 certificate documents\n• Booking 18002 has Document 179 certificate ISSUED (OK, different booking)",
+        "(NOT RUN) Generate cert for bk97 (Apr27-May22) via SIS Massimiliano bk97 Docs Generate Certificate. See recipe: issue-9-massimiliano-cert-split.md",
+        "Jun21 hrly: bk97 UNCHANGED CONFIRMED 1741/1741 (updAt=Jun05=16d stale). doc63 REVOKED + doc64 ISSUED both tmpl78 (invoices only). 0 certificate docs (tmpl82) for bk97. Course bc107 ended May22 = 30 days ago. NEIL: SIS → student 91 → bk97 → Documents → Generate Certificate.",
+        "cert bk97 30d"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• Stray cell — only content is 278 in column F (Area), all other fields are empty\n• No student name, no issue description, no context — cannot diagnose",
+        "Delete row 39 if accidental entry, or complete the missing fields (issue number, student name, description).",
+        "Jun21 hrly: phantom row STILL PRESENT (F=278 only, all other fields empty, 40+ days). NEIL: delete row 39 if accidental entry, or fill in issue number, student name, and description.",
+        "del or fill"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Student 356 (Shih-Wei Huang) has gender = null — never set in personal details (last updated Jun 03, 18 days stale)\n• Exit letter (document 238, template 4, booking 560) is STILL ISSUED since Jun 18 08:53 UTC — wrong Ms./she/her pronouns\n• Document encoding: gender null → isMale=false → salutation=Ms, pronoun=she/her — no null guard in code\n• Code fix needed in documents.ts for null-gender handling (all null-gender docs will silently use Ms./she/her)",
+        "1) Set gender=Male on student 356 via SIS personal details; 2) revoke document 238; 3) regenerate exit letter for booking 560. See recipe: issue-32-shih-wei-gender-default.md",
+        "Jun21 hrly: s356 gender=null UNCHANGED (updAt=Jun03=18d stale). doc238 STILL ISSUED Jun18T08:53UTC — 3 days elapsed, wrong Ms./she/her pronouns on exit letter booking 560 (templateId=4). NEIL: SIS → student 356 → Personal Details → set gender=Male; revoke doc238; regenerate exit letter.",
+        "urgent; revoke doc238"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Bug in sendBulkEmail() (admin.html line 1494) reads live bulkSelectedStudents instead of frozen snapshot\n• showStudentsInSchoolReport() clears bulkSelectedStudents on every reload (line 2219) — including while modal is open\n• openBulkEmailModal() (line 1367) captures ids=[...bulkSelectedStudents] into local var but never stores into _bulkEmailRecipientIds\n• _bulkEmailRecipientIds declared at line 1349 as the intended frozen snapshot — but is never populated",
+        "Set _bulkEmailRecipientIds=ids in openBulkEmailModal + read it in sendBulkEmail. See recipe: issue-33-khulan-reports-email-send.md",
+        "Jun21 hrly: bug CONFIRMED STILL PRESENT. L1349 _bulkEmailRecipientIds=[] declared but never set in openBulkEmailModal. L1367 captures local ids=[...bulkSelectedStudents] but does NOT assign to _bulkEmailRecipientIds. L1494 sendBulkEmail re-reads live Set (cleared by L2219 showStudentsInSchoolReport on every render). Fix: 2 lines in public/admin.html, no build or restart. NOT YET APPLIED.",
+        "code fix pending"
+      ]
+    ]
+  }
+]

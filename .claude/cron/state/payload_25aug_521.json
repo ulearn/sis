@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H33:K33",
+    "values": [
+      [
+        "• 20th check Tue 25 Aug 2026 UTC — no change since 19th (Mon 24 Aug)\n• Only content is value 278 in column F (Veronica Martin student ID — misplaced)\n• Veronica Martin accommodation resolved via Issue 37 (row 39); this row is a phantom entry\n• Safe to delete from sheet",
+        "Delete this row (phantom entry — no actual issue). See recipe: issue-32-addendum-24aug.md",
+        "20th Tue 25 Aug UTC. Phantom row unchanged since Mon 24 Aug. Neil to delete manually from sheet.",
+        "phantom row; delete"
+      ]
+    ]
+  },
+  {
+    "range": "H37:K37",
+    "values": [
+      [
+        "• 499th check Tue 25 Aug 2026 UTC — no change since 498th (Mon 24 Aug)\n• renderSheetHtml() (lines 36–130, src/routes/attendance.ts): no homework section present\n• getWeekAttendance(): no school_closures check\n• Fix NOT RUN — awaiting spec from Paul/Neil on homework format",
+        "Add homework block to renderSheetHtml(); add closure check to getWeekAttendance(). Awaiting spec. See recipe: issue-36-addendum-25aug.md",
+        "499th Tue 25 Aug UTC. G column unchanged. Code unchanged. Awaiting spec.",
+        "code open; awaiting spec"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• 520th check Tue 25 Aug 2026 UTC — no change since 519th (earlier today)\n• Booking Accommodation 11173 (Alessandro Signorotti, bed 83): ends 30 Aug 2026 — 5 DAYS AWAY, cleanedAt = null\n• Booking Accommodation 25 (Rosa Maria Mollica, bed 83): starts 30 Aug 2026 — 5 DAYS AWAY, fee EUR 2,100\n• 5 stale Booking Accommodations on bed 83 still active = true: BA11239 (93d), BA11168 (66d), BA11285 (51d, fee null), BA11352 (45d, uncleaned), BA11179 (16d)\n• BA11173 needs cleaning before Rosa Mollica moves in on 30 Aug\n• DEADLINE in 5 days — deactivation fix NOT RUN",
+        "Deactivate BA11239/11168/11285/11352/11179 before 30 Aug; set fee on BA11285; clean BA11173 on checkout. See recipe: issue-37-addendum-25aug.md",
+        "520th Tue 25 Aug UTC. Aug 30 handover: BA11173 ends, BA25 starts. 5 stale BAs unchanged. URGENT.",
+        "5 stale BAs; Aug30 = 5d"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 514th check Tue 25 Aug 2026 UTC — update since 513th (earlier today)\n• Booking Accommodation 11387 (Vincenzo Gagliano, bed 89): ended 22 Aug 2026 — 3 days stale, cleanedAt = 24 Aug 16:11 — CLEANED, fee null, active = true\n• Booking Accommodation 11394 (Fabrizio Mauro, bed 89): ended 9 Aug 2026 — 16 days stale, cleanedAt = 12 Aug 17:13 — CLEANED, fee null, active = true\n• Booking Accommodation 11397 (Giampaolo, bed 89): CURRENT stay, ends 6 Sep 2026 — 12 days, fee = null — SET FEE URGENTLY\n• Booking Accommodation 11392 (bed 161, 6–14 Sep 2026): fee = EUR 415 — correct\n• Booking Accommodation 11357 (bed 178): ended 15 Aug — 10 days stale, fee 1,250, active = true\n• Booking Accommodation 11396 (bed 44): ended 22 Aug — 3 days stale, fee null, active = true\n• Deactivation of 11357, 11396, 11387, 11394 NOT RUN",
+        "Deactivate BAs 11357/11396/11387/11394 (all cleaned, safe); set fee on BA11397 before Sep 6. See recipe: issue-41-addendum-25aug.md",
+        "514th Tue 25 Aug UTC. BA11387 + BA11394 now cleaned (Aug 24/Aug 12). BA11397 fee null; Sep 6 = 12d. Fix NOT RUN.",
+        "4 stale BAs; BA11397 fee null; Sep6 = 12d"
+      ]
+    ]
+  },
+  {
+    "range": "H54:K54",
+    "values": [
+      [
+        "• 520th check Tue 25 Aug 2026 UTC — no change since 519th (earlier today)\n• Booking Accommodation 11267 (bed 23, 29 Aug to 4 Oct 2026): fee EUR 3,840, active = true — READY for arrival\n• Booking Accommodation 11399 (bed 54, 4 Oct to 19 Dec 2026): fee = null, active = true — NOT YET SET\n• Student Fanny Scelles ARRIVES IN 4 DAYS (29 Aug 2026) — BA11267 is confirmed ready\n• BA11399 fee null (40 days until Oct 4 move-in) — set bed-54 rate x 11 weeks",
+        "Set BA11399.fee = bed-54 rate x 11 weeks before Oct 4; confirm rate with KC. See recipe: issue-52-addendum-25aug.md",
+        "520th Tue 25 Aug UTC. Arrival imminent (4d). BA11267 ready. BA11399 fee null unchanged.",
+        "ARRIVES AUG 29 (4d); BA11399 fee null"
+      ]
+    ]
+  },
+  {
+    "range": "H56:K56",
+    "values": [
+      [
+        "• 520th check Tue 25 Aug 2026 UTC — no change since 519th (earlier today)\n• Booking Accommodation 11161 (Lucia Borroni, Bed A, A1/Room 1): ended 22 Aug 2026 — 3 days ago, cleanedAt = null — STILL UNCLEANED\n• Booking Accommodation 11160 (Maicol Moretti, Bed B, A1/Room 1): ended 22 Aug — cleanedAt = 24 Aug 16:11 — CLEANED\n• Design gap: cleaning queue counts per person (2 per shared room) vs per room (1 per room)\n• BA11161 3 days past checkout — ESCALATE to KC/Natia immediately",
+        "Mark BA11161 as cleaned (manual or DB); implement per-room grouping in getCleaningQueue. See recipe: issue-54-addendum-25aug.md",
+        "520th Tue 25 Aug UTC. BA11161 still uncleaned (3 days). BA11160 cleaned Aug 24. ESCALATE.",
+        "BA11161 uncleaned 3d; design gap open"
+      ]
+    ]
+  }
+]

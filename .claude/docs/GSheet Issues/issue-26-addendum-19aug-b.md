@@ -1,0 +1,1 @@
+Issue 26 addendum 19aug-b: no change, BC23 89d stale, BC24826 61d stale, EUR250 open on bk18034. Recipe: deactivate BC23+BC24826, chase EUR250. Run 388th.

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H17:K17",
+    "values": [
+      [
+        "• Bed assignment 11282 (bed 66) ran May 15 – Jun 05 but active = true (stale flag — ended 18 days ago)\n• Historical issue — Mélie term completed Jun 05\n• Overlap constraint from bed assignment 11158 (ended May 17) is also cleared",
+        "UPDATE booking_accommodations SET active=false WHERE id=11282 (low-priority cleanup). Re-issue doc148 only if student requests. See recipe: issue-16-melie-accomm-dates.md",
+        "hrly Jun25 UTC: ba11282 (bed 66, bk17897) endDate=Jun05 active=true STILL — 20d stale (unchanged from Jun24). Historical cleanup. NEIL: UPDATE booking_accommodations SET active=false WHERE id=11282 when convenient.",
+        "historical"
+      ]
+    ]
+  },
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "• Booking 1308 is CANCELLED, confirmed = false — student has fully paid EUR 1530 (amount paid = amount total)\n• Payment 17186 (EUR 1280, HubSpot ID 1243664915703) + Payment 17050 (EUR 250, HubSpot ID 1243648063725): both Xero ID = null, unreconciled\n• Booking course 1350 (Academic Year Afternoon, May 25 – Nov 13) is ACTIVE — Day 30 calendar, zero class assignments all time\n• Cancellation appears accidental — no refund issued, course still running; student 766 (Ana Jessica Rosa de Paula Santos) is in limbo",
+        "(NOT RUN) UPDATE bookings SET status='CONFIRMED', confirmed=true WHERE id=1308; then assign AY-AFT class bc1350 via SIS. See recipe: issue-17-ana-jessica-accidental-cancel.md",
+        "hrly Jun25 UTC (check #6): UNCHANGED. bk1308 CANCELLED conf=false amtPaid=1530 (updAt=Jun07=18d stale). bc1350 AY-AFT May25-Nov13 STILL active=true — D31cal, 0 SCAs. pmt17186 EUR1280 + pmt17050 EUR250 both xeroId=null. 0 invoices. NEIL: uncancel booking (Step1 SQL) or issue refund?",
+        "D30cal; CANCELLED; 0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• Student 983 (Flávia Nascimento Mariano) visa status = null — Prisma save error prevents updating via the UI\n• Booking 1534 is Confirmed, fully paid EUR 1308 — booking course 1710 (Academic Year Afternoon Jun 01 – Nov 20) is active\n• Class assignment 265 (class 11 B1 PM, Jun 15 – Nov 20) is active — student is attending normally\n• Null visa status passes the class assignment filter — no operational impact\n• Cosmetic fix pending: UPDATE students SET visa_status='Approved' WHERE id=983 (NOT RUN)",
+        "SQL (NOT RUN): UPDATE students SET visa_status='Approved' WHERE id=983. See recipe: issue-18-flavia-visa-save-error.md",
+        "hrly Jun25 UTC: s983 visaStatus=null STILL (updAt=Jun15=10d). bk1534 CONF amtPaid=1308. bc1710 AY-Aft Jun01-Nov20 active. sca256(cls9) Jun01-Jun14 + sca265(cls11) Jun15-Nov20 ACTIVE. Student in class. Cosmetic visa fix NOT RUN.",
+        "in class; visa cosmetic"
+      ]
+    ]
+  },
+  {
+    "range": "H20:K20",
+    "values": [
+      [
+        "• Booking 83 courses — IELTS (bc89) and Private (bc90) — both ended May 22 (26 days ago)\n• Second booking 2606 also exists, fully paid 2135 / 2135 — but course bc3034 has suspicious 2024 dates (Apr 29 – May 24 2024)\n• Booking 2606 is a Fidelo 2024 migration import — course ended whether dates are 2024 or 2026\n• Private lessons (bc90) is 1-to-1 tuition — no class slot needed by design\n• No active courses for student 77 — not appearing in class list is expected behaviour",
+        "Close: all courses ended. bk2606 is Fidelo 2024 migration (historical). See recipe: issue-19-mailan-class-assign.md",
+        "hrly Jun25 UTC: bk83 CONF amtPaid=2629.8 (updAt=May21=35d). bc89+bc90 Apr13-May22 still active=true (33d stale). bk2606 bc3034 Apr-May 2024 also stale. Student completed all courses and left. No action needed. UNCHANGED.",
+        "no fix needed"
+      ]
+    ]
+  },
+  {
+    "range": "H24:K24",
+    "values": [
+      [
+        "• Booking course 828 (Academic Year Morning, booking 787) has end date 27 Feb 2026 — 3 days before its start date 02 Mar 2026 (backwards date)\n• Legacy DST off-by-one bug from Issue 2 — one of 56 rows not auto-corrected in the batch fix\n• All four booking courses on booking 787 show active = true despite courses ending in Nov 2025, Jan 2026, and Jun 2026 (stale flags)\n• Student Enshi Lu (397) fully paid EUR 2147.50 — course completed 05 Jun 2026 (18 days ago)\n• Data-hygiene fix only: UPDATE booking_courses SET end_date='2026-03-20' WHERE id=828",
+        "SQL (NOT RUN): UPDATE booking_courses SET end_date='2026-03-20' WHERE id=828 — cosmetic, course completed. See recipe: issue-23-enshi-lu-backwards-course.md",
+        "hrly Jun25 UTC: bc828 startDate=Mar02 endDate=Feb27 STILL BACKWARDS (updAt=May11=44d). bk787 CONF amtPaid=2147.5. bc826+bc827+bc828+bc829 all active=true fee=null. bc829 ended Jun05=20d ago. Historical data bug. Fix NOT RUN: UPDATE booking_courses SET end_date='2026-03-20' WHERE id=828.",
+        "ended;date bug"
+      ]
+    ]
+  },
+  {
+    "range": "H29:K29",
+    "values": [
+      [
+        "• Booking 17850 is PENDING, confirmed = false — amount paid shows null despite payment 17519 (EUR 321.35) being linked\n• Payment 17519: EUR 321.35, HubSpot ID 1231805396201, Xero ID = null — unreconciled\n• Booking course 24624 (Morning General, May 18 – Jun 05) ended 18 days ago — historical data-integrity issue\n• Fix is low priority: course already complete, no live student impact",
+        "(NOT RUN) UPDATE bookings SET status='CONFIRMED', confirmed=true, amount_paid=321.35 WHERE id=17850. See recipe: issue-28-paola-pending-won-deal.md",
+        "hrly Jun25 UTC: bk17850 PENDING conf=false amtPaid=null UNCHANGED (updAt=Jun04=21d). pmt17519 EUR321.35 xeroId=null hsId=1231805396201 bkId=17850. bc24624 Morning May18-Jun05 active=true (20d ended). Historical low-pri. Fix NOT RUN.",
+        "historical; low-pri"
+      ]
+    ]
+  }
+]

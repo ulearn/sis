@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/png" href="/sis/public/favicon.ico?v=2">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ULearn — Create Account</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f4f3f0;
+    display: flex; justify-content: center; align-items: center;
+    min-height: 100vh;
+  }
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    width: 100%; max-width: 380px;
+    padding: 40px;
+  }
+  .logo { text-align: center; margin-bottom: 8px; font-size: 22px; font-weight: 700; color: #1a1d23; }
+  .subtitle {
+    text-align: center;
+    font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px;
+    color: #9b9ea6; margin-bottom: 32px;
+  }
+  label { display: block; font-size: 13px; font-weight: 600; color: #4a4d56; margin-bottom: 6px; }
+  input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd; border-radius: 6px;
+    font-size: 14px; margin-bottom: 16px;
+    outline: none; transition: border-color 0.2s;
+  }
+  input:focus { border-color: #6FB42C; }
+  .pw-wrap { position: relative; margin-bottom: 16px; }
+  .pw-wrap input { margin-bottom: 0; padding-right: 40px; }
+  .pw-toggle {
+    position: absolute; top: 50%; right: 6px; transform: translateY(-50%);
+    width: 32px; height: 32px;
+    background: transparent; border: 0; padding: 0;
+    cursor: pointer; font-size: 18px; line-height: 1;
+    color: #9b9ea6; opacity: 0.85;
+  }
+  .pw-toggle:hover { opacity: 1; }
+  button.primary {
+    width: 100%;
+    padding: 11px;
+    background: #6FB42C; color: #fff;
+    border: none; border-radius: 6px;
+    font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: background 0.2s;
+  }
+  button.primary:hover { background: #5d9c24; }
+  button.primary:disabled { background: #bbb; cursor: not-allowed; }
+  .alert {
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .alert.error { background: #fef2f2; color: #dc2626; }
+  .alert.success { background: #ecfdf5; color: #065f46; }
+  .footer-link { text-align: center; margin-top: 16px; font-size: 13px; }
+  .footer-link a { color: #6FB42C; text-decoration: none; font-weight: 600; }
+  /* Honeypot — hidden from real users, bait for bots */
+  .hp { position: absolute; left: -9999px; opacity: 0; pointer-events: none; }
+  /* App-store badges under the form */
+  .app-badges { margin-top: 22px; padding-top: 18px; border-top: 1px solid #eceef1; text-align: center; }
+  .app-badges .lbl { font-size: 13px; color: #6b7280; margin-bottom: 12px; }
+  .app-badge-row { display: flex; gap: 18px; justify-content: center; align-items: flex-start; }
+  .app-badge { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .app-badge img { height: 52px; width: auto; display: block; border-radius: 11px; }
+  .app-badge .cap { font-size: 11px; color: #9aa1aa; }
+  .app-badge a { display: block; transition: transform .15s ease; }
+  .app-badge a:hover { transform: translateY(-2px); }
+  .app-badge.soon img { filter: grayscale(1); opacity: .5; }
+  .app-badge.soon { cursor: default; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">ULearn Student System</div>
+  <div class="subtitle">Create Account</div>
+  <div class="alert error" id="errorMsg"></div>
+  <div class="alert success" id="successMsg"></div>
+
+  <form id="registerForm" autocomplete="on">
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" autocomplete="email"
+           inputmode="email" required autofocus>
+
+    <label for="password">Password</label>
+    <div class="pw-wrap">
+      <!-- glide-typing works on password fields once visible; the eye
+           toggle lets students unmask briefly if they want -->
+      <input type="password" id="password" name="password"
+             autocomplete="new-password" minlength="8" required>
+      <button type="button" class="pw-toggle" aria-label="Show password"
+              onclick="togglePassword('password', this)">👁</button>
+    </div>
+
+    <label for="confirmPassword">Repeat password</label>
+    <div class="pw-wrap">
+      <input type="password" id="confirmPassword" name="confirmPassword"
+             autocomplete="new-password" minlength="8" required>
+      <button type="button" class="pw-toggle" aria-label="Show password"
+              onclick="togglePassword('confirmPassword', this)">👁</button>
+    </div>
+
+    <!-- Honeypot — see /sis/auth/register handler -->
+    <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off">
+
+    <button type="submit" class="primary" id="submitBtn">Create account</button>
+
+    <div class="footer-link">
+      Already have an account? <a href="/sis/login">Sign in</a>
+    </div>
+  </form>
+
+  <div class="app-badges">
+    <div class="lbl">Get the ULearn app</div>
+    <div class="app-badge-row">
+      <div class="app-badge">
+        <a href="https://play.google.com/store/apps/details?id=com.ulearnschool.app&hl=en"
+           target="_blank" rel="noopener" title="Get it on Google Play">
+          <img src="/sis/public/launch/icon-play.png" alt="Get the ULearn app on Google Play">
+        </a>
+        <span class="cap">Android</span>
+      </div>
+      <div class="app-badge soon" title="iOS app coming soon">
+        <img src="/sis/public/launch/icon-ios.png" alt="ULearn iOS app coming soon">
+        <span class="cap">iOS — Coming Soon</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function togglePassword(id, btn) {
+  const input = document.getElementById(id);
+  const showing = input.type === 'text';
+  input.type = showing ? 'password' : 'text';
+  btn.textContent = showing ? '👁' : '🙈';
+  btn.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+}
+
+document.getElementById('registerForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const err = document.getElementById('errorMsg');
+  const ok  = document.getElementById('successMsg');
+  err.style.display = 'none'; ok.style.display = 'none';
+
+  const email           = document.getElementById('email').value.trim();
+  const password        = document.getElementById('password').value;
+  const confirmPassword = document.getElementById('confirmPassword').value;
+  const website         = document.querySelector('input[name="website"]').value;
+
+  if (password !== confirmPassword) {
+    err.textContent = 'Passwords do not match.';
+    err.style.display = 'block';
+    return;
+  }
+
+  const submitBtn = document.getElementById('submitBtn');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Sending…';
+
+  try {
+    const res = await fetch('/sis/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, confirmPassword, website }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      // Generic success message regardless of whether the email was on file
+      // (we never confirm/deny — handler enforces this server-side).
+      ok.innerHTML = data.message || 'If your email is on file, a verification link is on its way. Check your inbox.';
+      ok.style.display = 'block';
+      document.getElementById('registerForm').reset();
+    } else {
+      err.textContent = data.error || 'Could not register.';
+      err.style.display = 'block';
+    }
+  } catch (e) {
+    err.textContent = 'Connection error. Please try again.';
+    err.style.display = 'block';
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Create account';
+  }
+});
+</script>
+</body>
+</html>

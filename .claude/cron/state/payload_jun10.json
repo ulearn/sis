@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "Student wasn't invoiced for Insurance",
+        "Engage WORLD2GO re HI+PEL. If agreed: add LIs to HS deal 503569276136, supp invoice, UPDATE booking_extras SET fee=150 WHERE id=96. see recipe: issue-13-lizbeth-health-insurance.md",
+        "Jun10 hrly D10: extra96 fee=null. c24773 AY-Aft Jun1-Nov20 ACTIVE D10 (~10 school days uninsured). bk17981 confirmed=false. s14522 visaStatus=null. Await WORLD2GO URGENT.",
+        "insurance TBC D10"
+      ]
+    ]
+  },
+  {
+    "range": "H17:K17",
+    "values": [
+      [
+        "ba11282 May15-Jun5 wrong (should May17-Jun7). Hugo ba11158 not conflict. doc148 ISSUED Jun4 wrong dates.",
+        "UPDATE ba SET start=May17 end=Jun7 WHERE id=11282; re-issue doc148. see recipe: issue-16-melie-accomm-dates.md",
+        "Jun10 hrly: STILL May15-Jun05. Accomm ended Jun05 (5d ago). doc148 cert ISSUED wrong dates. Historical fix, low urgency.",
+        "dates wrong"
+      ]
+    ]
+  },
+  {
+    "range": "H20:K20",
+    "values": [
+      [
+        "bk83 IELTS+Private ended May22 (19d). No renewal bk. Private=1:1, no class needed.",
+        "Close: correct behaviour—courses ended. No fix needed. see recipe: issue-19-mailan-class-assign.md",
+        "Jun10: bk83 CONFIRMED paid=2629.8. All courses ended 19d ago. bk2606=Fidelo2024 hist. No current bk. Not a bug.",
+        "close - no action"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "bk1605 PENDING 0/1509. HS deal 502951083215 stage=ENROLMENT not WON — payment not received.",
+        "Contact student/agent re EUR 1509 outstanding. Once deal WON webhook auto-confirms. see recipe: issue-20-ariunsarnai-payment-due.md",
+        "Jun10 D58: bk1605 PENDING 0/1509. c1791 AY-Morn Apr13-Oct2 ACTIVE (58d in). HS deal ENROLMENT. NEIL: student possibly attending 58d w/o confirmed bk. Escalate now.",
+        "PENDING D58 urgent"
+      ]
+    ]
+  },
+  {
+    "range": "H22:K22",
+    "values": [
+      [
+        "sca132 A1 May11-Jun26 dup overlaps sca156 A2 AM Apr06-Jul02. Both fire WB May11+.",
+        "DELETE FROM student_class_assignments WHERE id=132. see recipe: issue-21-maurivan-double-class.md",
+        "Jun10 hrly: sca132(7/A1-AM May11-Jun26)+sca156(8/A2-AM Apr06-Jul02) BOTH ACTIVE. Ends Jun26 (16d). DELETE sca132.",
+        "del needed"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "Last course c24668 ended May15. bk18131+bk18133 shell bookings no courses. Dup pmts: 970+17852(1185), 17027+17730(648), 17161+17728(482.4).",
+        "Del dups: pmt17728+17730+17852 (method=Bank, no receipt/transactionId). Verify HS before action. see recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun10 hrly: pmt17728+17730+17852 (Bank, no txId, Jun3-5) confirmed dups. bk18131/18133 CONFIRMED shells no courses. NEIL: verify HS deals 438072533213+471541671147 before deleting.",
+        "dup pmts pending"
+      ]
+    ]
+  }
+]

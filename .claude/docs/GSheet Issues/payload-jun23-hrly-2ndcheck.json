@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H44:K44",
+    "values": [
+      [
+        "• Accommodation 11311 (bed 84, Pietro Caccianiga): updated Jun 23 14:51 UTC — weeks = 11, fee = EUR 3,850 (Scenario A confirmed by Neil)\n• Start date Jun 28 — 5 days away; 11 weeks puts checkout Sep 13\n• Four stale bed 84 records still active = true, blocking new allocation:\n  — Accommodation 11157 (booking 100): ended May 10 — 44 days stale\n  — Accommodation 9917 (booking 1274): ended May 16 — 38 days stale\n  — Accommodation 11159 (booking 100): ended May 30 — 24 days stale\n  — Accommodation 11180 (booking 81): ended Jun 20 — 3 days stale; updated Jun 22 13:31 UTC but NOT deactivated (anomaly — check what changed)\n• Pietro arrives Jun 28 — all four stale records must be deactivated before then",
+        "(NOT RUN) UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180). Investigate ba11180 Jun22 modification first. See recipe: issue-36b-pietro-accomm-dates.md",
+        "Jun23 hrly (2nd check): ba11311 weeks=11 fee=3850 endDate=Sep13 CONFIRMED (Neil updated 14:51 UTC today). All 4 stale beds STILL active=true (fresh DB). NEW: ba11180 (ended Jun20) was updated Jun22 13:31 UTC — someone modified it post-expiry but did NOT deactivate. Check what changed Jun22 then deactivate. Pietro arrives Jun28=5d. Step1 NOT RUN.",
+        "Jun28=5d; deactivate beds"
+      ]
+    ]
+  }
+]

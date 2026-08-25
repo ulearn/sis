@@ -1,0 +1,42 @@
+[
+  {
+    "range": "J23",
+    "values": [
+      [
+        "105th hrly Sat 25 Jul UTC. UNCHANGED. BC24991 still 0 SCAs (10d missed). BCs 24933+24934 still active (15d stale). Mon Jul 27 = penultimate window (2 calendar days). Course ends Aug 7. Fix NOT RUN."
+      ]
+    ]
+  },
+  {
+    "range": "J25",
+    "values": [
+      [
+        "105th hrly Sat 25 Jul UTC. UNCHANGED. BC24686 active Jul20-Sep18, fee=null, SCAs=0. Week 1 complete (5d missed). Week 2 starts Mon 27 Jul (2d). BC1797 stale 30d. Fix NOT RUN."
+      ]
+    ]
+  },
+  {
+    "range": "J40",
+    "values": [
+      [
+        "105th hrly Sat 25 Jul UTC. UNCHANGED. Confirmed: only school_closure in H2 2026 is Christmas (id=7, Dec21-Jan3). Aug 3 BH absent. 17 active BCs still start Aug 3. BC25016 endDate 2028 typo unchanged. BC25003 dup unchanged. Fix NOT RUN."
+      ]
+    ]
+  },
+  {
+    "range": "J41",
+    "values": [
+      [
+        "105th hrly Sat 25 Jul UTC. UNCHANGED. BC24609 still 0 SCAs (10d missed = 2 full weeks). Mon Jul 27 = FINAL WINDOW (2 days). Course ends Jul 31. Fix NOT RUN."
+      ]
+    ]
+  },
+  {
+    "range": "J43",
+    "values": [
+      [
+        "105th hrly Sat 25 Jul UTC. UNCHANGED. Capel BA still missing on BK18180. Pmt17954 xeroId=null (30d). BC24956 still starts Aug 3 (needs BH shunt). Host family check-in Aug 2 = 8 days. Fix NOT RUN."
+      ]
+    ]
+  }
+]

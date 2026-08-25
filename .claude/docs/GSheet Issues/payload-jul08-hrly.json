@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H35:K35",
+    "values": [
+      [
+        "• Fix CONFIRMED APPLIED — public/admin.html lines 1467 + 1625 (8 Jul 2026 UTC)\n• openBulkEmailModal() line 1467: _bulkEmailRecipientIds = ids now assigned — recipients frozen at modal open\n• sendBulkEmail() line 1625: const ids = [..._bulkEmailRecipientIds] — reads frozen snapshot, not live set\n• Code comment at lines 1444–1447 documents the freeze rationale explicitly\n• Bug resolved — report navigation between modal open and send no longer clears the selection",
+        "see recipe: issue-33-khulan-reports-email-send.md",
+        "8 Jul UTC: admin.html L1467 _bulkEmailRecipientIds=ids CONFIRMED SET. L1625 reads frozen snapshot CONFIRMED. Comment L1444-1447 present. Bug FIXED (was open since Jun 2026).",
+        "fixed"
+      ]
+    ]
+  },
+  {
+    "range": "H37:K37",
+    "values": [
+      [
+        "• Homework section: renderSheetHtml() in src/routes/attendance.ts (lines 36–128) — no homework block implemented; awaiting Paul / Neil layout spec\n• Holiday display bug: getWeekAttendance (src/scripts/attendance.ts lines 31–183) does NOT fetch bookingHoliday records — students on holiday appear in the attendance grid with live checkboxes\n• getStudentAttendance (src/scripts/attendance.ts lines 350+) DOES fetch holidays correctly via fetchStudentHolidays — only the weekly-grid path is missing it\n• Both bugs confirmed still present (12th code check 8 Jul 2026 UTC)",
+        "Homework: get Paul/Neil layout spec then add to renderSheetHtml. Holiday: add bookingHoliday fetch to getWeekAttendance (attendance.ts L31). See recipes: issue-36-attendance-homework-section.md + issue-36c-attendance-holiday-display.md",
+        "12th code check 8 Jul UTC. UNCHANGED. (1) Holiday: getWeekAttendance scripts/attendance.ts L31 — no bookingHoliday fetch confirmed. (2) Homework: renderSheetHtml routes/attendance.ts L36 — no homework section confirmed. Awaiting Paul/Neil layout spec.",
+        "open; Gaps: holiday+homework"
+      ]
+    ]
+  },
+  {
+    "range": "H12:K12",
+    "values": [
+      [
+        "• Junior Valeriya (student 1063): dad Egor booked under his own HubSpot contact — original merge issue resolved\n• Duplicates merged: kept booking 17912 on Valeriya 1063, accommodation folded in, Fidelo duplicate (booking 1622) and Egor record (14502) deleted\n• Booking 17912: Confirmed, confirmed = true, EUR 1938 / 1938 — touched today 8 July 2026 10:21 UTC (recent admin edit)\n• Remaining anomaly: student 1063 HubSpot contact ID = STILL null — link not restored post-merge (29 days since 9 June 2026)",
+        "Set student 1063 hubspotContactId via SIS admin or direct DB; see recipe: issue-10-valeriya-egor-guardian-booking.md",
+        "8 Jul UTC check. s1063 hubspotContactId=STILL null (updAt=Jun9=29d). bk17912 CONF EUR1938/1938 TOUCHED TODAY 10:21UTC. Low priority cosmetic.",
+        "hubspot link null; low-pri"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• 20th check, 8 July 2026 UTC — booking still pending; student in school with zero class assignments for 87 days\n• Booking 1605 (Ariunsarnai Batbayar, student 1047): status = Pending, confirmed = false, EUR 0 paid of EUR 1509 total\n• Booking course 1791 (Academic Year Renewal Morning, 13 April to 23 October 2026, fee EUR 2150): active = true\n• Booking 1605 last updated 23 June 2026 — 15 days stale with no progress\n• Zero class assignments for student 1047 ever recorded\n• HubSpot deal 502951083215 (B2B pipeline) must reach Won stage (104175589) to trigger SIS confirmation webhook",
+        "Advance HubSpot deal 502951083215 to Won in B2B pipeline stage 104175589; see recipe: issue-20-ariunsarnai-payment-due.md",
+        "20th check 8 Jul UTC. UNCHANGED. BK1605 STILL PENDING paid=0/1509 (updAt=Jun23=15d stale). BC1791 AY-Ren-AM Apr13-Oct23 active fee=2150. 0 SCAs Day87 unassigned. HS deal 502951083215 needs Won stage 104175589. NEIL: advance HS deal to Won in B2B pipeline.",
+        "Day87; HS deal Won pending"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• Booking course 24826 (Ernesto Pesoa Gil, Intensive General 30, 8 Jun to 19 Jun 2026): ended 19 Jun — STILL active = true (19 days stale, 26th check 8 Jul UTC)\n• Booking course 23 (Ivan Rodriguez Solares, Intensive General 30, 4 May to 22 May 2026): ended 22 May — STILL active = true (47 days stale)\n• Booking 18034 (Ernesto Pesoa Gil): Partial, confirmed = false — EUR 845 paid of EUR 1095 total; EUR 250 outstanding (booking updated 7 Jun 2026)\n• Payment 17683 (EUR 845): HubSpot ID 1241215836360, Xero payment ID = null, type = null — not yet reconciled",
+        "Deactivate booking courses 24826 + 23; reconcile payment 17683 in Xero; chase EUR 250 from Ernesto (booking 18034); see recipe: issue-26-intensive-class-assign-once.md",
+        "26th check 8 Jul UTC. UNCHANGED. bc24826 Ernesto (ended Jun19=19d) active=STILL true. bc23 Ivan (ended May22=47d) active=STILL true. bk18034 PARTIAL 845/1095 EUR250 outstanding (updAt=Jun7). pmt17683 xeroId=STILL null type=null.",
+        "26th check; 2 stale BCs"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Booking 18044 (duplicate Milena Vinci entry) deleted — confirmed 27 June 2026\n• Giulia Avallone (student 88) retains only booking 94 — Confirmed, EUR 1151.50 fully paid\n• Booking course 104 (Morning General Plus, 15 Jun to 26 Jun 2026): ended 26 June — STILL active = true (12 days stale, 23rd check 8 Jul UTC)\n• Milena Vinci no longer appears as a student in the database\n• Payment 17102 (EUR 1151.50, booking 94): Xero payment ID = null, HubSpot payment ID = null, type = null — 64 days outstanding (created 5 May 2026)\n• Outstanding: confirm HubSpot payment 1239529228498 was voided in HubSpot UI",
+        "Deactivate booking course 104; reconcile payment 17102 in Xero; confirm HubSpot payment 1239529228498 voided; see recipe: issue-30-giulia-milena-parent-student.md",
+        "23rd check 8 Jul UTC. UNCHANGED. bc104 Morning-Gen-Plus Jun15-Jun26 STILL active=true (12d stale). pmt17102 EUR1151.5 type=null xeroId=null hsId=null (64d since May5). bk94 CONF EUR1151.5/1151.5 confirmed=true. NEIL: (1) deactivate bc104; (2) reconcile pmt17102 Xero; (3) confirm HS pmt 1239529228498 voided.",
+        "23rd check; bc104 stale"
+      ]
+    ]
+  }
+]

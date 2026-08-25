@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "extra96.fee=null (9+ school days). bk17981 confirmed=false. s14522 visaStatus=null.",
+        "SET extra96.fee=150. SET bk17981 confirmed=true. SET s14522 visa_status=Approved. see recipe: issue-13-lizbeth-health-insurance.md",
+        "Jun09 hrly(7): UNCHANGED. extra96 fee=null (PEL;Health). bk17981 CONFIRMED confirmed=false. c24773 AY Aft Jun1 ACTIVE (9+ days). s14522 visaStatus=null. NEIL: 3 fixes + HI retro.\nJun09 hrly(8): UNCHANGED. extra96 INSURANCE fee=null. bk17981 confirmed=false. s14522 visaStatus=null. 12+ school days uninsured Jun1-Jun9. Await Neil: HI urgent.",
+        "HI urgent"
+      ]
+    ]
+  },
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "Accidental cancel Jun07. bk1308 CANCELLED 3d. c1350 May25-Nov13 ACTIVE. EUR1530 fully paid.",
+        "UPDATE bookings SET status=CONFIRMED, confirmed=true WHERE id=1308 (NOT RUN). see recipe: issue-17-ana-jessica-accidental-cancel.md",
+        "Jun09 hrly(7): STILL CANCELLED 6d. bk1308 amtPaid=1530=amtTotal. lastChg Jun07 21:01UTC. c1350 ACTIVE. NEIL: RUN NOW.\nJun09 hrly(8): UNCHANGED. bk1308 CANCELLED confirmed=false. amtPaid=1530=amtTotal. c1350 ACTIVE mid-course. NEIL: RUN STEP1 NOW.",
+        "cancel 2d"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "s917 visaStatus=null (Prisma drift). bk1467 CONFIRMED EUR2405. 0 SCAs since Apr27 (43d).",
+        "UPDATE students SET visa_status=Approved WHERE id=917 (direct SQL bypass). Then assign class. see recipe: issue-25-uyanga-visa-escrow.md",
+        "Jun09 hrly(run6): UNCHANGED. s917 visaStatus=null, visaFrom=Apr27, visaUntil=Dec28 set. bk1467 CONFIRMED EUR2405 confirmed=true. c1613 AY Morn Apr27-Oct16 ACTIVE 43d. 0 SCAs entire course. pmt17258 EUR3066 Escrow vs amtPaid EUR2405 discrepancy. NEIL: Step2+3 urgent.\nJun09 hrly(8): UNCHANGED. s917 visaStatus=null. 0 SCAs 44d since Apr27. bk1467 CONFIRMED EUR2405. Step2+3 still needed.",
+        "class needed 44d"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "s75 Daniela. sca161 A1 MORNING only. c86 INTENSIVE Jun8-Jun19 ACTIVE. No PM SCA. Ivan s18 c23 ENDED May22 (historical).",
+        "Assign Daniela s75 PM class via roster (NOT RUN). see recipe: issue-26-intensive-class-assign-once.md",
+        "Jun09 hrly(7): STILL NO PM SCA. s75 sca161 classId=7 AM only. c86 Intensive ACTIVE (2d in, 9 remain til Jun19). NEIL: Assign PM URGENTLY.\nJun09 hrly(8): UNCHANGED. sca161 classId=7 AM only. Day 2/10. c86 ends Jun19. NEIL: ASSIGN PM TODAY via class roster.",
+        "PM urgent day2/10"
+      ]
+    ]
+  },
+  {
+    "range": "H28:K28",
+    "values": [
+      [
+        "sca14 week_start=Mar30 (should Jun08). bk17909 CANCELLED amtPaid=1455.5>amtTotal=727.5. pmts17477+17478 double charge.",
+        "Step1: UPDATE sca SET week_start=2026-06-08 WHERE id=14 (NOT RUN). Step2: REFUND EUR1455.5 pmts17477+17478. see recipe: issue-27-sofiia-sca-cancelled-booking.md",
+        "Jun09 hrly(run6): UNCHANGED. sca14 week_start=Mar30 weekEnd=null (should Jun08). pmt17477(EUR727.5 Apr28)+pmt17478(EUR728 May15)=EUR1455.5 on bk17909 CANCELLED (no transactionId). bk17849 correct. NEIL: (1) UPDATE sca14 week_start Jun08 (2) REFUND EUR1455.5.\nJun09 hrly(8): UNCHANGED. sca14 weekStart=Mar30 (should Jun08). pmts17477(727.5)+17478(728)=EUR1455.5 orphaned on bk17909 CANCELLED. Both steps pending.",
+        "pmts+sca open"
+      ]
+    ]
+  },
+  {
+    "range": "H29:K29",
+    "values": [
+      [
+        "Won-webhook never fired. bk17850 PENDING; pmt17519 EUR321.35 Bank May07 exists. Course c24624 ENDED Jun05.",
+        "UPDATE bookings SET status=CONFIRMED, confirmed=true, amount_paid=321.35 WHERE id=17850 (NOT RUN). see recipe: issue-28-paola-pending-won-deal.md",
+        "Jun09 hrly(run6): UNCHANGED. bk17850 STILL PENDING confirmed=false amtPaid=null. pmt17519 EUR321.35 Bank May07 EXISTS. c24624 Morning ENDED Jun05 (4d). NEIL: UPDATE SET status=CONFIRMED confirmed=true amount_paid=321.35 WHERE id=17850 (NOT RUN).\nJun09 hrly(8): UNCHANGED. bk17850 PENDING amtPaid=null. c24624 ended Jun05 (4d). pmt17519 EUR321.35 Bank confirmed. Data-integrity fix awaiting Neil.",
+        "course ended 4d"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Student 356 has gender = null — never set in personal details\n• Exit letter doc 238 (template 4) generated today Jun 17 as DRAFT with Ms./she/her — incorrect if student is male\n• Root cause: documents.ts L338 isMale = (gender === 1) — null gives false, so null gender defaults to female\n• 14,053 students have gender = null — systemic: all their documents silently default to female",
+        "Set gender=1 (male) via SIS student 356 Personal Details. Delete DRAFT doc 238 and regen exit letter via SIS bk560 Documents. Code fix: null gender must not default to female. See recipe: issue-32-shih-wei-gender-default.md",
+        "Jun17 hrly: s356 gender=null (fresh DB confirmed). Doc 238 STILL DRAFT tmpl4 (updAt=Jun17 15:19 UTC) — safe to delete+regen before issue. 14,053 students with null gender (systemic bug confirmed). NEIL: (1) set gender=male SIS s356 Personal Details; (2) delete doc238 DRAFT bk560 Docs; (3) regen exit letter bk560 Docs. Code fix: recipe issue-32-shih-wei-gender-default.md.",
+        "set gender; regen doc"
+      ]
+    ]
+  }
+]

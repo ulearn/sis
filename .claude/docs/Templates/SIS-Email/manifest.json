@@ -1,0 +1,1653 @@
+{
+  "generatedAt": "2026-05-16T13:24:08Z",
+  "scope": "SIS email templates (templateType=email, active=true)",
+  "source": {
+    "db": "sis_db.document_templates",
+    "resolver": "sis/src/scripts/documents.ts:resolveTokens + renderTemplate"
+  },
+  "legend": {
+    "resolved": "token is produced by the SIS token resolver",
+    "custom_editable": "custom.* — intentional staff-fillable editable region",
+    "unresolved": "token is referenced as {{x}} but the resolver does not produce it",
+    "fidelo_single_brace_leak": "legacy Fidelo {x} placeholder NOT processed by the SIS resolver — renders as literal text in the sent email",
+    "fidelo_equality_block": "{if x == \"value\"} blocks — SIS resolver only handles {if token} truthy checks; equality is ignored so the block is left as literal text alongside its inner content"
+  },
+  "criticalFindings": [
+    {
+      "severity": "CRITICAL",
+      "issue": "62 of 71 active email templates contain Fidelo single-brace {placeholders} that the SIS resolver does not touch. Recipients see literal text like {firstname}, {accommodation_provider_name}, {date_course_start} in the sent email.",
+      "affected": 62,
+      "mostCommonLeaks": [
+        "{firstname} — 57 templates",
+        "{surname} — 19",
+        "{roomtype_full} — 19",
+        "{date_accommodation_start} — 17",
+        "{date_accommodation_end} — 17",
+        "{accommodation_category} — 16",
+        "{start_loop_accommodations}/{end_loop_accommodations} — 15/14 (Fidelo loop control)",
+        "{accommodation_meal_full} — 12",
+        "{booked_transfer}, {school_name}, {date_course_start} — 11 each"
+      ],
+      "fixOptions": [
+        "A. Bulk-rewrite leaks to SIS double-brace equivalents (recommended). Build a token-rename map { firstname: \"student.first_name\", surname: \"student.last_name\", date_course_start: \"booking.start_date\", ... } and rewrite every htmlTemplate. ~half a day, one-shot.",
+        "B. Extend the resolver to also process Fidelo single-brace placeholders. Lower-effort initial change but accepts Fidelo syntax as a permanent shape — opposite direction to the doc-template clean-up that already happened."
+      ]
+    },
+    {
+      "severity": "HIGH",
+      "issue": "Day1-Orient (and similar) use Fidelo {if course_category == \"Morning Classes\"}…{/if} equality blocks. SIS renderTemplate only matches {if token} (truthy), so equality blocks fall through untouched → recipient sees ALL session variants stitched together WITH the {if …} / {/if} control tags visible.",
+      "affected": [
+        "Day1-Orient"
+      ],
+      "controlBlockTemplates": 24,
+      "fixOptions": [
+        "A. Rewrite Day-1 (and any sibling) to plain JS-rendered conditional: drop the {if x == \"y\"} syntax, use {{course_session_block}} that the resolver computes (returns the right snippet based on booking.courses[0].category). One value, one substitution.",
+        "B. Extend renderTemplate to recognise the Fidelo equality form. Then every {if x == \"y\"} block in every template works. Slightly bigger blast radius but unblocks 24 templates at once."
+      ]
+    },
+    {
+      "severity": "HIGH",
+      "issue": "FeedbackFinal and FeedbackFinal2-ExitLetter both have href=\"{link_feedback_12}\" — the Fidelo placeholder is never substituted, so the anchor href renders literally and the link goes nowhere when clicked.",
+      "affected": [
+        "FeedbackFinal",
+        "FeedbackFinal2-ExitLetter"
+      ],
+      "fix": "Replace with the SIS feedback URL (e.g. https://sis.ulearnschool.com/feedback/{{student.id}} or whatever public feedback surface we are pointing at). The current {link_feedback_12} corresponds to a Fidelo deep-link the new system does not own."
+    },
+    {
+      "severity": "MEDIUM",
+      "issue": "Visa-Approval-Notice references {{booking.original_start_date}} — not produced by the resolver. Renders as empty string. Likely refers to Student.visaShuntOriginalArrival (the pre-shunt arrival date stamped during applyVisaApprovalShunt).",
+      "affected": [
+        "Visa-Approval-Notice"
+      ],
+      "fix": "Add booking.original_start_date to resolveTokens, sourcing from student.visaShuntOriginalArrival."
+    },
+    {
+      "severity": "MEDIUM",
+      "issue": "Antonella reports \"END OF COURSE EMAIL 2024\" missing — likely the final-week communication. Not present in DB (closest matches: End-Certificate (email) and FeedbackFinal2-ExitLetter). Fidelo email-templates folder also has no matching name — may be a 2024 update never migrated.",
+      "action": "Need Antonella to share the live Gmail version so we can import it as a new template + decide whether to retire End-Certificate."
+    },
+    {
+      "severity": "MEDIUM",
+      "issue": "No active SIS DOCUMENT templates for Certificates, Student Letters, or Attendance Letters. Fidelo had them under attend/*, class/certs/*, academic/Attendance-Letter.md. Document audit confirmed only 9 doc templates exist — these aren't in the set.",
+      "affected_docs": [
+        "Attendance-Letter",
+        "ILEP-Attendance",
+        "Certificate-of-Attendance"
+      ],
+      "action": "Import the Fidelo .md attendance/certificate templates into document_templates table. Same per-token rewrite needed (Fidelo → SIS token names)."
+    }
+  ],
+  "summary": {
+    "templatesTotal": 71,
+    "templatesWithFideloLeakage": 62,
+    "templatesWithUnresolvedDoubleBrace": 2,
+    "templatesWithControlBlocks": 24
+  },
+  "templates": {
+    "Attendance-Absence": {
+      "id": 9,
+      "name": "Attendance Absence",
+      "subject": null,
+      "category": "academic",
+      "htmlLength": 965,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "firstname"
+      ],
+      "tokens": []
+    },
+    "Attendance-Absence-Week+": {
+      "id": 8,
+      "name": "Attendance Absence Week+",
+      "subject": null,
+      "category": "academic",
+      "htmlLength": 927,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "firstname"
+      ],
+      "tokens": []
+    },
+    "Attendance-Punctuality": {
+      "id": 10,
+      "name": "Attendance Punctuality",
+      "subject": null,
+      "category": "academic",
+      "htmlLength": 845,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "firstname"
+      ],
+      "tokens": []
+    },
+    "DOSVisitRequest-Student": {
+      "id": 11,
+      "name": "DOSVisitRequest Student",
+      "subject": null,
+      "category": "academic",
+      "htmlLength": 332,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [],
+      "tokens": []
+    },
+    "ExamBooked-Student": {
+      "id": 12,
+      "name": "ExamBooked Student",
+      "subject": null,
+      "category": "academic",
+      "htmlLength": 3132,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "birthdate",
+        "email",
+        "exam",
+        "exam_date",
+        "firstname",
+        "passport_number",
+        "phone_home",
+        "surname"
+      ],
+      "tokens": []
+    },
+    "ExamInfo-12Weeks": {
+      "id": 13,
+      "name": "ExamInfo 12Weeks",
+      "subject": null,
+      "category": "academic",
+      "htmlLength": 8110,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "firstname"
+      ],
+      "tokens": []
+    },
+    "ExamInfo-6Weeks": {
+      "id": 14,
+      "name": "ExamInfo 6Weeks",
+      "subject": null,
+      "category": "academic",
+      "htmlLength": 7872,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "firstname"
+      ],
+      "tokens": []
+    },
+    "LevelTest-Week1": {
+      "id": 15,
+      "name": "LevelTest Week1",
+      "subject": null,
+      "category": "academic",
+      "htmlLength": 1401,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [
+        "{if last_level}"
+      ],
+      "singleBraceLeaks": [
+        "firstname"
+      ],
+      "tokens": []
+    },
+    "PlacementTest": {
+      "id": 17,
+      "name": "PlacementTest",
+      "subject": null,
+      "category": "academic",
+      "htmlLength": 727,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "firstname",
+        "link_placementtest"
+      ],
+      "tokens": []
+    },
+    "PlacementTest-Remind": {
+      "id": 16,
+      "name": "PlacementTest Remind",
+      "subject": null,
+      "category": "academic",
+      "htmlLength": 923,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "firstname",
+        "link_placementtest"
+      ],
+      "tokens": []
+    },
+    "Apart-Provider-Booking-Detail": {
+      "id": 18,
+      "name": "Apart Provider Booking Detail",
+      "subject": null,
+      "category": "accomm/confirm-provider",
+      "htmlLength": 2057,
+      "tokenCount": 1,
+      "unresolvedCount": 1,
+      "controlBlocks": [
+        "{if transfer_booked}"
+      ],
+      "singleBraceLeaks": [
+        "accommodation_category",
+        "arrival_airline",
+        "arrival_date",
+        "arrival_flightnumber",
+        "arrival_time",
+        "birthdate",
+        "booked_transfer",
+        "date_accommodation_start",
+        "email",
+        "emergency_contact_phone",
+        "firstname",
+        "gender",
+        "nationality",
+        "phone_home",
+        "roomtype_full",
+        "surname"
+      ],
+      "tokens": [
+        {
+          "token": "Accomm-Provider-Contact-First-Name",
+          "status": "unresolved"
+        }
+      ]
+    },
+    "Host-Availability": {
+      "id": 20,
+      "name": "Host Availability",
+      "subject": null,
+      "category": "accomm/confirm-provider",
+      "htmlLength": 774,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [
+        "{if gender}"
+      ],
+      "singleBraceLeaks": [
+        "accommodation_contact_firstname",
+        "age",
+        "date_accommodation_end",
+        "date_accommodation_start",
+        "firstname",
+        "gender",
+        "nationality",
+        "roomtype"
+      ],
+      "tokens": []
+    },
+    "Host-Booking": {
+      "id": 19,
+      "name": "Host Booking",
+      "subject": null,
+      "category": "accomm/confirm-provider",
+      "htmlLength": 1650,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [
+        "{if student_criteria_allergies}"
+      ],
+      "singleBraceLeaks": [
+        "accommodation_address",
+        "accommodation_address_addon",
+        "accommodation_allocation_end",
+        "accommodation_allocation_start",
+        "accommodation_city",
+        "accommodation_contact_firstname",
+        "accommodation_meal_full",
+        "accommodation_phone",
+        "accommodation_weeks",
+        "accommodation_zip",
+        "age",
+        "arrival_date",
+        "arrival_flightnumber",
+        "arrival_time",
+        "firstname",
+        "gender",
+        "nationality",
+        "phone_home",
+        "roomtype_full",
+        "student_criteria_allergies",
+        "surname"
+      ],
+      "tokens": []
+    },
+    "Host-Cancel": {
+      "id": 21,
+      "name": "Host Cancel",
+      "subject": null,
+      "category": "accomm/confirm-provider",
+      "htmlLength": 643,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "accommodation_contact_firstname",
+        "accommodation_contact_lastname",
+        "accommodation_weeks",
+        "date_accommodation_end",
+        "date_accommodation_start",
+        "end_loop_accommodations",
+        "firstname",
+        "nationality",
+        "start_loop_accommodations",
+        "surname"
+      ],
+      "tokens": []
+    },
+    "Host-GardaVet": {
+      "id": 22,
+      "name": "Host GardaVet",
+      "subject": null,
+      "category": "accomm/confirm-provider",
+      "htmlLength": 1439,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "item_firstname"
+      ],
+      "tokens": []
+    },
+    "Host-Group": {
+      "id": 24,
+      "name": "Host Group",
+      "subject": null,
+      "category": "accomm/confirm-provider",
+      "htmlLength": 3097,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [
+        "{if student_criteria_allergies}",
+        "{if student_criteria_vegetarian}"
+      ],
+      "singleBraceLeaks": [
+        "accommodation_address",
+        "accommodation_address_addon",
+        "accommodation_allocation_end",
+        "accommodation_allocation_start",
+        "accommodation_assigned_nights",
+        "accommodation_city",
+        "accommodation_contact_firstname",
+        "accommodation_meal_full",
+        "accommodation_zip",
+        "age",
+        "arrival_date",
+        "arrival_flightnumber",
+        "arrival_time",
+        "end_loop_roommate",
+        "firstname",
+        "gender",
+        "nationality",
+        "roomtype_full",
+        "start_loop_roommate",
+        "student_criteria_allergies",
+        "surname"
+      ],
+      "tokens": []
+    },
+    "Host-Group-Leaders": {
+      "id": 23,
+      "name": "Host Group Leaders",
+      "subject": null,
+      "category": "accomm/confirm-provider",
+      "htmlLength": 2727,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [
+        "{if student_criteria_allergies}",
+        "{if student_criteria_vegetarian}"
+      ],
+      "singleBraceLeaks": [
+        "accommodation_address",
+        "accommodation_address_addon",
+        "accommodation_allocation_end",
+        "accommodation_allocation_start",
+        "accommodation_assigned_nights",
+        "accommodation_city",
+        "accommodation_contact_firstname",
+        "accommodation_meal_full",
+        "accommodation_zip",
+        "age",
+        "arrival_date",
+        "arrival_flightnumber",
+        "arrival_time",
+        "end_loop_roommate",
+        "firstname",
+        "gender",
+        "nationality",
+        "roomtype_full",
+        "start_loop_roommate",
+        "student_criteria_allergies",
+        "surname"
+      ],
+      "tokens": []
+    },
+    "Host-Login": {
+      "id": 25,
+      "name": "Host Login",
+      "subject": null,
+      "category": "accomm/confirm-provider",
+      "htmlLength": 160,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "accommodation_reset_password_link"
+      ],
+      "tokens": []
+    },
+    "Host-UpdateCRM": {
+      "id": 26,
+      "name": "Host UpdateCRM",
+      "subject": null,
+      "category": "accomm/confirm-provider",
+      "htmlLength": 550,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "accommodation_provider_name"
+      ],
+      "tokens": []
+    },
+    "Apart-Student-RoomChange": {
+      "id": 27,
+      "name": "Apart Student RoomChange",
+      "subject": null,
+      "category": "accomm/confirm-student",
+      "htmlLength": 3266,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "accommodation_category",
+        "accommodation_meal_full",
+        "accommodation_provider_name",
+        "accommodation_room",
+        "date_accommodation_end",
+        "date_accommodation_start",
+        "end_selected_entries",
+        "firstname",
+        "roomtype_full",
+        "school_name",
+        "start_selected_entries"
+      ],
+      "tokens": []
+    },
+    "Arrival-Agent-Agent": {
+      "id": 28,
+      "name": "Arrival Agent Agent",
+      "subject": null,
+      "category": "accomm/confirm-student",
+      "htmlLength": 0,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [],
+      "tokens": []
+    },
+    "Arrival-Agent-Apart": {
+      "id": 29,
+      "name": "Arrival Agent Apart",
+      "subject": null,
+      "category": "accomm/confirm-student",
+      "htmlLength": 1399,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [
+        "{if accommodation_googlemaps}",
+        "{if agency_staffmember_firstname}"
+      ],
+      "singleBraceLeaks": [
+        "accommodation_address",
+        "accommodation_allocation_end",
+        "accommodation_allocation_start",
+        "accommodation_category",
+        "accommodation_city",
+        "accommodation_description",
+        "accommodation_googlemaps",
+        "accommodation_meal_full",
+        "accommodation_phone",
+        "accommodation_provider_email",
+        "accommodation_provider_name",
+        "accommodation_zip",
+        "agency",
+        "agency_staffmember_firstname",
+        "date_course_start",
+        "end_loop_accommodation_allocations",
+        "end_loop_accommodations",
+        "firstname",
+        "roomtype_full",
+        "school_name",
+        "start_loop_accommodation_allocations",
+        "start_loop_accommodations",
+        "surname"
+      ],
+      "tokens": []
+    },
+    "Arrival-Student-Apart": {
+      "id": 33,
+      "name": "Arrival Student Apart",
+      "subject": null,
+      "category": "accomm/confirm-student",
+      "htmlLength": 2445,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [
+        "{if accommodation_mobile}",
+        "{if accommodation_phone}",
+        "{if accommodation_provider_email}",
+        "{if transfer_booked}"
+      ],
+      "singleBraceLeaks": [
+        "accommodation_address",
+        "accommodation_allocation_end",
+        "accommodation_allocation_start",
+        "accommodation_category",
+        "accommodation_city",
+        "accommodation_googlemaps",
+        "accommodation_meal_full",
+        "accommodation_mobile",
+        "accommodation_phone",
+        "accommodation_provider_email",
+        "accommodation_provider_name",
+        "accommodation_zip",
+        "booked_transfer",
+        "firstname",
+        "roomtype_full",
+        "school_name",
+        "start_loop_accommodation_allocations",
+        "start_loop_accommodations"
+      ],
+      "tokens": []
+    },
+    "Arrival-Student-Apart-2": {
+      "id": 30,
+      "name": "Arrival Student Apart 2",
+      "subject": null,
+      "category": "accomm/confirm-student",
+      "htmlLength": 3235,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [
+        "{if accommodation_googlemaps}",
+        "{if transfer_booked}"
+      ],
+      "singleBraceLeaks": [
+        "accommodation_address",
+        "accommodation_category",
+        "accommodation_city",
+        "accommodation_googlemaps",
+        "accommodation_meal_full",
+        "accommodation_provider_name",
+        "accommodation_room",
+        "accommodation_zip",
+        "booked_transfer",
+        "date_accommodation_end",
+        "date_accommodation_start",
+        "end_loop_accommodations",
+        "firstname",
+        "roomtype_full",
+        "school_name",
+        "start_loop_accommodations"
+      ],
+      "tokens": []
+    },
+    "Arrival-Student-Apart-FromHere": {
+      "id": 31,
+      "name": "Arrival Student Apart FromHere",
+      "subject": null,
+      "category": "accomm/confirm-student",
+      "htmlLength": 5888,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [
+        "{if transfer_booked}"
+      ],
+      "singleBraceLeaks": [
+        "accommodation_address",
+        "accommodation_category",
+        "accommodation_city",
+        "accommodation_contact_firstname",
+        "accommodation_contact_lastname",
+        "accommodation_meal_full",
+        "accommodation_phone",
+        "accommodation_provider_email",
+        "accommodation_provider_name",
+        "accommodation_zip",
+        "booked_transfer",
+        "date_accommodation_end",
+        "date_accommodation_start",
+        "firstname",
+        "roomtype_full",
+        "school_name"
+      ],
+      "tokens": []
+    },
+    "Arrival-Student-Apart-SHARING": {
+      "id": 32,
+      "name": "Arrival Student Apart SHARING",
+      "subject": null,
+      "category": "accomm/confirm-student",
+      "htmlLength": 2703,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [
+        "{if accommodation_googlemaps}",
+        "{if transfer_booked}"
+      ],
+      "singleBraceLeaks": [
+        "accommodation_address",
+        "accommodation_category",
+        "accommodation_city",
+        "accommodation_googlemaps",
+        "accommodation_meal_full",
+        "accommodation_provider_name",
+        "accommodation_room",
+        "accommodation_zip",
+        "booked_transfer",
+        "date_accommodation_end",
+        "date_accommodation_start",
+        "end_loop_accommodation_allocations",
+        "end_loop_accommodations",
+        "end_loop_roommate",
+        "firstname",
+        "roomtype_full",
+        "school_name",
+        "start_loop_accommodation_allocations",
+        "start_loop_accommodations",
+        "start_loop_roommate"
+      ],
+      "tokens": []
+    },
+    "Arrival-Student-Flight": {
+      "id": 34,
+      "name": "Arrival Student Flight",
+      "subject": null,
+      "category": "accomm/confirm-student",
+      "htmlLength": 515,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "firstname"
+      ],
+      "tokens": []
+    },
+    "Arrival-Student-SelfCheckIn": {
+      "id": 35,
+      "name": "Arrival Student SelfCheckIn",
+      "subject": null,
+      "category": "accomm/confirm-student",
+      "htmlLength": 1682,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "firstname"
+      ],
+      "tokens": []
+    },
+    "Depart-CheckOut-Capel": {
+      "id": 36,
+      "name": "Depart CheckOut Capel",
+      "subject": null,
+      "category": "accomm/confirm-student",
+      "htmlLength": 1751,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "date_accommodation_end",
+        "firstname"
+      ],
+      "tokens": []
+    },
+    "Depart-CheckOut-Providers": {
+      "id": 37,
+      "name": "Depart CheckOut Providers",
+      "subject": null,
+      "category": "accomm/confirm-student",
+      "htmlLength": 1693,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "accommodation_provider_name",
+        "date_accommodation_end",
+        "firstname"
+      ],
+      "tokens": []
+    },
+    "Student-Cancel": {
+      "id": 38,
+      "name": "Student Cancel",
+      "subject": null,
+      "category": "accomm/confirm-student",
+      "htmlLength": 626,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "accommodation_meal_full",
+        "accommodation_weeks",
+        "date_accommodation_end",
+        "date_accommodation_start",
+        "end_loop_accommodations",
+        "firstname",
+        "roomtype_full",
+        "start_loop_accommodations",
+        "surname"
+      ],
+      "tokens": []
+    },
+    "Arrival-Transfer-Agent": {
+      "id": 40,
+      "name": "Arrival Transfer Agent",
+      "subject": null,
+      "category": "accomm/transfer",
+      "htmlLength": 1837,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [
+        "{if agency_staffmember_firstname}",
+        "{if gender}"
+      ],
+      "singleBraceLeaks": [
+        "accommodation_address",
+        "accommodation_address_addon",
+        "accommodation_city",
+        "accommodation_phone",
+        "accommodation_provider_name",
+        "accommodation_zip",
+        "agency",
+        "agency_staffmember_firstname",
+        "arrival_flightnumber",
+        "arrival_time",
+        "arrival_transfer_company_phone",
+        "date_first_accommodation_start",
+        "firstname",
+        "phone_home",
+        "phone_mobile",
+        "surname"
+      ],
+      "tokens": []
+    },
+    "Departure-Transfer-Student": {
+      "id": 41,
+      "name": "Depart Capel Transfer",
+      "subject": "Departure - Capel to Airport",
+      "category": "accomm/transfer",
+      "htmlLength": 1309,
+      "tokenCount": 3,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [],
+      "tokens": [
+        {
+          "token": "student.first_name",
+          "status": "resolved"
+        },
+        {
+          "token": "student.outbound_flight_number",
+          "status": "resolved"
+        },
+        {
+          "token": "student.outbound_flight_time",
+          "status": "resolved"
+        }
+      ]
+    },
+    "depart-transfer-host": {
+      "id": 80,
+      "name": "Depart Host Transfer",
+      "subject": "Departure - Transfer Details",
+      "category": "accomm/transfer",
+      "htmlLength": 372,
+      "tokenCount": 1,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [],
+      "tokens": [
+        {
+          "token": "student.first_name",
+          "status": "resolved"
+        }
+      ]
+    },
+    "provider-confirm": {
+      "id": 42,
+      "name": "provider confirm",
+      "subject": null,
+      "category": "accomm/transfer",
+      "htmlLength": 1064,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "accommodation_address",
+        "accommodation_address_addon",
+        "accommodation_contact_firststname",
+        "accommodation_contact_lastname",
+        "accommodation_phone",
+        "accommodation_zip",
+        "arrival_flightnumber",
+        "arrival_pick_up",
+        "arrival_time",
+        "arrival_transfer_driver",
+        "date_first_accommodation_start",
+        "firstname",
+        "phone_home",
+        "phone_mobile",
+        "surname"
+      ],
+      "tokens": []
+    },
+    "credit-note": {
+      "id": 45,
+      "name": "credit note",
+      "subject": null,
+      "category": "accounts",
+      "htmlLength": 219,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "agency",
+        "manual_credit_note_amount",
+        "manual_credit_note_currency"
+      ],
+      "tokens": []
+    },
+    "PayReceived-Agent": {
+      "id": 43,
+      "name": "PayReceived Agent",
+      "subject": null,
+      "category": "accounts",
+      "htmlLength": 1312,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "accommodation_category",
+        "agency",
+        "arrival_date",
+        "booked_transfer",
+        "course",
+        "date_accommodation_end",
+        "date_accommodation_start",
+        "date_course_start",
+        "date_last_course_end",
+        "departure_date",
+        "end_loop_accommodations",
+        "end_loop_courses",
+        "end_loop_individual_transfer",
+        "firstname",
+        "roomtype_full",
+        "salutation",
+        "start_loop_accommodations",
+        "start_loop_courses",
+        "start_loop_individual_transfer",
+        "surname"
+      ],
+      "tokens": []
+    },
+    "PayReceived-Student": {
+      "id": 44,
+      "name": "PayReceived Student",
+      "subject": null,
+      "category": "accounts",
+      "htmlLength": 2612,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [
+        "{if course_category}"
+      ],
+      "singleBraceLeaks": [
+        "accommodation_category",
+        "arrival_date",
+        "booked_transfer",
+        "course",
+        "date_accommodation_end",
+        "date_accommodation_start",
+        "date_course_end",
+        "date_course_start",
+        "departure_date",
+        "end_loop_accommodations",
+        "end_loop_courses",
+        "end_loop_individual_transfer",
+        "firstname",
+        "roomtype_full",
+        "start_loop_accommodations",
+        "start_loop_courses",
+        "start_loop_individual_transfer"
+      ],
+      "tokens": []
+    },
+    "Access-Student": {
+      "id": 46,
+      "name": "Access Student",
+      "subject": null,
+      "category": "app",
+      "htmlLength": 1271,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "firstname",
+        "school_name",
+        "user_name",
+        "user_password"
+      ],
+      "tokens": []
+    },
+    "Pass-Reset-Student": {
+      "id": 47,
+      "name": "Pass Reset Student",
+      "subject": null,
+      "category": "app",
+      "htmlLength": 370,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "firstname",
+        "school_name",
+        "user_login_code",
+        "user_name"
+      ],
+      "tokens": []
+    },
+    "Details-Provider": {
+      "id": 48,
+      "name": "Details Provider",
+      "subject": null,
+      "category": "insurance",
+      "htmlLength": 578,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "arrival_flightnumber",
+        "arrival_time",
+        "birthdate",
+        "date_accommodation_start",
+        "firstname",
+        "gender",
+        "insurance_provider",
+        "nationality",
+        "school_name",
+        "surname"
+      ],
+      "tokens": []
+    },
+    "Policy-Student": {
+      "id": 49,
+      "name": "Policy Student",
+      "subject": null,
+      "category": "insurance",
+      "htmlLength": 659,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "date_insurance_end",
+        "date_insurance_start",
+        "end_loop_insurances",
+        "firstname",
+        "insurance",
+        "insurance_price",
+        "insurance_provider",
+        "start_loop_insurances",
+        "surname"
+      ],
+      "tokens": []
+    },
+    "B2B-Confirm-RequestPay": {
+      "id": 53,
+      "name": "B2B Confirm RequestPay",
+      "subject": null,
+      "category": "sales/B2B",
+      "htmlLength": 3553,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [
+        "{if course_category}"
+      ],
+      "singleBraceLeaks": [
+        "accommodation_category",
+        "agency",
+        "arrival_date",
+        "booked_transfer",
+        "course",
+        "date_accommodation_end",
+        "date_accommodation_start",
+        "date_course_end",
+        "date_course_start",
+        "departure_date",
+        "end_loop_accommodations",
+        "end_loop_courses",
+        "end_loop_individual_transfer",
+        "firstname",
+        "roomtype_full",
+        "start_loop_accommodations",
+        "start_loop_courses",
+        "start_loop_individual_transfer",
+        "surname"
+      ],
+      "tokens": []
+    },
+    "B2B-EnrollConfirm": {
+      "id": 50,
+      "name": "B2B EnrollConfirm",
+      "subject": null,
+      "category": "sales/B2B",
+      "htmlLength": 8191,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [
+        "{if accommodation_category}"
+      ],
+      "singleBraceLeaks": [
+        "accommodation_category",
+        "accommodation_meal_full",
+        "accommodation_weeks",
+        "address",
+        "birthdate",
+        "city",
+        "country",
+        "course",
+        "course_weeks",
+        "date_accommodation_end",
+        "date_accommodation_start",
+        "date_course_end",
+        "date_course_start",
+        "email",
+        "end_loop_accommodations",
+        "end_loop_courses",
+        "firstname",
+        "gender",
+        "mothertongue",
+        "nationality",
+        "roomtype_full",
+        "start_loop_accommodations",
+        "start_loop_courses",
+        "surname",
+        "zip"
+      ],
+      "tokens": []
+    },
+    "B2B-EnrollNotify": {
+      "id": 51,
+      "name": "B2B EnrollNotify",
+      "subject": null,
+      "category": "sales/B2B",
+      "htmlLength": 659,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [],
+      "tokens": []
+    },
+    "B2B-Portal-Access": {
+      "id": 52,
+      "name": "B2B Portal Access",
+      "subject": null,
+      "category": "sales/B2B",
+      "htmlLength": 1062,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "agency_activation_key",
+        "agency_staffmember_firstname"
+      ],
+      "tokens": []
+    },
+    "B2B-Updated-RequestPay": {
+      "id": 54,
+      "name": "B2B Updated RequestPay",
+      "subject": null,
+      "category": "sales/B2B",
+      "htmlLength": 1767,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [
+        "{if course_category}"
+      ],
+      "singleBraceLeaks": [
+        "accommodation_category",
+        "agency",
+        "arrival_date",
+        "booked_transfer",
+        "course",
+        "date_accommodation_end",
+        "date_accommodation_start",
+        "date_course_end",
+        "date_course_start",
+        "departure_date",
+        "end_loop_accommodations",
+        "end_loop_courses",
+        "end_loop_individual_transfer",
+        "firstname",
+        "roomtype_full",
+        "start_loop_accommodations",
+        "start_loop_courses",
+        "start_loop_individual_transfer",
+        "surname"
+      ],
+      "tokens": []
+    },
+    "B2C-Confirm-RequestPay": {
+      "id": 55,
+      "name": "B2C Confirm RequestPay",
+      "subject": null,
+      "category": "sales/B2C",
+      "htmlLength": 8637,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [
+        "{if course_category}"
+      ],
+      "singleBraceLeaks": [
+        "accommodation_category",
+        "amount",
+        "arrival_date",
+        "booked_transfer",
+        "course",
+        "date_accommodation_end",
+        "date_accommodation_start",
+        "date_course_end",
+        "date_course_start",
+        "departure_date",
+        "end_loop_accommodations",
+        "end_loop_courses",
+        "end_loop_individual_transfer",
+        "firstname",
+        "roomtype_full",
+        "start_loop_accommodations",
+        "start_loop_courses",
+        "start_loop_individual_transfer"
+      ],
+      "tokens": []
+    },
+    "B2C-Updated-RequestPay": {
+      "id": 57,
+      "name": "B2C Updated RequestPay",
+      "subject": null,
+      "category": "sales/B2C",
+      "htmlLength": 2439,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [
+        "{if course_category}"
+      ],
+      "singleBraceLeaks": [
+        "accommodation_category",
+        "amount",
+        "arrival_date",
+        "booked_transfer",
+        "course",
+        "date_accommodation_end",
+        "date_accommodation_start",
+        "date_course_end",
+        "date_course_start",
+        "departure_date",
+        "end_loop_accommodations",
+        "end_loop_courses",
+        "end_loop_individual_transfer",
+        "firstname",
+        "roomtype_full",
+        "start_loop_accommodations",
+        "start_loop_courses",
+        "start_loop_individual_transfer"
+      ],
+      "tokens": []
+    },
+    "Student-BookingAutoResponse": {
+      "id": 56,
+      "name": "Student BookingAutoResponse",
+      "subject": null,
+      "category": "sales/B2C",
+      "htmlLength": 2554,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [
+        "{if accommodation_category}",
+        "{if address}",
+        "{if billing_address}",
+        "{if billing_city}",
+        "{if billing_country}",
+        "{if billing_zip}",
+        "{if city}",
+        "{if country}",
+        "{if course}",
+        "{if gender}",
+        "{if insurance}",
+        "{if mothertongue}",
+        "{if nationality}",
+        "{if phone_home}",
+        "{if zip}"
+      ],
+      "singleBraceLeaks": [
+        "accommodation_category",
+        "accommodation_meal_full",
+        "accommodation_weeks",
+        "address",
+        "billing_address",
+        "billing_city",
+        "billing_country",
+        "billing_zip",
+        "birthdate",
+        "city",
+        "country",
+        "course",
+        "course_weeks",
+        "date_accommodation_end",
+        "date_accommodation_start",
+        "date_course_end",
+        "date_course_start",
+        "date_insurance_end",
+        "date_insurance_start",
+        "email",
+        "end_loop_accommodations",
+        "end_loop_courses",
+        "end_loop_insurances",
+        "firstname",
+        "gender",
+        "insurance",
+        "mothertongue",
+        "nationality",
+        "phone_home",
+        "roomtype_full",
+        "school_name",
+        "start_loop_accommodations",
+        "start_loop_courses",
+        "start_loop_insurances",
+        "surname",
+        "zip"
+      ],
+      "tokens": []
+    },
+    "Confirm-Group": {
+      "id": 58,
+      "name": "Confirm Group",
+      "subject": null,
+      "category": "success/agent",
+      "htmlLength": 1635,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [
+        "{if group_address_addon}",
+        "{if group_country}",
+        "{if transfer_booked}"
+      ],
+      "singleBraceLeaks": [
+        "accommodation_category",
+        "accommodation_meal",
+        "accommodation_room",
+        "accommodation_weeks",
+        "course",
+        "course_weeks",
+        "customernumber",
+        "date_course_start",
+        "end_loop_accommodations",
+        "end_loop_courses",
+        "end_loop_group_members",
+        "firstname",
+        "gender",
+        "group_address",
+        "group_address_addon",
+        "group_city",
+        "group_contact_firstname",
+        "group_contact_surname",
+        "group_count_exkl_leader",
+        "group_count_leader",
+        "group_count_member",
+        "group_country",
+        "group_name",
+        "group_zip",
+        "salutation",
+        "start_loop_accommodations",
+        "start_loop_courses",
+        "start_loop_group_members",
+        "surname"
+      ],
+      "tokens": []
+    },
+    "FeedbackFinal": {
+      "id": 59,
+      "name": "FeedbackFinal",
+      "subject": null,
+      "category": "success/feedback",
+      "htmlLength": 1176,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [
+        "{if ilep_course_code}"
+      ],
+      "singleBraceLeaks": [
+        "firstname",
+        "link_feedback_12"
+      ],
+      "tokens": []
+    },
+    "FeedbackFinal2-ExitLetter": {
+      "id": 60,
+      "name": "FeedbackFinal2 ExitLetter",
+      "subject": null,
+      "category": "success/feedback",
+      "htmlLength": 561,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "firstname",
+        "link_feedback_12"
+      ],
+      "tokens": []
+    },
+    "FeedbackQuick": {
+      "id": 61,
+      "name": "FeedbackQuick",
+      "subject": null,
+      "category": "success/feedback",
+      "htmlLength": 355,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "firstname",
+        "link_feedback_11"
+      ],
+      "tokens": []
+    },
+    "FeedbackThanks-Cert": {
+      "id": 63,
+      "name": "FeedbackThanks Cert",
+      "subject": null,
+      "category": "success/feedback",
+      "htmlLength": 539,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "firstname"
+      ],
+      "tokens": []
+    },
+    "FeedbackThanks-Cert-Google": {
+      "id": 62,
+      "name": "FeedbackThanks Cert Google",
+      "subject": null,
+      "category": "success/feedback",
+      "htmlLength": 1293,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "firstname"
+      ],
+      "tokens": []
+    },
+    "FeedbackWeek1": {
+      "id": 64,
+      "name": "FeedbackWeek1",
+      "subject": null,
+      "category": "success/feedback",
+      "htmlLength": 411,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "firstname",
+        "link_feedback_8",
+        "school_name"
+      ],
+      "tokens": []
+    },
+    "Arrival-Student-Transfer": {
+      "id": 39,
+      "name": "Arrival Transfer",
+      "subject": "Airport Arrival - Tansfer Details",
+      "category": "success/student",
+      "htmlLength": 365,
+      "tokenCount": 1,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [],
+      "tokens": [
+        {
+          "token": "student.first_name",
+          "status": "resolved"
+        }
+      ]
+    },
+    "Day1-Orient": {
+      "id": 66,
+      "name": "Day1 Orient",
+      "subject": null,
+      "category": "success/student",
+      "htmlLength": 5446,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [
+        "{if course_category}",
+        "{if ilep_course_code}"
+      ],
+      "singleBraceLeaks": [
+        "firstname",
+        "user_name",
+        "user_password"
+      ],
+      "tokens": []
+    },
+    "Day1-Orient-BankHols": {
+      "id": 65,
+      "name": "Day1 Orient BankHols",
+      "subject": null,
+      "category": "success/student",
+      "htmlLength": 5592,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [
+        "{if course_category}",
+        "{if ilep_course_code}"
+      ],
+      "singleBraceLeaks": [
+        "firstname",
+        "user_name",
+        "user_password"
+      ],
+      "tokens": []
+    },
+    "DocRequest": {
+      "id": 67,
+      "name": "DocRequest",
+      "subject": null,
+      "category": "success/student",
+      "htmlLength": 326,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "firstname"
+      ],
+      "tokens": []
+    },
+    "End-Certificate": {
+      "id": 68,
+      "name": "End Certificate",
+      "subject": null,
+      "category": "success/student",
+      "htmlLength": 397,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [],
+      "tokens": []
+    },
+    "LEAP": {
+      "id": 69,
+      "name": "LEAP",
+      "subject": null,
+      "category": "success/student",
+      "htmlLength": 2712,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "firstname"
+      ],
+      "tokens": []
+    },
+    "ParentConsent": {
+      "id": 70,
+      "name": "ParentConsent",
+      "subject": null,
+      "category": "success/student",
+      "htmlLength": 890,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [],
+      "tokens": []
+    },
+    "Trial": {
+      "id": 72,
+      "name": "Trial",
+      "subject": null,
+      "category": "success/student",
+      "htmlLength": 2683,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [
+        "{if course_category}"
+      ],
+      "singleBraceLeaks": [
+        "course",
+        "date_course_end",
+        "date_course_start",
+        "end_loop_courses",
+        "firstname",
+        "start_loop_courses"
+      ],
+      "tokens": []
+    },
+    "Trial-FollowUp": {
+      "id": 71,
+      "name": "Trial FollowUp",
+      "subject": null,
+      "category": "success/student",
+      "htmlLength": 595,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "firstname",
+        "surname"
+      ],
+      "tokens": []
+    },
+    "ISD-DocsRequired": {
+      "id": 73,
+      "name": "ISD DocsRequired",
+      "subject": null,
+      "category": "success/visa",
+      "htmlLength": 2187,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "firstname"
+      ],
+      "tokens": []
+    },
+    "ISD-Online-IRP": {
+      "id": 74,
+      "name": "ISD Online IRP",
+      "subject": null,
+      "category": "success/visa",
+      "htmlLength": 1614,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "firstname"
+      ],
+      "tokens": []
+    },
+    "LoA-Attach-Agent": {
+      "id": 75,
+      "name": "LoA Attach Agent",
+      "subject": null,
+      "category": "success/visa",
+      "htmlLength": 397,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "agency_staffmember_firstname",
+        "firstname"
+      ],
+      "tokens": []
+    },
+    "LoA-Attach-Student": {
+      "id": 76,
+      "name": "LoA Attach Student",
+      "subject": null,
+      "category": "success/visa",
+      "htmlLength": 343,
+      "tokenCount": 0,
+      "unresolvedCount": 0,
+      "controlBlocks": [],
+      "singleBraceLeaks": [
+        "firstname"
+      ],
+      "tokens": []
+    },
+    "Visa-Approval-Notice": {
+      "id": 79,
+      "name": "Visa Approval — 4-Week Notice",
+      "subject": null,
+      "category": "success/visa",
+      "htmlLength": 1265,
+      "tokenCount": 3,
+      "unresolvedCount": 1,
+      "controlBlocks": [],
+      "singleBraceLeaks": [],
+      "tokens": [
+        {
+          "token": "booking.original_start_date",
+          "status": "unresolved"
+        },
+        {
+          "token": "booking.start_date",
+          "status": "resolved"
+        },
+        {
+          "token": "student.first_name",
+          "status": "resolved"
+        }
+      ]
+    }
+  }
+}

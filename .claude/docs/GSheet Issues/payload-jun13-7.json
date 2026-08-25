@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "bk18151 AFT CONF 1339.2. bk1605 MORN PEND 0/1509 D76. sca255 cls11 bc24925 AY-AFT Jan12-Jul03(20d). att=0 all time(see#29). Hash chg=B cell edit.",
+        "WON deal 502951083215 for EUR1509 MORN renewal. recipe: issue-15-saikhantes-course-dates.md",
+        "Jun13 SAT hrly5(hash chg=B cell edit): UNCHANGED. bk18151 CONF 1339.2 c24925 AY-AFT Jan12-Jul03(20d). sca255 cls11 weekEnd=Jul03. bk1605 PEND 0/1509 c1791 AY-MORN Apr13-Oct02. att=0 all time(see issue-29 IRP). visaStatus=null. NEIL: win deal 502951083215 EUR1509 or confirm no morning renewal.",
+        "aft sca ok; morn pending"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "bk18158 PEND 0/740+2 DUP crs(c24933 fee=380,c24934 fee=360). bk18131 CONF 1185/bk18133 CONF 648 ghost(0crs). pmts17728(bk1567 dup)+17730+17852 xero=null. 0 SCAs. STARTS MON.",
+        "5 steps NOT RUN:(1)DELETE pmts 17728,17730,17852;(2)CANCEL bk18131,18133;(3)DELETE bc24934;(4)check HS 505836060909;(5)assign s1015 cls7 c24933 Jun15. recipe:issue-22-edith-nunes-payment-dups.md",
+        "Jun13 SAT hrly5: pmt17728(EUR482.4 bk1567 xero=null)=dup of pmt17161(same date Apr14 same amt) - safe delete. pmt17730(bk18133 EUR648)+pmt17852(bk18131 EUR1185) ghost xero=null. bk18158 PEND 0/740. c24933(380)+c24934(DUP360). bk18131 CONF 1185+bk18133 CONF 648 0-courses ghost. 0 SCAs. STARTS MON JUN15 under 33h. ALL 5 NOT RUN.",
+        "CRITICAL Mon Jun15"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "s14532 Ernesto 0SCAs 0att. bc24826 INTENSIVE Jun08-19. WK1(Jun08-12) MISSED. WK2(Jun15-19) starts Mon. currentLevel=null DB.",
+        "Mon 08:00 get level from teacher->INSERT 2 SCAs WK2 IMMEDIATELY(AM+PM). recipe:issue-26-intensive-class-assign-once.md",
+        "Jun13 SAT hrly5: UNCHANGED. s14532 Ernesto currentLevel=null 0SCAs 0att(att table COUNT=0). bc24826 INTENSIVE Jun08-Jun19. WK1(Jun08-12) ENTIRELY MISSED. WK2(Jun15-19) FINAL WEEK starts MON under 33h. bk18034 PARTIAL 845/1095 conf=false. Pairs: A2=cls8/9,B1=cls5+12/11,B2-C1=cls4/6,C1=cls13/14. NEIL: Mon 08:00 ask teacher IMMEDIATELY then INSERT 2 SCAs for Jun15-19.",
+        "Mon AM LAST CHANCE"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "s1001 att=0 ALL TIME(155d+ enrolled). sca255 cls11 AY-AFT weekEnd=Jul03(20d). visaStatus=null. IRP compliance risk.",
+        "Mon AM cls11 register check. If no physical att: IRP escalation URGENTLY. recipe:issue-29-saikhantes-jan12-start-date.md",
+        "Jun13 SAT hrly5: UNCHANGED. att=0(attendance table COUNT=0). sca255 cls11 B1PM weekStart=Jan12 weekEnd=Jul03(20d remaining). bc24925 AY-AFT active. s1001 level=B1 visaStatus=null updAt=Jun08. bk18151 CONF 1339.2. bk1605 PEND 0/1509. 155d+ ZERO attendance. No alias in DB. NEIL: Mon AM ask cls11 teacher if Saikhantes EVER attended. If absent: IRP escalation immediately(20d to Jul03).",
+        "0att URGENT 20d"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "s88 Giulia JUNIOR 0SCAs level=null. bk94 CONF 1151.5 c104 Jun15-26(REAL). bk18044 CONF DUP 1106.5 c24836 Jun15-26(pmt17607 EUR1151.5 xero=null dbl-import Mar13). bk18152 Milena PEND 0/1151.5. STARTS MON.",
+        "(1)assign s88 std AM cls bk94/c104 Jun15-26;(2)CANCEL bk18044+DELETE pmt17607(xero=null dbl-import);(3)CANCEL bk18152+delete s14557. recipe:issue-30-giulia-milena-parent-student.md",
+        "Jun13 SAT hrly5: UNCHANGED. s88 Giulia JUNIOR hubId=725804908732(SET) currentLevel=null 0SCAs. bk94 CONF 1151.5/1151.5 c104 Jun15-26. bk18044 CONF DUP 1106.5 c24836 Jun15-26(pmt17607 EUR1151.5 xero=null hsId=1239529228498=dbl-import Mar13 DELETE not refund). bk18152 Milena(s14557) PEND 0/1151.5 c24926 Jun15-26. ALL 4 NOT RUN. STARTS MON JUN15 under 33h. NEIL: TONIGHT.",
+        "CRITICAL Mon Jun15"
+      ]
+    ]
+  },
+  {
+    "range": "H32:K32",
+    "values": [
+      [
+        "TZ=Europe/Dublin(NOT UTC). 9 ghost SCAs(ids39,40,65,66,74,75,81,87,100) week_end=null courses all ended<=Jun12. Mon att WILL show Sun Jun14+9 ghosts.",
+        "FIX TONIGHT:(1)echo TZ=UTC>>.env+touch tmp/restart.txt;(2)UPDATE student_class_assignments SET week_end=(SELECT end_date FROM booking_courses WHERE id=booking_course_id) WHERE week_end IS NULL; recipe:issue-31-attendance-sheet-week-bug.md",
+        "Jun13 SAT hrly5: DB TZ=Europe/Dublin(SHOW timezone raw). 9 ghost SCAs week_end=null(IDs:39=May22,40=Jun12,65=Jun12,66=May15,74=May15,75=Jun12,81=Jun05,87=Jun05,100=May29). Total nullWeekEnd=43(34 ongoing=OK). FIX1(NOT RUN): echo TZ=UTC>>.env+touch tmp/restart.txt. FIX2 SQL(NOT RUN): UPDATE student_class_assignments SET week_end=(SELECT end_date FROM booking_courses WHERE id=booking_course_id) WHERE week_end IS NULL. DEADLINE Mon 07:00 under 33h.",
+        "URGENT Mon 07:00"
+      ]
+    ]
+  }
+]

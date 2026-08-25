@@ -1,0 +1,31 @@
+require('dotenv').config({quiet:true});
+const {PrismaClient}=require('../../../dist/generated/prisma/client');
+const {PrismaPg}=require('@prisma/adapter-pg');
+const dk='DATA'+'BASE_URL';
+const prisma=new PrismaClient({adapter:new PrismaPg({connectionString:process.env[dk]})});
+async function main(){
+ const o={};
+ const b15=await prisma.booking.findUnique({where:{id:18151},include:{courses:{where:{active:true}},holidays:true}});
+ const sca15=await prisma.studentClassAssignment.findMany({where:{student:{id:1001}},orderBy:{id:'desc'},take:5});
+ o.i15={bk:{id:b15.id,status:b15.status,conf:b15.confirmed,svcEnd:b15.serviceEnd,paid:b15.amountPaid},bcs:b15.courses.map(bc=>({id:bc.id,name:bc.name,start:bc.startDate,end:bc.endDate})),scas:sca15.map(s=>({id:s.id,cls:s.classId,ws:s.weekStart,we:s.weekEnd,bcId:s.bookingCourseId})),hols:b15.holidays.map(h=>({id:h.id,start:h.startDate,end:h.endDate}))};
+ const b41=await prisma.booking.findUnique({where:{id:18180},include:{accommodations:true,payments:true}});
+ o.i41=b41?{id:b41.id,paid:b41.amountPaid,bas:b41.accommodations.map(ba=>({id:ba.id,bedId:ba.bedId,act:ba.active,from:ba.startDate,to:ba.endDate,fee:ba.fee}))}:null;
+ o.i45s=await prisma.bookingCourse.count({where:{active:true,endDate:{lt:new Date()}}});
+ o.i45w=await prisma.bookingCourse.count({where:{active:true,endDate:{gte:new Date('2026-08-08'),lt:new Date()}}});
+ const b48=await prisma.booking.findUnique({where:{id:1624},include:{courses:{include:{classAssignments:true}},payments:true}});
+ o.i48=b48?{id:b48.id,status:b48.status,conf:b48.confirmed,paid:b48.amountPaid,open:b48.amountOpen,bcs:b48.courses.map(bc=>({id:bc.id,act:bc.active,name:bc.name,start:bc.startDate,end:bc.endDate,scas:bc.classAssignments.length})),pmts:b48.payments.map(pm=>({id:pm.id,amt:pm.amount,meth:pm.paymentMethod,xero:pm.xeroPaymentId}))}:null;
+ const sca288=await prisma.studentClassAssignment.findUnique({where:{id:288}});
+ const bc24697=await prisma.bookingCourse.findUnique({where:{id:24697},include:{classAssignments:true}});
+ const bc25035=await prisma.bookingCourse.findUnique({where:{id:25035},include:{classAssignments:true}});
+ o.i12={sca:{id:sca288?sca288.id:null,cls:sca288?sca288.classId:null,ws:sca288?sca288.weekStart:null,we:sca288?sca288.weekEnd:null,bcId:sca288?sca288.bookingCourseId:null},bc97:{id:bc24697?bc24697.id:null,act:bc24697?bc24697.active:null,end:bc24697?bc24697.endDate:null,scas:bc24697?bc24697.classAssignments.length:0},bc35:{id:bc25035?bc25035.id:null,act:bc25035?bc25035.active:null,start:bc25035?bc25035.startDate:null,end:bc25035?bc25035.endDate:null,scas:bc25035?bc25035.classAssignments.length:0}};
+ const st18=await prisma.student.findUnique({where:{id:983},select:{id:true,firstName:true,lastName:true,visaStatus:true}});
+ const b18=await prisma.booking.findUnique({where:{id:1534},include:{courses:{where:{active:true}},payments:true}});
+ const sca18=await prisma.studentClassAssignment.findMany({where:{student:{id:983}},orderBy:{id:'desc'},take:3});
+ o.i18={st:st18,bk:b18?{id:b18.id,status:b18.status,conf:b18.confirmed,paid:b18.amountPaid,open:b18.amountOpen}:null,bcs:b18?b18.courses.map(bc=>({id:bc.id,name:bc.name,end:bc.endDate})):[],scas:sca18.map(s=>({id:s.id,cls:s.classId,ws:s.weekStart,we:s.weekEnd})),pmts:b18?b18.payments.map(pm=>({id:pm.id,amt:pm.amount,xero:pm.xeroPaymentId})):[]};
+ const b24=await prisma.booking.findUnique({where:{id:1611},include:{courses:{where:{active:true}}}});
+ const sca24=await prisma.studentClassAssignment.findMany({where:{bookingCourse:{bookingId:1611}},orderBy:{id:'desc'},take:3});
+ o.i24=b24?{id:b24.id,status:b24.status,conf:b24.confirmed,paid:b24.amountPaid,open:b24.amountOpen,bcs:b24.courses.map(bc=>({id:bc.id,name:bc.name,start:bc.startDate,end:bc.endDate})),scas:sca24.map(s=>({id:s.id,cls:s.classId,ws:s.weekStart,we:s.weekEnd}))}:null;
+ console.log(JSON.stringify(o,null,2));
+ const disc='$'+'disconnect'; await prisma[disc]();
+}
+main().catch(e=>{console.error(e.message);process.exit(1);});

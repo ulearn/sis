@@ -1,0 +1,57 @@
+[
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• Accommodation 11352 (Verónica Martín, booking 18156): bed 83, 4 Jul to 11 Jul — today is Verónica's check-in day (92nd check, 4 Jul 2026 UTC)\n• Accommodation 11285 (Jesús Manuel Ramírez Díaz, booking 17825): bed 83, 21 Jun to 5 Jul — Jesus checks out TOMORROW 5 Jul\n• Bed 83 conflict LIVE NOW — both guests on same bed tonight (ba11285 last updated Jun16, ba11352 last updated Jun29)\n• Beds 174, 175, 176 confirmed free 4–11 Jul (prior DB checks)\n• Booking 18156 (Verónica): Confirmed, fully paid EUR 573.20",
+        "(NOT RUN) Move accommodation 11352 to bed 174/175/176: SIS Student 278 > Booking 18156 > Accommodation > edit 11352. See recipe: issue-37-veronica-capel-accomm-allocation.md",
+        "92nd check 4 Jul UTC. TONIGHT = Veronica's first night AND Jesus's last night — both on bed83. ba11352 (Veronica, bed83, Jul4-11, active) + ba11285 (Jesus, bed83, Jun21-Jul5, active) BOTH UNCHANGED. Jesus out TOMORROW Jul5. Beds 174/175/176 free Jul4-11. MOVE ba11352 TODAY before 10am Jul5.",
+        "LIVE NOW; Jul5=Jesus out"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Tuguldurtugs Enkhtugs (student 858, booking 1601): course 1786 (Academic Year Renewal Morning) starts TOMORROW Monday 6 Jul — zero class assignments — EUR 250 outstanding (12th check, 4 Jul 2026 UTC)\n• Kayque Tauann Lopes Coelho (student 852, booking 1633): course 1821 (Academic Year Renewal Afternoon) started 29 Jun — 5 days overdue — zero class assignments\n• Both courses: is_renewal = false (webhook not setting renewal flag)\n• Booking 1601 (Tuguldurtugs): Confirmed, EUR 1356.50 of EUR 1606.50 paid — EUR 250 outstanding\n• Booking 1633 (Kayque): Confirmed, fully paid EUR 1405.50",
+        "(NOT RUN) Assign all to classes urgently: Kayque overdue 5 days; Tuguldurtugs starts Monday 6 Jul. SQL: UPDATE booking_courses SET is_renewal=true WHERE name ILIKE '%Renewal%' AND is_renewal=false. See recipe: issue-45-renewal-arrivals.md",
+        "12th check 4 Jul UTC. s858 Tuguldurtugs: bc1786 AY-Morn-Renewal STARTS TOMORROW Mon Jul6, STILL ZERO SCA, EUR250 outstanding (1356.5/1606.5). s852 Kayque: bc1821 AY-Aft-Renewal Jun29-Dec18, 5d overdue, STILL ZERO SCA, fully paid 1405.5. ASSIGN CLASSES TODAY — Tuguldurtugs starts Monday morning.",
+        "0SCA; Jul6=TOMORROW"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• Accommodation 11357 (Giampaolo Russo, Host Family, 2 Aug to 6 Sep): claim status = pending, bed ID = null — claimed by provider 24 (Edel McDonald, mcdonald.edel@gmail.com, +353879905430) at 1 Jul 18:06 UTC — 3 days pending (35th check, 4 Jul 2026 UTC)\n• Provider 24 claim not confirmed or released — last record update 2 Jul 17:32 UTC (still no bed)\n• Capel accommodation (6 Sep to 14 Sep) still not added to booking 18180 — zero database records\n• August 2 = 29 days away — host family bed must be assigned before then\n• Booking 18180: Confirmed, fully paid EUR 2584.96",
+        "(1) Confirm or release Edel McDonald (provider 24) claim on accommodation 11357; (2) Assign host family bed to accommodation 11357; (3) Add Capel accommodation Sep 6-14 to booking 18180 via SIS admin. see recipe: issue-41-giampaolo-dual-accomm.md",
+        "35th check 4 Jul UTC. ba11357 HF Aug02-Sep06 bedId=STILL null claimStatus=STILL pending. Provider 24=Edel McDonald (mcdonald.edel@gmail.com +353879905430) claimed Jul01 18:06 UTC — 3 days no action. Last ba updated Jul02 17:32 UTC. 0 Capel ba records. Aug02=29d. Neil: (1) confirm/release p24 claim; (2) add Capel Sep6-14 to bk18180.",
+        "HF claim pending; 29d"
+      ]
+    ]
+  },
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "• Extra 96 (INSURANCE) has fee = null — extra type = INSURANCE, active = true\n• Created 25 May — 40 days stale, no fee set (16th check, 4 Jul 2026 UTC)\n• Booking 17981 confirmed = false (minor anomaly) — paid EUR 1407.50 / 1407.50\n• Student 14522 (Lizbeth del Carmen) insurance_from = null, insurance_until = null on student record\n• Student in class since 01 Jun — Day 34 uninsured; no health insurance arranged",
+        "(NOT RUN) Set fee for extra 96 via SIS bk17981 Extras INSURANCE; or UPDATE booking_extras SET fee=<amount> WHERE id=96. See recipe: issue-13-lizbeth-health-insurance.md",
+        "4 Jul UTC (16th check): extra96 INSURANCE fee=STILL NULL active=true created May25=40d stale. bk17981 CONF conf=false 1407.5/1407.5. s14522 ins_from=null ins_until=null. Day34 uninsured. Neil: set insurance fee and dates on extra 96 in SIS.",
+        "ins; D34 uninsured"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• Accommodation 11285 (Jesus Manuel Ramirez Diaz, bed 83): stored dates 21 Jun to 5 Jul — requested 20 Jun to 4 Jul — 1-day discrepancy on both ends (46th check, 4 Jul 2026 UTC)\n• Primary blocker: Issue 37 still unresolved — move Verónica (accommodation 11352) to bed 174/175/176 first\n• Jesus checks out TOMORROW 5 Jul — date correction urgent; do same day as Issue 37 fix\n• ba11285 last updated Jun16 — dates have never been corrected",
+        "(NOT RUN) Primary: resolve Issue 37 first (move accommodation 11352 to bed 174/175/176). Secondary: UPDATE booking_accommodations SET start_date='2026-06-20', end_date='2026-07-04' WHERE id=11285. See recipe: issue-43-jesus-accomm-dates.md",
+        "46th check 4 Jul UTC. ba11285 Jesus bed83 Jun21-Jul05 UNCHANGED (requested Jun20-Jul04). ba last updated Jun16 — dates never corrected. Jesus checks out TOMORROW Jul5. Issue37 STILL unresolved. Fix Issue37 first, then: UPDATE booking_accommodations SET start_date='2026-06-20', end_date='2026-07-04' WHERE id=11285.",
+        "LINKED; fix row 39 first"
+      ]
+    ]
+  }
+]

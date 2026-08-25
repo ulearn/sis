@@ -1,0 +1,56 @@
+[
+  {
+    "range": "J2:K2",
+    "values": [
+      [
+        "Jun15 hrly12: pmt16988(EUR339.9)+pmt16989(EUR339.9) bookingId=null UNCHANGED. Jun29 arrival=14d. UPDATE not run.",
+        "14d to arrival"
+      ]
+    ]
+  },
+  {
+    "range": "J23:K23",
+    "values": [
+      [
+        "Jun15 hrly12: STARTED. bk18158 PEND 0/740 UNCHANGED. bc24933+bc24934 DUP Jun15-Jul10. bk18131(1185)+bk18133(648) CONF no-courses NOT cancelled. 0 SCAs. NEIL: collect EUR740 or escalate.",
+        "URGENT 0SCA STARTED"
+      ]
+    ]
+  },
+  {
+    "range": "J27:K27",
+    "values": [
+      [
+        "Jun15 hrly12: WK2 DAY1. s14532 Ernesto 0SCAs UNCHANGED. bc24826 INTENSIVE ends Jun19=4d. bk18034 PARTIAL 845/1095. NEIL: get level from teacher NOW then INSERT AM+PM SCAs ws=Jun15 we=Jun19.",
+        "WK2 DAY1 4d left"
+      ]
+    ]
+  },
+  {
+    "range": "J30:K30",
+    "values": [
+      [
+        "Jun15 hrly12: att=0 CONFIRMED (attendance table). sca255 cls11/B1PM bc24925 ends Jul03=18d. visa=null. bk1605 PEND 0/1509. NEIL: ask cls11/B1PM teacher re Saikhantes TODAY.",
+        "IRP CRITICAL 18d"
+      ]
+    ]
+  },
+  {
+    "range": "J31:K31",
+    "values": [
+      [
+        "Jun15 hrly12: STARTED. s88 0SCAs. bk94 bc104 Jun15-26 ACTIVE. bk18044 CONF DUP bc24836 NOT cancelled. bk18152 Milena PEND. NEIL: (1)get Giulia level (2)assign cls bk94/c104 (3)cancel bk18044+DELETE pmt17607 (4)cancel bk18152+del Milena s14557.",
+        "URGENT 0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "J32:K32",
+    "values": [
+      [
+        "Jun15 hrly12: TZ STILL missing .env. 43 null week_end (9 ghost IDs:39/40/65/66/74/75/81/87/100; 34 active). Att sheet Sun Jun14 heading. BOTH FIXES NOT RUN. FIX1: echo TZ=UTC>>.env && touch tmp/restart.txt. FIX2 SQL: UPDATE student_class_assignments SET week_end=(SELECT end_date FROM booking_courses WHERE id=booking_course_id) WHERE week_end IS NULL.",
+        "URGENT APPLY NOW"
+      ]
+    ]
+  }
+]

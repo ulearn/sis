@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 56th check Sun 2 Aug 2026 UTC (6th today) — August Bank Holiday 2026-08-03 still absent from school_closures\n• 21 active booking courses still start 2026-08-03 — count unchanged from previous checks\n• Booking course 25003 (Aleix Cervera Gonzalez, booking 18225): confirmed duplicate — 0 class assignments, deactivate only; shunt booking course 25002\n• 20 unique booking courses need shunting to August 4; 1 to deactivate (booking course 25003)\n• school_closures confirmed: 9 entries (Good Fridays 2026-2030 + Christmas 2026-2029 only)\n• FINAL HOURS — must run before 08:00 UTC Monday 3 Aug 2026",
+        "Insert August Bank Holiday into school_closures; shunt 20 booking courses to Aug 4; deactivate booking course 25003. See recipe: issue-38-addendum-2aug-c.md",
+        "56th hrly Sun 2 Aug UTC (6th today). 21 booking courses on Aug 3. Aug BH still absent. Window closes <8h from now. Fix NOT RUN.",
+        "URGENT; window tonight"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 50th check Sun 2 Aug 2026 UTC (5th today) — student arrived today, course starts Tue 4 Aug (shunted from Aug 3 by Issue 38)\n• Booking accommodation 11357 (host family, bed 178, Aug 2-Sep 6, EUR 1,250): active — checked in today\n• Booking course 24956 (General English AM, Aug 3 → shunts to Aug 4-Sep 11): 0 class assignments — student starts Tuesday with no class assigned\n• Capel Street accommodation (Sep 6-Sep 14): still absent from booking 18180 — 1 record only\n• Available Capel Street premium beds Sep 6-14: 161 (A2/Room 1), 168 (A1/Room 1A), 174 (A1/Room 1B), 175 (A1/Room 2B), 176 (A2/Room 1B)\n• Payment 17954 (EUR 2,584.96, Bank, created Jun 29): xero_payment_id = null — 37 days unreconciled",
+        "Assign class for week Aug 4 (URGENT); add Capel St booking accommodation (beds 161/168/174/175/176 available); reconcile payment 17954 in Xero. See recipe: issue-41-addendum-2aug-c.md",
+        "50th hrly Sun 2 Aug UTC (5th today). Student arrived. Starts Tue Aug 4. 0 class assignments. Capel BA absent. Xero null 37 days. Fix NOT RUN.",
+        "SCA+Capel urgent; arrived"
+      ]
+    ]
+  }
+]

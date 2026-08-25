@@ -1,0 +1,57 @@
+[
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• Email address in phone field — Dolgormaa Bayaraa (student 1897): saraa.tpb@gmail.com — unchanged since 28 April 2026 (76 days)\n• Email address in phone field — Aki Miura (student 8567): aki-hinaaki1116@ezudo.he.jp — unchanged since 10 April 2026 (94 days)\n• Annotation in phone field — Jieun Lee (student 1194): 00821097366523 (home contry) — unchanged since 7 May 2026 (67 days)\n• Annotation in phone field — Lisa Li (student 5345): 0864645297 (Husband) — unchanged since 10 April 2026 (94 days)\n• Unicode trailing characters in phone field — Alessandra Saito de Araujo (student 10343): +353 (83) 885 9162 with trailing Unicode right-to-left marks — unchanged since 28 April 2026 (76 days)\n• All 5 records confirmed unchanged in fresh database query 13 July 2026\n• Students 1194, 5345, 10343: can be corrected by stripping annotation text or Unicode\n• Students 1897 and 8567: require a real phone number from HubSpot or staff before correcting",
+        "Strip annotations on students 1194 + 5345; strip Unicode on 10343; get real numbers for 1897 + 8567 from HubSpot; recipe: issue-5-mobile-numbers.md",
+        "13 Jul MON UTC (fresh DB). UNCHANGED. s1897 email saraa.tpb@gmail.com in phone (Dolgormaa, 76d). s8567 email aki-hinaaki1116@ezudo.he.jp in phone (Aki, 94d). s1194 annotation 00821097366523 (Jieun, 67d). s5345 annotation 0864645297 (Husband) (Lisa, 94d). s10343 Unicode trailing after +353 (83) 885 9162 (Alessandra, 76d). All 5 STILL wrong. NOT RUN.",
+        "5 phones wrong; 94d"
+      ]
+    ]
+  },
+  {
+    "range": "H17:K17",
+    "values": [
+      [
+        "• Bed assignment 11282 (bed 66, booking 17897, Mélie Villard): ran 15 May to 5 June 2026 — active = still true (38 days stale since student left 5 June)\n• Historical issue — Mélie Villard term completed 5 June 2026, no guest impact\n• Overlap constraint from bed assignment 11158 (ended 17 May) is also cleared",
+        "",
+        "13 Jul MON UTC (fresh DB). CONFIRMED UNCHANGED. BA11282 bed66 May15-Jun05 active=STILL true (38d stale — Mélie left Jun05). Historical cosmetic cleanup only. No guest impact. NEIL: UPDATE booking_accommodations SET active=false WHERE id=11282 (low priority).",
+        "38d stale; cosmetic"
+      ]
+    ]
+  },
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "• Booking 1308 CANCELLED, confirmed = false — cancellation intentional (per staff)\n• Amount paid = EUR 1530 = amount total — no refund issued\n• Payment 17186 (EUR 1280, HubSpot 1243664915703): xeroPaymentId = null, type = null — unreconciled\n• Payment 17050 (EUR 250, HubSpot 1243648063725): xeroPaymentId = null, type = null — unreconciled\n• Booking course 1350 (Academic Year Afternoon, 25 May – 13 Nov 2026): active = true on cancelled booking (68 days stale, zero class assignments)\n• Accounts decision needed: reconcile EUR 1530 in Xero or issue refund",
+        "Deactivate booking course 1350 (active on cancelled booking); reconcile payments 17186 + 17050 (EUR 1530 total) in Xero. See recipe: issue-17-ana-jessica-accidental-cancel.md",
+        "13 Jul MON UTC (fresh DB). Cancellation accepted as intentional. BK1308 CANCELLED EUR1530/1530 (updAt=Jun07). PMT17186 EUR1280 xeroId=null type=null. PMT17050 EUR250 xeroId=null type=null. BC1350 AY-Aft active=true (68d stale, zero SCAs). EUR1530 held on cancelled booking — Xero reconciliation or refund decision needed. NOT RUN.",
+        "pmts unreconciled"
+      ]
+    ]
+  },
+  {
+    "range": "H20:K20",
+    "values": [
+      [
+        "• Booking 83 courses — IELTS (booking course 89, ended 22 May 2026) and Private Lessons (booking course 90, ended 22 May 2026): both still active = true — 52 days stale\n• Second booking 2606: fully paid EUR 2135 / EUR 2135 — booking course 3034 has 2024 dates (29 April to 24 May 2024) — Fidelo migration import, historical\n• Private lessons (booking course 90) is one-to-one tuition — no class slot needed by design\n• No active courses for student 77 — not appearing in class list is expected behaviour",
+        "",
+        "13 Jul MON UTC (fresh DB). CONFIRMED UNCHANGED. BC89 Morning-IELTS Apr13-May22 active=STILL true (52d stale). BC90 Private-Lessons Apr13-May22 active=STILL true (52d stale). BK83 CONF confirmed=true EUR2629.8/2629.8 (updatedAt=May21=53d). bk2606 Fidelo-2024 historical. No operational action needed. Cosmetic: UPDATE booking_courses SET active=false WHERE id IN (89, 90).",
+        "BC89+90 stale 52d"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• Booking course 23 (Ivan Rodriguez Solares, Intensive General 30, 4 to 22 May 2026): STILL active = true — 52 days past end date\n• Booking course 24826 (Ernesto Pesoa Gil, 2-week Intensive General 30, 8 to 19 June 2026): STILL active = true — 24 days past end date\n• Booking 18034 (Ernesto Pesoa Gil): PARTIAL, confirmed = false — EUR 845 paid of EUR 1095 total; EUR 250 outstanding; last updated 7 June 2026 (36 days ago)\n• Payment 17683 (EUR 845, HubSpot payment 1241215836360): Xero payment ID = STILL null, type = null — not reconciled in Xero",
+        "Deactivate booking courses 23 + 24826 (both ended weeks ago); reconcile payment 17683 EUR 845 in Xero; chase EUR 250 from Ernesto (booking 18034); see recipe: issue-26-intensive-class-assign-once.md",
+        "31st check 13 Jul MON UTC (fresh DB). UNCHANGED. BC23 (Ivan ended May22=52d) active=STILL true. BC24826 (Ernesto ended Jun19=24d) active=STILL true. BK18034 PARTIAL EUR845/1095 EUR250 outstanding confirmed=false (updAt=Jun7=36d). PMT17683 EUR845 xeroPaymentId=STILL null type=null HS1241215836360. NEIL: (1) deactivate BC23+BC24826; (2) reconcile PMT17683 EUR845 in Xero; (3) chase EUR250 from Ernesto.",
+        "bc stale 52d; open"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 48th check Sat 1 Aug 2026 UTC (21st today) — STILL NOT FIXED\n• August Bank Holiday 2026-08-03 absent from school_closures (9 entries: Good Fridays 2026-2030 + Christmas 2026-2029)\n• 21 active booking courses still start on 2026-08-03 — 0 shunted to Aug 4\n• Only 1 active booking course on Aug 4 currently (pre-existing; none from the 21 shunted)\n• WINDOW CLOSING: school opens Mon Aug 3 09:00 BST — approximately 32 hours remaining\n• Fix NOT RUN — see recipe: issue-38-addendum-1aug-k.md",
+        "Insert Aug BH to school_closures + shunt 21 BCs to Aug 4 + deactivate BC 25003. See recipe: issue-38-addendum-1aug-k.md",
+        "48th hrly Sat 1 Aug UTC (21st today). Aug BH still absent. 21 BCs on Aug 3, 0 shunted. ~32h window. Fix NOT RUN.",
+        "URGENT; ~32h window"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 43rd check Sat 1 Aug 2026 UTC (21st today) — CHECK-IN TOMORROW Aug 2\n• Booking 18180 (Giampaolo Russo, student 14571): Confirmed, confirmed = true, paid EUR 2,584.96 in full\n• Booking accommodation 11357: bed 178, start 2026-08-02, end 2026-09-06, active = true, fee EUR 1,250 — host family confirmed ready for TOMORROW\n• Capel Street accommodation Sep 6 to Sep 14: ABSENT — only 1 booking accommodation on booking 18180 (unchanged)\n• Booking course 24956: General English AM, Aug 3 to Sep 11 — still starts on Bank Holiday; awaiting Issue 38 shunt\n• Payment 17954: EUR 2,584.96, Bank Transfer, xero payment ID = null — 36 days unreconciled (paid Jun 26 2026)",
+        "Add Capel St BA + reconcile payment 17954 + run Issue 38 BH shunt. See recipe: issue-41-addendum-1aug-k.md",
+        "43rd hrly Sat 1 Aug UTC (21st today). CHECK-IN TOMORROW Aug 2. Host BA 11357 confirmed ready (bed 178, Aug 2 to Sep 6, EUR 1,250). Capel BA absent. Payment 17954 xero null 36d. BC 24956 needs BH shunt. Fix NOT RUN.",
+        "CHECK-IN TOMORROW; Capel absent"
+      ]
+    ]
+  }
+]

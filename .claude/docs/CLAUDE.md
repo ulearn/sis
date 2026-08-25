@@ -35,6 +35,26 @@ HUBSPOT
 - Subscription: Sales Pro + Marketing Hub Starter (NO Operations Hub)
 - No custom code blocks in workflows — calculations must happen externally (SIS or Make.com)
 - Portal ID: 26488591
+- **API SCHEMA — read it before probing fields or guessing property names.** Full HubSpot OpenAPI 3.0 spec collection lives on the **hub** box (`ssh hub@localhost`):
+  `/home/hub/web/hub.ulearnschool.com/public_html/hubapp/Docs/API/PublicApiSpecs/`
+  Organised by area (`CRM/`, `Marketing/`, `Webhooks/`, `Automation/`, `Files/`, `Settings/`…), each with rollout-versioned JSON (`v3`, `2025-09`, `2026-03`, `2026-09`). CRM covers Invoices, Discounts, Fees, Commerce Payments, Commerce Subscriptions, Deals, Contacts, Companies, Associations, Line Items, Carts, Courses, etc. Grep it rather than trial-and-error against the live API.
+
+CROSS-ENVIRONMENT ACCESS (authorized 2026-06-05)
+- Standing approval to read AND act across all four ULearn environments to resolve issues: HubSpot, Xero, the SIS (Postgres + app), and the Hub server (`ssh hub@localhost`).
+- Don't stall on production-read confirmations for these four. Hard-to-reverse or outward-facing WRITES still get a quick heads-up first.
+- Hub access pattern: `ssh hub@localhost` for `/home/hub/web/hub.ulearnschool.com/public_html/fins/` reads+edits. Do NOT route via `ssh ulearn@quiz` sudo (that's LMS-only).
+- Live issue board: the "SIS Cleanup" Google Sheet — see the dedicated section below.
+
+SIS CLEANUP SHEET — staff issue queue (scoped to THIS sheet for now; may broaden later)
+The "SIS Cleanup" Google Sheet is a live triage board: staff stock up issues (any kind), you diagnose and resolve them, writing status back to the sheet.
+- ID `1XYnr1KSVkOKF8PEf9hGSYXOUQdsteDknY7UVymiUGj0`, owned by neil@. Live tab = "ISSUE LOG" (a "CURRENT" tab also exists). One issue per row.
+- Columns: `A=#  B=STUDENT  C=DealID  D=SIS  E=REPORT(reporter initials)  F=AREA  G=ISSUE  H=CAUSE  I=SOLUTION  J=INFO NEEDED  K=DONE?`. You fill H–K.
+- **CAUSE (H) MUST be human-readable bullet points — NOT morse-style.** One point per line (real newlines in the cell), each line prefixed `• `, first letter Capitalised, words spaced, abbreviations expanded (Booking not bk, Payment not pmt, "class assignment" not sca, "booking course" not bc, Confirmed not CONF). Preserve every id/date/amount/status; just make it legible. Concise still — one fact per bullet, no padding.
+- I (SOLUTION) and J (INFO NEEDED) stay terse. ALL detail — questions for staff, background, status notes — goes in J, not H/I/K.
+- K (DONE?) is BINARY: write `fixed` (or a ≤3-word state) or leave it blank — NEVER a sentence.
+- Read/write: the MCP Drive connector is read-only on cells. Use the helper: `node .claude/cron/sheet.js read` and `node .claude/cron/sheet.js write <payload.json>` (payload `[{"range":"H3","values":[["…"]]}]`; bare ranges auto-qualify to the ISSUE LOG tab). It uses the lms-api OAuth token (neil@, full `auth/drive` scope) at `lms/lms-api/.secrets/oauth.json`.
+- Fix recipes (exact step-by-step, each marked NOT-YET-RUN; a human runs them) live in `.claude/docs/GSheet Issues/issue-<N>-<slug>.md`.
+- An hourly report-only bot (`.claude/cron/`, kill switch `rm .claude/cron/ENABLED`) diagnoses new/changed rows + writes recipes; it NEVER executes changes itself.
 
 GIT
 Repo: https://github.com/ulearn/sis
@@ -74,6 +94,14 @@ MySql Database
 
 Business Logic 
  - Project is assembled by platform and function in /home/sis/public_html/sis/scripts subfolders (see architecture). I'll outline some of the key files here.
+
+
+## UI: Information Presentation (minimal viable communication)
+
+Rule of thumb (an information-architecture principle, not preference):
+- **Required to operate the function → on-page, visible on load.** The control's label IS the explanation. A button labelled **"Upload Document"** is self-explanatory — no helper paragraph.
+- **NOT required to operate the function → secondary surface** (tooltip / dialog / dropdown / expandable), not immediately visible on load.
+- **No padding paragraphs** ("Upload your passport, IRP card, … so you don't have to email them" → cut or tooltip). Labels: Title Case, fewest words.
 
 
 ## Protocol: How to Approach Any Task

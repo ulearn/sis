@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "Pmts unlinked(not spurious): pmt16988->bk17856 Margherita, pmt16989->bk17857 Francesca",
+        "UPDATE payments SET booking_id=17856 WHERE id=16988; +17857/16989. see recipe: issue-1-orphan-payments.md",
+        "Jun14-UTC 20:03 hrly: pmt16988+pmt16989 EUR339.9 bookingId=null UNCHANGED(D47). bk17856(Margherita s14461 CONF)+bk17857(Francesca s14462 CONF) amtPaid=339.9/339.9(0 linked pmts). 15d to arrival Jun29. SQL NOT RUN.",
+        "15d to arrival"
+      ]
+    ]
+  },
+  {
+    "range": "H6:K6",
+    "values": [
+      [
+        "ba11287 bedId=null(updAt=Jun05) active Jun27-Dec12. doc204 LOA v1 ISSUED Jun08(manually fixed). Accom block absent; bed still unassigned.",
+        "Assign bed to ba11287 in SIS Accom module before Jun27 arrival. see recipe: issue-4-rakan-loa-barcode.md",
+        "Jun14-UTC 20:03 hrly: ba11287 bed_id=null UNCHANGED(updAt=Jun05). 13d to Jun27 arrival. NEIL: assign bed ASAP via SIS Accom module.",
+        "bed 13d"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "bk18158 PEND 0/740 c24933+c24934(DUP) GE-AM Jun15-Jul10. bk18131(CONF 1185)+bk18133(CONF 648) NOT cancelled. 0SCA. NOTE: pmt17728 on OLD bk1567=DO NOT DELETE.",
+        "(NOT RUN) CANCEL bk18131+18133; DEL c24934; collect EUR740 bk18158; assign cls7 c24933. DO NOT touch pmt17728. see recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun14-UTC 20:03 hrly: COURSE STARTS ~4H(Jun15 IST). bk18158 PEND 0/740 UNCHANGED(updAt=Jun11). bc24933(GE-AM fee=380)+bc24934(DUP fee=360) BOTH Jun15-Jul10. bk18131 CONF 1185 ghost+bk18133 CONF 648 ghost NOT cancelled. pmt17730(EUR648 xero=null)+pmt17852(EUR1185 xero=null). 0 SCAs s1015. ALL 4 STEPS NOT RUN. SQL: 1)UPDATE bks CANCELLED IN(18131,18133); 2)void pmt17852+pmt17730 via HS; 3)DEL bc24934; 4)assign cls7/c24933 after bk18158 paid.",
+        "TODAY 0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "s14532 Ernesto 0SCA ENTIRE COURSE. bc24826 INTENSIVE Jun08-Jun19. bk18034 PARTIAL 845/1095 conf=false.",
+        "(NOT RUN) ask teacher Ernesto level; INSERT 2 SCAs AM+PM bc24826 wkStart=Jun15 wkEnd=Jun19. see recipe: issue-26-intensive-class-assign-once.md",
+        "Jun14-UTC 20:03 hrly: WK2 STARTS ~4H(Jun15 IST). s14532 Ernesto currentLevel=null 0SCAs ALL COURSE(DB confirmed). bc24826 INTENSIVE ends Jun19(5d). bk18034 PARTIAL 845/1095 conf=false(updAt=Jun07). SQL(NOT RUN): INSERT INTO student_class_assignments(booking_course_id,class_id,week_start,week_end,student_id) VALUES(24826,AM_cls,2026-06-15,2026-06-19,14532),(24826,PM_cls,2026-06-15,2026-06-19,14532). Pairs: A2=cls8/9,B1=cls5+12/11,B2-C1=cls4/6,C1=cls13/14. NEIL: get level from teacher FIRST THING MON AM.",
+        "WK2 urgent"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "s88 Giulia JUNIOR 0SCA. bk94 CONF 1151.5 c104 MORN-GEN-PLUS Jun15-Jun26(0SCA). bk18044 DUP CONF 1106.5 NOT cancelled. bk18152 Milena PEND.",
+        "(1)get level; (2)assign SCA cls[?] bk94/c104 ws=Jun15 we=Jun26; (3)CANCEL bk18044+DEL pmt17607(dbl-import Mar13 xeroId=null); (4)CANCEL bk18152+del s14557 Milena. see recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun14-UTC 20:03 hrly: COURSE DAY1 IN ~4H(Jun15 IST). s88 Giulia 0SCAs bc104+bc24836(DB confirmed). bk94 CONF 1151.5/1151.5(updAt=May21) ok. bk18044 CONF DUP 1106.5/1106.5(updAt=Jun07) NOT cancelled. pmt17607 EUR1151.5 hsId=1239529228498 xeroId=null=dbl-import Mar13 DELETE not refund. bk18152 Milena(s14557) PEND 0/1151.5(updAt=Jun09). ALL 4 STEPS NOT RUN. NEIL: (1)get Giulia level; (2)assign s88 std AM cls bk94/c104; (3)CANCEL bk18044+DELETE pmt17607; (4)CANCEL bk18152+delete s14557.",
+        "TODAY 0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H32:K32",
+    "values": [
+      [
+        "TZ NOT SET .env. 43 SCAs week_end=null. Att sheet date bug active.",
+        "FIX1(NOT RUN): echo TZ=UTC >> .env && touch tmp/restart.txt. FIX2(NOT RUN): UPDATE student_class_assignments SET week_end=(SELECT end_date FROM booking_courses WHERE id=booking_course_id) WHERE week_end IS NULL; see recipe: issue-31-attendance-sheet-week-bug.md",
+        "Jun14-UTC 20:03 hrly: TZ NOT SET(.env confirmed grep ^TZ= = 0). DB TZ=Europe/Dublin. 43 SCAs week_end=null: 9 ghost past-end(IDs:39/40/65/66/74/75/81/87/100 bc<=Jun12)+34 active ongoing. School opens ~07:30 UTC Mon Jun15(~11h). Mon att sheet WILL show Sun Jun14 heading+9 ghost students. BOTH FIXES NOT RUN. FIX1: echo TZ=UTC>>.env && touch tmp/restart.txt. FIX2: UPDATE student_class_assignments SET week_end=(SELECT end_date FROM booking_courses WHERE id=booking_course_id) WHERE week_end IS NULL;",
+        "APPLY NOW"
+      ]
+    ]
+  }
+]

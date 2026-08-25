@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 83rd check Sun 9 Aug 2026 UTC — CRITICAL: classes start TOMORROW (Mon 10 Aug)\n• All 17 booking courses starting 10 Aug still have 0 class assignments — unchanged from 82nd check\n• 13 ready to assign (Confirmed, confirmed = true): BCs 108, 109, 1313, 1818, 24915, 24970, 25004, 25005, 25024, 25027, 25031, 25036, 25039\n• 1 needing confirmed = true first: Booking 88 (Alessandro Signorotti — BC 96, Intensive General 30)\n• 1 in Escrow: Booking 790 (Settiyanee Duangjai — BC 833, Academic Year Morning, EUR 4,847.50 paid)\n• 2 not ready: Booking 18229 (Nominjin Amartsogt, Partial, EUR 980), Booking 18262 (Edith Nunes, Pending, EUR 0)",
+        "Assign 13 ready Booking Courses immediately; set Booking 88 confirmed = true; release Booking 790 from Escrow. See recipe: issue-38-addendum-9aug-c.md",
+        "83rd hrly Sun 9 Aug UTC. URGENT — classes tomorrow. All 17 Booking Courses at 0 class assignments. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 81st check Sun 9 Aug 2026 UTC — service_end expired 2 days ago\n• Booking 18151 (Saikhantes Shagdarsuren): Confirmed, confirmed = true, EUR 1,339.20 paid, EUR 0 open\n• service_end = 2026-08-07 — expired 2 days ago; active Booking Course 24925 ends 2026-10-02\n• Booking Course 24925 (Academic Year Afternoon, 2026-03-09 to 2026-10-02): active = true\n• Payment 17872: EUR 1,339.20, Bank Transfer, 2025-12-19, xero_payment_id = null\n• Fix: UPDATE bookings SET service_end = 2026-10-02 WHERE id = 18151",
+        "UPDATE bookings SET service_end = 2026-10-02 WHERE id = 18151. See recipe: issue-15-addendum-9aug-b.md",
+        "81st hrly Sun 9 Aug UTC. service_end 2 days expired (Aug 7). Booking Course ends Oct 2. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• 63rd check Sun 9 Aug 2026 UTC — service_end expired 2 days ago (same as Issue 15)\n• Booking 18151 (Saikhantes Shagdarsuren): Confirmed, confirmed = true, EUR 1,339.20 fully paid\n• service_end = 2026-08-07 — expired 2 days ago\n• Booking Course 24925 (Academic Year Afternoon): ends 2026-10-02, active = true\n• Jan 12 start date: migration artefact from Fidelo — actual restart 2026-03-09 is correct in SIS\n• Fix: UPDATE bookings SET service_end = 2026-10-02 WHERE id = 18151 (see Issue 15)",
+        "Same fix as Issue 15: UPDATE bookings SET service_end = 2026-10-02 WHERE id = 18151. See recipe: issue-29-addendum-9aug-b.md",
+        "63rd hrly Sun 9 Aug UTC. service_end expired 2 days ago. Fix NOT RUN. See Issue 15 (row 16).",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 30th check Sun 9 Aug 2026 UTC — bed still unassigned, 28 days to check-in\n• Booking Accommodation 11392 (Giampaolo Russo, City Centre Apartment, Premium): bed_id = null\n• Check-in 2026-09-06, check-out 2026-09-14, fee = EUR 415\n• Booking 18180: Confirmed, confirmed = true, EUR 2,584.96 paid, EUR 0 open\n• Booking Accommodation 11357 (Host Family): bed_id = 178, Aug 2–Sep 6 — correctly assigned\n• Available Premium beds for Sep 6–14: beds 168, 174, 175, 176 (property A1/A2), 194 (Arasain)\n• Conflicting: bed 83 (bk17844 Aug 30–Oct 11), bed 161 (bk3 Aug 30–Oct 25)",
+        "Assign available Premium bed (168, 174, 175, 176, or 194) to Booking Accommodation 11392 via SIS admin. See recipe: issue-41-addendum-9aug-b.md",
+        "30th hrly Sun 9 Aug UTC. Bed null. 6 available Premium beds Sep 6-14. 28 days to check-in. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 46th check Sun 9 Aug 2026 UTC — 24,479 stale booking courses unchanged\n• 14 Booking Courses ended Aug 3–8 (now in stale count): BCs 25038, 1673, 1672, 1740, 1675, 1742, 24966, 24983, 24955, 24967, 24991, 24990, 88 (Aug 7), 25006 (Aug 3)\n• Sunday 9 Aug: 0 new Booking Course ends today\n• Stale active Booking Courses prevent renewal students from appearing on arrivals list",
+        "Bulk: UPDATE booking_courses SET active = false WHERE active = true AND end_date < 2026-08-09 (off-hours). See recipe: issue-45-addendum-9aug-b.md",
+        "46th hrly Sun 9 Aug UTC. 24479 stale Booking Courses. 14 ended this week. Unchanged. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 79th check Sun 9 Aug 2026 UTC — unchanged from 78th check\n• Telmuun Enkhsaikhan (student 293): 6 stale Booking Courses (513 days max stale) — BCs 482, 483, 1609, 1610, 1611, 1612\n• Booking Course 1810 (Academic Year Renewal Morning, 2026-06-29 to 2027-01-01): active = true — current course, do NOT deactivate\n• Ana Jessica Rosa de Paula Santos (student 766): Booking 1308 Cancelled, EUR 1,530 paid on cancelled booking\n• Payment 17186: EUR 1,280, Bank Transfer, 2026-05-01, xero_payment_id = null\n• Payment 17050: EUR 250, Bank Transfer, 2026-02-17, xero_payment_id = null",
+        "Deactivate Booking Courses 482, 483, 1609-1612 (Telmuun); decide refund/reallocate EUR 1530 Ana Jessica. See recipe: issue-48-addendum-9aug-b.md",
+        "79th hrly Sun 9 Aug UTC. NEW: Booking Course 1810 (Telmuun) active through Jan 2027 — keep. Deactivate 6 stale only. Ana Jessica EUR 1530 unreconciled. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  }
+]

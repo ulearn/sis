@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H9:K9",
+    "values": [
+      [
+        "• 22nd check Sun 9 Aug 2026 UTC — unchanged from 21st check\n• Booking Course 1482 (Academic Year Afternoon): ended 19 Dec 2025 — 233 days stale, active = true, 0 class assignments\n• Booking Course 1483 (Academic Year Afternoon): ended 13 Feb 2026 — 177 days stale, active = true, 0 class assignments\n• Booking Course 1485 (Academic Year Afternoon): ended 19 Dec 2025 — 233 days stale, active = true, 0 class assignments\n• Booking Course 1486 (Academic Year Afternoon): ended 13 Feb 2026 — 177 days stale, active = true, 0 class assignments\n• Booking Course 1602 (Academic Year Morning): ended 19 Dec 2025 — 233 days stale, active = true, 0 class assignments\n• Booking Course 1603 (Academic Year Morning): ended 5 Jun 2026 — 65 days stale, active = true, 2 historical class assignments\n• Booking Course 1607 (Academic Year Afternoon): ends 27 Nov 2026 — current course, do not deactivate\n• Fix still NOT RUN",
+        "Deactivate 6 stale Booking Courses: 1482, 1483, 1485, 1486, 1602, 1603. See recipe: issue-8-addendum-9aug.md",
+        "22nd hrly Sun 9 Aug UTC. UNCHANGED. 6 stale BCs (233d max). BC 1607 is current. Fix NOT RUN.",
+        "6 stale BCs; 233d max"
+      ]
+    ]
+  },
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• 131st check Sun 9 Aug 2026 UTC — unchanged from 130th check\n• Booking Course 24697 (Academic Year Morning, Rakan Alghamdi): ended 31 Jul 2026 — stale 9 days, active = true\n• Class Assignment 288: linked to Booking Course 24697, week range 6 Jul to 18 Dec 2026 — extends 140 days past course end (mislinked)\n• Booking Course 25035 (General English Academic Year AM Plus, Rakan): started 3 Aug 2026 — 6 days active, 0 class assignments\n• Classes restart Mon 10 Aug — Rakan unassigned again this week if fix not applied",
+        "Deactivate Booking Course 24697; delete Class Assignment 288; assign Booking Course 25035 via SIS admin. See recipe: issue-12-addendum-9aug.md",
+        "131st hrly Sun 9 Aug UTC. BC 25035 0 SCAs day 6. BC 24697 stale 9d. Fix NOT RUN.",
+        "Rakan SCA mislinked; 9d"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• 42nd check Sun 9 Aug 2026 UTC — day 118 since course start (13 Apr 2026), unchanged\n• Booking 1605 (Ariunsarnai Batbayar, student 1047): status = PENDING, confirmed = false\n• Amount paid = EUR 0, amount open = EUR 1,509, amount total = EUR 1,509 — fully unpaid, 0 payment records\n• Booking Course 1791 (Academic Year Renewal Morning): active = true, 0 class assignments\n• HubSpot contact ID 780356561119 — check deal for payment history",
+        "Check HubSpot contact 780356561119 for payment; if paid link + confirm; else contact student re EUR 1,509. See recipe: issue-20-addendum-9aug.md",
+        "42nd hrly Sun 9 Aug UTC. Day 118. Bk1605 PENDING, 0 payments, EUR 1,509. NOT RUN.",
+        "EUR 1,509 unpaid; day 118"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• 65th check Sun 9 Aug 2026 UTC — unchanged from 64th check\n• Booking Course 24686 (Morning General, Alberto Squillace): started 20 Jul 2026 — 20 days active, 0 class assignments\n• Booking Course 1797 (Morning General): ended 26 Jun 2026 — 44 days stale, active = true, 1 stale class assignment\n• Booking 1611: Confirmed, confirmed = true, fully paid EUR 1,280.12, service_end 18 Sep 2026\n• Student 1052 (Alberto Squillace): visa_status = null\n• Fix still NOT RUN",
+        "Assign Booking Course 24686 to class in SIS admin; deactivate stale Booking Course 1797. See recipe: issue-24-addendum-9aug.md",
+        "65th hrly Sun 9 Aug UTC. BC 24686 0 SCAs day 20. BC 1797 44d stale. Fix NOT RUN.",
+        "BC24686 0 SCAs; 20d"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• 153rd check Sun 9 Aug 2026 UTC — day 104 since course start (27 Apr 2026), unchanged\n• Student 917 (Uyanga Tungalag): visa_status = null, HubSpot contact ID = null\n• Booking 1467: Confirmed, confirmed = true, amount paid = EUR 2,405, amount open = EUR 0 (fully paid)\n• Booking Course 1613 (Academic Year Morning): started 27 Apr 2026 — 104 days active, 0 class assignments\n• Fix still NOT RUN",
+        "Set visa_status; link HubSpot contact; assign Booking Course 1613 to a class. See recipe: issue-25-addendum-9aug.md",
+        "153rd hrly Sun 9 Aug UTC. Day 104. Visa null, HubSpot null, 0 SCAs. NOT RUN.",
+        "visa null; 0 SCAs; day 104"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 86th check Sun 9 Aug 2026 UTC — unchanged from 85th check\n• Classes start TOMORROW Mon 10 Aug — 17 Booking Courses still at 0 class assignments\n• 13 confirmed-ready: Booking Courses 108, 109, 1313, 1818, 24915, 24970, 25004, 25005, 25024, 25027, 25031, 25036, 25039\n• Booking 88 (Alessandro Signorotti, Booking Course 96): confirmed = false — must confirm before assigning\n• Booking 790 (Settiyanee Duangjai, Booking Course 833): in Escrow — must release first\n• Booking Course 25007 (Nominjin Amartsogt): partial payment EUR 980 / EUR 1,350 — hold\n• Booking Course 25042 (Edith Nunes): payment pending EUR 0 / EUR 456 — hold",
+        "Assign 13 ready Booking Courses; confirm Booking 88; release Booking 790 from Escrow. See recipe: issue-38-addendum-9aug-f.md",
+        "86th hrly Sun 9 Aug UTC. CRITICAL — classes Mon 10 Aug. All 17 BCs still at 0 SCAs. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  }
+]

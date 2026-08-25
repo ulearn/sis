@@ -1,0 +1,58 @@
+[
+  {
+    "range": "J2:K2",
+    "values": [
+      [
+        "Jun16 hrly: pmt16988+pmt16989 bookingId=null UNCHANGED (EUR339.9 each, Apr28). bk17856+bk17857 CONF confirmed=false amountPaid=339.9/339.9. xeroId=null both. Arrival Jun29=13d. SQL NOT RUN.",
+        "13d to Jun29"
+      ]
+    ]
+  },
+  {
+    "range": "J6:K6",
+    "values": [
+      [
+        "Jun16 hrly: ba11287 bedId=null UNCHANGED (updAt=Jun05). Arrival Jun27=11d. doc204 ISSUED Jun08. NEIL: assign bed in SIS Accom module -- 11 days to arrival.",
+        "bed 11d"
+      ]
+    ]
+  },
+  {
+    "range": "J10:K10",
+    "values": [
+      [
+        "Jun16 hrly: doc171 DRAFT(tmpl82) updAt=Jun05 (11d UNCHANGED). bk1498 CONF confirmed=false amountPaid=null. NEIL: SIS->s947->bk1498->Docs->Issue cert. If blocked: UPDATE bookings SET confirmed=true WHERE id=1498 (NOT RUN) then retry.",
+        "cert DRAFT 11d"
+      ]
+    ]
+  },
+  {
+    "range": "J25:K25",
+    "values": [
+      [
+        "Jun16 hrly: sca229 covers Apr06-Apr26 ONLY (expired 51d ago). Apr27-Jun26 (10d left) 0 SCA. bc1797 Morning ends Jun26=10d. att=0 ALL TIME. NEIL: assign SCA cls12 bc1797 ws=Jun16 we=Jun26 if Alberto returned.",
+        "0att;0SCA 10d left"
+      ]
+    ]
+  },
+  {
+    "range": "J26:K26",
+    "values": [
+      [
+        "Jun16 hrly D46: s917 visaStatus=null UNCHANGED (updAt=May21). bk1467 CONF 2405/2405. 0 SCAs. NEIL: verify IRP paperwork; UPDATE students SET visa_status=approved WHERE id=917 (NOT RUN); assign B1-MORN class.",
+        "visa null D46"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Course bc24925 startDate = Jan 12 in DB — Antonella confirmed Mar 9 is correct (IRP constraint)\n• Previous AY Morning course (bk1724) ended Dec 19, 2025\n• Attendance = 0 for ALL TIME (confirmed via DB — not a data gap)\n• Class assignment 255 active Jan 12–Jul 3 (B1 PM cls11); weekStart also needs correcting to Mar 9\n• ILEP code is null on booking course 24925 (previous booking had 0318/0010)\n• Booking 18151 is confirmed and paid (1339.20 / 1339.20)",
+        "(NOT RUN) 1) Confirm Mar9 with Antonella; 2) UPDATE booking_courses SET start_date=2026-03-09 WHERE id=24925; 3) Update sca255 weekStart; 4) Ask B1PM teacher re attendance since Mar9; 5) Set ILEP code. see recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun16 hrly (G extended by staff — Antonella confirmed Mar9 correct start per IRP). bc24925 startDate=Jan12 (wrong, should be Mar9). att=0 ALL TIME confirmed. sca255 cls11/B1PM Jan12-Jul03 (17d). ilepCode=null on bc24925. NEIL: fix startDate + ask B1PM teacher re attendance + set ILEP code.",
+        "IRP 17d;att=0"
+      ]
+    ]
+  }
+]

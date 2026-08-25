@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 106th check Mon 17 Aug 2026 UTC\n• Student Class Assignment 424 (class 12, Aug 17-Sep 11): STARTED TODAY — duplicate of SCA 426 (same class, Aug 10-Sep 11); student double-assigned to class 12 this week\n• Booking Accommodation 11357 (bed 178, Host Family, Aug 2-15): active=true — ended 2 days ago, still active\n• Booking Accommodation 11396 (bed 44, Host Family, Aug 15-22): fee = null — student already checked in; checkout Aug 22 (5 days)\n• Booking Accommodation 11397 (bed 89, Host Family, Aug 22-Sep 6): fee = null — check-in in 5 days\n• Booking Accommodation 11392 (City Centre Apartment, Sep 6-14): no bed assigned, fee EUR 415",
+        "Delete SCA 424 NOW; deactivate BA 11357; set fees BAs 11396+11397 before Aug 22; assign bed BA 11392. See recipe: issue-41-addendum-17aug.md",
+        "106th Mon 17 Aug UTC. SCA 424 LIVE NOW (started today). BA 11357 2d stale. BAs 11396+11397 fee null. BA 11392 no bed. Fix NOT RUN.",
+        "URGENT: SCA424 live today; BAs due"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 139th check Mon 17 Aug 2026 UTC\n• Booking 18151: CONFIRMED, EUR 1,339.20 fully paid\n• Service end = 7 Aug 2026 — expired 10 days ago (returns Fri 21 Aug, 4 days)\n• Booking Course 24925 (Academic Year Afternoon): end date 2 Oct 2026 — service_end should match\n• Student Class Assignment 255 (class 11): expired 45 days ago (week_end 3 Jul 2026), no new assignment for return",
+        "Extend service_end to 2026-10-02; create SCA for week of 24 Aug (class 11). See recipe: issue-15-addendum-17aug.md",
+        "139th Mon 17 Aug UTC. Returns Fri 21 Aug (4d). Service_end expired 10d. No SCA for return. Fix NOT RUN.",
+        "URGENT: return Aug21 4d; svc_end+SCA exp"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• 105th check Mon 17 Aug 2026 UTC\n• Booking 18151 (Saikhantes Shagdarsuren, student 1001): CONFIRMED, EUR 1,339.20 fully paid\n• Service end = 7 Aug 2026 — expired 10 days (returns Fri 21 Aug, 4 days from now)\n• Booking Course 24925 end date 2 Oct 2026 — service_end should match\n• Student Class Assignment 255 (class 11, Jan 12-Jul 3): expired 45 days ago, no new assignment\n• Original issue (booking start Jan 12 2026): confirmed as deliberate Fidelo restart date — not a bug",
+        "Extend service_end to 2026-10-02; create SCA for week 24 Aug (class 11). See recipe: issue-29-addendum-17aug.md and issue-15-addendum-17aug.md",
+        "105th Mon 17 Aug UTC. Returns Fri 21 Aug (4d). Service_end 10d expired. No SCA for return. Shares recipe with Issue 15. Fix NOT RUN.",
+        "URGENT: return Aug21 4d; svc_end+SCA exp"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 206th check Mon 17 Aug 2026 UTC — no change since 205th check\n• Booking Accommodation 11393 (bed 88, Bed A): fee = null, active = true\n• Start date: 22 Aug 2026 (5 days), end date: 13 Sep 2026\n• Booking 17980 (Pietro Caccianiga): CONFIRMED, EUR 5,331 fully paid",
+        "Set fee on Booking Accommodation 11393 before 22 Aug. See recipe: issue-36b-addendum-17aug.md",
+        "206th Mon 17 Aug UTC. BA 11393 fee still null, check-in 22 Aug (5d). No change. Fix NOT RUN.",
+        "fee null BA11393; check-in Aug22 (5d)"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• 37th check Mon 17 Aug 2026 UTC — no change since 36th check\n• Booking Accommodation 11285 (booking 17825, Jesus Manuel Ramirez Diaz): 21 Jun - 5 Jul 2026, fee = null — 43 days stale\n• Bed 83: 5 stale BAs active (11239 85d, 11168 58d, 11285 43d, 11352 37d, 11179 8d)\n• Current occupant: Booking Accommodation 11173 (Alessandro Signorotti), 9-30 Aug 2026 — active, correct\n• Next check-in: Booking Accommodation 25 (Rosa Maria Mollica), 30 Aug 2026 — 13 days",
+        "Deactivate BAs 11239/11168/11285/11352/11179; set fee BA 11285. See recipe: issue-43-addendum-17aug.md",
+        "37th Mon 17 Aug UTC. BA 11285 43d stale, fee null. Bed 83 cluster 5 stale BAs unchanged. Aug 30 check-in 13d. Fix NOT RUN.",
+        "5 stale BAs; Aug 30 check-in (13d)"
+      ]
+    ]
+  },
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "• 36th check Mon 17 Aug 2026 UTC\n• Booking 1308 (Ana Jessica Rosa de Paula Santos, student 766): CANCELLED, confirmed = false, EUR 1,530 paid, last updated 2026-06-07 (71 days ago)\n• Booking Course 1350 (Academic Year Afternoon): active = true, end date 13 Nov 2026 — active course on cancelled booking\n• Payment 17186: EUR 1,280, paid 1 May 2026, Xero payment ID = null (not reconciled)\n• Payment 17050: EUR 250, paid 17 Feb 2026, Xero payment ID = null (not reconciled)\n• Only one booking for student 766 — no successor booking exists",
+        "Determine if cancellation was accidental (reinstate) or genuine (deactivate BC 1350, process Xero refund). See recipe: issue-17-addendum-17aug.md",
+        "36th Mon 17 Aug UTC. Booking CANCELLED 71d. EUR 1,530 unreconciled in Xero. BC 1350 active on cancelled booking. Clarification needed. Fix NOT RUN.",
+        "BC1350 active; EUR 1,530 cancelled"
+      ]
+    ]
+  }
+]

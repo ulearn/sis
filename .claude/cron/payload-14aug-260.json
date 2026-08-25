@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 163rd check Fri 14 Aug 2026 UTC — course ended today; no change\n• Booking Course 25043 (General English PM): ended 2026-08-14 (today), active = true, 0 class assignments\n• Certificate 566 (DRAFT): created 2026-08-13, not yet issued — 0 class assignments means no attendance data\n• Booking 18265 (Eduardo Roche Diaz, student 14602): CONFIRMED, confirmed = true, EUR 126 paid\n• 5 school days permanently lost: Mon 10 Aug to Fri 14 Aug 2026",
+        "Create SCA retroactively for Booking Course 25043 (Aug 10-14, class 6); deactivate Booking Course 25043; update and issue cert 566. See recipe: issue-38-addendum-14aug-b.md",
+        "163rd Fri 14 Aug UTC. Course ended today (Aug 14). Cert 566 DRAFT, 0 SCAs. 5 days lost permanently. Fix NOT RUN.",
+        "cert DRAFT; 0 SCAs"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• 86th check Fri 14 Aug 2026 UTC — no change since 85th check\n• Booking 18151 (Saikhantes Shagdarsuren, student 1001): CONFIRMED, confirmed = true, EUR 1,339.20 paid\n• service_end = 2026-08-07 — expired 7 days ago (student still in class)\n• Booking Course 24925: Academic Year Afternoon, end 2026-10-02, active = true\n• Student Class Assignment 255: weekEnd = 2026-07-03 — expired 42 days ago, class_id = 11\n• Booking last updated 2026-07-08 (37 days since any admin action)",
+        "Update BK 18151 service_end to 2026-10-02; extend SCA 255 week_end to 2026-10-02. See recipe: issue-29-addendum-14aug.md",
+        "86th Fri 14 Aug UTC. service_end expired 7d (Aug 7). SCA 255 expired 42d (Jul 3). Fix NOT RUN.",
+        "svc_end 7d exp; SCA 42d exp"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 188th check Fri 14 Aug 2026 UTC — no change\n• Booking Accommodation 11393: bed 88, 22 Aug to 13 Sep 2026, fee = null, active = true — check-in in 8 days\n• Payment 17733: EUR 5,331, Bank, created 3 Jun 2026, Xero not reconciled (72 days)\n• Booking 17980 (Pietro Caccianiga): CONFIRMED, confirmed = true, fully paid EUR 5,331",
+        "Confirm fee with Diego; set fee on Booking Accommodation 11393; reconcile Payment 17733 in Xero. See recipe: issue-36b-addendum-14aug.md",
+        "188th Fri 14 Aug UTC. No change. Fee null Booking Accommodation 11393 (check-in Aug 22 = 8 days). Xero null Payment 17733 (72d). Fix NOT RUN.",
+        "fee null; check-in 8 days"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 72nd check Fri 14 Aug 2026 UTC — no change\n• Booking Accommodation 11392 (apartment, Sep 6 to Sep 14 2026): bed_id = null, fee = EUR 415, active = true\n• Booking Accommodation 11357 (host family, Aug 2 to Sep 6 2026): bed_id = 178, placed correctly\n• Beds 168 and 194: no conflicts in Sep 6 to Sep 14 window — still available\n• Sep 6 check-in = 23 days away",
+        "Assign bed to Booking Accommodation 11392 before Sep 6 (beds 168 or 194 available). See recipe: issue-41-addendum-14aug.md",
+        "72nd Fri 14 Aug UTC. No change. Bed null Booking Accommodation 11392. Beds 168 + 194 still available. Sep 6 check-in (23d). Fix NOT RUN.",
+        "bed null; Sep 6 check-in (23d)"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 88th check Fri 14 Aug 2026 UTC — stale count unchanged (24,479)\n• Active Booking Courses ended before 14 Aug 2026 (stale): 24,479\n• Live Booking Courses (end date on or after 14 Aug 2026): 285 (unchanged)\n• No change since 87th check",
+        "Mass-deactivate active Booking Courses where end_date < today. See recipe: issue-45-addendum-13aug-i.md",
+        "88th Fri 14 Aug UTC. Stale: 24,479 (unchanged). Live: 285 (unchanged). No change.",
+        "24,479 stale; fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• 52nd check Fri 14 Aug 2026 UTC — day 123 since course start (13 Apr 2026), unchanged\n• Booking 1605 (Ariunsarnai Batbayar, student 1047): PENDING, confirmed = false, EUR 0 paid, EUR 1,509 open\n• No payments linked to booking 1605 — booking last updated 2026-06-23 (52 days ago)\n• Booking Course 1791 (Academic Year Renewal Morning, 13 Apr to 23 Oct 2026): active = true, 0 class assignments — student unassigned 123 days\n• Likely Fidelo migration gap — payment made in Fidelo before SIS migration, not carried over (same as Telmuun, Issue 48)",
+        "Confirm payment for bk1605; if paid, set confirmed=true and assign to class. See recipe: issue-20-addendum-13aug.md",
+        "52nd Fri 14 Aug UTC. Day 123. EUR 1,509 open, 0 payments on bk1605. BC 1791 still 0 class assignments. Unchanged. Fix NOT RUN.",
+        "EUR 1,509; day 123; 0 SCAs"
+      ]
+    ]
+  }
+]

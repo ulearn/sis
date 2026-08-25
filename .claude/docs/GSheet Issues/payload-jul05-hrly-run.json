@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 16 booking courses start Monday 6 July 2026 with zero class assignments (47th check, 5 Jul 2026 UTC — COURSES START IN HOURS)\n• 11 confirmed starters need class assignment before 09:00 Monday: Aitana López (student 7, booking course 7, Morning General Jul 6–17), Pietro Colombo (student 72, booking course 81, Morning General Plus Jul 6–24), Tuguldurtugs Enkhtugs (student 858, booking course 1786, Academic Year Renewal Morning Jul 6–Dec 25), Rakan Alghamdi (student 14444, booking course 24697, Academic Year Morning Jul 6–Dec 18), Mario Roggi (student 14528, booking course 24776, General English AM Jul 6–24), Kiyoshi Fujino (student 14445, booking course 24907, General English AM Jul 6–10 ends Friday), Verónica Martín (student 278, booking course 24931, General English AM Jul 6–10 ends Friday), Sarah Venturini Talizin (student 1055, booking course 24945, General English AM Jul 6–31), Hugo Lopez Tamayo (student 14572, booking course 24960, General English AM Jul 6–17), Yuxi Ke (student 14577, booking course 24965, General English PM Jul 6–Aug 21), Ettore Iovinella (student 14564, booking course 24968, General English AM Plus Jul 6–13)\n• 4 pending starters (advance HubSpot deal first): Zeyad Alharbi (student 32, booking course 38), Shih-Wei Huang (student 356, booking course 24913), Sulaiman Abdullatif (student 7309, booking course 24930), Gustavo Da Silva (student 14570, booking courses 24955 + 24967 — deactivate duplicate 24967)\n• Booking 1601 (Tuguldurtugs): EUR 1356.50 paid of EUR 1606.50 total — EUR 250 outstanding\n• Booking courses 24941 (Ettore, ended 3 Jul) and 24967 (Gustavo duplicate) still active = true — deactivate both",
+        "Assign all 11 confirmed to classes via SIS before Mon 09:00. Deactivate bc24967+bc24941. See recipe: issue-45-renewal-arrivals.md",
+        "47th check 5 Jul SUN UTC UNCHANGED — ALL 16 BCS START MON JUL6 IN HOURS. 11 confirmed 0-SCA: Aitana s7/bc7, Pietro s72/bc81, Tuguldurtugs s858/bc1786 (bk1601 EUR1356.5/1606.5 EUR250 outstanding), Rakan s14444/bc24697, Mario s14528/bc24776, Kiyoshi s14445/bc24907 (ends Fri Jul10), Veronica s278/bc24931 (ends Fri Jul10), Sarah s1055/bc24945, Hugo s14572/bc24960, Yuxi s14577/bc24965, Ettore s14564/bc24968. Pending (4, advance HubSpot first): Zeyad s32/bc38, Shih-Wei s356/bc24913, Sulaiman s7309/bc24930, Gustavo s14570/bc24955 (deactivate dup bc24967). bc24941+bc24967 STILL active=true. NEIL: ASSIGN ALL 11 CONFIRMED VIA SIS + DEACTIVATE bc24967+bc24941 BEFORE MON JUL6 09:00.",
+        "URGENT; Mon 09:00"
+      ]
+    ]
+  },
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 (HubSpot 1204827374829) and 16989 (HubSpot 1204846469317): EUR 339.90 each — booking ID = null, Xero payment ID = null — unlinked since 28 April 2026 (226+ hourly checks)\n• Booking 17856 (Margherita Galbusera, student 14461): Confirmed, confirmed field = false — booking course 24631 (General English AM Plus, 29 June to 10 July, fee = null)\n• Booking 17857 (Francesca Fassina, student 14462): Confirmed, confirmed field = false — booking course 24630 (General English AM Plus, 29 June to 10 July, fee = null)\n• Booking courses 24630 + 24631: both active, both end Friday 10 July 2026 — 5 school days remaining\n• Root cause: webhook missed setting booking ID at payment creation on 28 April 2026",
+        "Link payments to bookings, set fees, confirm bookings. See recipe: issue-1-orphan-payments.md",
+        "226th check 5 Jul UTC UNCHANGED — pmt16988+pmt16989 EUR339.90 each bkId=null xeroId=null type=one_time_or_initial. bk17856 (Margherita) CONF conf=false paid=339.9/339.9 bc24631 end=Jul10 fee=null 0SCAs. bk17857 (Francesca) CONF conf=false paid=339.9/339.9 bc24630 end=Jul10 fee=null 0SCAs. COURSES END FRI JUL10 = 5 SCHOOL DAYS. SQL NOT RUN 226 checks. NEIL: (1)UPDATE payments SET booking_id=17856 WHERE id=16988; (2)UPDATE payments SET booking_id=17857 WHERE id=16989; (3)UPDATE booking_courses SET fee=339.9 WHERE id IN(24630,24631); (4)UPDATE bookings SET confirmed=true WHERE id IN(17856,17857).",
+        "URGENT; Fri Jul10"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Class assignment 255 (Saikhantes Shagdarsuren, student 1001, class 11 B1 Afternoon): week end = 3 July 2026 — EXPIRED 2 DAYS AGO (116th check, 5 Jul 2026 UTC)\n• Student 1001 has zero other class assignments — missed Friday 4 July, misses Monday 6 July if not fixed before 09:00\n• Booking course 24925 (Academic Year Afternoon, 9 March to 2 October 2026): active, fee = EUR 1102.20 — course is ongoing through October\n• Fix: extend class assignment 255 to October 2 via SQL, or add new assignment via SIS student 1001 > Classes",
+        "Extend SCA 255 weekEnd to 2026-10-02 via SQL or SIS admin before Mon 09:00. See recipe: issue-15-saikhantes-course-dates.md",
+        "116th check 5 Jul SUN UTC UNCHANGED — sca255 cls11 (B1 PM) s1001: weekEnd=2026-07-03 EXPIRED 2 DAYS AGO. No new SCA. Student missed Fri Jul4; misses Mon Jul6 without fix. bc24925 AY-Afternoon Mar09-Oct02 active=true fee=1102.20. bk18151 CONFIRMED EUR1339.20. SQL NOT RUN 116 checks. NEIL: UPDATE student_class_assignments SET week_end=2026-10-02 WHERE id=255 — or SIS admin: Student 1001 > Classes > extend sca255. RUN BEFORE MON JUL6 09:00.",
+        "SCA expired; Jul3"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 (Edite Nunes, student 1015): Confirmed, fully paid EUR 740 — General English AM, 15 June to 10 July 2026 (80th check, 5 Jul 2026 UTC)\n• Booking course 24933 (General English AM, Jun 15–Jul 10, fee = 380) and booking course 24934 (duplicate, fee = 360): both still active — duplicate not yet deactivated\n• Student 1015 has zero class assignments since 15 June 2026 — course ends Friday 10 July 2026, 5 school days remaining\n• Fix: deactivate booking course 24934, then assign student 1015 (A1 level) to class 7 (A1 AM) for booking course 24933",
+        "Deactivate bc24934, assign s1015 cls7 A1-AM via SIS bk18158/bc24933 before Fri Jul10. See recipe: issue-22-edith-nunes-payment-dups.md",
+        "80th check 5 Jul UTC UNCHANGED — bk18158 CONF confirmed=true paid=740/740 fully paid. bc24933 (GE-AM Jun15-Jul10 fee=380 active=true) 0SCAs. bc24934 (DUP fee=360 active=true) 0SCAs. COURSES END FRI JUL10 = 5 SCHOOL DAYS. Student Edite (s1015) has ZERO SCAs since Jun15. Fix (NOT RUN): (1) UPDATE booking_courses SET active=false WHERE id=24934; (2) assign student 1015 to class 7 A1-AM via SIS admin for bc24933. NEIL: act before Fri Jul10.",
+        "dup BC; 0SCA; Fri10"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• Student 917 (Uyanga Tungalag): visa status = null — unchanged since 21 May 2026 (45 days stale)\n• Booking 1467: Confirmed, confirmed = true, fully paid EUR 2405\n• Payment 17258 (EUR 3066): type = Escrow, Xero payment ID = null, HubSpot payment ID = null — still Escrow; may have been released by TransferMate but not converted in SIS\n• Escrow amount EUR 3066 exceeds booking total EUR 2405 — possibly includes agency hold-back or accommodation outside SIS\n• Booking course 1613 (Academic Year Morning, Apr 27 to Oct 16 2026): Day 71 of course — zero class assignments across all 71 days\n• 69th check, 5 Jul 2026 UTC",
+        "(NOT RUN) (1) Check Hub fins/TransferMate: has payment 17258 (EUR 3066 Escrow) been released? (2) If released: UPDATE payments SET type = one_time_or_initial WHERE id = 17258. (3) UPDATE students SET visa_status = Approved WHERE id = 917. (4) Assign Uyanga to AY Morning class via SIS admin. See recipe: issue-25-uyanga-visa-escrow.md",
+        "69th check 5 Jul UTC UNCHANGED — s917 Uyanga visaStatus=null (45d since May21). pmt17258 EUR3066 type=Escrow xeroId=null hsId=null. bc1613 AY-Morning Apr27-Oct16 active=true 0SCAs (Day 71 of course). bk1467 CONFIRMED conf=true EUR2405/2405 fully paid. NEIL: (1) check TransferMate pmt D2025502 via Hub fins/; (2) if released: UPDATE students SET visa_status=Approved WHERE id=917; UPDATE payments SET type=one_time_or_initial WHERE id=17258; (3) assign Uyanga to AY Morning class via SIS.",
+        "Escrow; 0SCA; Day71"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Booking 17831 (Xuezhen Huang, student 14443): status = Partial, confirmed = false — EUR 965 paid of EUR 1396.90 total (EUR 431.90 outstanding) (46th check, 5 Jul 2026 UTC)\n• Accommodation 11358: active, 12 Jul to 2 Aug 2026, checkin in 7 days\n• Payment 17180 (EUR 431.90, 27 Apr 2026, TransferMate Escrow): Xero ID = null, HubSpot ID = null — type = null, not counted in amount paid\n• Payment 17963 (EUR 965, 1 Jul 2026, HubSpot 1273784562922): Xero ID = null, type = null — counted in amount paid but not reconciled in Xero\n• Combined payments EUR 1396.90 = booking total — fully covered, confirmation blocked pending Xero reconciliation\n• Booking course 24609 (Morning General, 13 Jul to 31 Jul, fee = 570): starts 13 Jul",
+        "Reconcile pmt17180 + pmt17963 in Xero, then confirm bk17831 before Jul12. See recipe: issue-39-xuezhen-huang-accomm-missing.md",
+        "46th check 5 Jul UTC UNCHANGED — bk17831 PARTIAL confirmed=false paid=965/1396.9 (EUR431.9 open). pmt17180 EUR431.9 type=null xeroId=null hsId=null (Escrow 69d). pmt17963 EUR965 type=null xeroId=null hsId=1273784562922. ba11358 active=true Jul12-Aug2. CHECKIN IN 7 DAYS. Combined EUR1396.9 = total — fully covered pending Xero. NEIL: reconcile both pmts in Xero then UPDATE bookings SET confirmed=true WHERE id=17831 BEFORE Jul12.",
+        "PARTIAL; Jul12"
+      ]
+    ]
+  }
+]

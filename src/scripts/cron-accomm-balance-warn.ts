@@ -44,8 +44,8 @@ async function main() {
     include: {
       booking: {
         select: {
-          id: true, amountPaid: true, amountTotal: true,
-          student: { select: { id: true, firstName: true, lastName: true } },
+          id: true, amountPaid: true, amountTotal: true, status: true,
+          student: { select: { id: true, firstName: true, lastName: true, visaStatus: true } },
         },
       },
       bed: {
@@ -63,6 +63,13 @@ async function main() {
   let notified = 0, bounced = 0, skipped = 0;
 
   for (const r of rows) {
+    // Skip ESCROW bookings — money's in TM escrow, not BoI. We can't chase a
+    // balance that's contingent on visa approval; the warning would be noise.
+    // Same logic if the visa is still pending / in appeal regardless of
+    // booking status.
+    if (r.booking?.status === 'ESCROW') { skipped++; continue; }
+    const sv = r.booking?.student?.visaStatus;
+    if (sv === 'Pending' || sv === 'In Appeal') { skipped++; continue; }
     const paid    = Number(r.booking?.amountPaid  || 0);
     const total   = Number(r.booking?.amountTotal || 0);
     const balance = total - paid;

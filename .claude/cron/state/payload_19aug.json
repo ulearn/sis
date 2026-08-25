@@ -1,0 +1,35 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 273rd check Wed 19 Aug 2026 UTC — no change since 272nd check\n• Payment 4781: EUR 380, Flywire 2019 — booking_id = null (legacy orphan, low priority)\n• Payment 16988: EUR 339.90, Bank, 28 Apr 2026 — booking_id = null (likely Booking 17856, Margherita Galbusera)\n• Payment 16989: EUR 339.90, Bank, 28 Apr 2026 — booking_id = null (likely Booking 17857, Francesca Fassina)\n• Payment 17187: EUR 6,151, TransferMate, ref D2026226 — booking_id = null; leave as-is (2025 service)\n• Booking 17856 (Margherita Galbusera): CONFIRMED, confirmed = false, paid = EUR 339.90, total = EUR 339.90\n• Booking 17857 (Francesca Fassina): CONFIRMED, confirmed = false, paid = EUR 339.90, total = EUR 339.90\n• Booking Courses 24630 + 24631 (General English AM Plus): ended 10 Jul 2026, active = true — 40 days stale",
+        "Link Payments 16988/16989 to Bookings 17856/17857; set confirmed = true on both; deactivate Booking Courses 24630+24631. See recipe: issue-1-addendum-19aug.md",
+        "273rd Wed 19 Aug UTC. No change. Booking Courses 24630+24631 now 40d stale. Fix NOT RUN. Payment 4781 legacy orphan — low priority.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 148th check Wed 19 Aug 2026 UTC — no change from live DB\n• Booking 1624 (Telmuun Enkhsaikhan, student 293): PARTIAL, confirmed = false\n• Amount paid = EUR 1,406; amount open = EUR 250; implied total EUR 1,656\n• Only 1 payment in DB: ID 17956, EUR 100, 31 Mar 2026, Xero Payment ID = null — EUR 1,306 unaccounted\n• Booking Course 1810 (Academic Year Renewal Morning): 29 Jun to 1 Jan 2027, active, 0 class assignments — day 52",
+        "Investigate EUR 1,306 payment gap; assign class to BC 1810; settle EUR 250; set confirmed = true. See recipe: issue-48-addendum-19aug.md",
+        "148th Wed 19 Aug UTC. No change. BC 1810 day 52 with 0 class assignments. EUR 1,306 payment gap. EUR 250 open. Fix NOT RUN.",
+        "payment gap; BC1810 52d; SCA 0"
+      ]
+    ]
+  },
+  {
+    "range": "H52:K52",
+    "values": [
+      [
+        "• 7th check Wed 19 Aug 2026 UTC — 2 new stale BAs since last check\n• Booking Accommodation 27: bed 59, 1 Aug to 15 Aug, booking 17853 — 4 days stale, active = true\n• Booking Accommodation 11230: bed = null, 4 Jul to 15 Aug, booking 32 — 4 days stale, active = true, no bed assigned\n• Booking Accommodation 11357: bed 178, 2 Aug to 15 Aug, booking 18180 (Giampaolo Russo) — 4 days stale, active = true\n• NEW: Accommodation 11286: bed 87, Vincenzo Pio Di Costanzo (booking 17911), City Centre Apartment, 24 May to 16 Aug — 3 days stale, fee EUR 2,520\n• NEW: Accommodation 11371: bed 157, Luana Salzano (booking 18188), Apartment, 8 Aug to 16 Aug — 3 days stale, fee = null\n• Total: 5 recent stale active accommodations (all ended, active = true, cleanCheckoutAt = null)",
+        "Deactivate Accommodations 27, 11230, 11357, 11286, 11371; fix checkout window to current week. See recipe: issue-50-addendum-19aug.md",
+        "7th Wed 19 Aug UTC. 2 new stale BAs (11286 + 11371, ended Aug 16). Total 5 stale active BAs from past 2 weeks. Fix NOT RUN.",
+        "5 stale BAs; fix pending"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 496th check Mon 24 Aug 2026 UTC — no change since 495th\n• 5 orphan payments total — fix NOT RUN\n• Payment 16988: EUR 339.90, Bank, 28 Apr 2026 — linkable to booking 17856 (Margherita Galbusera)\n• Payment 16989: EUR 339.90, Bank, 28 Apr 2026 — linkable to booking 17857 (Francesca Fassina)\n• Payment 17187: EUR 6,151.00, TransferMate Escrow, 1 May 2026, transactionId D2026226 — linkable via ULEARNP2026124\n• Payment 18122: EUR 250.00, Card, 23 Aug 2026 — dataSource HUBSPOT, clearance deposit (student unknown)\n• Payment 18123: EUR 250.00, Card, 23 Aug 2026 — dataSource HUBSPOT, clearance deposit, 56-min gap (2 students)",
+        "Link P16988 to bk17856, P16989 to bk17857; check HubSpot Commerce for P18122+P18123 (EUR 250 each, clearance deposits). See recipe: issue-1-addendum-24aug.md",
+        "496th Mon 24 Aug UTC. No change. P18122/P18123 confirmed dataSource=HUBSPOT. Fix NOT RUN.",
+        "5 orphan pmts; P18122/P18123=clearance dep"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 496th check Mon 24 Aug 2026 UTC — no change; SCA still missing\n• Student Class Assignment 255 (class 11): weekEnd 2026-07-03 — expired 52 days ago\n• Booking Course 24925 (Academic Year Afternoon): active, ends 2 Oct 2026 — 39 days remaining\n• Booking Course 1982 (Academic Year Morning): ended 19 Dec 2025, still active — 248 days stale\n• Student in school today with no valid class assignment — fix NOT RUN (URGENT)",
+        "Insert new Student Class Assignment (class 11) from 2026-07-07 to 2026-10-02 for Booking Course 24925 (student 1001); deactivate Booking Course 1982. See recipe: issue-15-addendum-24aug-b.md",
+        "496th Mon 24 Aug UTC. CRITICAL — SCA 255 expired Jul 3 (52d ago). BC24925 active to Oct 2 (39d). Fix NOT RUN.",
+        "CRITICAL: SCA needed NOW"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• 496th check Mon 24 Aug 2026 UTC — CRITICAL: Saikhantes in school today with no class assignment\n• Student Class Assignment 255: class 11, weekEnd 3 Jul 2026 — expired 52 days ago, no new assignment\n• Booking Course 24925 (Academic Year Afternoon): active, 9 Mar to 2 Oct 2026 — 39 days remaining\n• Booking Course 1982 (Academic Year Morning): ended 19 Dec 2025, still active — 248 days stale\n• Fix NOT RUN — URGENT TODAY",
+        "Create Student Class Assignment on Booking Course 24925, class 11, weekStart 7 Jul, weekEnd 2 Oct; deactivate Booking Course 1982. See recipe: issue-29-15-addendum-24aug.md",
+        "496th Mon 24 Aug UTC. Saikhantes in school today with no SCA (expired 52d). BC24925 active to 2 Oct. Fix NOT RUN.",
+        "CRITICAL: class today, no SCA; 39d left"
+      ]
+    ]
+  },
+  {
+    "range": "H37:K37",
+    "values": [
+      [
+        "• 496th check Mon 24 Aug 2026 UTC — issue text updated (G changed); code diagnosis unchanged\n• renderSheetHtml() in src/routes/attendance.ts (lines 36–130): no homework section present — confirmed\n• getWeekAttendance(): no school_closures check — confirmed\n• Awaiting spec from Paul/Neil on homework format and closure day behaviour",
+        "Add homework block to renderSheetHtml(); add closure check to getWeekAttendance(). Awaiting spec. See recipe: issue-36-addendum-24aug.md",
+        "496th Mon 24 Aug UTC. G column text changed (sheet edit). Code diagnosis unchanged — no homework block in renderSheetHtml lines 36-130. Awaiting spec.",
+        "code open; awaiting spec"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• 496th check Mon 24 Aug 2026 UTC — no change since 495th\n• Bed 83: 5 stale Booking Accommodations still active — fix NOT RUN\n• Booking Accommodation 11239 (Ivan Rodriguez Solares): ended 24 May 2026 — 92 days stale, fee EUR 1,050\n• Booking Accommodation 11168 (Diego Da Silva Saldanha): ended 20 Jun 2026 — 65 days stale, fee EUR 700\n• Booking Accommodation 11285 (Jesús Manuel Ramírez Díaz): ended 5 Jul 2026 — 50 days stale, fee null\n• Booking Accommodation 11352 (Verónica Martín): ended 11 Jul 2026 — 44 days stale, fee EUR 360\n• Booking Accommodation 11179 (Africa Mera Bachir): ended 9 Aug 2026 — 15 days stale, fee EUR 1,360\n• Next occupant (Rosa Maria Mollica, BA25) starts bed 83 on 30 Aug — 6 DAYS AWAY",
+        "Deactivate Booking Accommodations 11239, 11168, 11285, 11352, 11179 (all ended). Do NOT touch BA11173 or BA25. See recipe: issue-37-addendum-23aug-f.md",
+        "496th Mon 24 Aug UTC. Aug 30 = 6d. 5 stale BAs on bed 83 unchanged. Fix NOT RUN.",
+        "5 stale BAs; DEADLINE Aug30 = 6d"
+      ]
+    ]
+  },
+  {
+    "range": "H54:K54",
+    "values": [
+      [
+        "• 496th check Mon 24 Aug 2026 UTC — no change since 495th; arrival in 5 days\n• Booking Accommodation 11267 (bed 23, 29 Aug to 4 Oct 2026): fee EUR 3,840, active — student arrives 29 Aug (5 days)\n• Booking Accommodation 11399 (bed 54, 4 Oct to 19 Dec 2026): fee null, active — 41 days until this stay starts\n• Booking 17843: CONFIRMED, fully paid EUR 5,595.16 — OK\n• Fix NOT RUN — set fee on BA11399 before Oct 4",
+        "Set fee on Booking Accommodation 11399 (bed 54, 4 Oct to 19 Dec). See recipe: issue-52-addendum-24aug-b.md",
+        "496th Mon 24 Aug UTC. Arrival Aug 29 (5d). BA11267 OK (EUR 3,840). BA11399 fee null — 41d to Oct 4. Fix NOT RUN.",
+        "ARRIVE Aug29 5d; BA11399 fee null"
+      ]
+    ]
+  }
+]

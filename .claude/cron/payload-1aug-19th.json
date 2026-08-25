@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 46th check Sat 1 Aug 2026 UTC (19th today) — STILL NOT FIXED\n• August Bank Holiday 2026-08-03 absent from school_closures (9 entries: Good Fridays 2026-2030 + Christmas 2026-2029)\n• 21 active booking courses start on 2026-08-03 (unchanged)\n• WINDOW CLOSING: school opens Mon Aug 3 09:00 BST — must fix tonight or Sunday\n• Fix NOT RUN — see recipe: issue-38-addendum-1aug-j.md",
+        "Insert Aug BH to school_closures + shunt 21 BCs to Aug 4 + deactivate BC 25003. See recipe: issue-38-addendum-1aug-j.md",
+        "46th hrly Sat 1 Aug UTC (19th today). Aug BH still absent. 21 BCs on Aug 3. Window closing - must fix tonight/Sunday. Fix NOT RUN.",
+        "URGENT; ~38h window"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 41st check Sat 1 Aug 2026 UTC (19th today) — student arrives TOMORROW (Sun Aug 2)\n• Booking 18180 (Giampaolo Russo, student 14571): Confirmed, confirmed = true, paid EUR 2,584.96 in full\n• Booking accommodation 11357: bed 178, Aug 2 to Sep 6, active = true, fee EUR 1,250 — host family ready\n• Booking course 24956: General English AM, Aug 3 to Sep 11 — starts on Bank Holiday, needs Issue 38 shunt\n• Capel Street accommodation Sep 6 to Sep 14: ABSENT — only 1 BA on booking (unchanged)\n• Payment 17954: EUR 2,584.96, Bank Transfer, xeroPaymentId = null (33 days unreconciled)",
+        "Add Capel St BA + reconcile payment 17954 + run Issue 38 BH shunt. See recipe: issue-41-addendum-1aug-j.md",
+        "41st hrly Sat 1 Aug UTC (19th today). CHECK-IN TOMORROW Aug 2. Host BA 11357 active. Capel Sep 6-14 absent. Payment 17954 xero null 33d. BC 24956 on BH. Fix NOT RUN.",
+        "CHECK-IN TOMORROW; Capel absent"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 136th check Sat 1 Aug 2026 UTC (7th today) — count stable at 47\n• 46 booking accommodations: active = true, bed assigned, end date Jul 31 or earlier\n• Booking accommodation 11382 (Marcos Abrego Tofe, bed 189, Jul 25 to Aug 1): active = true, fee = EUR 300 — ended TODAY\n• Total with bed, active, end date on or before Aug 1 = 47 (unchanged)\n• Oldest: BA 11183 (bed 89, ended 2026-03-06) — 148 days post-checkout\n• Pietro Caccianiga payment 17733 (EUR 5,331, booking 17980): xero_payment_id = null — 60 days",
+        "Bulk deactivate all 47 stale BAs (active=true, bed assigned, end_date <= Aug 1). See recipe: issue-36b-addendum-1aug-d.md",
+        "136th hrly Sat 1 Aug UTC (7th today). 47 stale BAs stable (46 pre-Aug1 + 1 ended today BA 11382). Fix NOT RUN.",
+        "47 stale BAs; count stable"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• 11th check Sat 1 Aug 2026 UTC — 2 days since last check (Thu 30 Jul)\n• Booking accommodation 11352 (Veronica Martin, bed 83, booking 18156): ended 11 Jul 2026 — 21 days post-checkout, active = true, fee = EUR 360\n• Booking accommodation 11285 (Jesus Manuel Ramirez Diaz, bed 83, booking 17825): ended 5 Jul 2026 — 27 days post-checkout, active = true, fee = null\n• Both BAs still active — bed 83 remains blocked for new allocation",
+        "Deactivate BA 11352 + 11285 (verify BA 11285 fee=null with accounts first). See recipe: issue-37-addendum-1aug.md",
+        "11th hrly Sat 1 Aug UTC. BAs 11352 + 11285 now 21d + 27d stale (was 19d+25d Thu). Bed 83 still blocked. Fix NOT RUN.",
+        "BA stale 21d+27d; cosmetic"
+      ]
+    ]
+  },
+  {
+    "range": "H29:K29",
+    "values": [
+      [
+        "• 31st check Sat 1 Aug 2026 UTC — 2 days since last check (Thu 30 Jul)\n• Booking 17850 (Paola Moreira, student 14456): status = CONFIRMED — confirmed = false (anomaly)\n• Amount open = EUR 321.35, amount paid = null (unset)\n• Last updated 8 Jul 2026 — 24 days stale\n• Low priority: student appears in class but cannot be assigned due to confirmed = false",
+        "Set confirmed=true once payment verified in HubSpot/Xero. See recipe: issue-28-addendum-1aug.md",
+        "31st hrly Sat 1 Aug UTC. Booking 17850 confirmed=false, amountPaid=null (24d stale). Low priority - student in class. Fix NOT RUN.",
+        "bk confirmed=false; low-pri; 24d"
+      ]
+    ]
+  },
+  {
+    "range": "H33:K33",
+    "values": [
+      [
+        "• Sat 1 Aug 2026 UTC — phantom row still present (4 days since last check Thu 30 Jul)\n• Only content is 278 in column F (Area field — SIS ID for Veronica Martin)\n• Veronica Martin accommodation issue resolved in Issue 37 (row 39)\n• Phantom row present approximately 114 days (since approx Apr 2026)\n• No DB diagnosis possible — manual sheet deletion required",
+        "Delete row 33 manually in Google Sheets (right-click -> Delete row). See recipe: issue-32-phantom-row-1aug.md",
+        "Sat 1 Aug UTC. Phantom row col F=278 only. Still present ~114d. Neil: right-click row 33 then Delete row.",
+        "phantom row; delete"
+      ]
+    ]
+  }
+]

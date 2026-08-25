@@ -1,0 +1,35 @@
+[
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• Stray cell — only content is 278 in column F (Area), all other fields are empty\n• No student name, no issue description, no context — cannot diagnose",
+        "Delete row 39 if accidental entry, or complete the missing fields (issue number, student name, description).",
+        "Jun22 hrly: Phantom row UNCHANGED (F=278 only, all other fields empty — 41+ days since ~May11). Suspected accidental entry. NEIL: delete row 39 or fill in issue number, student name, and description.",
+        "del or fill"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Student 356 (Shih-Wei Huang) has gender = null — never set in personal details (last updated Jun 03, 18 days stale)\n• Exit letter (document 238, template 4, booking 560) is STILL ISSUED since Jun 18 08:53 UTC — wrong Ms./she/her pronouns\n• Document encoding: gender null to isMale=false to salutation=Ms, pronoun=she/her — no null guard in code\n• Code fix needed in documents.ts for null-gender handling (all null-gender docs will silently use Ms./she/her)",
+        "1) Set gender=Male on student 356 via SIS personal details; 2) revoke document 238; 3) regenerate exit letter for booking 560. See recipe: issue-32-shih-wei-gender-default.md",
+        "Jun22 hrly: doc238 STILL ISSUED (5d stale, updAt=Jun18T08:53 UTC). Student 356 gender=null (updAt=Jun03=19d stale). Wrong Ms./she/her exit letter still live on booking 560. NEIL: (1) SIS → student 356 → Personal Details → set Gender=Male; (2) revoke doc238; (3) regenerate exit letter for booking 560. NOT YET RUN.",
+        "urgent; revoke doc238"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Bug in sendBulkEmail() (admin.html line 1494) reads live bulkSelectedStudents instead of frozen snapshot\n• showStudentsInSchoolReport() clears bulkSelectedStudents on every reload (line 2219) — including while modal is open\n• openBulkEmailModal() (line 1367) captures ids=[...bulkSelectedStudents] into local var but never stores into _bulkEmailRecipientIds\n• _bulkEmailRecipientIds declared at line 1349 as the intended frozen snapshot — but is never populated",
+        "Set _bulkEmailRecipientIds=ids in openBulkEmailModal + read it in sendBulkEmail. See recipe: issue-33-khulan-reports-email-send.md",
+        "Jun22 hrly: Bug CONFIRMED STILL PRESENT (fresh code check). _bulkEmailRecipientIds (admin.html line 1349) declared but NEVER assigned in openBulkEmailModal — line 1367 captures local ids var only, not assigned to _bulkEmailRecipientIds. sendBulkEmail line 1494 reads live [...bulkSelectedStudents] — cleared at line 2219 by showStudentsInSchoolReport on any render. Fix: 2 lines, no build or restart. NOT YET APPLIED.",
+        "code fix pending"
+      ]
+    ]
+  }
+]

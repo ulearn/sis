@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 258th check Fri 14 Aug 2026 UTC — no change since 257th check\n• Payment 4781: EUR 380, Flywire, 2019 — booking_id = null (legacy orphan, Fidelo ref 21022)\n• Payment 16988: EUR 339.90, Bank, 2026-04-28 — booking_id = null (likely Booking 17856, Margherita Galbusera)\n• Payment 16989: EUR 339.90, Bank, 2026-04-28 — booking_id = null (likely Booking 17857, Francesca Fassina)\n• Payment 17187: EUR 6,151, TransferMate Escrow, ref ULEARNP2026124 — booking_id = null, no matching booking found\n• Booking 17856 (Margherita Galbusera): CONFIRMED, confirmed = false, amount paid = EUR 339.90\n• Booking 17857 (Francesca Fassina): CONFIRMED, confirmed = false, amount paid = EUR 339.90\n• Booking Courses 24630 + 24631: ended 2026-07-10, active = true (35 days stale)",
+        "Link Payments 16988/16989 to Bookings 17856/17857; set confirmed = true; deactivate Booking Courses 24630 + 24631. See recipe: issue-1-addendum-14aug.md",
+        "258th Fri 14 Aug UTC. No change. Fix NOT RUN. Payment 17187 (EUR 6,151 ref ULEARNP2026124) still needs manual TM/Hub lookup. Payment 4781 (Flywire 2019) is a legacy orphan.",
+        ""
+      ]
+    ]
+  }
+]

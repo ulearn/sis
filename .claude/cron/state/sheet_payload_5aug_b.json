@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "148th check Wed 5 Aug 2026 UTC - 4 orphan payments unchanged (107 days)\nPayment 16988: EUR 339.90, booking_id = null, xero_id = null\nPayment 16989: EUR 339.90, booking_id = null, xero_id = null\nPayment 17187: EUR 6,151, transaction = D2026226, booking_id = null\nPayment 4781:  EUR 380, transaction = D20191404, legacy 2019\nBooking course 24630 (Fassina, ended 2026-07-10): active = true, 26 days stale, 0 SCAs\nBooking course 24631 (Galbusera, ended 2026-07-10): active = true, 26 days stale, 0 SCAs\nBooking course 25006 (Larripa, ended 2026-08-03): active = true, 2 days stale, 2 SCAs\nBookings 17856 + 17857: status = CONFIRMED, confirmed = false (anomaly)",
+        "Link pmt 16988->bk17856, 16989->bk17857; deactivate BCs 24630+24631+25006; fix confirmed on bk17856+17857. See recipe: issue-1-addendum-5aug-b.md",
+        "148th hrly Wed 5 Aug UTC. 4 orphan payments unchanged (107d). BCs 24630+24631 26d stale. BC 25006 2d stale 2 SCAs. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H8:K8",
+    "values": [
+      [
+        "26th check Wed 5 Aug 2026 UTC - unchanged (52 days open)\nBooking 17909 (Sofiia Korkishchenko, student 768): status = CANCELLED, confirmed = true (anomaly)\nAmount paid = EUR 0, amount open = EUR 727.50 - full balance unpaid\nBooking course 24693 (Renewal Academic Year PM, ends 2026-11-13): active = true, 0 SCAs",
+        "Confirm intent (cancel vs reinstate); set confirmed=false on bk17909; deactivate BC 24693 if cancelled. See recipe: issue-7-addendum-5aug-b.md",
+        "26th hrly Wed 5 Aug UTC. Bk17909 CANCELLED + confirmed=true, EUR 0 paid, EUR 727.50 open. BC 24693 active to Nov 2026. 52 days open. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "23rd check Wed 5 Aug 2026 UTC - day 115 since course start Apr 13\nBooking 1605 (Ariunsarnai Batbayar, student 1047): status = PENDING, confirmed = false\nAmount paid = EUR 0, amount open = EUR 1,509 - no payments on file\nBooking course 1791 (Academic Year Renewal Morning, ends 2026-10-23): active = true, 0 SCAs",
+        "Collect EUR 1,509 for booking 1605; confirm booking; assign class to BC 1791. See recipe: issue-20-addendum-5aug.md",
+        "23rd hrly Wed 5 Aug UTC. Day 115. EUR 0 / 1,509. 0 SCAs. 0 payments. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "55th check Wed 5 Aug 2026 UTC - unchanged\nStudent 1052 (Alberto Squillace), booking 1611\nBooking course 1797 (Morning General, ended 2026-06-26): active = true, 40 days stale, 1 SCA\nBooking course 24686 (Morning General, started 2026-07-20, ends 2026-09-18): active = true, 16 days in, 0 SCAs",
+        "Assign class for BC 24686 (16d in, 0 SCAs); deactivate BC 1797 (ended Jun 26). See recipe: issue-24-addendum-5aug-b.md",
+        "55th hrly Wed 5 Aug UTC. BC 24686: 0 SCAs, 16d into course. BC 1797 stale 40d. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "17th check Wed 5 Aug 2026 UTC - 3 booking courses end FRIDAY 7 Aug (2 days), 0 SCAs - UNCHANGED\nBooking course 88 (Africa Mera Bachir): Morning General, ends 2026-08-07, 0 SCAs - URGENT\nBooking course 24967 (Gustavo Da Silva): General English AM, ends 2026-08-07, 0 SCAs - URGENT\nBooking course 25038 (Eduardo Roche Diaz): General English PM, ends 2026-08-07, 0 SCAs - URGENT\n8 booking courses end Fri 14 Aug, 0 SCAs: BC 24, 1305, 1344, 1591, 1572, 1144, 25004, 25005\n10 booking courses end Fri 7 Aug already have SCAs (BC 1673, 1672, 1740, 1675, 1742, 24966, 24983, 24955, 24991, 24990)",
+        "Assign BC 88, 24967, 25038 TODAY (end Fri 7 Aug). Assign BC 24/1305/1344/1591/1572/1144/25004/25005 by Thu 13 Aug. See recipe: issue-38-addendum-5aug-b.md",
+        "17th hrly Wed 5 Aug UTC. URGENT: 3 BCs end FRIDAY 7 Aug (2 days), still 0 SCAs. 8 BCs end Aug 14, 0 SCAs. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "53rd check Wed 5 Aug 2026 UTC\nBooking course 24630 (Francesca Fassina, ended 2026-07-10): active = true, 26 days stale, 0 SCAs\nBooking course 24631 (Margherita Galbusera, ended 2026-07-10): active = true, 26 days stale, 0 SCAs\nBooking course 25006 (Marina Larripa, ended 2026-08-03): active = true, 2 days stale, 2 SCAs (progress)\nPayment 16988: EUR 339.90, booking_id = null - should link to booking 17856 (Galbusera)\nPayment 16989: EUR 339.90, booking_id = null - should link to booking 17857 (Fassina)",
+        "Deactivate BCs 24630/24631/25006; link pmt 16988->bk17856, 16989->bk17857. See recipe: issue-48-addendum-5aug-b.md",
+        "53rd hrly Wed 5 Aug UTC. BC 25006 has 2 SCAs (progress). BCs 24630+24631 26d stale. Payments 107d orphaned. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  }
+]

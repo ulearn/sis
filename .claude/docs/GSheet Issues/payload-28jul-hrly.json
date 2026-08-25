@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• 111th check Tue 28 Jul 2026 UTC — core 5 erroneous phone numbers unchanged (+1 day each)\n• Student 1897 Dolgormaa Bayaraa: email saraa.tpb@gmail.com in phone field (11 days, updated 17 Jul)\n• Student 8567 Aki Miura: email aki-hinaaki1116@ezudo.he.jp in phone field (109 days, updated 10 Apr)\n• Student 1194 Jieun Lee: annotation 00821097366523 (home contry) in phone field (82 days, updated 7 May)\n• Student 5345 Lisa Li: annotation 0864645297 (Husband) in phone field (109 days, updated 10 Apr)\n• Student 10343 Alessandra Saito de Araujo: Unicode trailing chars after +353 (83) 885 9162 (91 days, updated 28 Apr)\n• Student 14556 Theodore Bolt: +1 (984) 389-3888 (5 days, updated 23 Jul) — US NC area code; verify via HubSpot",
+        "Strip annotations on 1194, 5345; strip Unicode on 10343; get correct phones from HubSpot for 1897, 8567; verify 14556. See recipe: issue-6-addendum-28jul.md",
+        "111th hrly Tue 28 Jul UTC. Core 5 unchanged (11d/109d/82d/109d/91d). Theodore 14556 +1(984)389-3888 (5d). Fix NOT RUN.",
+        "5 phones wrong; 14556 verify"
+      ]
+    ]
+  },
+  {
+    "range": "H8:K8",
+    "values": [
+      [
+        "• 15th check Tue 28 Jul 2026 UTC — unchanged\n• Booking 17909 (Sofiia Korkishchenko, student 768): CANCELLED but confirmed = true (anomaly)\n• Last updated 17 Jun 2026 — 41 days stale\n• Amount open = EUR 727.50, amount paid = 0 — no payments on this booking\n• Booking course 24693 (Renewal - Academic Year PM, 25 May-13 Nov 2026): still active = true",
+        "Set confirmed = false on booking 17909; deactivate BC 24693. See recipe: issue-7-addendum-28jul.md",
+        "15th check Tue 28 Jul UTC. BK17909 CANCELLED confirmed=STILL true (41d). amtOpen=EUR727.50 amtPaid=0. BC24693 active=true. Fix NOT RUN.",
+        "bk17909 anomaly; 41d"
+      ]
+    ]
+  },
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• 110th check Tue 28 Jul 2026 UTC — unchanged, all +1 day stale\n• Booking accommodation 11162 (Massimiliano Cameran, booking 97, bed 179, Host Family): ended 23 May 2026 — 66 days stale, active = true\n• Booking accommodation 11314 (Massimiliano Cameran, booking 18002, bed 179, Host Family): ended 6 Jun 2026 — 52 days stale, active = true\n• Booking accommodation 11319 (zero-day apartment, bed null, fee EUR 400): ended 31 May 2026 — 58 days stale, active = true",
+        "Set active = false on BAs 11162, 11314, 11319. See recipe: issue-12-addendum-28jul.md",
+        "110th hrly Tue 28 Jul UTC. 3 BAs stale (66d/52d/58d). Fix NOT RUN.",
+        "3 stale BAs; 66d max"
+      ]
+    ]
+  },
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "• 37th check Tue 28 Jul 2026 UTC — unchanged\n• Booking extra 96 (Lizbeth del Carmen, booking 17981): extra_type = INSURANCE, fee = null — 64 days unpriced (last updated 25 May 2026)\n• Booking 17981: EUR 1,407.50 amount paid, status Confirmed\n• Insurance cost not tracked in Xero; booking amount_open likely understated",
+        "Set fee on booking_extra 96 (verify amount from HubSpot deal first). See recipe: issue-13-addendum-28jul.md",
+        "37th check Tue 28 Jul UTC. UNCHANGED. Fee null 64d (since May 25). Fix NOT RUN.",
+        "insurance fee null; 64d"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• 110th check Tue 28 Jul 2026 UTC\n• Student 983 Flavia Nascimento Mariano: visa_status = null — 14 days (student record last updated 26 Jul 2026)\n• Booking course 1710 (Academic Year Afternoon, Jun 1-Nov 20 2026): 2 class assignments confirmed\n• SCA 256: Jun 1-14 class 9 (initial entry); SCA 265: Jun 15-Nov 20 class 11 (ongoing through course end)\n• Class assignment issue RESOLVED — Flavia continuously assigned to class 11 through Nov 20\n• Remaining issue: visa_status = null may cause her to be filtered from some staff views",
+        "Set visa_status on student 983 (confirm via HubSpot first). See recipe: issue-18-addendum-28jul.md",
+        "110th hrly Tue 28 Jul UTC. BC1710: SCA256 (class9 Jun1-14) + SCA265 (class11 Jun15-Nov20). CLASS ASSIGNED. Visa=null (14d since Jul14, rec updated Jul26). Fix NOT RUN.",
+        "visa null; 14d; class OK"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• 121st check Tue 28 Jul 2026 UTC — UNCHANGED\n• Student 917 (Uyanga Tungalag): visa_status = null — 68 days since last update (21 May 2026)\n• Student 917: hubspotContactId = null — cannot auto-verify visa status\n• Booking course 1613 (Academic Year Morning, Apr 27-Oct 30 2026): 0 class assignments — 92 days into AY course\n• Student enrolled in AY course since Apr 27 and never assigned to a class (92 days)\n• Root cause: visa_status = null prevents appearance in class assignment view",
+        "Set visa_status on student 917; assign BC 1613 to a Morning class immediately. See recipe: issue-25-addendum-28jul.md",
+        "121st check Tue 28 Jul UTC. visaStatus=null (68d since May21), hubspotContactId=null. BC1613 0 SCAs, 92d into AY course. URGENT. Fix NOT RUN.",
+        "visa null; 0 SCAs; 92d"
+      ]
+    ]
+  }
+]

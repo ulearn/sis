@@ -1,0 +1,35 @@
+[
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 119th check Friday 17 July 2026 — all 9 Monday 20 July starters confirmed zero class assignments (fresh database)\n• Booking course 1630: Saranzaya Khishigbayar, Academic Year Afternoon, student 931, booking 1481 confirmed — fee EUR 2620\n• Booking course 24616: Mia Wehrli, General English AM Plus, student 14450, booking 17842 confirmed — fee null (check HubSpot deal before assigning)\n• Booking course 24686: Alberto Squillace, Morning General, student 1052, booking 1611 confirmed — fee null; see Issue 24\n• Booking course 24942: Lorena Pizarro Araya, Academic Year Morning, student 14565, booking 18166 confirmed — fee EUR 2362.50\n• Booking course 24966: Filippo Corazzini, General English AM Plus, student 14578, booking 18190 confirmed — fee EUR 549.90\n• Booking course 24989: Marcos Abrego Tofe, General English AM, student 14587, booking 18212 confirmed — fee EUR 152\n• Booking course 25000: Giorgio Sau, General English AM Plus, student 14595, booking 18223 confirmed — fee EUR 940\n• Booking course 24932: Stephany Martins Pardinho, Life Pass Morning, student 14560, booking 18157 PENDING — 105 weeks; do not assign until confirmed and paid\n• Booking course 25001: Neil Mc Mahon, General English AM, student 97, booking 18224 PENDING — likely admin/test record\n• 8 courses ended 17 Jul with zero assignments: BC1719 Maria Hermosilla (24wk AY, never tracked), BC26 Kritchana (EUR 2638 unpaid), BC95 Florian Baury, BC24946 Lunel Dubost, BC24985+24986 Maza sisters (EUR 265 each pending), BC24992 Luz Sobrino, BC24994 Petru Ous",
+        "Assign 7 confirmed starters before Mon 20 Jul; back-fill today-enders where appropriate. See recipe: issue-45-addendum-17jul.md",
+        "119th check Fri 17 Jul UTC. All 9 Monday starters STILL 0 SCAs confirmed fresh DB. BC24932 Stephany: PENDING 105wk hold. BC25001 Neil McMahon: PENDING test record. 7 confirmed starters need class assignment before Mon 20 Jul. WEEKEND — last chance today. Fix NOT RUN.",
+        "CRITICAL; assign before Mon"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• Booking accommodation 11352 (Veronica Martin, bed 83, booking 18156, July 4-11 2026): checked out 11 July — active = still true, 6 days stale\n• Booking accommodation 11285 (Jesus Manuel Ramirez Diaz, bed 83, booking 17825, June 21-July 5 2026): checked out 5 July — active = still true, 12 days stale (see Issue 43)\n• Both records on bed 83 — cosmetic data hygiene, no guest impact\n• Fix: UPDATE booking_accommodations SET active = false WHERE id IN (11285, 11352)\n• Verified Fri 17 Jul 2026 UTC",
+        "Set active = false on accommodations 11352 and 11285 (both on bed 83, both post-checkout). See recipe: issue-37-veronica-capel-accomm-allocation.md",
+        "Fri 17 Jul UTC. CONFIRMED UNCHANGED. BA11352 (Veronica Martin, bed 83, Jul4-Jul11): active=STILL true (6d post-checkout). BA11285 (Jesus Manuel, bed 83, Jun21-Jul5): active=STILL true (12d post-checkout — see Issue 43). Fix NOT RUN.",
+        "BA stale 6d+12d; cleanup"
+      ]
+    ]
+  },
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "• Extra 96 (booking 17981, Lizbeth del Carmen Sierra Martinez, student 14522): Insurance extra, details = PEL;Health, fee = null — not priced (53 days since created 25 May 2026)\n• Booking 17981: Confirmed, confirmed flag = false, EUR 1407.50 / 1407.50 fully paid\n• Insurance arrangement still pending — student uninsured since course started 1 June 2026\n• World2Go reference rate for other students: EUR 150 (extra 218, booking 18149)\n• 29th check, 17 Jul 2026 UTC",
+        "Arrange insurance; set fee on extra 96 via SIS bk17981 Extras; supplementary invoice on HS deal 503569276136. See recipe: issue-13-lizbeth-health-insurance.md",
+        "29th check Fri 17 Jul UTC. UNCHANGED. Extra96 INSURANCE PEL;Health fee=STILL null (53d since May25). BK17981 CONF EUR1407.5/1407.5 confirmed=false. Fix NOT RUN.",
+        "insurance fee null; 53d"
+      ]
+    ]
+  }
+]

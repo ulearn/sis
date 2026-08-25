@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 13th check Tue 4 Aug 2026 UTC — 3 URGENT booking courses still 0 assigned, end Fri 7 Aug\n• Booking course 88 (Africa Mera Bachir, student 76): Morning General, ends Fri 7 Aug — 0 class assignments, URGENT\n• Booking course 24967 (Gustavo Da Silva, student 14570, booking 18179): General English AM, ends Fri 7 Aug — 0 class assignments, URGENT; same booking also has BC 24955 (AM Plus, 2 assignments) — possible duplicate, verify before assigning\n• Booking course 25038 (Eduardo Roche Diaz, student 14602): General English PM, ends Fri 7 Aug — 0 class assignments, URGENT\n• 8 booking courses end Fri 14 Aug with 0 class assignments: BC 24 (Amine Ibrani, AY Afternoon, started Feb — NEW), BC 1144 (Anar-Erdene Batbayar), BC 1305 (Nomin Nergui), BC 1344 (Bat-Orgil Baljinnyam), BC 1572 (Ganchimeg Ganbaatar), BC 1591 (Turbold Altankhuyag), BC 25004 (Vincenzo Contu — NEW), BC 25005 (Claudia Mereu — NEW)\n• Booking course 25003 (Aleix Cervera, booking 18225): duplicate of BC 25002 — deactivate only\n• Booking course 25006 (Marina Larripa, ended 2026-08-03): active = true — 1 day stale\n• Aug Bank Holiday 2026-08-03: absent from school_closures — BC 24956 (Giampaolo Russo) started on BH; add 2027+ to prevent recurrence",
+        "Assign BCs 88+25038 TODAY (ends Fri); check BC 24967 (Gustavo — possible duplicate of BC 24955); assign BCs 24/1144/1305/1344/1572/1591/25004/25005 by Thu 13 Aug; deactivate BCs 25003+25006. See recipe: issue-38-addendum-4aug-i.md",
+        "13th hrly Tue 4 Aug UTC. 3 urgent BCs end Fri Aug 7 (unchanged). 3 NEW Aug 14 BCs found: BC 24 (Amine Ibrani AY), BC 25004 (Vincenzo Contu), BC 25005 (Claudia Mereu). Gustavo booking 18179 has 2 active BCs ending Aug 7 (BC 24955 assigned + BC 24967 unassigned — possible duplicate). Fix NOT RUN.",
+        "CRITICAL; 3 urgent Aug 7; 8 Aug 14"
+      ]
+    ]
+  }
+]

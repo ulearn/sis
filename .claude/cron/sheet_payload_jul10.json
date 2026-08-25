@@ -1,0 +1,57 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 + 16989 (EUR 339.90 each): booking ID = STILL null, Xero payment ID = STILL null — 73 days since 28 April 2026\n• Bookings 17856 + 17857: status = Confirmed, confirmed flag = false, amount paid = EUR 339.90 each — zero payment records linked in database (anomaly: amount paid column updated 8 July but no payment rows found with booking ID set)\n• Booking courses 24630 + 24631 (General English AM Plus, 29 June to 10 July 2026): ENDED TODAY — fee = STILL null, active = STILL true\n• Courses have now ENDED — payment link fix is OVERDUE — payments remain permanently orphaned without intervention",
+        "Link payments to bookings via 4-step SQL — OVERDUE as of 10 July; recipe: issue-1-orphan-payments.md",
+        "10 Jul UTC (this run, deadline day). DB CONFIRMED UNCHANGED 73d since Apr28. Pmts 16988+16989 bookingId=STILL null xeroPaymentId=STILL null EUR339.90 each. BKs 17856+17857 confirmed=false amtPaid=339.9 ZERO linked payment rows in DB. BCs 24630+24631 ENDED TODAY Jul10 fee=STILL null active=STILL true. NEIL: Run 4-step SQL NOW: (1)UPDATE payments SET booking_id=17856 WHERE id=16988; (2)UPDATE payments SET booking_id=17857 WHERE id=16989; (3)UPDATE booking_courses SET fee=339.9 WHERE id IN(24630,24631); (4)UPDATE bookings SET confirmed=true WHERE id IN(17856,17857).",
+        "OVERDUE: Jul10"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student class assignment 255 (student 1001 Saikhantes Shagdarsuren, class 11 B1 Afternoon): week end = 3 July 2026 — EXPIRED 7 days ago\n• Student absent from class roll since 4 July — 5 consecutive school days missed this week (Monday 6 July to Friday 10 July 2026)\n• Active booking course 24925 (Academic Year Afternoon, booking 18151, 9 March to 2 October 2026, fee = EUR 1102.20): 84 days of course remain after today\n• Booking 18151: Confirmed, EUR 1339.20 / 1339.20 fully paid",
+        "Run SQL: UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255 — URGENT (5 days missed); recipe: issue-15-saikhantes-course-dates.md",
+        "10 Jul UTC (this run). CONFIRMED UNCHANGED (fresh DB). SCA255 weekEnd=Jul03 EXPIRED 7 DAYS — 5 school days missed Mon Jul6–Fri Jul10. BC24925 AY-Afternoon Mar9-Oct2 active=true fee=1102.2. BK18151 CONFIRMED EUR1339.2/1339.2 fully paid. SQL NOT RUN. NEIL: Run SQL BEFORE Mon Jul13 or student misses another full week. 84 days remain to Oct2 course end.",
+        "OVERDUE: 7d missed"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Edith Nunes (student 1015): booking 18158 Confirmed, EUR 740 / 740 fully paid\n• Booking course 24933 (General English AM, 15 June to 10 July 2026, fee = EUR 380): ENDED TODAY — still active = true\n• Booking course 24934 (General English AM, 15 June to 10 July 2026, fee = EUR 360): ENDED TODAY — still active = true — DUPLICATE of booking course 24933\n• Zero class assignment records for student 1015 this booking period (last class assignment expired May 2026)\n• Payment 17895 (EUR 740, 12 June 2026): Xero payment ID = STILL null — not reconciled in Xero\n• Zero document records on booking 18158 — completion certificate not yet generated",
+        "Deactivate booking courses 24933 + 24934; generate completion cert; reconcile payment 17895 in Xero; recipe: issue-22-edith-nunes-payment-dups.md",
+        "10 Jul UTC (this run, Jul10). Courses ENDED TODAY. BC24933(GE-AM Jun15-Jul10 fee=380)+BC24934(DUP GE-AM same dates fee=360) both STILL active=true. PMT17895 EUR740 Jun12 xeroPaymentId=STILL null. ZERO docs on BK18158. ZERO class assignments for student 1015 this term. NEIL: (1) UPDATE booking_courses SET active=false WHERE id IN(24933,24934); (2) Generate completion cert for student 1015 booking 18158; (3) Reconcile payment 17895 EUR740 in Xero.",
+        "post-Jul10 cleanup"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• Booking 17980 (Pietro Caccianiga, student 14521): Confirmed, EUR 5331 / 5331 fully paid, in residence since 28 June 2026\n• Accommodation 11311: bed 84, 28 June to 13 September 2026, active = true — current in-stay, correct\n• 4 stale bed 84 records still active (past dates, no date overlap with Pietro stay — low priority): bed allocation 9917 (booking 1274, 10–16 May 2026), bed allocation 11157 (booking 100, 2–10 May 2026), bed allocation 11159 (booking 100, 17–30 May 2026), bed allocation 11180 (booking 81, 6–20 June 2026)\n• Sheet row B column edited by staff on 9 July — database data confirmed unchanged throughout",
+        "(Low priority) Deactivate 4 stale bed 84 records: UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180); recipe: issue-36b-pietro-accomm-dates.md",
+        "10 Jul UTC (this run). Hash matched stored hash — no new DB change. DB CONFIRMED UNCHANGED (fresh query Jul10). BA11311 bed84 Jun28-Sep13 active=true (Pietro valid in-stay, day 12 of stay). Stale BAs: BA9917(bk1274 May10-16 +55d stale), BA11157(bk100 May2-10 +61d stale), BA11159(bk100 May17-30 +41d stale), BA11180(bk81 Jun6-20 +20d stale) all STILL active=true. No guest conflict. Low priority.",
+        "low-pri; stale bed84"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Verónica Martín (student 278, booking course 24931 General English AM, 6 to 10 July 2026): 1-week course ENDED TODAY — ZERO class assignments ever assigned — MISSED ENTIRELY\n• Ettore Iovinella (student 14564, booking course 24968 General English AM Plus, 6 to 13 July 2026): class assignment 281 links to old booking course 24941 (ended 3 July), zero class assignments for current booking course 24968 — 3 school days remain (deadline Friday 13 July)\n• Pietro Colombo (student 72, booking course 81 Morning General Plus, 6 July to 24 July 2026): zero class assignments for current course — 10 school days remain (deadline 24 July)\n• Renewals not shown in arrivals view by design — this is not an arrivals-list bug",
+        "Assign Ettore (booking course 24968, deadline Fri 13 Jul) + Pietro (booking course 81, deadline 24 Jul) to classes via SIS admin — URGENT; recipe: issue-45-renewal-arrivals.md",
+        "10 Jul UTC (this run, Jul10). CONFIRMED UNCHANGED (fresh DB). s278 Verónica BC24931 GE-AM Jul6-Jul10 ENDED TODAY ZERO class assignments — MISSED ENTIRELY. s14564 Ettore BC24968 GE-AM-Plus Jul6-Jul13 SCA281 for old BC24941(ended Jul3) ZERO assignments for BC24968 — 3 school days remain. s72 Pietro BC81 MG-Plus Jul6-Jul24 ZERO assignments — 10 school days remain. NEIL: Assign Ettore (deadline Fri Jul13) + Pietro (deadline Jul24) in SIS admin immediately.",
+        "Verónica MISSED; Ettore Fri"
+      ]
+    ]
+  }
+]

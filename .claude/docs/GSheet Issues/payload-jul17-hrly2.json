@@ -1,0 +1,74 @@
+[
+  {
+    "range": "H47",
+    "values": [
+      [
+        "• 118th check Friday 17 July 2026 — all 9 Monday 20 July starters have zero class assignments (fresh database)\n• Booking course 1630: Saranzaya Khishigbayar, Academic Year Afternoon, student 931, booking 1481 confirmed — fee EUR 2620\n• Booking course 24616: Mia Wehrli, General English AM Plus, student 14450, booking 17842 confirmed — fee null (check HubSpot deal before assigning)\n• Booking course 24686: Alberto Squillace, Morning General, student 1052, booking 1611 confirmed — fee null; see Issue 24\n• Booking course 24942: Lorena Pizarro Araya, Academic Year Morning, student 14565, booking 18166 confirmed — fee EUR 2362.50\n• Booking course 24966: Filippo Corazzini, General English AM Plus, student 14578, booking 18190 confirmed — fee EUR 549.90\n• Booking course 24989: Marcos Abrego Tofe, General English AM, student 14587, booking 18212 confirmed — fee EUR 152\n• Booking course 25000: Giorgio Sau, General English AM Plus, student 14595, booking 18223 confirmed — fee EUR 940\n• Booking course 24932: Stephany Martins Pardinho, Life Pass Morning, student 14560, booking 18157 PENDING — 105 weeks (Jul 2026 to Aug 2028); do not assign until booking is confirmed and paid\n• Booking course 25001: Neil Mc Mahon, General English AM, student 97, booking 18224 PENDING — appears to be admin or test record; verify with Neil before assigning\n• 8 courses ended today (17 Jul 2026) with zero class assignments: booking courses 1719 (Maria Hermosilla, 24-week AY, attendance never tracked), 26 (Kritchana, EUR 2638.75 fully unpaid), 95 (Florian Baury), 24946 (Lunel Dubost), 24985 and 24986 (Maza sisters, EUR 265 each pending), 24992 (Luz Sobrino), 24994 (Petru Ous)"
+      ]
+    ]
+  },
+  {
+    "range": "J47",
+    "values": [
+      [
+        "118th check Fri 17 Jul UTC. All 9 Monday starters STILL 0 SCAs confirmed fresh DB. Booking course 24932 Stephany Martins: 105-week Life Pass Jul20-Aug2028, booking 18157 PENDING — hold on assignment. Booking course 25001 Neil McMahon: booking 18224 PENDING — likely test record. 7 confirmed starters need class assignment before Mon 20 Jul. See recipe: issue-45-addendum-17jul.md (118th check). Fix NOT RUN."
+      ]
+    ]
+  },
+  {
+    "range": "K47",
+    "values": [
+      [
+        "CRITICAL; assign 7 today"
+      ]
+    ]
+  },
+  {
+    "range": "J28",
+    "values": [
+      [
+        "26th check Fri 17 Jul UTC. CONFIRMED UNCHANGED. Booking 17909 CANCELLED confirmed=STILL true, amount open EUR 727.50, amount paid EUR 0. Booking course 24693 (Renewal Academic Year PM, ends Nov 13 2026): STILL active=true on cancelled booking, ILEP code=null. Payment 17468 (EUR 1455.50, booking 17849): type=STILL null. Fix NOT RUN."
+      ]
+    ]
+  },
+  {
+    "range": "J27",
+    "values": [
+      [
+        "35th check Fri 17 Jul UTC. CONFIRMED UNCHANGED. Booking course 23 (Ivan Rodriguez Solares, Intensive General 30, ended 22 May 2026): active=STILL true — 56 days stale. Booking course 24826 (Ernesto Pesoa Gil, 2-week Intensive General 30, ended 19 June 2026): active=STILL true — 28 days stale. Fix NOT RUN."
+      ]
+    ]
+  },
+  {
+    "range": "K27",
+    "values": [
+      [
+        "2 BCs stale; 56d"
+      ]
+    ]
+  },
+  {
+    "range": "J34",
+    "values": [
+      [
+        "Fri 17 Jul UTC (fresh check). CONFIRMED UNCHANGED. Student 356 (Shih-Wei Huang): gender=STILL null (last updated 3 June 2026, 44 days old). Document 238 (exit letter, booking 560): STILL ISSUED since 18 June 2026 — 29 days with incorrect Ms. and she/her pronouns. Null-gender code fix (documents.ts) also pending. Fix NOT RUN."
+      ]
+    ]
+  },
+  {
+    "range": "J40",
+    "values": [
+      [
+        "36th check Fri 17 Jul UTC. CONFIRMED UNCHANGED. August Bank Holiday (Monday 3 August 2026): STILL absent from school_closures — 17 days away. October Bank Holiday (Monday 26 October 2026): also absent. 9 school closure records confirmed: Good Friday 2026-2030 + Christmas 2026-2029; zero bank holiday Mondays. Schema has no type column — recipe uses correct columns (name, start_date, end_date, is_paid_holiday). Fix NOT RUN."
+      ]
+    ]
+  },
+  {
+    "range": "J23",
+    "values": [
+      [
+        "55th check Fri 17 Jul UTC. CONFIRMED UNCHANGED. Booking course 24991 (Edith Nunes, student 1015, General English AM, 13 Jul to 7 Aug 2026): 0 class assignments confirmed fresh database. Week 1 (13-17 Jul) ended today — 3 weeks remain (20 Jul to 7 Aug 2026). Fix NOT RUN."
+      ]
+    ]
+  }
+]

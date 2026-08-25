@@ -1,0 +1,56 @@
+[
+  {
+    "range": "J2:K2",
+    "values": [
+      [
+        "4 Jul 2026 (latest fresh DB): pmts 16988+16989 bookingId=STILL null xeroId=null. bk17856 CONFIRMED confirmed=false paid=339.9/339.9. bk17857 CONFIRMED confirmed=false paid=339.9/339.9. bc24630+24631 fee=STILL null active=true. Jul10=6d. Fix UNRUN 200+ hours.",
+        "Jul10=6d; UNRUN"
+      ]
+    ]
+  },
+  {
+    "range": "J21:K21",
+    "values": [
+      [
+        "4 Jul 2026 (fresh DB, 15th check): bk1605 STILL PENDING paid=0/1509. bc1791 AY Renewal Morning Apr13-Oct23 active=true Day83. 0 SCAs total. Last bk updated Jun23 (11d stale). HS deal 502951083215 needs Won stage.",
+        "D83; PENDING; 0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "J39:K39",
+    "values": [
+      [
+        "4 Jul 2026 (fresh DB): ba11352 Veronica bed83 Jul4-11 active=true — student has arrived. ba11285 Jesus bed83 Jun21-Jul5 active=true — checks out tomorrow Jul5. bk18156 CONFIRMED fully paid 573.2/573.2. Original allocation complaint resolved. Monitoring closed.",
+        "fixed"
+      ]
+    ]
+  },
+  {
+    "range": "J41:K41",
+    "values": [
+      [
+        "4 Jul 2026 (fresh DB): bk17831 STILL PARTIAL paid=965/1396.9 (EUR431.9 open). pmt17180 (431.9 Escrow Apr27) xeroId=null hsId=null. pmt17963 (965 Bank Jul1) xeroId=null hsId=1273784562922. Combined=1396.9=total (fully covered pending Xero). ba bed180 Jul12-Aug2=8d.",
+        "PARTIAL; Jul12=8d"
+      ]
+    ]
+  },
+  {
+    "range": "J43:K43",
+    "values": [
+      [
+        "4 Jul 2026 (fresh DB): ba11311 bed84 Capel Jun28-Sep13 active=true (student in situ, EUR3850 fee). ba11357 HF Aug2-Sep6 claimStatus=pending (claimed Jul1) bedId=null — no provider matched. bk17980 CONF 5331/5331. bk18180 CONF 2584.96/2584.96. Aug2=29d.",
+        "HF claim pending; Aug2=29d"
+      ]
+    ]
+  },
+  {
+    "range": "J47:K47",
+    "values": [
+      [
+        "4 Jul 2026 (22nd check, fresh DB): confirmed 0 SCAs for all 15 students for week Jul6+. bc24941 (Ettore, ended Jul3) STILL active=true. bc24967 (Gustavo dup, Jul6-Aug7, EUR137.60) STILL active=true alongside bc24955. All 15 BCs active. NEIL: assign classes + deactivate bc24941 + bc24967 BEFORE Mon Jul6 morning.",
+        "Mon=2d; 0SCA 15 students"
+      ]
+    ]
+  }
+]

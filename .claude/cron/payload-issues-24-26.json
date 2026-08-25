@@ -1,0 +1,35 @@
+[
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "Fidelo migration split: 2 courses (c1797 Apr6-Jun26 + c24686 Jul20-Sep18) instead of holiday. No hols in DB. EUR1280 paid = 12wk rate, not 21wk.",
+        "Check HS deal 494814774510=12wk. SIS->bk1611->add hol wb Apr27. Delete c24686 if no SCAs. see recipe: issue-24-alberto-fidelo-course-split.md",
+        "Confirm holiday duration (how many wks absent from Apr27). Confirm HS deal is 12wk only.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "(A) Only escrow pmt (pm17258 EUR3066 TransferMate Escrow) blocks to-be-assigned. (B) visaStatus=null can't save via UI (Prisma drift, same as #18).",
+        "Step1: resolve TransferMate escrow (primary blocker). Step2: UPDATE students SET visa_status='Approved' WHERE id=917. see recipe: issue-25-uyanga-visa-escrow.md",
+        "Has TransferMate released EUR 3066 for bk1467? Check Hub fins.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "Code bug: unassignedStudents() treats any SCA as fully assigned. INTENSIVE needs 2 (AM+PM). After 1st assign student vanishes from list.",
+        "Workaround: assign afternoon class via class roster directly. Code fix: bc filter <2 for INTENSIVE. see recipe: issue-26-intensive-class-assign-once.md",
+        "Daniela (s75, bc86) already has 1 SCA - apply workaround now for her afternoon class.",
+        ""
+      ]
+    ]
+  }
+]

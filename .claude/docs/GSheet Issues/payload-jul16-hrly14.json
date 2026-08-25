@@ -1,0 +1,35 @@
+[
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 3 confirmed booking courses end TOMORROW (Friday 17 July) with zero class assignments — 113th check, Thursday 16 July UTC (11th check today)\n• Booking course 1719 (María Magdalena Hermosilla Ogaz, student 992): Academic Year Afternoon, 26 January to 17 July 2026 — zero class assignments for entire 24-week course — EUR 144 of EUR 1500 still owed\n• Booking course 24946 (Lunel Dubost, student 14566): General English AM, 13–17 July 2026 — zero class assignments — fully paid\n• Booking course 24994 (Petru Ous, student 14591): General English AM, 13–17 July 2026 — zero class assignments — fully paid\n• 7 additional confirmed courses start Monday 20 July with zero class assignments: booking course 1630 Saranzaya Khishigbayar (Academic Year Afternoon), booking course 24616 Mia Wehrli (General English AM Plus), booking course 24686 Alberto Squillace (Morning General — also Issue 24), booking course 24942 Lorena Pizarro Araya (Academic Year Morning), booking course 24966 Filippo Corazzini (General English AM Plus), booking course 24989 Marcos Ábrego Tofé (General English AM), booking course 25000 Giorgio Sau (General English AM Plus)\n• Pending bookings ending tomorrow with zero payments: booking 25 Kritchana Ratcha-Anan (EUR 2638.75 unpaid), bookings 18208 and 18209 Maza Valladolid sisters (EUR 265 each, EUR 0 paid)",
+        "Assign booking courses 1719/24946/24994 TODAY (last chance); assign 7 Monday starters before 20 Jul. See recipe: issue-45-addendum-16jul.md",
+        "113th check Thu 16 Jul UTC (11th today). CONFIRMED fresh DB. bc1719 Maria Magdalena AY Aft Jan26-Jul17 0 SCAs. bc24946 Lunel Dubost 0 SCAs. bc24994 Petru Ous 0 SCAs. All 3 end TOMORROW. NEW: 7 Jul20 starters 0 SCAs: bc1630 Saranzaya, bc24616 Mia, bc24686 Alberto(Iss24), bc24942 Lorena, bc24966 Filippo, bc24989 Marcos, bc25000 Giorgio. Fix NOT RUN.",
+        "CRITICAL; today+Mon"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student class assignment 255 (Saikhantes Shagdarsuren, student 1001, booking course 24925): still the only ever assignment — class ID 11, week start 12 January 2026, week end 3 July 2026\n• Two full weeks missed without assignment: week 6–10 July (5 school days, past) AND week 13–17 July (4 days in — last day tomorrow)\n• Booking course 24925 (Academic Year Afternoon): active, ends 2 October 2026 — student holiday 20 July to 21 August 2026 starts Monday\n• Booking course 1982 (Academic Year Morning, ended 19 December 2025): still active = true — 7 months stale\n• 77th check, Thursday 16 July UTC (11th check today)",
+        "Assign student 1001 (Saikhantes Shagdarsuren) to class 11 for week ending 17 July (TODAY IS LAST CHANCE). See recipe: issue-15-addendum-16jul.md",
+        "77th check Thu 16 Jul UTC (11th today). SCA255 weekStart=Jan12 weekEnd=Jul03 classId=11 CONFIRMED fresh DB. BC24925 AY Afternoon Mar09-Oct02 active=true. BC1982 (ended Dec2025) active=STILL true (7mo stale). Holiday2500 Jul20-Aug21 (starts Mon). Zero SCAs weeks Jul06-10+Jul13-17. TOMORROW (Jul17) LAST DAY. Fix NOT RUN.",
+        "CRITICAL; LAST DAY TODAY"
+      ]
+    ]
+  },
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• Accommodation 11162 (Massimiliano Cameran, booking 97, bed 179): 21 April to 23 May 2026 — active = still true — 54 days stale\n• Accommodation 11314 (Massimiliano Cameran, booking 18002, bed 179): 23 May to 6 June 2026 — active = still true — 40 days stale — NEW, found this run 16 July\n• Accommodation 11319 (Ernesto Pesoa Gil, booking 18034, no bed assigned): 31 May to 31 May 2026 — active = still true — 46 days stale, no bed ever assigned\n• Three stale accommodation records confirmed — fresh query 16 July 2026",
+        "Set active = false on accommodations 11162 and 11314 (both Massimiliano stale). Review accommodation 11319 (no bed, zero-day record — cancel or fix). See recipe: issue-12-accomm-dates-mismatch.md",
+        "16 Jul THU UTC (this run). NEW: BA11314 (Massimiliano bk18002 bed179 May23-Jun6 2026) active=STILL true (40d stale, first time tracked). BA11162 (bed179 Apr21-May23) active=STILL true (54d stale). BA11319 (no bed May31-May31) active=STILL true (46d). BA11287 (Rakan bed190 Jul4-Dec19) correct+active. Fix NOT RUN.",
+        "3 stale BAs; 54d worst"
+      ]
+    ]
+  }
+]

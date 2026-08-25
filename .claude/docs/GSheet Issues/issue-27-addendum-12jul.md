@@ -1,0 +1,3 @@
+Issue 27 Addendum - 12 July 2026 (Sofiia Korkishchenko)
+
+22nd check 12 Jul SUN UTC (fresh DB): UNCHANGED. BK17909 CANCELLED confirmed=STILL true amtPaid=0 (pmts 17477+17478 DELETED Jun17). BC24693 Renewal-AY-PM May25-Nov13 STILL active=true. HS Commerce pmts 1230788330738(EUR727.50)+1230645766331(EUR728.00) NOT voided. Deadlines: Oct25/Nov11 2026. NEIL: Xero check Sofiia Apr-May 2026 + void HS pmts before Oct25 + UPDATE bk17909 confirmed=false. Last checked: 2026-07-12 SUN UTC.

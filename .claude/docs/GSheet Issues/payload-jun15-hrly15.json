@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H6:K6",
+    "values": [
+      [
+        "ba11287 bedId=null(updAt=Jun05) active Jun27-Dec12. doc204 LOA v1 ISSUED Jun08(manually fixed). Accom block absent; bed still unassigned.",
+        "Assign bed to ba11287 in SIS Accom module before Jun27 arrival. see recipe: issue-4-rakan-loa-barcode.md",
+        "Jun15-UTC hrly15: ba11287 bed_id=null UNCHANGED(updAt=Jun05). 12d to Jun27 arrival. NEIL: assign bed via SIS Accom ASAP.",
+        "bed 12d"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "bk1605 PENDING 0/1509 D74. HS deal 502951083215 B2B-Sales ENROLMENT not WON.",
+        "Move HS deal 502951083215 to WON stage to trigger webhook. see recipe: issue-20-ariunsarnai-payment-due.md",
+        "Jun15-UTC hrly15: bk1605 PEND 0/1509 conf=false updAt=Jun11(stale 4d). NEIL: contact student/agent re EUR1509 or cancel booking.",
+        "stale 4d pend"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "s917 Uyanga visaStatus=null. bk1467 CONF 2405/2405. 0 SCAs. hubspotContactId=null.",
+        "Confirm visa approved then UPDATE students SET visa_status='approved' WHERE id=917 (NOT RUN). Assign AY-MORN class. see recipe: issue-25-uyanga-visa-escrow.md",
+        "Jun15-UTC hrly15 D45: s917 visaStatus=null UNCHANGED(updAt=May21). bk1467 CONF 2405/2405. NEIL: verify Uyanga visa IRP paperwork; UPDATE visa_status; assign B1-MORN class.",
+        "visa null D45"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "s14532 Ernesto 0SCA ENTIRE COURSE. bc24826 INTENSIVE Jun08-Jun19. bk18034 PARTIAL 845/1095 conf=false.",
+        "(NOT RUN) ask teacher Ernesto level; INSERT 2 SCAs AM+PM bc24826 wkStart=Jun15 wkEnd=Jun19. see recipe: issue-26-intensive-class-assign-once.md",
+        "Jun15-UTC hrly15: 0 SCAs bc24826 WK2(Jun15-19) ACTIVE DAY1. Course ENDS Jun19=4d. WK1(Jun08-12) entirely missed. bk18034 PART 845/1095. NEIL: get Ernesto level from teacher NOW then INSERT AM+PM SCAs ws=Jun15 we=Jun19.",
+        "WK2 0SCA 4d"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "s1001 att=0 ALL TIME. sca255 B1PM bc24925 bkId=18151 Jan12-Jul03. visa_status=null nationality=Mongolia. IRP risk.",
+        "(1)ask cls11/B1PM teacher if Saikhantes attends; (2)YES: backfill att; (3)NO: IRP escalation. see recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun15-UTC hrly15: att=0 CONFIRMED. sca255 cls11/B1PM bc24925 ends Jul03=17d. visa_status=null. NEIL: ask cls11 teacher re Saikhantes attendance TODAY (IRP risk).",
+        "IRP 17d"
+      ]
+    ]
+  },
+  {
+    "range": "H32:K32",
+    "values": [
+      [
+        "TZ NOT SET .env. 43 SCAs week_end=null. Att sheet date bug active.",
+        "FIX1(NOT RUN): echo TZ=UTC >> .env && touch tmp/restart.txt. FIX2(NOT RUN): UPDATE student_class_assignments SET week_end=(SELECT end_date FROM booking_courses WHERE id=booking_course_id) WHERE week_end IS NULL; see recipe: issue-31-attendance-sheet-week-bug.md",
+        "Jun15-UTC hrly15: TZ STILL missing .env. 43 SCAs week_end=null: 9 ghost(IDs:39/40/65/66/74/75/81/87/100)+34 active. School OPEN NOW. Att sheets showing Sun Jun14 heading+9 ghost students. BOTH FIXES NOT RUN. NEIL: APPLY NOW.",
+        "APPLY NOW"
+      ]
+    ]
+  }
+]

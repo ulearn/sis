@@ -1,0 +1,57 @@
+[
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• 5 students have bad mobile-number data:\n• Email address in phone field — Dolgormaa (1897): saraa.tpb@gmail.com; Aki (8567): aki-hinaaki1116@ezudo.he.jp\n• Annotation in phone field — Jieun Lee (1194): 00821097366523 (home contry); Lisa Li (5345): 0864645297 (Husband)\n• Invisible unicode trailing chars — Alessandra Saito de Araujo (10343): +353 (83) 885 9162 + U+202C chars\n• All 5 UNCHANGED since first reported (day 50+)",
+        "Clean per recipe; 1194/5345/10343 fixable now (strip annotation/unicode); 1897/8567 need real# from HubSpot/staff. see recipe: issue-5-mobile-numbers.md",
+        "Jun17 hrly: All 5 UNCHANGED (fresh DB query). s1897 phone=saraa.tpb@gmail.com (email). s8567 phone=aki-hinaaki1116@ezudo.he.jp (email). s1194 Jieun=00821097366523 (home contry) (annotated). s5345 Lisa=0864645297 (Husband) (annotated). s10343 Alessandra=+353(83)8859162 with trailing U+202C unicode. 3 fixable now (strip annotation/unicode). 2 need real# from HS/staff. Await Neil.",
+        "info needed"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Booking 18151 (Afternoon Academic Year) is CONFIRMED, paid 1339.20 / 1339.20 — updated Jun 16 by Neil\n• Course 24925 correctly set to Mar 09 – Sep 11 (confirmed Jun 16)\n• Class assignment 255 (class 11, B1 PM) still has incorrect start = Jan 12 and end = Jul 03\n• Correct dates: week start = Mar 09, week end = Sep 11 (see issue 29 — SQL not yet run)\n• No morning 2026 booking exists for this student",
+        "(NOT RUN) UPDATE student_class_assignments SET week_start=2026-03-09, week_end=2026-09-11 WHERE id=255. See recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun17 hrly: bk18151 CONF 1339.2/1339.2 (updAt=Jun16). bc24925 AFT Mar09-Sep11 ACTIVE confirmed. sca255 cls11 B1-PM weekStart=Jan12 weekEnd=Jul03 STILL WRONG (see iss29 SQL NOT RUN). bk1724 old 2025 CONF 2171.87 (historical). No morning 2026 bk for s1001. AFT booking confirmed; SCA date fix pending.",
+        "sca255 wrong; see iss29"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• Student 983 (Flavia Nascimento Mariano, B1) has visaStatus = null — never saved after original Prisma error\n• Student record was touched Jun 15 but visa_status was not updated\n• Booking 1534 is CONFIRMED, fully paid 1308 / 1308\n• In class via assignment 265 (class 11, B1 PM) Jun 15 – Nov 20 — attending fine\n• visaStatus null may block certificate or attendance letter generation",
+        "UPDATE students SET visa_status=APPROVED WHERE id=983 (NOT RUN) once visa confirmed. see recipe: issue-18-flavia-visa-save-error.md",
+        "Jun17 hrly: s983 visaStatus=null (updAt=Jun15 — record touched Jun15 but visa not saved). sca265 cls11 B1-PM Jun15-Nov20 ACTIVE. sca256 cls9 A2-PM Jun01-Jun14 ended. bk1534 CONF 1308/1308. In class OK. visa null may block cert/letter. SQL NOT RUN.",
+        "in class; visa null"
+      ]
+    ]
+  },
+  {
+    "range": "H24:K24",
+    "values": [
+      [
+        "• Course 828 (Morning General, booking 787) has end_date Feb 27 — 3 days BEFORE its start_date Mar 02 (backwards)\n• Legacy DST off-by-one bug from issue 2 — one of 56 unfixed oddities from migration\n• Course 829 (Mar 30 – Jun 05) has ended — no active courses for student 397 (Enshi Lu)\n• Student holiday 52 ran Mar 23 – Mar 29 — correct end_date for course 828 = Mar 20\n• Low-priority data-hygiene only — student term finished",
+        "(NOT RUN) UPDATE booking_courses SET end_date=2026-03-20 WHERE id=828. Low priority. See recipe: issue-23-enshi-lu-backwards-course.md",
+        "Jun17 hrly: bc828 STILL BACKWARDS start=Mar02 end=Feb27 (updAt=May11 UNCHANGED). bc829 ended Jun05 (12d). sca58 expired May31. No active courses or SCAs. Low-priority cleanup — student term done.",
+        "ended;date bug"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking 1611 is CONFIRMED, paid 1280.12 / 1280.12\n• Course 1797 (Morning General) ends June 26 — 8 school days remaining\n• Last class assignment (sca229, class 12 B1 AM2) expired April 26 — 52 days with no class record\n• Attendance count = 0 for all time — student likely on extended holiday since late April\n• Course 24686 (Morning General Jul 20 – Sep 18) is future; gap June 27 – July 19",
+        "Confirm if Alberto returning before Jun 26. If yes: assign SCA cls12 bc1797 ws=Jun17 we=Jun26 via SIS (NOT RUN). See recipe: issue-24-alberto-fidelo-course-split.md",
+        "Jun17 hrly: UNCHANGED. bc1797 ends Jun26=9d (8 school days). sca229 expired Apr26 (52d). att=0 ALL TIME confirmed (fresh DB query). s1052 B1. bc24686 Jul20-Sep18 future (0 SCAs). NEIL: if Alberto returning before Jun26 assign SCA cls12 ws=Jun17 we=Jun26 via SIS NOW; if summer break course ends Jun26 unused — next booking starts Jul20.",
+        "8 school days;ends Jun26"
+      ]
+    ]
+  }
+]

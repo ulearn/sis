@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Student 356 (Shih-Wei Huang) has gender = null — never set in personal details\n• Exit letter document 238 (template 4) generated Jun 17 15:19 UTC as DRAFT, then ISSUED Jun 18 08:53 UTC (~10h ago) with Ms./she/her pronouns\n• ESCALATED: issued letter with wrong pronouns is active — not yet revoked\n• Root cause: null gender defaults to female pronouns in src/scripts/documents.ts line 338\n• 14,052 students with null gender affected by this code bug",
+        "Set gender=1 (male) on student 356 → revoke doc 238 (ISSUED) → regenerate exit letter. Code fix: null gender must not default to female. See recipe: issue-32-shih-wei-gender-default.md",
+        "Jun18 hrly (latest): doc238 STILL ISSUED — updated_at=Jun18 08:53 UTC (~10h ago), created Jun17 15:19 UTC (DRAFT->ISSUED this morning). s356 gender=null UNCHANGED (updAt=Jun03). Wrong pronouns (Ms./she/her) in active exit letter not revoked. NEIL URGENT: (1) SIS s356 Personal Details → Gender=Male → Save; (2) Revoke doc238; (3) Regenerate exit letter.",
+        "urgent; set gender"
+      ]
+    ]
+  }
+]

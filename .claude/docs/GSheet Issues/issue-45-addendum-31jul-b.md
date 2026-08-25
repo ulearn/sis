@@ -1,0 +1,1 @@
+8th check 31 Jul UTC. Jul24 batch: 11 BCs stale 8d: 20 37 81 1781 1792 24606 24620 24776 24828 24989 25011. Jul31 batch: 16 BCs ended today active=true, stale from Aug1: 87 1347 1454 1502 1503 1723 24609 24616 24945 24987 24998 25008 25017 25019 25021 25023. Total stale as of Aug1: 27. FIX NOT RUN. Last checked 2026-07-31 UTC

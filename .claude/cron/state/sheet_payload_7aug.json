@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 171st check Fri 7 Aug 2026 UTC — unchanged since 170th check\n• Payment 4781: EUR 380, Flywire, 20 Aug 2019 (legacy Fidelo, ~2,545 days orphaned)\n• Payment 16988: EUR 339.90, Bank, 28 Apr 2026 (101 days orphaned, Xero null)\n• Payment 16989: EUR 339.90, Bank, 28 Apr 2026 (101 days orphaned, Xero null)\n• Payment 17187: EUR 6,151, TransferMate Escrow, 1 May 2026, transaction ID D2026226 (98 days orphaned, Xero null)\n• Bookings 17856 and 17857: CONFIRMED, confirmed = false — amount paid = EUR 339.90 each but 0 payment rows linked\n• Booking Courses 24630 and 24631 (General English AM Plus): ended 10 Jul 2026, still active — now 28 days stale",
+        "Link payments 16988/16989 to bookings 17857/17856; confirm bookings; deactivate Booking Courses 24630+24631. See recipe: issue-1-addendum-7aug.md",
+        "171st hrly Fri 7 Aug 2026 UTC. Unchanged. Booking Courses 24630/24631 now 28d stale (ended Jul 10). Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 53rd check Fri 7 Aug 2026 UTC — service_end EXPIRED midnight tonight\n• Booking 18151 (Saikhantes Shagdarsuren, student 1001): service_end = 2026-08-07T00:00:00.000Z — expired NOW; portal locked\n• Booking status: CONFIRMED, confirmed = true, fully paid EUR 1,339.20\n• Booking Course 24925 (Academic Year Afternoon, 9 Mar to 2 Oct 2026): active, correct dates\n• service_end is 57 days shorter than Booking Course end date (2 Oct 2026) — discrepancy\n• Last class assignment id 255: class 11 (B1 PM), week end 3 Jul 2026 — 35 days without new assignment\n• Student on holiday until Mon 24 Aug 2026\n• Student visa status = null; booking not updated since 8 Jul 2026",
+        "Update booking 18151 service_end to 2026-10-02 IMMEDIATELY; add SCA for return 24 Aug. See recipe: issue-15-addendum-7aug-b.md",
+        "53rd hrly Fri 7 Aug UTC. service_end expired midnight today but Booking Course 24925 runs to Oct 2. Portal locked. Fix NOT RUN.",
+        "service_end expired; fix now"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Fri 7 Aug 2026 UTC — service_end EXPIRED midnight today (see Issue 15, row 16)\n• Booking 18151: service_end 2026-08-07 expired; Booking Course 24925 (Academic Year Afternoon, end 2 Oct 2026): active and correct\n• Last class assignment 255: class 11 (B1 PM) — student on holiday until 24 Aug 2026\n• Fix: update booking 18151 service_end to 2026-10-02 (recipe in Issue 15)",
+        "See Issue 15 (row 16) for fix recipe.",
+        "Fri 7 Aug UTC. service_end expired today. Booking Course and class assignments intact. Fix is in Issue 15.",
+        "see Issue 15"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 50th check Fri 7 Aug 2026 UTC — URGENT: students start Mon 10 Aug, 3 days away\n• All 17 Booking Courses starting 10 Aug 2026: 0 class assignments (unchanged)\n• 13 ready for assignment (CONFIRMED + confirmed = true): Booking Courses 108, 109, 1313, 1818, 24915, 24970, 25004, 25005, 25024, 25027, 25031, 25036, 25039\n• 4 not ready — Booking Course 96: confirmed = false (anomaly); Booking Course 833: ESCROW; Booking Course 25007: PARTIAL; Booking Course 25042: PENDING\n• Class assignment deadline is TODAY (Fri 7 Aug) before Monday start",
+        "Assign 13 ready students to classes via SIS Admin; investigate Booking Course 96 (confirmed=false). See recipe: issue-38-addendum-7aug.md",
+        "50th hrly Fri 7 Aug UTC. 17 Booking Courses, 0 assignments. 13 assignable. Students start Mon 10 Aug. Assign classes TODAY.",
+        "URGENT: assign by EOD"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 34th check Fri 7 Aug 2026 UTC — count unchanged at 24,466 stale active Booking Courses\n• Most recently ended (still active): Booking Course 25006 (General English AM Plus, ended 3 Aug 2026) — 4 days stale, 2 class assignments\n• 10 Booking Courses ended 31 Jul 2026 still active — 7 days stale\n• Awaiting policy decision on bulk deactivation",
+        "Bulk deactivate all Booking Courses where active = true and end date < today. See recipe: issue-45-addendum-7aug.md",
+        "34th hrly Fri 7 Aug UTC. Count unchanged at 24,466. No decision made. Fix NOT RUN.",
+        "24,466 stale; awaiting decision"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 65th check Fri 7 Aug 2026 UTC — unchanged\n• Booking Course 24630 (General English AM Plus, booking 17857): ended 10 Jul 2026, active = true — 28 days stale, 0 class assignments\n• Booking Course 24631 (General English AM Plus, booking 17856): ended 10 Jul 2026, active = true — 28 days stale, 0 class assignments\n• Booking Course 25006 (General English AM Plus, booking 18228): ended 3 Aug 2026, active = true — 4 days stale, 2 class assignments\n• Orphan payments 16988, 16989, 17187, 4781: all still booking = null (see Issue 1)",
+        "Deactivate Booking Courses 24630+24631+25006; link orphan payments per Issue 1. See recipe: issue-48-addendum-7aug.md",
+        "65th hrly Fri 7 Aug UTC. Unchanged. Booking Courses 24630/24631 28d stale (0 SCAs). Booking Course 25006 4d stale. Orphan payments unchanged. Fix NOT RUN.",
+        "stale BCs + orphan pmts; see Issue 1"
+      ]
+    ]
+  }
+]

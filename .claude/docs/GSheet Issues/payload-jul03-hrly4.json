@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 and 16989: booking ID = null, Xero payment ID = null — still unlinked (180th check, 3 Jul 2026 UTC)\n• Payment 16988 (HubSpot 1204827374829): EUR 339.90, type = one-time or initial — should link to booking 17856 (student 14461)\n• Payment 16989 (HubSpot 1204846469317): EUR 339.90, type = one-time or initial — should link to booking 17857 (student 14462)\n• Bookings 17856 and 17857: Confirmed, confirmed = false, fully paid EUR 339.90 each — course ends 10 Jul (7 days remain)\n• Booking courses 24630 and 24631 (General English AM Plus, 29 Jun to 10 Jul): fee = null on both — still unset\n• 4-step SQL fix has NOT been run across 180 hourly checks — 7 days until course end",
+        "(NOT RUN) (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) UPDATE booking_courses SET fee=339.9 WHERE id IN (24630,24631); (4) UPDATE bookings SET confirmed=true WHERE id IN (17856,17857). See recipe: issue-1-orphan-payments.md",
+        "3 Jul UTC (180th check, fresh DB): pmts 16988+16989 bookingId=STILL null xeroId=null EUR339.9 each. bk17856+17857 CONF confirmed=false 339.9/339.9. bc24631+24630 GE-AM-Plus Jun29-Jul10 fee=null. Course ends Jul10=7d. 180 CHECKS UNRUN. NEIL: RUN NOW.",
+        "7d to end; UNRUN"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Class assignment 255 (Saikhantes, student 1001, B1 Afternoon, class 11): week end = 3 Jul 2026 — EXPIRED TODAY Friday (80th check, 3 Jul 2026 UTC)\n• Booking course 24925 (Academic Year Afternoon, 9 Mar to 2 Oct 2026): still active = true\n• Week end must be updated to 2 Oct 2026 to match booking course end\n• Student loses class access from Monday 7 Jul if SQL not run before end of day today",
+        "(NOT RUN — URGENT) UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255. Run TODAY before EOD. See recipe: issue-15-saikhantes-course-dates.md",
+        "3 Jul UTC (80th check): sca255 weekEnd=Jul03 EXPIRED TODAY FRI. bc24925 AY-Aft Mar09-Oct02 active=true. 0 other active SCAs s1001. Student loses access Mon Jul07 if unfixed. 80 CHECKS UNRUN. NEIL: RUN NOW.",
+        "SCA EXPIRED; RUN NOW"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 (Edith Nunes, student 1015): Confirmed, confirmed = true, fully paid EUR 740 (35th check, 3 Jul 2026 UTC)\n• Duplicate booking courses: course 24933 (General English AM, EUR 380) and 24934 (General English AM, EUR 360) — both still active = true, both end 10 Jul\n• Last class assignment (id 146, class 7): expired 15 May 2026 — 49 days ago, no active assignment\n• Course ends 10 Jul 2026 — 7 days remain — student STILL unassigned to class",
+        "(NOT RUN) (1) UPDATE booking_courses SET active=false WHERE id=24934; (2) Assign student 1015 to class via SIS Classes. See recipe: issue-22-edith-nunes-payment-dups.md",
+        "3 Jul UTC (35th check): bk18158 CONF 740/740. bc24933(380)+bc24934(DUP 360) BOTH active Jun15-Jul10. Last SCA #146 expired May15=49d. 0 active SCAs. Course ends Jul10=7d. FIX URGENT.",
+        "0SCA; Jul10=7d; Day35"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking course 1797 (Morning General, 6 Apr to 26 Jun 2026): ended 7 days ago — still active = true (22nd check, 3 Jul 2026 UTC)\n• Booking course 24686 (Morning General, 20 Jul to 18 Sep 2026): starts in 17 days — fee = null (must be set before course start)\n• Payment 17124 (EUR 1280.12): Xero payment ID = null — not reconciled\n• Booking 1611: Confirmed, fully paid EUR 1280.12",
+        "(NOT RUN) (1) UPDATE booking_courses SET active=false WHERE id=1797; (2) UPDATE booking_courses SET fee=<amount> WHERE id=24686; (3) Reconcile payment 17124 in Xero. See recipe: issue-24-alberto-fidelo-course-split.md",
+        "3 Jul UTC (22nd check): bc1797 ended Jun26=7d active=STILL true fee=1836. bc24686 Jul20-Sep18 fee=STILL null (17d to start). bk1611 CONF 1280.12/1280.12. pmt17124 EUR1280.12 xeroId=STILL null. All 3 steps unrun. Neil: deadline Jul20.",
+        "bc1797 ended+active; Jul20=17d"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• Accommodation 11352 (Veronica Martin, bed 83): 4 Jul to 11 Jul — STILL double-booked (72nd check, 3 Jul 2026 UTC)\n• Bed 83 conflict: Jesus Manuel Ramirez Diaz (accommodation 11285) occupies until 5 Jul — 2-night overlap Jul 4 to 5\n• Alternative beds 174, 175, 176 confirmed FREE for Jul 4 to 11 (fresh DB query, zero conflicts)\n• Veronica arrives TOMORROW Saturday 4 Jul — fix required today Friday 3 Jul",
+        "(NOT RUN — URGENT, FIX TODAY) SIS: Student 278 > Booking 18156 > Accommodation > edit 11352 > change bed from 83 to 174 (or 175 or 176). See recipe: issue-37-veronica-capel-accomm-allocation.md",
+        "3 Jul UTC (72nd check): ba11352 Veronica STILL bed83 Jul04-Jul11. ba11285 Jesus bed83 Jun21-Jul05. 2-night conflict Jul4-5. Beds 174/175/176 FREE Jul4-11. ARRIVES TOMORROW SAT 4 JUL. 72 CHECKS UNRUN.",
+        "BED CONFLICT; ARRIVES TOMORROW"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Payment 17963 (EUR 965.00, HubSpot 1273784562922, paid 2 Jul 2026): type = null, Xero payment ID = null — not reconciled (7th check, 3 Jul 2026 UTC)\n• Payment 17180 (EUR 431.90, HubSpot ID = null): type = null, Xero payment ID = null — not reconciled; 68 or more days stale\n• Booking 17831: Partial, amount paid = EUR 965 of EUR 1396.90 — EUR 431.90 outstanding\n• Accommodation 11358: bed 180, 12 Jul to 2 Aug 2026 — student starts in 9 days, booking unconfirmed",
+        "(NOT RUN) (1) Reconcile payment 17180 (EUR 431.90) in Xero; (2) reconcile payment 17963 (EUR 965) in Xero; (3) UPDATE bookings SET confirmed=true WHERE id=17831 once both reconciled. See recipe: issue-39-xuezhen-huang-accomm-missing.md",
+        "3 Jul UTC (7th check): pmt17963 EUR965 type=null xeroId=STILL null (Jul02). pmt17180 EUR431.90 type=null xeroId=null hsId=null. bk17831 PARTIAL 965/1396.90 open=431.90 confirmed=false. ba11358 bed180 Jul12-Aug2 OK. ACCOMM STARTS 9d. Neil: reconcile both pmts in Xero.",
+        "PARTIAL; Xero TBD; 9d"
+      ]
+    ]
+  }
+]

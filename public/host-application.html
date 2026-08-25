@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Become a ULearn Host Family</title>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <style>
+    :root{
+      --green:#6FB42C; --green-d:#4d8a1e; --ink:#2b2b2b; --muted:#6b7280;
+      --line:#e3e6e1; --bg:#f6f7f4; --card:#ffffff; --err:#dc2626; --radius:10px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);
+      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+      line-height:1.5;padding:24px 14px;}
+    .wrap{max-width:640px;margin:0 auto;}
+    .head{text-align:center;margin:0 0 22px;}
+    .head h1{font-size:23px;margin:0 0 6px;letter-spacing:-.01em;}
+    .head p{color:var(--muted);font-size:14px;margin:0;}
+    form{background:var(--card);border:1px solid var(--line);border-radius:14px;
+      padding:22px 20px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+    fieldset{border:0;padding:0;margin:0 0 26px;}
+    legend{font-size:15px;font-weight:700;color:var(--green-d);padding:0;margin:0 0 4px;
+      display:flex;align-items:center;gap:8px;}
+    .legend-note{font-size:12.5px;color:var(--muted);margin:0 0 14px;}
+    .row{display:flex;gap:12px;flex-wrap:wrap;margin:0 0 14px;}
+    .row>.f{flex:1 1 0;min-width:140px;}
+    .f{margin:0 0 14px;}
+    label{display:block;font-size:13px;font-weight:600;margin:0 0 5px;}
+    label .req{color:var(--err);margin-left:2px;}
+    .hint{font-weight:400;color:var(--muted);font-size:12px;margin-top:3px;}
+    input,select,textarea{width:100%;font:inherit;font-size:14.5px;color:var(--ink);
+      background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+      padding:10px 12px;outline:none;transition:border-color .12s,box-shadow .12s;}
+    input:focus,select:focus,textarea:focus{border-color:var(--green);
+      box-shadow:0 0 0 3px rgba(111,180,44,.15);}
+    textarea{resize:vertical;min-height:80px;}
+    select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236b7280' d='M6 8 0 0h12z'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;background-position:right 12px center;padding-right:34px;}
+    .checks{display:flex;gap:10px;flex-wrap:wrap;}
+    .chk{display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:var(--radius);
+      padding:9px 13px;cursor:pointer;font-size:14px;user-select:none;flex:1 1 auto;justify-content:center;min-width:70px;}
+    .chk input{width:auto;margin:0;accent-color:var(--green);}
+    .chk:has(input:checked){border-color:var(--green);background:rgba(111,180,44,.08);font-weight:600;}
+    .repeat{border:1px solid var(--line);border-radius:var(--radius);padding:13px;margin:0 0 12px;background:#fbfcfa;}
+    .repeat .rhead{display:flex;justify-content:space-between;align-items:center;margin:0 0 10px;}
+    .repeat .rhead b{font-size:13px;}
+    .rm{background:none;border:0;color:var(--err);font-size:12.5px;cursor:pointer;padding:2px 4px;}
+    .addbtn{background:#fff;border:1px dashed var(--green);color:var(--green-d);font-weight:600;
+      font-size:14px;border-radius:var(--radius);padding:10px;width:100%;cursor:pointer;transition:background .12s;}
+    .addbtn:hover{background:rgba(111,180,44,.07);}
+    .addbtn:disabled{opacity:.45;cursor:not-allowed;border-style:solid;}
+    .submit{background:var(--green);color:#fff;border:0;border-radius:var(--radius);
+      font-size:16px;font-weight:700;padding:14px;width:100%;cursor:pointer;transition:background .12s;}
+    .submit:hover{background:var(--green-d);}
+    .submit:disabled{opacity:.6;cursor:wait;}
+    .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;}
+    .msg{display:none;text-align:center;padding:30px 12px;}
+    .msg .tick{width:56px;height:56px;border-radius:50%;background:var(--green);color:#fff;
+      display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 16px;}
+    .msg h2{margin:0 0 8px;font-size:20px;}
+    .msg p{color:var(--muted);font-size:14.5px;margin:0;}
+    .err-banner{display:none;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;
+      border-radius:var(--radius);padding:11px 13px;font-size:13.5px;margin:0 0 16px;}
+    .foot{text-align:center;color:var(--muted);font-size:11.5px;margin:16px 0 0;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div id="okMsg" class="msg">
+      <div class="tick">✓</div>
+      <h2>Thank you — application received!</h2>
+      <p>Our accommodation team will review your details and contact you shortly at the email you provided.</p>
+    </div>
+
+    <form id="hostForm" novalidate>
+      <div id="errBanner" class="err-banner"></div>
+
+      <!-- honeypot -->
+      <div class="hp"><label>Website<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+
+      <fieldset>
+        <legend>👋 About You</legend>
+        <div class="row">
+          <div class="f" style="flex:0 0 110px">
+            <label>Title</label>
+            <select name="salutation">
+              <option value="">Select…</option>
+              <option>Mr</option><option>Mrs</option><option>Ms</option><option>Miss</option><option>Dr</option>
+            </select>
+          </div>
+          <div class="f"><label>First Name<span class="req">*</span></label><input name="firstName" autocomplete="given-name"></div>
+          <div class="f"><label>Surname<span class="req">*</span></label><input name="lastName" autocomplete="family-name"></div>
+        </div>
+        <div class="row">
+          <div class="f"><label>Email<span class="req">*</span></label><input type="email" name="email" autocomplete="email"></div>
+          <div class="f"><label>Mobile<span class="req">*</span></label><input type="tel" name="mobile" autocomplete="tel"></div>
+        </div>
+        <div class="row">
+          <div class="f"><label>DOB</label><input type="date" name="dob"></div>
+          <div class="f"><label>Secondary Contact</label><input name="secondaryContact"></div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>🏠 Your Home</legend>
+        <div class="f"><label>Street Address<span class="req">*</span></label><input name="streetAddress" autocomplete="address-line1"></div>
+        <div class="row">
+          <div class="f"><label>Neighbourhood<span class="req">*</span></label><input name="neighbourhood" placeholder="e.g. Rathmines, Drumcondra"></div>
+          <div class="f"><label>City</label><input name="city" value="Dublin"></div>
+          <div class="f" style="flex:0 0 130px"><label>Eircode<span class="req">*</span></label><input name="eircode" placeholder="D02 XY45"></div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>🛏️ Rooms Available</legend>
+        <div id="rooms"></div>
+        <button type="button" class="addbtn" id="addRoom">+ Add another room</button>
+      </fieldset>
+
+      <fieldset>
+        <legend>🎓 Students Accepted</legend>
+        <div class="checks">
+          <label class="chk"><input type="checkbox" name="st_junior"> Juniors (12-17)</label>
+          <label class="chk"><input type="checkbox" name="st_adult"> Adults (18+)</label>
+          <label class="chk"><input type="checkbox" name="st_boy"> Boys</label>
+          <label class="chk"><input type="checkbox" name="st_girl"> Girls</label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>👨‍👩‍👧 Your Family</legend>
+        <p class="legend-note">Tell us about your family — it helps new students get to know you.</p>
+        <div class="f">
+          <textarea name="familyDescription" placeholder="e.g. Mature family, two teens at home, we love cooking and the outdoors"></textarea>
+        </div>
+        <p class="legend-note" style="margin-top:4px">Please add anyone under 18 living in the home — this is needed for Garda Vetting.</p>
+        <div id="children"></div>
+        <button type="button" class="addbtn" id="addChild">+ Add Child</button>
+        <div class="f" style="margin-top:14px"><label>Pets</label><input name="pets" placeholder="e.g. 1 small dog, 2 cats — or None"></div>
+        <div class="f"><label>Additional Info</label><textarea name="additionalInfo"></textarea></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>🏦 Bank Details</legend>
+        <div class="f"><label>Account Name</label><input name="accountName" autocomplete="off"></div>
+        <div class="row">
+          <div class="f"><label>IBAN</label><input name="iban" autocomplete="off"></div>
+          <div class="f" style="flex:0 0 150px"><label>BIC / Swift</label><input name="bic" autocomplete="off"></div>
+        </div>
+      </fieldset>
+
+      <div class="cf-turnstile" data-sitekey="0x4AAAAAAD0YGLsPiehg0jAM" data-theme="light" style="margin:0 0 16px"></div>
+      <button type="submit" class="submit" id="submitBtn">Submit application</button>
+      <p class="foot">Your details are stored securely and used only to arrange student accommodation.</p>
+    </form>
+  </div>
+
+  <script>
+    var _loadedAt = Date.now(); // submit-time trap — bots fill & fire in ms
+    var ROOM_TYPES = ['Individual','Twin','Triple'];
+    var MAX_ROOMS = 5, MAX_CHILDREN = 5;
+    var roomsEl = document.getElementById('rooms');
+    var childrenEl = document.getElementById('children');
+    var addRoomBtn = document.getElementById('addRoom');
+    var addChildBtn = document.getElementById('addChild');
+
+    function roomCount(){ return roomsEl.querySelectorAll('.repeat').length; }
+    function childCount(){ return childrenEl.querySelectorAll('.repeat').length; }
+
+    function addRoom(required){
+      if(roomCount() >= MAX_ROOMS) return;
+      var n = roomCount() + 1;
+      var opts = ROOM_TYPES.map(function(t){return '<option>'+t+'</option>';}).join('');
+      var div = document.createElement('div');
+      div.className = 'repeat';
+      div.innerHTML =
+        '<div class="rhead"><b>Room '+n+' Type'+(required?'<span class="req">*</span>':'')+'</b>'+(required?'':'<button type="button" class="rm">Remove</button>')+'</div>'+
+        '<select class="room-type"><option value="">Select…</option>'+opts+'</select>';
+      roomsEl.appendChild(div);
+      if(!required) div.querySelector('.rm').onclick = function(){ div.remove(); renumberRooms(); syncAddBtns(); };
+      syncAddBtns();
+    }
+
+    function addChild(){
+      if(childCount() >= MAX_CHILDREN) return;
+      var n = childCount() + 1;
+      var div = document.createElement('div');
+      div.className = 'repeat';
+      div.innerHTML =
+        '<div class="rhead"><b>Child '+n+'</b><button type="button" class="rm">Remove</button></div>'+
+        '<div class="f"><label>Name</label><input class="child-name"></div>'+
+        '<div class="row" style="margin-bottom:0">'+
+          '<div class="f" style="margin-bottom:0"><label>DOB<span class="req">*</span></label><input type="date" class="child-dob"></div>'+
+          '<div class="f" style="margin-bottom:0"><label>Gender<span class="req">*</span></label>'+
+            '<select class="child-gender"><option value="">Select…</option><option>Male</option><option>Female</option></select></div>'+
+        '</div>';
+      childrenEl.appendChild(div);
+      div.querySelector('.rm').onclick = function(){ div.remove(); renumber(childrenEl,'Child'); syncAddBtns(); };
+      syncAddBtns();
+    }
+
+    function renumber(container,label){
+      var i=1;
+      container.querySelectorAll('.repeat .rhead b').forEach(function(b){ b.textContent = label+' '+(i++); });
+    }
+    function renumberRooms(){
+      roomsEl.querySelectorAll('.repeat').forEach(function(d, idx){
+        d.querySelector('.rhead b').innerHTML = 'Room '+(idx+1)+' Type'+(idx===0?'<span class="req">*</span>':'');
+      });
+    }
+    function syncAddBtns(){
+      addRoomBtn.disabled = roomCount() >= MAX_ROOMS;
+      addChildBtn.disabled = childCount() >= MAX_CHILDREN;
+      addRoomBtn.textContent = roomCount() >= MAX_ROOMS ? 'Maximum '+MAX_ROOMS+' rooms' : '+ Add another room';
+      addChildBtn.textContent = childCount() >= MAX_CHILDREN ? 'Maximum '+MAX_CHILDREN+' children' : '+ Add Child';
+    }
+
+    addRoomBtn.onclick = function(){ addRoom(false); };
+    addChildBtn.onclick = addChild;
+    addRoom(true); // Room 1 is mandatory and non-removable
+
+    var form = document.getElementById('hostForm');
+    var errBanner = document.getElementById('errBanner');
+    var submitBtn = document.getElementById('submitBtn');
+
+    function val(name){ var el = form.elements[name]; return el ? el.value.trim() : ''; }
+
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      errBanner.style.display='none';
+
+      var rooms = [];
+      var roomOk = true;
+      roomsEl.querySelectorAll('.room-type').forEach(function(s){
+        if(s.value) rooms.push({ type: s.value }); else roomOk = false;
+      });
+      var children = [];
+      var childOk = true;
+      childrenEl.querySelectorAll('.repeat').forEach(function(d){
+        var name = d.querySelector('.child-name').value.trim();
+        var dob = d.querySelector('.child-dob').value;
+        var gender = d.querySelector('.child-gender').value;
+        if(!dob || !gender) childOk = false;
+        children.push({ name: name, dob: dob, gender: gender });
+      });
+
+      var required = { firstName:'First name', lastName:'Surname', email:'Email', mobile:'Mobile',
+        streetAddress:'Street address', neighbourhood:'Neighbourhood', eircode:'Eircode' };
+      var missing = [];
+      for(var k in required){ if(!val(k)) missing.push(required[k]); }
+      var email = val('email');
+      if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) missing.push('a valid email');
+      if(!roomOk || rooms.length===0) missing.push('a type for every room (at least one room)');
+      if(!childOk) missing.push('date of birth & gender for each child added');
+      var tsToken = (form.elements['cf-turnstile-response'] && form.elements['cf-turnstile-response'].value) || '';
+      if(!tsToken) missing.push('the human check at the bottom');
+
+      if(missing.length){
+        errBanner.textContent = 'Please complete: ' + missing.join(', ') + '.';
+        errBanner.style.display='block';
+        errBanner.scrollIntoView({behavior:'smooth',block:'center'});
+        return;
+      }
+
+      var payload = {
+        website: val('website'), // honeypot
+        elapsedMs: Date.now() - _loadedAt, // submit-time trap
+        turnstileToken: tsToken, // Cloudflare Turnstile
+        salutation: val('salutation'), firstName: val('firstName'), lastName: val('lastName'),
+        dob: val('dob'), email: email, mobile: val('mobile'), secondaryContact: val('secondaryContact'),
+        streetAddress: val('streetAddress'), neighbourhood: val('neighbourhood'), city: val('city'), eircode: val('eircode'),
+        rooms: rooms,
+        studentTypes: {
+          junior: form.elements['st_junior'].checked, adult: form.elements['st_adult'].checked,
+          boy: form.elements['st_boy'].checked, girl: form.elements['st_girl'].checked
+        },
+        familyDescription: val('familyDescription'), children: children,
+        pets: val('pets'), additionalInfo: val('additionalInfo'),
+        accountName: val('accountName'), iban: val('iban'), bic: val('bic')
+      };
+
+      submitBtn.disabled = true; submitBtn.textContent = 'Submitting…';
+      fetch('/sis/api/host-application', {
+        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
+      }).then(function(r){ return r.json(); }).then(function(res){
+        if(res && res.success){
+          form.style.display='none';
+          document.getElementById('okMsg').style.display='block';
+          document.getElementById('okMsg').scrollIntoView({behavior:'smooth',block:'center'});
+        } else {
+          errBanner.textContent = (res && res.error) || 'Something went wrong. Please try again.';
+          errBanner.style.display='block';
+          submitBtn.disabled = false; submitBtn.textContent = 'Submit application';
+          if(window.turnstile) try{ turnstile.reset(); }catch(e){}
+        }
+      }).catch(function(){
+        errBanner.textContent = 'Could not submit right now. Please try again in a moment.';
+        errBanner.style.display='block';
+        submitBtn.disabled = false; submitBtn.textContent = 'Submit application';
+        if(window.turnstile) try{ turnstile.reset(); }catch(e){}
+      });
+    });
+
+    // ── Auto-height for iframe embeds ──
+    // Posts the document height to the parent page (Drupal) so the host <iframe>
+    // can resize to fit — the form grows/shrinks as rooms & children are added
+    // and when the success message replaces it. Parent listens for this message.
+    function postHeight(){
+      var h = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+      try { parent.postMessage({ type: 'ulearn-host-form-height', height: h }, '*'); } catch(e){}
+    }
+    window.addEventListener('load', postHeight);
+    window.addEventListener('resize', postHeight);
+    if (window.ResizeObserver) { new ResizeObserver(postHeight).observe(document.body); }
+    else { setInterval(postHeight, 800); }
+    postHeight();
+  </script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 and 16989: booking ID = null, Xero payment ID = null — still unlinked (160th check, 2 Jul UTC)\n• Payment 16988 (HubSpot 1204827374829): EUR 339.90, paid 28 Apr — should link to Booking 17856 (Margherita Galbusera)\n• Payment 16989 (HubSpot 1204846469317): EUR 339.90, paid 28 Apr — should link to Booking 17857 (Francesca Fassina)\n• Bookings 17856 and 17857: status = Confirmed, confirmed = false, amount paid = EUR 339.90 — correct amount, payment links missing\n• Booking courses 24630 and 24631: General English AM Plus, 29 Jun to 10 Jul — 8 calendar days to course end\n• 4-step SQL fix has NOT been run across 160 hourly checks",
+        "(NOT RUN) (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) UPDATE booking_courses SET fee=339.9 WHERE id IN (24630,24631); (4) UPDATE bookings SET confirmed=true WHERE id IN (17856,17857). See recipe: issue-1-orphan-payments.md",
+        "hrly 2 Jul UTC (160th check, fresh DB): pmts 16988+16989 bookingId=STILL null xeroId=null EUR339.9 each. bk17856+17857 CONF confirmed=STILL false amtPaid=339.9. bc24630+24631 GE-AM-Plus Jun29-Jul10 fee=STILL null. Course ends Jul10=8d. 160 CHECKS SQL UNRUN. NEIL: RUN NOW.",
+        "8d to end; SQL UNRUN"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Class assignment 255 (Saikhantes Shagdarsuren, class 11 B1 PM): week end = 3 Jul 2026 — expires TOMORROW Friday 3 Jul\n• Booking course 24925 (Academic Year Afternoon, booking 18151): runs to 11 Sep 2026 — student enrolled through September\n• After Friday, student is invisible to class B1 PM scheduling for 10 weeks (4 Jul to 11 Sep 2026)\n• 64 consecutive hourly checks — SQL UPDATE has never been run\n• TODAY (Thursday 2 Jul) is the absolute last chance before the record expires",
+        "(NOT RUN) UPDATE student_class_assignments SET week_end='2026-09-11' WHERE id=255. See recipe: issue-15-saikhantes-course-dates.md",
+        "hrly 2 Jul UTC (64th check, fresh DB): sca255 cls11 B1-PM weekEnd=STILL 2026-07-03 (expires FRI 3 JUL = TOMORROW). bc24925 AY-Aft bk18151 runs Sep11. SQL NOT RUN 64 CHECKS. NEIL: TODAY THU 2 JUL = ABSOLUTE LAST CHANCE.",
+        "EXPIRES FRI; LAST CHANCE"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Duplicate entry for Issue 15 (row 16) — same student Saikhantes Shagdarsuren (student 1001)\n• Class assignment 255 (class 11, B1 PM): week end = 3 Jul 2026 — expires TOMORROW Friday 3 Jul\n• After Friday, student is invisible to class B1 PM scheduling for 10 weeks through 11 Sep 2026\n• TODAY (Thursday 2 Jul) is the absolute last chance — see row 16 Issue 15 for full detail",
+        "(NOT RUN) UPDATE student_class_assignments SET week_end='2026-09-11' WHERE id=255. See recipe: issue-15-saikhantes-course-dates.md (same as row 16)",
+        "hrly 2 Jul UTC (60th check): sca255 B1-PM weekEnd=STILL 2026-07-03 (expires FRI 3 JUL = TOMORROW). SQL NOT RUN. Same as Issue 15 row16. NEIL: TODAY IS LAST CHANCE — run UPDATE.",
+        "EXPIRES FRI; LAST CHANCE"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• Accommodation 11352 (Verónica Martín, bed 83): 4 Jul to 11 Jul, active = true — starts TOMORROW Saturday 4 Jul\n• Accommodation 11285 (Jesús Manuel Ramírez Díaz, bed 83): 21 Jun to 5 Jul, active = true — 2-night overlap 4 to 5 Jul\n• Beds 174, 175, 176 (City Centre Apartment premium): re-verified FREE for 4 to 11 Jul — zero conflicts (fresh DB, 2 Jul UTC)\n• Booking 18156: Confirmed, EUR 573.20 fully paid — no payment issue\n• TODAY (Thursday 2 Jul) is the LAST BUSINESS DAY before Verónica arrival Saturday 4 Jul",
+        "(NOT RUN) Reassign accommodation 11352 from bed 83 to bed 174, 175, or 176 via SIS Student 278. See recipe: issue-37-veronica-capel-accomm-allocation.md",
+        "hrly 2 Jul UTC (52nd check, fresh DB): ba11352 Veronica bed83 Jul04-Jul11 STILL double-booked (updAt=Jun29=3d stale). ba11285 Jesus bed83 Jun21-Jul05 STILL active (updAt=Jun16=17d stale). BED83 CONFLICT CONFIRMED. Beds 174/175/176 RE-VERIFIED FREE Jul04-11 (0 conflicts). TODAY THU 2 JUL = LAST BUSINESS DAY. Veronica arrives SAT 4 JUL.",
+        "BED83; SAT 4 JUL; FIX TODAY"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• Accommodation 11357 (Giampaolo Russo, Host Family): 2 Aug to 6 Sep, active = true — bed still unassigned (15th check, 2 Jul UTC)\n• No Capel Street accommodation added to booking 18180 — Sep 6 to 14 record still missing\n• Host Family beds OCCUPIED Aug 2-Sep 6 (exclude when assigning): 59 (Aug 1-15), 83 (Jul 12-Aug 9), 112 (Jul 25-Sep 4), 179 (Jun 28-Sep 19), 190 (Jun 27-Dec 12)\n• Host Family beds AVAILABLE Aug 2-Sep 6 (historically used, no conflicts): 33, 38, 47, 54, 66, 89, 178, 182, 186, 188, 189 (11 options)\n• Bed 180 (Xuezhen Huang): ends 2 Aug — same-day turnover possible if she checks out before Giampaolo checks in\n• Capel beds 174, 175, 176: confirmed free Sep 6-14 in DB — safe to use for second accommodation\n• Student arrives 2 Aug (31 days); both accommodation steps still pending",
+        "Assign Host Family bed (from 33/38/47/54/66/89/178/182/186/188/189) to accommodation 11357 via SIS Matching; then add Capel accommodation Sep 6-14 to booking 18180 using beds 174/175/176. See recipe: issue-41-giampaolo-dual-accomm.md",
+        "hrly 2 Jul UTC (15th check, fresh DB): ba11357 HF Aug02-Sep06 bedId=STILL null (updAt=Jul01 18:06 UTC — touched yesterday, bed not saved). 0 Capel records for bk18180. HF beds free Aug2-Sep6: 33/38/47/54/66/89/178/182/186/188/189 (11 options). HF occupied: 59(Aug15)/83(Aug9)/112(Sep4)/179(Sep19)/190(Dec12). Beds 174/175/176 FREE Sep6-14 for Capel. Aug02=31d. BOTH pending.",
+        "HF unbedded; Capel missing; Aug2=31d"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• Accommodation 11285 (Jesús Manuel Ramírez Díaz, bed 83): 21 Jun to 5 Jul, active = true — 17 days stale (updated 16 Jun)\n• Original request: dates should be 20 Jun to 4 Jul per student/staff communication\n• Bed 83 conflicts with Verónica Martín accommodation 11352 (4 to 5 Jul, 2-night overlap) — see Issue 37\n• Verónica arrives TOMORROW (Saturday 4 Jul) — preferred fix: reassign Verónica to bed 174, 175, or 176\n• Beds 174, 175, 176 re-verified free 4 to 11 Jul (fresh DB, 2 Jul UTC)",
+        "Preferred: reassign Verónica (Issue 37, row 39) to bed 174/175/176 — resolves conflict. See recipe: issue-43-jesus-accomm-dates.md",
+        "hrly 2 Jul UTC (29th check, fresh DB): ba11285 Jesus bed83 Jun21-Jul05 UNCHANGED (updAt=Jun16=17d stale). BED83 conflict with Veronica Jul04-Jul11 CONFIRMED (2 nights). Veronica arrives SAT 4 JUL = TOMORROW. TODAY = LAST BUSINESS DAY. Fix via Issue 37 row39.",
+        "BED83; SAT 4 JUL; FIX TODAY"
+      ]
+    ]
+  }
+]

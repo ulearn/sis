@@ -1,0 +1,1 @@
+13th check Sat 15 Aug 2026 UTC. No change since 12th (Fri 14 Aug). BC 89 85d stale (SCA 250 historical). BC 90 85d stale 0 SCAs. See issue-19-addendum-13aug.md for full recipe.

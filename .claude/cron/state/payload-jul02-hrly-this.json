@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Class assignment 255 (Saikhantes, student 1001, class 11, B1 Afternoon): week end = 3 Jul 2026 — expires TOMORROW Friday (71st check, 2 Jul 2026 UTC)\n• Booking 18151: Confirmed, confirmed = true, amount paid EUR 1339.20\n• Course 24925 (Academic Year Afternoon): runs 9 Mar to 2 Oct 2026 — still active\n• Student will lose class access from Monday 6 Jul if fix not run before end of day Friday 3 Jul\n• SQL fix has NOT been run across 71 hourly checks",
+        "(NOT RUN) UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255. See recipe: issue-15-saikhantes-course-dates.md",
+        "2 Jul UTC (71st check): sca255 cls11 B1-Aft weekEnd=Jul03 EXPIRES TOMORROW FRI. bc24925 AY-Aft Mar09-Oct02 active=true. bk18151 CONF 1339.20. 71 checks SQL UNRUN. Run before EOD Fri 3 Jul.",
+        "SCA exp TOMORROW; CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 (Edith Nunes, student 1015): Confirmed, confirmed = true, fully paid EUR 740 (26th check, 2 Jul 2026 UTC)\n• Duplicate booking courses: course 24933 (General English AM, 15 Jun to 10 Jul, fee EUR 380) and course 24934 (same name, same dates, fee EUR 360) — both still active\n• No class assignment for student 1015 on course 24933 or 24934 — last assignment was booking course 24668 (different course), week end 15 May 2026 (47 days ago)\n• Payment 17895 (EUR 740, HubSpot 1254474444002): Xero payment ID = null — not reconciled\n• Course ends 10 Jul — 8 days remaining; student has been attending informally since 15 Jun (Day 18)",
+        "(NOT RUN) (1) UPDATE booking_courses SET active=false WHERE id=24934; (2) assign student 1015 to class 7 (A1 AM) for course 24933 via SIS admin. See recipe: issue-22-edith-nunes-payment-dups.md",
+        "2 Jul UTC (26th check): bk18158 CONF 740/740. bc24933(fee=380)+bc24934(DUP fee=360) BOTH active Jun15-Jul10. 0 active SCAs. Day18+. pmt17895 EUR740 xeroId=null. Jul10=8d. Both steps NOT RUN.",
+        "0SCA; Jul10=8d"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Duplicate entry for Issue 15 (row 16) — same student Saikhantes Shagdarsuren (student 1001)\n• Class assignment 255 (class 11, B1 Afternoon): week end = 3 Jul 2026 — expires TOMORROW Friday (71st check, 2 Jul 2026 UTC)\n• See row 16 (Issue 15) for full diagnosis and SQL fix — 71 checks, fix unrun",
+        "Same as Issue 15 — run SQL on row 16. See recipe: issue-15-saikhantes-course-dates.md",
+        "2 Jul UTC: dup of row 16 (Issue 15). sca255 cls11 B1-Aft weekEnd=Jul03 EXPIRES TOMORROW FRI. SQL NOT RUN. Neil: fix via row 16 before EOD Fri 3 Jul.",
+        "dup; SCA exp TOMORROW"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• Accommodation 11352 (Veronica Martin, booking 18156): bed 83, 4 Jul to 11 Jul — double-booked (62nd check, 2 Jul 2026 UTC)\n• Accommodation 11285 (Jesus Manuel Ramirez Diaz, booking 17825): bed 83, 21 Jun to 5 Jul — Jesus does not vacate until Sunday 5 Jul\n• Bed 83 conflict on Saturday 4 Jul: Veronica checks in while Jesus still occupying bed 83\n• Alternative Capel beds 174, 175, and 176 confirmed free 4 Jul to 11 Jul (zero database conflicts, fresh query 2 Jul UTC)\n• Veronica ARRIVES TOMORROW Saturday 4 Jul — fix must happen today",
+        "(NOT RUN) SIS: Student 278 > Booking 18156 > Accommodation > edit 11352 > change bed 83 to bed 174 (or 175/176). See recipe: issue-37-veronica-capel-accomm-allocation.md",
+        "2 Jul UTC (62nd check): ba11352 Veronica bed83 Jul04-Jul11 CONFLICT. ba11285 Jesus bed83 Jun21-Jul05. Beds 174/175/176 zero conflicts. 62 checks no action. ARRIVES TOMORROW SAT 4 JUL.",
+        "BED83; ARRIVES TOMORROW"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• Accommodation 11357 (Giampaolo Russo, Host Family, Aug 2 to Sep 6): claim status = Pending, bed ID = null — claim reverted (24th check, 2 Jul 2026 UTC)\n• Claim was briefly Released at 16:37 UTC on 2 Jul, then reverted to Pending at 17:32 UTC same day — reason unknown (staff cancel or provider withdrawal?)\n• Provider 24 (Edel McDonald, mcdonald.edel@gmail.com) submitted claim via host portal on 1 Jul at 18:06 UTC\n• No Capel accommodation record for booking 18180 — Sep 6 to 14 slot still missing from database\n• Booking 18180: Confirmed, fully paid EUR 2584.96 — no payment issues\n• Capel beds 174, 175, 176 confirmed free 6 Sep to 14 Sep (zero database conflicts, fresh query 2 Jul UTC)",
+        "(NOT RUN) (1) Investigate claim reversion in host portal; (2) re-assign claim or pick new host via SIS Matching; (3) add Capel accommodation Sep 6-14 to booking 18180. See recipe: issue-41-giampaolo-dual-accomm.md",
+        "2 Jul UTC (24th check): ba11357 HF Aug02-Sep06 bedId=null claimStatus=pending (reverted 17:32 UTC). Provider24=Edel McDonald claimed Jul01 18:06. 0 Capel records bk18180. HF beds avail: 33/38/47/54/66/89/178/182/186/188/189. Aug2=31d.",
+        "HF claim reverted"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• Accommodation 11285 (Jesus Manuel Ramirez Diaz, bed 83, booking 17825): stored dates 21 Jun to 5 Jul — requested 20 Jun to 4 Jul (1-day discrepancy, 36th check, 2 Jul 2026 UTC)\n• Bed 83 is double-booked with Veronica Martin (accommodation 11352) from 4 Jul — see Issue 37 (row 39) for primary fix\n• Correcting Jesus end date to 4 Jul would still leave Veronica with same-night arrival as check-out — Issue 37 fix takes priority",
+        "(NOT RUN) Primary: fix Issue 37 (move ba11352 to bed 174/175/176). Secondary: UPDATE booking_accommodations SET start_date='2026-06-20', end_date='2026-07-04' WHERE id=11285 (low priority). See recipe: issue-43-jesus-accomm-dates.md",
+        "2 Jul UTC (36th check): ba11285 Jesus bed83 Jun21-Jul05 UNCHANGED (requested Jun20-Jul04). Bed83 conflict with Veronica STILL unresolved — primary fix is Issue 37 row 39. Date correction low priority.",
+        "CRITICAL; see row 39"
+      ]
+    ]
+  }
+]

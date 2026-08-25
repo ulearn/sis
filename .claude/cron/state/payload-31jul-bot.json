@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 24th check Fri 31 Jul 2026 UTC (6th today) -- STILL NOT FIXED\n• August Bank Holiday (Mon 3 Aug 2026) absent from school_closures — confirmed live query\n• 21 active booking courses start 3 Aug; 14 confirmed need shunting to 4 Aug (Tue)\n• IDs to shunt: 88, 1755, 1766, 24908, 24956, 24958, 24959, 24964, 24984, 25002, 25010, 25016, 25028, 25035\n• BC 25003 (Aleix Cervera): duplicate of BC 25002 — delete before shunting\n• BC 24627 (Angelica Guerin, confirmed=false): verify before shunting\n• BC 25006 (Marina Larripa): ends 3 Aug — cosmetic only, no shunt needed\n• FIX WINDOW CLOSES TONIGHT — school reopens Mon 4 Aug",
+        "Add Aug BH 3 Aug 2026 to school_closures; shunt 14 BCs to 4 Aug. See recipe: issue-38-aug-bh.md",
+        "24th check, 6th today, Fri 31 Jul UTC. STILL NOT FIXED. 21 BCs affected. Last window TONIGHT. Fix NOT RUN.",
+        "URGENT; fix TONIGHT"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 19th check Fri 31 Jul 2026 UTC — CHECK-IN TOMORROW (Sat 1 Aug)\n• BA 11357 (bed 178, 5 Claremont Close Glasnevin): start_date = 1 Aug 2026 (prior H stated Aug 2 — 1-day shift confirmed in DB) — active, confirmed, READY\n• Booking 18180 (Giampaolo Russo, student 14571): CONFIRMED, confirmed = true, EUR 2,584.96 fully paid\n• Capel Street accommodation (6-14 Sep): still NO booking_accommodations record — Diego has not added\n• BC 24956 (General English AM): start = 2 Aug (Sunday) — in Issue 38 shunt list; first class = 4 Aug (Tue) once Aug BH fix runs\n• Zero class assignments for student 14571",
+        "Add Capel St BA (Sep 6-14) once Diego confirms bed + fee; fix BC 24956 via Issue 38 shunt. See recipe: issue-41-giampaolo.md",
+        "19th check Fri 31 Jul UTC. CHECK-IN TOMORROW SAT 1 AUG. BA ready (start Aug 1, not Aug 2). Capel still missing. BC wrong start. Fix NOT RUN.",
+        "Capel missing; Diego needed"
+      ]
+    ]
+  },
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 120th check Fri 31 Jul 2026 UTC (6th today) -- 4 orphan payments unchanged\n• Payment 16988: EUR 339.90, Bank, booking_id = null (94 days, HubSpot payment ID 1204827374829)\n• Payment 16989: EUR 339.90, Bank, booking_id = null (94 days, HubSpot payment ID 1204846469317)\n• Payment 17187: EUR 6,151, TransferMate Escrow, booking_id = null (87 days, fidelo 37587, txn D2026226)\n• Payment 4781: EUR 380, Flywire 2019, booking_id = null (legacy ~7yr, fidelo 32056)",
+        "Link payments 16988+16989 to bookings via HubSpot; investigate 17187 via deal D2026226. See recipe: issue-1-orphan-payments.md",
+        "120th hrly (6th today) Fri 31 Jul UTC. 4 orphan payments unchanged (94d/94d/87d/legacy). Fix NOT RUN.",
+        "4 orphan pmts; 94d+"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 14th check Fri 31 Jul 2026 UTC — unchanged\n• Galbusera (student 14461, booking 17856): CONFIRMED, confirmed = false, ZERO class assignments ever; courses ended 10 Jul — 21d stale\n• Fassina (student 14462, booking 17857): CONFIRMED, confirmed = false, ZERO class assignments ever; courses ended 10 Jul — 21d stale\n• Saikhantes (student 1001): last SCA 255 (class 11, ends 2 Jul 2026); on holiday 20 Jul-21 Aug; returns 24 Aug — new SCA needed from 24 Aug\n• Fix items: set confirmed=true on bookings 17856+17857; deactivate BCs 24630+24631; create SCA for student 1001 from 24 Aug",
+        "Set confirmed=true on 17856+17857; deactivate BCs; add SCA student 1001 from 24 Aug. See recipe: issue-48-attendance.md",
+        "14th check Fri 31 Jul UTC. Galbusera+Fassina zero SCAs confirmed. Saikhantes needs new SCA from 24 Aug. Fix NOT RUN.",
+        "4 items open; return Aug 24"
+      ]
+    ]
+  },
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• 21st check Fri 31 Jul 2026 UTC — all 6 phones unchanged\n• Student 1897 (Dolgormaa Bayaraa): email saraa.tpb@gmail.com in phone_mobile — 15 days stale\n• Student 8567 (Aki Miura): email aki-hinaaki1116@ezudo.he.jp in phone_mobile — 113 days stale\n• Student 1194 (Jieun Lee): annotation in phone_mobile: 00821097366523 (home contry) — 86 days stale\n• Student 5345 (Lisa Li): annotation in phone_mobile: 0864645297 (Husband) — 113 days stale\n• Student 10343 (Alessandra Saito de Araujo): invisible Unicode RTL chars in phone_mobile — 95 days stale\n• Student 14556 (Theodore Bolt): US format in phone_mobile: +1 (984) 389-3888 — record touched today; value unchanged",
+        "Fix 6 phone_mobile values: strip annotations, remove emails, normalise formats. See recipe: issue-6-phone-errors.md",
+        "21st check Fri 31 Jul UTC. All 6 phones unchanged. Student 14556 record touched today but value still wrong. Fix NOT RUN.",
+        "6 phones wrong; 15d+"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 13th check Fri 31 Jul 2026 UTC — unchanged\n• 24,449 active booking courses ended before today — unchanged\n• Named recipe subset: 27 booking courses still all active = true (live query confirmed)\n• BC 1791 (Ariunsarnai Batbayar, ends 23 Oct 2026): active = true but not stale — exclude from cleanup\n• Bulk fix Option B pending Neil decision on migration approach",
+        "Bulk deactivate 24,449 stale BCs (or 27-item recipe subset first). See recipe: issue-45-stale-bcs.md",
+        "13th check Fri 31 Jul UTC. 24,449 stale BCs unchanged. Bulk cleanup approach pending Neil decision. Fix NOT RUN.",
+        "27 in recipe; 24,449 total"
+      ]
+    ]
+  }
+]

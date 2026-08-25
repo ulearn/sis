@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H6:K6",
+    "values": [
+      [
+        "• Rakan Alghamdi LOA resolved — document 204 issued 8 Jun via booking 17915 (see Issue 14)\n• Khongorzul Uranaa booking 17871 remains in ESCROW — confirmed = true (database anomaly)\n• Amount paid EUR 300 of EUR 2313.62 total — EUR 2013.62 outstanding, 54 days since last update\n• Payment 17375 (EUR 300) linked to booking 17871, type = Escrow, no Xero payment ID, no HubSpot payment ID\n• Booking course 24644 (Academic Year Morning) ended 23 Jan 2026 — course finished 5 months ago, ESCROW never resolved\n• Booking last updated 8 May 2026 — no action taken (17th check, 1 Jul UTC)",
+        "Rakan LOA done (Issue 14). Decide fate of bk17871 Khongorzul: write off, pursue or cancel EUR 2013.62 stale ESCROW (course ended Jan 23). See recipe: issue-4-rakan-loa-barcode.md",
+        "hrly 1 Jul UTC (17th check, fresh DB): bk17871 ESCROW conf=true EUR300/2313.62 (EUR2013.62 outstanding) UNCHANGED. bc24644 AY-Morn ended Jan23 2026 active=false fee=3350. pmt17375 EUR300 type=Escrow xeroId=null hsId=null. Course ended 5+ months ago, ESCROW unresolved 54d. Neil: decide write-off/pursue/cancel EUR2013.62.",
+        "EUR2013; 54d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• Booking 1605 is PENDING, confirmed = false — amount paid = EUR 0 of EUR 1509 total\n• Booking course 1791 (Academic Year Renewal Morning) started 13 Apr 2026 — student has been unassigned for 79 days (course ends 23 Oct)\n• Student 1047 has zero class assignments\n• HubSpot deal 502951083215 in B2B pipeline needs to advance to WON stage (104175589)\n• Booking last updated 23 Jun 2026 — 8 days stale, no action taken (12th check, 1 Jul UTC)",
+        "Advance HubSpot deal 502951083215 to WON stage (104175589) in B2B pipeline. See recipe: issue-20-ariunsarnai-payment-due.md",
+        "hrly 1 Jul UTC (12th check, fresh DB): bk1605 STILL PENDING conf=false EUR0/1509 (updAt=Jun23=8d stale). bc1791 AY-Morn-Renewal Apr13-Oct23 active. s1047 0 SCAs. D79 since bc1791 start. UNCHANGED. Neil: advance HS deal 502951083215 to WON (B2B pipeline 104175589).",
+        "D79; PENDING; 0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking course 1797 (Morning General, 6 Apr to 26 Jun) ended 5 days ago — still active = true (last updated 3 May, 59 days stale)\n• Booking course 24686 (Morning General, 20 Jul to 18 Sep) starts in 19 days — fee is still null (last updated 14 May, 48 days stale)\n• Payment 17124 (EUR 1280.12): Xero payment ID = null, HubSpot payment ID = null — not reconciled in Xero\n• Action before 20 Jul: set fee on course 24686, set course 1797 active = false, reconcile payment 17124 in Xero",
+        "(NOT RUN) Set booking course 1797 active=false (ended Jun26); set fee for booking course 24686 before Jul20; reconcile payment 17124 in Xero. See recipe: issue-24-alberto-fidelo-course-split.md",
+        "hrly 1 Jul UTC (fresh DB): bc1797 Apr06-Jun26 ENDED Jun26=5d ago active=STILL true (updAt=May03=59d). bc24686 Jul20-Sep18 fee=STILL null (updAt=May14=48d). pmt17124 EUR1280.12 xeroId=null hsId=null. bc1797 must be deactivated; bc24686 fee must be set before Jul20=19d. Neil: (1) deactivate bc1797; (2) set bc24686 fee; (3) reconcile pmt17124 Xero.",
+        "bc1797 ended+active; Jul20=19d"
+      ]
+    ]
+  },
+  {
+    "range": "H35:K35",
+    "values": [
+      [
+        "• Bug in public/admin.html sendBulkEmail() — reads the live bulkSelectedStudents set, not a frozen snapshot\n• _bulkEmailRecipientIds declared at line 1444 (comment says freeze here) but never assigned in openBulkEmailModal()\n• sendBulkEmail() at line 1619 reads [...bulkSelectedStudents] — live set, cleared on any report navigation\n• Fix: add _bulkEmailRecipientIds = ids; after line 1462 in openBulkEmailModal; change line 1619 to use _bulkEmailRecipientIds",
+        "Add _bulkEmailRecipientIds=ids after line 1462 in openBulkEmailModal; change line 1619 to const ids=_bulkEmailRecipientIds. No build needed. See recipe: issue-33-khulan-reports-email-send.md",
+        "hrly 1 Jul UTC (5th code check, admin.html): Bug STILL PRESENT. L1462 const ids=[...bulkSelectedStudents] in openBulkEmailModal — correct source — but _bulkEmailRecipientIds NEVER SET. L1619 const ids=[...bulkSelectedStudents] in sendBulkEmail — BUG: reads live set not frozen. 2-line fix: (1) add _bulkEmailRecipientIds=ids; after L1462; (2) change L1619 to const ids=_bulkEmailRecipientIds. Neil: apply in admin.html, no build needed.",
+        "code fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• Giampaolo Russo (student 14571): booking 18180 Confirmed, EUR 2584.96 fully paid, amount open = 0\n• Accommodation 11357: Host Family, 2 Aug to 6 Sep — bed is unassigned (bed ID = null), making student invisible in Matching section\n• Capel accommodation (6 Sep to 14 Sep) missing from booking entirely\n• Host Family beds occupied 2 Aug to 6 Sep (avoid when assigning): beds 83, 112, 179, 190\n• Student arrives 2 Aug — 32 days remaining",
+        "(1) Assign host family bed to accommodation 11357 in SIS Matching (not beds 83/112/179/190); (2) Add Capel accommodation Sep 6-14 to booking 18180 in SIS admin. See recipe: issue-41-giampaolo-dual-accomm.md",
+        "hrly 1 Jul UTC (12th check, fresh DB): ba11357 HF Aug02-Sep06 bedId=STILL null (updAt=Jun24=7d stale). bk18180 CONF 2584.96/2584.96 updAt=Jun29. 0 Capel records on bk18180. HF beds occupied Aug2-Sep6 (avoid): 83/112/179/190. Aug02=32d. BOTH actions pending. Neil: (1) assign HF bed to ba11357 in SIS Matching (not 83/112/179/190); (2) add Capel Sep06-Sep14 to bk18180 via SIS.",
+        "HF unbedded; Capel missing; Aug2=32d"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• CRITICAL CONFLICT: Accommodation 11285 (Jesús Manuel, bed 83, Jun 21 to Jul 5) overlaps with accommodation 11352 (Verónica Martín, bed 83, Jul 4 to Jul 11) — both active on Jul 4 and Jul 5\n• Jesús dates may be wrong — reporter says Jun 20 to Jul 4; SIS shows Jun 21 to Jul 5 (1-day BST/UTC shift, same pattern as Issue 2)\n• If corrected to Jun 20 to Jul 4, Jesús checks out morning of Jul 4 and Verónica arrives Jul 4 — resolves conflict\n• Orphan booking 17836 (same student 14439): Confirmed, EUR 765 paid, no course and no accommodation — needs cancellation or investigation\n• HubSpot deal 498775243984 must be checked to confirm correct dates (Jun 20 / Jul 4)",
+        "URGENT: fix accommodation 11285 dates to Jun 20-Jul 4 (resolves bed 83 conflict with Verónica Issue 37). Investigate orphan booking 17836. See recipe: issue-43-jesus-accomm-dates.md",
+        "hrly 1 Jul UTC (7th check, fresh DB): accomm11285 Jesus bed83 Jun21-Jul05 STILL UNCHANGED (updAt=Jun16=15d). CONFIRMED BED 83 CONFLICT: accomm11352 Veronica bed83 Jul04-Jul11 active — 2-day overlap Jul04-05. Veronica arrives 3 days. bk17836 s14439 EUR765 CONF orphan (pmt17182+17414 xeroId=null) unchanged. Neil: URGENT fix accomm11285 dates OR reassign Veronica (see Issue 37) before Jul04.",
+        "BED83 CONFLICT; Jul04=3d"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• 37th check Fri 7 Aug 2026 UTC — day 24\n• 966 students with non-E.164 phone numbers (552 without + prefix, 414 with + but containing spaces)\n• Total students with phone on record: 1,369. Non-E.164: 966 (71%)\n• Unchanged since 36th check",
+        "Strip spaces and annotations; normalise to E.164. See recipe: issue-6-addendum-6aug-b.md",
+        "37th hrly Fri 7 Aug 2026 UTC. Day 24. 966 non-E.164 (552 no-plus, 414 plus+space). Unchanged. Fix NOT RUN.",
+        "~966 phones; 24d"
+      ]
+    ]
+  },
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• 126th check Fri 7 Aug 2026 UTC — 3 stale booking accommodations unchanged\n• Booking Accommodation 11162 (booking 97, bed 179): ended 23 May 2026, still active — 75 days stale\n• Booking Accommodation 11314 (booking 18002, bed 179): ended 6 Jun 2026, still active — 61 days stale\n• Booking Accommodation 11319 (booking 18034, bed null): ended 31 May 2026, zero-length, still active — 67 days stale\n• Bernardo Hughes Pimentel (student 14524): Booking Accommodation 11213 ends 4 Sep 2026 — CURRENT, not stale\n• Bernardo booking 49: CONFIRMED, confirmed = true, fully paid EUR 3,200.20, service_end 13 Sep 2026 — no anomaly",
+        "Set active = false on booking accommodations 11162, 11314, 11319. See recipe: issue-12-addendum-7aug.md",
+        "126th hrly Fri 7 Aug UTC. 3 stale BAs (75d/61d/67d) unchanged. Bernardo (14524) BA 11213 is current (ends Sep 4) — not stale. Fix NOT RUN.",
+        "3 stale BAs; 75d max"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 55th check Fri 7 Aug 2026 UTC — service_end STILL EXPIRED, portal LOCKED\n• Booking 18151 (Saikhantes Shagdarsuren, student 1001): CONFIRMED, confirmed = true, fully paid EUR 1,339.20\n• service_end = 2026-08-07 — expired at midnight UTC today; portal inaccessible NOW\n• Booking Course 24925 (Academic Year Afternoon, ends 2 Oct 2026): active and correct\n• Last class assignment 255: class 11, week-end 3 Jul 2026 — student on holiday until 24 Aug 2026\n• Fix: set service_end = 2026-10-02 (= booking course end date) — recipe exists",
+        "Update booking 18151 service_end to 2026-10-02 IMMEDIATELY. See recipe: issue-15-addendum-7aug-b.md",
+        "55th hrly Fri 7 Aug UTC. service_end expired midnight today, portal locked. Student on holiday to 24 Aug. Fix NOT RUN. URGENT.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• 10th check Fri 7 Aug 2026 UTC — unchanged since 9th check\n• Student 983 (Flavia Nascimento Mariano): visa_status = null, last updated 28 Jul 2026 (10 days ago)\n• Booking 1534: CONFIRMED, confirmed = true, EUR 1,308 paid, EUR 0 open — fully settled, service_end = 20 Nov 2026\n• Booking Course 1710 (Academic Year Afternoon, Jun to Nov 2026): active — student attending normally\n• visa_status is a plain string field (no Postgres enum) — PrismaClientKnownRequestError is UI-layer validation issue\n• Data quality only; student attending class normally",
+        "Set visa_status = Approved on student 983 via direct DB update. See recipe: issue-18-addendum-7aug.md",
+        "10th hrly Fri 7 Aug UTC. Visa null, 10d since last DB update. Booking Course 1710 active, service_end Nov 20. Fix NOT RUN.",
+        "visa null; class OK"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• 62nd check Fri 7 Aug 2026 UTC — unchanged\n• Student 1052 (Alberto Squillace): visa_status = null\n• Booking 1611: CONFIRMED, confirmed = true, fully paid EUR 1,280.12, service_end 18 Sep 2026\n• Booking Course 24686 (Morning General, 20 Jul to 18 Sep 2026): active = true, 0 class assignments — 18 days without assignment\n• Booking Course 1797 (Morning General, ended 26 Jun 2026): active = true — 42 days stale",
+        "Assign Booking Course 24686 to class in SIS admin; deactivate stale Booking Course 1797. See recipe: issue-24-addendum-7aug.md",
+        "62nd hrly Fri 7 Aug UTC. Booking Course 24686: 0 class assignments, 18 days since Jul 20 start. Booking Course 1797: 42d stale. Fix NOT RUN.",
+        "BC24686 0 SCAs; 18d"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 66th check Fri 7 Aug 2026 UTC — G updated by staff; new finding: Francesca Fassini not in SIS\n• Booking Course 24630 (General English AM Plus, booking 17857): ended 10 Jul 2026, active — 28 days stale, 0 class assignments\n• Booking Course 24631 (General English AM Plus, booking 17856): ended 10 Jul 2026, active — 28 days stale, 0 class assignments\n• Booking Course 25006 (General English AM Plus, booking 18228): ended 3 Aug 2026, active — 4 days stale, 2 class assignments\n• Francesca Fassini: NO SIS RECORD — student does not exist in database\n• Margherita Galbusera (student 14461): booking 17856 CONFIRMED but confirmed = false, EUR 339.90 paid, service_end = null\n• Orphan payment 16988 (EUR 339.90, Bank, 28 Apr 2026): booking = null — amount matches booking 17856 (Margherita)\n• Orphan payment 16989 (EUR 339.90, Bank, 28 Apr 2026): booking = null — likely matches booking 17857\n• Orphan payment 17187 (EUR 6,151, TransferMate Escrow, 1 May 2026): booking = null — see Issue 1\n• Orphan payment 4781 (EUR 380, Flywire, Aug 2019): legacy, booking = null",
+        "Create Francesca Fassini in SIS; confirm booking 17856; link orphan payments 16988/16989. See recipe: issue-48-addendum-7aug-b.md",
+        "66th hrly Fri 7 Aug UTC. NEW: Francesca Fassini not in DB. Margherita bk 17856 confirmed=false. Payments 16988/16989 likely link to bks 17856/17857. Fix NOT RUN.",
+        "stale BCs + Francesca missing"
+      ]
+    ]
+  }
+]

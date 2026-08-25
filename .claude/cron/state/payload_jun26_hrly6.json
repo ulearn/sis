@@ -1,0 +1,56 @@
+[
+  {
+    "range": "J2:K2",
+    "values": [
+      [
+        "hrly Jun26 FRI UTC (62nd check, fresh DB): pmt16988+16989 STILL bookingId=null, xeroPaymentId=null — 59d stale since Apr28. bc24630(bk17857)+bc24631(bk17856) fee=STILL NULL, start=Jun29=TOMORROW. NEIL: TODAY IS LAST WORKING DAY — fix before Mon Jun29 class start. SQL ready in I column.",
+        "Jun29=Mon; EMERGENCY"
+      ]
+    ]
+  },
+  {
+    "range": "J16:K16",
+    "values": [
+      [
+        "hrly Jun26 UTC (fresh DB): sca255 (student1001 classId=11 B1 PM) weekStart=Jan12 weekEnd=Jul03 UNCHANGED — 7 days to expiry. BC24925 AY Afternoon Mar09-Sep11 is the correct course dates. Fix: UPDATE student_class_assignment SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255. See also row 30 (same issue). BK18151 CONFIRMED paid EUR1339.20.",
+        "sca255; Jul03=7d; URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "J23:K23",
+    "values": [
+      [
+        "hrly Jun26 UTC (fresh DB): student1015 (Edith Nunes) has 0 CURRENT class assignments — sca48 ended Apr17 + sca146 ended May15 both stale. bc24933(fee=380)+bc24934(fee=360) both active Jun15-Jul10 = DUPLICATE courses. pmt17895 EUR740 xeroPaymentId=null. Student NOT in class despite active course — deactivate one BC + assign to class. Jul10=14d.",
+        "D10school; Jul10=14d; URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "J26:K26",
+    "values": [
+      [
+        "hrly Jun26 UTC (fresh DB): student917 visaStatus=null (likely blocker). visaFrom=Apr27, visaUntil=Dec28. BK1467 CONFIRMED amountPaid=2405/2405 (fully paid EUR2405). SCA count=0 — 60 days in school with NO class assignment since Apr27. Fix: (1) set visaStatus=APPROVED for student917; (2) assign to class.",
+        "D60; 0SCA; CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "J40:K40",
+    "values": [
+      [
+        "hrly Jun26 UTC (fresh DB): doc238 STILL ISSUED (exit letter template4 bk560, updated Jun18 = 8d stale). student356 gender=STILL NULL (not updated since Jun03 = 23d stale). Neil: (1) open student 356 personal details, set gender=Male; (2) revoke doc238 via SIS; (3) regenerate exit letter.",
+        "urgent; revoke doc238"
+      ]
+    ]
+  },
+  {
+    "range": "J44:K44",
+    "values": [
+      [
+        "hrly Jun26 UTC (47th check, fresh DB): 4 stale bed 84 records STILL active=true — ba9917(ended May16, 41d) + ba11157(ended May10, 47d) + ba11159(ended May30, 27d) + ba11180(ended Jun20, 6d). Pietro accomm ba11311 (bk17980) Jun28-Sep13 EXISTS active=true, accommodationType=null. BK17980 CONFIRMED, paid EUR5331. Pietro ARRIVES TOMORROW Sun Jun28. Run: UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180);",
+        "Jun28=Sun; EMERGENCY"
+      ]
+    ]
+  }
+]

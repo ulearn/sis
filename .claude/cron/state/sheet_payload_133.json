@@ -1,0 +1,35 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 133rd check Mon 27 Jul 2026 UTC — Aug Bank Holiday STILL ABSENT, DEADLINE Fri 31 Jul (4 days left)\n• School closures: 9 entries confirmed fresh — Aug 3 2026 absent\n• 17 active booking courses start Aug 3 2026 — auto-shunt blocked until closure record added\n• All 17 BC IDs: 88, 97, 1755, 1766, 24627, 24908, 24956, 24958, 24959, 24964, 24970, 24984, 24999, 25002, 25003, 25010, 25016",
+        "Insert Aug BH closure; shunt 17 BCs to Aug 4. Deadline Fri 31 Jul. See recipe: issue-38-addendum-27jul-d.md",
+        "133rd hrly Mon 27 Jul 2026 UTC. Aug BH still absent confirmed fresh (9 closures only). 17 BCs start Aug 3. DEADLINE Fri Jul 31 (4 days). Fix NOT RUN.",
+        "Aug BH; DEADLINE Fri; 4 days"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• 133rd check Mon 27 Jul 2026 UTC — 0 class assignments confirmed fresh, COURSE ENDS FRI 31 JUL\n• Booking course 24609 (Morning General, Jul 13–Jul 31 2026): active = true, 0 SCAs\n• Xuezhen Huang (student 14443), booking 17831, EUR 570 paid\n• 4 school days remain: Mon 27 – Fri 31 Jul\n• ASSIGN TONIGHT: last chance before course ends Friday",
+        "Assign BC 24609 to Morning General class tonight. See recipe: issue-39-addendum-27jul-e.md",
+        "133rd hrly Mon 27 Jul 2026 UTC. BC24609 0 SCAs confirmed fresh. Course ends Fri Jul 31 (4d remain). ASSIGN TONIGHT. Fix NOT RUN.",
+        "CRITICAL; 4d left; assign tonight"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 133rd check Mon 27 Jul 2026 UTC — Capel Street BA still absent — CHECK-IN SUN AUG 2 (6 days)\n• Booking 18180 (Giampaolo Russo, student 14571): confirmed, EUR 2,584.96 fully paid\n• Booking accommodation 11357 (bed 178, host family): present, active, claim confirmed (Aug 2–Sep 6)\n• Capel Street booking accommodation (Sep 6–Sep 14 2026): ABSENT — confirmed fresh, 1 BA only\n• Booking course 24956 (General English AM, Aug 3–Sep 11, EUR 804.96): 0 class assignments; blocked by Issue 38",
+        "Create Capel BA; assign BC 24956 after Issue 38 fix. See recipe: issue-41-addendum-27jul-c.md",
+        "133rd hrly Mon 27 Jul 2026 UTC. Capel BA still absent (1 BA: bed 178 HF, Aug 2–Sep 6, confirmed fresh). Check-in Aug 2 (6 days). Fix NOT RUN.",
+        "Capel missing; check-in 6d"
+      ]
+    ]
+  }
+]

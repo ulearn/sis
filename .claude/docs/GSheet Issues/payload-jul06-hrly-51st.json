@@ -1,0 +1,98 @@
+[
+  {
+    "range": "H2",
+    "values": [
+      [
+        "• Payments 16988 (HubSpot 1204827374829) and 16989 (HubSpot 1204846469317): EUR 339.90 each — booking ID = null, Xero payment ID = null — unlinked since 28 April 2026 (231st check, 6 Jul 2026 UTC)\n• Booking 17856 (Margherita Galbusera, student 14461): Confirmed, confirmed field = false — booking course 24631 (General English AM Plus, 29 Jun to 10 Jul 2026, fee = null, zero class assignments)\n• Booking 17857 (Francesca Fassina, student 14462): Confirmed, confirmed field = false — booking course 24630 (General English AM Plus, 29 Jun to 10 Jul 2026, fee = null, zero class assignments)\n• Both booking courses active, Day 6 of 10 — ends Friday 10 July 2026 (4 school days remaining: 7, 8, 9, 10 Jul)\n• Students in school today with no attendance tracking; course fees still null\n• Root cause: webhook missed setting booking ID at payment creation on 28 April 2026"
+      ]
+    ]
+  },
+  {
+    "range": "J2",
+    "values": [
+      [
+        "231st check 6 Jul UTC. Unchanged. pmts 16988+16989 bookingId=null xeroId=null EUR339.90. bks 17856+17857 CONF confirmed=false amtPaid=339.9/339.9. bcs 24630+24631 fee=null 0SCA ends Fri Jul10=4d. SQL NOT RUN."
+      ]
+    ]
+  },
+  {
+    "range": "H16",
+    "values": [
+      [
+        "• Class assignment 255 (student 1001 Saikhantes Shagdarsuren, class 11 B1 Afternoon): week end = 3 July 2026 — EXPIRED 3 days ago; student missing class since Monday 6 July 2026 (119th check, 6 Jul 2026 UTC)\n• Booking course 24925 (Academic Year Afternoon, booking 18151): active, 9 March to 2 October 2026, fee EUR 1102.20\n• Booking 18151: Confirmed, confirmed = true, fully paid EUR 1339.20\n• Fix (NOT YET RUN, 119 checks): UPDATE student_class_assignments SET week_end = 2026-10-02 WHERE id = 255"
+      ]
+    ]
+  },
+  {
+    "range": "J16",
+    "values": [
+      [
+        "119th check 6 Jul UTC. SCA 255 weekEnd=Jul3(Thu) STILL EXPIRED 3 days ago. Student missing class Mon Jul6 (1 school day; Jul4=Saturday). bc24925 AY-Aft end Oct2 active=true fee=1102.2. bk18151 CONF EUR1339.2/1339.2. SQL NOT RUN (119 checks)."
+      ]
+    ]
+  },
+  {
+    "range": "H23",
+    "values": [
+      [
+        "• Booking 18158 (Edith Nunes, student 1015): Confirmed, confirmed = true, fully paid EUR 740 (amount open = 0) (84th check, 6 Jul 2026 UTC)\n• Two duplicate booking courses both still active with zero class assignments: booking course 24933 (General English AM, fee EUR 380) and booking course 24934 (General English AM, fee EUR 360) — same dates 15 June to 10 July 2026\n• Course ends Friday 10 July 2026 — 4 school days remaining; student in school with no attendance tracking\n• Payment 17895: EUR 740, type = null, Xero payment ID = null — not yet reconciled in Xero\n• Root cause: double webhook insert on HubSpot deal 505836060909 created two identical booking courses\n• Fix: deactivate booking course 24934 (lower fee EUR 360), then assign student 1015 to a class immediately"
+      ]
+    ]
+  },
+  {
+    "range": "J23",
+    "values": [
+      [
+        "84th check 6 Jul UTC. Unchanged. bk18158 CONF EUR740/740 amtOpen=0. bc24933 EUR380 + bc24934 EUR360 both active 0SCA ends Fri Jul10=4d. pmt17895 EUR740 type=null xeroId=null. SQL NOT RUN."
+      ]
+    ]
+  },
+  {
+    "range": "H27",
+    "values": [
+      [
+        "• Booking course 24826 (Ernesto Pesoa Gil, student 14532: Intensive General 30, 8 Jun to 19 Jun 2026): ended 19 Jun — STILL active = true (17 days stale, 23rd check, 6 Jul 2026 UTC)\n• Booking course 23 (Ivan Rodriguez Solares, student 18: Intensive General 30, 4 May to 22 May 2026): ended 22 May — STILL active = true (45 days stale)\n• Booking 18034 (Ernesto Pesoa Gil): Partial, confirmed = false — EUR 845 paid of EUR 1095 total (EUR 250 outstanding)\n• Payment 17683 (EUR 845, HubSpot 1241215836360): type = null, Xero payment ID = null — not reconciled"
+      ]
+    ]
+  },
+  {
+    "range": "J27",
+    "values": [
+      [
+        "23rd check 6 Jul UTC. Booking course 24826 Ernesto (ended Jun19) STILL active (17d stale). Booking course 23 Ivan (ended May22) STILL active (45d stale). bk18034 PARTIAL EUR845/1095 EUR250 open. pmt17683 EUR845 type=null xeroId=null. NEIL: deactivate bc23+24826; reconcile pmt17683; chase EUR250."
+      ]
+    ]
+  },
+  {
+    "range": "H41",
+    "values": [
+      [
+        "• Booking 17831 (Xuezhen Huang, student 14443): status Partial, confirmed = false — amount paid EUR 965 of EUR 1396.90 total; amount open EUR 431.90 (51st check, 6 Jul 2026 UTC)\n• Payment 17180 (EUR 431.90, 27 April 2026): type = null, Xero payment ID = null, HubSpot payment ID = null — excluded from amount paid calculation\n• Payment 17963 (EUR 965, 1 July 2026, HubSpot 1273784562922): type = null — counted in amount paid\n• Both payments total EUR 1396.90 = booking total — student is fully paid; EUR 431.90 open figure is incorrect\n• Accommodation 11358 (bed 180, Host Family, 12 July to 2 August 2026): fee EUR 900, claim status = null — CHECK-IN IN 6 DAYS (12 Jul) URGENT\n• Booking course 24609 (Morning General, 13 July to 31 July 2026): fee EUR 570, zero class assignments, starts in 7 days\n• Root cause: payment 17180 type = null — excluded from amount paid calculation"
+      ]
+    ]
+  },
+  {
+    "range": "J41",
+    "values": [
+      [
+        "51st check 6 Jul UTC. ba11358 bed180 Jul12-Aug2 active claimStatus=null. CHECK-IN 6d URGENT. bk17831 PARTIAL conf=false EUR965/1396.9 amtOpen=431.9. pmt17180 EUR431.9 type=null hubId=null. pmt17963 EUR965 type=null hubId=1273784562922. Both sum=1396.9=total — fully paid. bc24609 0SCA starts Jul13. SQL NOT RUN."
+      ]
+    ]
+  },
+  {
+    "range": "H47",
+    "values": [
+      [
+        "• 16 booking courses started Monday 6 July 2026 — ALL have zero class assignments (53rd check, 6 Jul 2026 UTC)\n• 11 confirmed students in school today with no attendance tracking:\n  Aitana Lopez student 7 (booking course 7, Morning General Jul 6-17, EUR 40 outstanding)\n  Pietro Colombo student 72 (booking course 81, Morning General Plus Jul 6-24, fully paid)\n  Tuguldurtugs Enkhtugs student 858 (booking course 1786, Academic Year Renewal Morning Jul 6-Dec 25, EUR 250 outstanding)\n  Rakan Alghamdi student 14444 (booking course 24697, Academic Year Morning Jul 6-Dec 18, fully paid)\n  Mario Roggi student 14528 (booking course 24776, General English AM Jul 6-24, fully paid)\n  Kiyoshi Fujino student 14445 (booking course 24907, General English AM Jul 6-10, ENDS FRIDAY)\n  Veronica Martin student 278 (booking course 24931, General English AM Jul 6-10, ENDS FRIDAY)\n  Sarah Venturini Talizin student 1055 (booking course 24945, General English AM Jul 6-31, fully paid)\n  Hugo Lopez Tamayo student 14572 (booking course 24960, General English AM Jul 6-17, fully paid)\n  Yuxi Ke student 14577 (booking course 24965, General English PM Jul 6-Aug 21, fully paid)\n  Ettore Iovinella student 14564 (booking course 24968, General English AM Plus Jul 6-13, fully paid)\n• 4 pending bookings blocked — advance HubSpot deals to Won before assigning:\n  Zeyad Alharbi student 32 (booking course 38, Morning General Plus Jul 6-Sep 11, booking 36 Pending EUR 0/4765)\n  Shih-Wei Huang student 356 (booking course 24913, Academic Year Morning Jul 6-Dec 25, booking 18138 Pending EUR 0/1832.50)\n  Sulaiman Abdullatif student 7309 (booking course 24930, Intensive English Jul 6-Aug 28, booking 18155 Pending EUR 0/4259)\n  Gustavo Da Silva student 14570 (booking course 24955, General English AM Plus Jul 6-Aug 7, booking 18179 Pending EUR 0/1021.84 — deactivate duplicate booking course 24967 first)\n• Booking course 24941 (Ettore Iovinella old course, General English AM Plus, ended 3 July 2026): still active = true — deactivate\n• Booking course 24967 (Gustavo Da Silva duplicate of booking course 24955, booking 18179 Pending): still active = true — deactivate"
+      ]
+    ]
+  },
+  {
+    "range": "J47",
+    "values": [
+      [
+        "53rd check 6 Jul UTC. All 16 booking courses starting Jul6 confirmed 0SCA (re-verified live DB). 11 confirmed in school, no attendance. 4 pending deals blocked (bk36,bk18138,bk18155,bk18179). Booking course 24967 dup + booking course 24941 (ended Jul3) STILL active=true. Tuguldurtugs EUR250 open; Aitana EUR40 open; Kiyoshi EUR8 open. NO ACTION TAKEN."
+      ]
+    ]
+  }
+]

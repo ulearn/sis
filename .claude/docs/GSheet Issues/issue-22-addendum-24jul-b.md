@@ -1,0 +1,1 @@
+Issue 22 Edith Nunes BC24991 Zero CAs 69th hourly 149th total Fri 24 Jul 2026. BC24991 General English AM 13 Jul - 7 Aug 2026 active=true. CAs=0 confirmed. 10 school days missed (13 Jul - 24 Jul). ~8 days remaining (27 Jul - 7 Aug). Aug 3 BH still missing (Issue 38). Fix NOT RUN. CRITICAL.

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• 104th check Sat 25 Jul 2026 UTC\n• Booking course 24609 (Morning General, Jul 13–Jul 31): active = true, 0 class assignments — UNCHANGED\n• 10 school days missed (Jul 14–25 = weeks 1 + 2)\n• Mon 27 Jul = FINAL window to assign class — 2 calendar days away\n• Course ends Thu Jul 31 — only 5 school days remain\n• Accommodation 11358 (Jul 12–Aug 2, bed 180): active = true — correct\n• Booking 17831: Confirmed, fully paid EUR 1,396.90\n• STUDENT HAS MISSED ENTIRE COURSE — assign now",
+        "Assign student 14443 to Morning General wb Mon 27 Jul — FINAL WINDOW. See recipe: issue-39-addendum-25jul-m.md",
+        "104th hrly Sat 25 Jul UTC. UNCHANGED. BC24609 still 0 SCAs (10 days missed = 2 full weeks). Mon Jul 27 = FINAL WINDOW (2 days). Course ends Jul 31. Fix NOT RUN.",
+        "CRITICAL; Mon 27 Jul FINAL window"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• 104th check Sat 25 Jul 2026 UTC\n• Booking course 24991 (General English AM, Jul 13–Aug 7): active = true, 0 class assignments — UNCHANGED\n• 10 school days missed (Jul 14–25 = weeks 1 + 2)\n• Mon 27 Jul = penultimate window — 2 calendar days away\n• 9 school days remain (Jul 27-31 = 5, Aug 4-7 = 4; Aug 3 = Bank Holiday)\n• Booking courses 24933 + 24934 (ended Jul 10): both active = true — 15 days stale\n• Booking 18214: Confirmed, fully paid EUR 608",
+        "Assign student 1015 to AM class wb Mon 27 Jul; deactivate BCs 24933+24934. See recipe: issue-22-addendum-25jul-j.md",
+        "104th hrly Sat 25 Jul UTC. UNCHANGED. BC24991 still 0 SCAs (10 days missed). BCs 24933+24934 still active (15d stale). Mon Jul 27 = penultimate window (2 days). Course ends Aug 7. Fix NOT RUN.",
+        "CRITICAL; 10d missed; 9d remain"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• 104th check Sat 25 Jul 2026 UTC\n• Booking course 24686 (Morning General, booking 1611): active = true, fee = null, 0 class assignments — UNCHANGED\n• Week 1 (Jul 20-24): complete — 5 school days missed\n• Week 2 starts Mon 27 Jul 2026 — 2 calendar days away\n• Approx 38 school days remaining through Sep 18\n• Booking course 1797 (Apr 6–Jun 26): active = true — stale 29 days",
+        "Confirm fee; assign BC 24686 to Morning General wb Mon 27 Jul. See recipe: issue-24-addendum-25jul-c.md",
+        "104th hrly Sat 25 Jul UTC. BC24686 active Jul20-Sep18, fee=null, SCAs=0. Week 1 complete (5d missed). Week 2 starts Mon 27 Jul (2 days). BC1797 stale 29d. Fix NOT RUN.",
+        "fee null; 0 SCAs; week 2 starts Mon"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 104th check Sat 25 Jul 2026 UTC\n• Aug 3 Bank Holiday: NOT in school_closure table — 8 days away\n• 17 booking courses start Aug 3 (active) — all need shunting to Aug 4 after Bank Holiday added\n• Booking course 25003 (booking 18225): confirmed duplicate of BC 25002 — same booking, name, dates Aug 3–Sep 18 — deactivate\n• Booking course 25016 (Life Pass Morning, booking 18238): endDate 2028-08-29 — typo, should be 2026-08-29\n• UNCHANGED from prior check",
+        "Add Aug BH to school_closure; fix BC 25016 endDate (2028→2026); deactivate BC 25003 dup; shunt 17 BCs to Aug 4. See recipe: issue-38-addendum-25jul-l.md",
+        "104th hrly Sat 25 Jul UTC. UNCHANGED. Aug 3 BH still absent (8d now). 17 active BCs starting Aug 3. BC25016 still endDate 2028-08-29. BC25003 still active dup of BC25002. Fix NOT RUN.",
+        "Aug BH; 8d; BC 25016 typo; BC 25003 dup"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 104th check Sat 25 Jul 2026 UTC\n• Booking 18180: Confirmed, fully paid EUR 2,584.96\n• Accommodation 11357 (Aug 2–Sep 6, bed 178 host family, EUR 1,250): active = true — correct\n• Capel Street accommodation (Sep 6–Sep 14): still missing — only 1 BA on booking 18180\n• EUR 529.96 unaccounted (paid 2,584.96 minus course 804.96 minus host family 1,250)\n• Booking course 24956 (General English AM, Aug 3–Sep 11): starts Aug 3 Bank Holiday — needs shunt to Aug 4\n• Payment 17954: EUR 2,584.96 Bank 26 Jun 2026 (29 days), xeroPaymentId = null\n• Host family check-in: Aug 2 = 8 calendar days away\n• UNCHANGED from prior checks",
+        "Confirm Capel details; create BA (BK18180, Sep 6-Sep 14, EUR 529.96); reconcile pmt 17954. See recipe: issue-41-addendum-25jul-k.md",
+        "104th hrly Sat 25 Jul UTC. UNCHANGED. Capel BA still missing on BK18180 (1 BA: host family Aug2-Sep6 bed178). BC24956 starts Aug3 (needs Aug BH shunt). Pmt17954 xeroId=null (29d). Check-in Aug 2 = 8 days. Fix NOT RUN.",
+        "Capel missing; check-in 8d"
+      ]
+    ]
+  },
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Orphan payments: 4 (unchanged, 88d/88d/85d/legacy)\n• Payment 16988: EUR 339.90, Bank, Apr 28, 88 days, hubspotPaymentId = 1204827374829\n• Payment 16989: EUR 339.90, Bank, Apr 28, 88 days, hubspotPaymentId = 1204846469317\n• Payment 17187: EUR 6,151, TransferMate Escrow, May 1, 85 days, fideloPaymentId = 37587, transactionId = D2026226\n• Payment 4781: EUR 380, Flywire, Aug 2019, legacy/unresolvable, fideloPaymentId = 32056\n• Stale confirmed booking courses (active, endDate < now): 23,173 — unchanged\n• Stale booking accommodations with beds: 43 — unchanged",
+        "Link pmts 16988+16989 to bookings; investigate fideloPaymentId=37587 on pmt 17187. See recipe: issue-1-addendum-25jul-f.md",
+        "104th hrly Sat 25 Jul UTC. 4 orphan pmts unchanged. 16988+16989 (EUR 339.90 each, Bank, Apr28, 88d). 17187 (EUR 6,151, TransferMate Escrow, May1, 85d, fideloPaymentId=37587). 4781 (EUR 380, Flywire, Aug2019, legacy). Fix NOT RUN.",
+        "4 orphan pmts; 23,173 stale BCs"
+      ]
+    ]
+  }
+]

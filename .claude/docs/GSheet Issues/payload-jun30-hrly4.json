@@ -1,0 +1,82 @@
+[
+  {
+    "range": "J2",
+    "values": [
+      [
+        "hrly 30 Jun UTC (122nd check, fresh DB): pmts 16988+16989 bookingId=STILL null xeroId=null EUR339.9 each. bk17856+17857 CONF conf=STILL false amtPaid=339.9 amtOpen=null. bc24630+24631 GE-AM-Plus Jun29-Jul10 fee=STILL null. Margherita+Francesca IN CLASS DAY 2 of 10. 4-STEP SQL STILL NOT RUN — 122 CHECKS. NEIL: RUN NOW."
+      ]
+    ]
+  },
+  {
+    "range": "J16",
+    "values": [
+      [
+        "hrly 30 Jun UTC (29th check, fresh DB): sca255 STILL weekStart=2026-01-12 weekEnd=2026-07-03. BC24925 AY-Afternoon Mar09-Sep11 active=true. Expires FRI 3 JUL = 3 DAYS FROM NOW. UPDATE NOT RUN. NEIL: MUST RUN BEFORE FRI — UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255."
+      ]
+    ]
+  },
+  {
+    "range": "J26",
+    "values": [
+      [
+        "hrly 30 Jun UTC (48th check, fresh DB): s917 Uyanga visaStatus=STILL null (updAt=May21=40d stale). bk1467 CONF conf=true 2405/2405 amtOpen=0. bc1613 AY-Morning Apr27-Oct16 active Day65. SCAs=STILL 0. NEIL: UPDATE students SET visa_status='Approved' WHERE id=917; THEN ASSIGN CLASS."
+      ]
+    ]
+  },
+  {
+    "range": "K26",
+    "values": [
+      [
+        "D65; 0SCA; CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "J30",
+    "values": [
+      [
+        "hrly 30 Jun UTC (29th check): Same as Issue 15 row 16. sca255 STILL weekStart=Jan12 weekEnd=Jul03. BC24925 AY-Afternoon Mar09-Sep11 active=true. Expires FRI 3 Jul = 3 DAYS FROM NOW. UPDATE NOT RUN. NEIL: run before Friday."
+      ]
+    ]
+  },
+  {
+    "range": "H39",
+    "values": [
+      [
+        "• Booking 18156 (Veronica Martin, student 278): Confirmed, EUR 573.20 fully paid, amount_open = 0\n• Accommodation 11352 (Veronica): bed 83, City Centre Apartment, 4 Jul to 11 Jul — CHECK-IN TOMORROW (Sat 4 Jul)\n• Accommodation 11285 (Jesus Manuel, booking 17825): also bed 83, 21 Jun to 5 Jul — overlap 2 days (4–5 Jul)\n• Conflict: bed 83 double-booked Jul 4–5 — both Veronica and Jesus assigned same bed\n• Beds 174, 175, 176 confirmed available for 4–11 Jul (fresh query 30 Jun)"
+      ]
+    ]
+  },
+  {
+    "range": "J39",
+    "values": [
+      [
+        "hrly 30 Jun UTC (16th check, fresh DB): accomm11352 Veronica bed83 Jul04-Jul11 STILL NOT REASSIGNED (updAt=Jun29). accomm11285 Jesus bed83 Jun21-Jul05 UNCHANGED (updAt=Jun16=14d). BED83 2-DAY OVERLAP Jul04-Jul05 CONFIRMED. CHECK-IN IS TOMORROW SAT 4 JUL. Beds 174(A1/R1)+175(A1/R2)+176(A2/R1) CONFIRMED FREE for Jul04-Jul11 (fresh DB query Jun30, 0 conflicts). pmt17953 xeroId=null. NEIL: REASSIGN accomm11352 bed83->174 in SIS NOW — last chance today."
+      ]
+    ]
+  },
+  {
+    "range": "K39",
+    "values": [
+      [
+        "TOMORROW; CONFLICT"
+      ]
+    ]
+  },
+  {
+    "range": "H43",
+    "values": [
+      [
+        "• Giampaolo Russo (student 14571): booking 18180 Confirmed, EUR 2584.96 fully paid, amount_open = 0\n• Accommodation 11357: Host Family, 2 Aug to 6 Sep 2026, fee = EUR 1250 — bed_id = null (not yet assigned)\n• Host Family beds occupied during Aug 2–Sep 6: 83 (until Aug 9), 112 (Jul 25–Sep 4), 179 (Jun 28–Sep 19), 190 (Jun 27–Dec 12)\n• 10 other Host Family accommodations in this period also unassigned (bed_id = null) — assign before the queue grows\n• Capel accommodation Sep 6–14: NOT YET CREATED in SIS"
+      ]
+    ]
+  },
+  {
+    "range": "J43",
+    "values": [
+      [
+        "hrly 30 Jun UTC (5th check, fresh DB): bk18180 CONF confirmed=true 2584.96/2584.96 amtOpen=0 updAt=Jun29. ba11357 Host Family Aug02-Sep06 fee=1250 bedId=STILL null. HF beds occupied Aug2-Sep6 confirmed: 83(Jul12-Aug09)+112(Jul25-Sep04)+179(Jun28-Sep19)+190(Jun27-Dec12). 10 other Host Family accomms in period also bedId=null. 0 Capel records for bk18180. Student arrives Aug 2 = 33 days. Neil: (1) assign HF bed to ba11357 in SIS (avoid beds 83/112/179/190); (2) add Capel Sep06-Sep14 to bk18180 via SIS admin."
+      ]
+    ]
+  }
+]

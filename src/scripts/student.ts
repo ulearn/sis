@@ -6,11 +6,124 @@
  * payloads for the three tabs: Profile (SIS), Challenges, LMS.
  */
 import type { PrismaClient } from '../generated/prisma/client';
-import { fetchStudentHolidays, filterOutHolidayDates, pctFromRows } from './attendance-pct';
+import { Prisma } from '../generated/prisma/client';
+import { studentSearchSql } from '../lib/student-search';
+import { computeImpact } from '../lib/impact-score';
+
+// KickStart prize: each Progress Post has a 14-day measurement window from the
+// moment it's linked. After that it exits the window (algos sink with age).
+const POST_WINDOW_DAYS = 14;
+import { fetchStudentHolidays, filterOutHolidayDates, pctFromRows, blendedAttendancePct } from './attendance-pct';
 import { kellyMention } from '../lib/slack';
 import { notifyChallenge } from '../lib/challenge-notify';
+import { mapCourseType, buildBaseDealProps } from './booking-deal';
+import { sendStudentEmail } from '../routes/email';
 
 export function studentScripts(prisma: PrismaClient) {
+
+  // ── HubSpot (student self-service booking) ──────────────────────────
+  // A logged-in student booking a new course/extension creates a HubSpot Deal
+  // against their EXISTING contact (never a second contact). See book() below.
+  const HUBSPOT_PAT = process.env.HUBSPOT_WRITE_TOKEN || process.env.ACCESS_TOKEN;
+  const HS = 'https://api.hubapi.com';
+  const B2B_PIPELINE = '35765201';            // Partner students → B2B Sales pipeline
+  const ENROLMENT_STAGE = '109570243';        //   …ENROLMENT stage
+  const DIRECT_PIPELINE = 'default';          // Direct (no agency) → Direct Sales pipeline
+  const DIRECT_CONTRACT_STAGE = 'contractsent'; //   …CONTRACT stage
+  async function hsRequest(method: string, path: string, body?: any): Promise<any> {
+    const opts: any = {
+      method,
+      headers: { 'Authorization': `Bearer ${HUBSPOT_PAT}`, 'Content-Type': 'application/json' },
+    };
+    if (body && method !== 'GET') opts.body = JSON.stringify(body);
+    const res = await fetch(HS + path, opts);
+    return res.json().catch(() => ({}));
+  }
+
+  // Shared accommodation shape (address/map resolution). Used by the in-view
+  // booking in me() and by the on-demand Upcoming / History lists so all three
+  // render identically.
+  function buildAccom(accom: any) {
+    if (!accom) return null;
+    const property = accom?.bed?.room?.property || null;
+    const provider = property?.provider || null;
+    // property.address wins (apartments/residences have a physical address
+    // distinct from the management company); Host Families only set provider.address.
+    const addrLine1 = property?.address || provider?.address || null;
+    const addrLine2 = provider?.addressAddon || null;
+    const fullAddress = [addrLine1, addrLine2, provider?.zip, provider?.city].filter(Boolean).join(', ') || null;
+    const mapUrl = fullAddress ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}` : null;
+    return {
+      type: accom.accommodationType,
+      roomType: accom.roomType,
+      board: accom.board,
+      startDate: accom.startDate,
+      endDate: accom.endDate,
+      address: fullAddress,
+      mapUrl,
+      provider: provider ? { name: provider.name, city: provider.city, phone: provider.mobile || provider.phone } : null,
+    };
+  }
+
+  // Effective service window of a booking. Prefers the denormalised
+  // serviceStart/serviceEnd; falls back to the span of its courses +
+  // accommodations when those aren't set (e.g. a hand-created booking), so date
+  // bucketing still works. Nulls only when the booking has no dated part at all.
+  function windowOf(b: any): { start: Date | null; end: Date | null } {
+    // Fallback span from the booking's parts — used ONLY per-edge when the
+    // denormalised serviceStart/serviceEnd is missing (don't blend the two, or a
+    // late course end would override a real serviceEnd).
+    const starts: number[] = [], ends: number[] = [];
+    const push = (d: any, arr: number[]) => { if (d) { const t = new Date(d).getTime(); if (!isNaN(t)) arr.push(t); } };
+    for (const c of b.courses || []) { push(c.startDate, starts); push(c.endDate, ends); }
+    for (const a of b.accommodations || []) { push(a.startDate, starts); push(a.endDate, ends); }
+    const start = b.serviceStart ? new Date(b.serviceStart) : (starts.length ? new Date(Math.min(...starts)) : null);
+    const end   = b.serviceEnd   ? new Date(b.serviceEnd)   : (ends.length   ? new Date(Math.max(...ends))   : null);
+    return { start, end };
+  }
+
+  // Full serialisation of one booking (course + accommodation + invoice) for the
+  // Upcoming / History overlays.
+  function serializeBooking(b: any, phase: 'upcoming' | 'past') {
+    const c = b.courses?.[0] || null;
+    return {
+      id: b.id,
+      phase,
+      serviceStart: b.serviceStart,
+      serviceEnd: b.serviceEnd,
+      status: b.status,
+      invoiceUrl: b.hubspotInvoiceUrl || null,
+      course: c ? { name: c.name, level: c.level, startDate: c.startDate, endDate: c.endDate, weeks: c.weeks, hoursPerWeek: c.hoursPerWeek } : null,
+      accommodation: buildAccom(b.accommodations?.[0] || null),
+    };
+  }
+
+  // The student's OTHER bookings (everything except the one in view), bucketed
+  // into upcoming (starts in the future, soonest first) and past (already ended,
+  // most recent first). Loaded on demand by the Course-section links so the /me
+  // payload stays lean. `excludeId` = the booking already in full view.
+  async function bookingsList(studentId: number, excludeId?: number) {
+    const now = new Date();
+    const bookings = await prisma.booking.findMany({
+      where: { studentId },
+      orderBy: { id: 'desc' },
+      include: {
+        courses: { orderBy: { startDate: 'desc' } },
+        accommodations: { orderBy: { startDate: 'desc' }, include: { bed: { include: { room: { include: { property: { include: { provider: true } } } } } } } },
+      },
+    });
+    const usable = bookings.filter(b => b.id !== excludeId && b.status !== 'CANCELLED');
+    const win = new Map(usable.map(b => [b.id, windowOf(b)] as const));
+    const upcoming = usable
+      .filter(b => { const w = win.get(b.id)!; return w.start && w.start > now; })
+      .sort((a, b) => win.get(a.id)!.start!.getTime() - win.get(b.id)!.start!.getTime())
+      .map(b => serializeBooking(b, 'upcoming'));
+    const past = usable
+      .filter(b => { const w = win.get(b.id)!; return w.end && w.end < now; })
+      .sort((a, b) => win.get(b.id)!.end!.getTime() - win.get(a.id)!.end!.getTime())
+      .map(b => serializeBooking(b, 'past'));
+    return { upcoming, past };
+  }
 
   async function me(studentId?: number) {
     if (!studentId) return { student: null, error: 'No student session' };
@@ -20,14 +133,26 @@ export function studentScripts(prisma: PrismaClient) {
       select: {
         id: true, firstName: true, lastName: true, email: true,
         nationality: true, birthday: true, phoneMobile: true, phone: true,
-        currentLevel: true, profilePicture: true,
+        currentLevel: true, profilePicture: true, language: true, beta: true,
+        passportValidUntil: true,
+        // Surfaced in the Overview "Personal" section (student.html) — same
+        // column the Challenges Social card edits. Without it the row shows "—"
+        // even when a handle is set.
+        instagramHandle: true,
+        // Null → app shows the welcome video once (after the agreement gate).
+        welcomeVideoSeenAt: true,
       },
     });
     if (!student) return { student: null, error: 'Student not found' };
 
-    // Pick the active/current booking — most recent service window. Fall back
-    // to most recent regardless of dates if none are active right now.
-    const today = new Date();
+    // In-view booking, chosen by DATE (not row id): the booking live right now
+    // (serviceStart ≤ today ≤ serviceEnd); else the nearest UPCOMING one (shown
+    // in full, badged "Upcoming" until it starts); else the most recent past one.
+    // The rest are reachable via the Upcoming →/History → links (bookingsList,
+    // loaded on demand). When today's course ends the next one slides into view
+    // automatically on the next load.
+    const now = new Date();
+    const today = now;   // alias — later "this week" + passport-window math use `today`
     const bookings = await prisma.booking.findMany({
       where: { studentId },
       orderBy: { id: 'desc' },
@@ -41,13 +166,27 @@ export function studentScripts(prisma: PrismaClient) {
         },
       },
     });
-    const current = bookings.find(b =>
-      b.serviceStart && b.serviceEnd && b.serviceStart <= today && b.serviceEnd >= today
-    ) || bookings[0] || null;
+    // Bucket by EFFECTIVE service window (windowOf) and drop CANCELLED. A booking
+    // whose serviceStart/serviceEnd weren't populated still sorts by its course/
+    // accommodation dates, so a hand-created future booking still surfaces.
+    const usable = bookings.filter(b => b.status !== 'CANCELLED');
+    const win = new Map(usable.map(b => [b.id, windowOf(b)] as const));
+    const active = usable.find(b => { const w = win.get(b.id)!; return w.start && w.end && w.start <= now && w.end >= now; }) || null;
+    const futureSorted = usable
+      .filter(b => { const w = win.get(b.id)!; return w.start && w.start > now; })
+      .sort((a, b) => win.get(a.id)!.start!.getTime() - win.get(b.id)!.start!.getTime());
+    const pastSorted = usable
+      .filter(b => { const w = win.get(b.id)!; return w.end && w.end < now; })
+      .sort((a, b) => win.get(b.id)!.end!.getTime() - win.get(a.id)!.end!.getTime());
+    const current = active || futureSorted[0] || pastSorted[0] || usable[0] || null;
+    const isUpcoming = !!current && !active && current === futureSorted[0];
+    // Counts of the OTHER bookings (excluding the one in view) → drive the links.
+    const upcomingCount = futureSorted.filter(b => b.id !== current?.id).length;
+    const pastCount = pastSorted.filter(b => b.id !== current?.id).length;
 
     const course = current?.courses?.[0] || null;
     const accom = current?.accommodations?.[0] || null;
-    const provider = (accom as any)?.bed?.room?.property?.provider || null;
+    const accommodationObj = buildAccom(accom);
 
     // Attendance — count records for this student. Holiday days are excluded
     // entirely from the calculation (neither present nor absent — the student
@@ -59,7 +198,13 @@ export function studentScripts(prisma: PrismaClient) {
     const holidays = await fetchStudentHolidays(prisma, studentId);
     const attRows = filterOutHolidayDates(attRowsAll, holidays);
     const total = attRows.length;
-    const overallPct = pctFromRows(attRows);
+    // Overall folds in the pre-migration Fidelo figure (if any) carried on the
+    // current booking, weighted with the SIS-tracked days since 04/05.
+    const overallPct = blendedAttendancePct(
+      attRows,
+      current?.legacyAttendancePct != null ? Number(current.legacyAttendancePct) : null,
+      current?.serviceStart || null,
+    );
 
     // "This week" = Monday-of-this-week to today
     const monday = new Date(today);
@@ -97,6 +242,13 @@ export function studentScripts(prisma: PrismaClient) {
       startTime: cls.startTime,
       endTime: cls.endTime,
       classroomName: cls.classroom?.name || null,
+      // The class's CEFR — what the student is *actually* attending. The
+      // mobile Profile prefers this over BookingCourse.level (which is the
+      // level on the original sale and stays static if the student is moved
+      // between classes — e.g. from a B2 placement to an A2 group).
+      level: cls.level || null,
+      session: cls.session || null,
+      className: cls.name || null,
     } : null;
 
     // Documents — issued only (drafts aren't shown to students)
@@ -110,7 +262,29 @@ export function studentScripts(prisma: PrismaClient) {
       take: 10,
     });
 
+    // Passport-expiry check against the travel window (earliest upcoming course
+    // start → latest end across live/upcoming bookings). Critical if it expires
+    // before the course starts (can't travel); warning if before it ends (renew
+    // at home — overseas renewals take months). Null when the passport covers
+    // the whole trip or dates are missing.
+    const nowMs = today.getTime();
+    const upcoming = bookings.filter(b => b.serviceEnd && b.serviceEnd.getTime() >= nowMs);
+    const startsMs = upcoming.map(b => b.serviceStart?.getTime()).filter((t): t is number => !!t && !isNaN(t));
+    const endsMs = upcoming.map(b => b.serviceEnd?.getTime()).filter((t): t is number => !!t && !isNaN(t));
+    const winStart = startsMs.length ? new Date(Math.min(...startsMs)) : null;
+    const winEnd = endsMs.length ? new Date(Math.max(...endsMs)) : null;
+    let passportWarning: { severity: 'critical' | 'warning'; message: string } | null = null;
+    const ppExp = student.passportValidUntil;
+    if (ppExp && winStart) {
+      if (ppExp < winStart) {
+        passportWarning = { severity: 'critical', message: 'Your passport expires before your course starts. You need to renew it before you travel — passport renewals from abroad can take months.' };
+      } else if (winEnd && ppExp < winEnd) {
+        passportWarning = { severity: 'warning', message: 'Your passport expires while you are here in Ireland. We strongly recommend renewing it before you leave home — renewing a passport abroad is slow and complicated.' };
+      }
+    }
+
     return {
+      passportWarning,
       student: {
         id: student.id,
         firstName: student.firstName,
@@ -121,13 +295,33 @@ export function studentScripts(prisma: PrismaClient) {
         phone: student.phoneMobile || student.phone,
         level: student.currentLevel,
         profilePicture: student.profilePicture,
+        // Mother tongue — used client-side to translate the "+ Book" button
+        // label into the student's own language. May be null.
+        language: student.language,
+        // Beta-access flag — gates the Learning (LMS) tab during launch.
+        beta: student.beta,
+        // Surfaced in the Overview "Personal" row (must be on the returned object,
+        // not just the select).
+        instagramHandle: student.instagramHandle,
+        // Null → the app shows the welcome video once, then stamps it seen.
+        welcomeVideoSeenAt: student.welcomeVideoSeenAt,
       },
       booking: current ? {
         id: current.id,
         serviceStart: current.serviceStart,
         serviceEnd: current.serviceEnd,
         status: current.status,
+        // True when the in-view booking hasn't started yet → UI badges "Upcoming".
+        isUpcoming,
+        // Customer-facing HubSpot invoice share link — surfaced as a "View
+        // Invoice" button under the Course card. Quote deliberately omitted
+        // (superfluous — the student already has it by email).
+        invoiceUrl: (current as any).hubspotInvoiceUrl || null,
       } : null,
+      // Counts of the student's OTHER bookings → show/hide the Upcoming →/History →
+      // links; the bookings themselves load on demand via GET /bookings/list.
+      upcomingCount,
+      pastCount,
       course: course ? {
         name: course.name,
         level: course.level,
@@ -137,17 +331,7 @@ export function studentScripts(prisma: PrismaClient) {
         hoursPerWeek: course.hoursPerWeek,
       } : null,
       timetable,
-      accommodation: accom ? {
-        type: accom.accommodationType,
-        roomType: accom.roomType,
-        board: accom.board,
-        startDate: accom.startDate,
-        endDate: accom.endDate,
-        provider: provider ? {
-          name: provider.name,
-          city: provider.city,
-        } : null,
-      } : null,
+      accommodation: accommodationObj,
       attendance: {
         overallPct,
         weekPct,
@@ -393,6 +577,21 @@ export function studentScripts(prisma: PrismaClient) {
     });
     if (!s) return { error: 'Student not found' };
 
+    // Eligibility: student has the Challenges tab iff ANY of their bookings
+    // mirrored Booking.hubspotChallenge from a HubSpot Deal (e.g.
+    // "KickStart"). Per Neil 2026-05-20: once a student has done a
+    // challenge, the visible record stays forever — we don't reset the tab
+    // for a second/third booking that has no challenge. So one historical
+    // hit is enough to keep the tab on.
+    const anyChallengeBooking = await (prisma.booking as any).findFirst({
+      where: { studentId, hubspotChallenge: { not: null } },
+      select: { id: true, hubspotChallenge: true },
+    });
+    if (!anyChallengeBooking) {
+      return { eligible: false, items: [], progress: { done: 0, total: 0 }, periodKind: 'WEEK' };
+    }
+    const challengeType: string = anyChallengeBooking.hubspotChallenge;
+
     // Decide weekly vs monthly window from the student's primary booking.
     // AY/LifePass (>= 12 weeks) → monthly, otherwise → weekly.
     const booking = await prisma.booking.findFirst({
@@ -445,9 +644,27 @@ export function studentScripts(prisma: PrismaClient) {
     }
 
     // Content tasks: 3 verified video posts to clear it
-    const content = await (prisma as any).studentChallengeContent.findMany({
+    const contentRaw = await (prisma as any).studentChallengeContent.findMany({
       where: { studentId },
       orderBy: { id: 'asc' },
+    });
+    // Enrich each post with its 14-day measurement window, anchored on the REAL
+    // post date (postedAt), falling back to createdAt for legacy rows. There's no
+    // upload guard any more — the student may upload the result screenshot at ANY
+    // time; the window only decides leaderboard eligibility (checked against the
+    // screenshot's own date at upload). `windowOpen` drives friendly messaging.
+    const content = contentRaw.map((c: any) => {
+      const anchor = c.postedAt ? new Date(c.postedAt) : new Date(c.createdAt);
+      const due = new Date(anchor.getTime() + POST_WINDOW_DAYS * 86400000);
+      const daysLeft = Math.ceil((due.getTime() - Date.now()) / 86400000);
+      return {
+        ...c,
+        dueAt: due.toISOString(),      // last date a screenshot still counts for the prize
+        daysLeft,                       // days left in the window (may be <0 once past it)
+        measurable: true,               // no gate — screenshot uploadable any time
+        windowOpen: daysLeft > 0,       // still inside the 14-day counting window
+        hasMetrics: c.metricsAt != null,
+      };
     });
     const verifiedContent = content.filter((c: any) => c.verified).length;
     const contentTasksDone = verifiedContent >= 3;
@@ -485,7 +702,7 @@ export function studentScripts(prisma: PrismaClient) {
       },
       {
         key: 'content',
-        label: 'Content Tasks',
+        label: 'Progress Posts',
         icon: '🎬',
         done: contentTasksDone,
         state: `${verifiedContent} of 3 verified`,
@@ -493,7 +710,7 @@ export function studentScripts(prisma: PrismaClient) {
       },
       {
         key: 'course_attended',
-        label: 'Attended Course',
+        label: 'Attend Course',
         icon: '🎯',
         done: courseAttendedDone,
         state: periodPct !== null
@@ -503,12 +720,12 @@ export function studentScripts(prisma: PrismaClient) {
       },
       {
         key: 'activity_attended',
-        label: 'Attended Social',
+        label: 'Attend Social',
         icon: '🎉',
         done: activityAttendedDone,
         state: activityAttendedDone
           ? `${attendedRows.length} attended this ${periodKind === 'WEEK' ? 'week' : 'month'}`
-          : 'RSVP and show up to an activity',
+          : 'RSVP & Show Up',
         data: { attended: attendedRows.map((r: any) => ({ activityId: r.activity.id, title: r.activity.title, date: r.activity.date })) },
       },
       {
@@ -538,13 +755,133 @@ export function studentScripts(prisma: PrismaClient) {
         },
       },
     ];
-    const done = items.filter(i => i.done).length;
+
+    // July open-competition cohort (temporary, tagged Booking.hubspotChallenge='July'):
+    // focus them on just the two tasks that feed the €500 Progress-Post leaderboard
+    // — Connect (Instagram handle + follow) and Progress Posts — hiding the rest of
+    // the KickStart suite they never signed up for. KickStart/CashBack keep the full
+    // set. Revert = clear the 'July' tag (scripts/tag-july-cohort.js). They still
+    // share ONE leaderboard with KickStart (challengeLeaderboard keys on
+    // hubspotChallenge != null, so 'July' is already included — no pool change).
+    const shownItems = challengeType === 'July'
+      ? items.filter(i => i.key === 'social' || i.key === 'content')
+      : items;
+    const done = shownItems.filter(i => i.done).length;
 
     return {
-      progress: { done, total: items.length },
+      challenge: challengeType,
+      progress: { done, total: shownItems.length },
       periodKind,
-      items,
+      items: shownItems,
     };
+  }
+
+  // Admin dashboard: every student CURRENTLY in a challenge. "Currently" = a
+  // booking whose HubSpot Deal carried a challenge (KickStart/CashBack) and
+  // whose course hasn't ended yet (serviceEnd >= today) — so departed students
+  // drop off. One row per student (most recent active challenge booking),
+  // enriched with the same per-task progress the student sees on their app.
+  async function challengesReport(search?: string) {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const bookings = await (prisma.booking as any).findMany({
+      where: {
+        hubspotChallenge: { not: null },
+        serviceEnd: { gte: today },
+        // Only COMMITTED bookings: drop CANCELLED and PENDING (PENDING = quote
+        // sent, €0 paid — a prospect, not an enrolled student). null status is
+        // kept (= not cancelled/pending), same convention as the other reports.
+        OR: [{ status: null }, { status: { notIn: ['CANCELLED', 'PENDING'] } }],
+      },
+      select: { studentId: true, hubspotChallenge: true, serviceStart: true, serviceEnd: true },
+      orderBy: { id: 'desc' },
+    });
+
+    // Dedup → keep the most recent active challenge booking per student.
+    const byStudent = new Map<number, any>();
+    for (const b of bookings) if (!byStudent.has(b.studentId)) byStudent.set(b.studentId, b);
+
+    // Search reuses the canonical accent-insensitive name/nickname/email/id
+    // matcher (same as the Students list + partner portal) — applied as a
+    // post-filter constrained to the challenge cohort.
+    let ids = [...byStudent.keys()];
+    const term = (search || '').trim();
+    if (term && ids.length) {
+      const frag = studentSearchSql(term);
+      const matched = await prisma.$queryRaw<Array<{ id: number }>>(
+        Prisma.sql`SELECT s.id FROM students s WHERE s.id IN (${Prisma.join(ids)}) AND ${frag}`
+      );
+      const keep = new Set(matched.map(r => Number(r.id)));
+      ids = ids.filter(id => keep.has(id));
+    }
+
+    const rows: any[] = [];
+    const emailByStudent = new Map<number, string>();
+    for (const studentId of ids) {
+      const b = byStudent.get(studentId);
+      const s = await prisma.student.findUnique({
+        where: { id: studentId },
+        select: { id: true, firstName: true, lastName: true, nickname: true, nationality: true, currentLevel: true, email: true },
+      });
+      if (!s) continue;
+      if ((s as any).email) emailByStudent.set(studentId, (s as any).email);
+      const ch: any = await challenges(studentId);
+      const started = b.serviceStart && new Date(b.serviceStart) <= today;
+      rows.push({
+        studentId,
+        firstName: s.firstName, lastName: s.lastName, nickname: s.nickname,
+        nationality: s.nationality, level: s.currentLevel,
+        challenge: b.hubspotChallenge,
+        serviceStart: b.serviceStart, serviceEnd: b.serviceEnd,
+        status: started ? 'In School' : 'Upcoming',
+        periodKind: ch?.periodKind || 'WEEK',
+        done: ch?.progress?.done ?? 0,
+        total: ch?.progress?.total ?? 0,
+        // Prize eligibility = whole challenge complete (all tasks).
+        eligible: (ch?.progress?.total ?? 0) > 0 && (ch?.progress?.done ?? 0) >= (ch?.progress?.total ?? 0),
+        items: (ch?.items || []).map((i: any) => ({ key: i.key, label: i.label, icon: i.icon, done: i.done, state: i.state })),
+        leadImpact: null as number | null,
+        leadPost: null as any,
+        has_account: false,
+      });
+    }
+
+    // Attach each student's LEADING (highest-Impact) Progress Post for the
+    // €500 leaderboard — one batched query, max per student.
+    const sids = rows.map(r => r.studentId);
+    if (sids.length) {
+      const posts = await (prisma as any).studentChallengeContent.findMany({
+        where: { studentId: { in: sids }, impact: { not: null } },
+        select: { studentId: true, impact: true, url: true, views: true, likes: true, comments: true, shares: true },
+      });
+      const leadBy = new Map<number, any>();
+      for (const p of posts) {
+        const cur = leadBy.get(p.studentId);
+        if (!cur || (p.impact || 0) > (cur.impact || 0)) leadBy.set(p.studentId, p);
+      }
+      for (const r of rows) {
+        const l = leadBy.get(r.studentId);
+        if (l) { r.leadImpact = l.impact; r.leadPost = { url: l.url, views: l.views, likes: l.likes, comments: l.comments, shares: l.shares }; }
+      }
+    }
+
+    // Registration flag — has each student created a ULearn account? Drives the
+    // "Account ✓" column. sis_users.email is stored normalised (lowercase) at
+    // registration, so an `in` on lowercased emails matches cleanly.
+    const accEmails = [...emailByStudent.values()].filter(Boolean).map(e => e.toLowerCase());
+    if (accEmails.length) {
+      const accts = await prisma.sisUser.findMany({
+        where: { email: { in: accEmails }, userType: 'student', active: true },
+        select: { email: true },
+      });
+      const has = new Set(accts.map(a => (a.email || '').toLowerCase()));
+      for (const r of rows) {
+        const em = emailByStudent.get(r.studentId);
+        if (em && has.has(em.toLowerCase())) r.has_account = true;
+      }
+    }
+
+    rows.sort((a, b) => (a.firstName || '').localeCompare(b.firstName || ''));
+    return rows;
   }
 
   // Student updates own social fields. Verification is admin-only — toggling
@@ -625,19 +962,29 @@ export function studentScripts(prisma: PrismaClient) {
   async function addContentSubmission(studentId: number, body: any) {
     const url = (body.url || '').toString().trim();
     if (!url) throw new Error('URL required');
+    // postedAt = the real post date (captured by the "Date posted?" prompt at
+    // link time). Anchors the 14-day measurement window. Falls back to createdAt
+    // downstream if the student didn't provide it.
+    // ANTI-CHEAT: a post can't be dated in the FUTURE — that would push the window
+    // out and let the post mature longer than everyone else's (unfair). Backdating
+    // is self-penalising (shorter window), so it's allowed. Clamp any future date
+    // to now, server-side, so the client `max` can't be bypassed.
+    let postedAt = body.postedAt ? new Date(body.postedAt) : null;
+    if (postedAt && !isNaN(postedAt.getTime()) && postedAt.getTime() > Date.now()) postedAt = new Date();
     const row = await (prisma as any).studentChallengeContent.create({
       data: {
         studentId,
         url,
         kind: (body.kind || 'VIDEO').toString().toUpperCase(),
         note: body.note || null,
+        postedAt: postedAt && !isNaN(postedAt.getTime()) ? postedAt : null,
       },
     });
     // How many of the 3 has the student now submitted? Drives the body text
     // so Kelly knows at a glance whether they've finished the set.
     const total = await (prisma as any).studentChallengeContent.count({ where: { studentId } });
     void notifyChallenge(prisma, studentId, {
-      title: `🎬 Content Tasks — video ${total}/3 submitted`,
+      title: `🎬 Progress Posts — video ${total}/3 submitted`,
       body: [
         `URL: ${url}`,
         `${kellyMention()} please review and verify.`,
@@ -647,12 +994,170 @@ export function studentScripts(prisma: PrismaClient) {
   }
 
   async function removeContentSubmission(studentId: number, id: number) {
-    // Guard: students can only delete their own (and only if not yet verified).
+    // Students may delete their OWN post at any time and start over — including
+    // after metrics/verification (they own the entry; the app confirms first).
     const row = await (prisma as any).studentChallengeContent.findUnique({ where: { id } });
     if (!row || row.studentId !== studentId) throw new Error('Not found');
-    if (row.verified) throw new Error('Cannot remove a verified submission');
     await (prisma as any).studentChallengeContent.delete({ where: { id } });
     return { deleted: true };
+  }
+
+  // KickStart prize: store the day-14 screenshot the student uploads for a
+  // Progress Post (relPath is relative to uploads/). The metrics come back via
+  // saveContentMetrics after the AI read + student confirm.
+  async function attachContentScreenshot(studentId: number, contentId: number, relPath: string, shotDateStr?: string | null) {
+    const row = await (prisma as any).studentChallengeContent.findUnique({ where: { id: contentId } });
+    if (!row || row.studentId !== studentId) throw new Error('Not found');
+    // Eligibility for the €500 leaderboard: the date read from the screenshot must
+    // fall within the post's 14-day window (anchored on postedAt, fallback
+    // createdAt). If the AI couldn't read a date, leave eligible = null — it still
+    // counts (lenient), and the leader is hand-checked at month end regardless.
+    const shotDate = shotDateStr ? new Date(shotDateStr + 'T12:00:00Z') : null;  // noon UTC → no TZ off-by-one
+    let eligible: boolean | null = null;
+    if (shotDate && !isNaN(shotDate.getTime())) {
+      const anchor = row.postedAt ? new Date(row.postedAt) : new Date(row.createdAt);
+      const due = anchor.getTime() + POST_WINDOW_DAYS * 86400000;
+      eligible = shotDate.getTime() <= due;
+    }
+    await (prisma as any).studentChallengeContent.update({
+      where: { id: contentId },
+      data: { screenshotPath: relPath, shotDate: (shotDate && !isNaN(shotDate.getTime())) ? shotDate : null, eligible },
+    });
+    return { ok: true, shotDate: (shotDate && !isNaN(shotDate.getTime())) ? shotDate.toISOString() : null, eligible };
+  }
+
+  // Save the confirmed engagement metrics for a Progress Post and (re)compute
+  // its Impact. Student-confirmed in the app; the leading entry is hand-checked
+  // against the live link at month end, so inflation has no payoff.
+  async function saveContentMetrics(
+    studentId: number,
+    contentId: number,
+    m: { views?: number | null; likes?: number | null; comments?: number | null; reposts?: number | null; shares?: number | null; saves?: number | null },
+  ) {
+    const row = await (prisma as any).studentChallengeContent.findUnique({ where: { id: contentId } });
+    if (!row || row.studentId !== studentId) throw new Error('Not found');
+    const clean = (v: any) => { const x = Math.round(Number(v)); return Number.isFinite(x) && x >= 0 ? x : null; };
+    const views = clean(m.views), likes = clean(m.likes), comments = clean(m.comments);
+    const reposts = clean(m.reposts), shares = clean(m.shares), saves = clean(m.saves);
+    const impact = computeImpact({ views, likes, comments, reposts, shares, saves });
+    const updated = await (prisma as any).studentChallengeContent.update({
+      where: { id: contentId },
+      data: { views, likes, comments, reposts, shares, saves, impact, metricsAt: new Date() },
+      select: { id: true, views: true, likes: true, comments: true, reposts: true, shares: true, saves: true, impact: true, metricsAt: true },
+    });
+    return updated;
+  }
+
+  // Student-facing €500 leaderboard: ranks the current challenge cohort by each
+  // student's LEADING (highest-Impact) Progress Post. Light query (no per-student
+  // challenges() recompute) — cohort bookings + max-impact per student.
+  async function challengeLeaderboard(studentId: number) {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const bookings = await (prisma.booking as any).findMany({
+      where: { hubspotChallenge: { not: null }, serviceEnd: { gte: today }, OR: [{ status: null }, { status: { notIn: ['CANCELLED', 'PENDING'] } }] },
+      select: { studentId: true },
+    });
+    const sids = [...new Set(bookings.map((b: any) => b.studentId))] as number[];
+    if (!sids.length) return { prize: 500, total: 0, top: [], me: null };
+
+    const students = await prisma.student.findMany({ where: { id: { in: sids } }, select: { id: true, firstName: true, lastName: true, nickname: true } });
+    const sById = new Map(students.map(s => [s.id, s]));
+    // Only leaderboard-eligible posts count (eligible=false = screenshot past the
+    // 14-day window; null = lenient, hand-checked at month end). SCOPED to the
+    // CURRENT competition month (post's window-end month = posted_at+14d) so the
+    // student board shows THIS month's race and resets each month — past months
+    // live on the admin's month-selectable leaderboard.
+    const nowMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+    const posts: any[] = await (prisma as any).$queryRawUnsafe(
+      `SELECT student_id AS "studentId", impact FROM student_challenge_content
+       WHERE student_id = ANY($1::int[]) AND impact IS NOT NULL AND eligible IS NOT false
+         AND to_char((COALESCE(posted_at, created_at) + interval '14 days'),'YYYY-MM') = $2`,
+      sids, nowMonth);
+    const impBy = new Map<number, number>();
+    for (const p of posts) { const cur = impBy.get(p.studentId) || 0; if ((p.impact || 0) > cur) impBy.set(p.studentId, p.impact || 0); }
+
+    const nameOf = (s: any) => s ? ((s.nickname || s.firstName || 'Student') + (s.lastName ? ' ' + s.lastName.charAt(0) + '.' : '')) : 'Student';
+    const ranked = [...impBy.keys()].map(id => ({ id, impact: impBy.get(id)! })).sort((a, b) => b.impact - a.impact);
+    const total = ranked.length;
+    const top = ranked.slice(0, 10).map((r, i) => ({ rank: i + 1, name: nameOf(sById.get(r.id)), impact: Math.round(r.impact), isMe: r.id === studentId }));
+    const myIdx = ranked.findIndex(r => r.id === studentId);
+    const me = myIdx >= 0
+      ? { rank: myIdx + 1, impact: Math.round(ranked[myIdx].impact), of: total }
+      : { rank: null, impact: null, of: total, inCohort: sids.includes(studentId) };
+    return { prize: 500, total, top, me, month: nowMonth };
+  }
+
+  // Staff-side mirror of the student-app leaderboard. Same cohort + ranking as
+  // challengeLeaderboard, but returns the FULL ranked list with full names +
+  // post counts (staff see everything; no top-10 cap, no name abbreviation).
+  async function challengeLeaderboardAdmin() {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const bookings = await (prisma.booking as any).findMany({
+      where: { hubspotChallenge: { not: null }, serviceEnd: { gte: today }, OR: [{ status: null }, { status: { notIn: ['CANCELLED', 'PENDING'] } }] },
+      select: { studentId: true },
+    });
+    const sids = [...new Set(bookings.map((b: any) => b.studentId))] as number[];
+    if (!sids.length) return { prize: 500, total: 0, rows: [] };
+
+    const students = await prisma.student.findMany({ where: { id: { in: sids } }, select: { id: true, firstName: true, lastName: true, nickname: true } });
+    const sById = new Map(students.map(s => [s.id, s]));
+    // Only leaderboard-eligible posts count — a screenshot dated past the post's
+    // 14-day window (eligible=false) is stored but excluded. null = lenient (AI
+    // couldn't read a date) → still counts, hand-checked at month end.
+    const posts = await (prisma as any).studentChallengeContent.findMany({ where: { studentId: { in: sids }, impact: { not: null }, NOT: { eligible: false } }, select: { studentId: true, impact: true } });
+    const impBy = new Map<number, number>();
+    const postCount = new Map<number, number>();
+    for (const p of posts) {
+      const cur = impBy.get(p.studentId) || 0;
+      if ((p.impact || 0) > cur) impBy.set(p.studentId, p.impact || 0);
+      postCount.set(p.studentId, (postCount.get(p.studentId) || 0) + 1);
+    }
+    const fullName = (s: any) => s ? ([s.firstName, s.lastName].filter(Boolean).join(' ') || s.nickname || 'Student') : 'Student';
+    const ranked = [...impBy.keys()]
+      .map(id => ({ id, impact: impBy.get(id)!, posts: postCount.get(id) || 0 }))
+      .sort((a, b) => b.impact - a.impact);
+    const rows = ranked.map((r, i) => ({
+      rank: i + 1,
+      studentId: r.id,
+      name: fullName(sById.get(r.id)),
+      nickname: (sById.get(r.id) as any)?.nickname || null,
+      impact: Math.round(r.impact),
+      posts: r.posts,
+    }));
+    return { prize: 500, total: rows.length, rows };
+  }
+
+  // Admin HISTORICAL leaderboard, scoped to a competition MONTH so past months
+  // (e.g. July's winner) are retained after the cohort rolls off. The competition
+  // month of a post = the month its 14-day window ENDS (posted_at + 14d), matching
+  // how the prize month is decided. Recomputed live from the persisted posts — no
+  // snapshot needed since the posts don't change once a month closes. Defaults to
+  // the latest month that has any scored, eligible post. Student app stays current-month.
+  async function challengeLeaderboardByMonth(monthKey?: string | null) {
+    const COMP = `to_char((COALESCE(posted_at, created_at) + interval '14 days'),'YYYY-MM')`;
+    const monthRows: any[] = await (prisma as any).$queryRawUnsafe(
+      `SELECT DISTINCT ${COMP} m FROM student_challenge_content
+       WHERE impact IS NOT NULL AND eligible IS NOT false ORDER BY 1 DESC`);
+    const months = monthRows.map(r => r.m).filter(Boolean);
+    const month = (monthKey && months.includes(monthKey)) ? monthKey : (months[0] || null);
+    if (!month) return { prize: 500, month: null, months: [], total: 0, rows: [] };
+    const posts: any[] = await (prisma as any).$queryRawUnsafe(
+      `SELECT student_id AS "studentId", impact FROM student_challenge_content
+       WHERE impact IS NOT NULL AND eligible IS NOT false AND ${COMP} = $1`, month);
+    const impBy = new Map<number, number>(); const postCount = new Map<number, number>();
+    for (const p of posts) {
+      if ((p.impact || 0) > (impBy.get(p.studentId) || 0)) impBy.set(p.studentId, p.impact || 0);
+      postCount.set(p.studentId, (postCount.get(p.studentId) || 0) + 1);
+    }
+    const sids = [...impBy.keys()];
+    const students = await prisma.student.findMany({ where: { id: { in: sids } }, select: { id: true, firstName: true, lastName: true, nickname: true } });
+    const sById = new Map(students.map(s => [s.id, s]));
+    const fullName = (s: any) => s ? ([s.firstName, s.lastName].filter(Boolean).join(' ') || s.nickname || 'Student') : 'Student';
+    const rows = sids
+      .map(id => ({ id, impact: impBy.get(id)!, posts: postCount.get(id) || 0 }))
+      .sort((a, b) => b.impact - a.impact)
+      .map((r, i) => ({ rank: i + 1, studentId: r.id, name: fullName(sById.get(r.id)), nickname: (sById.get(r.id) as any)?.nickname || null, impact: Math.round(r.impact), posts: r.posts }));
+    return { prize: 500, month, months, total: rows.length, rows };
   }
 
   // ── Admin verify endpoints (for the staff side) ─────────────
@@ -694,17 +1199,219 @@ export function studentScripts(prisma: PrismaClient) {
     return (prisma as any).studentChallengeContent.update({ where: { id: contentId }, data });
   }
 
+  // Admin: delete a Progress Post outright (e.g. spam / wrong link / duplicate).
+  async function adminDeleteContent(contentId: number) {
+    await (prisma as any).studentChallengeContent.delete({ where: { id: contentId } });
+    return { deleted: true };
+  }
+
   async function learning() {
-    // LMS surface stub — handover/redirect to lms.ulearnschool.com is the real path.
-    return { lmsUrl: 'https://lms.ulearnschool.com/' };
+    // LMS surface stub — handover/redirect to the migrated LMS on the SIS host.
+    return { lmsUrl: 'https://sis.ulearnschool.com/prototype/' };
+  }
+
+  // ── Student self-service booking ────────────────────────────────────
+  // The "+ Book" button in the student app: an existing student books a new
+  // course / extension. This is the THIRD booking surface (after the Drupal
+  // front-end form and the partner portal). It always represents a
+  // CONTINUATION — these are existing students — so:
+  //   • continuation = Yes  → HubSpot autoQuote charges no registration fee
+  //   • no challenge/KickStart (that promo is for brand-new enrolments only)
+  //   • continuation_accomm = Yes when accommodation is added → no accom fee
+  //   • createquote = true  → fires the HubSpot autoQuote workflow
+  // The deal is routed to the partner B2B pipeline if the student belongs to an
+  // agency, otherwise to Direct Sales (B2C). No second contact is ever created;
+  // the deal hangs off the student's existing HubSpot contact. A staff task is
+  // dropped on the deal as the "please send the quotation" nudge.
+  async function book(studentId: number | undefined, data: any) {
+    if (!studentId) return { success: false, error: 'No student session' };
+    if (!HUBSPOT_PAT) return { success: false, error: 'HubSpot not configured' };
+    if (!data?.courseType) return { success: false, error: 'Please choose a course.' };
+
+    const student = await prisma.student.findUnique({
+      where: { id: studentId },
+      select: { id: true, firstName: true, lastName: true, email: true, nationality: true, hubspotContactId: true },
+    });
+    if (!student) return { success: false, error: 'Student not found' };
+
+    // Partner relationship comes from the student's current/most-recent booking
+    // (agency lives on Booking, not Student). Picks the active service window,
+    // else the most recent booking.
+    const today = new Date();
+    const bookings = await prisma.booking.findMany({
+      where: { studentId },
+      orderBy: { serviceStart: 'desc' },
+      select: {
+        serviceStart: true, serviceEnd: true, agencyId: true,
+        agency: { select: { primaryEntityId: true, primaryEntityType: true } },
+      },
+    });
+    const curBooking = bookings.find(b =>
+      b.serviceStart && b.serviceEnd && b.serviceStart <= today && b.serviceEnd >= today
+    ) || bookings[0] || null;
+    const hasAgency = !!curBooking?.agencyId;
+    const agency = curBooking?.agency || null;
+
+    const nationality = data.nationality || student.nationality || '';
+
+    // 1. Resolve the EXISTING HubSpot contact — never create a second contact
+    //    for a known student. Prefer the stored id; fall back to an email
+    //    search; only create as a last resort (legacy record with no link).
+    let contactId: string | null = student.hubspotContactId || null;
+    if (!contactId && student.email) {
+      const search = await hsRequest('POST', '/crm/v3/objects/contacts/search', {
+        filterGroups: [{ filters: [{ propertyName: 'email', operator: 'EQ', value: student.email }] }],
+        properties: ['email'], limit: 1,
+      });
+      contactId = search?.results?.[0]?.id || null;
+    }
+    if (!contactId) {
+      const props: Record<string, string> = {
+        firstname: student.firstName || '', lastname: student.lastName || '',
+        nationality, type: hasAgency ? 'Student-B2B' : 'Student-B2C',
+      };
+      if (student.email) props.email = student.email;
+      const c = await hsRequest('POST', '/crm/v3/objects/contacts', { properties: props });
+      contactId = c?.id || (c?.category === 'CONFLICT' ? (c.message?.match(/Existing ID: (\d+)/)?.[1] || null) : null);
+      // Backfill the link so future bookings skip the lookup.
+      if (contactId && student.hubspotContactId !== contactId) {
+        try { await prisma.student.update({ where: { id: studentId }, data: { hubspotContactId: contactId } }); } catch { /* unique race — non-fatal */ }
+      }
+    }
+    if (!contactId) return { success: false, error: 'Could not resolve your HubSpot contact.' };
+
+    // 2. Build the deal — shared course/accom/extras mapping + continuation flags.
+    const dealProps: Record<string, any> = {
+      dealname: `${student.firstName} ${student.lastName} — Continuation`,
+      pipeline: hasAgency ? B2B_PIPELINE : DIRECT_PIPELINE,
+      dealstage: hasAgency ? ENROLMENT_STAGE : DIRECT_CONTRACT_STAGE,
+      ...buildBaseDealProps({ ...data, nationality }),
+      continuation: 'Yes',
+      createquote: 'true',
+    };
+    if (data.accommType && data.accommType !== 'none') dealProps.continuation_accomm = 'Yes';
+
+    const dealRes = await hsRequest('POST', '/crm/v3/objects/deals', { properties: dealProps });
+    if (!dealRes.id) return { success: false, error: dealRes.message || 'Failed to create deal in HubSpot' };
+    const dealId = dealRes.id;
+
+    // 3. Associate deal ↔ student contact: default (3) + the student label
+    //    matching the partner-portal convention (B2C=1, B2B=11).
+    const studentLabel = hasAgency ? 11 : 1;
+    await hsRequest('PUT', `/crm/v4/objects/deals/${dealId}/associations/contacts/${contactId}`,
+      [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 3 },
+       { associationCategory: 'USER_DEFINED', associationTypeId: studentLabel }]);
+
+    // 4. Partner students — tie the deal to the agency's primary entity exactly
+    //    as the partner portal does (company=5, or sole-trader contact=13).
+    if (hasAgency && agency?.primaryEntityId) {
+      if (agency.primaryEntityType === 'company') {
+        await hsRequest('PUT', `/crm/v4/objects/deals/${dealId}/associations/companies/${agency.primaryEntityId}`,
+          [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 5 }]);
+      } else if (agency.primaryEntityType === 'contact' && agency.primaryEntityId !== contactId) {
+        await hsRequest('PUT', `/crm/v4/objects/deals/${dealId}/associations/contacts/${agency.primaryEntityId}`,
+          [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 3 },
+           { associationCategory: 'USER_DEFINED', associationTypeId: 13 }]);
+      }
+    }
+
+    // 5. Staff task on the deal — the "please send the quotation" nudge.
+    //    autoQuote drafts the quote; a human still reviews & sends. Non-fatal.
+    try {
+      const summary = [mapCourseType({ ...data, nationality })];
+      if (data.courseWeeks) summary.push(`${data.courseWeeks}w`);
+      if (data.courseStart) summary.push(`from ${data.courseStart}`);
+      if (data.accommType && data.accommType !== 'none') summary.push('+ accommodation');
+      await hsRequest('POST', '/crm/v3/objects/tasks', {
+        properties: {
+          hs_task_subject: `Quotation — ${student.firstName} ${student.lastName} (student self-booking)`,
+          hs_task_body:
+            `${student.firstName} ${student.lastName} booked a continuation via the student app.\n` +
+            `Course: ${summary.join(' · ')}.\n` +
+            `Continuation (no registration fee). Auto-quote requested — review & send the quotation.`,
+          hs_task_status: 'NOT_STARTED',
+          hs_task_priority: 'HIGH',
+          hs_task_type: 'TODO',
+          hs_timestamp: Date.now(),
+        },
+        associations: [{ to: { id: dealId }, types: [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 216 }] }],
+      });
+    } catch { /* task is a nicety — never fail the booking on it */ }
+
+    return { success: true, dealId };
+  }
+
+  // ── "Message us" — student → school support email ───────────────────
+  // Logged-in student contacts the school from the app. Sends to
+  // success@ulearnschool.com via the existing sendStudentEmail (SES + EmailLog),
+  // replyTo = the student so staff just hit Reply. Identity/context is appended
+  // server-side so staff don't have to look anything up. No new tables.
+  async function support(studentId: number | undefined, data: any) {
+    if (!studentId) return { success: false, error: 'No student session' };
+    const topic = String(data?.topic || 'Other').slice(0, 40);
+    const message = String(data?.message || '').trim();
+    if (!message) return { success: false, error: 'Please type a message.' };
+
+    const student = await prisma.student.findUnique({
+      where: { id: studentId },
+      select: { id: true, firstName: true, lastName: true, email: true, currentLevel: true, nationality: true, phoneMobile: true, phone: true },
+    });
+    if (!student) return { success: false, error: 'Student not found' };
+
+    // Light current-context for the staff-facing identity block.
+    const today = new Date();
+    const booking = await prisma.booking.findFirst({
+      where: { studentId, serviceStart: { lte: today }, serviceEnd: { gte: today } },
+      orderBy: { serviceStart: 'desc' },
+      select: { serviceStart: true, serviceEnd: true, courses: { orderBy: { startDate: 'desc' }, take: 1, select: { name: true } } },
+    });
+    const assignment: any = await prisma.studentClassAssignment.findFirst({
+      where: { studentId, weekStart: { lte: today }, OR: [{ weekEnd: null }, { weekEnd: { gte: today } }] },
+      orderBy: { weekStart: 'desc' },
+      select: { class_: { select: { name: true } } } as any,
+    });
+
+    const esc = (s: any) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const name = [student.firstName, student.lastName].filter(Boolean).join(' ');
+    const courseName = booking?.courses?.[0]?.name || '—';
+    const className = assignment?.class_?.name || '—';
+    const phone = student.phoneMobile || student.phone || '—';
+
+    const html =
+      `<p style="white-space:pre-wrap;font-size:15px;line-height:1.55">${esc(message)}</p>` +
+      `<hr style="border:none;border-top:1px solid #e2e8f0;margin:18px 0">` +
+      `<p style="font-size:13px;color:#555;margin:0;line-height:1.7">` +
+      `<strong>Sent from the Student App</strong> · Topic: ${esc(topic)}<br>` +
+      `Student: <strong>${esc(name)}</strong> (#${student.id})<br>` +
+      `Email: ${esc(student.email || '—')} · Phone: ${esc(phone)}<br>` +
+      `Nationality: ${esc(student.nationality || '—')} · Level: ${esc(student.currentLevel || '—')}<br>` +
+      `Course: ${esc(courseName)} · Class: ${esc(className)}` +
+      `</p>`;
+
+    try {
+      const sent = await sendStudentEmail(prisma, {
+        from: 'app@ulearnschool.com',
+        fromName: 'ULearn Student App',
+        to: 'app@ulearnschool.com',
+        subject: `[Student Support · ${topic}] ${name} (#${student.id})`,
+        html,
+        replyTo: student.email || undefined,
+        studentId: student.id,
+        sentBy: 'student-app',
+      });
+      return { success: true, emailLogId: (sent as any)?.emailLogId ?? null, studentFirst: student.firstName };
+    } catch (e: any) {
+      return { success: false, error: 'Could not send your message. Please try again, or email app@ulearnschool.com.' };
+    }
   }
 
   return {
-    me, absences, planned,
+    me, bookingsList, absences, planned, book, support,
     recordAbsenceReason, clearAbsenceReason,
     attachAbsenceCert, removeAbsenceCertFile, getAbsenceCertFile,
-    challenges, learning,
+    challenges, challengesReport, learning,
     updateSocial, confirmFollow, addContentSubmission, removeContentSubmission,
-    adminSetVerify, adminVerifyContent,
+    attachContentScreenshot, saveContentMetrics, challengeLeaderboard, challengeLeaderboardAdmin, challengeLeaderboardByMonth,
+    adminSetVerify, adminVerifyContent, adminDeleteContent,
   };
 }

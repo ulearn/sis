@@ -1,0 +1,57 @@
+[
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Pietro Colombo (student 72, booking course 81, Morning General Plus 6–24 July 2026): zero class assignments ever — 7 school days missed 7–13 July — 9 school days remaining\n• Sophia Emilly Gallo Borim (student 853, booking course 1820, Academic Year Renewal Afternoon 29 June–18 December 2026): NEW — last assignment week end 24 April on old course — zero assignments on current booking course (14 days)\n• Kayque Tauann Lopes Coelho (student 852, booking course 1821, Academic Year Renewal Afternoon 29 June–18 December 2026): last assignment SCA 26 week end 24 April on old course — zero assignments on current booking course (14 days)\n• Tuguldurtugs Enkhtugs (student 858, booking course 1786, Academic Year Renewal Morning 6 July–25 December 2026): last assignment SCA 55 week end 1 May on old course — zero assignments on current booking course (7 days)\n• Monday 13 July = TODAY — all four students are in class with no valid assignment",
+        "Create class assignments for students 72, 853, 852, and 858 starting week of 13 July. See recipe: issue-45-addendum-13jul.md",
+        "43rd check 13 Jul MON UTC. NEW: Sophia Emilly Gallo Borim (s853, bc1820 AY Renewal Afternoon Jun29-Dec18) also has 0 SCAs on current bc, last SCA Apr24 old course. Pietro (s72 bc81 ends Jul24) 0 SCAs ever, 7d missed Jul7-13. Kayque (s852 bc1821) SCA26 Apr24 old, 0 current 14d. Tuguldurtugs (s858 bc1786) SCA55 May1 old, 0 current 7d. All 4 unassigned TODAY. NEIL: assign all 4 NOW via SIS admin.",
+        "CRITICAL; 4 students; TODAY"
+      ]
+    ]
+  },
+  {
+    "range": "H34:K34",
+    "values": [
+      [
+        "• SIS database default for gender is null (no default) — not female; the original question was answered\n• Student 356 (Shih-Wei Huang): gender field = null — still not set after 40 days (last updated 3 June 2026)\n• Exit letter document 238 generated with she/her pronouns because code used gender = null as default-to-female\n• Document 238 status = ISSUED — has not been revoked or regenerated with correct pronouns (25 days since 18 June 2026)\n• Code-level fix needed: documents.ts should guard against null gender (avoid any pronoun assumption)",
+        "Set student 356 gender via SIS admin; revoke document 238; regenerate exit letter with correct pronouns; add null-gender guard in documents.ts; see recipe issue-32-shih-wei-gender-default.md",
+        "13 Jul MON UTC (fresh DB). s356 gender=STILL null (updatedAt=Jun03=40 days). doc238 STILL ISSUED issuedAt=Jun18 (25 days with wrong she/her pronouns). Staff: set gender in SIS for student 356, then revoke doc 238 and regenerate. Code fix also needed in documents.ts.",
+        "40d; doc238 issued"
+      ]
+    ]
+  },
+  {
+    "range": "H37:K37",
+    "values": [
+      [
+        "• Homework section: renderSheetHtml() in src/routes/attendance.ts — no homework block present; awaiting Paul / Neil layout specification (9th code check, 13 Jul MON UTC)\n• Holiday display bug: getWeekAttendance in src/scripts/attendance.ts (line 31) — no bookingHoliday fetch; students on holiday appear as absent\n• Code unchanged since commit 9008d10",
+        "Homework: get Paul / Neil layout spec then add block to renderSheetHtml. Holiday: add bookingHoliday fetch to getWeekAttendance (src/scripts/attendance.ts line 31). See recipe: issue-36-attendance-homework-section.md",
+        "9th check 13 Jul MON UTC. G column edited on sheet (hash changed). No homework block in renderSheetHtml (src/routes/attendance.ts:36). getWeekAttendance (src/scripts/attendance.ts:31) still no bookingHoliday fetch. Both bugs open. Awaiting homework spec from Paul/Neil.",
+        "code unchanged; open"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Gap 2 — Holiday weeks field: FIXED — calcHolEnd() and calcHolWeeks() confirmed at admin.html lines 13832–13843 (checked 13 Jul UTC)\n• Gap 1 — Admin course start Monday snap: STILL OPEN — calcCourseEnd() at admin.html line 13801 has no Monday enforcement\n• Gap 3 — Irish bank holiday Mondays: STILL OPEN — School closures table has Christmas and Good Friday only (9 records: Christmas 2026–2029, Good Friday 2026–2030); no public bank holiday Mondays",
+        "Implement Monday snap for admin course start dates and add Irish bank holiday Mondays to school closures. See recipe: issue-38-course-date-ux.md",
+        "Jul13 MON UTC check. G column annotated on sheet (hash changed). Gap 2 holWeeks FIXED (calcHolEnd/calcHolWeeks admin.html 13832-13843). Gap 1 Monday-snap STILL OPEN (no snapAdminCourseStart in admin.html). Gap 3 Irish BH Mondays STILL OPEN (9 SchoolClosure records: Christmas 2026-29 + Good Friday 2026-30; 0 bank holiday Mondays). Code-only change. Low priority.",
+        "open; Gaps 1+3"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• Payment 17954 (EUR 2584.96, booking 18180): Xero payment ID = null and type = null — payment not reconciled in Xero (29th check, 13 Jul UTC)\n• Booking 18180 (Giampaolo Russo, student 14571): Confirmed, EUR 2584.96 fully paid, paid 29 June 2026\n• Accommodation 11357 (bed 178, Host Family, 2 August to 6 September 2026): claim status = confirmed — bed assigned — OK\n• Capel Street period (6 to 14 September): covered by accommodation 11311 (bed 84, booking 17980, ends 13 September) — confirmed 4 July 2026\n• August check-in is 20 days away — only outstanding item is Xero reconciliation",
+        "Reconcile payment 17954 (EUR 2584.96) against booking 18180 in Xero. See recipe: issue-41-giampaolo-dual-accomm.md",
+        "29th check 13 Jul MON UTC. UNCHANGED. PMT17954 EUR2584.96 xeroPaymentId=STILL null type=STILL null (bookingId=18180 hsId=1268783973563). BA11357 bed178 HF Aug2-Sep6 claimStatus=confirmed OK (confirmed 6 Jul). Capel Sep6-14 covered by BA11311 bed84 bk17980 ends Sep13. BC24956 GE-AM Aug3-Sep11. ONLY outstanding: reconcile PMT17954 in Xero. Aug2 check-in=20 days.",
+        "Xero pmt null; Aug2 20d"
+      ]
+    ]
+  }
+]

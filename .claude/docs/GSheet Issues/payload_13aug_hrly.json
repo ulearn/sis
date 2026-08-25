@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• 159th check Thu 13 Aug 2026 UTC — day 108 since course start (27 Apr 2026), unchanged\n• Student 917 (Uyanga Tungalag): visa_status = null, HubSpot contact ID = null; last updated 28 Jul 2026 (16 days ago)\n• Booking 1467: CONFIRMED, confirmed = true, EUR 2,405 paid, EUR 0 open, service_end 30 Oct 2026\n• Booking Course 1613 (Academic Year Morning, 27 Apr to 30 Oct 2026): active = true — 0 class assignments — 108 days attendance unrecorded",
+        "Set visa_status = approved on student 917; assign BC 1613 to AM class; link HubSpot contact. See recipe: issue-25-addendum-13aug.md",
+        "159th check Thu 13 Aug UTC. Day 108. visaStatus = null, HS null (16d). EUR 2,405 paid, EUR 0 open. BC 1613 0 SCAs. Fix NOT RUN.",
+        "visa null; 0 SCAs; day 108"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• 63rd check Thu 13 Aug 2026 UTC — unchanged from 62nd check (Wed 12 Aug)\n• Booking Course 23 (Intensive General 30, bk 22): ended 2026-05-22 — 83 days stale, active = true, 2 class assignments\n• Booking Course 24826 (2 weeks Intensive, bk 18034): ended 2026-06-19 — 55 days stale, active = true, 0 class assignments\n• Booking 22: CONFIRMED, confirmed = true, EUR 1,948 paid — fully paid\n• Booking 18034: PARTIAL, confirmed = false, EUR 845 paid, EUR 250 open, EUR 1,095 total\n• Payment 17023: EUR 1,698, bk 22, 14 Feb 2026 — xeroPaymentId = null (180 days unreconciled)\n• Payment 17237: EUR 250, bk 22, 1 Oct 2025 — xeroPaymentId = null (316 days unreconciled)\n• Payment 17683: EUR 845, bk 18034, 23 Apr 2026 — xeroPaymentId = null (112 days unreconciled)",
+        "Deactivate BCs 23+24826; chase EUR 250 on bk 18034; reconcile payments 17023+17237+17683 in Xero. See recipe: issue-26-addendum-13aug.md",
+        "63rd check Thu 13 Aug UTC. BC 23 83d stale (2 SCAs), BC 24826 55d stale (0 SCAs). EUR 250 open on bk18034. 3 payments Xero null (316d max). Fix NOT RUN.",
+        "2 BCs stale; EUR250 open; 83d"
+      ]
+    ]
+  },
+  {
+    "range": "H28:K28",
+    "values": [
+      [
+        "• 48th check Thu 13 Aug 2026 UTC — unchanged (57 days since booking last updated Jun 17)\n• Booking 17909 (Sofiia Korkishchenko): status = CANCELLED, confirmed = true (anomaly)\n• Amount paid = EUR 0, amount open = EUR 727.50, no payment records\n• Booking Course 24693 (Renewal - Academic Year PM, ends 13 Nov 2026): active = true on cancelled booking, 0 class assignments\n• Student enrolled correctly on booking 17849 / Booking Course 24623 — no current student impact\n• Same anomaly tracked under Issue 7 (row 8)",
+        "Set booking 17909 confirmed = false; deactivate Booking Course 24693. See recipe: issue-27-addendum-13aug.md",
+        "48th hrly Thu 13 Aug 2026 UTC. Unchanged 57d. Booking 17909 CANCELLED + confirmed. Fix NOT RUN.",
+        "bk17909 CANCELLED+confirmed; 57d"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• 126th check Thu 13 Aug 2026 UTC — unchanged from 125th check (Wed 12 Aug)\n• Booking Course 104 (Morning General Plus, bk 94): ended 2026-06-26 — 48 days stale, active = true, 1 class assignment\n• Caution: Booking Course 104 has 1 class assignment — verify historical before deactivating\n• Booking 94 (Giulia Avallone): CONFIRMED, confirmed = true, EUR 1,151.50 fully paid\n• Payment 17102: EUR 1,151.50, bk 94, 13 Mar 2026 — xeroPaymentId = null — 153 days unreconciled\n• Payment 945: EUR 4,231, bk 79 (Milena Vinci), 30 Jan 2026 — xeroPaymentId = null — 195 days unreconciled",
+        "Verify BC 104 class assignment historical then deactivate; reconcile payments 17102+945 in Xero. See recipe: issue-30-addendum-13aug.md",
+        "126th check Thu 13 Aug UTC. BC 104 48d stale (1 class assignment). Xero lag 153d (pmt17102) + 195d (pmt945). Fix NOT RUN.",
+        "BC104 stale 48d; Xero 153d+195d"
+      ]
+    ]
+  },
+  {
+    "range": "H33:K33",
+    "values": [
+      [
+        "• 11th check Thu 13 Aug 2026 UTC — unchanged (~125 days)\n• Only content is value 278 in column F (Veronica Martin student ID)\n• Veronica Martin accommodation resolved in Issue 37 (row 39)\n• No database record involved — sheet admin issue only",
+        "Delete row 33 in Google Sheets. See recipe: issue-32-addendum-13aug.md",
+        "11th hrly Thu 13 Aug UTC (~125d). Awaiting Neil to delete manually.",
+        "phantom row; delete"
+      ]
+    ]
+  },
+  {
+    "range": "H34:K34",
+    "values": [
+      [
+        "• 26th check Thu 13 Aug 2026 UTC — unchanged\n• Student 356 (Shih-Wei Huang): gender = null, last updated 28 Jul 2026 (16 days ago)\n• Document 238 (Exit Letter, bk 560): status = ISSUED — 57 days since issued (17 Jun 2026) with incorrect she/her pronouns\n• No superseding version generated — only one document record exists for booking 560\n• Booking 560: CONFIRMED, confirmed = true",
+        "Set student 356 gender = male; revoke doc 238; regenerate Exit Letter. See recipe: issue-33-addendum-13aug.md",
+        "26th hrly Thu 13 Aug UTC. Unchanged. Gender null 16d. Doc 238 ISSUED 57d wrong pronouns. Fix NOT RUN.",
+        "57d; doc238 wrong pronouns"
+      ]
+    ]
+  }
+]

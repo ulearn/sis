@@ -1,0 +1,35 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 177th check Fri 7 Aug 2026 UTC — unchanged since 176th check\n• Payment 4781: EUR 380, Flywire, 20 Aug 2019 (legacy Fidelo, ~2,549 days orphaned)\n• Payment 16988: EUR 339.90, Bank, 28 Apr 2026 (102 days orphaned, xero_payment_id null)\n• Payment 16989: EUR 339.90, Bank, 28 Apr 2026 (102 days orphaned, xero_payment_id null)\n• Payment 17187: EUR 6,151, TransferMate Escrow, 1 May 2026 (98 days orphaned, xero_payment_id null)\n• Bookings 17856 and 17857: CONFIRMED, confirmed = false — amount_paid EUR 339.90 each, 0 payment rows linked\n• Booking Courses 24630 and 24631 (General English AM Plus): ended 10 Jul 2026, still active — 28 days stale",
+        "Link payments 16988/16989 to bookings 17857/17856; confirm bookings; deactivate Booking Courses 24630+24631. See recipe: issue-1-addendum-7aug-b.md",
+        "177th hrly Fri 7 Aug 2026 UTC. Unchanged. Booking Courses 24630/24631 28d stale (ended Jul 10). Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 55th check Fri 7 Aug 2026 UTC — STILL 0 class assignments, Mon 10 Aug in 3 days\n• All 17 Booking Courses starting Mon 10 Aug 2026: 0 class assignments unchanged\n• 13 ready (CONFIRMED + confirmed = true): BCs 108 (Borroni), 109 (Moretti), 1313 (De Sousa), 1818 (Reis), 24915 (Hanakawa), 24970 (Mendsaikhan), 25004 (Contu), 25005 (Mereu), 25024 (Roberto), 25027 (Burgos), 25031 (Garcia Roman), 25036 (Perez Aldana), 25039 (Ravai)\n• BC 96 (Alessandro Signorotti): CONFIRMED but confirmed = false — EUR 250 open of EUR 2,095\n• BC 833 (Settiyanee Duangjai): ESCROW — EUR 4,847.50 in escrow\n• BC 25007 (Nominjin Amartsogt): PARTIAL — EUR 370 open of EUR 1,350\n• BC 25042 (Edith Nunes): PENDING — EUR 456 fully unpaid",
+        "Assign 13 ready students to classes via SIS Admin TODAY (EOD Fri 7 Aug); clear 4 blocked bookings. See recipe: issue-38-addendum-7aug-e.md",
+        "55th hrly Fri 7 Aug UTC. STILL 0 assignments. 3 days to Mon 10 Aug. Roster in recipe -e. EOD TODAY is deadline.",
+        "URGENT: assign TODAY"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 35th check Fri 7 Aug 2026 UTC — count unchanged at 24,466 stale active Booking Courses\n• Most recently ended (still active): Booking Course 25006 (General English AM Plus, ended 3 Aug 2026) — 4 days stale, 2 class assignments\n• 10 Booking Courses ended 31 Jul 2026 still active — 7 days stale\n• Awaiting policy decision on bulk deactivation",
+        "Bulk deactivate all Booking Courses where active = true and end date < today. See recipe: issue-45-addendum-7aug.md",
+        "35th hrly Fri 7 Aug UTC. Count unchanged at 24,466. No decision made. Fix NOT RUN.",
+        "24,466 stale; awaiting decision"
+      ]
+    ]
+  }
+]

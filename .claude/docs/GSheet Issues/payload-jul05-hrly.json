@@ -1,0 +1,66 @@
+[
+  {
+    "range": "J2",
+    "values": [
+      [
+        "211th check 5 Jul SUN UTC — UNCHANGED. Payments 16988+16989 bookingId=STILL null xeroId=null EUR339.9 each. Bookings 17856+17857 CONFIRMED confirmed=false amtPaid=339.9/339.9. Courses 24630+24631 GE-AM-Plus end Jul10=5d (Mon-Fri). 4-step SQL NOT RUN 211 checks. NEIL: COURSES END FRIDAY JUL10 — RUN NOW."
+      ]
+    ]
+  },
+  {
+    "range": "H23",
+    "values": [
+      [
+        "• Booking 18158 (Edite Nunes, student 1015): Confirmed, confirmed = true, fully paid EUR 740/740 (66th check, 5 Jul 2026 UTC)\n• Booking course 24933 (General English AM, 15 Jun to 10 Jul, EUR 380): active — valid course, zero class assignments for current term\n• Booking course 24934 (General English AM, 15 Jun to 10 Jul, EUR 360): still active — duplicate booking course to be deactivated\n• Student 1015 has two old class assignments (SCA 48 + SCA 146, class 7, on old booking courses) but zero class assignments for current booking course 24933 (started 15 Jun)\n• Course ends 10 Jul 2026 — 5 days remaining — student has not been in any class for current term"
+      ]
+    ]
+  },
+  {
+    "range": "J23",
+    "values": [
+      [
+        "66th check 5 Jul SUN UTC — UNCHANGED. Booking 18158 CONFIRMED EUR740/740. Booking course 24933 GE-AM active, ends Jul10=5d. Booking course 24934 DUP (EUR360) STILL active. Student 1015 has old SCAs (class 7, last expired May15) but zero assignments for current booking course 24933. 2 steps NOT RUN. NEIL: assign Edite to class before Jul10 — 5 days left."
+      ]
+    ]
+  },
+  {
+    "range": "J25",
+    "values": [
+      [
+        "30th check 5 Jul SUN UTC — UNCHANGED. Booking course 1797 ended Jun26=9d ago still active=true. Booking course 24686 starts Jul20=15d, fee=null. Payment 17124 type=null xeroId=null unreconciled. 3 steps unrun."
+      ]
+    ]
+  },
+  {
+    "range": "J41",
+    "values": [
+      [
+        "33rd check 5 Jul SUN UTC — UNCHANGED. Booking 17831 PARTIAL EUR965/1396.90 (EUR431.90 open) confirmed=false. Payment 17180 (EUR431.90, Apr27, TransferMate Escrow): xeroId=null hsId=null not counted in amtPaid. Payment 17963 (EUR965, Jul01, HubSpot 1273784562922): xeroId=null counted in amtPaid. Accommodation 11358 (bed 180, Host Family, Jul12-Aug02) STARTS IN 7 DAYS. Both payments unreconciled. NEIL: reconcile pmt17180+pmt17963 in Xero before Jul12."
+      ]
+    ]
+  },
+  {
+    "range": "H47",
+    "values": [
+      [
+        "• Kayque Lopes Coelho (student 852, booking course 1821): Academic Year Renewal Afternoon 29 Jun to 18 Dec — 7 days in, zero class assignments — OVERDUE\n• Sophia Gallo Borim (student 853, booking course 1820): Academic Year Renewal Afternoon 29 Jun to 18 Dec — 7 days in, zero class assignments — OVERDUE\n• Tuguldurtugs Enkhtugs (student 858, booking course 1786): Academic Year Renewal Morning 6 Jul to 25 Dec — STARTS TOMORROW MON 6 Jul, zero class assignments — CRITICAL\n• Telmuun Enkhsaikhan (student 293, booking course 1810): Academic Year Renewal Morning 29 Jun to 18 Dec — 7 days in, zero class assignments; booking 1624 PARTIAL, confirmed = false (payment pending)\n• Ettore Iovinella (student 14564): booking course 24941 (General English AM Plus, ended 3 Jul) still active = true; booking course 24968 (General English AM Plus, 6 Jul to 13 Jul) starts tomorrow, zero class assignments\n• Gustavo Da Silva (student 14570): duplicate booking courses 24967 (General English AM, EUR 137.60) and 24955 (General English AM Plus, EUR 996.84) both active for 6 Jul to 7 Aug — deactivate 24967; both bookings PENDING (not confirmed)\n• Verónica Martín (student 278, booking course 24931): General English AM 6 Jul to 10 Jul — course ends Friday, zero class assignments (confirmed) — ONLY 4 SCHOOL DAYS\n• Kiyoshi Fujino (student 14445, booking course 24907): General English AM 6 Jul to 10 Jul — course ends Friday, zero class assignments (confirmed) — ONLY 4 SCHOOL DAYS\n• 8 other confirmed starters for 6 Jul with zero class assignments: students 7/72/1055/14528/14572/14577 (confirmed); students 7309/32 pending\n• Root cause: renewal students excluded from arrivals report; is_renewal flag not propagated to RNW booking courses (33rd check, 5 Jul 2026 UTC)"
+      ]
+    ]
+  },
+  {
+    "range": "I47",
+    "values": [
+      [
+        "URGENT: assign all confirmed students to classes before Mon 6 Jul 09:00; deactivate booking courses 24967 (Gustavo duplicate) and 24941 (Ettore ended Jul3); advance HubSpot deals for students 293/7309/32 to confirm. See recipe: issue-45-renewal-arrivals.md"
+      ]
+    ]
+  },
+  {
+    "range": "J47",
+    "values": [
+      [
+        "33rd check 5 Jul SUN UTC — STUDENTS START TOMORROW MON JUL6. All checked students still zero current SCAs. Tuguldurtugs s858 bc1786 AY-Morn TOMORROW. Kiyoshi s14445 bc24907 + Veronica s278 bc24931 GE-AM TOMORROW end Fri=4 school days. Ettore s14564 bc24968 GE-AM-Plus TOMORROW (1wk). Kayque s852+Sophia s853 AY-Aft 7d in 0SCA. NEIL: ASSIGN ALL CONFIRMED STUDENTS NOW — SUNDAY BEFORE MONDAY. Deactivate bc24967+bc24941."
+      ]
+    ]
+  }
+]

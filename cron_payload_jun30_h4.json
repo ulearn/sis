@@ -1,0 +1,56 @@
+[
+  {
+    "range": "J2:K2",
+    "values": [
+      [
+        "hrly 30 Jun UTC (119th check, fresh DB): pmts 16988+16989 bookingId=STILL null xeroId=null EUR339.9 each. bk17856+17857 CONFIRMED confirmed=STILL false amtPaid=339.9 amtOpen=null. bc24630+24631 GE-AM-Plus Jun29-Jul10 fee=STILL null. Margherita+Francesca IN CLASS DAY 2 of 10. 4-STEP SQL STILL NOT RUN — 119 CHECKS. NEIL: RUN NOW.",
+        "Day 2; SQL UNRUN"
+      ]
+    ]
+  },
+  {
+    "range": "J16:K16",
+    "values": [
+      [
+        "hrly 30 Jun UTC (26th check, fresh DB): sca255 weekStart=STILL 2026-01-12 weekEnd=STILL 2026-07-03. EXPIRES THU 3 JUL = 3 DAYS — NOT CORRECTED. bc24925 AY-Afternoon Mar09-Sep11 bk18151 CONF. Only SCA for Saikhantes, 0 others. After Thu Jul03 drops from class 11 B1-PM through Sep11 (10 weeks uncovered). SQL NOT RUN. NEIL: RUN TODAY.",
+        "CRITICAL; Jul03=3d"
+      ]
+    ]
+  },
+  {
+    "range": "J30:K30",
+    "values": [
+      [
+        "hrly 30 Jun UTC (26th check, fresh DB): Same as Issue 15. sca255 STILL weekStart=2026-01-12 weekEnd=2026-07-03. EXPIRES THU 3 JUL = 3 DAYS NOT CORRECTED. 0 other SCAs. SQL NOT RUN: UPDATE student_class_assignments SET week_start=2026-03-09, week_end=2026-09-11 WHERE id=255. NEIL: RUN TODAY. See Issue 15 (row 16).",
+        "CRITICAL; Jul03=3d"
+      ]
+    ]
+  },
+  {
+    "range": "J26:K26",
+    "values": [
+      [
+        "hrly 30 Jun UTC (45th check, fresh DB): s917 Uyanga visaStatus=STILL null (40d stale). bk1467 CONF conf=true amtPaid=2405/2405 amtOpen=0. bc1613 AY-Morn Apr27-Oct16. SCA=STILL 0 (65d in school, 0 class assignments). SQL NOT RUN. NEIL: 45 CHECKS UNRESOLVED — run UPDATE students SET visa_status=Approved WHERE id=917 then assign class via SIS.",
+        "D65; 0SCA; CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "J23:K23",
+    "values": [
+      [
+        "hrly 30 Jun UTC (3rd check, fresh DB): bk18158 CONF 740/740. bc24933+bc24934 GE-AM Jun15-Jul10 (fees 380+360=740), duplicate still present. SCAs for s1015: sca48 (Mar30-Apr17) + sca146 (Apr20-May15) — both expired for prior courses, 0 active SCA for current booking. Day 16 in school; course ends Jul10=10d. NEIL: deactivate bc24934 + assign Edite to GE-AM class via SIS admin ASAP.",
+        "D16; 0SCA; Jul10=10d"
+      ]
+    ]
+  },
+  {
+    "range": "J39:K39",
+    "values": [
+      [
+        "hrly 30 Jun UTC (13th check, fresh DB): accomm 11352 Veronica bed83 Jul04-Jul11 STILL NOT REASSIGNED (updAt=Jun29). accomm 11285 Jesus bk17825 bed83 Jun21-Jul05 STILL UNCHANGED (updAt=Jun16=14d stale). Overlap Jul04-Jul05 = 2 nights, same bed 83. Beds 174, 175, 176 verified FREE for Jul04-Jul11 (0 conflicts, fresh DB). bk18156 CONFIRMED 573.2/573.2 amtOpen=0. Veronica arrives SAT 4 JUL = 4 DAYS. NEIL: reassign accomm 11352 from bed83 to bed 174, 175, or 176 via SIS (Student 278 -> Booking 18156 -> Accommodation) URGENTLY.",
+        "Jul04=4d; bed83"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,46 @@
+[
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• 143rd check Sun 9 Aug 2026 UTC (8th today) — CRITICAL: Rakan new course BC 25035 started 6 days ago, still 0 class assignments\n• Booking Course 25035 (General English Academic Year AM Plus, 3 Aug–18 Dec 2026): active = true, 0 class assignments — unchanged\n• Student Class Assignment 288 still linked to old Booking Course 24697 (ended 31 Jul 2026), class 12, week start 6 Jul 2026\n• Booking Course 24697 (Academic Year Morning): ended 31 Jul 2026, still active = true (9 days stale)\n• Fix: relink SCA 288 to BC 25035, week_start = 2026-08-10; deactivate BC 24697",
+        "Relink Student Class Assignment 288 to Booking Course 25035, week_start=2026-08-10; deactivate Booking Course 24697. See recipe: issue-12-addendum-9aug-i.md",
+        "143rd hrly Sun 9 Aug UTC (8th today). BC 25035 still 0 class assignments, 6 days since start. Fix NOT RUN. CRITICAL before Mon 09:00.",
+        "CRITICAL: fix before 09:00"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 90th check Sun 9 Aug 2026 UTC — service_end now 2 days past (expired 7 Aug 2026)\n• Booking 18151 (Saikhantes Shagdarsuren): Confirmed, confirmed = true, EUR 1,339.20 paid, EUR 0 open\n• service_end = 2026-08-07 — expired 2 days ago\n• Correct service_end should be 2026-10-02 (based on active Booking Course 1810 running through Jan 2027)\n• Issue 29 (row 30) tracks the same booking — same fix",
+        "UPDATE bookings SET service_end=2026-10-02 WHERE id=18151. See recipe: issue-15-addendum-9aug-h.md",
+        "90th hrly Sun 9 Aug UTC. service_end 2d expired (Aug 7). Same fix as Issue 29. Fix NOT RUN.",
+        "service_end 2d expired"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• 69th check Sun 9 Aug 2026 UTC — service_end still expired (expired 7 Aug 2026, 2 days ago)\n• Booking 18151 (Saikhantes Shagdarsuren, student 1001): status = CONFIRMED, confirmed = true, EUR 1,339.20 fully paid, amount open = EUR 0\n• service_end = 2026-08-07 — expired 2 days ago; course ends 2 Oct 2026 (54 days remaining)\n• Booking Course 24925 (Academic Year Afternoon, Mar 9 to Oct 2 2026): active = true\n• Student Class Assignment 255: class 11, week start 12 Jan 2026 — predates course start (9 Mar) by 56 days (migration artefact)\n• Payment 17872: EUR 1,339.20, Dec 19 2025 — xeroPaymentId = null (not reconciled in Xero)\n• Student actively enrolled; service_end expiry may affect portal access or attendance eligibility",
+        "Set booking 18151 service_end = 2026-10-02. See recipe: issue-29-addendum-9aug-g.md",
+        "69th hrly Sun 9 Aug UTC. service_end expired 2d (Aug 7). Course active to Oct 2. Fix NOT RUN.",
+        "svc_end 2d exp"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 98th check Sun 9 Aug 2026 UTC (8th today) — CRITICAL: classes start Mon 10 Aug 09:00 (hours away)\n• 17 booking courses starting 2026-08-10 have 0 class assignments: 13 ready + 4 on hold — NO CHANGE\n• 13 ready: BC 108 Lucia Borroni, 109 Maicol Moretti, 1313 Ana Luiza De Sousa, 1818 Natanael Reis Lourenco, 24915 Toshimi Hanakawa, 24970 Tsengelbayar Mendsaikhan, 25004 Vincenzo Contu (AM Plus), 25005 Claudia Mereu (AM), 25024 Josimar Roberto (PM), 25027 Jacqueline Burgos, 25031 Brisia Garcia Roman, 25036 Jorge Perez Aldana, 25039 Cristian Ravai (PM Plus)\n• 4 on hold (confirmed = false): BC 96 Alessandro Signorotti (EUR 250 owed), 833 Settiyanee Duangjai (Escrow), 25007 Nominjin Amartsogt (EUR 370 owed), 25042 Edith Nunes (EUR 456 owed)\n• 8 Aug-3 starters still 0 class assignments (6 days overdue): BC 97 Gustavo Ferreira (PENDING), 1766 Maria Eduarda Alves Paiva (CONF), 24999 Soumaya Bourguiba (PENDING), 25003 Aleix Cervera (CONF), 25010 Alin Merticariu (CONF), 25016 Anderson da Silva Martins (CONF), 25029 Monica Fiametti (CONF), 25035 Rakan Alghamdi (see Issue 12)\n• 14 of 22 Aug-3 booking courses now have class assignments\n• Total active booking courses with 0 class assignments system-wide: 172",
+        "Assign 13 ready Aug-10 booking courses + 5 confirmed Aug-3 starters to classes before Mon 09:00 via SIS Admin. See recipe: issue-38-addendum-9aug-n.md",
+        "98th hrly Sun 9 Aug UTC (8th today). All 17 Aug-10 BCs still 0 class assignments. 8 of 22 Aug-3 starters still unassigned. CRITICAL: classes start Mon 10 Aug 09:00 — hours away.",
+        "CRITICAL: Mon 10 Aug"
+      ]
+    ]
+  }
+]

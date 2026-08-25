@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 262nd check Sun 16 Aug 2026 UTC — no change since 261st check\n• Payment 4781: EUR 380, Flywire, 2019-08-20 — booking_id = null (legacy orphan, Fidelo ref D20191404)\n• Payment 16988: EUR 339.90, Bank, 2026-04-28 — booking_id = null (likely Booking 17856, Margherita Galbusera)\n• Payment 16989: EUR 339.90, Bank, 2026-04-28 — booking_id = null (likely Booking 17857, Francesca Fassina)\n• Payment 17187: EUR 6,151, TransferMate Escrow, ref D2026226 — booking_id = null, no matching booking found\n• Booking 17856 (Margherita Galbusera): CONFIRMED, confirmed = false, amount paid = EUR 339.90\n• Booking 17857 (Francesca Fassina): CONFIRMED, confirmed = false, amount paid = EUR 339.90\n• Booking Courses 24630 + 24631 (General English AM Plus): ended 2026-07-10, active = true — 37 days stale",
+        "Link Payments 16988/16989 to Bookings 17856/17857; set confirmed = true; deactivate Booking Courses 24630 + 24631. See recipe: issue-1-addendum-16aug.md",
+        "262nd Sun 16 Aug UTC. No change. Fix NOT RUN. Payment 17187 (EUR 6,151 ref D2026226) needs manual TransferMate lookup. Payment 4781 (Flywire 2019) is a legacy orphan.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• 55th check Sun 16 Aug 2026 UTC — no change since 54th check\n• 552 students without + prefix (unchanged; 14,471 total students, +9 since last check)\n• ~419 students with + prefix but spaces or dashes (from prior check)\n• Total non-E.164: ~971 (basis unchanged)\n• Day 39 — fix not applied",
+        "Strip spaces; normalise to E.164. See recipe: issue-6-addendum-16aug.md",
+        "55th hrly Sun 16 Aug UTC. Day 39. Non-E.164: ~971 (unchanged). Total students 14,471 (+9). Fix NOT RUN.",
+        "~971 phones; 39d"
+      ]
+    ]
+  },
+  {
+    "range": "H8:K8",
+    "values": [
+      [
+        "• 44th check Sun 16 Aug 2026 UTC — no change since 43rd check\n• Booking 17909 (Sofiia Korkishchenko, student 768): status = CANCELLED, confirmed = true (anomaly)\n• Amount paid = EUR 0, amount open = EUR 727.50, no payment records\n• Last updated 2026-06-17 — 60 days since last change\n• Booking Course 24693 (Renewal - Academic Year PM, ends 13 Nov 2026): active = true on cancelled booking, 0 class assignments\n• Student correctly enrolled via Booking 17849 / Booking Course 24623 — no current student impact\n• Same anomaly tracked under Issue 27 (row 28)",
+        "Set Booking 17909 confirmed = false; deactivate Booking Course 24693. See recipe: issue-7-addendum-16aug.md",
+        "44th hrly Sun 16 Aug UTC. Unchanged 60d. Fix NOT RUN.",
+        "bk17909 CANCELLED+confirmed; 60d"
+      ]
+    ]
+  },
+  {
+    "range": "H28:K28",
+    "values": [
+      [
+        "• 51st check Sun 16 Aug 2026 UTC — no change since 50th check\n• Booking 17909 (Sofiia Korkishchenko, student 768): status = CANCELLED, confirmed = true (anomaly)\n• Amount paid = EUR 0, amount open = EUR 727.50, no payment records\n• Last updated 2026-06-17 — 60 days since last change\n• Booking Course 24693 (Renewal - Academic Year PM, ends 13 Nov 2026): active = true on cancelled booking\n• Duplicate tracking of Issue 7 (row 8) — same fix required",
+        "Set Booking 17909 confirmed = false; deactivate Booking Course 24693. See recipe: issue-27-addendum-16aug.md",
+        "51st hrly Sun 16 Aug UTC. Unchanged 60d. Booking 17909 CANCELLED + confirmed. Fix NOT RUN.",
+        "bk17909 CANCELLED+confirmed; 60d"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• 36th check Sun 16 Aug 2026 UTC — no change since 35th check\n• Bed 83: 5 stale Booking Accommodations, all past end date, still active\n• BA 11239 (booking 22): May 3 – May 24 2026, fee = EUR 1,050 — 84 days stale\n• BA 11168 (booking 92): Jun 6 – Jun 20 2026, fee = EUR 700 — 57 days stale\n• BA 11285 (booking 17825): Jun 21 – Jul 5 2026, fee = null — 42 days stale (also Issue 43)\n• BA 11352 (booking 18156): Jul 4 – Jul 11 2026, fee = EUR 360 — 36 days stale\n• BA 11179 (booking 82): Jul 12 – Aug 9 2026, fee = EUR 1,360 — 7 days stale\n• Next occupant Booking Accommodation 25 (booking 17844): Aug 30 check-in — 14 days",
+        "Deactivate BAs 11239/11168/11285/11352/11179; verify bed 83 is clear for Aug 30. See recipe: issue-37-addendum-16aug.md",
+        "36th hrly Sun 16 Aug UTC. 5 stale BAs (84d max). Aug 30 check-in in 14d. Fix NOT RUN.",
+        "5 stale BAs; Aug 30 check-in (14d)"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 171st check Sun 16 Aug 2026 UTC — BC25043 now 2 days past end date\n• Booking Course 25043 (General English PM, booking 18265, student Eduardo Roche Diaz): ended Aug 14 2026, active = true\n• Now 2 days past end — not deactivated\n• Part of 24,497 total stale Booking Courses (see Issue 45) — low-priority data hygiene",
+        "Set active = false on BC 25043. See recipe: issue-38-addendum-16aug.md",
+        "171st Sun 16 Aug UTC. 2 days past end, still active. Part of bulk stale BC problem (Issue 45).",
+        "BC25043 2d past end"
+      ]
+    ]
+  }
+]

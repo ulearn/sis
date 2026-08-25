@@ -1,0 +1,60 @@
+[
+  {
+    "range": "J32:K32",
+    "values": [
+      [
+        "Jun14 SUN hrly6: TZ STILL NOT IN .env(grep=null). DB TZ=Europe/Dublin. 43 NULL week_end: 9 ghost(IDs:39/40/65/66/74/75/81/87/100 bc<=Jun12)+34 active. BOTH FIXES NOT RUN. Mon att sheet WILL break. NEIL: FIX1(echo TZ=UTC>>.env && touch tmp/restart.txt)+FIX2(UPDATE week_end) BEFORE MIDNIGHT.",
+        "URGENT TONIGHT"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "s88 Giulia JUNIOR 0SCA. bk94(REAL CONF 1151.5/1151.5)+bk18044(DUP CONF 1106.5/1106.5 pmt17607 xero=null). c104 Morning General Plus STARTS TODAY Jun15.",
+        "(1)get level; (2)assign cls bk94/c104; (3)CANCEL bk18044+handle pmt17607(EUR44.5 excess); (4)CANCEL bk18152+del s14557 Milena. recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun14 SUN hrly6: 0SCA confirmed(att=0 s88). bk94 CONF(REAL). c104 Jun15-26 STARTS TODAY. bk18044 DUP CONF unchanged. bk18152 Milena PEND 0. NEIL: Mon 08:00 get level assign cls c104 bk94 cancel bk18044.",
+        "Mon URGENT 0SCA DUP"
+      ]
+    ]
+  },
+  {
+    "range": "J27:K27",
+    "values": [
+      [
+        "Jun14 SUN hrly6: 0SCA confirmed. bk18034 PARTIAL 845/1095 conf=false unchanged. bc24826 INTENSIVE Jun08-19 WK1(Jun08-12) MISSED. WK2(Jun15-19) FINAL WEEK STARTS TODAY. NEIL: Mon 08:00 ask bc24826 teacher Ernesto level; INSERT 2 SCAs WK2(Jun15-19) only.",
+        "FINAL WK TODAY 0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "bk18158 PEND 0/740 c24933+c24934(DUP) GE-AM Jun15-Jul10 STARTS TODAY. bk18131(CONF 1185 ghost pmt17852)+bk18133(CONF 648 ghost pmt17730). 0SCA. NOTE: pmt17728 on OLD bk1567(unrelated)=DO NOT DELETE.",
+        "(NOT RUN) CANCEL bk18131+18133; DEL c24934; refund/re-link pmt17852(1185)+pmt17730(648) via HS; collect EUR740 for bk18158; assign cls7 c24933. DO NOT touch pmt17728. recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun14 SUN hrly6: STARTS TODAY Jun15. bk18158 PEND 0/740 NO pmts linked. bk18131(pmt17852=1185 hsId)+bk18133(pmt17730=648 hsId)=GHOST dups. pmt17728=bk1567 OLD(unrelated). SCAs ended May15. Clarify: if 1185+648 covers 740 need refund of 1093.",
+        "URGENT TODAY 0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "J18:K18",
+    "values": [
+      [
+        "Jun14 SUN hrly6: bk1308 CANCELLED(updAt=Jun07) unchanged. paid=1530/1530 fully paid. c1350 AY-Aft May25-Nov13 active. SCAs=0. SQL NOT RUN D20.",
+        "D20 cancelled"
+      ]
+    ]
+  },
+  {
+    "range": "J30:K30",
+    "values": [
+      [
+        "Jun14 SUN hrly6: att=0 CONFIRMED(attendance count=0). sca255 B1PM(cls11) Jan12-Jul03 ends 19d. 163d enrolled ZERO att. visa_status=null. IRP risk CRITICAL. NEIL: Mon 08:00 ask cls11 B1PM teacher immediately.",
+        "0att IRP 19d CRITICAL"
+      ]
+    ]
+  }
+]

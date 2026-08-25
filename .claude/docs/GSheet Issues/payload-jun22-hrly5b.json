@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking 1611 is Confirmed, paid EUR 1280.12 / 1280.12\n• Booking course 1797 (Morning General) runs 6 Apr to 26 Jun — FINAL WEEK; course ends Fri 26 Jun (4 days)\n• sca229 (class 12, B1 AM 2) expired Apr 26 — no active class assignment this final week (live check Jun22: still 0 SCAs on bk1611)\n• Booking course 24686 (Morning General, 20 Jul to 18 Sep) exists with fee = null — needs fee before Jul 20\n• Neil decision needed today: Is Alberto in school Mon 22 to Fri 26 Jun?",
+        "If in school this week: INSERT SCA for bc1797 cls12 ws=Jun22 (or Jun23 if Mon missed) we=Jun26. Set bc24686 fee before Jul 20. See recipe: issue-24-alberto-final-week.md",
+        "Jun22 hrly x12 (FINAL WEEK Mon; Jun26=4d LAST DAY): bc1797 active ends Jun26 (50d stale). sca229 expired Apr26 (57d). 0 active SCAs fresh Jun22 x2 live checks. bc24686 Jul20 fee=null (39d stale). NEIL URGENT TODAY: Is Alberto attending this final week? If YES → INSERT SCA bc1797 cls12 ws=Jun22 we=Jun26 (NOT RUN). If NO: course simply ends Fri.",
+        "Jun26=LAST DAY; DECIDE"
+      ]
+    ]
+  }
+]

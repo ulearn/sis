@@ -1,0 +1,35 @@
+[
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking course 24686 (Alberto Squillace, Morning General, 20 Jul–18 Sep 2026): fee = null — course starts MONDAY 20 July (confirmed)\n• Booking 1611: Confirmed, confirmed = true, EUR 1280.12 fully paid\n• Booking course 1797 (Morning General, ended 26 June 2026): still active = true — 21 days stale\n• 67th check, Friday 17 July 2026 UTC",
+        "Set fee on booking course 24686 before Monday 20 Jul; deactivate booking course 1797. See recipe: issue-24-alberto-fidelo-course-split.md",
+        "67th check Fri 17 Jul UTC. BC24686 Morning General Jul20-Sep18: fee=STILL null (fresh DB). Booking 1611 EUR1280.12/1280.12 CONFIRMED. BC1797 ended Jun26 active=STILL true. Also flagged in Issue 45. COURSE STARTS MONDAY — fee must be set today. Fix NOT RUN.",
+        "fee null; starts Mon"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• August Bank Holiday 2026 (Monday 3 August): missing from school closures — 17 days away\n• October Bank Holiday 2026 (Monday 26 October): missing from school closures — 101 days away\n• Current school closures: 9 records — Good Friday 2026/2027/2028/2029/2030 and Christmas 2026–2027 through 2029–2030\n• Risk: booking course end dates landing on 3 August or 26 October will not be shunted to the next school day",
+        "Add August Bank Holiday (Monday 3 August 2026) and October Bank Holiday (Monday 26 October 2026) to school_closures table. See recipe: issue-38-course-date-ux.md",
+        "39th check Fri 17 Jul UTC. CONFIRMED UNCHANGED. Aug Bank Holiday (Mon 3 Aug): STILL absent — 17d away. Oct BH (Mon 26 Oct): also absent. 9 closures total (Good Friday 2026–2030 + Christmas 2026–2030). Fix NOT RUN.",
+        "Aug BH missing; 17d"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 122nd check Friday 17 July 2026 — all 7 confirmed Monday starters STILL zero class assignments (fresh DB)\n• Booking course 1630: Saranzaya Khishigbayar, Academic Year Afternoon, student 931 — fee EUR 2620 — 0 class assignments\n• Booking course 24616: Mia Wehrli, General English AM Plus, student 14450 — fee null — 0 class assignments\n• Booking course 24686: Alberto Squillace, Morning General, student 1052 — fee null; see Issue 24 — 0 class assignments\n• Booking course 24942: Lorena Pizarro Araya, Academic Year Morning, student 14565 — fee EUR 2362.50 — 0 class assignments\n• Booking course 24966: Filippo Corazzini, General English AM Plus, student 14578 — fee EUR 549.90 — 0 class assignments\n• Booking course 24989: Marcos Abrego Tofe, General English AM, student 14587 — fee EUR 152 — 0 class assignments\n• Booking course 25000: Giorgio Sau, General English AM Plus, student 14595 — fee EUR 940 — 0 class assignments\n• Booking course 24932: Stephany Martins Pardinho, Life Pass Morning, PENDING 105 weeks — do not assign until booking confirmed and paid\n• Booking course 25001: Neil McMahon, General English AM, PENDING — likely test/admin record, verify before assigning\n• 8 courses ended 17 July with zero class assignments: BC1719 Maria Hermosilla (24-week Academic Year), BC26 Kritchana (EUR 3370 unpaid), BC95 Florian Baury, BC24946 Lunel Dubost, BC24985 and BC24986 Maza sisters (EUR 240 each), BC24992 Luz Sobrino, BC24994 Petru Ous",
+        "Assign 7 confirmed starters before Mon 20 Jul; back-fill today-enders where appropriate. See recipe: issue-45-addendum-17jul.md",
+        "122nd check Fri 17 Jul UTC. CONFIRMED UNCHANGED. All 7 confirmed starters STILL 0 class assignments (fresh DB). BC24616 Mia fee=STILL null. BC24686 Alberto fee=STILL null. WEEKEND — last window before Mon 20 Jul. Fix NOT RUN.",
+        "CRITICAL; assign before Mon"
+      ]
+    ]
+  }
+]

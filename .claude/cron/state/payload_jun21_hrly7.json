@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Two payments are unlinked — booking_id = null and xeroPaymentId = null\n• Payment 16988 maps to Booking 17856 (Margherita Galbusera) — EUR 339.90, created Apr 28 (54 days orphaned)\n• Payment 16989 maps to Booking 17857 (Francesca Fassina) — EUR 339.90, created Apr 28 (54 days orphaned)\n• Both bookings are CONFIRMED (status), confirmed = false, amountPaid = 339.90 — payment audit trail broken\n• Booking courses 24630 + 24631 (General English AM Plus) start Jun 29 — 8 DAYS from today",
+        "UPDATE payments SET booking_id=17856 WHERE id=16988; UPDATE payments SET booking_id=17857 WHERE id=16989. See recipe: issue-1-orphan-payments.md",
+        "Jun21 hrly7 09UTC: pmts 16988/16989 STILL bookingId=null xeroId=null (crAt=Apr28=54d, fresh DB). bk17856 (Margherita)+bk17857 (Francesca) CONF amtPaid=339.9 (updAt=Jun04=17d). bc24630/24631 start Jun29 = 8 DAYS. HS pmt IDs: 16988=1204827374829, 16989=1204846469317. NEIL: URGENT — run recipe before Jun29 arrivals.",
+        "8d to Jun29; unlinked"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Booking 18151 (Afternoon Academic Year) is CONFIRMED, paid EUR 1339.20 / 1339.20 — updated Jun 16 by Neil\n• Booking course 24925 correctly set to Mar 09 – Sep 11 (corrected Jun 16)\n• Class assignment 255 (class 11, B1 PM) still has week start = Jan 12 and week end = Jul 03 — dates NOT corrected\n• Jul 03 week end is 12 days away — Saikhantes will vanish from B1-PM class list after that date\n• One SQL statement required — not yet run",
+        "(NOT RUN) UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255. See recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun21 hrly7 09UTC: sca255 UNCHANGED weekStart=Jan12 weekEnd=Jul03 classId=11 (fresh DB). bc24925 Mar09-Sep11 correct (updAt=Jun16). bk18151 CONF 1339.2. Jul03 weekEnd = 12 days — Saikhantes disappears from B1-PM class list after Jul03. Fix NOT RUN. See row 30 for recipe.",
+        "sca fix; Jul03 12d"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking course 24934 (duplicate, General English AM, fee = 360, Jun 15–Jul 10) STILL ACTIVE in database — not yet deleted\n• Booking course 24933 (correct, fee = 380, Jun 15–Jul 10) active — correct booking\n• Student 1015 (Edith Nunes) has ZERO active class assignments — last expired May 15 on booking course 24668\n• Booking 18158 is CONFIRMED, paid EUR 740 / 740 — correct\n• Class resumes TOMORROW Monday Jun 22 at 8am — Edith will attend with NO assignment record",
+        "(NOT RUN) 1) DELETE FROM booking_courses WHERE id=24934; 2) INSERT INTO student_class_assignments(booking_course_id,class_id,week_start,week_end,student_id) VALUES(24933,7,'2026-06-22','2026-07-10',1015). See recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun21 hrly7 09UTC FINAL: bc24934 (dup,fee=360) STILL LIVE in DB (fresh check). sca=0 active s1015 — sca48 expired Apr17, sca146 expired May15. bk18158 CONF 740/740. TOMORROW MON JUN22 8am = CLASS DAY. Neil: act TONIGHT before 8am Mon.",
+        "CRITICAL;Mon22=8am;0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking 1611: CONFIRMED, confirmed = true, fully paid EUR 1280.12 / 1280.12\n• Booking course 1797 (Morning General) runs Apr 06 – Jun 26 — FINAL WEEK starts TOMORROW Mon Jun 22\n• Booking course 24686 (Morning General, Jul 20 – Sep 18) is future — fee = null (missing, needs setting)\n• Class assignment 229 (class 12, B1 AM 2): week end Apr 26 — expired 56 days ago, never renewed\n• Zero attendance records all time — Alberto on extended holiday since late April\n• LAST CHANCE: if Alberto returning Mon Jun 22, insert class assignment TONIGHT before bc1797 expires Jun 26",
+        "(NOT RUN) If Alberto returning Mon Jun 22: INSERT INTO student_class_assignments(booking_course_id,class_id,week_start,week_end,student_id) VALUES(1797,12,'2026-06-22','2026-06-26',1052). Also fix bc24686 fee=null. See recipe: issue-24-alberto-fidelo-course-split.md",
+        "Jun21 hrly7 09UTC FINAL: bc1797 Morning General Apr06-Jun26 ACTIVE (fresh DB). bc24686 Jul20-Sep18 fee=null. sca229 cls12 expired Apr26 (56d). bk1611 CONF 1280.12. TOMORROW MON JUN22 = FINAL WEEK START. bc1797 expires Fri Jun26. Neil: confirm Alberto returning? If yes, insert SCA (1797,12,2026-06-22,2026-06-26,1052) tonight.",
+        "FINAL;Jun26=5d;Mon22"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Class assignment 255 (class 11, B1 PM) has week start = Jan 12 and week end = Jul 03 — both wrong\n• Booking course 24925 (Afternoon Academic Year, Mar 09 – Sep 11) dates were corrected by Neil on Jun 16\n• Correct class assignment dates should match booking course: Mar 09 to Sep 11\n• Booking 18151 is CONFIRMED, fully paid EUR 1339.20 — student is attending normally\n• Jul 03 week end = 12 days away — must fix before then or Saikhantes drops from class list",
+        "(NOT RUN) UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255. See recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun21 hrly7 09UTC: sca255 UNCHANGED weekStart=Jan12 weekEnd=Jul03 classId=11 STILL WRONG (fresh DB). bc24925 Mar09-Sep11 correct (updAt=Jun16 by Neil). bk18151 CONF 1339.2. Jul03 = 12 DAYS — Saikhantes drops from B1-PM class list after Jul03. Fix NOT RUN.",
+        "sca fix; Jul03 12d"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Booking 18044 (duplicate booking for Giulia Avallone) STILL CONFIRMED — last updated Jun 07, 14 days stale\n• Booking 18044 amount paid = EUR 1106.50 / 1106.50 — overpayment anomaly vs correct booking 94\n• Payment 17607 (EUR 1151.50, HubSpot payment ID 1239529228498): xeroId = null — must be voided via HubSpot UI only\n• Booking course 24836 (2 weeks Morning General Plus) ends Jun 26 — 5 DAYS\n• Class assignment 270 (class 12, Jun 15–26) is on booking course 104 (correct booking 94) — Giulia in class correctly\n• Two steps not yet done: (1) cancel bk18044 via SIS; (2) void HS payment 1239529228498",
+        "(NOT RUN) (1) Cancel booking 18044 via SIS UI; (2) VOID payment 17607 via HubSpot UI (HubSpot payment ID 1239529228498 — do NOT delete raw from database). See recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun21 hrly7 09UTC: bk18044 STILL CONFIRMED 1106.5/1106.5 (updAt=Jun07=14d stale, fresh DB). bc24836 ends Jun26 = 5 DAYS. pmt17607 EUR1151.5 xeroId=null hsId=1239529228498. sca270 cls12 Jun15-26 on bk94 = CORRECT. Neil: (1) cancel bk18044 via SIS UI; (2) void HS pmt 1239529228498 via HubSpot UI. Deadline Jun26.",
+        "5d to Jun26; void HS"
+      ]
+    ]
+  }
+]

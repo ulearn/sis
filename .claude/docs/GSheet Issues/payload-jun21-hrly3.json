@@ -1,0 +1,21 @@
+[
+  {
+    "range": "H28:K28",
+    "values": [
+      [
+        "• Booking 17909 is CANCELLED but confirmed = true — database anomaly (updated Jun 17)\n• Database payments 17477 + 17478 deleted Jun 17 — booking now shows amount paid = 0, zero payment records\n• HubSpot Commerce payments 1230788330738 (EUR 727.50) + 1230645766331 (EUR 728.00) STILL LIVE — status = succeeded, not refunded\n• Refund deadlines: payment 1230788330738 expires Oct 25 2026 | payment 1230645766331 expires Nov 11 2026\n• Renewal booking 17849 confirmed and paid correctly (payment 17468, EUR 1455.50)\n• Class assignment 254 (class 6, B2-C1 PM, Jun 08 to Nov 27) is active and correct",
+        "(NOT RUN) (1) Check Xero Sofiia Apr-May 2026 — 3 payments = refund EUR 1455.50 via HS Commerce before Oct 25; (2) UPDATE bookings SET confirmed=false WHERE id=17909. See recipe: issue-27-sofiia-sca-cancelled-booking.md",
+        "Jun21 hrly (3rd): HS type corrected — pmts are Commerce Hub objects (0-101) not line_items. 1230788330738 EUR727.50 succeeded live (deadline Oct25-26). 1230645766331 EUR728.00 succeeded live (deadline Nov11-26). DB pmts deleted Jun17. bk17909 CANCELLED confirmed=true amtPaid=0. NEIL: Xero check Apr-May26 — if double-charge: refund EUR1455.50 via HS Commerce before Oct25.",
+        "void HS pmts + cf=false"
+      ]
+    ]
+  },
+  {
+    "range": "J2:J2",
+    "values": [
+      [
+        "Jun21 hrly (3rd): HS CONFIRMED — pmts 1204827374829+1204846469317 are Commerce Hub objects (0-101) LIVE (succeeded, is_refundable=true). EUR339.90 initial, EUR332.00 net each (EUR7.90 fee). 0 refunds. DB pmt16988+16989 STILL bookingId=null (55d). bk17856+17857 CONF conf=false, 0 linked pmt rows. Jun29=8d. SQL NOT RUN. NEIL: run UPDATE before Jun29."
+      ]
+    ]
+  }
+]

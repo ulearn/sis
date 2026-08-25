@@ -1,0 +1,46 @@
+[
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Booking accommodation 11358 (Xuezhen Huang, student 14443, bed 180, Host Family Mary Carver): check-in TOMORROW Sunday 12 July 2026 — claimedAt = STILL null — claimStatus = null — host family NOT notified (20th pass, 11 Jul UTC)\n• Booking 17831: CONFIRMED, amount paid = EUR 1396.90 / 1396.90 — fully paid (confirmed 7 July)\n• 4 payments ALL xeroPaymentId = null: payment 17180 (EUR 431.90, TransferMate Escrow, 27 Apr 2026, no HubSpot ID), payment 17963 (EUR 965.00, Bank, 1 Jul, HubSpot 1273784562922), payment 17987 (EUR 131.90, Bank, 25 Jun, HubSpot 1277724782804), payment 17988 (EUR 300.00, Bank, 12 Jun, HubSpot 1277795367133)\n• Note: payments 17987 + 17988 = EUR 431.90 = payment 17180 — likely Fidelo installment pair (verify before reconciling all 4 separately in Xero)\n• Host: Mary Carver, mary.carver28@gmail.com, +353 87 927 1130 — NOT YET NOTIFIED",
+        "Submit host family claim for accommodation 11358 via SIS admin TODAY; contact Mary Carver; reconcile payments in Xero. See recipe: issue-39-xuezhen-huang-accomm-missing.md",
+        "20th pass 11 Jul SAT UTC (fresh DB). BA11358 bed180 HF Jul12-Aug2 claimedAt=STILL null claimStatus=null. BK17831 CONF EUR1396.90/1396.90 (confirmed Jul7). 4 pmts ALL xeroId=null: pmt17180(EUR431.90 Apr27 Fidelo no-HS), pmt17963(EUR965 Jul1 HS1273784562922), pmt17987(EUR131.90 Jun25 HS1277724782804), pmt17988(EUR300 Jun12 HS1277795367133). pmts17987+17988=EUR431.90=pmt17180 (Fidelo pair verify first). HOST NOT NOTIFIED. CHECK-IN TOMORROW. NOT RUN.",
+        "CRITICAL; checkin TOMORROW"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Pietro Colombo (student 72, booking course 81, Morning General Plus, 6–24 July 2026): ZERO class assignments ever recorded — 5 school days missed 7–11 July — week 2 starts Monday 13 July in 2 days (20th pass, 11 Jul UTC)\n• Kayque Tauann (student 852, booking course 1821, Academic Year Afternoon, 29 Jun–18 Dec 2026): only assignment 26 for old course 1507 (expired 24 April) — ZERO assignments for current course 1821\n• Tuguldurtugs Enkhtugs (student 858, booking course 1786, Academic Year Renewal Morning, 6 Jul–25 Dec 2026): only assignment 55 for old course 1521 (expired 1 May) — ZERO assignments for current course 1786\n• Booking course 24968 (General English AM Plus, ended 10 July 2026): STILL active = true — 1 day stale",
+        "Assign Pietro (student 72) to class for booking course 81; assign Kayque (student 852) to class for booking course 1821; assign Tuguldurtugs (student 858) to class for booking course 1786; deactivate booking course 24968. See recipe: issue-45-renewal-arrivals.md",
+        "20th pass 11 Jul SAT UTC (fresh DB). Pietro(s72) BC81 Jul6-Jul24 ZERO SCAs confirmed. Kayque(s852) BC1821 Jun29-Dec18 only SCA26 for old BC1507 expired Apr24 (ZERO SCAs for BC1821). Tuguldurtugs(s858) BC1786 Jul6-Dec25 only SCA55 for old BC1521 expired May1 (ZERO SCAs for BC1786). BC24968 ended Jul10 STILL active=true (1d stale). Mon13=2d. NEIL: assign Pietro/Kayque/Tuguldurtugs + deactivate BC24968. NOT RUN.",
+        "CRITICAL; Mon13 2d; 3 unassigned"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student 1001 (Saikhantes Shagdasuren): class assignment 255 (class 11) week end = 3 July 2026 — expired 8 days ago — 5 school days missed (6–10 July) with no active assignment (19th check, 11 Jul UTC)\n• Booking course 24925 (Academic Year Afternoon, 9 March to 2 October 2026): active = true\n• Booking course 1982 (Academic Year Morning, ended 19 December 2025): STILL active = true — 204 days stale\n• Monday 13 July is next school day — student needs valid assignment before then",
+        "Extend class assignment 255 weekEnd to 2026-10-02 via SIS admin; deactivate booking course 1982. See recipe: issue-15-saikhantes-course-dates.md",
+        "19th check 11 Jul SAT UTC (fresh DB). SCA255 cls11 weekEnd=2026-07-03 STILL EXPIRED (8d). 5 school days missed Jul6-Jul10. BC24925 AY-Aft Mar9-Oct2 active=true. BC1982 ended Dec2025 STILL active=true (204d stale). BK18151 CONF confirmed=true. Mon13=2d. NEIL: extend SCA255 to Oct02 + deactivate BC1982. NOT RUN.",
+        "Mon13 deadline; 2d"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Duplicate of issue 15 (row 16): student 1001 Saikhantes Shagdasuren — class assignment 255 (class 11) week end = 3 July 2026 — expired 8 days ago — no valid class assignment (20th check, 11 Jul UTC)\n• Active booking course: booking course 24925 (Academic Year Afternoon, 9 March to 2 October 2026, active = true)\n• Stale booking course: booking course 1982 (Academic Year Morning, ended 19 December 2025, STILL active = true — 204 days stale)\n• Monday 13 July is next school day — student needs valid assignment before then",
+        "Extend class assignment 255 weekEnd to 2026-10-02; deactivate booking course 1982. See recipe: issue-15-saikhantes-course-dates.md",
+        "20th check 11 Jul SAT UTC (fresh DB). SCA255 expired 8d (weekEnd=Jul3). 5 school days missed Jul6-Jul10. Mon Jul13=2d. BC24925 AY-Aft Mar9-Oct2-2026 active=true. BC1982 ended Dec2025 STILL active=true (204d stale). NOT RUN.",
+        "Mon13 deadline; 2d"
+      ]
+    ]
+  }
+]

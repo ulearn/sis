@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 + 16989 (EUR 339.90 each, HubSpot 1204827374829 / 1204846469317): booking ID = STILL null, Xero payment ID = STILL null — 73 days since 28 April 2026\n• Payment type = one_time_or_initial, method = Bank — booking ID linkage still missing\n• Booking 17856 (Margherita Galbusera, student 14461, deal 498984295669): Confirmed, confirmed = false, EUR 339.90 / 339.90, updated 8 Jul\n• Booking 17857 (Francesca Fassina, student 14462, deal 500880898270): Confirmed, confirmed = false, EUR 339.90 / 339.90, updated 8 Jul\n• Booking course 24631 (booking 17856) + booking course 24630 (booking 17857): General English AM Plus, 29 Jun to 10 Jul 2026, fee = STILL null, active = true — COURSES END TOMORROW 10 Jul\n• Four-step SQL fix NOT run in 73 days — FINAL CALL today 9 Jul",
+        "Run 4-step link SQL TODAY (9 Jul) — courses end Fri 10 Jul; recipe issue-1-orphan-payments.md",
+        "9 Jul UTC hrly20 (33rd check). CONFIRMED UNCHANGED (fresh DB). Pmts 16988+16989 bookingId=STILL null xeroId=null EUR339.90 each type=one_time_or_initial method=Bank (73d since Apr28). BKs 17856(Margherita s14461 deal498984295669)+17857(Francesca s14462 deal500880898270) CONFIRMED confirmed=false amtPaid=339.90/339.90 updAt=Jul8. BCs 24630(bk17857)+24631(bk17856) GE-AM-Plus Jun29-Jul10 fee=STILL null active=true. COURSES END TOMORROW FRI JUL10. 4-STEP SQL NOT RUN 73d. NEIL: FINAL CALL — run before school opens today.",
+        "FINAL CALL — Jul9 last day"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Class assignment 255 (student 1001 Saikhantes Shagdarsuren, class 11 B1 Afternoon): week end = 3 July 2026 — expired 6 days ago (fresh DB 9 Jul)\n• Booking course 24925 (Academic Year Afternoon, 9 March to 2 October 2026): active = true, fee = EUR 1102.20 — student booked to 2 Oct\n• School days missed: Monday 6 Jul (Day 1), Tuesday 7 Jul (Day 2), Wednesday 8 Jul (Day 3), Thursday 9 Jul (Day 4 today)\n• Friday 10 July = Day 5 TOMORROW — last school day this week; fix must run today\n• Fix: UPDATE student_class_assignments SET week_end = 2026-10-02 WHERE id = 255 (NOT YET RUN)",
+        "",
+        "9 Jul UTC hrly20. CONFIRMED UNCHANGED (fresh DB). SCA255 student=1001 classId=11 weekEnd=STILL 2026-07-03. BC24925 AY-Afternoon Mar9-Oct2 active=true fee=EUR1102.20. BK18151 CONFIRMED EUR1339.2/1339.2 updAt=Jul8. 4 school days missed (Mon Jul6-Thu Jul9 today). Day5=Fri Jul10 TOMORROW. NEIL: UPDATE student_class_assignments SET week_end=2026-10-02 WHERE id=255.",
+        "Day4 done; D5=Fri Jul10; SQL not run"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 (Edith Nunes, student 1015): Confirmed, confirmed = true, EUR 740 / 740 fully paid\n• Booking course 24933 (General English AM, 15 Jun to 10 Jul 2026): active = true, fee = EUR 380 — ENDS TOMORROW 10 Jul\n• Booking course 24934 (DUPLICATE General English AM, 15 Jun to 10 Jul 2026): active = STILL true, fee = EUR 360 — not deactivated 55+ days\n• Zero class assignments for student 1015 on either booking course — NEVER assigned to class this term; prior SCAs: SCA 146 (expired 15 May) + SCA 48 (expired 17 Apr)\n• Payment 17895: Xero payment ID = STILL null, type = null — not reconciled in Xero\n• FINAL DAY: both courses END TOMORROW 10 Jul — absolute last chance",
+        "Deactivate booking course 24934 (duplicate); assign student 1015 to class TODAY — courses end TOMORROW 10 Jul; recipe issue-22-edith-nunes-payment-dups.md",
+        "38th check 9 Jul UTC hrly20. CONFIRMED UNCHANGED (fresh DB). BK18158 CONF confirmed=true EUR740/740. BC24933 GE-AM Jun15-Jul10 fee=380 active=true. BC24934 DUP GE-AM same dates fee=360 active=STILL true. SCAs for s1015: SCA146 bc24668 weekEnd=May15 + SCA48 bc1751 weekEnd=Apr17 — ZERO active SCAs on BCs 24933/24934 (55+ days). BOTH COURSES END TOMORROW FRI JUL10 — absolute last chance. NEIL: deactivate BC24934 + assign s1015 to class BEFORE SCHOOL OPENS TODAY.",
+        "FINAL DAY: ZERO SCAs; both BCs end Jul10"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Booking 17831 (Xuezhen Huang, student 14443): Confirmed, EUR 1396.90 / 1396.90 fully paid\n• Accommodation 11358: bed 180 (Host Family), 12 Jul to 2 Aug 2026, active = true, fee = EUR 900, claim status = STILL null — CHECK-IN SAT 12 JULY (3 DAYS)\n• 4 payments on booking 17831 — ALL Xero payment ID = null (none reconciled):\n  — Payment 17180: EUR 431.90, TransferMate Escrow, 27 Apr 2026, no HubSpot ID (Fidelo migration)\n  — Payment 17963: EUR 965.00, Bank, 1 Jul 2026, HubSpot 1273784562922\n  — Payment 17987: EUR 131.90, Bank, 25 Jun 2026, HubSpot 1277724782804\n  — Payment 17988: EUR 300.00, Bank, 12 Jun 2026, HubSpot 1277795367133\n• Note: payments 17987 + 17988 = EUR 431.90 = payment 17180 — likely HubSpot re-entry of Fidelo payment; verify before reconciling separately\n• Host family claim not submitted; check-in Saturday 12 Jul = 3 days away",
+        "Reconcile Xero payments + submit host family claim before Sat 12 Jul check-in; recipe issue-39-xuezhen-huang-accomm-missing.md",
+        "21st check 9 Jul UTC hrly20. CONFIRMED UNCHANGED (fresh DB). BK17831 CONF EUR1396.90/1396.90. BA11358 bed180 (Host Family) Jul12-Aug2 active=true fee=EUR900 claimStatus=STILL null updAt=Jun26. 4 pmts ALL xeroId=STILL null: pmt17180(EUR431.90 TM-Escrow Apr27 hsId=null Fidelo), pmt17963(EUR965 Bank Jul1 HS1273784562922), pmt17987(EUR131.90 Bank Jun25 HS1277724782804 corrected from Jul7), pmt17988(EUR300 Bank Jun12 HS1277795367133 corrected from Jul7). pmt17987+17988=EUR431.90=pmt17180 likely HubSpot re-entry. CHECK-IN SAT JUL12=3 DAYS. NEIL: reconcile Xero + submit HF claim URGENTLY.",
+        "Xero; HF claim; Sat Jul12"
+      ]
+    ]
+  },
+  {
+    "range": "H46:K46",
+    "values": [
+      [
+        "• Student 1010 (Gretel Merlina Nunez): two confirmed bookings — 17917 (Academic Year Morning, booking course 24699) and 18159 (Life Pass Morning, booking course 24935)\n• Holiday record 2504 (student type, Jul 20-24 2026, weekdays pushed = 5): exists on booking 17917 — set 3 Jul 2026, confirmed present\n• Booking 18159: no Jul 20-24 student holiday — only school closures Dec 2026 and Dec 2027 (fresh DB 9 Jul confirmed)\n• No accommodation records on either booking 17917 or 18159 (both empty, fresh DB 9 Jul confirmed)\n• Both bookings confirmed and fully paid: booking 17917 EUR 997 / 997, booking 18159 EUR 1294 / 1294; both updated 8 Jul 2026\n• Question unresolved: should booking 18159 (Life Pass Morning) also receive the Jul 20-24 student holiday?",
+        "Neil to confirm: add Jul 20-24 student holiday to booking 18159 if Gretel attends that course that week; see recipe issue-44-gretel-holiday.md",
+        "9th check 9 Jul UTC hrly20. Fresh DB: HOL2504 on bk17917 Jul20-24 type=student weekdaysPushed=5 (created Jul3) = present. bk18159 holidays: 2 school closures only (Dec2026/Dec2027) — NO Jul20-24 student holiday. BA17917=[] BA18159=[] (no accommodation). bk17917 AY-Morning BC24699 active EUR997/997 updAt=Jul8. bk18159 Life-Pass BC24935 active EUR1294/1294 updAt=Jul8. NEIL: confirm if bk18159 also needs Jul20-24 student holiday.",
+        "bk17917 done; bk18159 Neil to decide"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Veronica Martin (student 278, booking course 24931 General English AM, 6-10 Jul 2026): ZERO class assignments EVER — course ENDS TOMORROW 10 Jul — MOST URGENT\n• Ettore Iovinella (student 14564, booking course 24968 General English AM Plus, 6-13 Jul 2026): last SCA 281 for booking course 24941 (ended 3 Jul) — ZERO SCA on current booking course 24968; booking course 24941 still active = true (6 days stale)\n• Pietro Colombo (student 72, booking course 81 Morning General Plus, 6-24 Jul 2026): ZERO class assignments EVER — 4 school days missed since 6 Jul\n• Tuguldurtugs Enkhtugs (student 858, booking course 1786 Academic Year Renewal Morning, 6 Jul-25 Dec 2026): SCA 55 for booking course 1521 expired 1 May 2026 — ZERO SCA on current course; 69+ days not assigned\n• All four students confirmed unassigned to current classes (fresh DB 9 Jul 2026)",
+        "Assign Veronica (student 278) to class TODAY — course ends TOMORROW 10 Jul; then assign students 14564 / 72 / 858; recipe issue-45-renewal-arrivals.md",
+        "35th check 9 Jul UTC hrly20. CONFIRMED UNCHANGED (fresh DB). s278 Veronica bc24931 GE-AM Jul6-Jul10 ZERO SCAs ever — ENDS TOMORROW FRI JUL10 — MOST URGENT. s14564 Ettore bc24968 GE-AM-Plus Jul6-Jul13: last SCA281 bc24941 weekEnd=Jul3 — ZERO SCA on current bc24968; bc24941 STILL active=true stale 6d. s72 Pietro bc81 MornGen-Plus Jul6-Jul24: ZERO SCAs ever (4 days missed). s858 Tuguldurtugs bc1786 AY-Ren-Morning Jul6-Dec25: last SCA55 bc1521 weekEnd=May1 (69d stale) — ZERO SCA on current course. NEIL: assign s278 BEFORE SCHOOL OPENS TODAY (course ends TOMORROW); then assign s14564 bc24968 + s72 bc81 + s858 bc1786.",
+        "FINAL: s278 ends Jul10 TOMORROW; s14564/s72 also unassigned"
+      ]
+    ]
+  }
+]

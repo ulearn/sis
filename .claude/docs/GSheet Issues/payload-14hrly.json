@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 65th hourly check Thu 23 Jul 2026 UTC (139th total)\n• Booking course 25011 (Eduardo Roche Diaz, student 14602): General English PM, 20 Jul to 24 Jul 2026 — STILL zero class assignments\n• 4 school days lost (Mon 20, Tue 21, Wed 22, Thu 23 Jul); course EXPIRES TOMORROW Fri 24 Jul\n• Booking 18233 confirmed = true, fully paid EUR 178.50 / 178.50\n• THIS IS THE LAST CHANCE — course ends tomorrow Fri 24 Jul 2026. Assign before 09:00 Fri or attendance is unrecoverable.\n• Fix NOT RUN",
+        "URGENT: assign BC25011 to Class 6 (PM) before Fri 24 Jul 09:00. See recipe: issue-45-addendum-23jul-d.md",
+        "65th hrly 139th check Thu 23 Jul UTC. BC25011 STILL 0 CAs — EXPIRES TOMORROW Fri 24 Jul. 4 days lost (Jul 20-23). LAST CHANCE. Fix NOT RUN.",
+        "EXPIRES TOMORROW Fri 24 Jul"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• 62nd hourly check Thu 23 Jul 2026 UTC (139th total)\n• Booking course 24991 (Edith Nunes, student 1015, booking 18214): General English AM, 13 Jul to 7 Aug 2026 — STILL zero class assignments\n• 9 school days missed (Mon 13 Jul to Thu 23 Jul 2026)\n• 11 school days remaining (Fri 24 Jul to Fri 7 Aug 2026); 10 once Aug Bank Holiday added (Issue 38)\n• Booking 18214 confirmed = true, amount paid EUR 608\n• Fix NOT RUN",
+        "Assign Edith Nunes (BC24991) to a General English AM class immediately. See recipe: issue-22-addendum-23jul-c.md",
+        "62nd hrly 139th check Thu 23 Jul UTC. BC24991 STILL 0 CAs. 9 school days missed. 11 remaining to Aug 7. Fix NOT RUN.",
+        "CRITICAL; 9d missed; assign NOW"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 66th hourly check Thu 23 Jul 2026 UTC (139th total)\n• August Bank Holiday Mon 3 Aug 2026: STILL absent from school_closures — 11 calendar days away — CRITICAL\n• October Bank Holiday Mon 27 Oct 2026: STILL absent — 96 calendar days away\n• Next school_closure in DB: Christmas id=7 startDate 2026-12-21\n• Zero closures between 23 Jul 2026 and 21 Dec 2026\n• Fix NOT RUN",
+        "Add school_closure rows for Mon 3 Aug 2026 and Mon 27 Oct 2026. See recipe: issue-38-addendum-23jul-d.md",
+        "66th hrly 139th check Thu 23 Jul UTC. Aug BH STILL absent — 11d to Aug 3 (CRITICAL). Oct BH STILL absent. Fix NOT RUN.",
+        "Aug BH; 11d CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• 51st hourly check Thu 23 Jul 2026 UTC (139th total)\n• Booking course 24686 (Alberto Squillace, student 1052, booking 1611): Morning General, 20 Jul to 18 Sep 2026 — fee = null, 0 class assignments\n• 4 school days lost (Mon 20, Tue 21, Wed 22, Thu 23 Jul); 40+ school days remaining through 18 Sep 2026\n• Booking 1611 confirmed = true, amount paid EUR 1,280.12\n• Fee null since booking created — no billing rate set on this course\n• Fix NOT RUN",
+        "Set course fee on BC24686; assign to Morning General class (class 12 B1 AM 2). See recipe: issue-24-addendum-23jul-b.md",
+        "51st hrly 139th check Thu 23 Jul UTC. BC24686 STILL fee=null, 0 CAs — 4 school days lost (Jul 20-23). Fix NOT RUN.",
+        "fee null; 0 SCAs; Day 4"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• 64th hourly check Thu 23 Jul 2026 UTC (139th total)\n• Booking course 24609 (Xuezhen Huang, student 14443): Morning General, 13 Jul to 31 Jul 2026 — STILL zero class assignments\n• School days remaining: 6 (Fri 24 Jul, Mon 27, Tue 28, Wed 29, Thu 30, Fri 31 Jul)\n• Fix NOT RUN",
+        "Assign Xuezhen Huang (BC24609) to a Morning General class. See recipe: issue-39-addendum-23jul-d.md",
+        "64th hrly 139th check Thu 23 Jul UTC. BC24609 STILL 0 CAs — 6 school days left (ends Jul 31). Fix NOT RUN.",
+        "BC24609 0 CAs; 6d left"
+      ]
+    ]
+  },
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 50th hourly check Thu 23 Jul 2026 UTC (139th total)\n• Payment 16988 (EUR 339.90, Bank, 28 Apr 2026): booking ID null — 86 days since payment date\n• Payment 16989 (EUR 339.90, Bank, 28 Apr 2026): booking ID null — 86 days since payment date\n• Payment 17187 (EUR 6,151, TransferMate Escrow, 1 May 2026): booking ID null — fideloPaymentId = 37587 — Fidelo-migrated orphan — 83 days\n• Payment 4781 (EUR 380, Flywire): Fidelo legacy, fideloPaymentId = 32056, payment date Aug 2019 — permanently unresolvable\n• Stale booking courses: 24,436 with active = true and end date before 23 Jul 2026 — unchanged\n• Stale booking accommodations: 11,175 with active = true and end date before 23 Jul 2026 — unchanged",
+        "Link payments 16988, 16989 to correct bookings; investigate fideloId=37587 on payment 17187. Deactivate stale BCs + BAs. See recipe: issue-1-addendum-23jul-b.md",
+        "50th hrly 139th check Thu 23 Jul UTC. UNCHANGED. Same 4 orphan pmts. Stale BCs: 24,436. Stale BAs: 11,175. Fix NOT RUN.",
+        "4 orphan pmts; 24,436 stale BCs"
+      ]
+    ]
+  }
+]

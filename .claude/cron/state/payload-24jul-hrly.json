@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 54th hourly check Fri 24 Jul 2026 UTC (147th total)\n• Payment 16988 (EUR 339.90, Bank, 28 Apr 2026): booking ID null — 87 days orphaned\n• Payment 16989 (EUR 339.90, Bank, 28 Apr 2026): booking ID null — 87 days orphaned\n• Payment 17187 (EUR 6,151, TransferMate Escrow, 5 May 2026): booking ID null — fideloPaymentId = 37587, transactionId = D2026226 — 80 days\n• Payment 4781 (EUR 380, Flywire, Apr 2019): fideloPaymentId = 32056 — permanently unresolvable\n• Stale booking courses: 24,436 — unchanged\n• Stale booking accommodations: 11,176 — up by 1 from 11,175 yesterday",
+        "Link payments 16988, 16989 to correct bookings; investigate fideloId=37587 on payment 17187. Deactivate stale BCs + BAs. See recipe: issue-1-addendum-24jul.md",
+        "54th hrly 147th check Fri 24 Jul UTC. UNCHANGED. Same 4 orphan pmts. Stale BCs: 24,436. Stale BAs: 11,176 (+1). Fix NOT RUN.",
+        "4 orphan pmts; 24,436 stale BCs"
+      ]
+    ]
+  },
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• 80th check Fri 24 Jul 2026 UTC (144th total) — all 5 phones still wrong\n• Dolgormaa Bayaraa (student 1897): email saraa.tpb@gmail.com in phone field — last touched 17 Jul 2026, 7 days unchanged\n• Aki Miura (student 8567): email aki-hinaaki1116@ezudo.he.jp in phone field — 105 days\n• Jieun Lee (student 1194): annotation 00821097366523 (home contry) — 78 days\n• Lisa Li (student 5345): annotation 0864645297 (Husband) — 105 days\n• Alessandra Saito de Araujo (student 10343): Unicode trailing chars in +353 (83) 885 9162 — 87 days",
+        "Strip annotations on students 1194 and 5345; strip Unicode on 10343; get real numbers for 1897 and 8567 from HubSpot. See recipe: issue-6-addendum-24jul.md",
+        "80th check 144th hrly Fri 24 Jul UTC. UNCHANGED. Same 5 phones wrong: 1897 (email, touched Jul17 7d), 8567 (email 105d), 1194 (annotation 78d), 5345 (annotation 105d), 10343 (Unicode 87d). Fix NOT RUN.",
+        "5 phones wrong; 105d+"
+      ]
+    ]
+  },
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "• 34th check Fri 24 Jul 2026 UTC — unchanged\n• Booking extra 96 (Lizbeth del Carmen Sierra Martinez, booking 17981): details = PEL;Health, fee = null — 60 days unpriced since 25 May 2026\n• Booking 17981: Confirmed, EUR 1407.50 / 1407.50 fully paid, confirmed flag = false — last updated 23 Jun 2026 (31 days)\n• Student attending since approx 1 Jun 2026 — about 53 school days with insurance unpriced\n• Fix NOT RUN",
+        "Price booking extra 96 (confirm fee with finance); set booking 17981 confirmed = true. See recipe: issue-13-addendum-24jul.md",
+        "34th check Fri 24 Jul UTC — UNCHANGED. Fee null 60d. Booking confirmed=false despite full payment. Fix NOT RUN.",
+        "insurance fee null; 60d"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• 85th check Fri 24 Jul 2026 UTC — unchanged\n• Student 917 (Uyanga Tungalag): visa status = null — 64 days since last update (21 May 2026)\n• Student 917: HubSpot contact ID = null — cannot auto-verify visa\n• Booking 1467: Confirmed, EUR 2405 / 2405 fully paid, confirmed = true\n• Booking course 1613 (Academic Year Morning, 27 Apr to 30 Oct 2026): active, 0 class assignments — 88 days since course start",
+        "Set student 917 visa status to Approved in SIS admin; assign to AY Morning class via SIS booking 1467 / booking course 1613. See recipe: issue-25-addendum-24jul.md",
+        "85th check Fri 24 Jul UTC. UNCHANGED. s917 visaStatus=null hubspotContactId=null (64d since May21). BC1613 AY Morning Apr27-Oct30 0 SCAs (88d). BK1467 CONF EUR2405/2405. Fix NOT RUN.",
+        "visa null 64d; zero SCAs 88d"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• 39th check Fri 24 Jul 2026 UTC (25th hourly) — unchanged\n• Booking course 23 (Ivan Rodriguez Solares, Intensive General 30, ended 22 May 2026): active = still true — 63 days stale\n• Booking course 24826 (Ernesto Pesoa Gil, Intensive General 30, ended 19 Jun 2026): active = still true — 35 days stale\n• Booking 18034 (Ernesto Pesoa Gil): Partial, confirmed = false, EUR 845 / 1095, EUR 250 outstanding\n• Payment 17683 (EUR 845): type = null, Xero payment ID = null — unreconciled",
+        "Set active = false on booking courses 23 and 24826; chase EUR 250 from Ernesto Pesoa (booking 18034). See recipe: issue-26-addendum-24jul.md",
+        "39th check Fri 24 Jul UTC (25th hrly). UNCHANGED. BC23 (Ivan, ended May22) 63d stale. BC24826 (Ernesto, ended Jun19) 35d stale. BK18034 PARTIAL EUR845/1095 EUR250 open. PMT17683 Xero null. Fix NOT RUN.",
+        "2 BCs stale; EUR250 open"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• 40th hourly check Fri 24 Jul 2026 UTC — unchanged\n• Booking course 104 (Morning General Plus, ended 26 Jun 2026): active = still true — 28 days stale\n• Payment 17102 (EUR 1151.50, booking 94, Giulia Avallone): Xero payment ID = null, type = null — created 5 May 2026, 80 days unreconciled\n• Fix NOT RUN",
+        "Deactivate BC 104; reconcile payment 17102 in Xero (booking 94, EUR 1151.50, approx 5 May). See recipe: issue-30-addendum-24jul.md",
+        "40th hrly Fri 24 Jul UTC — UNCHANGED. BC 104 28d stale. Pmt 17102 Xero null 80 days. Fix NOT RUN.",
+        "bc104 stale 28d; xero null 80d"
+      ]
+    ]
+  }
+]

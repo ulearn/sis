@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 144th check Mon 17 Aug 2026 UTC — no change since 143rd check\n• Booking 18151 (Saikhantes Shagdarsuren, student 1001): CONFIRMED, confirmed = true, amount paid = EUR 1,339.20, amount open = EUR 0\n• Booking Course 24925 (Academic Year Afternoon): start 2026-03-09, end 2026-10-02, active = true\n• Student Class Assignment 255: class 11, weekEnd 2026-07-03 — expired 45 days ago; no SCA for return\n• Student returns Thursday 21 Aug 2026 (4 days) — URGENT: no class assignment will show attendance",
+        "Insert SCA for Mon 24 Aug (class 11); verify holiday intact. See recipe: issue-15-addendum-17aug-d.md",
+        "144th Mon 17 Aug UTC. Returns Thu Aug 21 (4d). SCA 255 expired 45d (Jul 3). No return SCA. Fix URGENT.",
+        "URGENT: return Aug21 4d; SCA+svcEnd"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• 110th check Mon 17 Aug 2026 UTC — no change since 109th check\n• Booking 18151 (Saikhantes Shagdarsuren, student 1001): CONFIRMED, amount paid = EUR 1,339.20, amount open = EUR 0\n• Booking Course 24925 (Academic Year Afternoon): active, start 2026-03-09, end 2026-10-02\n• Student Class Assignment 255: weekEnd 2026-07-03 — expired 45 days ago; no SCA for Aug return\n• Returns Thursday 21 Aug 2026 (4 days) — URGENT",
+        "Insert SCA for Mon 24 Aug. See recipe: issue-29-addendum-17aug-d.md",
+        "110th Mon 17 Aug UTC. Returns Thu Aug 21 (4d). BC active. SCA 255 expired 45d. No return SCA. URGENT.",
+        "URGENT: return Aug21 4d; svc_end+SCA exp"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 210th check Mon 17 Aug 2026 UTC — no change since 209th check\n• Booking Accommodation 11393 (bed 88, Bed A): fee = null, startDate = 2026-08-22 (check-in 5 days), endDate = 2026-09-13, active = true\n• Booking 17980: CONFIRMED, confirmed = true, amount paid = EUR 5,331, amount open = EUR 0",
+        "Set fee on BA 11393 before Aug 22 check-in. See recipe: issue-36b-addendum-17aug-c.md",
+        "210th Mon 17 Aug UTC. BA 11393 fee still null, check-in 22 Aug (5d). No change. Fix NOT RUN.",
+        "fee null BA11393; check-in Aug22 (5d)"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 180th check Mon 17 Aug 2026 UTC — no change since 179th check\n• Booking Course 25043 (General English PM): start 2026-08-10, end 2026-08-14, active = true\n• Student: Eduardo Roche Diaz (id 14602), Booking 18265: CONFIRMED\n• Booking Course 25043 ended 3 days ago (2026-08-14) and is still active\n• Zero class assignments on Booking Course 25043 — safe to deactivate\n• Stale active Booking Courses total: 24,497 (unchanged)",
+        "Deactivate Booking Course 25043 (0 class assignments, safe). See recipe: issue-38-addendum-17aug-b.md",
+        "180th Mon 17 Aug UTC. BC 25043 ended Aug 14 (3d ago), still active, 0 SCAs. Fix NOT RUN.",
+        "BC25043 3d past end"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 111th check Mon 17 Aug 2026 UTC — no change since 110th check\n• Booking 18180 (Giampaolo Russo, student 14571): CONFIRMED, confirmed = true, amount paid = EUR 2,584.96, amount open = EUR 0\n• Student Class Assignment 424 (class 12, Aug 17 to Sep 11, Booking Course 24956): ACTIVE — day 1 of duplicate period\n• Student Class Assignment 426 (class 12, Aug 10 to Sep 11, Booking Course 24956): both active simultaneously\n• Booking Accommodation 11357 (bed 178, Aug 2 to Aug 15): 2 days past end, still active, fee = EUR 1,250\n• Booking Accommodation 11396 (bed 44, Aug 15 to Aug 22): CURRENT, student here now, fee = null — URGENT\n• Booking Accommodation 11397 (bed 89, Aug 22 to Sep 6): check-in 5 days, fee = null\n• Booking Accommodation 11392 (no bed, Sep 6 to Sep 14): fee = EUR 415, bed not assigned",
+        "Delete SCA 424; deactivate BA 11357; set fees on BA 11396+11397; assign bed to BA 11392. See recipe: issue-41-addendum-17aug-d.md",
+        "111th Mon 17 Aug UTC. SCA 424 (Aug 17) day 1 dup with SCA 426 (Aug 10), both class 12. BA 11396 current fee null (student in room). BA 11397 check-in 5d fee null. Fix NOT RUN.",
+        "SCA424+426 dup live; BA fees null"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• 38th check Mon 17 Aug 2026 UTC — no change since 37th check\n• Booking Accommodation 11285 (booking 17825, Jesus Manuel Ramirez Diaz): 21 Jun - 5 Jul 2026, fee = null — 43 days stale\n• Bed 83: 5 stale BAs active (11239 85d, 11168 58d, 11285 43d, 11352 37d, 11179 8d)\n• Current occupant: Booking Accommodation 11173 (Alessandro Signorotti), 9-30 Aug 2026 — active, correct\n• Next check-in: Booking Accommodation 25 (Rosa Maria Mollica), 30 Aug 2026 — 13 days",
+        "Deactivate BAs 11239/11168/11285/11352/11179; set fee BA 11285. See recipe: issue-43-addendum-17aug-b.md",
+        "38th Mon 17 Aug UTC. BA 11285 43d stale, fee null. Bed 83 cluster 5 stale BAs unchanged. Aug 30 check-in 13d. Fix NOT RUN.",
+        "5 stale BAs; Aug 30 check-in (13d)"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Two payments are unlinked — booking_id = null and xeroPaymentId = null\n• Payment 16988 → Booking 17856 (Margherita Galbusera) — EUR 339.90\n• Payment 16989 → Booking 17857 (Francesca Fassina) — EUR 339.90\n• Both bookings are CONFIRMED, confirmed = false, amountPaid = 339.90 / amountTotal = 339.90\n• Linking payments reconciles Xero and HubSpot\n• Students arrive Jun 29 — 11 days",
+        "UPDATE payments SET booking_id=17856 WHERE id=16988; UPDATE payments SET booking_id=17857 WHERE id=16989. See recipe: issue-1-orphan-payments.md",
+        "Jun18 THU hrly: UNCHANGED (fresh DB). Payment 16988 bookingId=null xeroPaymentId=null (EUR 339.90). Payment 16989 bookingId=null xeroPaymentId=null (EUR 339.90). Booking 17856 CONFIRMED conf=false amtPaid=339.9/339.9. Booking 17857 CONFIRMED conf=false amtPaid=339.9/339.9. Students arrive Jun29=11 days. SQL NOT RUN.",
+        "11d to Jun29"
+      ]
+    ]
+  },
+  {
+    "range": "H6:K6",
+    "values": [
+      [
+        "• Bed assignment 11287 confirmed: bed 179 assigned Jun 16 18:14 UTC, active Jun 27 – Dec 12\n• Booking 17871 is ESCROW — EUR 300 paid of EUR 2313.62 total (EUR 2013 outstanding), confirmed = true\n• Student 14473 (Rakan) has ZERO document records in SIS — no LOA has ever been generated via SIS\n• The LOA mentioned in the issue was manually amended outside SIS — no SIS barcode was ever attached\n• Previous diagnosis incorrectly cited doc 204 (booking 17915 / student 14444 — different student)\n• Arrival Jun 27 = 9 days",
+        "Generate LOA via SIS → Rakan → booking 17871 → Documents → Generate. Bed and fee data now populated. See recipe: issue-4-rakan-loa-barcode.md",
+        "Jun18 hrly: CORRECTION — doc204 belongs to booking 17915 / student 14444 (different student). Student 14473 (Rakan) has 0 document_records (fresh DB confirmed). LOA was manually amended outside SIS. Bed ba11287 bedId=179 Jun27-Dec12 confirmed (set Jun16). bk17871 ESCROW 300/2313.62 confirmed=true. Arrival Jun27=9d. NEIL: generate fresh LOA in SIS bk17871 (not regenerate).",
+        "gen LOA; 9d"
+      ]
+    ]
+  },
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "• Booking 1308 is CANCELLED, confirmed = false — stale since Jun 07 (11 days)\n• Amount paid = 1530 / 1530 (fully paid genuine enrolment)\n• Booking course 1350 (Academic Year Afternoon, May 25 – Nov 13) is ACTIVE\n• Student 766 (Ana Jessica Rosa, A2) has 0 class assignments all time\n• HubSpot contact ID = 777791875262\n• Student in school since May 25 — approximately 18 school days with no confirmed booking and no class record",
+        "(NOT RUN) UPDATE bookings SET status='CONFIRMED', confirmed=true WHERE id=1308; then assign A2-AFT class to booking course 1350. See recipe: issue-17-ana-jessica-accidental-cancel.md",
+        "Jun18 THU hrly: UNCHANGED (fresh DB). Booking 1308 CANCELLED confirmed=false (stale 11+ days). 0 class assignments student 766 all time. Booking course 1350 Afternoon May25-Nov13 ACTIVE. Approximately 18 school days (started May25, Jun1 bank holiday) with no confirmed booking and no class. SQL NOT RUN.",
+        "D18;urgent;0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• Booking 1605 is PENDING, paid 0 / 1509 — Day 68 in school\n• HubSpot deal 502951083215 (B2B Sales) is at ENROLMENT stage, not WON\n• Booking course 1791 (Academic Year Renewal Morning, Apr 13 – Oct 02) is ACTIVE\n• Student 1047 (Ariunsarnai Batbayar, B2) has 0 class assignments all time",
+        "Move HubSpot deal 502951083215 to WON stage to trigger webhook and confirm booking. See recipe: issue-20-ariunsarnai-payment-due.md",
+        "Jun18 THU hrly: UNCHANGED (fresh DB). Booking 1605 PENDING 0/1509. 0 class assignments student 1047. Booking course 1791 Academic Year Renewal Morning Apr13-Oct02 ACTIVE. HubSpot deal 502951083215 not moved to WON. SQL NOT RUN.",
+        "D68;pending;0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• Booking course 24826 (2 weeks Intensive General 30, Jun 08 – Jun 19) has zero class assignments — entire course unattended\n• Student Ernesto Pesoa Gil (id 14532) has currentLevel = null — level unknown in both SIS and HubSpot (contact 3344151, last updated May 31)\n• Booking 18034 is PARTIAL, paid 845 / 1095 (EUR 250 outstanding), confirmed = false\n• Course ends TOMORROW Fri Jun 19 — today Thu Jun 18 is the last full school day\n• 11 school days elapsed with zero class record — entire 2-week intensive course unattended",
+        "(NOT RUN) Ask teacher Ernesto level then INSERT 2 SCAs ws=2026-06-18 we=2026-06-19: VALUES(24826,AM_id,14532)+(24826,PM_id,14532). Pairs: A2=cls8/9, B1=cls5+12/11, B2-C1=cls4/6, C1=cls13/14. See recipe: issue-26-intensive-class-assign-once.md",
+        "Jun18 THU hrly: STILL 0 SCAs (fresh DB confirmed). s14532 Ernesto Pesoa Gil currentLevel=null (DB unchanged). bk18034 PARTIAL 845/1095 confirmed=false (stale Jun07=11d). TODAY JUN18 (THU) = LAST FULL SCHOOL DAY — course ends TOMORROW FRI JUN19. 11 school days with ZERO class record. NEIL: GET ERNESTO LEVEL FROM TEACHER TODAY — ABSOLUTE LAST CHANCE. SQL NOT RUN.",
+        "CRIT;LAST DAY;0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Student 356 has gender = null — never set in personal details\n• Exit letter document 238 (template 4) generated Jun 17 as DRAFT with Ms./she/her — incorrect if student is male\n• Root cause: documents.ts isMale = (gender === 1) — null gives false, so null gender defaults to female\n• 14,053 students have gender = null — systemic: all their documents silently default to female",
+        "Set gender=1 (male) via SIS student 356 Personal Details. Delete DRAFT document 238 and regen exit letter via SIS booking 560 Documents. Code fix: null gender must not default to female. See recipe: issue-32-shih-wei-gender-default.md",
+        "Jun18 hrly: s356 gender=null (unchanged, fresh DB). Document 238 still DRAFT template 4 updated Jun17 15:19 UTC — not yet deleted and regenerated. 14,053 students with null gender (systemic). NEIL: (1) set gender=male SIS s356 Personal Details; (2) delete doc238 DRAFT bk560 Documents; (3) regen exit letter bk560 Documents. Code fix in recipe issue-32.",
+        "set gender; regen doc"
+      ]
+    ]
+  }
+]

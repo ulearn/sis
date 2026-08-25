@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 133rd check Wed 12 Aug 2026 UTC — STILL 0 class assignments; CRITICAL: 2 school days remain (Thu 13 + Fri 14 Aug)\n• Booking Course 25043 (General English PM): 10-14 Aug 2026, student 14602 Eduardo Roche Diaz, booking 18265 — 0 class assignments confirmed\n• Pattern re-confirmed this run: SCA 421 (BC 25038, Aug 3-7) = class 6; all prior weeks in Class 6 (B2 & C1 PM)\n• Mon 10 + Tue 11 + Wed 12 attendance already unrecorded (3 of 5 days lost)\n• Fix: INSERT student_class_assignment — booking_course_id=25043, class_id=6, week 2026-08-10 to 2026-08-14\n• Thu 13 and Fri 14 still recoverable if fix applied today",
+        "INSERT SCA class 6 week Aug 10-14 for BC 25043. See recipe: issue-38-addendum-12aug-h.md",
+        "133rd Wed 12 Aug UTC. BC 25043 STILL 0 SCAs. 3 days lost. 2 days left. CRITICAL. Fix NOT RUN.",
+        "CRITICAL: ends Fri 14 Aug"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payment 16988 (HubSpot payment 1204827374829): EUR 339.90 — booking ID = null, Xero payment ID = null — still unlinked (195th check, 3 Jul 2026 UTC)\n• Payment 16989 (HubSpot payment 1204846469317): EUR 339.90 — booking ID = null, Xero payment ID = null — still unlinked\n• Bookings 17856 and 17857: status = Confirmed, confirmed = false — still inconsistent\n• Booking courses 24630 and 24631 (General English AM Plus, 29 Jun to 10 Jul 2026): fee = null — still unset\n• Course ends 10 Jul 2026 = 7 days remaining — 195 hourly checks — SQL not run",
+        "(NOT RUN) (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) UPDATE booking_courses SET fee=339.9 WHERE id IN (24630,24631); (4) UPDATE bookings SET confirmed=true WHERE id IN (17856,17857). See recipe: issue-1-orphan-payments.md",
+        "3 Jul UTC (195th check, fresh DB): pmts 16988+16989 bookingId=STILL null xeroId=null EUR339.9 each. bk17856+17857 CONF confirmed=false amtTotal=339.9 amtPaid=339.9. bc24630+24631 GE-AM-Plus Jun29-Jul10 fee=STILL null. Course ends Jul10=7d. 195 CHECKS UNRUN. NEIL: RUN NOW — DEADLINE JUL10.",
+        "7d to end; UNRUN"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Class assignment 255 (Saikhantes Shagdasuren, student 1001, class 11 B1 Afternoon): week end = 3 Jul 2026 — EXPIRED TODAY (92nd check, 3 Jul 2026 UTC)\n• No future class assignments for student 1001 — student loses class access from Monday 6 Jul 2026\n• Booking course 24925 (Academic Year Afternoon, booking 18151): 9 Mar to 2 Oct 2026, active = true, fee = EUR 1102.20 — course continues until October\n• Fix: extend class assignment 255 week end to 2026-10-02 to match the booking course end date",
+        "(NOT RUN) UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255; see recipe: issue-15-saikhantes-course-dates.md",
+        "3 Jul UTC (92nd check): class assignment 255 weekEnd=TODAY EXPIRED. 0 future assignments. bc24925 AY-Aft Mar09-Oct02 active=true fee=EUR1102.2. bk18151 CONF confirmed=true. Student loses class access Mon Jul06. SQL NOT RUN. NEIL: URGENT — RUN TODAY.",
+        "EXPIRED; RUN TODAY"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 (Edith Nunes, student 1015): Confirmed, confirmed = true, fully paid EUR 740 (48th check, 3 Jul 2026 UTC)\n• Duplicate booking courses: course 24933 (General English AM, EUR 380) and course 24934 (General English AM, EUR 360) — both active, same dates 15 Jun to 10 Jul 2026\n• No current class assignment: last assignment 146 expired 15 May 2026 — student unassigned for 49 days\n• Course ends 10 Jul 2026 = 7 days remaining — student still unassigned to class",
+        "(1) Assign student 1015 to class via SIS admin; (2) UPDATE booking_courses SET active=false WHERE id=24934 (duplicate). See recipe: issue-22-edith-nunes-payment-dups.md",
+        "3 Jul UTC (48th check): bk18158 CONF 740/740 confirmed=true. bc24933(EUR380)+bc24934(DUP EUR360) BOTH active Jun15-Jul10=7d. Last class assignment 146 expired May15=49d ago. 0 current/future class assignments. NEIL: (1) assign student 1015 to class NOW; (2) set bc24934 active=false.",
+        "0SCA; Jul10=7d; Day49"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Duplicate entry for Issue 15 (row 16) — same student Saikhantes Shagdasuren (student 1001)\n• Class assignment 255 (class 11, B1 Afternoon): week end = 3 Jul 2026 — EXPIRED TODAY (92nd check, 3 Jul 2026 UTC)\n• Student has zero future class assignments — loses class access from Monday 6 Jul 2026\n• Booking course 24925 (Academic Year Afternoon) runs to 2 Oct 2026 — class assignment extension needed to match",
+        "Duplicate of Issue 15 (row 16). Fix: UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255. See recipe: issue-15-saikhantes-course-dates.md",
+        "3 Jul UTC (92nd check): dup of row16/iss15. Class assignment 255 EXPIRED TODAY (fresh DB). NEIL: apply row16 fix NOW — loses class access Mon Jul06.",
+        "EXPIRED; RUN TODAY"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• Accommodation 11352 (Veronica Martin, booking 18156): bed 83, 4 Jul to 11 Jul — DOUBLE-BOOKED — Veronica ARRIVES TOMORROW Saturday 4 Jul 2026 (87th check, 3 Jul 2026 UTC)\n• Bed 83 conflict: Jesus Manuel Ramirez Diaz (accommodation 11285, booking 17825) in same bed 83 until 5 Jul 2026 — 2-night overlap (4 Jul and 5 Jul)\n• Beds 174, 175, and 176 all confirmed free for the full period 4 Jul to 11 Jul 2026 (fresh DB, zero conflicts)\n• Fix: move Veronica from bed 83 to bed 174 (or 175 or 176) via SIS admin TODAY",
+        "Move Veronica to bed 174, 175, or 176 (all free Jul 4-11): SIS Student 278 > Booking 18156 > Accommodation > edit 11352 > change bed 83 to bed 174. See recipe: issue-37-veronica-capel-accomm-allocation.md",
+        "3 Jul FRI UTC (87th check): accommodation 11352 Veronica bed 83 Jul 4-11 STILL ACTIVE. Accommodation 11285 Jesus bed 83 Jun 21-Jul 5 active. 2-night overlap Jul4-5 CONFIRMED. Beds 174+175+176 ALL FREE Jul4-11 (fresh DB zero rows). NEIL: CHANGE BED NOW — ARRIVES TOMORROW.",
+        "BED CONFLICT; ARRIVES SAT"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Three renewal students not appearing in arrivals list — is_renewal = false on all three booking courses (6th check, 3 Jul 2026 UTC)\n• Tuguldurtugs Enkhtugs (student 858, booking 1601, course 1786 Academic Year Renewal Morning): starts Monday 6 Jul 2026 — no class assignment since assignment 55 expired 1 May 2026 — EUR 250 outstanding\n• Kayque Tauann Lopes Coelho (student 852, booking 1632, course 1820 Academic Year Renewal Afternoon): started 29 Jun 2026 — no class assignment since assignment 26 expired 24 Apr 2026\n• Sophia Emilly Gallo Borim (student 853, booking 1633, course 1821 Academic Year Renewal Afternoon): started 29 Jun 2026 — no class assignment since assignment 23 expired 24 Apr 2026\n• All three booking courses have is_renewal = false — students not showing in renewal arrivals view",
+        "(NOT RUN) (1) UPDATE booking_courses SET is_renewal=true WHERE id IN (1786,1820,1821); (2) Assign all three students to their classes via SIS admin. See recipe: issue-45-renewal-arrivals.md",
+        "3 Jul UTC (6th check): bc1786 Tuguldurtugs AY-Renewal-Morn Jul06-Dec25 is_renewal=STILL false. bc1820+1821 Kayque+Sophia AY-Renewal-Aft Jun29-Dec18 STARTED 4d ago is_renewal=false. All 3 students: 0 class assignments (s858 since May01, s852+853 since Apr24). NEIL: (1) set is_renewal=true; (2) assign 3 students to classes. Tuguldurtugs starts MONDAY.",
+        "0SCA; STARTS MON Jul6"
+      ]
+    ]
+  }
+]

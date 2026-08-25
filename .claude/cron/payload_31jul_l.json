@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 25th check Fri 31 Jul 2026 UTC (7th today) — STILL NOT FIXED\n• August Bank Holiday Mon 3 Aug 2026 absent from school_closures — confirmed live query\n• 21 active booking courses start 3 Aug; 15 CONFIRMED need shunting; 5 PENDING leave as-is\n• BC 25003 changed: now CONFIRMED/confirmed=true (was PENDING) — still duplicate of BC 25002 (booking 18225); check SCAs before delete\n• BC 25006 (Marina Larripa) ends 3 Aug — school closed that day; correct end_date to Jul 31 or Aug 4 (confirm with AC/PG)\n• THIS IS THE LAST WINDOW — school reopens Mon 4 Aug",
+        "Shunt 14 confirmed BCs to Aug 4; handle BC 25003 duplicate; fix BC 25006 end. See recipe: issue-38-addendum-31jul-l.md",
+        "25th check, 7th today, Fri 31 Jul UTC. BC 25003 now CONFIRMED (was PENDING). FINAL WINDOW TONIGHT. Fix NOT RUN.",
+        "URGENT; fix TONIGHT"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 20th check Fri 31 Jul 2026 UTC — CHECK-IN TOMORROW SAT 1 AUG\n• Booking accommodation 11357 (bed 178, property 66 Claremont Close): start_date = 2026-08-02 (Sunday) in DB\n• Prior check claimed start was shifted to Aug 1 — live query still shows Aug 2; discrepancy unresolved\n• Student reportedly arrives Saturday 1 Aug — if correct, BA start needs correcting to 2026-08-01\n• No Capel Street booking accommodation yet — awaiting Diego confirmation\n• Booking course 24956 in Issue 38 shunt list (start Aug 3 moves to Aug 4 tonight)",
+        "Verify BA start (DB=Aug 2 vs reported arrival Aug 1); add Capel BA once Diego confirms. See recipe: issue-41-addendum-31jul-i.md",
+        "20th check Fri 31 Jul UTC. CHECK-IN TOMORROW. BA Aug 2 in DB vs Aug 1 arrival — Neil verify. Capel pending Diego. Fix NOT RUN.",
+        "Capel missing; Diego needed"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 15th check Fri 31 Jul 2026 UTC — unchanged\n• Galbusera (student 14461, booking 17856): CONFIRMED, confirmed = false; BC 24631 active and stale 21 days; 0 class assignments ever\n• Fassina (student 14462, booking 17857): CONFIRMED, confirmed = false; BC 24630 active and stale 21 days; 0 class assignments ever\n• Saikhantes: new class assignment needed from 24 Aug 2026 (student returns then)",
+        "Set confirmed=true on 17856+17857; deactivate BCs 24631+24630; add SCA for Saikhantes from 24 Aug. See recipe: issue-48-addendum-31jul-i.md",
+        "15th check Fri 31 Jul UTC. Galbusera+Fassina 0 SCAs; BCs 21d stale. Saikhantes SCA on return 24 Aug. Fix NOT RUN.",
+        "4 items open; return Aug 24"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• 132nd check Fri 31 Jul 2026 UTC — unchanged\n• Student 917 (Uyanga Tungalag): visaStatus = null, hubspotContactId = null\n• Booking 1467: CONFIRMED, confirmed = true, EUR 2,405 / 2,405 (fully paid)\n• Booking course 1613 (Academic Year Morning, 27 Apr - 30 Oct 2026): active, fee EUR 3,370\n• 0 class assignments — day 95 from course start\n• EUR 661 unreconciled overpayment (see prior recipe)",
+        "Set visa Approved; link HubSpot contact; create SCA for BC 1613; reconcile EUR 661. See recipe: issue-25-addendum-31jul.md",
+        "132nd check Fri 31 Jul UTC. Day 95; 0 SCAs. visaStatus null. Fix NOT RUN.",
+        "visa null; 0 SCAs; 95d"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• 2nd check Fri 31 Jul 2026 UTC — day 109 from course start 13 Apr 2026 — unchanged\n• Booking 1605 (Ariunsarnai Batbayar, student 1047): PENDING, confirmed = false\n• Amount paid = EUR 0 of EUR 1,509 — 0 payment records in database\n• Booking last updated: 23 Jun 2026 (38 days ago — no activity)\n• Booking course 1791 still active",
+        "Chase EUR 1,509 via HubSpot for student 1047; if no payment, cancel booking 1605 + deactivate BC 1791. See recipe: issue-20-addendum-31jul-b.md",
+        "2nd check Fri 31 Jul UTC. Day 109; EUR 0 / 1,509. Last activity 23 Jun. Fix NOT RUN.",
+        "Day 109; EUR 0 / 1,509"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• 5th check Fri 31 Jul 2026 UTC — unchanged\n• Student 1052 (Alberto Squillace): visaStatus = null (last touched 28 Jul 2026)\n• Booking 1611: CONFIRMED, confirmed = true, EUR 1,280.12 / 1,280.12 (fully paid)\n• Booking course 1797 (Morning General, 6 Apr - 26 Jun 2026): still active (stale 35 days); 1 class assignment (SCA 229) ended Apr 26\n• Booking course 24686 (Morning General, 20 Jul - 18 Sep 2026): active, fee = null, 0 class assignments (10 lost days)\n• ~34 teaching days remaining in BC 24686",
+        "Set visa status; set BC 24686 fee; deactivate BC 1797; create SCA for BC 24686 from Aug 4. See recipe: issue-24-addendum-31jul-c.md",
+        "5th check Fri 31 Jul UTC. 10d lost (Jul 20-31); BC 24686 fee null; visa null. Fix NOT RUN.",
+        "10d lost; visa null; 34d remain"
+      ]
+    ]
+  }
+]

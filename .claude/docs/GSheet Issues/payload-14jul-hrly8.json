@@ -1,0 +1,50 @@
+[
+  {
+    "range": "J2",
+    "values": [
+      [
+        "50th check Tue 14 Jul UTC. UNCHANGED. Payments 16988 + 16989 bookingId = null. Booking courses 24630 + 24631 ended 10 Jul active = still true (4d stale). Fix NOT RUN."
+      ]
+    ]
+  },
+  {
+    "range": "J25",
+    "values": [
+      [
+        "43rd check Tue 14 Jul UTC. Booking course 24686 Morning General Jul20-Sep18 fee = STILL null (6 days to course start Mon 20 Jul — URGENT). Booking course 1797 Apr6-Jun26 active = STILL true (18d stale). Payment 17124 EUR1280.12 xeroPaymentId = null. Fix NOT RUN."
+      ]
+    ]
+  },
+  {
+    "range": "J40",
+    "values": [
+      [
+        "10th check Tue 14 Jul UTC. Aug Bank Holiday Mon 3 Aug STILL missing from school_closures. Oct Bank Holiday Mon 27 Oct also missing. Booking courses 97 and 24970 both start Aug 3 — shunt blocked without this entry. 20 days to deadline. Fix NOT RUN."
+      ]
+    ]
+  },
+  {
+    "range": "J41",
+    "values": [
+      [
+        "7th check Tue 14 Jul UTC. Booking course 24609 Morning General Jul13-Jul31: 0 class assignments. Day 1 (Mon 13 Jul) and Day 2 (Tue 14 Jul today) both missed. Accommodation 11358 bed 180 Jul12-Aug02 claimStatus = STILL null. Fix NOT RUN."
+      ]
+    ]
+  },
+  {
+    "range": "J43",
+    "values": [
+      [
+        "39th check Tue 14 Jul UTC. Payment 17954 EUR 2584.96 Bank Transfer 26 Jun xeroPaymentId = STILL null. Booking 18180 CONFIRMED EUR 2584.96 fully paid. 19 days to Aug 2 check-in. Fix NOT RUN."
+      ]
+    ]
+  },
+  {
+    "range": "J47",
+    "values": [
+      [
+        "74th check Tue 14 Jul UTC. UNCHANGED. 19 booking courses end Fri 17 Jul; 11 assigned; 8 still zero class assignments. Priority confirmed enrolled: BC1719 (Maria Magdalena Hermosilla Ogaz, s992), BC24946 (Lunel Dubost, s14566), BC24994 (Petru Ous, s14591). Fix NOT RUN."
+      ]
+    ]
+  }
+]

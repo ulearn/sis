@@ -1,0 +1,8 @@
+{
+  "row": 23,
+  "issue": "22",
+  "H": "• Booking 18158 is Confirmed, paid EUR 740 / 740 (since 15 Jun)\n• Two duplicate booking courses: bc24933 (General English AM, fee = EUR 380) and bc24934 (General English AM, fee = EUR 360) — both Jun 15 to Jul 10\n• Zero class assignments for student Edith Nunes (student 1015, level A1) — in school since 15 Jun; Day 8 (Week 2 started Mon 22 Jun)\n• Duplicate booking course bc24934 not yet deleted (active = true, unchanged since 11 Jun)\n• OVERDUE — student in school 8 days with no class assignment",
+  "I": "Delete bc24934; insert SCA for bc24933: class 7 (A1-AM), weekStart = Jun 22, weekEnd = Jul 10. See recipe: issue-22-edith-nunes-payment-dups.md",
+  "J": "Jun22 hrly x4: UNCHANGED (fresh DB). bk18158 CONF 740/740 (updAt=Jun15=7d). bc24934 STILL active=true (updAt=Jun11=11d). 0 SCAs. Day 8 in school, Week 2 started Mon Jun22. NEIL: (1) deactivate bc24934 in SIS; (2) INSERT SCA bc24933 A1-AM ws=Jun22 we=Jul10 (NOT RUN).",
+  "K": "D8; 0SCA; OVERDUE"
+}

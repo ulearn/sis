@@ -1,0 +1,2 @@
+Issue 27 - Booking 17909 duplicate tracking (51st check Sun 16 Aug 2026)
+Same as Issue 7 (row 8). Booking 17909 CANCELLED + confirmed=true, 60 days unchanged. BC24693 active on cancelled booking. Fix: set confirmed=false + deactivate BC24693. Status: NOT RUN.

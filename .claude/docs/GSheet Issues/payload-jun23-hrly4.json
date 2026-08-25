@@ -1,0 +1,50 @@
+[
+  {
+    "range": "J2",
+    "values": [
+      [
+        "Jun23 hrly#4: UNCHANGED. pmt16988 bookingId=null xeroId=null STILL. pmt16989 bookingId=null xeroId=null STILL. bc24631(bk17856 Margherita)/bc24630(bk17857 Francesca) fee=null starts Mon Jun29=6d. bk17856+17857 CONFIRMED conf=false amtPaid=339.9. NEIL CRITICAL: link pmts + set bc fees BEFORE Mon Jun29."
+      ]
+    ]
+  },
+  {
+    "range": "J23",
+    "values": [
+      [
+        "Jun23 hrly#4: UNCHANGED. bc24933(fee=380)+bc24934(fee=360) BOTH active (dup). 0 SCAs on bc24933/bc24934. bk18158 CONF 740/740 (Jun15=8d). Student 1015 Day9 in school no class since May15=39d. NEIL URGENT: (1) Deactivate bc24934 in SIS; (2) Assign student 1015 to class 7 (A1 AM) on bc24933 via SIS bk18158."
+      ]
+    ]
+  },
+  {
+    "range": "J25",
+    "values": [
+      [
+        "Jun23 hrly#4: UNCHANGED. bk1611 CONF conf=true amtPaid=1280.12 (Jun11=12d). bc1797 Morning General ends Fri Jun26=3d, fee=1836. SCA229 class12 weekEnd=Apr26 EXPIRED 58d. 0 holidays in DB (bereavement never recorded). bc24686 Jul20-Sep18 fee=null. NEIL DECIDE TODAY: (1) Alberto attending Mon23-Fri26? (2) If yes assign class bc1797 now. (3) If no add holiday Apr27-Jun26. (4) Set bc24686 fee before Jul20."
+      ]
+    ]
+  },
+  {
+    "range": "J26",
+    "values": [
+      [
+        "Jun23 hrly#4: UNCHANGED. s917 visaStatus=null (May21=33d). bk1467 CONF conf=true amtPaid=2405/2405 (Jun11=12d). bc1613 AY-Morn Apr27-Oct16 active fee=3370. 0 SCAs on bc1613 (Day57 since Apr27). hubspotContactId=null. NEIL CRITICAL: SIS UI bk1467 bc1613 Assign Class (weekStart=today weekEnd=Oct16). Then student 917 set visaStatus."
+      ]
+    ]
+  },
+  {
+    "range": "J31",
+    "values": [
+      [
+        "Jun23 hrly#4: UNCHANGED. bk18044 STILL CONFIRMED conf=true amtPaid=1106.5 (Jun07=16d stale). bc24836 ends Fri Jun26=3d active=true. pmt17607 EUR1151.5 HS=1239529228498 xeroId=null STILL LIVE. bk94 OK: SCA270 class12 Jun15-26 active. NEIL URGENT: Cancel bk18044 in SIS + void HS payment 1239529228498 BEFORE FRI JUN26."
+      ]
+    ]
+  },
+  {
+    "range": "J40",
+    "values": [
+      [
+        "Jun23 hrly#4: UNCHANGED. st356 gender=null (Jun03=20d stale). doc238 STILL ISSUED (Jun18=5d). NEIL: (1) SIS Student 356 Personal Details set Gender Male; (2) SIS Booking 560 Documents Revoke doc238 Regenerate exit letter. Code fix null-gender guard still pending."
+      ]
+    ]
+  }
+]

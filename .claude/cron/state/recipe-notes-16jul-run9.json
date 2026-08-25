@@ -1,0 +1,8 @@
+{
+  "issue-45": "101st check 2026-07-16 THU UTC (9th today): BC1719/24946/24994 all end TOMORROW Jul 17. Still 0 SCAs each. Hermosilla (s992 bk1543 EUR1356/1500), Dubost (s14566 bk18171 EUR206.13/206.13), Ous (s14591 bk18217 EUR202/202). LAST DAY TODAY.",
+  "issue-39": "27th check 2026-07-16 THU UTC (7th today): BC24609 0-SCA Day4 Jul13-31. BK17831 CONF EUR1396.90/1396.90. BA11358 bed180 claimStatus=null (20d stale updAt=Jun26).",
+  "issue-41": "41st check 2026-07-16 THU UTC: PMT17954 EUR2584.96 xeroId=null (20d since paymentDate Jun26). BA11357 bed178 HF Aug2-Sep6 claimStatus=confirmed. Capel apt Sep6-14 NOT in SIS (bk18180 has 1 BA only; bk17980=Pietro Caccianiga, different student). 17d to Aug2 checkin.",
+  "issue-38": "26th check 2026-07-16 THU UTC (6th today): No Aug BH (3 Aug) or Oct BH (26 Oct) in school_closures. 9 records: Good Friday 2026-2030 + Christmas 2026-2029. 18 days to Aug BH.",
+  "issue-20": "29th check 2026-07-16 THU UTC: BK1605 STILL PENDING Day94 since Apr13. EUR0 paid of EUR1509. Zero payments, zero SCAs. BC1791 AY-Renewal active ends Oct23.",
+  "issue-17": "Thu 16 Jul UTC: BK1308 CANCELLED EUR1530/1530 (updAt=Jun07=39d). PMT17186 EUR1280 xeroId=null (72d since May). PMT17050 EUR250 xeroId=null (72d). BC1350 AY-Aft active=true on cancelled booking."
+}

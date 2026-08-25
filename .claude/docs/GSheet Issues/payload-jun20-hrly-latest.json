@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking course 24934 (General English AM, Jun 15-Jul 10, fee=360) is a duplicate of booking course 24933 (fee=380) on booking 18158\n• Booking 18158 is CONFIRMED, paid 740/740 — correct booking\n• Ghost bookings 18131 and 18133 were deleted Jun 17 — no longer outstanding\n• Student 1015 (Edith Numes) still has zero active class assignments — last assignment (class 7) expired May 15\n• 10 attendance records in DB — student attended Week 1 (Jun 15-19) with no formal class assignment\n• Two steps still not run: delete booking course 24934 (duplicate); insert class assignment for booking course 24933, class 7 — Week 2 starts Mon Jun 22",
+        "(NOT RUN) 1) DELETE booking course 24934 (duplicate); 2) INSERT class assignment: booking course 24933, class 7, week start 2026-06-22, week end 2026-07-10, student 1015. See recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun20 hrly: bc24934 DUP confirmed still present (fresh DB). 0 SCAs on bc24933/bc24934. Last SCA id=146 cls7 expired May15. bk18158 CONF 740/740 (updAt=Jun11). 10 att records (Week 1 Jun15-19, teacher manually tracked). NEIL: Mon Jun22 = 2 DAYS. NOT RUN: (1) DELETE bc24934; (2) INSERT SCA bc24933 cls7 ws=2026-06-22 we=2026-07-10 s1015.",
+        "URGENT;SCA;Mon22=2d"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking 1611: CONFIRMED, confirmed = true, fully paid EUR 1280.12 / 1280.12\n• Booking course 1797 (Morning General) runs Apr 06 - Jun 26 — FINAL WEEK is Mon Jun 22 - Fri Jun 26\n• Booking course 24686 (Morning General) runs Jul 20 - Sep 18 — second course after presumed holiday period\n• Class assignment 229: class 12 (B1 AM 2), week start Apr 06, week end Apr 26 — expired 54 days ago, never renewed\n• Zero attendance records for student 1052 (Alberto Fidelo) all time\n• Mon Jun 22 is the absolute last chance to assign a class before booking course 1797 expires Fri Jun 26",
+        "(NOT RUN) If Alberto returning Mon Jun 22: INSERT INTO student_class_assignments(booking_course_id,class_id,week_start,week_end,student_id) VALUES(1797,12,'2026-06-22','2026-06-26',1052). See recipe: issue-24-alberto-fidelo-course-split.md",
+        "Jun20 hrly: UNCHANGED (fresh DB). sca229 cls12-B1AM2 weekEnd=Apr26 EXPIRED 54d. bc1797 Morning General Apr06-Jun26 — FINAL WEEK Mon22-Fri26. bc24686 starts Jul20. s1052 att=0 ALL TIME. bk1611 CONF 1280.12 (updAt=Jun11). NEIL FINAL WINDOW: Alberto returning Mon22? If yes INSERT SCA bc1797 cls12 ws=2026-06-22 we=2026-06-26 via SIS (NOT RUN). Course expires Fri Jun26 — no further opportunity.",
+        "URGENT;Mon22=2d"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• Student 917 (Uyanga Tungalag) has visa status = null and HubSpot contact ID = null (unchanged since May 21)\n• Booking 1467 is CONFIRMED, fully paid EUR 2405 / 2405 (updated Jun 11)\n• Booking course 1613 (Academic Year Morning, Apr 27 - Oct 16) is active — Day 55 calendar / approx 40 school days elapsed\n• Zero class assignments all time — student has been in school approx 40 school days with no class record\n• Cannot verify visa via HubSpot — no contact ID link on student record",
+        "Set student 917 visaStatus = Approved + hubspotContactId via SIS; then assign AY-MORN class (id 5 or 12). See recipe: issue-25-uyanga-visa-escrow.md",
+        "Jun20 hrly: UNCHANGED (fresh DB). s917 visaStatus=null hubspotContactId=null (updAt=May21=30d stale). 0 SCAs. bk1467 CONF 2405/2405 (updAt=Jun11). bc1613 AY-MORN Apr27-Oct16 Day55cal/~40 school days. att=0. CRITICAL: ~40 school days elapsed with no class assignment on record. SET visaStatus=APPROVED WHERE id=917 NOT RUN; then assign AY-MORN class via SIS.",
+        "D55cal;CRITICAL;visa null;0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Booking 18044 (duplicate): CONFIRMED, amount paid = EUR 1106.50 / 1106.50 — not yet cancelled (last updated Jun 07, 13 days stale)\n• Payment 17607 (EUR 1151.50, HubSpot payment ID 1239529228498): must be voided via HubSpot UI — do NOT delete raw from database since it has a live HubSpot payment record\n• Booking 94 (correct booking, Giulia Avallone): CONFIRMED, paid EUR 1151.50 / 1151.50 — payment 17102 (Fidelo import, no HubSpot ID)\n• Class assignment 270 (class 12, B1 AM 2, Jun 15-26) is active on booking course 104 — Giulia is in class correctly\n• Milena Vinci (parent) is NOT in SIS — parent-as-student issue was resolved Jun 15\n• Booking course 24836 on duplicate booking 18044 ends Jun 26 — must cancel before course closes",
+        "(NOT RUN) (1) Cancel booking 18044 via SIS UI; (2) VOID payment 17607 via HubSpot UI (HubSpot payment ID 1239529228498 — do NOT delete from database raw). See recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun20 hrly: bk18044 STILL CONFIRMED (updAt=Jun07=13d stale, fresh DB). amountPaid=1106.50/1106.50. bc24836 ends Jun26=6 DAYS. bk94 CONF 1151.50/1151.50 correct. sca270 cls12 Jun15-Jun26 ACTIVE. Milena NOT in SIS. pmt17607 EUR1151.50 HubSpot ID 1239529228498 xeroId=null — NOT VOIDED (last confirmed Jun19, no HS token this run). NOT RUN: (1) cancel bk18044 via SIS; (2) VOID pmt17607 via HubSpot UI. DEADLINE: before Jun26.",
+        "bk18044 dup;Jun26=6d"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Student 356 (Shih-Wei Huang) has gender = null — never set in personal details (last updated Jun 03)\n• Exit letter (document 238, template 4, booking 560) is ISSUED since Jun 18 08:53 UTC — wrong Ms./she/her pronouns, not yet revoked\n• Root cause: null gender defaults to female in src/scripts/documents.ts line 338\n• Students with null gender will produce documents with wrong female pronouns",
+        "1) Set gender=Male on student 356 via SIS personal details; 2) revoke document 238; 3) regenerate exit letter for booking 560. See recipe: issue-32-shih-wei-gender-default.md",
+        "Jun20 hrly: s356 gender=null (updAt=Jun03=17d stale, fresh DB). doc238 STILL ISSUED Jun18T08:53UTC — 2 days elapsed, wrong Ms./she/her pronouns on exit letter bk560. bk560 CONF 3168.75/3168.75. documents.ts L338 null gender defaults female unchanged. NEIL URGENT: (1) SIS student 356 personal details gender=Male; (2) revoke doc238; (3) regen exit letter bk560.",
+        "urgent; revoke doc238"
+      ]
+    ]
+  },
+  {
+    "range": "H42:K42",
+    "values": [
+      [
+        "• PM block duration hardcoded as 3.25 (gross 13:45-17:00) in src/scripts/attendance.ts line 84\n• All 4 active group PM classes have breakMinutes = 15, so net teaching hours = 3.00\n• The classes.ts financial calculator (line 1064) already uses gross-minus-break correctly\n• attendance.ts ignores breakMinutes entirely — uses 3.25 not 3.00\n• Private 121 class (14:00-16:00, no break) = 2h net; hardcoded fix would give it 3h (minor, teacher overrides anyway)",
+        "(NOT RUN) Edit attendance.ts line 84: change 3.25 to 3 (Option A) or derive from class start/end/break (Option B). Rebuild. See recipe: issue-35-pm-attendance-duration.md",
+        "Jun20 hrly: attendance.ts L84 still 3.25 gross hours (net = 3.00 after 15m break). Code confirmed unchanged (fresh check). seen.json key corrected from row42 to 35 this run. Option A: change 3.25 to 3 at L84 + rebuild. Option B: derive net from class.startTime/endTime/breakMinutes (matches classes.ts L1064).",
+        "code fix pending"
+      ]
+    ]
+  }
+]

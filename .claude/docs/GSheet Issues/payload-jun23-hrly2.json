@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H6:K6",
+    "values": [
+      [
+        "• Original issue resolved — Rakan Alghamdi (student 14444) LOA doc 204 ISSUED Jun 08 via booking 17915; Issue 14 (same booking, K=fixed) covered the QR/barcode bug\n• Previous diagnosis error — all prior checks used booking 17871 (student 14473 = Khongorzul Uranaa), which is NOT Rakan booking\n• Booking 17871 (Khongorzul Uranaa): ESCROW, confirmed = true; course Academic Year Morning ran Aug 04 2025 to Jan 23 2026 (ended 5 months ago)\n• Amount paid = EUR 300 of EUR 2313.62 total — EUR 2013.62 outstanding; xeroPaymentId = null; no Xero reconciliation\n• Stale ESCROW with significant outstanding balance on a completed course — Neil decision needed",
+        "Rakan LOA done (Issue 14). Decide fate of bk17871 Khongorzul: write off, pursue, or reclassify EUR 2013 stale ESCROW. See recipe: issue-4-rakan-loa-barcode.md",
+        "Jun23 hrly: bk17871 ESCROW confirmed=true amtPaid=300/2313.62 (updAt=May08=46d stale). bc24644 AY-Morn ended Jan23-26=5m active=false. pmt17375 EUR300 xeroId=null hsId=null. EUR2013.62 outstanding UNCHANGED. Await Neil: write off / pursue / reclassify.",
+        "Khongorzul EUR2013; 46d"
+      ]
+    ]
+  },
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "• Document 171 is a DRAFT certificate (template 82) — last updated Jun 05, now 18 days stale\n• Booking 1498 is CONFIRMED (status), but confirmed = false and amount paid = null\n• Booking course 1660 (ULearn Renewal Morning) ended Jun 05 — certificate was never issued after course ended\n• Simple action needed: issue the document via SIS UI",
+        "(NOT RUN) SIS student 947 booking 1498 Documents Issue button. See recipe: issue-8-suvderdene-cert-dates.md",
+        "Jun23 hrly: UNCHANGED. doc171 STILL DRAFT (updAt=Jun05=18d stale). bk1498 CONF conf=false amtPaid=null (updAt=May21=33d stale). bc1660 ended Jun05=18d. Neil: SIS student 947 → bk1498 → Documents → Issue button.",
+        "cert DRAFT; 18d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• Student 917 (Uyanga Tungalag) has been Confirmed in school since 27 Apr — 58 calendar days with zero class assignments (live check Jun23: still 0 SCAs on bc1613)\n• Booking 1467 is Confirmed, paid EUR 2405 / 2405 — data source = Fidelo, no HubSpot Deal ID linked\n• Booking course 1613 (Academic Year Morning, 27 Apr to 16 Oct) is active with no class assignment\n• Student visa status = null and HubSpot contact ID = null — no HubSpot link established (record last updated 21 May)",
+        "Assign class for bc1613 via SIS UI (no SQL needed). Set visaStatus on student 917. See recipe: issue-25-uyanga-visa-escrow.md",
+        "Jun23 hrly: s917 visaStatus=null (updAt=May21=33d stale). bc1613 AY-Morn Apr27-Oct16 active=true. 0 SCAs (Jun23=Day58 since Apr27). bk1467 CONF 2405/2405 (updAt=Jun11=12d). NEIL CRITICAL: SIS UI assign class bc1613 ws=today we=Oct16 + set visaStatus (SQL NOT RUN).",
+        "D58; 0SCA; CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• Booking course 24826 (Intensive General 30, Jun 08 - Jun 19) ended Jun 19 — course is over\n• Booking 18034 is PARTIAL, confirmed = false — EUR 845 paid of EUR 1095 total (EUR 250 outstanding)\n• Payment 17683 = EUR 845 (Apr 23, xeroPaymentId = null) — not Xero-reconciled\n• Student on booking 18034 is Ernesto Pesoa Gil (student 14532), not Ivan Rodriguez\n• Ivan Rodriguez (student 18) has booking 22 CONFIRMED and fully paid — no outstanding issue on his record\n• Column B student name is a mismatch — the EUR 250 debt belongs to Ernesto Pesoa Gil",
+        "Chase EUR 250 from Ernesto Pesoa Gil (student 14532, booking 18034). Reconcile payment 17683 in Xero. See recipe: issue-26-intensive-class-assign-once.md",
+        "Jun23 hrly: bc24826 ENDED Jun19 (4d ago) STILL active=true (unchanged). bk18034 PARTIAL 845/1095 conf=false (updAt=Jun07=16d stale). pmt17683 EUR845 xeroId=null. EUR250 outstanding. Neil: (1) deactivate bc24826 in SIS; (2) chase EUR250 from Ernesto Pesoa Gil (bk18034); (3) reconcile pmt17683 in Xero.",
+        "EUR250; bc24826 active"
+      ]
+    ]
+  },
+  {
+    "range": "H28:K28",
+    "values": [
+      [
+        "• Booking 17909 is CANCELLED but confirmed = true — database anomaly (updated Jun 17)\n• Database payments 17477 + 17478 deleted Jun 17 — booking now shows amount paid = 0, zero payment records\n• HubSpot Commerce payments 1230788330738 (EUR 727.50) + 1230645766331 (EUR 728.00) STILL LIVE — status = succeeded, not refunded\n• Refund deadlines: payment 1230788330738 expires Oct 25 2026 | payment 1230645766331 expires Nov 11 2026\n• Renewal booking 17849 confirmed and paid correctly (payment 17468, EUR 1455.50)\n• Class assignment 254 (class 6, B2-C1 PM, Jun 08 to Nov 27) is active and correct",
+        "(NOT RUN) (1) Check Xero Sofiia Apr-May 2026 — 3 payments = refund EUR 1455.50 via HS Commerce before Oct 25; (2) UPDATE bookings SET confirmed=false WHERE id=17909. See recipe: issue-27-sofiia-sca-cancelled-booking.md",
+        "Jun23 hrly: UNCHANGED. bk17909 CANCELLED confirmed=true amtPaid=0 (updAt=Jun17=6d stale). pmts=[]. HS Commerce pmts 1230788330738 EUR727.50 + 1230645766331 EUR728.00 still live (deadlines Oct25/Nov11-26). Refund window ~4 months. NEIL: (1) Xero check Apr-May26 → refund EUR1455.50 via HS Commerce before Oct25; (2) SET confirmed=false WHERE id=17909 (SQL NOT RUN).",
+        "void HS pmts + cf=false"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• Accommodation id 11352 EXISTS in SIS for booking 18156 (City Centre Apartment Premium, Jul 4-11, EUR 360, active=true)\n• bed_id = null — no specific bed assigned; this is why it does not appear in the allocation view\n• Booking 18156 is PENDING (unconfirmed, EUR 0 of EUR 645 paid), course starts Jul 6\n• 3 Premium beds free for Jul 4-11: bed 174 (A1/Room 1), bed 175 (A1/Room 2), bed 176 (A2/Room 1)\n• Bed 173 is Twin/Shared — not a match for her Premium booking type\n• Record is not missing — it just needs a Premium bed assigned to appear in allocation",
+        "SIS: Student 278 bk18156 Accommodation — assign one of Premium bed 174/175/176. Confirm booking once EUR 645 paid. See recipe: issue-37-veronica-capel-accomm-allocation.md",
+        "Jun23 hrly: ba11352 bedId=null STILL (updAt=Jun17=6d stale). bk18156 PENDING 0/645. Jul4-11=11d away. Free Premium Jul4-11: id174 A1/Rm1, id175 A1/Rm2, id176 A2/Rm1. NEIL: assign Premium bed 174/175/176 to ba11352 via SIS UI; confirm bk18156 once EUR645 paid.",
+        "await bed; Jul4=11d"
+      ]
+    ]
+  }
+]

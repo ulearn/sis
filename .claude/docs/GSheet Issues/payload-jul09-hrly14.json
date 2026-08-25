@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 + 16989 (EUR 339.90 each, HubSpot 1204827374829 / 1204846469317): booking ID = STILL null, Xero payment ID = STILL null — orphaned 72 days (28 April 2026)\n• Payment type updated to one_time_or_initial (was null since 28 April) — partial fix; booking ID linkage still missing\n• Bookings 17856 (Margherita Galbusera) + 17857 (Francesca Fassina): Confirmed, confirmed = STILL false, amount paid = EUR 339.90 each\n• Booking courses 24630 + 24631 (General English AM Plus, 29 Jun to 10 Jul 2026): fee = STILL null, active = true — ENDS TOMORROW 10 Jul\n• Fix SQL not run in 72 days — ABSOLUTE LAST CHANCE",
+        "Run link SQL TODAY — course ends Fri 10 Jul; recipe issue-1-orphan-payments.md",
+        "9 Jul UTC (hrly14, 27th check). UNCHANGED (fresh DB). pmts 16988+16989 bookingId=STILL null xeroPaymentId=STILL null type=one_time_or_initial. bks 17856+17857 CONF confirmed=STILL false amtPaid=339.90 each. bcs 24630+24631 GE-AM-Plus fee=STILL null active=true — ENDS TOMORROW FRI JUL10 (72 DAYS). Link SQL STILL NOT RUN.",
+        "ABSOLUTE LAST CHANCE; TOMORROW Jul10"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 (Edith Nunes, student 1015): Confirmed, confirmed = true, EUR 740 / 740 fully paid\n• Booking course 24933 (General English AM, 15 Jun to 10 Jul 2026): active = true, fee = EUR 380 — ENDS TOMORROW 10 Jul\n• Booking course 24934 (duplicate General English AM, same dates): active = STILL true, fee = EUR 360 — not deactivated (55 days)\n• Last class assignment for student 1015: booking course 24668, expired 15 May 2026 — no class for 55 days\n• Payment 17895: Xero payment ID = STILL null, type = null — not reconciled in Xero\n• ABSOLUTE LAST CHANCE: course ENDS TOMORROW 10 Jul — student has had no class since 15 May (55 days ago)",
+        "Deactivate booking course 24934 (duplicate); assign student 1015 to class TODAY — course ends TOMORROW; recipe issue-22-edith-nunes-payment-dups.md",
+        "32nd check 9 Jul UTC (hrly14). UNCHANGED (fresh DB). bk18158 CONF EUR740/740. bc24933 GEAM Jun15-Jul10 fee=380 active=true ENDS TOMORROW FRI JUL10. bc24934 DUP GEAM STILL active=true fee=360 (55d not deactivated). s1015 last SCA id146 bc24668 weekEnd=May15 (55 days unassigned). pmt17895 xeroId=STILL null type=null EUR740 HS1254474444002. NEIL: (1) deactivate bc24934; (2) assign s1015 to class LAST DAY TOMORROW.",
+        "ABSOLUTE LAST CHANCE; TOMORROW Jul10"
+      ]
+    ]
+  },
+  {
+    "range": "H37:K37",
+    "values": [
+      [
+        "• Homework section: renderSheetHtml() in src/routes/attendance.ts (lines 36–128) — no homework block implemented; awaiting Paul / Neil layout spec\n• Holiday display bug: getWeekAttendance (src/scripts/attendance.ts lines 31–183) does NOT fetch bookingHoliday records — students on holiday appear in the attendance grid with live checkboxes\n• getStudentAttendance (src/scripts/attendance.ts lines 350+) DOES fetch holidays correctly via fetchStudentHolidays — only the weekly-grid path is missing it\n• Both bugs confirmed still present (14th code check 9 Jul 2026 UTC)",
+        "Homework: get Paul/Neil layout spec then add to renderSheetHtml. Holiday: add bookingHoliday fetch to getWeekAttendance (attendance.ts L31). See recipes: issue-36-attendance-homework-section.md + issue-36c-attendance-holiday-display.md",
+        "14th code check 9 Jul UTC (hrly14). UNCHANGED. (1) Holiday: getWeekAttendance scripts/attendance.ts L31-183 — no bookingHoliday fetch confirmed. (2) Homework: renderSheetHtml routes/attendance.ts L36 — no homework section confirmed. Awaiting Paul/Neil layout spec.",
+        "open; Gaps: holiday+homework"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Booking 17831 (Xuezhen Huang, student 14443): Confirmed, EUR 1396.90 / 1396.90 fully paid\n• Accommodation 11358: bed 180 (Host Family), 12 Jul to 2 Aug 2026, active = true, claim status = STILL null — CHECK-IN SUNDAY 12 JULY (3 DAYS)\n• 4 payments on booking 17831 — ALL have Xero payment ID = null (none reconciled in Xero):\n  — Payment 17180: EUR 431.90, type null, no HubSpot ID — Fidelo migration, 27 Apr 2026\n  — Payment 17963: EUR 965.00, type null, HubSpot 1273784562922 — 1 Jul 2026\n  — Payment 17987: EUR 131.90, type null, HubSpot 1277724782804 — 7 Jul 2026\n  — Payment 17988: EUR 300.00, type null, HubSpot 1277795367133 — 7 Jul 2026\n• Payments 17987 + 17988 (EUR 131.90 + EUR 300.00 = EUR 431.90) match payment 17180 — likely HubSpot replacements for Fidelo migration payment; verify before reconciling separately\n• Host family claim for accommodation 11358 not yet submitted (9 Jul UTC hrly14)",
+        "Reconcile pmts 17963 + 17987/17988 (verify vs 17180 Fidelo) in Xero + submit host family claim before Sun 12 Jul; recipe issue-39-xuezhen-huang-accomm-missing.md",
+        "16th check 9 Jul UTC (hrly14). 4 pmts ALL xeroId=STILL null type=null (fresh DB). ba11358 claimStatus=STILL null bed180 Jul12-Aug2 active=true. CHECK-IN SUN JUL12=3 DAYS. pmts 17987(131.90 HS1277724782804)+17988(300.00 HS1277795367133) created Jul7 — sum=431.90=pmt17180 Fidelo amt. NEIL: reconcile in Xero + submit host family claim URGENTLY.",
+        "Xero; Sun Jul12; 3 days"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• Accommodation 11357 (bed 178, Host Family, 2 Aug to 6 Sep 2026, Giampaolo Russo student 14571): RESOLVED — bed 178 assigned and claim confirmed 6 July 2026\n• Booking 18180: Confirmed, fully paid EUR 2584.96\n• Payment 17954 (EUR 2584.96, HubSpot 1268783973563): type = null, Xero payment ID = STILL null — not classified or reconciled in Xero\n• Capel accommodation 6 to 14 Sep covered by accommodation 11311 (bed 84, booking 17980) — no action needed\n• Only outstanding item: reconcile payment 17954 in Xero (9 Jul UTC, 24 days to Aug 2 check-in)",
+        "Reconcile payment 17954 (EUR 2584.96) in Xero; see recipe issue-41-giampaolo-dual-accomm.md",
+        "9 Jul UTC (hrly14). PMT17954 EUR2584.96 type=null xeroId=STILL null (fresh DB). ba11357 claimStatus=confirmed bed178 Aug2-Sep6 active=true. 24d to host family check-in Aug2. NEIL: reconcile pmt17954 in Xero vs booking 18180 (HS 1268783973563).",
+        "Xero; Aug2 checkin; 24d"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Veronica Martin (student 278, booking course 24931 General English AM, 6-10 Jul 2026): ZERO class assignments ever — course ENDS TOMORROW 10 Jul\n• Ettore Iovinella (student 14564, booking course 24968 General English AM Plus, 6-13 Jul 2026): last class assignment was for booking course 24941 (expired 3 Jul) — 6 days missed, wrong booking course\n• Pietro Colombo (student 72, booking course 81 Morning General Plus, 6-24 Jul 2026): ZERO class assignments ever — 3 school days missed\n• Tuguldurtugs Enkhtugs (student 858, booking course 1786 Academic Year Renewal Morning, 6 Jul to 25 Dec 2026): last class assignment for old booking course 1521 (expired 1 May 2026) — 69 days missed, not assigned to new course\n• Fresh database check 9 Jul 2026 UTC confirms all four still unassigned",
+        "Assign Veronica (student 278) to class TODAY — course ends TOMORROW 10 Jul; then assign students 14564/72/858; recipe issue-45-renewal-arrivals.md",
+        "29th check 9 Jul UTC (hrly14). UNCHANGED (fresh DB). s278 Veronica bc24931 GEAM Jul6-Jul10 ZERO SCAs ever — ENDS TOMORROW FRI JUL10. s14564 Ettore bc24968 GEAM+ Jul6-Jul13 last SCA281 bc24941 weekEnd=Jul3 (6d missed). s72 Pietro bc81 Morning Gen Plus Jul6-Jul24 ZERO SCAs ever. s858 Tuguldurtugs bc1786 AY Renewal Jul6-Dec25 last SCA55 bc1521 exp May1 (69d). NEIL: URGENT — assign Veronica bc24931 to class TODAY (LAST CHANCE; course ends Fri).",
+        "ABSOLUTE LAST CHANCE; Jul10 TOMORROW"
+      ]
+    ]
+  }
+]

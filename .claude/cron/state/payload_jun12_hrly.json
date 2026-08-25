@@ -1,0 +1,56 @@
+[
+  {
+    "range": "J18:K18",
+    "values": [
+      [
+        "Jun12 hrly D5: STILL CANCELLED. bk1308 CANC conf=false 1530/1530 updAt=Jun07T21:01. c1350 AY-Aft May25-Nov13 ACTIVE. s766 A2 0SCAs hubId=777791875262. 5d in limbo. NEIL: UPDATE bookings SET status=CONFIRMED,confirmed=true WHERE id=1308 NOW URGENT.",
+        "D5 CANC URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "J25:K25",
+    "values": [
+      [
+        "Jun12 hrly D14: SAME. s1052 Alberto B1. bk1611 CONF 1280.12. c1797 MORN Apr06-Jun26(14d left). c24686 Jul20-Sep18(gap). sca229 cls12 Apr06-Apr26 EXPIRED 47d ago. att=0 ZERO. hols=EMPTY. NEIL: confirm if Alberto returned after Apr26; if YES INSERT sca studentId=1052 classId=12 bci=1797 ws=Jun08 we=Jun26 NOW.",
+        "0att 14d URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "J26:K26",
+    "values": [
+      [
+        "Jun12 hrly D46: SAME. s917 B1 visaStatus=null hubspotId=null. bk1467 CONF 2405/2405. c1613 AY-Morn Apr27-Oct16 ACTIVE. 0SCAs all time. NEIL: verify Uyanga visa from IRP paperwork; UPDATE students SET visa_status=approved WHERE id=917 (NOT RUN); assign B1-MORN class.",
+        "visa null D46"
+      ]
+    ]
+  },
+  {
+    "range": "J27:K27",
+    "values": [
+      [
+        "Jun12 hrly FINAL FRI: SAME. s14532 Ernesto Pesoa Gil 0SCAs ALL TIME. c24826 INTENSIVE Jun08-19. PARTIAL 845/1095. lvl=null. Week1 done(Jun08-12). Next wk Jun15-19=last. NEIL: get Ernesto level+INSERT AM+PM SCAs bci=24826 ws=Jun08 we=Jun19. Pairs: A2=cls8/9 B1=cls5/11 B2=cls4/6. LAST CHANCE.",
+        "0SCA ends Jun19"
+      ]
+    ]
+  },
+  {
+    "range": "J30:K30",
+    "values": [
+      [
+        "Jun12 hrly D152: SAME. s1001 B1 visaStatus=null hubId=381605244124. att=0 ALL TIME(151d enrolled). sca255 cls11-B1PM Jan12-Jul03(21d). bk18151 CONF 1339.2 bk1724 CONF 2171.87. Not in cls11 register. NEIL: ask B1PM teacher TODAY if Saikhantes in class; if absent contact student+mgmt re IRP compliance.",
+        "0att 21d URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "J31:K31",
+    "values": [
+      [
+        "Jun12 hrly 3d CRIT: SAME. s88 JUNIOR lvl=null 0SCAs. bk94 CONF 1151.5 c104 Jun15-26. bk18044 CONF DUP 1106.5 same dates. pmt17607 EUR1151.5 on bk18044 xeroId=null hsId=1239529228498. EUR44.5 excess. bk18152 Milena PEND 0/1151.5. No Morning-Plus class in DB(use std MORN). NEIL:(1)get Giulia level TODAY(2)assign MORN cls s88 bk94(3)cancel bk18044(4)resolve EUR44.5(5)cancel bk18152.",
+        "CRITICAL Jun15 3d"
+      ]
+    ]
+  }
+]

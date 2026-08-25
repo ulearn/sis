@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 59th check Fri 7 Aug 2026 UTC — STILL 0 class assignments, Mon 10 Aug in 3 days\n• 13 ready: Booking Courses 108 109 1313 1818 24915 24970 25004 25005 25024 25027 25031 25036 25039\n• Blocked: Booking Course 96 (EUR 250 open), Booking Course 833 (Escrow), Booking Course 25007 (EUR 370 open), Booking Course 25042 (EUR 456 unpaid)\n• DEADLINE: EOD TODAY (Fri 7 Aug) — last working day before Mon 10 Aug",
+        "Assign 13 ready students to classes via SIS Admin TODAY. See recipe: issue-38-addendum-7aug-i.md",
+        "59th hrly Fri 7 Aug 2026 UTC. STILL 0 student class assignments. 3 days to Mon 10 Aug. EOD TODAY deadline. Fix NOT RUN.",
+        "URGENT: assign TODAY"
+      ]
+    ]
+  },
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 180th check Fri 7 Aug 2026 UTC — unchanged since 179th check\n• Payment 4781: EUR 380, Flywire, 20 Aug 2019 (legacy Fidelo, ~2,544 days orphaned)\n• Payment 16988: EUR 339.90, Bank, 28 Apr 2026 (~101 days orphaned, Xero payment ID null)\n• Payment 16989: EUR 339.90, Bank, 28 Apr 2026 (~101 days orphaned, Xero payment ID null)\n• Payment 17187: EUR 6,151, TransferMate Escrow, 1 May 2026 (~98 days orphaned, Xero payment ID null)\n• Booking 17856 (Margherita Galbusera): Confirmed, confirmed = false, amount paid EUR 339.90\n• Booking 17857 (Francesca Fassina): Confirmed, confirmed = false, amount paid EUR 339.90\n• Booking Courses 24630 and 24631 (General English AM Plus): ended 10 Jul 2026, still active — 28 days stale",
+        "Link payments 16988/16989 to bookings 17857/17856; confirm bookings; deactivate Booking Courses 24630+24631. See recipe: issue-1-addendum-7aug-d.md",
+        "180th hrly Fri 7 Aug 2026 UTC. Unchanged. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  }
+]

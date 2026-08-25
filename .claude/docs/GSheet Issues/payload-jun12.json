@@ -1,0 +1,90 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "Pmts unlinked (not spurious): pmt16988->bk17856 Margherita, pmt16989->bk17857 Francesca",
+        "UPDATE payments SET booking_id=17856 WHERE id=16988; +17857/16989. see recipe: issue-1-orphan-payments.md",
+        "Jun12 hrly D46: pmt16988+16989 bookingId=null UNCHANGED. bk17856+17857 amtPaid=339.9 (stale Fidelo - 0 linked pmt rows). NEIL: run Step2 SQL (NOT RUN 46d).",
+        "link needed"
+      ]
+    ]
+  },
+  {
+    "range": "H6:K6",
+    "values": [
+      [
+        "Bug1(barcode) DONE - doc204 ISSUED Jun08. Bug2: ba11287 bed=null - accom block absent LOA.",
+        "Assign bed to ba11287(Jun27-Dec12) then regen LOA. see recipe: issue-4-rakan-loa-barcode.md",
+        "Jun12 hrly: ba11287 bedId=null UNCHANGED updAt=Jun05. Jun27 arrival 15d. Bed assign + LOA regen still needed.",
+        "bed assign needed"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "bk1605 PENDING 0/1509 D73. HS deal 502951083215 B2B-Sales ENROLMENT not WON.",
+        "Move HS deal 502951083215 to WON stage to trigger webhook. see recipe: issue-20-ariunsarnai-payment-due.md",
+        "Jun12 hrly D73: bk1605 PEND 0/1509 conf=false. HS 502951083215 ENROLMENT stage. NEIL: contact student re EUR1509 or cancel bk1605.",
+        "PENDING D73"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "bk18158 PEND 0/740: c24933(380)+c24934(DUP 360) GE-AM Jun15-Jul10; dbl-insert. Old: bk18131+18133 shells+dup pmts unresolved.",
+        "(1)DELETE pmts17728/17730/17852;(2)CANCEL bk18131+18133;(3)DELETE c24934 DUP;(4)check HS 505836060909+assign c24933. recipe:issue-22-edith-nunes-payment-dups.md",
+        "Jun12 hrly FINAL: bk18158 PEND 0/740 UNCHANGED. c24933+c24934 DUP GE-AM Jun15-Jul10. 0 pmts. bk18131+18133 NOT cancelled. pmt17728/17730/17852 NOT deleted. 0 new SCAs. ALL STEPS NOT RUN. STARTS MON JUN15.",
+        "CRITICAL starts Mon"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "Ernesto s14532 0SCAs ALL TIME. bk18034 PARTIAL 845/1095. c24826 INTENSIVE Jun08-19. Level=null. WK1 MISSED.",
+        "Get Ernesto level from staff; INSERT 2 SCAs(AM+PM) bci=24826 Jun08-19. see recipe: issue-26-intensive-class-assign-once.md",
+        "Jun12 hrly D7 WK2 FINAL: s14532 0SCAs. WK1(Jun08-12) MISSED. WK2(Jun15-19) starts Mon. level=null DB+HS(id=3344151). Pairs: A2=cls8/9,B1=cls5or12/11,B2-C1=cls4/6,C1=cls13/14. SQL NOT RUN. NEIL: get level from staff+insert SCAs TODAY.",
+        "WK2 Mon CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "s1001 att=0 ALL TIME 152d. sca255 cls11-B1PM ws=Jan12 we=Jul03(21d). bk18151 CONF 1339.2.",
+        "Ask cls11 teacher if Saikhantes attending; if absent: IRP compliance escalation. see recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun12 hrly D152 21d-left: att=0 ALL TIME (COUNT=0). sca255 cls11-B1PM ws=Jan12 we=Jul03. visaStatus=null. Not in cls11 register, no alias. IRP compliance risk. Course ends Jul03. NEIL: ask B1PM teacher TODAY.",
+        "0att URGENT 21d"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "s88 JUNIOR 0SCAs lvl=null. bk94(CONF 1151.5 pmt17102 Fidelo)+bk18044(CONF DUP 1106.5 pmt17607 dbl-import)+bk18152(Milena PEND).",
+        "(1)get Giulia level;(2)assign s88 std AM bk94/c104;(3)cancel bk18044+DELETE pmt17607(dbl-import);(4)cancel bk18152+del s14557. recipe:issue-30-giulia-milena-parent-student.md",
+        "Jun12 hrly FINAL FRIDAY D3: s88 0SCAs level=null. bk94+bk18044 CONF DUP Jun15-26. pmt17607 EUR1151.5 xeroId=null=dbl-import. bk18152 Milena PEND 0. ALL 4 STEPS NOT RUN. TODAY=LAST BUSINESS DAY before MON JUN15.",
+        "CRITICAL Mon Jun15"
+      ]
+    ]
+  },
+  {
+    "range": "H32:K32",
+    "values": [
+      [
+        "Bug1(BST) NOT FIXED. 9 stale SCAs week_end=null(ids:39,40,65,66,74,75,81,87,100). Mon Jun15 att sheet WILL show Sun Jun14.",
+        "Fix1: rm setHours(0,0,0,0) from attendance.ts OR add TZ=UTC to .env+restart. Fix2 SQL(NOT RUN): UPDATE student_class_assignments SET week_end=(SELECT end_date FROM booking_courses WHERE id=booking_course_id) WHERE id IN(39,40,65,66,74,75,81,87,100). recipe:issue-31-attendance-sheet-week-bug.md",
+        "Jun12 hrly CONFIRMED FINAL: BOTH fixes NOT RUN. 9 stale SCAs week_end=null (all courses ended <=Jun12). BST NOT FIXED. Mon Jun15 WILL show Sun Jun14. Total null week_end=45(36 ongoing OK). NEIL: run BOTH fixes TODAY.",
+        "fix TONIGHT"
+      ]
+    ]
+  }
+]

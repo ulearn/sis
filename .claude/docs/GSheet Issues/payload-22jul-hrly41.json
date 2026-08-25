@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 34th hourly check Wed 22 Jul 2026 UTC (90th check)\n• Payment 16988 (EUR 339.90, Bank, 28 Apr 2026): booking ID null — 85 days since creation\n• Payment 16989 (EUR 339.90, Bank, 28 Apr 2026): booking ID null — 85 days since creation\n• Payment 17187 (EUR 6151, TransferMate Escrow, 1 May 2026): booking ID null — 82 days since creation\n• Payment 4781 (EUR 380, Flywire, 20 Aug 2019): booking ID null — legacy record\n• Stale booking courses: 24,436 with active = true and end date before 22 Jul 2026 — deactivation not yet running\n• Stale booking accommodations: 11,175 with active = true and end date before 22 Jul 2026",
+        "Link payments to bookings; run deactivation. See recipe: issue-1-addendum-22jul.md",
+        "34th hrly 90th check Wed 22 Jul UTC. UNCHANGED. 4 orphan pmts: 16988+16989 (EUR 339.90 ea, Bank Apr28, 85d), 17187 (EUR 6151, TransferMate Escrow May1, 82d), 4781 (EUR 380 Flywire legacy). Stale BCs: 24,436. Stale BAs: 11,175. Fix NOT RUN.",
+        "4 orphan pmts; 24,436 stale BCs"
+      ]
+    ]
+  },
+  {
+    "range": "H8:K8",
+    "values": [
+      [
+        "• 7th check Wed 22 Jul 2026 UTC (41st hourly)\n• Booking 17909 (Sofiia Korkishchenko): CANCELLED — confirmed flag = true (anomaly on cancelled booking)\n• Booking 17909: amount open = EUR 727.5, amount paid = EUR 0 — phantom balance, unchanged since 17 Jun 2026 (35 days)\n• Booking course 24693 (Renewal Academic Year PM, ends 13 Nov 2026): active = true, ILEP code = null — stale on cancelled booking\n• Document 94 (Letter of Acceptance, ISSUED version 2, updated 25 May 2026): still live on cancelled booking — should be revoked\n• Booking 1310: 5 old Academic Year Morning courses (IDs 1352–1356, ended Dec 2025 to Apr 2026) all active = true — up to 215 days stale\n• All items UNCHANGED from 6th check (Tue 21 Jul)",
+        "Set confirmed = false on booking 17909; close EUR 727.5 phantom balance; revoke document 94; deactivate booking courses 24693 and 1352–1356. See recipe: issue-7-addendum-22jul.md",
+        "7th check Wed 22 Jul UTC (41st hrly). UNCHANGED. BK17909 CANCELLED confirmed=STILL true, amtOpen=EUR727.5, amtPaid=EUR0 (updAt=Jun17, 35d). BC24693 (Renewal AY PM ends Nov13) active=STILL true. Doc94 STILL ISSUED v2. BCs 1352-1356 STILL all active (up to 215d stale). Fix NOT RUN.",
+        "bk17909 anomaly; 35d"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 85th check Wed 22 Jul 2026 UTC (24th hourly)\n• Student 1001 (Saikhantes Shagdarsuren): SCA 255 (class 11) expired — week ended 3 Jul 2026 (19 days ago)\n• Weeks of 6 Jul and 13 Jul 2026: permanently missed — irrecoverable\n• Holiday 2500 (booking 18151): student on holiday 20 Jul to 21 Aug 2026 — nothing to assign during this period\n• Booking course 24925 (Academic Year Afternoon, ends 2 Oct 2026): active, SCA 255 expired — next assignment needed from week of 24 Aug 2026\n• UNCHANGED from 84th check (Tue 21 Jul) — fix NOT RUN",
+        "Assign booking course 24925 to class 11 from week of Mon 24 Aug 2026. See recipe: issue-15-addendum-22jul.md",
+        "85th check Wed 22 Jul UTC (24th hrly). SCA255 expired Jul3 (19d ago). 2 wks missed (Jul6+Jul13) irrecoverable. Holiday 2500 active Jul20-Aug21. Next: assign BC24925 to class 11 from Mon Aug24. Fix NOT RUN.",
+        "2 wks missed; assign Mon 24 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• 40th hourly check Wed 22 Jul 2026 UTC (53rd check)\n• Booking 1605 (Ariunsarnai Batbayar, student 1047): status = PENDING, confirmed = false — Day 100 since 13 Apr 2026\n• Amount paid: EUR 0; amount total: EUR 1509; amount open: EUR 1509 — fully unpaid, zero payments on file\n• Booking last updated 23 Jun 2026 (29 days ago)\n• UNCHANGED from last check — fix NOT RUN",
+        "Confirm or cancel booking 1605; chase EUR 1509 payment or close. See recipe: issue-20-addendum-22jul.md",
+        "40th hrly 53rd check Wed 22 Jul UTC. UNCHANGED. BK1605 STILL PENDING Day 100 (Apr 13). EUR 0 / EUR 1509. Last updated Jun 23 (29d ago). Fix NOT RUN.",
+        "Day100; EUR 0 / 1509"
+      ]
+    ]
+  },
+  {
+    "range": "H28:K28",
+    "values": [
+      [
+        "• 29th check Wed 22 Jul 2026 UTC\n• Booking 17909 is CANCELLED but confirmed = true — database anomaly (last updated 17 Jun 2026, 35 days ago)\n• Payments 17477 and 17478 were deleted from the database on 17 Jun — amount paid = EUR 0\n• HubSpot Commerce payment 1230788330738 (EUR 727.50): not voided — void deadline 25 Oct 2026 (95 days away)\n• Booking course 24693 (Renewal Academic Year PM, ends 13 Nov 2026): active = true on cancelled booking\n• Document 94 (Letter of Acceptance): ISSUED version 2 — should be revoked\n• UNCHANGED from 28th check (Tue 21 Jul)",
+        "Void HubSpot payment 1230788330738; set booking 17909 confirmed = false; revoke document 94; deactivate booking course 24693. See recipe: issue-27-addendum-22jul.md",
+        "29th check Wed 22 Jul UTC. CONFIRMED UNCHANGED. BK17909 CANCELLED confirmed=STILL true, amtOpen EUR727.50, amtPaid EUR0 (updAt=Jun17, 35d). BC24693 Renewal AY PM ends Nov13 active=STILL true. HubSpot pmt not voided — void deadline Oct25 (95d). Fix NOT RUN.",
+        "void by Oct25; 95d"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• 38th hourly check Wed 22 Jul 2026 UTC (42nd check)\n• Booking course 104 (Morning General Plus, ended 26 Jun 2026): active = still true — 26 days stale\n• Payment 17102 (EUR 1151.50, booking 94, Giulia Avallone, student 88): Xero payment ID = null, type = null — not reconciled in Xero\n• UNCHANGED from 37th hourly (Tue 21 Jul) — fix NOT RUN",
+        "Deactivate booking course 104; reconcile payment 17102 in Xero. See recipe: issue-30-addendum-22jul.md",
+        "38th hrly 42nd check Wed 22 Jul UTC. BC104 STILL active (ended Jun26, 26d stale). Payment 17102 STILL xeroId=null (type=null). Fix NOT RUN.",
+        "bc104 stale 26d; xero null"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 46th hourly check Wed 22 Jul 2026 UTC (75th check)\n• LAST CHANCE: BC24828 (Martina Tartaro) ends Fri 24 Jul — zero class assignments — 2 school days left\n• LAST CHANCE: BC25011 (Eduardo Roche Diaz) General English PM, ends Fri 24 Jul — zero class assignments — 2 school days left\n• NEW: BC24945 (Sarah Venturini Talizin) General English AM, started 6 Jul, ends 31 Jul — zero class assignments — 16 school days missed — 7 remaining\n• NEW: BC24998 (Allison Guadalupe Ayala Vazquez) General English PM, started 13 Jul, ends 31 Jul — zero class assignments — 9 school days missed — 7 remaining\n• NEW: BC24990 (Samuele Stenico) General English AM, started 13 Jul, ends 7 Aug — zero class assignments — 9 school days missed\n• ANOMALY: Booking 18179 (Gustavo Da Silva) has two overlapping active booking courses — BC24955 (General English AM Plus) and BC24967 (General English AM) — same dates 6 Jul to 7 Aug — both zero class assignments — data anomaly\n• BC24609 (Xuezhen Huang) and BC24991 (Edith Nunes): still zero class assignments — tracked via issues 39 and 22",
+        "Assign BC24828 + BC25011 by Thu 23 Jul. Assign BC24945 + BC24998 + BC24990. Investigate BC24955/24967 duplicate. See recipe: issue-45-addendum-22jul-g.md",
+        "46th hrly 75th check Wed 22 Jul UTC. NEW: BC24945 Sarah (16d missed, 7 left), BC24998 Allison (9d, 7 left), BC24990 Samuele (9d, 16 left). ANOMALY: Gustavo has BC24955 (AM Plus) + BC24967 (AM) both Jul6-Aug7 active 0 CAs. LAST CHANCE: BC24828 Martina + BC25011 Eduardo end FRI 24 JUL. Fix NOT RUN.",
+        "LAST CHANCE + 6 more 0-CA BCs"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• 44th hourly check Wed 22 Jul 2026 UTC (67th check)\n• Booking course 24991 (Edith Nunes / Edite, student 1015, booking 18214): General English AM, 13 Jul to 7 Aug 2026 — confirmed — STILL zero class assignments\n• Days missed: 9 school days (Mon 13 Jul through Wed 22 Jul); approx 12 school days remaining (ends 7 Aug)\n• UNCHANGED — fresh DB query Wed 22 Jul 2026 UTC",
+        "Assign BC24991 to a class in SIS — 12 school days remaining. See recipe: issue-22-addendum-22jul-e.md",
+        "44th hrly 67th check Wed 22 Jul UTC. BC24991 Edith STILL 0 CAs — 9 missed (13-22 Jul), approx 12 remaining (ends 7 Aug). Fix NOT RUN.",
+        "CRITICAL; assign NOW; 12 days left"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• 44th hourly check Wed 22 Jul 2026 UTC (69th check)\n• Booking course 24609 (Xuezhen Huang, student 14443, booking 17831): Morning General, 13 to 31 Jul 2026 — confirmed — STILL zero class assignments\n• Days missed: 9 school days (Mon 13 Jul through Wed 22 Jul); 6 school days remaining (Thu 23 to Fri 31 Jul)\n• Accommodation: in place (per prior checks)\n• UNCHANGED — fresh DB query Wed 22 Jul 2026 UTC",
+        "Assign BC24609 to a class in SIS — 6 school days remaining. See recipe: issue-39-addendum-22jul-e.md",
+        "44th hrly 69th check Wed 22 Jul UTC. BC24609 Xuezhen STILL 0 CAs — 9 missed (13-22 Jul), 6 remaining (23-31 Jul). Fix NOT RUN.",
+        "BC24609 0 CAs; 6d left (ends Jul 31)"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 44th hourly check Wed 22 Jul 2026 UTC (117th check)\n• August Bank Holiday Mon 3 Aug 2026: still absent from school closures — 12 days away — URGENT\n• October Bank Holiday Mon 26 Oct 2026: also absent from school closures\n• School closure table has 9 records: Good Fridays 2026-2030 and Christmas 2026-2029 — zero bank holidays recorded\n• Approximately 202 booking courses affected by August Bank Holiday; 114 by October Bank Holiday\n• UNCHANGED — fresh DB query Wed 22 Jul 2026",
+        "Add Aug BH (Mon 3 Aug 2026) + Oct BH (Mon 26 Oct 2026) to school closures. See recipe: issue-38-addendum-22jul-e.md",
+        "44th hrly 117th check Wed 22 Jul UTC. Aug BH STILL absent — 12 days to Aug 3. Oct BH also absent. 202 BCs affected (Aug); 114 (Oct). Fix NOT RUN.",
+        "Aug BH; 12d URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 43rd hourly check Wed 22 Jul 2026 UTC (94th check)\n• Payment 17954 (EUR 2584.96, Bank Transfer, 26 Jun 2026): Xero payment ID = null — 26 days unreconciled\n• Booking 18180 (Giampaolo Russo, student 14571): confirmed = true, fully paid EUR 2584.96\n• Accommodation 11357 (bed 178, host family Patty McSweeney): 2 Aug to 6 Sep 2026 — active = true, in place\n• Capel Street apartment (6 Sep to 14 Sep 2026): STILL MISSING from booking 18180 — not in database\n• Booking course 24956 (General English AM, 3 Aug to 11 Sep 2026): fee EUR 804.96 set, 0 class assignments\n• Check-in 2 Aug 2026: 11 calendar days away\n• UNCHANGED — fix NOT RUN",
+        "Add Capel apt to booking 18180; reconcile payment 17954 in Xero. See recipe: issue-41-addendum-22jul-d.md",
+        "43rd hrly 94th check Wed 22 Jul UTC. Capel apt STILL missing (~EUR 530 gap). Payment 17954 xeroId STILL null (26d). BC24956 0 CAs. Check-in Aug 2 (11 days). Fix NOT RUN.",
+        "Xero null; Capel missing; 11d to check-in"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 41st hourly check Wed 22 Jul 2026 UTC (24th check)\n• 16 tracked stale booking accommodations still active — deactivation NOT run\n• System-wide stale booking accommodations (active = true, end date before 22 Jul 2026): 11,175 — unchanged\n• Tracked list: BA9917 (+67d), BA11246 (+46d), BA30 (+38d), BA11165/11278/11280 (+25d each), BA11354 (+24d), BA11167/11247/11339 (+18d each), BA11345 (+10d), BA11257/11365 (+4d each), BA11265 (+3d), BA11180 (bed 84, Daniela +32d), BA11168 (bed 83, Diego +32d)\n• UNCHANGED — fresh DB query Wed 22 Jul 2026 UTC",
+        "Deactivate 16 tracked stale BAs; schedule nightly job for 11k+. See recipe: issue-36b-addendum-22jul-b.md",
+        "41st hrly 24th check Wed 22 Jul UTC. 16 tracked still active. System-wide: 11,175. Fix NOT RUN.",
+        "11k stale BAs; 16 tracked with beds"
+      ]
+    ]
+  }
+]

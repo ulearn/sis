@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Bug in sendBulkEmail() (admin.html line 1494) reads live bulkSelectedStudents instead of frozen snapshot\n• showStudentsInSchoolReport() clears bulkSelectedStudents on every reload (line 2219) — including while modal is open\n• _bulkEmailRecipientIds declared at line 1349 as the intended frozen snapshot — never set in openBulkEmailModal()\n• Net effect: report view reload between checkbox-tick and Send wipes recipients — 0 students sent\n• Paul (Jun 2026) reported same bug — comment at line 1348 describes the fix but it was not implemented\n• 2-line fix in public/admin.html: set _bulkEmailRecipientIds in openBulkEmailModal (after L1367) + read it in sendBulkEmail (L1494)",
+        "Set _bulkEmailRecipientIds=ids in openBulkEmailModal + read it in sendBulkEmail. See recipe: issue-33-khulan-reports-email-send.md",
+        "Jun18 hrly (new): L1494 reads live bulkSelectedStudents; L2219 clears it on report reload. Fix: openBulkEmailModal add _bulkEmailRecipientIds=ids after L1367; sendBulkEmail L1494 read _bulkEmailRecipientIds. 2-line fix, zero-risk, no restart. Paul+Khulan both reported Jun2026. Recipe written.",
+        "code fix pending"
+      ]
+    ]
+  }
+]

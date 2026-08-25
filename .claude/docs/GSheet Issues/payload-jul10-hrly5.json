@@ -1,0 +1,46 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payment 16988 (EUR 339.90, one-time): booking ID still null — not linked to booking 17856\n• Payment 16989 (EUR 339.90, one-time): booking ID still null — not linked to booking 17857\n• Booking 17856 (EUR 339.90 paid): confirmed = false; booking course 24631 ended 2026-07-10\n• Booking 17857 (EUR 339.90 paid): confirmed = false; booking course 24630 ended 2026-07-10\n• Booking courses 24630 and 24631 ended 10 July 2026 — still active = true — deactivation overdue",
+        "Link payment 16988 to booking 17856 and payment 16989 to booking 17857; set confirmed = true; deactivate booking courses 24630 and 24631; see recipe issue-1-orphan-payments.md",
+        "10 Jul FRI UTC 5th pass (fresh DB). UNCHANGED. Pmts 16988/16989: bookingId=null, xeroPaymentId=null, amount=EUR339.90 each (matches amountTotal — balanced). BK17856/17857: confirmed=false. BC24630+BC24631: ended Jul10, active=true — deactivation OVERDUE. NEIL: run link SQL + set confirmed=true + deactivate BC24630+BC24631.",
+        "overdue; deactivate"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• Booking accommodation 11311 (Pietro Caccianiga, student 14521, bed 84, 28 June to 13 September 2026): active = true — current valid in-stay; dates correct (11 weeks as paid)\n• Pietro accommodation is resolved — no action needed on his record\n• Stale bed 84 records (previous occupants of bed 84, all ended, all still active = true — data hygiene only): accommodation 9917 Kanna Hasegawa booking 1274 ended 16 May; accommodation 11157 Hugo Tavernier booking 100 ended 10 May; accommodation 11159 Hugo Tavernier booking 100 ended 30 May; accommodation 11180 Daniela Perozo Gil booking 81 ended 20 June\n• Hash flags each run: persistent false-positive — two rows in the sheet share issue number 36 causing seen.json key collision",
+        "Pietro dates are correct — no action for Pietro. Deactivate 4 stale bed 84 records (other students): UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180); see recipe: issue-36b-pietro-accomm-dates.md",
+        "10 Jul FRI UTC 5th pass (fresh DB). Pietro accommodation 11311 CORRECT: bed 84 Jun28-Sep13 (11 weeks), active=true, student 14521 (day 12 of stay). Original issue RESOLVED Jun 23 2026. Stale BAs belong to other students: 9917=Kanna Hasegawa (bk1274 May10-16), 11157=Hugo Tavernier (bk100 May2-10), 11159=Hugo Tavernier (bk100 May17-30), 11180=Daniela Perozo Gil (bk81 Jun6-20) — all still active=true, low-priority cleanup. Hash flag is recurring false-positive (dual issue-36 row numbering in sheet).",
+        "low-pri; bed84 cleanup"
+      ]
+    ]
+  },
+  {
+    "range": "H46:K46",
+    "values": [
+      [
+        "• Student 1010 (Gretel Merlina Nunez): two confirmed bookings — 17917 (Academic Year Morning, booking course 24699) and 18159 (Life Pass Morning, booking course 24935, March 2026 to April 2028)\n• Holiday 2504 on booking 17917 (Academic Year Morning): July 20–24 2026 student holiday, 5 weekdays pushed — present in database\n• Booking 18159 (Life Pass Morning): no July 20–24 student holiday — only two school closures December 2026 and December 2027\n• Root cause of UI error (resolved 3 July 2026): 35-week visa ceiling check incorrectly blocked Life Pass bookings — code fix applied, UI should now work\n• Neil must decide: if Gretel attends Life Pass on week of July 20–24, add student holiday to booking 18159 via SIS",
+        "Add July 20–24 student holiday to booking 18159 via SIS student 1010 if Gretel attends Life Pass that week; see recipe: issue-44-gretel-holiday.md",
+        "10 Jul FRI UTC 5th pass (fresh DB). Booking 18159 Life Pass: confirmed, fully paid EUR1294/1294, NO Jul20-24 student holiday in DB (only school closures Dec2026/Dec2027). Booking 17917 Academic Year: holiday 2504 (Jul20-24) already present. Jul20 = 10 days away. NEIL: if Gretel attends Life Pass week Jul20-24, add student holiday to booking 18159 via SIS (code fix applied 3 Jul 2026).",
+        "10d to Jul20; decide"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Pietro Colombo (student 72, booking course 81, Morning General Plus, booking 78, 6 to 24 July): zero class assignments — week 2 starts Monday 13 July — no prior class history (level unknown) — 10 school days remain — URGENT BEFORE MONDAY\n• Ettore Iovinella (student 14564, booking course 24968, General English AM Plus, booking 18191, 6 to 10 July): zero class assignments — course ENDED 10 July — prior assignment: class 4 (B2-C1) week of 29 June on booking course 24941 (assignment id 281) — retroactive window closes today\n• Veronica Martín (student 278, booking course 24931, General English AM, booking 18156, 6 to 10 July): zero class assignments — course ENDED 10 July — no prior class history — retroactive window closes today\n• Fresh database check 10 July 2026 UTC (5th pass): all three still zero class assignments — active classes: B1 AM (5), A1 (7), A2 AM (8), B2-C1 (4), C1 AM (13), C1 PM (14), IELTS (10), A2 PM (9), B1 PM (11), others",
+        "URGENT Pietro: assign class for booking course 81 before Monday 13 July (check level with Paul); Ettore: retroactive class 4 (B2-C1) for booking course 24968 if attended Jul6-10 (today only); Veronica: retroactive class (level unknown) for booking course 24931 (today only); see recipe: issue-45-renewal-arrivals.md + issue-45-addendum-10jul.md",
+        "10 Jul FRI UTC 5th pass (fresh DB). ALL STILL ZERO SCAs. Pietro bc81 Jul6-Jul24: NO prior SCA history, level unknown, Mon13=3 days. Ettore bc24968 ENDED today: prior class=4 (B2-C1) SCA id=281 on bc24941 w/c Jun29 — retroactive SCA likely classId=4. Veronica bc24931 ENDED today: no class history, level unknown. RETROACTIVE WINDOW CLOSES EOD TODAY.",
+        "Pietro Mon13 CRITICAL; Ettore/Veronica TODAY"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H4:K4",
+    "values": [
+      [
+        "• Christmas shunt: implemented and operational\n• 9 closures in DB: Good Fridays 2026-2030, Christmas 2026-2029\n• Aug Bank Holiday 2026-08-03: confirmed absent from school_closures — window closed, holiday passed Mon Aug 3\n• No booking shunt occurred for Aug 3 starters (BC 24956 Giampaolo Russo started on BH)\n• Action needed: add Aug Bank Holiday 2027+ to school_closure before next AY booking season — see Issue 38 recipe issue-38-addendum-4aug-h.md",
+        "Add Aug BH 2027-2030 to school_closure (INSERT, not urgent today). Christmas shunt resolved.",
+        "Tue 4 Aug UTC. Aug BH 2026-08-03 passed without DB entry. Harm: BC 24956 started on BH without shunting. Future prevention: add 2027+ entries. Christmas shunt fixed (K=fixed).",
+        "fixed"
+      ]
+    ]
+  }
+]

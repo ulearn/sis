@@ -1,0 +1,35 @@
+[
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking 1611 is Confirmed, fully paid EUR 1280.12\n• Booking course 1797 (Morning General, Apr 06 – Jun 26) ends THIS FRIDAY — 3 days away (final week underway)\n• Booking course 24686 (Morning General, Jul 20 – Sep 18) exists but has no fee set — must be filled before billing\n• Class assignment 229 (class 12 B1 AM-2) expired 27 Apr — 58 days without a class assignment\n• Zero attendance records ever for student 1052 — absent since at least late April (bereavement leave)\n• No holiday block recorded — bereavement leave from week of 27 Apr was never formalised in SIS\n• Payment 17124 (EUR 1280.12) has no Xero payment ID",
+        "Assign class assignment on booking course 1797 for Jun 22–26 to class 12 via SIS TODAY (NOT RUN). Set booking course 24686 fee before Jul 20. See recipe: issue-24-alberto-fidelo-course-split.md",
+        "Jun23 hrly TUE (final week): CONFIRMED UNCHANGED (fresh DB). bk1611 CONF 1280.12/1280.12 (updAt=Jun11=12d). bc1797 Morning General Apr06-Jun26 ACTIVE — ends Fri Jun26=3d. sca229 cls12-B1AM2 weekEnd=Apr26 EXPIRED 58d. att=0 ALL TIME confirmed. bc24686 Jul20-Sep18 fee=null 0 SCAs. 0 booking_holidays. NEIL: if Alberto in school this week assign SCA bc1797 cls12 ws=Jun22 we=Jun26 via SIS TODAY.",
+        "Jun26=3d; SCA NOW"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Booking 18044 (duplicate Milena Vinci entry) no longer exists in the database — deleted since the last hourly run (confirmed Jun 23)\n• Giulia Avallone (student 88) retains only booking 94 — Confirmed, EUR 1151.50 fully paid, course ends Fri Jun 26\n• Class assignment 270 (class 12, Jun 15 – Jun 26) is active — Giulia is in class correctly\n• HubSpot payment 1239529228498 void status cannot be verified in headless run — Neil to confirm\n• Milena Vinci no longer appears as a student in the database",
+        "Database part fixed (booking 18044 deleted). Confirm HubSpot payment 1239529228498 was voided in HubSpot UI. See recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun23 hrly (later run): bk18044 NOT FOUND in DB — deleted since earlier run today (fixed by Neil). s88 Giulia Avallone bk94 CONF 1151.50/1151.50 only. sca270 cls12 Jun15-Jun26 active (in class correctly). Milena Vinci NOT in DB. HS pmt 1239529228498 void — unverifiable in headless run.",
+        "bk fixed; verify HS pmt"
+      ]
+    ]
+  },
+  {
+    "range": "H44:K44",
+    "values": [
+      [
+        "• Accommodation 11311 (bed 84, Pietro Caccianiga): UPDATED TODAY Jun 23 — weeks = 11, fee = EUR 3,850 (was 10 weeks / EUR 3,500)\n• Start date Jun 28 — 5 days away; 11 weeks puts checkout at Sep 13\n• Four stale bed 84 records still active = true and blocking bed availability:\n  — Accommodation 11157 (booking 100): ended May 09 — 45 days stale\n  — Accommodation 9917 (booking 1274): ended May 17 — 37 days stale\n  — Accommodation 11159 (booking 100): ended May 31 — 23 days stale\n  — Accommodation 11180 (booking 81): ended Jun 20 — 3 days stale\n• Pietro arrives Jun 28 — all four stale records must be deactivated before then",
+        "Deactivate 4 stale records (NOT RUN): UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180). See recipe: issue-36b-pietro-accomm-dates.md",
+        "Jun23 hrly (later run): ba11311 UPDATED TODAY 14:51 UTC (weeks=11 fee=3850, was 10/3500 — Scenario A applied). 4 stale active=true beds STILL PRESENT: ba11157 ended May09 (45d), ba9917 ended May17 (37d), ba11159 ended May31 (23d), ba11180 ended Jun20 (3d). bk17980 CONF amtPaid=5331. Pietro arrives Jun28=5d. Stale deactivation NOT RUN.",
+        "Jun28=5d; deactivate beds"
+      ]
+    ]
+  }
+]

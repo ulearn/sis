@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 236th check Wed 19 Aug 2026 UTC — no change since 235th check\n• Booking Course 24772 (General English AM): ends Fri 21 Aug 2026 — 2 days; active — deactivate after last class\n• Booking Accommodation 11311 (bed 84): 28 Jun to Sat 22 Aug, fee EUR 3,850, active — deactivate after checkout Sat 22\n• Booking Accommodation 11393 (bed 88): 22 Aug to 13 Sep 2026, fee = NULL — starts Sat 22 Aug (3 days); URGENT: set fee before move-in",
+        "Deactivate BC 24772 after Fri 21 class; deactivate BA 11311 after Sat 22 checkout; set fee on BA 11393 before Sat 22. See recipe: issue-36b-addendum-19aug-c.md",
+        "236th Wed 19 Aug UTC. BC 24772 ends Fri 21 (2d). BA 11393 fee still null — Sat 22 move-in 3 days. Fix NOT RUN.",
+        "URGENT: fee null BA11393; Sat22 (3d)"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 134th check Wed 19 Aug 2026 UTC — no change since 133rd check\n• Booking 18180 (Giampaolo Russo, student 14571): CONFIRMED, paid EUR 2,584.96, open EUR 0\n• Booking Accommodation 11357 (bed 178): ended Sat 15 Aug — 4 days stale, fee EUR 1,250, active — deactivate\n• Booking Accommodation 11396 (bed 44): 15 Aug to Sat 22 Aug, fee = NULL — 4 days into period, checkout Sat 22; URGENT: set fee now\n• Booking Accommodation 11397 (bed 89): 22 Aug to 6 Sep 2026, fee = NULL — URGENT: set fee before move-in Sat 22\n• Booking Accommodation 11392 (bed 168): 6 Sep to 14 Sep, fee EUR 415 — OK",
+        "Deactivate BA 11357; set fee on BA 11396 + BA 11397 before Sat 22. See recipe: issue-41-addendum-19aug-c.md",
+        "134th Wed 19 Aug UTC. BA 11396 now 4d into period (started Aug 15), fee still null. BA 11397 starts Sat 22. Fix NOT RUN.",
+        "URGENT: BA11396+11397 fees null; Sat22 (3d)"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 171st check Wed 19 Aug 2026 UTC — no change since 170th check\n• Booking 18151 (Saikhantes Shagdarsuren, student 1001): CONFIRMED, paid EUR 1,339.20\n• Service end = 7 Aug 2026 — 12 days stale; student returns Mon 25 Aug 2026 (6 days)\n• Booking Course 24925 (Academic Year Afternoon): 9 Mar to 2 Oct 2026, active\n• No active class assignment — SCA 255 ended week_end 3 Jul 2026 (47 days ago); no new SCA created",
+        "Create new SCA for BC 24925 (Afternoon, class_id 11) from Mon 25 Aug. See recipe: issue-15-addendum-19aug-c.md",
+        "171st Wed 19 Aug UTC. SCA 255 ended Jul 3, still no new SCA. Returns Mon 25 Aug (6 days). Fix NOT RUN.",
+        "URGENT: no SCA; return Mon25 (6d)"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• 134th check Wed 19 Aug 2026 UTC — no change since 133rd check\n• Booking 18151 (Saikhantes Shagdarsuren, student 1001): CONFIRMED, paid EUR 1,339.20\n• Booking Course 24925 (Academic Year Afternoon): 9 Mar to 2 Oct 2026, active\n• No active class assignment — SCA 255 ended week_end 3 Jul 2026 (47 days ago); no new SCA for Aug 25 return\n• Student returns Mon 25 Aug 2026 (6 days) — must have SCA created before then",
+        "Create new SCA for BC 24925 (Afternoon, class_id 11) from Mon 25 Aug. See recipe: issue-15-addendum-19aug-c.md",
+        "134th Wed 19 Aug UTC. SCA 255 ended Jul 3, still no new SCA. Returns Mon 25 Aug (6 days). Fix NOT RUN.",
+        "URGENT: no SCA; return Mon25 (6d)"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• 49th check Wed 19 Aug 2026 UTC — no change since 48th check\n• Current occupant BA 11173 (Alessandro Signorotti): Aug 9 to Aug 30, fee EUR 1,080 — active, legitimate\n• Upcoming BA 25 (Rosa Maria Mollica): starts Aug 30 — 11 days, fee EUR 2,100\n• 5 stale Booking Accommodations on bed 83 — all still active:\n  BA 11239 (Ivan Rodriguez): ended May 24 — 87d stale, fee EUR 1,050\n  BA 11168 (Diego Da Silva Saldanha): ended Jun 20 — 60d stale, fee EUR 700\n  BA 11285 (Jesus Ramirez): ended Jul 5 — 45d stale, fee NULL — confirm before deactivating\n  BA 11352 (Veronica Martin): ended Jul 11 — 39d stale, fee EUR 360\n  BA 11179 (Africa Mera Bachir): ended Aug 9 — 10d stale, fee EUR 1,360",
+        "Confirm BA 11285 fee; deactivate 5 stale BAs on bed 83 before Aug 30. See recipe: issue-37-addendum-19aug.md",
+        "49th Wed 19 Aug UTC. No change. 5 stale BAs: 87/60/45/39/10d. Aug 30 now 11 days. Fix NOT RUN.",
+        "5 stale BAs; bed83; Aug30 (11d)"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• 48th check Wed 19 Aug 2026 UTC — no change since 47th check\n• Bed 83 state unchanged — same as Issue 37\n• BA 11173 (Alessandro Signorotti): Aug 9 to Aug 30, fee EUR 1,080 — current occupant, legitimate\n• 5 stale Booking Accommodations on bed 83 still active (87d/60d/45d/39d/10d — see Issue 37 for full list)\n• BA 11285 fee null — confirm before deactivating",
+        "Confirm BA 11285 fee; deactivate 5 stale BAs bed 83. See recipe: issue-37-addendum-19aug.md",
+        "48th Wed 19 Aug UTC. BA 25 = Rosa Maria Mollica Aug 30 (11d). BA 11173 = Alessandro current Aug 9-30. 5 stale BAs. Fix NOT RUN.",
+        "5 stale BAs; Aug 30 (11d)"
+      ]
+    ]
+  }
+]

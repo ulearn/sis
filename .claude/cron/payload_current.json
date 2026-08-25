@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 113th check Thu 20 Aug 2026 UTC — no change from 112th check (Wed 19 Aug)\n• Stale active Booking Courses (end date before 20 Aug 2026): 24,497 — unchanged\n• Most recently ended stale: IDs 1591, 1344, 1305, 24, 1572 — all ended 14 Aug 2026 (6 days ago)\n• Fix script prepared; bulk deactivation not yet run",
+        "Run bulk deactivation of 24,497 stale Booking Courses. See recipe: issue-45-addendum-20aug.md",
+        "113th Thu 20 Aug UTC. No change. 24,497 stale unchanged. Fix NOT RUN.",
+        "24,497 stale; fix pending"
+      ]
+    ]
+  }
+]

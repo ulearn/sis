@@ -4,9 +4,192 @@ import QRCode from 'qrcode';
 import puppeteer from 'puppeteer';
 import fs from 'fs';
 import path from 'path';
+import { sendEmail } from './email';
+import { deriveIlepCode, isAyIlepCourse, isNonVisaNationality } from './ilep-deriver';
+import { irishPublicHolidays } from './irish-holidays';
 
 const BASE_URL = process.env.BASE_URL || 'https://sis.ulearnschool.com';
 const PUBLIC_DIR = path.resolve(__dirname, '../../public');
+
+// Cover-email signature, appended to the body before the Gmail send. Same file
+// the route used to read; lives here now so sendDocument() is self-contained
+// (callable straight from node on the box, not just via the HTTP route).
+const DOC_SIGNATURE_PATH = path.join(__dirname, '..', '..', '.claude', 'docs', 'Email Templates', 'signature.html');
+const DOC_SIGNATURE_HTML = fs.existsSync(DOC_SIGNATURE_PATH) ? fs.readFileSync(DOC_SIGNATURE_PATH, 'utf-8') : '';
+
+// ── GROSS RECEIPT renderer (shared, on-demand) ──────────────────────────────
+// Pure display layer over the HubSpot invoice — NO maths here. Reads gross
+// (hs_subtotal), line items and number verbatim from the invoice and fills the
+// "Net-to-Gross-Invoice" template. The invoice billed NET; this re-presents it
+// at GROSS (commission left in, never shown). Receipt → paid invoices only.
+// Generated on demand each call; nothing is stored. Used by BOTH the SIS route
+// (/documents/net-to-gross) and the agency-scoped partner endpoint.
+export async function buildGrossReceiptHtml(
+  prisma: PrismaClient, bookingId: number,
+): Promise<{ ok: true; html: string; number: string; gross: number } | { ok: false; code: number; error: string }> {
+  const booking = await prisma.booking.findUnique({
+    where: { id: bookingId }, include: { student: true, agency: true },
+  });
+  if (!booking) return { ok: false, code: 404, error: 'Booking not found' };
+  if (!booking.hubspotInvoiceId) return { ok: false, code: 400, error: 'No HubSpot invoice on this booking — the gross receipt is generated from the invoice.' };
+
+  const TOKEN = process.env.ACCESS_TOKEN;
+  const base = 'https://api.hubapi.com';
+  const H = { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' };
+  const esc = (s: any) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const eur = (n: number) => `€${(Number(n) || 0).toFixed(2)}`;
+
+  const inv: any = await fetch(`${base}/crm/v3/objects/invoices/${booking.hubspotInvoiceId}?properties=hs_number,hs_subtotal,hs_amount_billed,hs_balance_due,hs_invoice_status,hs_invoice_date,hs_payment_date`, { headers: H }).then(r => r.json());
+  const ip = inv?.properties;
+  if (!ip) return { ok: false, code: 404, error: 'HubSpot invoice not found' };
+  if (parseFloat(ip.hs_balance_due || '0') > 0.01) return { ok: false, code: 400, error: 'Receipt is only available once the invoice is paid in full.' };
+  const gross = parseFloat(ip.hs_subtotal || '0');
+
+  const la: any = await fetch(`${base}/crm/v4/objects/invoices/${booking.hubspotInvoiceId}/associations/line_items`, { headers: H }).then(r => r.json());
+  const liIds: string[] = (la.results || []).map((r: any) => String(r.toObjectId));
+  let lineItems: any[] = [];
+  if (liIds.length) {
+    const liData: any = await fetch(`${base}/crm/v3/objects/line_items/batch/read`, {
+      method: 'POST', headers: H,
+      body: JSON.stringify({ inputs: liIds.map(id => ({ id })), properties: ['name', 'quantity', 'price', 'amount'] }),
+    }).then(r => r.json());
+    lineItems = liData.results || [];
+  }
+  const rowsHtml = lineItems.map(li => {
+    const p = li.properties || {};
+    const qty = parseFloat(p.quantity || '1');
+    return `<tr><td style="padding:8px 0;border-bottom:1px solid #e5e4e0">${esc(p.name)}${qty > 1 ? ` <span style="color:#6b7280">× ${qty}</span>` : ''}</td><td style="padding:8px 0;border-bottom:1px solid #e5e4e0;text-align:right;white-space:nowrap">${eur(parseFloat(p.amount || '0'))}</td></tr>`;
+  }).join('') || `<tr><td style="padding:8px 0;border-bottom:1px solid #e5e4e0">Course fees</td><td style="padding:8px 0;border-bottom:1px solid #e5e4e0;text-align:right">${eur(gross)}</td></tr>`;
+
+  // A receipt is dated at PAYMENT, not invoice issue. Fall back to the invoice
+  // date only if HubSpot has no payment date recorded.
+  const invDate = new Date(ip.hs_payment_date || ip.hs_invoice_date || Date.now());
+  const tokens: Record<string, string> = {
+    'student.first_name': booking.student.firstName || '',
+    'student.last_name': booking.student.lastName || '',
+    'student.nationality': (booking.student as any).nationality || '',
+    'agency.name': (booking as any).agency?.name || '',
+    'invoice.number': ip.hs_number || '',
+    'invoice.date': invDate.toLocaleDateString('en-IE', { day: '2-digit', month: 'long', year: 'numeric' }),
+    'invoice.gross': eur(gross),
+    'invoice.line_items': rowsHtml,
+  };
+  const tpl = await prisma.documentTemplate.findUnique({ where: { slug: 'Net-to-Gross-Invoice' } });
+  if (!tpl) return { ok: false, code: 500, error: 'Net-to-Gross template not found — restart to seed' };
+  const html = tpl.htmlTemplate.replace(/\{\{([^}]+)\}\}/g, (_m: string, key: string) => {
+    const k = key.trim();
+    if (k === 'document.number') return tokens['invoice.number'];
+    if (k === 'document.issue_date') return tokens['invoice.date'];
+    return tokens[k] ?? '';
+  });
+  return { ok: true, html, number: ip.hs_number || '', gross };
+}
+
+// Wrap a receipt/document HTML fragment in a full, A4-sized screen page: a white
+// 210mm "sheet" on a grey backdrop (matching how the PDF renders edge-to-edge),
+// plus a sticky toolbar with Download-PDF + Print. The toolbar is .no-print so it
+// is absent from both the browser print dialog AND the puppeteer PDF (which uses
+// print media). pdfUrl is the same endpoint with ?format=pdf.
+export function receiptPage(innerHtml: string, pdfUrl: string, title = 'Receipt'): string {
+  const esc = (s: string) => s.replace(/"/g, '&quot;');
+  return `<!DOCTYPE html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${title.replace(/</g, '&lt;')}</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#525659;font-family:Verdana,Arial,sans-serif}
+  .rcpt-bar{position:sticky;top:0;z-index:10;display:flex;gap:10px;justify-content:flex-end;align-items:center;
+    background:#323639;padding:10px 16px;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+  .rcpt-bar a,.rcpt-bar button{font:600 13px Verdana,Arial,sans-serif;text-decoration:none;cursor:pointer;
+    border-radius:6px;padding:8px 14px;border:0;line-height:1}
+  .rcpt-dl{background:#16a34a;color:#fff}
+  .rcpt-print{background:#4b5563;color:#fff}
+  .rcpt-sheet{width:210mm;min-height:297mm;margin:20px auto;background:#fff;
+    box-shadow:0 2px 16px rgba(0,0,0,.55);overflow:hidden}
+  @media print{
+    body{background:#fff}
+    .rcpt-bar{display:none}
+    .rcpt-sheet{width:auto;min-height:0;margin:0;box-shadow:none}
+  }
+  @page{size:A4;margin:0}
+</style></head>
+<body>
+  <div class="rcpt-bar no-print">
+    <a class="rcpt-dl" href="${esc(pdfUrl)}" download>&#11015; Download PDF</a>
+    <button class="rcpt-print" onclick="window.print()">Print</button>
+  </div>
+  <div class="rcpt-sheet">${innerHtml}</div>
+</body></html>`;
+}
+
+// ISO-2 nationality codes → English country name ("Brazil", not "BR") for
+// documents. Leaves already-spelled-out names untouched; falls back to the raw
+// value if it isn't a recognised region code.
+const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
+function countryName(v: string | null | undefined): string {
+  const s = (v || '').trim();
+  if (!s) return '';
+  if (/^[A-Za-z]{2}$/.test(s)) {
+    try { return regionNames.of(s.toUpperCase()) || s; } catch { return s; }
+  }
+  return s;
+}
+
+// Academic Year programmes are sold as 25 weeks of tuition but the student's
+// permission-to-stay (and therefore the visa Letter of Acceptance) must cover
+// the FULL stay including the holiday weeks — 35 weeks total. The course
+// end_date only reflects tuition, so for visa documents we stretch the window.
+const AY_STAY_WEEKS = 35;
+
+function isAcademicYearCourse(name: string | null | undefined): boolean {
+  const n = (name || '').toLowerCase();
+  return n.includes('academic year') || n.includes('renewal');
+}
+
+function addWeeks(d: Date, weeks: number): Date {
+  const out = new Date(d);
+  out.setDate(out.getDate() + weeks * 7);
+  return out;
+}
+
+/**
+ * Visa window for a Letter of Acceptance (Non-EU). ALWAYS derived from the
+ * COURSE — never the student's visaFrom/visaUntil:
+ *   - start: course start
+ *   - end:   AY ? course start + 35 weeks (run to that week's Sunday) : course end
+ *   - weeks: AY ? 35 (the fixed entitlement) : derived from start→end
+ * Why ignore visaFrom/visaUntil (2026-06-29): the LoA is issued BEFORE any visa
+ * exists; those fields only mirror the visa AFTER it's granted, so letting them
+ * drive the letter is backwards — and broke renewals, which carry stale visa
+ * dates from the prior AY (e.g. an 18-May window printed on a 29-Jun course).
+ * Shared by the LoA PDF + the QR verification page so both always agree.
+ */
+function computeVisaWindow(opts: {
+  visaFrom?: Date | string | null;   // accepted for call-site compatibility; IGNORED
+  visaUntil?: Date | string | null;  // accepted for call-site compatibility; IGNORED
+  courseName?: string | null;
+  courseStart?: Date | string | null;
+  courseEnd?: Date | string | null;
+}): { start: Date | null; end: Date | null; weeks: number | null } {
+  const start = opts.courseStart ? new Date(opts.courseStart) : null;
+  const isAY = isAcademicYearCourse(opts.courseName) && !!start;
+  let end: Date | null;
+  if (isAY) {
+    // Fixed 35-week entitlement: the permission runs to the 35-week anniversary
+    // of the (Monday) start — e.g. Mon 6 Jul 2026 → Mon 8 Mar 2027. addWeeks()
+    // already lands on the Monday that *begins* week 36, so the previous
+    // "round forward to the next Sunday" pushed it a whole week too far (→ 14 Mar,
+    // i.e. 36 weeks). The anniversary date is the finish — no rounding.
+    end = addWeeks(start!, AY_STAY_WEEKS);
+  } else {
+    end = opts.courseEnd ? new Date(opts.courseEnd) : null;
+  }
+  // AY = a fixed 35-week entitlement — report that, not the rolled calendar span
+  // (20 Jul → 28 Mar is ~36 calendar weeks but the entitlement is 35).
+  const weeks = isAY ? AY_STAY_WEEKS
+    : (start && end ? Math.max(0, Math.round((end.getTime() - start.getTime()) / (7 * 24 * 60 * 60 * 1000))) : null);
+  return { start, end, weeks };
+}
 
 // Inline local /sis/public/* and /public/* image refs as data URIs so puppeteer's
 // setContent() (which has no base URL) can render them. Without this, header,
@@ -59,14 +242,15 @@ export function documentScripts(prisma: PrismaClient) {
   }
 
   async function createTemplate(data: {
-    name: string; slug: string; category?: string; documentType: string;
-    htmlTemplate: string; tokenSchema?: string;
+    name: string; slug: string; category?: string; documentType: string; templateType?: string;
+    subject?: string | null; defaultTo?: string | null;
+    htmlTemplate: string; tokenSchema?: string; requiresFullPayment?: boolean;
   }) {
     return prisma.documentTemplate.create({ data });
   }
 
   async function updateTemplate(id: number, data: {
-    name?: string; category?: string; htmlTemplate?: string; tokenSchema?: string; active?: boolean;
+    name?: string; category?: string; templateType?: string; subject?: string | null; defaultTo?: string | null; htmlTemplate?: string; tokenSchema?: string; active?: boolean; requiresFullPayment?: boolean;
   }) {
     // Bump version when template content changes
     const current = await prisma.documentTemplate.findUnique({ where: { id } });
@@ -76,6 +260,17 @@ export function documentScripts(prisma: PrismaClient) {
       where: { id },
       data: { ...data, ...(bump ? { version: current.version + 1 } : {}) },
     });
+  }
+
+  async function deleteTemplate(id: number) {
+    const tpl = await prisma.documentTemplate.findUnique({ where: { id } });
+    if (!tpl) throw new Error('Template not found');
+    // Refuse if any issued/draft document was generated from this template —
+    // those DocumentRecords FK to it (and we never orphan an issued doc).
+    const inUse = await prisma.documentRecord.count({ where: { templateId: id } });
+    if (inUse > 0) throw new Error(`Cannot delete: ${inUse} document(s) were generated from this template. Set it inactive instead.`);
+    await prisma.documentTemplate.delete({ where: { id } });
+    return { deleted: true, id };
   }
 
   // ── HUBSPOT COMMISSION FETCH ──────────────────
@@ -117,16 +312,94 @@ export function documentScripts(prisma: PrismaClient) {
     }
   }
 
+  // Partner LoAs show the GROSS the student committed to — the invoice subtotal,
+  // the SAME figure the partner-portal financial-display doc (getGrossReceiptHtml)
+  // reads. This is the source of truth for gross; we NEVER reverse-engineer it from
+  // net + commission (that gives a wrong number when the stored rate is stale).
+  async function fetchInvoiceGross(invoiceId: string): Promise<number | null> {
+    const token = process.env.ACCESS_TOKEN;
+    if (!token) return null;
+    try {
+      const inv: any = await fetch(
+        `https://api.hubapi.com/crm/v3/objects/invoices/${encodeURIComponent(invoiceId)}?properties=hs_subtotal,hs_number`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      ).then(r => r.json());
+      // A LifePass "-Sub" master invoice (€7,425 subscription receivable) is NOT a per-booking
+      // gross — its subtotal is the whole subscription. Never let it stand in as the reserved
+      // figure; a booking mislinked to it should read blank (→ fix the link) not €7,425.
+      if (/-sub$/i.test(String(inv?.properties?.hs_number || ''))) return null;
+      const v = parseFloat(inv?.properties?.hs_subtotal ?? '');
+      return isNaN(v) || v <= 0 ? null : v;
+    } catch {
+      return null;
+    }
+  }
+
   // ── TOKEN RESOLUTION ──────────────────────
 
-  async function resolveTokens(studentId: number, bookingId?: number | null) {
+  // Pick the accommodation a student is progressing toward, in the order they
+  // actually experience them: UPCOMING (arrival) → PRESENT (in-stay) → PAST
+  // (departed). A student can legitimately hold several bookings (e.g. two
+  // consecutive courses), and the booking carrying the live room is NOT
+  // necessarily the newest by id — so selecting by booking id alone left
+  // arrival docs blank when the latest booking had no room attached. The
+  // date-of-stay is the correct signal.
+  function pickAccommByArrival<T extends { startDate?: Date | null; endDate?: Date | null }>(accoms: T[]): T | null {
+    if (!accoms || !accoms.length) return null;
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const t = today.getTime();
+    const ms = (d: any) => (d ? new Date(d).getTime() : null);
+    const rank = (a: T) => {
+      const s = ms(a.startDate); const e = ms(a.endDate) ?? s;
+      if (s != null && s > t) return 0;                            // upcoming
+      if (s != null && s <= t && (e == null || e >= t)) return 1;  // present
+      return 2;                                                    // past
+    };
+    return [...accoms].sort((a, b) => {
+      const ra = rank(a), rb = rank(b);
+      if (ra !== rb) return ra - rb;
+      const sa = ms(a.startDate) ?? 0, sb = ms(b.startDate) ?? 0;
+      const ea = ms(a.endDate) ?? sa, eb = ms(b.endDate) ?? sb;
+      if (ra === 0) return sa - sb;   // soonest upcoming first (next arrival)
+      return eb - ea;                 // present/past: most recent end first
+    })[0];
+  }
+
+  // When the caller doesn't name a booking, resolve the one holding the most
+  // arrival-relevant accommodation; else the newest non-cancelled booking.
+  async function bestBookingIdForStudent(studentId: number): Promise<number | null> {
+    const accoms = await prisma.bookingAccommodation.findMany({
+      where: { booking: { studentId, NOT: { status: 'CANCELLED' as any } } },
+      select: { bookingId: true, startDate: true, endDate: true },
+    });
+    const best = pickAccommByArrival(accoms);
+    if (best) return best.bookingId;
+    // No accommodation on any booking → STILL choose by date, not id. The
+    // incremental id sequence is unreliable here: legacy/migration paths and
+    // deal-splitting (a €250 deposit deal becomes a separate high-id booking)
+    // mean a higher id can be an OLDER stay. Fall back on the booking's own
+    // service window with the same arrival ordering; newest-id is only the
+    // last-resort tiebreak when no dates exist at all.
+    const bookings = await prisma.booking.findMany({
+      where: { studentId, NOT: { status: 'CANCELLED' as any } },
+      select: { id: true, serviceStart: true, serviceEnd: true },
+    });
+    if (!bookings.length) return null;
+    const bestBk = pickAccommByArrival(
+      bookings.map(b => ({ id: b.id, startDate: b.serviceStart, endDate: b.serviceEnd })),
+    );
+    return bestBk?.id ?? [...bookings].sort((a, b) => b.id - a.id)[0].id;
+  }
+
+  async function resolveTokens(studentId: number, bookingId?: number | null, opts: { certAggregate?: boolean } = {}) {
     const student = await prisma.student.findUnique({ where: { id: studentId } });
     if (!student) throw new Error('Student not found');
 
-    const booking = bookingId
+    const resolvedBookingId = bookingId ?? await bestBookingIdForStudent(studentId);
+    const booking = resolvedBookingId
       ? await prisma.booking.findUnique({
-          where: { id: bookingId },
-          include: { courses: true, accommodations: true, agency: true },
+          where: { id: resolvedBookingId },
+          include: { courses: true, accommodations: true, agency: true, extras: true },
         })
       : null;
 
@@ -134,14 +407,96 @@ export function documentScripts(prisma: PrismaClient) {
     const hsCompanyId = (booking as any)?.agency?.hubspotCompanyId;
     const hsCommissionRate: number | null = hsCompanyId ? await fetchHubspotCommissionRate(hsCompanyId) : null;
 
-    const course = booking?.courses?.[0];
+    // Single condition = is there a B2B partner on this booking. If so, partner-facing
+    // docs (the LoA) show GROSS so the agency's commission is never exposed; direct/B2C
+    // bookings have no agency and keep showing the net they actually paid us.
+    const invoiceGross: number | null =
+      (booking as any)?.agency && booking?.hubspotInvoiceId
+        ? await fetchInvoiceGross(booking.hubspotInvoiceId)
+        : null;
+
+    // Pick the course that should drive Day-1 / session-block copy and the
+    // headline booking fields. Many afternoon bookings carry a placeholder
+    // "Unknown Course" (category=OTHER) at courses[0] for an arrival /
+    // placement session, with the real AFTERNOON course at courses[1+] — so
+    // naive `courses[0]` was selecting the OTHER row and Day-1 emails fell
+    // through to the morning default. Skip OTHER first, then prefer the
+    // earliest start_date among the real categories. Falls back to courses[0]
+    // when only OTHER rows exist (legacy / inactive bookings).
+    const REAL_CATEGORIES = new Set(['MORNING','MORNING_PLUS','AFTERNOON','AFTERNOON_PLUS','INTENSIVE','PRIVATE']);
+    const realCourses = (booking?.courses || []).filter(c => REAL_CATEGORIES.has(String(c.category)));
+    const ordered = [...realCourses].sort((a, b) => {
+      const ta = a.startDate ? new Date(a.startDate).getTime() : Infinity;
+      const tb = b.startDate ? new Date(b.startDate).getTime() : Infinity;
+      return ta - tb;
+    });
+    const course = ordered[0] || booking?.courses?.[0];
+
+    // Booking-level aggregates across all real courses. Many historical
+    // bookings have multiple booking_courses split around Christmas (an old
+    // Fidelo workaround for the holiday gap before the system had a proper
+    // shunt-forward mechanism). The headline `course` above picks one — but
+    // documents like the Exit Letter ("He completed his 25-week course")
+    // need the whole-stay totals: earliest start, latest end, and the SUM of
+    // weeks across the splits. Falls back to the picked course when there
+    // are no real-category rows (legacy / inactive bookings).
+    const aggSource = realCourses.length ? realCourses : (booking?.courses || []);
+    let bookingStartDate = aggSource.reduce<Date | null>((earliest, c) => {
+      if (!c.startDate) return earliest;
+      const d = new Date(c.startDate);
+      return !earliest || d < earliest ? d : earliest;
+    }, null);
+    let bookingEndDate = aggSource.reduce<Date | null>((latest, c) => {
+      if (!c.endDate) return latest;
+      const d = new Date(c.endDate);
+      return !latest || d > latest ? d : latest;
+    }, null);
+    let bookingTotalWeeks = aggSource.reduce((sum, c) => sum + Number(c.weeks || 0), 0);
+
+    // CERTIFICATE mode (Neil 2026-06-05): a certificate is issued at the END and
+    // must reflect the student's TOTAL study — SUM weeks across ALL their
+    // non-cancelled bookings (not just this one), with the date range spanning
+    // first start → last end. 24-month lookback so a student returning years
+    // later starts a fresh tally. LoA/visa keep the per-booking window above.
+    if (opts.certAggregate) {
+      const lookback = new Date(); lookback.setMonth(lookback.getMonth() - 24);
+      const allBks = await prisma.booking.findMany({
+        where: { studentId, NOT: { status: 'CANCELLED' as any } },
+        include: { courses: true },
+      });
+      const allCourses = allBks.flatMap(b => b.courses).filter(c =>
+        REAL_CATEGORIES.has(String(c.category)) && c.endDate && new Date(c.endDate) >= lookback);
+      if (allCourses.length) {
+        bookingTotalWeeks = allCourses.reduce((s, c) => s + Number(c.weeks || 0), 0);
+        bookingStartDate = allCourses.reduce<Date | null>((e, c) => {
+          const d = c.startDate ? new Date(c.startDate) : null;
+          return d && (!e || d < e) ? d : e;
+        }, null);
+        bookingEndDate = allCourses.reduce<Date | null>((l, c) => {
+          const d = c.endDate ? new Date(c.endDate) : null;
+          return d && (!l || d > l) ? d : l;
+        }, null);
+      }
+    }
+
+    // Visa LoA window (shared with the QR verification payload so the printed
+    // letter and the scanned page can never disagree). AY → 35-week stay.
+    const _visaWindow = computeVisaWindow({
+      visaFrom: (student as any).visaFrom,
+      visaUntil: (student as any).visaUntil,
+      courseName: course?.name,
+      courseStart: course?.startDate,
+      courseEnd: course?.endDate,
+    });
 
     // Gender-based pronouns (replaces Fidelo's {if gender =="Male"} conditionals)
     const isMale = student.gender === 1;
     const salutation = isMale ? 'Mr.' : 'Ms.';
 
-    // Accommodation (first placement if exists)
-    const accomm = booking?.accommodations?.[0];
+    // Accommodation — the arrival-relevant placement (upcoming → present →
+    // past), not blindly the first row, so multi-booking students render the
+    // room they're actually arriving into.
+    const accomm = pickAccommByArrival(booking?.accommodations || []) || booking?.accommodations?.[0];
     let accommProvider: any = null;
     if (accomm?.bedId) {
       const bed = await prisma.accommodationBed.findUnique({
@@ -149,6 +504,12 @@ export function documentScripts(prisma: PrismaClient) {
         include: { room: { include: { property: { include: { provider: true } } } } },
       });
       accommProvider = bed?.room?.property?.provider;
+    }
+    // The placement host's magic-link portal URL (empty if no host / no token).
+    let accommPortalLink = '';
+    if (accommProvider?.id) {
+      const _ht = await prisma.hostPortalToken.findUnique({ where: { providerId: accommProvider.id }, select: { token: true } });
+      if (_ht?.token) accommPortalLink = `${BASE_URL}/host-portal/${_ht.token}`;
     }
 
     const fmtDate = (d: any) => d ? new Date(d).toLocaleDateString('en-IE', { day: '2-digit', month: 'long', year: 'numeric' }) : '';
@@ -173,9 +534,10 @@ export function documentScripts(prisma: PrismaClient) {
       OTHER: 'Other',
     };
     let attendanceRateStr = '';
+    let attendanceRateProjectedStr = '';
     let absencesListHtml = '';
     try {
-      const { fetchStudentHolidays, filterOutHolidayDates } = await import('./attendance-pct');
+      const { fetchStudentHolidays, filterOutHolidayDates, legacyAttendanceCounts } = await import('./attendance-pct');
       const attRowsAll = await prisma.attendance.findMany({
         where: { studentId },
         select: { status: true, occurrence: { select: { date: true } } },
@@ -186,10 +548,39 @@ export function documentScripts(prisma: PrismaClient) {
       const studentHolidays = await fetchStudentHolidays(prisma, studentId);
       const attRows = filterOutHolidayDates(attRowsAll, studentHolidays);
       const total = attRows.length;
-      if (total > 0) {
-        const presentLike = attRows.filter(r => r.status === 'PRESENT' || r.status === 'LATE').length;
-        const pct = Math.round((presentLike / total) * 100);
+      const presentLike = attRows.filter(r => r.status === 'PRESENT' || r.status === 'LATE').length;
+      // Fold in the pre-migration Fidelo figure carried on this booking
+      // (weighted by its pre-04/05 weeks), so the letter cites the student's
+      // TRUE overall attendance — not just the short SIS-tracked window since
+      // migration. SIS-only when there's no legacy figure.
+      const leg = legacyAttendanceCounts(
+        (booking as any)?.legacyAttendancePct != null ? Number((booking as any).legacyAttendancePct) : null,
+        booking?.serviceStart || null,
+      );
+      const combPresent = presentLike + leg.present;
+      const combTotal = total + leg.total;
+      if (combTotal > 0) {
+        const pct = Math.round((combPresent / combTotal) * 100);
         attendanceRateStr = `${pct}%`;
+
+        // Projected attendance rate — used by the ILEP Attendance Letter
+        // (template id=83) to show "if you attend every remaining lesson
+        // you will finish with X%". Estimate uses ULearn's GE convention
+        // of 5 lessons/week (15h ÷ 3h), counted from today to the
+        // booking's serviceEnd. Imprecise (doesn't subtract scheduled
+        // holidays) but good enough for the letter's "best-case if you
+        // show up every day" framing. When the course is already over
+        // or has no end on file, projected just mirrors the current rate.
+        const courseEnd = booking?.serviceEnd ? new Date(booking.serviceEnd) : null;
+        const now = new Date();
+        if (courseEnd && courseEnd > now) {
+          const weeksRemaining = Math.max(0, Math.round((courseEnd.getTime() - now.getTime()) / (7 * 24 * 60 * 60 * 1000)));
+          const lessonsRemaining = weeksRemaining * 5;
+          const projectedPct = Math.round(((combPresent + lessonsRemaining) / (combTotal + lessonsRemaining)) * 100);
+          attendanceRateProjectedStr = `${projectedPct}%`;
+        } else {
+          attendanceRateProjectedStr = attendanceRateStr;
+        }
 
         if (pct < 85) {
           // Pull absences with any reason+cert metadata. Order chronologically
@@ -228,6 +619,38 @@ export function documentScripts(prisma: PrismaClient) {
       // — the letter still renders, just without the % and the absences block.
     }
 
+    // Day-1 email variant axes (drive the four {if day1_*} blocks in the
+    // "Day1 Orient" email — exactly one is truthy per booking):
+    //   · ILEP  — operable course is an Academic Year (work-study) course, so
+    //             its Induction is MANDATORY. Non-ILEP → Orientation (encouraged).
+    //             Per Neil (2026-08-13): DON'T use the ILEP code — infer purely
+    //             from the operable course name containing "Academic Year"
+    //             (covers AM / PM / AM Plus / PM Plus).
+    //   · PM    — course session: AFTERNOON / AFTERNOON_PLUS → PM; all else → AM
+    //             (mirrors course_session_block's morning-default).
+    const _day1Ilep = /academic\s*year/i.test(course?.name || '');
+    const _day1Pm = course?.category === 'AFTERNOON' || course?.category === 'AFTERNOON_PLUS';
+
+    // Day-1 bank-holiday shift — is the operable course's start day one the
+    // school is closed? True for an Irish bank holiday (computed) OR any logged
+    // school closure (Christmas / Good Friday / ad-hoc). When closed, the first
+    // lesson moves to the next day and the email says "Tuesday". Courses always
+    // start Mondays, so the closed day is a Monday and the next open day Tuesday.
+    let _day1BankHol = false;
+    if (course?.startDate) {
+      const startIso = new Date(course.startDate).toISOString().slice(0, 10);
+      if (irishPublicHolidays(Number(startIso.slice(0, 4))).has(startIso)) {
+        _day1BankHol = true;
+      } else {
+        const sd = new Date(course.startDate);
+        const closure = await prisma.schoolClosure.findFirst({
+          where: { startDate: { lte: sd }, endDate: { gte: sd } },
+          select: { id: true },
+        });
+        if (closure) _day1BankHol = true;
+      }
+    }
+
     const tokens: Record<string, string> = {
       // Student
       'student.full_name': `${student.firstName} ${student.lastName || ''}`,
@@ -235,7 +658,7 @@ export function documentScripts(prisma: PrismaClient) {
       'student.last_name': student.lastName || '',
       'student.email': student.email || '',
       'student.dob': fmtDate(student.birthday),
-      'student.nationality': student.nationality || '',
+      'student.nationality': countryName(student.nationality),
       'student.passport_number': student.passportNumber || '',
       'student.passport_number_masked': student.passportNumber ? student.passportNumber.slice(0, -4).replace(/./g, '*') + student.passportNumber.slice(-4) : '',
       'student.student_type': student.studentType || '',
@@ -251,6 +674,7 @@ export function documentScripts(prisma: PrismaClient) {
       'student.age': student.birthday ? String(Math.floor((Date.now() - new Date(student.birthday).getTime()) / (365.25 * 24 * 60 * 60 * 1000))) : '',
       'student.language': (student as any).language || (student as any).contactLanguage || '',
       'student.attendance_rate': attendanceRateStr,
+      'student.attendance_rate_projected': attendanceRateProjectedStr,
       'absences_list': absencesListHtml, // populated only when attendance < 85% — drives {if absences_list}
 
       // Gender pronouns (replaces Fidelo {if gender} blocks)
@@ -260,16 +684,65 @@ export function documentScripts(prisma: PrismaClient) {
       'student.pronoun_possessive_cap': isMale ? 'His' : 'Her',
       'student.pronoun_subject_cap': isMale ? 'He' : 'She',
 
-      // Booking
+      // Day-1 session block — picks the correct first-day-of-school copy
+      // based on the booked course's CourseCategory. Replaces the Fidelo
+      // {if course_category == "..."} equality blocks (the SIS render
+      // engine only handles {if token} truthy checks, so the equality form
+      // was leaking the literal {if …} tags AND rendering all four variants
+      // simultaneously). One token, one substitution, one source of truth.
+      'course_session_block': (() => {
+        const cat = course?.category;
+        const morning   = 'The school will open at <span style="text-decoration:underline"><strong>8:30am</strong></span> on Monday morning. Lessons will start at <span style="text-decoration:underline"><strong>9:00am</strong></span>. Please arrive <strong>15 minutes early</strong> on your first day to meet the Director of Studies and to complete a spoken assessment.';
+        const aftPlus   = 'The school will open at <span style="text-decoration:underline"><strong>8:30am</strong></span> on Monday morning. Your first lesson will be at <span style="text-decoration:underline"><strong>12:45pm</strong></span>, so please come at <span style="text-decoration:underline"><strong>12:30pm</strong></span> on your first day to meet the Director of Studies and to complete a spoken assessment.';
+        const afternoon = 'The school will open at <span style="text-decoration:underline"><strong>8:30am</strong></span> on Monday morning. Your first lesson will start at <span style="text-decoration:underline"><strong>1:45pm</strong></span>, so please come at <span style="text-decoration:underline"><strong>1:30pm</strong></span> on your first day to meet the Director of Studies and to complete a spoken assessment.';
+        if (cat === 'AFTERNOON_PLUS') return aftPlus;
+        if (cat === 'AFTERNOON')      return afternoon;
+        // MORNING, MORNING_PLUS, INTENSIVE, PRIVATE, OTHER, or unknown → morning copy
+        return morning;
+      })(),
+
+      // Day-1 email variant flags — exactly one truthy (see _day1Ilep/_day1Pm above).
+      'day1_ilep_am':   (_day1Ilep && !_day1Pm) ? '1' : '',
+      'day1_ilep_pm':   (_day1Ilep &&  _day1Pm) ? '1' : '',
+      'day1_noilep_am': (!_day1Ilep && !_day1Pm) ? '1' : '',
+      'day1_noilep_pm': (!_day1Ilep &&  _day1Pm) ? '1' : '',
+      // Bank-holiday shift: drives the {if day1_bank_holiday} note and swaps the
+      // schedule's day label (Monday → Tuesday) via {{day1_weekday}}.
+      'day1_bank_holiday': _day1BankHol ? '1' : '',
+      'day1_weekday': _day1BankHol ? 'Tuesday' : 'Monday',
+
+      // Booking — start/end/weeks use the BOOKING-LEVEL aggregate, not the
+      // single picked course, so Exit Letters and similar reflect the
+      // whole-stay totals across pre/post-Christmas course splits. course_name
+      // and course_level stay on the headline (single) course since they're
+      // intrinsically per-row.
       'booking.reference': booking ? `BK-${new Date().getFullYear()}-${String(booking.id).padStart(6, '0')}` : '',
       'booking.status': booking?.status || '',
-      'booking.start_date': fmtDate(course?.startDate),
-      'booking.end_date': fmtDate(course?.endDate),
+      'booking.start_date': fmtDate(bookingStartDate || course?.startDate),
+      'booking.end_date':   fmtDate(bookingEndDate   || course?.endDate),
       'booking.course_name': course?.name || '',
-      'booking.course_level': course?.level || '',
+      // Fall back to the student's level so the LoA isn't blank on older/edge
+      // bookings whose course.level was never set (new bookings now set it).
+      'booking.course_level': course?.level || student.currentLevel || '',
       'booking.hours_per_week': course?.hoursPerWeek ? String(course.hoursPerWeek) : '',
-      'booking.weeks': course?.weeks ? String(course.weeks) : '',
+      'booking.weeks': bookingTotalWeeks > 0 ? String(bookingTotalWeeks) : (course?.weeks ? String(course.weeks) : ''),
       'booking.amount_total': booking?.amountTotal ? `€${booking.amountTotal}` : '',
+      // LoA "has paid … to reserve" figure.
+      //   • Partner booking → GROSS ONLY (invoice subtotal = what the student paid the partner).
+      //     NEVER net — net exposes the commission the partner took. If the gross is unavailable
+      //     (invoice unlinked / a LifePass -Sub master), render BLANK so the gap is spotted and
+      //     the invoice link fixed, rather than silently leaking the net figure.
+      //   • Direct/B2C (no agency) → net = the amount they actually paid us.
+      'booking.amount_reserved': (booking as any)?.agency
+        ? (invoiceGross != null ? `€${invoiceGross.toFixed(2)}` : '')
+        : (booking?.amountTotal ? `€${booking.amountTotal}` : ''),
+      // Academic Year / LifePass? Gates the LoA insurance block — only AY/LifePass
+      // students carry the school Arachas cover + Learner Protection; short-stay
+      // non-EU students don't (same population as holiday eligibility). Same signal
+      // as bookings.ts holiday check: AY/renewal/LifePass course name or isRenewal.
+      'booking.is_academic_year': (booking?.courses || []).some(
+        (c: any) => /academic year|life ?pass|renewal/i.test(c.name || '') || c.isRenewal,
+      ) ? '1' : '',
       'booking.agency': (booking as any)?.agency?.name || '',
       'booking.amount_paid': booking?.amountPaid ? `€${Number(booking.amountPaid).toFixed(2)}` : '',
       'booking.amount_open': booking?.amountOpen ? `€${Number(booking.amountOpen).toFixed(2)}` : '',
@@ -278,6 +751,11 @@ export function documentScripts(prisma: PrismaClient) {
       // Agency / Commission
       'agency.name': (booking as any)?.agency?.name || '',
       'agency.contact': (booking as any)?.agency?.contactPerson || '',
+      // Agent FIRST name (first word of the contact person), and a smart greeting
+      // token that prefers the agent's first name and falls back to the agency
+      // name — so "Dear {{agency.contact_or_name}}" reads naturally either way.
+      'agency.contact_first_name': ((booking as any)?.agency?.contactPerson || '').trim().split(/\s+/)[0] || '',
+      'agency.contact_or_name': (((booking as any)?.agency?.contactPerson || '').trim().split(/\s+/)[0]) || (booking as any)?.agency?.name || '',
       'agency.email': (booking as any)?.agency?.email || '',
       'agency.commission_rate': (booking as any)?.agency?.commissionRate ? String((booking as any).agency.commissionRate) + '%' : '',
       'agency.commission_amount': (() => {
@@ -321,30 +799,106 @@ export function documentScripts(prisma: PrismaClient) {
         return `€${gross.toFixed(2)}`;
       })(),
 
+      // Flight (inbound / outbound — used by transfer emails)
+      'student.flight_number':           (student as any).flightNumber || '',
+      'student.flight_date':             fmtDate((student as any).flightDate),
+      'student.flight_time':             (student as any).flightTime || '',
+      'student.outbound_flight_number':  (student as any).outboundFlightNumber || '',
+      'student.outbound_flight_date':    fmtDate((student as any).outboundFlightDate),
+      'student.outbound_flight_time':    (student as any).outboundFlightTime || '',
+
       // Visa
       'student.visa_from':  fmtDate(student.visaFrom),
       'student.visa_until': fmtDate(student.visaUntil),
       // Visa-aware course-window dates for letters that need the embassy/INIS
-      // to see the full Stamp-2 window (LoA, ISD). Falls back to course dates
-      // when visa dates haven't been entered yet, so the doc never renders an
-      // empty cell. NonEU LoA template uses these in place of booking.start/end.
-      'booking.visa_start_date': fmtDate((student as any).visaFrom || course?.startDate),
-      'booking.visa_end_date':   fmtDate((student as any).visaUntil || course?.endDate),
+      // to see the full Stamp-2 window (LoA, ISD). For Academic Year bookings
+      // the window is stretched to the full 35-week stay (tuition + holidays);
+      // manually-entered visa dates always win. Falls back to course dates for
+      // short courses. NonEU LoA template uses these in place of booking.start/end.
+      'booking.visa_start_date': fmtDate(_visaWindow.start),
+      'booking.visa_end_date':   fmtDate(_visaWindow.end),
+      'booking.visa_weeks':      _visaWindow.weeks != null ? String(_visaWindow.weeks) : (bookingTotalWeeks > 0 ? String(bookingTotalWeeks) : ''),
       'booking.ilep_code': (course as any)?.ilepCode || '',
       'ilep_course_code': (course as any)?.ilepCode || '',  // legacy Fidelo placeholder name
 
+      // Exam / IRP sentences used in academic letters. Both render empty
+      // when the underlying data is missing, so {{token}} is safe to drop
+      // into a template — no orphan punctuation, no "TBD" placeholder.
+      // The sentences ARE the full sentence (including the trailing full
+      // stop and gendered pronoun) so the template author just adds them
+      // as a paragraph: <p>{{student.irp_holiday_sentence}}</p>.
+      'student.exam':            (student as any).exam || '',
+      'student.exam_date':       fmtDate((student as any).examDate),
+      'student.exam_sentence': (() => {
+        const d = (student as any).examDate;
+        if (!d) return '';
+        const fullName = `${salutation} ${student.firstName} ${student.lastName || ''}`.trim();
+        const possessive = isMale ? 'his' : 'her';
+        return `${fullName} is scheduled to sit ${possessive} end-of-course exam on ${fmtDate(d)}.`;
+      })(),
+      'student.visa_id':                (student as any).visaId || '',  // IRP number
+      'student.irp_holiday_sentence': (() => {
+        const exp = (student as any).visaUntil;
+        if (!exp) return '';
+        const fullName = `${salutation} ${student.firstName} ${student.lastName || ''}`.trim();
+        const subject = isMale ? 'He' : 'She';
+        return `${fullName}'s IRP is due to expire on ${fmtDate(exp)}. ${subject} remains on course holidays until this date.`;
+      })(),
+
       // Accommodation
-      'accommodation.contact_name': accommProvider?.contactPerson || '',
+      'accommodation.contact_name': [accommProvider?.contactFirstName, accommProvider?.contactLastName].filter(Boolean).join(' '),
+      'accommodation.contact_first_name': accommProvider?.contactFirstName || '',
       'accommodation.provider_name': accommProvider?.name || '',
       'accommodation.address': accommProvider ? [accommProvider.address, accommProvider.addressAddon, accommProvider.city, accommProvider.zip].filter(Boolean).join(', ') : '',
+      // Host name + address for document tables (LOA etc.): real values once a
+      // bed is placed; "To be confirmed" while accommodation is booked but
+      // unplaced; empty only when no accommodation is booked at all. Keeps the
+      // LOA accommodation table populated (and unflagged by the validator)
+      // pre-placement instead of showing blanks.
+      'accommodation.host_name': accommProvider?.name || (accomm ? 'To be confirmed' : ''),
+      'accommodation.host_address': accommProvider
+        ? [accommProvider.address, accommProvider.addressAddon, accommProvider.city, accommProvider.zip].filter(Boolean).join(', ')
+        : (accomm ? 'To be confirmed' : ''),
       'accommodation.phone': accommProvider?.phone || accommProvider?.mobile || '',
       'accommodation.email': accommProvider?.email || '',
+      'accommodation.portal_link': accommPortalLink,
       'accommodation.start_date': fmtDate(accomm?.startDate),
       'accommodation.end_date': fmtDate(accomm?.endDate),
       'accommodation.weeks': accomm?.weeks ? String(accomm.weeks) : '',
       'accommodation.room_type': accomm?.roomType || '',
       'accommodation.board': accomm?.board || '',
       'accommodation.type': accomm?.accommodationType || '',
+      // Google Maps link for the host address — used by arrival emails so
+      // students can tap straight into navigation. Empty when no provider
+      // is placed (i.e. the address string is empty).
+      'accommodation.googlemaps': (() => {
+        if (!accommProvider) return '';
+        const addr = [accommProvider.address, accommProvider.addressAddon, accommProvider.city, accommProvider.zip].filter(Boolean).join(', ');
+        return addr ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}` : '';
+      })(),
+
+      // Insurance (Learner Protection Policy column + new from/until dates).
+      // Single product in-house (8-month Arachas/Chubb) so we just surface
+      // the policy reference + coverage window; provider isn't a token.
+      'insurance.policy_number': (student as any).learnerProtectionPolicy || '',
+      'insurance.from':          fmtDate((student as any).insuranceFrom),
+      'insurance.until':         fmtDate((student as any).insuranceUntil),
+
+      // Transfer flag — truthy when the student has an active airport
+      // pickup OR dropoff BookingExtra. Rendered as the human label
+      // ("Airport pickup booked" / "Airport dropoff booked" / both) so the
+      // recipient sees something meaningful, while {if booked_transfer}
+      // blocks still work because the string is truthy.
+      'booked_transfer': (() => {
+        const extras = (booking as any)?.extras || [];
+        const types = new Set(extras.filter((e: any) => e.active).map((e: any) => e.extraType));
+        const pickup  = types.has('AIRPORT_PICKUP');
+        const dropoff = types.has('AIRPORT_DROPOFF');
+        if (pickup && dropoff) return 'Airport pickup and dropoff booked';
+        if (pickup)            return 'Airport pickup booked';
+        if (dropoff)           return 'Airport dropoff booked';
+        return '';
+      })(),
 
       // Institution
       'institution.name': 'ULearn English Language School',
@@ -352,9 +906,10 @@ export function documentScripts(prisma: PrismaClient) {
 
       // Document (placeholders — replaced at issue time)
       'document.issue_date': new Date().toLocaleDateString('en-IE', { day: '2-digit', month: 'long', year: 'numeric' }),
+      'document.issue_date_short': new Date().toLocaleDateString('en-IE', { day: '2-digit', month: '2-digit', year: 'numeric' }),
     };
 
-    return { tokens, student, booking };
+    return { tokens, student, booking, course };
   }
 
   function renderTemplate(htmlTemplate: string, tokens: Record<string, string>): string {
@@ -400,24 +955,65 @@ export function documentScripts(prisma: PrismaClient) {
   // role bypasses the gate entirely. Used by both generateDraft (block
   // creation) and issueDocument (block issuance) so a sales user can never
   // round-trip an LoA out to a student with an outstanding balance.
-  async function assertLoaPaymentGate(templateSlug: string | null, bookingId: number | null | undefined, callerRole?: string) {
-    if (!templateSlug || !/^lo?a[-_]/i.test(templateSlug)) return;
+  async function assertLoaPaymentGate(
+    template: { slug?: string | null; requiresFullPayment?: boolean | null } | null,
+    bookingId: number | null | undefined,
+    callerRole?: string,
+  ) {
+    // Gate applies when the template is explicitly flagged requiresFullPayment.
+    // Legacy fallback: any slug matching ^lo?a[-_] is still gated even if the
+    // flag wasn't backfilled (belt-and-braces — the seed sets the flag too).
+    const slug = template?.slug || null;
+    const gated = !!template?.requiresFullPayment || (!!slug && /^lo?a[-_]/i.test(slug));
+    if (!gated) return;
     if (callerRole === 'admin') return;
     if (!bookingId) {
-      throw new Error('Cannot create LoA: document is not linked to a booking');
+      throw new Error('Cannot generate this document: it is not linked to a booking');
     }
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
-      select: { amountPaid: true, amountTotal: true },
+      select: {
+        amountPaid: true, amountTotal: true, amountOpen: true, status: true,
+        student: { select: { visaStatus: true } },
+      },
     });
+    // ESCROW or visa-pending — funds (if any) are in TM escrow, not BoI; or
+    // the embassy hasn't decided. Don't issue an LoA on the back of money
+    // that hasn't actually settled, or for a student who may be refused.
+    // The gate clears when status flips out of ESCROW AND visa is resolved
+    // (Approved/Rejected/null), at which point the payment-balance gate
+    // below evaluates normally.
+    if (booking?.status === 'ESCROW') {
+      throw new Error(
+        `Document blocked: booking is in ESCROW (visa pending — funds are in TransferMate, ` +
+        `not yet in BoI). Wait for visa decision before issuing. Admin override available.`
+      );
+    }
+    const visa = booking?.student?.visaStatus;
+    if (visa === 'Pending' || visa === 'Appeal') {
+      throw new Error(
+        `Document blocked: student visa status is "${visa}". Wait for visa decision ` +
+        `before issuing. Admin override available.`
+      );
+    }
     const paid  = Number(booking?.amountPaid  || 0);
     const total = Number(booking?.amountTotal || 0);
-    const EPS = 0.01;
-    if (total <= 0 || (total - paid) > EPS) {
-      const balance = Math.max(0, total - paid);
+    // amountOpen is the booking's reconciled balance (computed upstream
+    // when payments / reg-fee waivers / currency rounding settle). Prefer
+    // it over (total - paid), which can drift by a few euros due to those
+    // adjustments — e.g. a comped €50 reg fee leaves total/paid out of
+    // sync but amountOpen at 0. Fall back to (total - paid) only when
+    // amountOpen is missing. €1 tolerance to absorb pure rounding noise.
+    // Empty booking (total <= 0) is still blocked — that's a data-integrity
+    // signal, not a fully-paid one.
+    const openExplicit = booking?.amountOpen != null ? Number(booking.amountOpen) : null;
+    const balance = openExplicit != null ? openExplicit : (total - paid);
+    const BALANCE_TOLERANCE = 1.00;
+    if (total <= 0 || balance > BALANCE_TOLERANCE) {
+      const shown = Math.max(0, balance);
       throw new Error(
-        `LoA blocked: full payment required first ` +
-        `(paid €${paid.toFixed(2)} of €${total.toFixed(2)}, balance €${balance.toFixed(2)}). ` +
+        `Document blocked: full payment required first ` +
+        `(paid €${paid.toFixed(2)} of €${total.toFixed(2)}, balance €${shown.toFixed(2)}). ` +
         `Admin override available.`
       );
     }
@@ -427,9 +1023,30 @@ export function documentScripts(prisma: PrismaClient) {
     const template = await prisma.documentTemplate.findUnique({ where: { id: templateId } });
     if (!template) throw new Error('Template not found');
 
-    await assertLoaPaymentGate(template.slug, bookingId ?? null, callerRole);
+    await assertLoaPaymentGate(template, bookingId ?? null, callerRole);
 
-    const { tokens } = await resolveTokens(studentId, bookingId);
+    // Static-PDF templates (e.g. SLA, legal/policy attachments) don't go
+    // through token resolution or HTML render — the PDF on disk is the
+    // document. We still create a DocumentRecord so the issuance is tracked
+    // per-student exactly like a regular generated doc; getDocumentPdf
+    // detects the staticPdfPath and serves the file directly.
+    if ((template as any).staticPdfPath) {
+      const record = await prisma.documentRecord.create({
+        data: {
+          studentId,
+          bookingId: bookingId || null,
+          templateId: template.id,
+          documentType: template.documentType,
+          sourceJson: '{}',
+          contentHtml: '',  // intentionally empty — staticPdfPath wins at PDF-fetch time
+          templateVersion: template.version,
+          status: 'DRAFT',
+        },
+      });
+      return { record, missing: [], tokens: {} };
+    }
+
+    const { tokens } = await resolveTokens(studentId, bookingId, { certAggregate: template.slug === 'Certificate' });
     const rendered = renderTemplate(template.htmlTemplate, tokens);
 
     // Find missing tokens (exclude custom blocks and document.* tokens resolved at issue time)
@@ -503,13 +1120,293 @@ export function documentScripts(prisma: PrismaClient) {
     if (!doc) throw new Error('Document not found');
     if (doc.status !== 'DRAFT') throw new Error('Cannot edit: document is locked (status: ' + doc.status + ')');
 
+    // A human editing the letter is a deliberate deviation — pin it so the
+    // living-document booking sync never silently overwrites their change
+    // (e.g. the manual "24 weeks" override). From here it's version-controlled.
     return prisma.documentRecord.update({
       where: { id },
       data: {
         contentHtml: data.contentHtml,
         editableFields: data.editableFields,
+        autoSync: false,
       },
     });
+  }
+
+  // In-place correction of an ISSUED living document. Unlike New Version (which
+  // supersedes + spawns a draft) this keeps the SAME record, versionNo, status and
+  // verification token — so the portal / student app / QR-scan surface the fix
+  // immediately with no reissue and (usually) the recipient none the wiser. Pins
+  // the doc (autoSync=false) so booking-date sync can't clobber the manual edit,
+  // and appends a who/when entry to the internal audit log (autoSyncLog).
+  async function liveEditDocument(id: number, contentHtml: string, editedBy?: string) {
+    const doc = await prisma.documentRecord.findUnique({ where: { id } });
+    if (!doc) throw new Error('Document not found');
+    if (doc.status !== 'ISSUED') throw new Error('Live Edit is only for issued documents (drafts use Edit Content)');
+    if (typeof contentHtml !== 'string' || !contentHtml.trim()) throw new Error('Empty content');
+    const prevLog = Array.isArray(doc.autoSyncLog) ? (doc.autoSyncLog as any[]) : [];
+    const entry = { at: new Date().toISOString(), action: 'live-edit', by: editedBy || 'unknown' };
+    return prisma.documentRecord.update({
+      where: { id },
+      data: {
+        contentHtml,
+        autoSync: false,
+        lastAutoSyncAt: new Date(),
+        autoSyncLog: [...prevLog, entry] as any,
+      },
+    });
+  }
+
+  // ── Living-document sync (LoA / visa letters) ──────────────────────────────
+  // The booking course date is the single source of truth. When it changes,
+  // re-render every ISSUED, still-auto-tracking LoA for that booking IN PLACE —
+  // same record, same versionNo, SAME verification token — so the student's
+  // portal copy and the scanned QR both follow the booking with no reissue and
+  // no resend. Pinned docs (autoSync=false, i.e. hand-edited or versioned) are
+  // skipped. Each silent update is timestamped + appended to autoSyncLog and
+  // logged. Best-effort: never throw into the booking-save path.
+  // ── Shared in-place re-render ──────────────────────────────────────────────
+  // Re-derive an ISSUED document's HTML from CURRENT field data, in place —
+  // same record, same versionNo, SAME verification token. This is the one true
+  // render path shared by the LoA booking-date auto-sync and the on-demand
+  // "refresh from source". It re-bakes the existing token's QR (never mints a
+  // new one) and only writes when the content actually changed (or a dataPatch
+  // is supplied). `makeLogEntry(tokens)` lets each caller stamp its own audit
+  // entry shape into autoSyncLog. Returns { record, changed }.
+  async function renderIssuedDocInPlace(
+    doc: any,
+    opts: { makeLogEntry?: (tokens: Record<string, string>) => any; dataPatch?: Record<string, any> } = {},
+  ): Promise<{ record: any; changed: boolean }> {
+    const tpl = doc.template || await prisma.documentTemplate.findUnique({ where: { id: doc.templateId } });
+    if (!tpl?.htmlTemplate || (tpl as any).staticPdfPath) {
+      throw new Error('This document is a static/uploaded PDF — there is no template to re-render from source.');
+    }
+    const { tokens } = await resolveTokens(doc.studentId, doc.bookingId, { certAggregate: tpl.slug === 'Certificate' });
+    // Freeze document.issue_date to the doc's ACTUAL issue date. resolveTokens is
+    // doc-agnostic and returns "today" for issue_date, so without this override
+    // every re-render (this repair path AND booking auto-sync) would silently
+    // drift an issued letter's issue date forward to the day it was re-rendered.
+    if (doc.issuedAt) {
+      tokens['document.issue_date'] = new Date(doc.issuedAt).toLocaleDateString('en-IE', { day: '2-digit', month: 'long', year: 'numeric' });
+      tokens['document.issue_date_short'] = new Date(doc.issuedAt).toLocaleDateString('en-IE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+    let html = renderTemplate(tpl.htmlTemplate, tokens);
+
+    // Re-bake the EXISTING verification token's QR / URL — never mint a new
+    // token, so the link/QR the student already holds keeps working.
+    const token = doc.verificationToken;
+    if (token) {
+      const verificationUrl = `${BASE_URL}/sis/verify/${token}`;
+      const qrDataUri = await QRCode.toDataURL(verificationUrl, { type: 'image/png', width: 150, margin: 1 });
+      const qrImg = `<img src="${qrDataUri}" alt="QR Verification" style="width:86px;height:86px">`;
+      html = html.includes('{{document.qr}}')
+        ? html.replace(/\{\{document\.qr\}\}/g, qrImg)
+        : html.replace(/<img[^>]*alt="QR Verification"[^>]*>/g, qrImg);
+      html = html.includes('{{document.verification_url}}')
+        ? html.replace(/\{\{document\.verification_url\}\}/g, verificationUrl)
+        : html.replace(/https?:\/\/[^\s"'<]*\/sis\/verify\/[A-Za-z0-9_-]+/g, verificationUrl);
+    }
+    const stampYear = (doc.issuedAt ? new Date(doc.issuedAt) : new Date()).getFullYear();
+    html = html.replace(/\{\{document\.version\}\}/g, `v${doc.versionNo}.0`);
+    html = html.replace(/\{\{document\.number\}\}/g, `DOC-${stampYear}-${String(doc.id).padStart(6, '0')}`);
+
+    const changed = html !== doc.contentHtml;
+    const dataPatch = opts.dataPatch || {};
+    if (!changed && Object.keys(dataPatch).length === 0) return { record: doc, changed: false };
+
+    const prevLog = Array.isArray(doc.autoSyncLog) ? (doc.autoSyncLog as any[]) : [];
+    const entry = { at: new Date().toISOString(), ...(opts.makeLogEntry ? opts.makeLogEntry(tokens) : {}) };
+    const record = await prisma.documentRecord.update({
+      where: { id: doc.id },
+      data: {
+        contentHtml: html,
+        sourceJson: JSON.stringify(tokens),
+        lastAutoSyncAt: new Date(),
+        autoSyncLog: [...prevLog, entry] as any,
+        ...dataPatch,
+      },
+    });
+    return { record, changed };
+  }
+
+  // Reset an ISSUED document fully to source — a clean whole-document re-render
+  // from the template + current field data. Unlike surgical Refresh, this
+  // DISCARDS any manual Live Edit (static text included) and realigns the entire
+  // letter to source truth — the fix for a doc whose field text was hand-edited
+  // and diverged from the source. Same record / versionNo / verification token.
+  // Clears the pin (autoSync=true): there are no manual edits left to protect.
+  async function resetDocumentFromSource(docId: number, opts: { by?: string } = {}) {
+    const { by = 'unknown' } = opts;
+    const doc = await prisma.documentRecord.findUnique({ where: { id: docId }, include: { template: true } });
+    if (!doc) throw new Error('Document not found');
+    if (doc.status !== 'ISSUED') throw new Error('Reset is only for issued documents (drafts use Edit Content).');
+    const { record } = await renderIssuedDocInPlace(doc, {
+      makeLogEntry: () => ({ action: 'reset-from-source', by, reason: 'full re-render — realigned entire document to source (manual edits discarded)' }),
+      dataPatch: { autoSync: true },
+    });
+    console.log(`[reset-from-source] doc #${docId} by ${by} — full re-render from source`);
+    return record;
+  }
+
+  // ── Living-document sync (LoA / visa letters) ──────────────────────────────
+  // The booking course date is the single source of truth. When it changes,
+  // re-render every ISSUED, still-auto-tracking LoA for that booking IN PLACE.
+  // Pinned docs (autoSync=false) are skipped. Best-effort: never throw into the
+  // booking-save path. Routes through the shared renderIssuedDocInPlace helper.
+  const LOA_DOC_TYPE = 'success/visa';
+  async function syncLoaToBooking(bookingId: number, reason = 'booking course dates changed'): Promise<number[]> {
+    const docs = await prisma.documentRecord.findMany({
+      where: { bookingId, status: 'ISSUED', autoSync: true, documentType: LOA_DOC_TYPE },
+      include: { template: true },
+    });
+    const synced: number[] = [];
+    for (const doc of docs) {
+      try {
+        const tpl = doc.template;
+        if (!tpl?.htmlTemplate || (tpl as any).staticPdfPath) continue;
+        const { changed } = await renderIssuedDocInPlace(doc, {
+          makeLogEntry: (tokens) => ({
+            reason,
+            start: tokens['booking.visa_start_date'] || '',
+            end: tokens['booking.visa_end_date'] || '',
+            weeks: tokens['booking.visa_weeks'] || '',
+          }),
+        });
+        if (!changed) continue;   // dates unchanged → nothing to do
+        console.log(`[LoA auto-sync] doc #${doc.id} (booking ${bookingId}, ${reason})`);
+        synced.push(doc.id);
+      } catch (e: any) {
+        console.error(`[LoA auto-sync] doc #${doc.id} failed:`, e?.message || e);
+      }
+    }
+    return synced;
+  }
+
+  // ── On-demand "refresh from source" (SURGICAL — field values only) ─────────
+  // Update ONLY the dynamic field values that changed, in place — NOT a whole-
+  // document re-render. We start from the CURRENT contentHtml (so any Live Edit
+  // to static text is preserved untouched) and swap each changed field's OLD
+  // value → NEW value, anchored on the old value stored in sourceJson (the exact
+  // token map used at last render). Same record / versionNo / verification token
+  // / QR — a field correction (e.g. a wrong DOB) flows into the letter without a
+  // manual HTML edit, a reissue, OR clobbering bespoke wording. Non-destructive
+  // by construction, so no pin/force gymnastics: it works on any ISSUED doc,
+  // Live-Edited or not, and never removes a manual edit.
+  // Inject a value for a field that was BLANK at issue time (so there's no old
+  // value to find-and-replace). Anchors on the static template text sitting
+  // immediately BEFORE the field's token — the stretch between the previous
+  // token and this one, which is pure static markup and typically carries the
+  // field's label (e.g. "<strong>Date of Birth</strong></td><td …>"), making it
+  // unique in the rendered doc. Returns the patched html, or null if no unique
+  // anchor was found (caller then leaves the field for a New Version).
+  function injectBlankField(field: string, newV: string, html: string, templateHtml: string): string | null {
+    const tokRe = new RegExp('\\{\\{\\s*' + field.replace(/[.]/g, '\\.') + '\\s*\\}\\}');
+    const m = tokRe.exec(templateHtml);
+    if (!m) return null;
+    const tokenPos = m.index;
+    const prevEnd = templateHtml.lastIndexOf('}}', tokenPos - 1);
+    let prefix = templateHtml.slice(prevEnd < 0 ? 0 : prevEnd + 2, tokenPos);
+    // The rendered doc has conditional/loop tags and any stray tokens removed —
+    // strip them from the anchor so it matches the baked HTML.
+    prefix = prefix
+      .replace(/\{if\s+[^}]+\}/gi, '').replace(/\{\/if\}/gi, '').replace(/\{else\}/gi, '')
+      .replace(/\{\{[^}]+\}\}/g, '').replace(/\{[a-z_]+\}/gi, '');
+    if (!prefix.trim()) return null;
+    // Nearest-to-token slice is the most label-bearing + least likely to overlap
+    // an unrelated hand-edit further up the doc.
+    const anchor = prefix.length > 220 ? prefix.slice(-220) : prefix;
+    const idx = html.indexOf(anchor);
+    if (idx < 0) return null;
+    if (html.indexOf(anchor, idx + 1) >= 0) return null;   // not unique — bail
+    const at = idx + anchor.length;
+    return html.slice(0, at) + newV + html.slice(at);
+  }
+
+  async function refreshDocumentFromSource(docId: number, opts: { by?: string } = {}) {
+    const { by = 'unknown' } = opts;
+    const doc = await prisma.documentRecord.findUnique({ where: { id: docId }, include: { template: true } });
+    if (!doc) throw new Error('Document not found');
+    if (doc.status !== 'ISSUED') throw new Error('Refresh from source is only for issued documents (drafts use Edit Content).');
+    const tpl = doc.template;
+    if (!tpl?.htmlTemplate || (tpl as any).staticPdfPath) {
+      throw new Error('This document is a static/uploaded PDF — there are no source fields to refresh.');
+    }
+
+    const oldTokens: Record<string, any> = (() => {
+      try { return JSON.parse(doc.sourceJson || '{}') || {}; } catch { return {}; }
+    })();
+    const { tokens: newTokens } = await resolveTokens(doc.studentId, doc.bookingId, { certAggregate: tpl.slug === 'Certificate' });
+
+    let html = doc.contentHtml || '';
+    const changed: { field: string; from: string; to: string }[] = [];
+    const skipped: { field: string; reason: string }[] = [];
+
+    // Replace longer OLD values first — a longer, more specific string is less
+    // likely to collide with an unrelated substring (e.g. replace a full name
+    // before a bare first name).
+    const keys = Object.keys(oldTokens).sort((a, b) => String(oldTokens[b] ?? '').length - String(oldTokens[a] ?? '').length);
+    for (const field of keys) {
+      // Skip document.* meta-tokens (issue_date, version, number, qr, verification_url):
+      // these are STAMPS frozen at issue time, not source fields — issue_date must
+      // never drift to "today" on a refresh, and the QR/token are re-baked elsewhere.
+      if (field.startsWith('document.')) continue;
+      const oldV = oldTokens[field];
+      const newV = newTokens[field];
+      if (oldV == null || newV == null) continue;
+      if (String(oldV) === String(newV)) continue;                 // unchanged field
+      if (String(oldV).trim() === '') {
+        // Blank at issue → nothing to find-and-replace. Try to INJECT the new
+        // value at the field's slot by anchoring on the surrounding template
+        // markup (e.g. a DOB added after the LOA was issued).
+        if (String(newV).trim() !== '') {
+          const patched = injectBlankField(field, String(newV), html, tpl.htmlTemplate);
+          if (patched) { html = patched; changed.push({ field, from: '', to: String(newV) }); continue; }
+        }
+        skipped.push({ field, reason: 'was blank at issue and no unique anchor found — use New Version to introduce it' });
+        continue;
+      }
+      if (html.includes(String(oldV))) {
+        html = html.split(String(oldV)).join(String(newV));
+        changed.push({ field, from: String(oldV), to: String(newV) });
+      } else {
+        skipped.push({ field, reason: 'old value not found in the document (it may have been hand-edited via Live Edit — left as-is)' });
+      }
+    }
+
+    // Second pass: fields present in the CURRENT source but absent from the
+    // issue-time snapshot entirely (token added to the template after issue, or
+    // never captured). Inject any that now carry a value.
+    for (const field of Object.keys(newTokens)) {
+      if (field.startsWith('document.')) continue;
+      if (Object.prototype.hasOwnProperty.call(oldTokens, field)) continue;   // handled above
+      const newV = newTokens[field];
+      if (newV == null || String(newV).trim() === '') continue;
+      const patched = injectBlankField(field, String(newV), html, tpl.htmlTemplate);
+      if (patched) { html = patched; changed.push({ field, from: '', to: String(newV) }); }
+    }
+
+    if (changed.length === 0) {
+      console.log(`[refresh-from-source] doc #${docId} by ${by} — no field values changed`);
+      return { document: doc, changed, skipped };
+    }
+
+    const prevLog = Array.isArray(doc.autoSyncLog) ? (doc.autoSyncLog as any[]) : [];
+    const entry = { at: new Date().toISOString(), action: 'refresh-from-source', by, fields: changed.map(c => c.field), skipped: skipped.map(s => s.field) };
+    const record = await prisma.documentRecord.update({
+      where: { id: docId },
+      data: {
+        contentHtml: html,
+        // Advance the baseline so a subsequent refresh diffs against these values.
+        sourceJson: JSON.stringify(newTokens),
+        lastAutoSyncAt: new Date(),
+        autoSyncLog: [...prevLog, entry] as any,
+        // NB: autoSync is deliberately left untouched — refresh preserves any
+        // Live Edit, so a pinned doc stays pinned (booking auto-sync still won't
+        // whole-doc re-render it).
+      },
+    });
+    console.log(`[refresh-from-source] doc #${docId} by ${by} — updated ${changed.map(c => c.field).join(', ')}${skipped.length ? ` (skipped ${skipped.length})` : ''}`);
+    return { document: record, changed, skipped };
   }
 
   async function issueDocument(id: number, issuedBy: string, callerRole?: string) {
@@ -520,9 +1417,9 @@ export function documentScripts(prisma: PrismaClient) {
     // LoA payment gate (same rule as draft creation). Admin override applies.
     const tpl = await prisma.documentTemplate.findUnique({
       where: { id: doc.templateId },
-      select: { slug: true },
+      select: { slug: true, requiresFullPayment: true },
     });
-    await assertLoaPaymentGate(tpl?.slug || null, doc.bookingId, callerRole);
+    await assertLoaPaymentGate(tpl, doc.bookingId, callerRole);
 
     const token = crypto.randomBytes(16).toString('base64url');
     const verificationUrl = `${BASE_URL}/sis/verify/${token}`;
@@ -532,8 +1429,17 @@ export function documentScripts(prisma: PrismaClient) {
 
     // Inject QR into content
     let finalHtml = doc.contentHtml || '';
-    finalHtml = finalHtml.replace(/\{\{document\.qr\}\}/g, `<img src="${qrDataUri}" alt="QR Verification" style="width:120px;height:120px">`);
-    finalHtml = finalHtml.replace(/\{\{document\.verification_url\}\}/g, verificationUrl);
+    const qrImg = `<img src="${qrDataUri}" alt="QR Verification" style="width:86px;height:86px">`;
+    // Idempotent injection. First issue swaps the {{document.qr}} token. A
+    // re-issued copy (createNewVersion clones the already-issued HTML) has the
+    // token already consumed and an OLD baked QR/URL from the superseded
+    // version — swap THOSE so the barcode always matches the live token.
+    finalHtml = finalHtml.includes('{{document.qr}}')
+      ? finalHtml.replace(/\{\{document\.qr\}\}/g, qrImg)
+      : finalHtml.replace(/<img[^>]*alt="QR Verification"[^>]*>/g, qrImg);
+    finalHtml = finalHtml.includes('{{document.verification_url}}')
+      ? finalHtml.replace(/\{\{document\.verification_url\}\}/g, verificationUrl)
+      : finalHtml.replace(/https?:\/\/[^\s"'<]*\/sis\/verify\/[A-Za-z0-9_-]+/g, verificationUrl);
     finalHtml = finalHtml.replace(/\{\{document\.version\}\}/g, `v${doc.versionNo}.0`);
     finalHtml = finalHtml.replace(/\{\{document\.number\}\}/g, `DOC-${new Date().getFullYear()}-${String(id).padStart(6, '0')}`);
 
@@ -580,10 +1486,141 @@ export function documentScripts(prisma: PrismaClient) {
         versionNo: original.versionNo + 1,
         supersedesId: originalId,
         status: 'DRAFT',
+        // A new version is a deliberate human intervention → pinned (no living
+        // sync). It clones the original's HTML, which auto-sync has been keeping
+        // current, so it starts from the latest dates.
+        autoSync: false,
       },
     });
 
     return newDoc;
+  }
+
+  // ── Attached (uploaded) external documents — e.g. Arachas insurance policies.
+  //    These are NOT generated: the uploaded PDF IS the document. We record them
+  //    as ISSUED DocumentRecords so they ride the existing issued-docs rails
+  //    (partner portal + student app "ULearn Documents" + admin) with zero
+  //    per-surface wiring. No QR, no payment gate (we bypass issueDocument).
+
+  // Find-or-create a lightweight template to categorise/name an attached doc.
+  async function ensureAttachTemplate(slug: string, name: string, documentType: string) {
+    const existing = await prisma.documentTemplate.findUnique({ where: { slug } });
+    if (existing) return existing;
+    return prisma.documentTemplate.create({
+      data: {
+        slug, name, documentType,
+        category: 'attachments',
+        // htmlTemplate is required by the schema but never rendered — the
+        // attachedFilePath on each record wins at PDF-fetch time.
+        htmlTemplate: `<!-- attached document: ${name}; the uploaded PDF is served directly -->`,
+        active: true,
+      },
+    });
+  }
+
+  // attachedRelPath is relative to uploads/ (e.g. "student-docs/171234.pdf").
+  async function attachExternalPdf(opts: {
+    studentId: number; bookingId?: number | null;
+    templateSlug: string; templateName: string; documentType: string;
+    attachedRelPath: string; originalName?: string; uploadedBy: string;
+  }) {
+    const tpl = await ensureAttachTemplate(opts.templateSlug, opts.templateName, opts.documentType);
+    const now = new Date();
+    const rec = await prisma.documentRecord.create({
+      data: {
+        studentId: opts.studentId,
+        bookingId: opts.bookingId ?? null,
+        templateId: tpl.id,
+        documentType: opts.documentType,
+        sourceJson: JSON.stringify({ uploadedBy: opts.uploadedBy, originalName: opts.originalName || null, attached: true }),
+        contentHtml: null,
+        attachedFilePath: opts.attachedRelPath,
+        templateVersion: tpl.version,
+        status: 'ISSUED',
+        issuedAt: now,
+        issuedBy: opts.uploadedBy,
+        lockedAt: now,
+        autoSync: false,
+      } as any,
+      select: { id: true, documentType: true, issuedAt: true },
+    });
+    return { id: rec.id, documentType: rec.documentType };
+  }
+
+  // Read an uploaded Arachas policy: parse its fields onto the student, and
+  // surface it as a ULearn Document — WITHOUT removing the original upload (it
+  // stays in the bucket too). Idempotent: re-reading the same file updates the
+  // fields but won't create a duplicate ULearn doc. `text` = the pdftotext.
+  async function fileInsurancePolicy(opts: {
+    studentId: number; bookingId?: number | null; subtype: 'medical' | 'learner_protection';
+    attachedRelPath: string; originalName?: string; uploadedBy: string; text: string;
+  }) {
+    const { INSURANCE_META, extractInsuranceFields } = await import('./insurance-classifier');
+    const meta = INSURANCE_META[opts.subtype];
+    const f = extractInsuranceFields(opts.text, opts.subtype);
+
+    const data: any = {};
+    if (opts.subtype === 'medical') {
+      if (f.policyNumber) data.medicalPolicy = f.policyNumber;
+      if (f.from) data.medicalFrom = f.from;
+      if (f.until) data.medicalUntil = f.until;
+    } else {
+      if (f.policyNumber) data.learnerProtectionPolicy = f.policyNumber;
+      if (f.from) data.insuranceFrom = f.from;
+      if (f.until) data.insuranceUntil = f.until;
+    }
+    if (Object.keys(data).length) await prisma.student.update({ where: { id: opts.studentId }, data });
+
+    let recordId: number;
+    const existing = await prisma.documentRecord.findFirst({ where: { studentId: opts.studentId, attachedFilePath: opts.attachedRelPath } as any, select: { id: true } });
+    if (existing) recordId = existing.id;
+    else {
+      const rec = await attachExternalPdf({
+        studentId: opts.studentId, bookingId: opts.bookingId ?? null,
+        templateSlug: meta.slug, templateName: meta.name, documentType: meta.documentType,
+        attachedRelPath: opts.attachedRelPath, originalName: opts.originalName, uploadedBy: opts.uploadedBy,
+      });
+      recordId = rec.id;
+    }
+    const iso = (d: Date | null) => d ? d.toISOString().slice(0, 10) : null;
+    return { subtype: opts.subtype, name: meta.name, recordId, fields: { policyNumber: f.policyNumber, from: iso(f.from), until: iso(f.until), premium: f.premium } };
+  }
+
+  // Save CONFIRMED insurance fields (from the read dialog) onto the student and
+  // surface the policy as a ULearn Document — the upload stays in the bucket.
+  // Idempotent on the doc (dedup by attachedFilePath).
+  async function saveInsurancePolicy(opts: {
+    studentId: number; bookingId?: number | null; subtype: 'medical' | 'learner_protection';
+    fields: { policyNumber?: string | null; from?: string | null; until?: string | null };
+    attachedRelPath: string; originalName?: string; uploadedBy: string;
+  }) {
+    const { INSURANCE_META } = await import('./insurance-classifier');
+    const meta = INSURANCE_META[opts.subtype];
+    const toUtc = (s?: string | null) => (s && /^\d{4}-\d{2}-\d{2}/.test(s)) ? new Date(s.slice(0, 10) + 'T00:00:00.000Z') : null;
+    const data: any = {};
+    if (opts.subtype === 'medical') {
+      data.medicalPolicy = opts.fields.policyNumber || null;
+      data.medicalFrom = toUtc(opts.fields.from);
+      data.medicalUntil = toUtc(opts.fields.until);
+    } else {
+      data.learnerProtectionPolicy = opts.fields.policyNumber || null;
+      data.insuranceFrom = toUtc(opts.fields.from);
+      data.insuranceUntil = toUtc(opts.fields.until);
+    }
+    await prisma.student.update({ where: { id: opts.studentId }, data });
+
+    let recordId: number;
+    const existing = await prisma.documentRecord.findFirst({ where: { studentId: opts.studentId, attachedFilePath: opts.attachedRelPath } as any, select: { id: true } });
+    if (existing) recordId = existing.id;
+    else {
+      const rec = await attachExternalPdf({
+        studentId: opts.studentId, bookingId: opts.bookingId ?? null,
+        templateSlug: meta.slug, templateName: meta.name, documentType: meta.documentType,
+        attachedRelPath: opts.attachedRelPath, originalName: opts.originalName, uploadedBy: opts.uploadedBy,
+      });
+      recordId = rec.id;
+    }
+    return { recordId, name: meta.name };
   }
 
   async function revokeDocument(id: number) {
@@ -609,7 +1646,17 @@ export function documentScripts(prisma: PrismaClient) {
     const booking = doc.bookingId
       ? await prisma.booking.findUnique({ where: { id: doc.bookingId }, include: { courses: true } })
       : null;
-    const course = booking?.courses?.[0];
+    // Same headline-course pick as resolveTokens — skip OTHER placeholders so
+    // a verifier doesn't see "Unknown Course" for afternoon students whose
+    // booking has an OTHER row at courses[0]. See note in resolveTokens.
+    const REAL_CATEGORIES = new Set(['MORNING','MORNING_PLUS','AFTERNOON','AFTERNOON_PLUS','INTENSIVE','PRIVATE']);
+    const realCourses = (booking?.courses || []).filter(c => REAL_CATEGORIES.has(String(c.category)));
+    const ordered = [...realCourses].sort((a, b) => {
+      const ta = a.startDate ? new Date(a.startDate).getTime() : Infinity;
+      const tb = b.startDate ? new Date(b.startDate).getTime() : Infinity;
+      return ta - tb;
+    });
+    const course = ordered[0] || booking?.courses?.[0];
 
     return {
       status: doc.status,
@@ -621,12 +1668,28 @@ export function documentScripts(prisma: PrismaClient) {
         dob: student.birthday,
         nationality: student.nationality,
       } : null,
-      booking: booking ? {
-        reference: `BK-${new Date(booking.createdAt).getFullYear()}-${String(booking.id).padStart(6, '0')}`,
-        courseName: course?.name,
-        startDate: course?.startDate,
-        endDate: course?.endDate,
-      } : null,
+      booking: booking ? (() => {
+        // Visa window = course start + 35-week AY entitlement, computed live so
+        // the QR always reflects the CURRENT booking (the source of truth). When
+        // the course start moves, the QR follows it; the printed LoA must be
+        // regenerated to match (it does not auto-follow once issued). AY →
+        // 35-week stay; manual visa dates win; short courses fall back to the
+        // course window.
+        const vw = computeVisaWindow({
+          visaFrom: (student as any)?.visaFrom,
+          visaUntil: (student as any)?.visaUntil,
+          courseName: course?.name,
+          courseStart: course?.startDate,
+          courseEnd: course?.endDate,
+        });
+        return {
+          reference: `BK-${new Date(booking.createdAt).getFullYear()}-${String(booking.id).padStart(6, '0')}`,
+          courseName: course?.name,
+          startDate: vw.start,
+          endDate:   vw.end,
+          weeks:     vw.weeks,
+        };
+      })() : null,
     };
   }
 
@@ -640,16 +1703,39 @@ export function documentScripts(prisma: PrismaClient) {
     try {
       const page = await browser.newPage();
       const inlinedHtml = inlineLocalImages(contentHtml);
+      // body padding:0 + page margin:0 = wrapper template controls all
+      // spacing. The template's HEADER constant is 210mm wide with internal
+      // padding for content; this lets the header/footer banners bleed
+      // edge-to-edge on the printed page as Neil asked (and stops the
+      // page-2 footer overflow that Paul flagged).
+      // Sticky footer: if the content carries the ULearn footer banner, lift it
+      // OUT of the flow and render it via puppeteer's repeating page-footer,
+      // pinned into a reserved bottom margin. This keeps the banner glued to the
+      // bottom edge of EVERY page (never floats up onto a near-empty page 2 when
+      // the letter runs long) — the recurring LoA "footer on page 2" bug. Docs
+      // without the banner are unaffected (margins stay 0).
+      const footerMatch = inlinedHtml.match(/<img[^>]*alt="ULearn Footer"[^>]*>/i);
+      let bodyHtml = inlinedHtml;
+      const pdfOpts: any = {
+        format: 'A4',
+        margin: { top: '0', bottom: '0', left: '0', right: '0' },
+        printBackground: true,
+      };
+      if (footerMatch) {
+        bodyHtml = inlinedHtml.replace(footerMatch[0], '');
+        // doc-footer.png is 794×66 → at 210mm wide it renders ~17.5mm tall.
+        const footerImg = footerMatch[0].replace(/width:[^;"']*/i, 'width:100%');
+        pdfOpts.displayHeaderFooter = true;
+        pdfOpts.headerTemplate = '<span></span>';
+        pdfOpts.footerTemplate = `<div style="width:100%;margin:0;padding:0;line-height:0">${footerImg}</div>`;
+        pdfOpts.margin = { top: '0', bottom: '17.5mm', left: '0', right: '0' };
+      }
       const fullHtml = `<!DOCTYPE html><html><head>
         <meta charset="UTF-8">
-        <style>body{margin:0;padding:40px;font-family:Verdana,sans-serif;font-size:14px;line-height:1.7;color:#1a1d23}img{max-width:100%}</style>
-      </head><body>${inlinedHtml}</body></html>`;
+        <style>body{margin:0;padding:0;font-family:Verdana,sans-serif;font-size:14px;line-height:1.7;color:#1a1d23}img{max-width:100%}</style>
+      </head><body>${bodyHtml}</body></html>`;
       await page.setContent(fullHtml, { waitUntil: 'networkidle0' });
-      const pdf = await page.pdf({
-        format: 'A4',
-        margin: { top: '20mm', bottom: '20mm', left: '15mm', right: '15mm' },
-        printBackground: true,
-      });
+      const pdf = await page.pdf(pdfOpts);
       return Buffer.from(pdf);
     } finally {
       await browser.close();
@@ -662,6 +1748,27 @@ export function documentScripts(prisma: PrismaClient) {
       include: { template: true },
     });
     if (!doc) throw new Error('Document not found');
+
+    // Static PDF template — read straight from disk, no render. Used for legal
+    // attachments (SLA etc.) that are byte-identical for every student.
+    const staticPath = (doc.template as any)?.staticPdfPath as string | null | undefined;
+    if (staticPath) {
+      if (!fs.existsSync(staticPath)) throw new Error(`Static PDF missing at ${staticPath}`);
+      const tplSlug = doc.template?.slug || doc.documentType || 'document';
+      return { pdf: fs.readFileSync(staticPath), filename: `${tplSlug}-${doc.id}.pdf` };
+    }
+
+    // PER-RECORD attached PDF (e.g. an uploaded Arachas insurance policy) — the
+    // record IS the uploaded file, not a generated/rendered doc. Path is stored
+    // relative to uploads/.
+    const attached = (doc as any).attachedFilePath as string | null | undefined;
+    if (attached) {
+      const abs = path.join(__dirname, '..', '..', 'uploads', attached);
+      if (!abs.startsWith(path.join(__dirname, '..', '..', 'uploads')) || !fs.existsSync(abs)) throw new Error('Attached document file missing');
+      const tplSlug = doc.template?.slug || doc.documentType || 'document';
+      return { pdf: fs.readFileSync(abs), filename: `${tplSlug}-${doc.id}.pdf` };
+    }
+
     if (!doc.contentHtml) throw new Error('Document has no content');
 
     const pdf = await generatePdf(doc.contentHtml);
@@ -681,13 +1788,233 @@ export function documentScripts(prisma: PrismaClient) {
     });
   }
 
+  // ── SEND (document as Gmail attachment) ──────────────────
+  // The full send orchestration, extracted from the POST /:id/send route so it
+  // can be invoked directly (node on the box) OR via the HTTP route — both share
+  // this one path. Regenerates the issued PDF, sends via the Gmail service
+  // account with the PDF attached, logs the dispatch + an EmailLog row.
+  //   opts.body = the (already token-rendered) cover-email HTML. The ULearn
+  //   signature + house style are appended/applied automatically — do NOT
+  //   include them in body. Throws on a missing / non-ISSUED document.
+  async function sendDocument(opts: {
+    docId: number;
+    to: string;
+    from: string;          // must be in email.ts ALLOWED_SENDERS
+    fromName?: string;
+    subject?: string;      // defaults to the template/document name
+    body?: string;         // cover-email HTML (rendered); signature auto-appended
+    sentBy?: string;
+    attach?: boolean;      // default TRUE. false = notify-only (see below)
+  }): Promise<{ status: 'sent'; messageId: string; threadId: string; filename: string }> {
+    if (!opts.to || !opts.from) throw new Error('to and from are required');
+    const doc = await getDocument(opts.docId);
+    if (!doc) throw new Error('Document not found');
+    if (doc.status !== 'ISSUED') throw new Error('Only issued documents can be sent');
+
+    // attach=false → "notify-only": the email just tells them the document is
+    // waiting in their ULearn account / Partner Portal, driving them to the
+    // portal instead of shipping the PDF around (mirrors /notify-insurance).
+    // Still logs the dispatch + EmailLog so the audit trail is identical.
+    // We skip the PDF render entirely — nothing consumes it when not attaching.
+    const attach = opts.attach !== false;
+    let pdf: Buffer | null = null;
+    let filename = '';
+    if (attach) {
+      const generated = await getDocumentPdf(opts.docId);
+      pdf = generated.pdf;
+      filename = generated.filename;
+    }
+
+    const fallbackBody = attach
+      ? '<p>Please find the attached document.</p>'
+      : '<p>A new document is available in your ULearn account.</p>';
+    const htmlBody = (opts.body || fallbackBody) + '<br>' + DOC_SIGNATURE_HTML;
+    const emailSubject = opts.subject || (doc as any).template?.name || doc.documentType || 'Document';
+
+    const result = await sendEmail({
+      from: opts.from,
+      fromName: opts.fromName || 'ULearn',
+      to: opts.to,
+      subject: emailSubject,
+      html: htmlBody,
+      ...(attach && pdf ? { attachments: [{ filename, content: pdf, contentType: 'application/pdf' }] } : {}),
+    });
+
+    await logDispatch(opts.docId, opts.to, 'email', opts.sentBy || opts.from);
+    await prisma.emailLog.create({
+      data: {
+        studentId: doc.studentId,
+        bookingId: doc.bookingId,
+        fromEmail: opts.from,
+        toEmail: opts.to,
+        subject: emailSubject,
+        bodyHtml: htmlBody,
+        gmailMessageId: result.messageId,
+        gmailThreadId: result.threadId,
+        sentBy: opts.sentBy || opts.from,
+      },
+    });
+
+    return { status: 'sent', messageId: result.messageId, threadId: result.threadId, filename };
+  }
+
+  // ── TEMPLATE VALIDATION ──────────────────────
+  // Walk a template + a specific (student, booking) pair and report which
+  // referenced tokens would resolve to empty strings. This catches the
+  // "resolved-but-blank" case that the existing generateDraft `missing`
+  // check doesn't surface (it only flags literally unresolved {{tokens}},
+  // which the resolver replaces with '' before that check runs).
+  //
+  // Returned `emptyTokens` includes a UI hint pointing staff at the form
+  // field they should populate before issuing — e.g. token
+  // `student.passport_number` maps to "Passport Number on Personal".
+  async function validateTemplate(templateId: number, studentId: number, bookingId?: number | null) {
+    const template = await prisma.documentTemplate.findUnique({ where: { id: templateId } });
+    if (!template) throw new Error('Template not found');
+
+    const { tokens, student, course } = await resolveTokens(studentId, bookingId ?? null, { certAggregate: template.slug === 'Certificate' });
+
+    // Resolve {if ...} conditionals FIRST so tokens that live inside a block
+    // which drops out for this student (e.g. the whole accommodation table when
+    // no accommodation is booked) are never reported as "missing" — they never
+    // render. Mirrors renderTemplate's {if} pass exactly.
+    const visible = template.htmlTemplate.replace(/\{if\s+([a-z0-9_.]+)\}([\s\S]*?)\{\/if\}/gi, (_m, key, content) => {
+      const k = String(key).trim();
+      const v = tokens[k] || tokens['booking.' + k] || tokens['student.' + k]
+        || tokens['accommodation.' + k] || tokens[k.replace(/^accommodation_/, 'accommodation.')] || '';
+      return v ? content : '';
+    });
+
+    const referenced = new Set<string>();
+    for (const m of visible.matchAll(/\{\{\s*([^{}]+?)\s*\}\}/g)) {
+      const k = m[1].trim();
+      if (!k) continue;
+      // custom.* are intentional editable regions; document.* are filled at
+      // issue time. Neither is a "missing data" condition for the staff to
+      // fix on the student record.
+      if (k.startsWith('custom.') || k.startsWith('document.')) continue;
+      referenced.add(k);
+    }
+
+    const emptyTokens = [];
+    for (const tok of referenced) {
+      const val = tokens[tok];
+      if (val == null || String(val).trim() === '') {
+        emptyTokens.push({ token: tok, hint: TOKEN_FIELD_HINTS[tok] || null });
+      }
+    }
+
+    // ── ILEP course-code completeness (visa / LoA templates) ─────────────────
+    // The ILEP row is wrapped in `{if booking.ilep_code}`, so a BLANK code drops
+    // out of `visible` above and the generic scan never flags it. But for an
+    // Academic Year, non-EU booking the ILEP programme code is a Department of
+    // Justice requirement on the acceptance letter — surface it explicitly and
+    // point staff at the TWO grounding fields it derives from (course Level +
+    // Course Type). The code auto-fills from those when either is set; if it's
+    // still blank the level is missing or the type isn't ILEP-listed.
+    const templateUsesIlep = /\{\{\s*booking\.ilep_code\s*\}\}/.test(template.htmlTemplate);
+    const ilepBlank = String(tokens['booking.ilep_code'] || '').trim() === '';
+    const courseName = (course as any)?.name || '';
+    const courseLevel = String((course as any)?.level || '').trim();   // the COURSE level, NOT the profile fallback
+    if (templateUsesIlep && ilepBlank
+        && isAyIlepCourse(courseName)
+        && !isNonVisaNationality((student as any)?.nationality)
+        && !referenced.has('booking.ilep_code')) {   // don't double-flag if it ever renders unconditionally
+      const derived = deriveIlepCode(courseName, courseLevel || null, (student as any)?.nationality || null);
+      let hint: string;
+      if (!courseLevel) {
+        hint = 'ILEP code auto-fills from the booking course’s Level + Course Type, but this course has no Level set. Set it on Booking → Course (use the current/renewal level — a 2nd course is usually a step up from the starting level, not the profile’s starting CEFR).';
+      } else if (derived) {
+        hint = `ILEP code is blank. For “${courseName}” at ${courseLevel} it should be ${derived} — set it on Booking → Course (it auto-fills from Level once, then it’s manual).`;
+      } else {
+        hint = 'ILEP code is blank and could not be auto-derived (course type not on the ILEP list for this level). Enter it manually on Booking → Course.';
+      }
+      emptyTokens.push({ token: 'booking.ilep_code', hint });
+    }
+
+    return {
+      templateId: template.id,
+      templateSlug: template.slug,
+      templateName: template.name,
+      referencedCount: referenced.size,
+      emptyTokens,
+    };
+  }
+
   return {
-    listTemplates, getTemplate, createTemplate, updateTemplate,
+    listTemplates, getTemplate, createTemplate, updateTemplate, deleteTemplate,
     resolveTokens, renderTemplate,
     generateDraft, getDocument, listDocuments, updateDraft,
-    issueDocument, createNewVersion, revokeDocument,
+    issueDocument, createNewVersion, revokeDocument, liveEditDocument, refreshDocumentFromSource, resetDocumentFromSource, renderIssuedDocInPlace, syncLoaToBooking, attachExternalPdf, fileInsurancePolicy, saveInsurancePolicy,
     verify,
     generatePdf, getDocumentPdf,
-    logDispatch,
+    logDispatch, sendDocument,
+    validateTemplate,
   };
 }
+
+// Token → UI-field hint, surfaced in the pre-generate validation modal so
+// staff know where to fix the missing data rather than guess. Keep this
+// flat and human-phrased; not every token needs an entry (only the ones
+// staff are likely to be looking for).
+const TOKEN_FIELD_HINTS: Record<string, string> = {
+  // Student — Personal card on Overview
+  'student.first_name':       'First Name (Student → Personal)',
+  'student.last_name':        'Last Name (Student → Personal)',
+  'student.email':            'Email (Student → Personal)',
+  'student.dob':              'Date of Birth (Student → Personal)',
+  'student.nationality':      'Nationality (Student → Personal)',
+  'student.address':          'Address (Student → Address)',
+  'student.phone':            'Phone (Student → Personal)',
+  'student.emergency_phone':  'Emergency Phone (Student → Personal)',
+  'student.current_level':    'Level (Student → Overview → Learning)',
+  'student.passport_number':  'Passport Number (Student → Visa & Flight)',
+  'student.allergies':        'Allergies (Student → Other)',
+  'student.gender':           'Gender (Student → Personal)',
+  'student.attendance_rate':  'Attendance records — none on file yet for this student',
+  'student.attendance_rate_projected': 'Projected attendance rate — assumes student attends every remaining lesson up to course end (5 lessons/week ULearn convention). Falls back to current rate when course has ended.',
+  'student.flight_number':    'Inbound Flight Number (Student → Visa & Flight)',
+  'student.flight_date':      'Inbound Flight Date (Student → Visa & Flight)',
+  'student.flight_time':      'Inbound Flight Time (Student → Visa & Flight)',
+  'student.outbound_flight_number': 'Outbound Flight Number (Student → Visa & Flight)',
+  'student.outbound_flight_date':   'Outbound Flight Date (Student → Visa & Flight)',
+  'student.outbound_flight_time':   'Outbound Flight Time (Student → Visa & Flight)',
+  'student.visa_from':        'Visa From date (Student → Visa & Flight)',
+  'student.visa_until':       'Visa Until date (Student → Visa & Flight)',
+  // Booking
+  'booking.start_date':       'Course Start Date — no booking linked, or booking has no course',
+  'booking.end_date':         'Course End Date — no booking linked, or booking has no course',
+  'booking.course_name':      'Course — no booking linked',
+  'booking.course_level':     'Course Level — set on Booking → Course',
+  'booking.hours_per_week':   'Hours per Week — set on Booking → Course',
+  'booking.weeks':            'Weeks — set on Booking → Course',
+  'booking.amount_total':     'Booking total — set on Booking → Financial',
+  'booking.amount_paid':      'Amount Paid — payments synced from Xero',
+  'booking.amount_open':      'Balance — derived from total minus paid',
+  'booking.ilep_code':        'ILEP code — only set on AY programmes (Booking → Course)',
+  'booking.gross_from_net':   'Falls back to net if HubSpot commission rate is unavailable',
+  'booking.course_fee':       'Course Fee — set on Booking → Course',
+  'booking.visa_start_date':  'Falls back to course start when visa dates are blank',
+  'booking.visa_end_date':    'Falls back to course end when visa dates are blank',
+  // Agency
+  'agency.name':              'Agency — not set on booking',
+  'agency.contact':           'Agency Contact — set on Agency record',
+  'agency.email':             'Agency Email — set on Agency record',
+  'agency.commission_rate':   'Commission Rate — sourced live from HubSpot, may be null',
+  'agency.commission_amount': 'Derived from commission rate (null when rate is null)',
+  'agency.net_amount':        'Derived from commission rate (falls back to gross when rate is null)',
+  // Accommodation
+  'accommodation.contact_name': 'Host contact name — student not yet placed (no bed assigned)',
+  'accommodation.provider_name':'Host name — student not yet placed',
+  'accommodation.address':      'Host address — student not yet placed',
+  'accommodation.phone':        'Host phone — student not yet placed',
+  'accommodation.email':        'Host email — student not yet placed',
+  'accommodation.start_date':   'Accommodation start — no accommodation booked',
+  'accommodation.end_date':     'Accommodation end — no accommodation booked',
+  'accommodation.weeks':        'Accommodation weeks — no accommodation booked',
+  'accommodation.room_type':    'Room type — set on Booking → Accommodation',
+  'accommodation.board':        'Board — set on Booking → Accommodation',
+  'accommodation.type':         'Accommodation type — set on Booking → Accommodation',
+  // Misc
+  'absences_list':            'Built only when attendance rate < 85% AND there are absences on file',
+};

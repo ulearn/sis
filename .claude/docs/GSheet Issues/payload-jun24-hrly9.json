@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• Homework section: renderSheetHtml() in src/routes/attendance.ts (lines 36-182) — no homework block implemented; new requirement pending Paul/Neil spec\n• Holiday display bug: getWeekAttendance (attendance.ts L31-184) never fetches bookingHoliday records — students on holiday appear in attendance grid with live checkboxes\n• Classes section IS holiday-aware (classes.ts L82-87 + admin.html L7365-7387) — that data does not flow to getWeekAttendance, getClassAttendance, or print routes\n• Both bugs confirmed still present (fresh code check Jun24 UTC)",
+        "Homework: get Paul/Neil layout spec then add to renderSheetHtml. Holiday: add bookingHoliday fetch to attend grid + print routes. See recipes: issue-36-attendance-homework-section.md + issue-36c-attendance-holiday-display.md",
+        "hrly Jun24: BOTH UNFIXED (fresh code check). (1) Holiday: attendance.ts getWeekAttendance L31-184 — no bookingHoliday fetch, no onHoliday flag. Classes view IS holiday-aware (classes.ts L82); Attend grid is NOT. Recipe: issue-36c-attendance-holiday-display.md. (2) Homework: renderSheetHtml still has no homework section. Awaiting Paul/Neil layout spec. Recipe: issue-36-attendance-homework-section.md.",
+        "awaiting Neil"
+      ]
+    ]
+  }
+]

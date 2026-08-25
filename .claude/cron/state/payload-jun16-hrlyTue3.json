@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• 5 students have bad mobile-number data:\n• Email address in the phone field — Dolgormaa (1897), Aki (8567)\n• Notes/annotations in the field — Jieun (1194), Lisa (5345)\n• Unicode characters — Alessandra (10343)",
+        "Clean per recipe; 2 need real# from HS/staff. see recipe: issue-5-mobile-numbers.md",
+        "Jun16 hrly(Tue): All 5 UNCHANGED. s1897 Dolgormaa phone=saraa.tpb@gmail.com (email in field). s8567 Aki phone=aki-hinaaki1116@ezudo.he.jp (email in field). s1194 Jieun=00821097366523 (home contry) (annotated). s5345 Lisa=0864645297 (Husband) (annotated). s10343 Alessandra=unicode/invisible chars in phone field. Awaiting correct numbers from staff or HubSpot.",
+        "info needed"
+      ]
+    ]
+  },
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "• Booking 1498 is CONFIRMED (status), but confirmed = false and amount paid = null\n• Document 171 is a DRAFT certificate (template 82) — 11 days stale since Jun 05\n• Booking course 1660 ended Jun 05 — cert was never issued after course ended",
+        "(NOT RUN) Issue doc171 via SIS → s947 → bk1498 → Documents → Issue. No payment gate expected. see recipe: issue-8-suvderdene-cert-dates.md",
+        "Jun16 hrly(Tue): doc171 DRAFT(tmpl82) updAt=Jun05 (11d UNCHANGED). bk1498 status=CONFIRMED confirmed=false amtPaid=null (updAt=May21). Course bc1660 ended Jun05. NEIL: SIS→s947→bk1498→Docs→Issue cert manually. If payment gate blocks: UPDATE bookings SET confirmed=true WHERE id=1498 (NOT RUN) then retry.",
+        "cert DRAFT 11d"
+      ]
+    ]
+  },
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "• Booking 1308 is CANCELLED, confirmed = false — 9 days stale since Jun 07\n• Amount paid = 1530 / 1530 (fully paid genuine enrolment)\n• Booking course 1350 (Academic Year Afternoon, May 25 – Nov 13) is ACTIVE\n• Student 766 (Ana Jessica Rosa, A2) has 0 class assignments all time\n• HubSpot contact ID = 777791875262\n• Student in school since May 25 — no confirmed booking and no class record",
+        "(NOT RUN) UPDATE bookings SET status=CONFIRMED, confirmed=true WHERE id=1308; then assign A2-AFT class to booking course 1350. See recipe: issue-17-ana-jessica-accidental-cancel.md",
+        "Jun16 hrly(Tue): CONFIRMED UNCHANGED. bk1308 CANCELLED conf=false amtPaid=1530/1530 (stale Jun07=9d). s766 A2 hsId=777791875262 visaStatus=null 0 SCAs all time. bc1350 AY-AFT May25-Nov13 ACTIVE. Student in school since May25 — no confirmed booking, no class. NEIL: URGENT — UPDATE bookings SET status=CONFIRMED,confirmed=true WHERE id=1308; assign A2-AFT class. SQL NOT RUN.",
+        "0SCA;urgent"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• Ernesto Pesoa Gil (student 14532) level = null — unknown in SIS and HubSpot (contact 3344151)\n• Booking course 24826 is a 2-week Intensive, Jun 08 – Jun 19 — ends Friday\n• Only 3 school days remain: Wed Jun 17, Thu Jun 18, Fri Jun 19\n• 9 school days missed to date (Jun08–Jun16) with zero class records\n• Booking 18034 is PARTIAL, paid 845 / 1095 (EUR 250 outstanding)\n• NOTE: column B on sheet says Ivan Rodriguez — actual student is Ernesto Pesoa Gil (s14532)",
+        "(NOT RUN) 1) Get Ernesto level from teacher before Wed 09:00; 2) INSERT 2 student class assignments (AM+PM) for booking course 24826, week start = 2026-06-17, week end = 2026-06-19. Level pairs: A2=cls8/9, B1=cls5+12/cls11, B2-C1=cls4/cls6, C1=cls13/cls14. See recipe: issue-26-intensive-class-assign-once.md",
+        "Jun16 hrly(Tue): s14532 Ernesto Pesoa Gil level=null 0SCAs ALL COURSE (fresh DB). bc24826 INTENSIVE ends Jun19 Fri=3 school days left (Wed17/Thu18/Fri19). bk18034 PARTIAL 845/1095 conf=false stale Jun07(9d). 9 school days missed. NEIL: get Ernesto level from teacher TODAY (Tue Jun16) for Wed morning class — CRITICAL, course ends Friday.",
+        "crit;3d;Fri19"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Course 24925 (Afternoon) dates fixed to Mar 09 – Sep 11 — confirmed by Neil Jun 16\n• ILEP code set to 0318/0003 on course 24925 — confirmed Jun 16\n• Booking 18151 updated Jun 16 14:47 UTC — confirmed, paid 1339.20 / 1339.20\n• Attendance count for student 1001 = 5 (student is attending B1 PM)\n• Class assignment 255 week start = Jan 12 (STILL WRONG — should be Mar 09)\n• Class assignment 255 week end = Jul 03 (STILL WRONG — should be Sep 11)",
+        "(NOT RUN) UPDATE student_class_assignments SET week_start = 2026-03-09, week_end = 2026-09-11 WHERE id = 255. See recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun16 hrly(Tue): DB VERIFIED. bc24925 startDate=Mar09 endDate=Sep11 ilepCode=0318/0003 CONFIRMED. bk18151 updatedAt=Jun16 14:47 UTC (Neil updated today). sca255 weekStart=Jan12 weekEnd=Jul03 classId=11 STILL WRONG. SQL NOT RUN: UPDATE student_class_assignments SET week_start=2026-03-09, week_end=2026-09-11 WHERE id=255.",
+        "sca fix needed"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Booking 94 is CONFIRMED (1151.50 / 1151.50) — correct booking for Giulia (student 88)\n• Class assignment 270 is ACTIVE Jun 15 – Jun 26, class 12 (B1-AM2) — Giulia is in class\n• Booking 18044 still CONFIRMED (1106.50 / 1106.50) — NOT cancelled, 9 days stale since Jun 07\n• Payment 17607 (EUR 1151.50, xeroId = null, HubSpot payment ID = 1239529228498) on booking 18044\n• Payment 17102 (EUR 1151.50, xeroId = null, no HubSpot ID) on booking 94\n• Class assignment 270 ends Jun 26 — 10 days remaining",
+        "(NOT RUN) 1) Cancel booking 18044; 2) Void payment 17607 in HubSpot (HS pmt ID 1239529228498) — pmt17607 has a HubSpot payment ID so void via HubSpot UI, not raw DELETE. See recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun16 hrly(Tue): sca270 ACTIVE Jun15-Jun26 cls12 B1-AM2 studentId=88 — Giulia in class. sca270 ends Jun26=10d remaining. bk94 CONF 1151.50 OK. bk18044 DUP still CONFIRMED 1106.50 (stale Jun07=9d). pmt17607(EUR1151.50 bk18044 HS=1239529228498 xeroId=null). NEIL: cancel bk18044 + void pmt17607 in HubSpot before Jun26. NOT RUN.",
+        "in class; dup bk"
+      ]
+    ]
+  }
+]

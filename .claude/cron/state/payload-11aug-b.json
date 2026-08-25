@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 116th check Tue 11 Aug 2026 UTC — PROGRESS: Booking Courses 25024 + 25036 now assigned (since earlier check today)\n• Eduardo Roche Diaz (student 14602, Booking Course 25043, General English PM): still 0 class assignments — course ends Fri 14 Aug (3 days left) — CRITICAL\n• Ana Luiza De Sousa (Booking Course 1313, Academic Year Afternoon): still 0 class assignments — ends Aug 28\n• Tsengelbayar Mendsaikhan (Booking Course 24970, Academic Year Afternoon): still 0 class assignments — ends Jan 29 2027\n• Cristian Ravai (Booking Course 25039, General English PM Plus): still 0 class assignments — ends Aug 28\n• Josimar Roberto (Booking Course 25024, General English PM): now assigned — 1 class assignment confirmed\n• Jorge Perez Aldana (Booking Course 25036, General English AM): now assigned — 1 class assignment confirmed",
+        "Assign Eduardo Booking Course 25043 to PM class today (ends Fri 14 Aug). Then assign Booking Courses 1313 / 24970 / 25039. See recipe: issue-38-addendum-11aug-b.md",
+        "116th Tue 11 Aug UTC. PROGRESS: Booking Courses 25024 + 25036 assigned. Eduardo (25043, ends Fri) + 1313 + 24970 + 25039 still 0 class assignments. Fix NOT RUN.",
+        "CRITICAL: Eduardo ends Fri; 4 courses still unassigned"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 61st check Tue 11 Aug 2026 UTC — 24,479 stale Booking Courses still active (unchanged)\n• Total active Booking Courses: 24,762; stale (ended before 2026-08-11): 24,479 — 98.9%\n• Current (ending 2026-08-11 or later): 283 (was 284 in earlier check today — 1 more Booking Course expired)\n• Mass deactivation not yet run",
+        "Mass-deactivate all active Booking Courses where endDate < today. See recipe: issue-45-addendum-11aug.md",
+        "61st Tue 11 Aug UTC. 24,479 stale unchanged. 283 current (down from 284). Fix NOT RUN.",
+        "24,479 stale; fix pending"
+      ]
+    ]
+  }
+]

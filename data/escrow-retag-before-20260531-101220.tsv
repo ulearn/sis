@@ -1,0 +1,58 @@
+payment	361	1708	250.00	Prior to arrival	Stripe	\N
+payment	562	1708	2290.00	Prior to arrival	TransferMate	\N
+payment	619	1738	2290.00	Prior to arrival	TransferMate	\N
+payment	620	559	4665.00	Prior to arrival	TransferMate	\N
+payment	621	1732	2920.00	Prior to arrival	TransferMate	\N
+payment	622	1295	2920.00	Prior to arrival	TransferMate	\N
+payment	624	791	3627.50	Prior to arrival	TransferMate	\N
+payment	654	1300	2940.00	Prior to arrival	TransferMate	\N
+payment	655	1299	2940.00	Prior to arrival	TransferMate	\N
+payment	693	1755	960.00	Prior to arrival	TransferMate	\N
+payment	729	790	1065.00	Prior to arrival	TransferMate	\N
+payment	730	790	2782.50	Prior to arrival	TransferMate	\N
+payment	824	790	1000.00	Prior to arrival	TransferMate	\N
+payment	841	1316	2950.00	Prior to arrival	TransferMate	\N
+payment	842	1317	2950.00	Prior to arrival	TransferMate	\N
+payment	852	1770	608.00	Prior to arrival	TransferMate	\N
+payment	898	1769	747.50	Prior to arrival	TransferMate	\N
+payment	17095	1598	900.00	\N	Bank Transfer	\N
+payment	17096	1598	706.50	\N	Bank Transfer	\N
+payment	17099	1597	1606.50	\N	Bank Transfer	\N
+payment	17349	1420	2625.00	\N	TransferMate	\N
+payment	17374	1300	2940.00	\N	TransferMate Escrow	\N
+payment	17379	17876	2313.62	Standard	TransferMate	\N
+payment	17233	17876	2313.62	Escrow	TransferMate Escrow	\N
+booking	1598	757	\N	\N	\N	CONFIRMED
+booking	1597	758	\N	\N	\N	CONFIRMED
+booking	17876	14478	\N	\N	\N	CANCELLED
+booking	1708	1137	\N	\N	\N	CONFIRMED
+booking	1755	1178	\N	\N	\N	CONFIRMED
+booking	1769	1190	\N	\N	\N	CONFIRMED
+booking	1770	1191	\N	\N	\N	CONFIRMED
+booking	559	355	\N	\N	\N	CONFIRMED
+booking	1316	774	\N	\N	\N	CONFIRMED
+booking	1317	775	\N	\N	\N	CONFIRMED
+booking	1295	753	\N	\N	\N	CONFIRMED
+booking	1299	757	\N	\N	\N	CONFIRMED
+booking	1732	1156	\N	\N	\N	CONFIRMED
+booking	1738	1162	\N	\N	\N	CONFIRMED
+booking	1300	758	\N	\N	\N	CONFIRMED
+booking	790	400	\N	\N	\N	CONFIRMED
+booking	791	401	\N	\N	\N	CONFIRMED
+booking	1420	872	\N	\N	\N	CONFIRMED
+student-visa	401	\N	\N	\N	\N	\N
+student-visa	355	\N	\N	\N	\N	\N
+student-visa	1137	\N	\N	\N	\N	\N
+student-visa	1178	\N	\N	\N	\N	\N
+student-visa	1162	\N	\N	\N	\N	\N
+student-visa	1190	\N	\N	\N	\N	\N
+student-visa	1191	\N	\N	\N	\N	\N
+student-visa	774	\N	\N	\N	\N	\N
+student-visa	757	\N	\N	\N	\N	\N
+student-visa	775	\N	\N	\N	\N	\N
+student-visa	872	\N	\N	\N	\N	\N
+student-visa	400	\N	\N	\N	\N	\N
+student-visa	1156	\N	\N	\N	\N	\N
+student-visa	753	\N	\N	\N	\N	\N
+student-visa	758	\N	\N	\N	\N	\N
+student-visa	14478	\N	\N	\N	\N	Approved

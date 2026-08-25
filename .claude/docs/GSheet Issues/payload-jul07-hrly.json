@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payment 16988 (EUR 339.90, HubSpot 1204827374829): booking ID = STILL null, Xero payment ID = null — orphaned since 28 April 2026\n• Payment 16989 (EUR 339.90, HubSpot 1204846469317): booking ID = STILL null, Xero payment ID = null — orphaned since 28 April 2026\n• Booking 17856 (Margherita Galbusera, student 14461): Confirmed, confirmed = false, EUR 339.90 / 339.90\n• Booking 17857 (Francesca Fassina, student 14462): Confirmed, confirmed = false, EUR 339.90 / 339.90\n• Booking courses 24630 and 24631 (General English AM Plus, 29 Jun – 10 Jul 2026): fee = null, active = true\n• Course ends Friday 10 July 2026 — 3 school days remain (Wed 8, Thu 9, Fri 10)\n• Root cause: webhook missed setting booking ID at payment creation 28 April 2026",
+        "Run 4-step SQL: (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) UPDATE booking_courses SET fee=339.9 WHERE id IN(24630,24631); (4) UPDATE bookings SET confirmed=true WHERE id IN(17856,17857)",
+        "261st check 7 Jul UTC. ALL STILL UNCHANGED. Pmts 16988+16989 bookingId=null xeroPaymentId=null EUR 339.90 ea. Bks 17856+17857 CONF confirmed=false EUR 339.90/339.90. BCs 24630+24631 GE-AM-Plus ends Jul10 fee=null. COURSE ENDS FRI JUL10 = 3 SCHOOL DAYS (Wed 8, Thu 9, Fri 10). SQL NOT RUN 261 checks. NEIL: RUN 4-STEP SQL NOW — last window before course ends Friday.",
+        "URGENT; Fri Jul10"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Class assignment 255 (student 1001 Saikhantes Shagdarsuren, class 11 B1 Afternoon): week_end = 3 July 2026 — expired 4 days ago, student invisible to class scheduling\n• Booking course 24925 (Academic Year Afternoon, 9 Mar – 2 Oct 2026): active, fee EUR 1102.20\n• Booking 18151: Confirmed, confirmed = true, EUR 1339.20 / 1339.20 fully paid\n• School days missed: Mon 6 July (Day 1) and Tue 7 July (Day 2 — today)\n• Fix: UPDATE student_class_assignments SET week_end = '2026-10-02' WHERE id = 255 (NOT YET RUN)",
+        "Extend class assignment 255 week_end to 2026-10-02 via SIS admin student 1001 Classes, or run: UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255",
+        "147th check 7 Jul UTC. UNCHANGED. SCA255 weekEnd=Jul03 EXPIRED 4d. BC24925 AY-Aft Mar09-Oct02 active=true fee=1102.2. BK18151 CONF EUR1339.2/1339.2 confirmed=true. Student missed Mon Jul6+Tue Jul7=2 school days. NEIL: UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255 URGENTLY TODAY.",
+        "URGENT; Day1+2 missed"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 (Edith Nunes, student 1015): Confirmed, fully paid EUR 740\n• Booking course 24933 (General English AM, 15 Jun – 10 Jul 2026): active, fee EUR 380 — zero class assignments\n• Booking course 24934 (General English AM, 15 Jun – 10 Jul 2026): active, fee EUR 360 — DUPLICATE booking course, zero class assignments\n• Payment 17895 (EUR 740, HubSpot 1254474444002): Xero payment ID = null — not yet reconciled in Xero\n• Student 1015 last class assignment expired 15 May — 53 days ago\n• Course ends Friday 10 July — 3 school days remain (Wed 8, Thu 9, Fri 10)\n• Root cause: duplicate booking course created by webhook double-insert; no class assignment added to either",
+        "(1) Deactivate booking course 24934 (duplicate); (2) assign student 1015 to class 7 A1-AM on booking course 24933 via SIS admin",
+        "113th check 7 Jul UTC. UNCHANGED. BK18158 CONF EUR740/740 confirmed=true. BC24933 GE-AM Jun15-Jul10 fee=380 active 0SCAs. BC24934 DUP GE-AM Jun15-Jul10 fee=360 STILL active. sca48 expired Apr17, sca146 expired May15. COURSE ENDS FRI JUL10=3 DAYS. NEIL: (1) deact bc24934; (2) assign s1015 to class 7 A1-AM on bc24933 TODAY.",
+        "URGENT; Fri10; 0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Accommodation 11358 (bed 180, Host Family, 12 Jul – 2 Aug 2026): active, claim status = null, fee = EUR 900 — check-in this Sunday 12 July (5 days)\n• Booking 17831 (Xuezhen Huang, student 14443): status = Partial, confirmed = false, amount paid = EUR 965 / total = EUR 1396.90\n• Payment 17180 (EUR 431.90, TransferMate Escrow, 27 Apr 2026, source = Fidelo): no Xero ID, no HubSpot payment ID — NOT counted in amount paid; 71 days unreleased\n• Payment 17963 (EUR 965.00, Bank, 1 Jul 2026, HubSpot 1273784562922): no Xero ID — IS counted in amount paid\n• Both payments together total EUR 1396.90 = booking total — student is fully paid; booking shows Partial only because Fidelo payment 17180 has no HubSpot payment ID and is excluded from amount paid calculation",
+        "Reconcile payment 17180 (EUR 431.90 Escrow) + payment 17963 (EUR 965 Bank) in Xero; then confirm booking 17831 before Sunday 12 July",
+        "77th check 7 Jul UTC. UNCHANGED. BA11358 bed180 Jul12-Aug2 claimStatus=STILL null fee=EUR900 (updAt=Jun26). BK17831 PARTIAL EUR965/1396.9 confirmed=false (updAt=Jul02). Pmt17180 EUR431.9 Escrow type=null xeroId=null hsId=null (May05 Fidelo). Pmt17963 EUR965 Bank type=null xeroId=null hsId=1273784562922 (Jul02). CHECK-IN SUN JUL12=5 DAYS. NEIL: reconcile Escrow+Bank pmts in Xero; confirm bk17831 before Sunday.",
+        "URGENT; Sun Jul12"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• All 6 students still have zero valid class assignments — 83 hourly checks, zero action taken\n• Pietro Colombo (student 72, booking course 81, Morning General Plus, 6–24 Jul): zero assignments ever — 2 school days missed (Mon 6, Tue 7 Jul); booking 78 CONFIRMED EUR 1880/1880\n• Tuguldurtugs Enkhtugs (student 858, booking course 1786, AY Renewal Morning, 6 Jul – 25 Dec): old assignment 55 expired 1 May; booking 1601 EUR 1356.50/1606.50 (EUR 250 outstanding)\n• Verónica Martín (student 278, booking course 24931, General English AM, 6–10 Jul): zero assignments — ENDS FRIDAY 10 JULY (3 school days left); booking 18156 CONFIRMED EUR 573.20/573.20\n• Sarah Venturini Talizin (student 1055, booking course 24945, General English AM, 6–31 Jul): zero assignments; booking 18169 CONFIRMED EUR 611/611\n• Yuxi Ke (student 14577, booking course 24965, General English PM, 6 Jul – 21 Aug): zero assignments; booking 18189 CONFIRMED EUR 792.56/792.56\n• Ettore Iovinella (student 14564, booking course 24968, General English AM Plus, 6–13 Jul): assignment 281 on expired booking course 24941 (ended 3 Jul, still active = true); zero assignment for current booking course 24968; booking 18191 CONFIRMED EUR 190.63/190.63\n• Booking course 24941 (Ettore old course, ended 3 Jul 2026): still active = true — deactivate after assigning Ettore to booking course 24968",
+        "Assign 6 students to appropriate classes via SIS admin; deactivate booking course 24941 (Ettore old course, ended 3 Jul, still active)",
+        "83rd check 7 Jul UTC. ALL 6 CONFIRMED 0 VALID SCAs. Pietro s72/bc81 Jul6-24 0SCAs EVER bk78 CONF EUR1880 Day1+2 missed. Tug s858/bc1786 Jul6-Dec25 SCA55 expired May1 (bc1521). Veronica s278/bc24931 ENDS FRI JUL10=3 DAYS 0SCAs. Sarah s1055/bc24945 Jul6-31 0SCAs. Yuxi s14577/bc24965 Jul6-Aug21 0SCAs. Ettore s14564 SCA281 on bc24941 (expired Jul3 STILL active=true), bc24968 Jul6-13 0SCAs. NEIL: ASSIGN ALL 6 + deact bc24941 URGENTLY TODAY.",
+        "ALL 6; URGENT TODAY"
+      ]
+    ]
+  },
+  {
+    "range": "H48:K48",
+    "values": [
+      [
+        "• 13th check, 7 July 2026 UTC — fix not applied; A1 attendance sheets still printing ULearn ADoS as teacher\n• Class 7 (A1) has two class_teacher records both with end_date = null (duplicate active teachers)\n• Record 34: Dave Booth (teacher 4), assigned 8 June 2026, end_date = null — correct current teacher\n• Record 46: ADoS (teacher 3), assigned 25 June 2026, end_date = STILL null — should be closed 27 June 2026\n• Root cause: when ADoS cover was entered, end_date was not set; ADoS remains active alongside Dave Booth",
+        "Set end_date=2026-06-27 on class_teacher id=46 to close overlap. See recipe: issue-46-a1-teacher-ados.md",
+        "13th check 7 Jul UTC. UNCHANGED. CT id=34 Dave Booth (teacher4) Jun08 end=null (correct). CT id=46 ADoS (teacher3) Jun25 end=STILL null (OVERLAP — 12d unresolved). CT id=50 Margaret (teacher17) May25-Jun05 end=Jun05 (closed, correct). NEIL: UPDATE class_teachers SET end_date='2026-06-27' WHERE id=46.",
+        "dup teacher record"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 291st check Sat 22 Aug 2026 UTC — no change since 290th\n• Payment 16988: EUR 339.90, 28 Apr 2026, booking_id = null (orphan), xero_payment_id = null\n• Payment 16989: EUR 339.90, 28 Apr 2026, booking_id = null (orphan), xero_payment_id = null\n• Booking 17856 (Margherita Galbusera): CONFIRMED, confirmed = false, amountPaid = EUR 339.90 — zero Payment records linked\n• Booking 17857 (Francesca Fassina): CONFIRMED, confirmed = false, amountPaid = EUR 339.90 — zero Payment records linked\n• Booking Courses 24630 + 24631 (General English AM Plus): ended 10 Jul 2026, active = true — 43 days stale\n• Fix NOT RUN",
+        "Link Payment 16989 to Booking 17856, Payment 16988 to Booking 17857; deactivate BCs 24630+24631. Recipe: issue-1-addendum-22aug.md",
+        "291st Sat 22 Aug UTC. No change. Booking Courses now 43 days stale. Fix NOT RUN.",
+        "orphan pmts; BCs stale"
+      ]
+    ]
+  },
+  {
+    "range": "H8:K8",
+    "values": [
+      [
+        "• 53rd check Sat 22 Aug 2026 UTC — no change since 52nd\n• Booking 17909: status = CANCELLED, confirmed = true (anomaly persists)\n• Amount paid = EUR 0, amount open = EUR 727.50 — 0 payments linked\n• Booking Course 24693 (Renewal – Academic Year PM): active = true, ends 13 Nov 2026, linked to CANCELLED booking 17909, 0 class assignments\n• Booking last updated 17 Jun 2026 (66 days ago)\n• Fix NOT RUN",
+        "Set booking 17909 confirmed = false; deactivate Booking Course 24693. See recipe: issue-7-addendum-22aug.md",
+        "53rd Sat 22 Aug UTC. Unchanged 66d. Fix NOT RUN.",
+        "bk17909 anomaly"
+      ]
+    ]
+  },
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• 192nd check Sat 22 Aug 2026 UTC — no change since 191st\n• Student Class Assignment 288: student 14444 (Rakan Alghamdi), booking course = 24697 (wrong course)\n• Booking Course 24697 (Academic Year Morning): active = true, ended 31 Jul 2026 — 22 days stale, 1 class assignment still linked\n• Booking Course 25035 (General English Academic Year AM Plus): active = true, starts 3 Aug 2026, ends 8 Jan 2027 — 0 class assignments, 19 days elapsed\n• Fix NOT RUN",
+        "Move class assignment 288 to Booking Course 25035; deactivate Booking Course 24697. See recipe: issue-12-addendum-22aug.md",
+        "192nd Sat 22 Aug UTC. Fresh check confirms: SCA 288 on BC 24697 (ended Jul 31, 22d stale, 1 SCA). BC 25035: 0 SCAs, 19d elapsed. Fix NOT RUN.",
+        "SCA wrong BC; 0 SCAs"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• 74th check Sat 22 Aug 2026 UTC — no change since 73rd\n• Booking Course 23 (Intensive General 30, booking 22): active = true, ended 22 May 2026 — 92 days stale, 2 class assignments still linked\n• Booking Course 24826: active = true, ended 19 Jun 2026 — 64 days stale, 0 class assignments\n• Booking 18034: PARTIAL, confirmed = false, amount paid = EUR 845, amount open = EUR 250\n• Payment 17683: EUR 845, 23 Apr 2026, Xero payment ID = null — 121 days unreconciled\n• Fix NOT RUN",
+        "Deactivate Booking Courses 23 + 24826; reconcile Payment 17683 in Xero; resolve EUR 250 open balance. See recipe: issue-26-addendum-22aug.md",
+        "74th Sat 22 Aug UTC. Booking Course 23: 92d stale (2 SCAs). Booking Course 24826: 64d stale. Payment 17683: 121d Xero null. EUR 250 open. Fix NOT RUN.",
+        "stale BCs; pmt unreconciled"
+      ]
+    ]
+  },
+  {
+    "range": "H29:K29",
+    "values": [
+      [
+        "• 62nd check Sat 22 Aug 2026 UTC — no change since 61st\n• Booking 17850 (Paola Sthefane Moreira): CONFIRMED, confirmed = false — anomaly persists\n• Amount paid = null, amount open = EUR 321.35\n• Payment 17519: EUR 321.35, 7 May 2026, Xero payment ID = null — 107 days unreconciled\n• Booking Course 24624 (Morning General): active = true, ended 5 Jun 2026 — 78 days stale, 0 class assignments\n• Fix NOT RUN",
+        "Set booking 17850 confirmed = true + amount paid = EUR 321.35; deactivate Booking Course 24624; reconcile Payment 17519 in Xero. See recipe: issue-28-addendum-22aug.md",
+        "62nd Sat 22 Aug UTC. Booking Course 24624: 78d stale, 0 assignments. Payment 17519: 107d Xero null. confirmed = false. Fix NOT RUN.",
+        "bk confirmed=false; stale"
+      ]
+    ]
+  },
+  {
+    "range": "H54:K54",
+    "values": [
+      [
+        "• 3rd check Sat 22 Aug 2026 UTC — no change since 2nd check today\n• Booking Accommodation 11399: fee = null, starts 4 Oct 2026, ends 19 Dec 2026, active = true, booking 17843\n• Booking Accommodation 11267 (Fanny Scelles, student 14451): fee = EUR 3,840, 29 Aug to 4 Oct 2026 — arrives in 7 days\n• Admin comms To: field: no host email auto-populate for host booking templates\n• Fix NOT RUN",
+        "Set fee on Booking Accommodation 11399 before Oct 4; add host email auto-populate to admin.html comms To: field. See recipe: issue-52-addendum-22aug.md",
+        "3rd Sat 22 Aug. Accommodation 11399 fee null (Oct 4, 43d). Fanny arrives Aug 29 (7d). Fix NOT RUN.",
+        "BA11399 fee null; 7d"
+      ]
+    ]
+  }
+]

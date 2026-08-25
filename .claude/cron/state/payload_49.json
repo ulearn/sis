@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H51:K51",
+    "values": [
+      [
+        "• Student 14547 (Elena Saduchina): 3 Instagram videos linked today 31 Jul 2026 at 09:41 UTC\n• 14-day window starts from createdAt (link-submit date), not Instagram post date\n• All 3 content records (IDs 18, 19, 20) have dueAt = 2026-08-14 → screenshot blocked\n• Content 18 (DaymvTTM4eJ): actually posted 2026-07-14 → real window ended 2026-07-28 (past)\n• Content 19 (Da595bBuc7A): actually posted 2026-07-17 → real window ends 2026-07-31 (today)\n• Content 20 (DbESN2POSOD): actually posted 2026-07-21 → real window ends 2026-08-04 (4 days)",
+        "Backdate created_at on content IDs 18+19+20 to actual post dates; see recipe: issue-49-elena-challenge-14day-window.md",
+        "3 SQL UPDATEs on student_challenge_content. Long-term fix: add posted_at column + decode shortcode on URL submit (see recipe). Fix NOT RUN.",
+        ""
+      ]
+    ]
+  }
+]

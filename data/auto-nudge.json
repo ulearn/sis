@@ -1,0 +1,187 @@
+{
+  "waves": [
+    {
+      "id": "b1w1",
+      "batch": 1,
+      "batchName": "GV Completed",
+      "wave": 1,
+      "gv": [
+        "complete"
+      ],
+      "level": [],
+      "firstDibs": true,
+      "preMatch": true,
+      "includeUnset": false,
+      "onlyUnset": false,
+      "template": "standard",
+      "day": "Mon",
+      "time": "08:00",
+      "enabled": true,
+      "note": "First Dibs — flagged hosts (missed out last cycle, self-serve/manual), front of the queue",
+      "lastFired": "2026-08-24"
+    },
+    {
+      "id": "b1w2",
+      "batch": 1,
+      "batchName": "GV Completed",
+      "wave": 2,
+      "gv": [
+        "complete"
+      ],
+      "level": [
+        "Sleeper"
+      ],
+      "preMatch": true,
+      "includeUnset": false,
+      "onlyUnset": false,
+      "template": "standard",
+      "day": "Mon",
+      "time": "12:00",
+      "enabled": true,
+      "note": "Dormant — re-engage",
+      "lastFired": "2026-08-24"
+    },
+    {
+      "id": "b1w3",
+      "batch": 1,
+      "batchName": "GV Completed",
+      "wave": 3,
+      "gv": [
+        "complete"
+      ],
+      "level": [
+        "Regular"
+      ],
+      "preMatch": true,
+      "includeUnset": false,
+      "onlyUnset": false,
+      "template": "standard",
+      "day": "Mon",
+      "time": "15:00",
+      "enabled": true,
+      "note": "",
+      "lastFired": "2026-08-24"
+    },
+    {
+      "id": "b1w4",
+      "batch": 1,
+      "batchName": "GV Completed",
+      "wave": 4,
+      "gv": [
+        "complete"
+      ],
+      "level": [
+        "BusyBee",
+        "SuperHost"
+      ],
+      "preMatch": true,
+      "includeUnset": false,
+      "onlyUnset": false,
+      "template": "standard",
+      "day": "Mon",
+      "time": "18:00",
+      "enabled": true,
+      "note": "Most active — reliable",
+      "lastFired": "2026-08-24"
+    },
+    {
+      "id": "b2w1",
+      "batch": 2,
+      "batchName": "GV In-Progress",
+      "wave": 1,
+      "gv": [
+        "form"
+      ],
+      "level": [],
+      "preMatch": true,
+      "includeUnset": false,
+      "onlyUnset": false,
+      "template": "gv-reminder",
+      "day": "Tue",
+      "time": "08:00",
+      "enabled": true,
+      "note": "Form done, not uploaded — nudge to upload signed form",
+      "lastFired": "2026-08-25"
+    },
+    {
+      "id": "b2w2",
+      "batch": 2,
+      "batchName": "GV In-Progress",
+      "wave": 2,
+      "gv": [
+        "upload"
+      ],
+      "level": [],
+      "preMatch": true,
+      "includeUnset": false,
+      "onlyUnset": false,
+      "template": "standard",
+      "day": "Tue",
+      "time": "12:00",
+      "enabled": true,
+      "note": "Uploaded w/ signature — ball in our court, no GV nag",
+      "lastFired": "2026-08-18"
+    },
+    {
+      "id": "b3w1",
+      "batch": 3,
+      "batchName": "No GV",
+      "wave": 1,
+      "gv": [
+        "none"
+      ],
+      "level": [],
+      "preMatch": true,
+      "includeUnset": false,
+      "onlyUnset": false,
+      "template": "gv-reminder",
+      "day": "Tue",
+      "time": "15:00",
+      "enabled": true,
+      "note": "Not vetted",
+      "lastFired": "2026-08-18"
+    },
+    {
+      "id": "b4w1",
+      "batch": 4,
+      "batchName": "Catch-all (no attribute data)",
+      "wave": 1,
+      "gv": [
+        "complete",
+        "upload"
+      ],
+      "level": [],
+      "preMatch": false,
+      "includeUnset": false,
+      "onlyUnset": true,
+      "template": "standard",
+      "day": "Wed",
+      "time": "08:00",
+      "enabled": true,
+      "note": "Vetting done on their end — attributes unknown",
+      "lastFired": "2026-08-19"
+    },
+    {
+      "id": "b4w2",
+      "batch": 4,
+      "batchName": "Catch-all (no attribute data)",
+      "wave": 2,
+      "gv": [
+        "none",
+        "form"
+      ],
+      "level": [],
+      "preMatch": false,
+      "includeUnset": false,
+      "onlyUnset": true,
+      "template": "gv-reminder",
+      "day": "Wed",
+      "time": "12:00",
+      "enabled": true,
+      "note": "Vetting not done — attributes unknown",
+      "lastFired": "2026-08-19"
+    }
+  ],
+  "armed": true,
+  "lastSentAt": "2026-08-12T09:56:09.687Z"
+}

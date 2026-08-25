@@ -1,0 +1,21 @@
+[
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• No booking_accommodation record exists for booking 17831 (student 14443 Xuezhen Huang)\n• Booking 17831 is CONFIRMED, paid EUR 431.9 / 431.9 (updatedAt Jun 04)\n• Course bc24609 Morning General Jul 13 to Jul 31, fee = EUR 570, active = true\n• Payment pmt17180 EUR 431.9 no HubSpot payment ID no Xero ID\n• HubSpot deal 498502900972 (Hazel - 3 w Morning General 15) amount EUR 431.9, stage = contractsent (not WON)\n• No accommodation properties in HubSpot -- accommodation record never created in SIS",
+        "Clarify if ULearn-arranged or agency-direct; if ULearn: SIS s14443 bk17831 Accomm tab -> Add (Host Family Jul12-Aug2 3wks, confirm fee). See recipe: issue-39-xuezhen-huang-accomm-missing.md",
+        "hrly Jun25 UTC (new row): bk17831 CONF amtPaid=431.9/431.9 (Jun04). bc24609 Jul13-Jul31 fee=570. pmt17180 EUR431.9 xeroId=null hsId=null. 0 accomm records for bk17831/s14443. HS deal 498502900972 contractsent EUR431.9 no accomm props. Jul12=17d. Neil: (1) confirm ULearn or agency-direct? (2) if ULearn: SIS bk17831 Accomm tab -> Add HF Jul12-Aug2 3wks; (3) reconcile pmt17180 in Xero.",
+        "accomm missing; Jul12=17d"
+      ]
+    ]
+  },
+  {
+    "range": "J46:J46",
+    "values": [
+      [
+        "hrly Jun25 UTC: G updated with Neil annotations (-- ADDING TO HOLS + auto-end note). Code check: holiday modal L5911-5915 STILL holStart+holEnd only -- no weeks field, no calcHolEnd(). Course weeks+end already works. Monday-snap absent in admin (student portal has it). H/I remain accurate."
+      ]
+    ]
+  }
+]

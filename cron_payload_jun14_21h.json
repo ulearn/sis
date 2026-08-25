@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H32:K32",
+    "values": [
+      [
+        "TZ NOT SET .env. 43 SCAs week_end=null. Att sheet date bug active.",
+        "FIX1(NOT RUN): echo TZ=UTC >> .env && touch tmp/restart.txt. FIX2(NOT RUN): UPDATE student_class_assignments SET week_end=(SELECT end_date FROM booking_courses WHERE id=booking_course_id) WHERE week_end IS NULL; see recipe: issue-31-attendance-sheet-week-bug.md",
+        "Jun14-UTC ~21h hrly: TZ=0(grep confirmed). 43 SCA null(34 active). SchoolOpen Mon~07:30UTC(~8.5h). Att WILL show SunJun14+9ghosts(IDs:39/40/65/66/74/75/81/87/100 bc_end<=Jun12). BOTH FIXES NOT RUN. NEIL: apply BOTH before 07:30 Mon.",
+        "APPLY NOW"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "s14532 Ernesto 0SCA ENTIRE COURSE. bc24826 INTENSIVE Jun08-Jun19. bk18034 PARTIAL 845/1095 conf=false.",
+        "(NOT RUN) ask teacher Ernesto level; INSERT 2 SCAs AM+PM bc24826 wkStart=Jun15 wkEnd=Jun19. see recipe: issue-26-intensive-class-assign-once.md",
+        "Jun14-UTC ~21h hrly: WK2 starts~8.5h. s14532 Ernesto currentLevel=null 0SCAs(DB confirmed). bc24826 ends Jun19(5d). bk18034 PARTIAL 845/1095 conf=false. SQL NOT RUN. NEIL: get level from teacher FIRST THING Mon08:00 then INSERT AM+PM SCAs.",
+        "WK2 urgent"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "bk18158 PEND 0/740 bc24933+bc24934(DUP) GE-AM Jun15-Jul10. bk18131(CONF 1185)+bk18133(CONF 648) NOT cancelled. NOTE: s1015 2 SCAs are OLD(bk1567 Apr-May) NOT new course. 0 pmts bk18158.",
+        "(NOT RUN) CANCEL bk18131+18133; DEL bc24934; collect EUR740 bk18158; assign cls7 bc24933. DO NOT touch pmt17728. see recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun14-UTC ~21h hrly: COURSE STARTS ~8.5h(Jun15). bk18158 PEND 0/740(updAt=Jun11). CORRECTION: sca48+sca146 belong to OLD bk1567(ended Apr-May) NOT new bc24933. 0 pmts on bk18158. bk18131 CONF 1185+bk18133 CONF 648 NOT cancelled. ALL 4 STEPS NOT RUN.",
+        "starts 8h 0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "s88 Giulia JUNIOR 0SCA. bk94 CONF 1151.5 c104 MORN-GEN-PLUS Jun15-Jun26. bk18044 DUP CONF 1106.5 NOT cancelled. bk18152 Milena PEND.",
+        "(1)get level; (2)assign SCA cls[?] bk94/c104 ws=Jun15 we=Jun26; (3)CANCEL bk18044+DEL pmt17607(dbl-import Mar13 xeroId=null); (4)CANCEL bk18152+del s14557 Milena. see recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun14-UTC ~21h hrly: COURSE DAY1 ~8.5h(Jun15). s88 Giulia 0SCAs(DB confirmed). bk94 CONF 1151.5/1151.5. bc104 MornGenPlus Jun15-26. bk18044 DUP CONF 1106.5 NOT cancelled. bk18152 Milena PEND. ALL 4 STEPS NOT RUN. NEIL: get Giulia level then assign cls ASAP.",
+        "starts 8h 0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "Pmts unlinked(not spurious): pmt16988->bk17856 Margherita, pmt16989->bk17857 Francesca",
+        "UPDATE payments SET booking_id=17856 WHERE id=16988; UPDATE payments SET booking_id=17857 WHERE id=16989. see recipe: issue-1-orphan-payments.md",
+        "Jun14-UTC ~21h hrly: pmt16988(EUR339.90 hsId:1204827374829 bk_id=null)+pmt16989(EUR339.90 hsId:1204846469317 bk_id=null) UNCHANGED. bk17856 Margherita CONF 339.9/339.9(0 linked pmts). bk17857 Francesca CONF 339.9/339.9(0 linked pmts). Note: both bks confirmed=false(anomaly). 14d to Jun29. SQL NOT RUN.",
+        "14d to Jun29"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "bk1605 PENDING 0/1509 D74. HS deal 502951083215 B2B-Sales ENROLMENT not WON.",
+        "Move HS deal 502951083215 to WON stage to trigger webhook. see recipe: issue-20-ariunsarnai-payment-due.md",
+        "Jun14-UTC ~21h hrly: bk1605 PEND 0/1509 conf=false updAt=Jun11(stale 3d). HS deal 502951083215 ENROLMENT stage(not WON). NEIL: contact student/agent re EUR1509 or cancel booking.",
+        "D74 stale 3d"
+      ]
+    ]
+  }
+]

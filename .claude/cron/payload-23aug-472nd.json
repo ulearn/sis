@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 472nd check Sun 23 Aug 2026 UTC — no change since 471st\n• Booking Holiday 2500 (booking 18151): ended 21 Aug 2026 — student back 2 days\n• Student Class Assignment 255: class 11 (B1 PM), Booking Course 24925, week_end = 3 Jul 2026 (expired 51 days ago)\n• No class assignment covers today (23 Aug) or Monday 24 Aug\n• Booking Course 24925 (Academic Year Afternoon): active, ends 2 Oct 2026\n• FIX NOT RUN — TOMORROW is the return date (Mon 24 Aug)",
+        "Create SCA: student 1001, class 11, BC 24925, from 24 Aug. See recipe: issue-15-addendum-23aug-d.md",
+        "472nd Sun 23 Aug UTC. SCA 255 expired 51d. Holiday ended 21 Aug. No SCA on BC 24925. Mon 24 = TOMORROW. Fix NOT RUN.",
+        "URGENT: Mon24 = TOMORROW"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• 472nd check Sun 23 Aug 2026 UTC — duplicate of Issue 15 (row 16)\n• Holiday 2500 ended 21 Aug 2026 — student back 2 days, no class assignment\n• Student Class Assignment 255: week_end = 3 Jul 2026 (expired 51 days ago)\n• No class assignment on Booking Course 24925 from 22 Aug onwards\n• FIX NOT RUN — Mon 24 = TOMORROW",
+        "See Issue 15 (row 16) and recipe: issue-15-addendum-23aug-d.md",
+        "472nd Sun 23 Aug UTC. No change. Mon 24 = TOMORROW. Dup of issue 15. Fix NOT RUN.",
+        "URGENT: Mon24 = TOMORROW"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• 472nd check Sun 23 Aug 2026 UTC — 7 DAYS to Aug 30 deadline\n• 5 stale Booking Accommodations on bed 83, all active = true:\n  Booking Accommodation 11239 (Ivan Rodriguez, 3 May to 24 May 2026): 91 days stale, fee EUR 1,050\n  Booking Accommodation 11168 (Diego Da Silva, 6 Jun to 20 Jun 2026): 64 days stale, fee EUR 700\n  Booking Accommodation 11285 (Jesus Manuel Ramirez, 21 Jun to 5 Jul 2026): 49 days stale, fee null\n  Booking Accommodation 11352 (Veronica Martin, 4 Jul to 11 Jul 2026): 43 days stale, fee EUR 360\n  Booking Accommodation 11179 (Africa Mera Bachir, 12 Jul to 9 Aug 2026): 14 days stale, fee EUR 1,360\n• Current valid: Booking Accommodation 11173 (Alessandro Signorotti, 9 Aug to 30 Aug 2026) — DO NOT TOUCH\n• Next: Booking Accommodation 25 (Rosa Maria Mollica, 30 Aug to 11 Oct 2026) — 7 days\n• Fix NOT RUN",
+        "Deactivate Booking Accommodations 11239, 11168, 11285, 11352, 11179 before 30 Aug. See recipe: issue-37-addendum-23aug-d.md",
+        "472nd Sun 23 Aug UTC. 7 days to Aug 30. 5 stale Booking Accommodations on bed 83. Next (BA 25) starts 30 Aug. Fix NOT RUN.",
+        "5 stale BAs; Aug 30 = 7d"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• 472nd check Sun 23 Aug 2026 UTC — 7 DAYS to Aug 30 deadline (same bed 83 as Issue 37)\n• Booking Accommodation 11285 (Jesus Manuel Ramirez, bed 83, 21 Jun to 5 Jul 2026): 49 days stale, active = true, fee = null\n• 4 other stale Booking Accommodations on same bed 83 (see Issue 37 for full list)\n• Booking Accommodation 25 (Rosa Maria Mollica) starts 30 Aug — 7 days\n• Fix NOT Run",
+        "Deactivate Booking Accommodation 11285 (and others on bed 83) before 30 Aug. See Issue 37 and recipe: issue-43-addendum-23aug-d.md",
+        "472nd Sun 23 Aug UTC. No change. Aug 30 = 7 days. Same bed 83 as Issue 37. Fix NOT RUN.",
+        "5 stale BAs; Aug 30 = 7d"
+      ]
+    ]
+  },
+  {
+    "range": "H54:K54",
+    "values": [
+      [
+        "• 472nd check Sun 23 Aug 2026 UTC — 6 DAYS to arrival (unchanged from 471st)\n• Booking Accommodation 11267: bed 23, 29 Aug to 4 Oct 2026, fee EUR 3,840, active — first stay OK\n• Booking Accommodation 11399: bed 54, 4 Oct to 19 Dec 2026, fee = NULL, active — second stay missing fee\n• Student Fanny Scelles (14451) arrives 29 Aug 2026\n• Host email auto-fill template bug: separate issue, not yet fixed\n• Fee fix NOT RUN",
+        "Set fee on Booking Accommodation 11399. See recipe: issue-52-addendum-23aug-c.md",
+        "472nd Sun 23 Aug UTC. Booking Accommodation 11399 fee null. Fanny Scelles arrives 29 Aug — 6 days. Fix NOT RUN.",
+        "BA11399 fee null; 6d"
+      ]
+    ]
+  },
+  {
+    "range": "H55:K55",
+    "values": [
+      [
+        "• 472nd check Sun 23 Aug 2026 UTC — 6 DAYS to arrival (unchanged from 471st)\n• Student Fanny Scelles (14451): arrives 29 Aug 2026\n• Booking Accommodation 11267: bed 23, 29 Aug to 4 Oct, fee EUR 3,840, active — first stay OK\n• Booking Accommodation 11399: bed 54, 4 Oct to 19 Dec, fee = NULL, active — second stay missing fee\n• No multi-host confirmation template exists\n• Fee fix NOT RUN; multi-host template awaiting spec",
+        "Set fee on Booking Accommodation 11399; await multi-host template spec. See recipe: issue-53-addendum-23aug-c.md",
+        "472nd Sun 23 Aug UTC. Same as Issue 52. Arrives 29 Aug (6 days). Fee null. Fix NOT RUN.",
+        "BA11399 fee null; 6d"
+      ]
+    ]
+  }
+]

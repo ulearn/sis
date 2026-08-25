@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Student 356 (Shih-Wei Huang) has gender = null — never set in personal details (last updated Jun 03, 18 days stale)\n• Exit letter (document 238, template 4, booking 560) is STILL ISSUED since Jun 18 08:53 UTC — wrong Ms./she/her pronouns\n• Document encoding: gender null → isMale=false → salutation=Ms, pronoun=she/her — no null guard in code\n• Code fix needed in documents.ts for null-gender handling (all null-gender docs will silently use Ms./she/her)",
+        "1) Set gender=Male on student 356 via SIS personal details; 2) revoke document 238; 3) regenerate exit letter for booking 560. See recipe: issue-32-shih-wei-gender-default.md",
+        "Jun21 hrly4 (row-shift 39→40 confirmed, B/F/G unchanged): doc238 STILL ISSUED (created Jun17T15:19UTC, now 4d). s356 gender=null (updAt=Jun03=18d stale, fresh DB). Wrong Ms./she/her pronouns on exit letter bk560. NEIL: SIS → student 356 → Personal Details → set gender=Male; revoke doc238; regenerate exit letter.",
+        "urgent; revoke doc238"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Bug in sendBulkEmail() (admin.html line 1494) reads live bulkSelectedStudents instead of frozen snapshot\n• showStudentsInSchoolReport() clears bulkSelectedStudents on every reload (line 2219) — including while modal is open\n• openBulkEmailModal() (line 1367) captures ids=[...bulkSelectedStudents] into local var but never stores into _bulkEmailRecipientIds\n• _bulkEmailRecipientIds declared at line 1349 as the intended frozen snapshot — but is never populated",
+        "Set _bulkEmailRecipientIds=ids in openBulkEmailModal + read it in sendBulkEmail. See recipe: issue-33-khulan-reports-email-send.md",
+        "Jun21 hrly4 (row-shift 40→41 confirmed, B/F/G unchanged): bug CONFIRMED STILL PRESENT (fresh code check). L1349 _bulkEmailRecipientIds=[] declared but never set. L1367 openBulkEmailModal captures local ids=[...bulkSelectedStudents] but does NOT assign to _bulkEmailRecipientIds. L1494 sendBulkEmail re-reads live Set (cleared L2219 on every render). Fix: 2 lines in admin.html, no build or restart. NOT YET APPLIED.",
+        "code fix pending"
+      ]
+    ]
+  }
+]

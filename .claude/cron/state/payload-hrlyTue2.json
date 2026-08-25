@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "• Booking 1308 is CANCELLED, confirmed = false — 9 days stale since Jun 07\n• Amount paid = 1530 / 1530 (fully paid genuine enrolment)\n• Booking course 1350 (Academic Year Afternoon, May 25 – Nov 13) is ACTIVE\n• Student 766 (Ana Jessica Rosa, A2) has 0 class assignments all time\n• HubSpot contact ID = 777791875262\n• Student in school since May 25 — no confirmed booking and no class record",
+        "(NOT RUN) UPDATE bookings SET status=CONFIRMED, confirmed=true WHERE id=1308; then assign A2-AFT class to booking course 1350. See recipe: issue-17-ana-jessica-accidental-cancel.md",
+        "Jun16 hrly(Tue): CONFIRMED UNCHANGED. s766 Ana Jessica Rosa A2 visaStatus=null (updAt=Jun06). bk1308 CANCELLED conf=false 1530/1530 (stale Jun07=9d). bc1350 AY-AFT May25-Nov13 active. 0 SCAs all time. Day 22 in school since May25 — no confirmed booking, no class record. NEIL: UPDATE bookings SET status=CONFIRMED, confirmed=true WHERE id=1308; then assign A2-AFT class. SQL NOT RUN.",
+        "D22;urgent;0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 is CONFIRMED, paid 740 / 740 (since Jun 15) — active booking for Edite Nunes (s1015, A1)\n• Booking courses 24933 and 24934 are DUPLICATES: both named General English AM, Jun 15 – Jul 10 on booking 18158\n• Student 1015 has 0 current class assignments (last assignment expired May 15)\n• Bookings 18131 (EUR 1185) and 18133 (EUR 648) are ghost shell bookings — still CONFIRMED, not cancelled\n• Payments 17852 (EUR 1185, hubspot 1245328690407) and 17730 (EUR 648, hubspot 1242902318299) are ghost payments, xeroId = null",
+        "(NOT RUN) 1) CANCEL bookings 18131+18133; 2) void payments 17852+17730 via HubSpot; 3) DELETE booking course 24934 (keep 24933); 4) assign cls7 (A1-AM) to booking course 24933 ws=2026-06-16 we=2026-07-10. See recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun16 hrly(Tue): UNCHANGED. bk18158 CONF 740/740 (updAt=Jun15). bk18131 CONF 1185 (stale Jun05=11d). bk18133 CONF 648 (stale Jun04=12d). bc24933+bc24934 BOTH ACTIVE Jun15-Jul10 (duplicate persists). 0 SCAs on bk18158. Day 2 in school, no class. NEIL: assign cls7 (A1-AM) to bc24933 ws=Jun16 we=Jul10 IMMEDIATELY; cancel bk18131+bk18133; delete bc24934. SQL NOT RUN.",
+        "D2;0SCA;A1-cls7"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• Ernesto Pesoa Gil (student 14532) level = null — unknown in SIS and HubSpot (contact 3344151)\n• Booking course 24826 is a 2-week Intensive, Jun 08 – Jun 19 — ends Friday\n• Only 3 school days remain: Wed Jun 17, Thu Jun 18, Fri Jun 19\n• 9 school days missed to date (Jun08–Jun16) with zero class records\n• Booking 18034 is PARTIAL, paid 845 / 1095 (EUR 250 outstanding)\n• NOTE: column B on sheet says Ivan Rodriguez — actual student is Ernesto Pesoa Gil (s14532)",
+        "(NOT RUN) 1) Get Ernesto level from teacher before Wed 09:00; 2) INSERT 2 student class assignments (AM+PM) for booking course 24826, week start = 2026-06-17, week end = 2026-06-19. Level pairs: A2=cls8/9, B1=cls5+12/cls11, B2-C1=cls4/cls6, C1=cls13/cls14. See recipe: issue-26-intensive-class-assign-once.md",
+        "Jun16 hrly(Tue eve): CONFIRMED UNCHANGED. s14532 Ernesto Pesoa Gil level=null (updAt=May31). bc24826 INTENSIVE Jun08-Jun19 active. bk18034 PARTIAL 845/1095 conf=false (stale Jun07=9d). 0 SCAs all course. 3 school days left (Wed17/Thu18/Fri19). NEIL: get level from teacher BEFORE Wed 09:00 then INSERT 2 SCAs ws=Jun17 we=Jun19. SQL NOT RUN.",
+        "crit;3d;Fri19"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Course 24925 (Afternoon) dates fixed to Mar 09 – Sep 11 — confirmed by Neil Jun 16\n• ILEP code set to 0318/0003 on course 24925 — confirmed Jun 16\n• Booking 18151 updated Jun 16 14:47 UTC — confirmed, paid 1339.20 / 1339.20\n• Attendance count for student 1001 = 5 (student is attending B1 PM)\n• Class assignment 255 week start = Jan 12 (STILL WRONG — should be Mar 09)\n• Class assignment 255 week end = Jul 03 (STILL WRONG — should be Sep 11)",
+        "(NOT RUN) UPDATE student_class_assignments SET week_start = 2026-03-09, week_end = 2026-09-11 WHERE id = 255. See recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun16 hrly(Tue): CONFIRMED UNCHANGED. bc24925 AFT Mar09-Sep11 active ilepCode=0318/0003 confirmed. bk18151 CONF 1339.2/1339.2 (updAt=Jun16 14:47 — Neil updated today). sca255 weekStart=Jan12 weekEnd=Jul03 classId=11 STILL WRONG. SQL NOT RUN: UPDATE student_class_assignments SET week_start=2026-03-09, week_end=2026-09-11 WHERE id=255.",
+        "sca fix needed"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Booking 94 is CONFIRMED (1151.50 / 1151.50) — correct booking for Giulia (student 88)\n• Class assignment 270 is ACTIVE Jun 15 – Jun 26, class 12 (B1-AM2) — Giulia is in class\n• Booking 18044 still CONFIRMED (1106.50 / 1106.50) — NOT cancelled, 9 days stale since Jun 07\n• Payment 17607 (EUR 1151.50, xeroId = null, HubSpot payment ID = 1239529228498) on booking 18044\n• Payment 17102 (EUR 1151.50, xeroId = null, no HubSpot ID) on booking 94\n• Class assignment 270 ends Jun 26 — 10 days remaining",
+        "(NOT RUN) 1) Cancel booking 18044; 2) Void payment 17607 in HubSpot (HS pmt ID 1239529228498) — pmt17607 has a HubSpot payment ID so void via HubSpot UI, not raw DELETE. See recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun16 hrly(Tue): CONFIRMED UNCHANGED. bk94 CONF 1151.50 (correct). bk18044 DUP CONF 1106.50 (stale Jun07=9d). sca270 ACTIVE cls12 B1-AM2 Jun15-Jun26 (10 days remaining). pmt17607 EUR1151.50 HS=1239529228498 xeroId=null on bk18044. NEIL: cancel bk18044 + void pmt17607 in HubSpot before Jun26. NOT RUN.",
+        "in class; dup bk"
+      ]
+    ]
+  },
+  {
+    "range": "H32:K32",
+    "values": [
+      [
+        "• Week math in attendance.ts used local (BST) time on UTC dates — showed Sunday Jun 14 instead of Monday Jun 15\n• Null week_end class assignment count = 0 (confirmed Jun 16, 4th consecutive check) — stale-SCA bug RESOLVED\n• BST Sunday-display fix: applied in code but unverified in headless run",
+        "Update code to UTC timezone — that will fix it. See recipe: issue-31-attendance-sheet-week-bug.md",
+        "Jun16 hrly(Tue): null_end=0 CONFIRMED (4th consecutive check; total SCAs=236). Stale-SCA bug FULLY RESOLVED. BST Sunday heading fix: unverified in headless run. NEIL: check attendance sheet shows Mon Jun16 heading for WB Jun16; if correct, mark as fixed.",
+        "null_end=0;verify UTC"
+      ]
+    ]
+  }
+]

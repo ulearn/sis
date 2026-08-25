@@ -1,0 +1,50 @@
+[
+  {
+    "range": "J23",
+    "values": [
+      [
+        "Jun13 SAT hrly: CONFIRMED UNCHANGED. bk18158 PEND 0/740 updAt=Jun11. c24933(GE-AM fee=380)+c24934(DUP fee=360) Jun15-Jul10. bk18131 CONF 1185+bk18133 CONF 648 NOT cancelled (0 courses each). pmt17728/17730/17852 xeroId=null. s1015 0 active SCAs. ALL 5 STEPS NOT RUN. STARTS MON JUN15 <19h."
+      ]
+    ]
+  },
+  {
+    "range": "J27",
+    "values": [
+      [
+        "Jun13 SAT hrly: CONFIRMED UNCHANGED. s14532 Ernesto 0SCAs ALL TIME level=null. WK1(Jun08-12) MISSED. WK2(Jun15-19) FINAL WEEK starts TOMORROW. bc24826 INTENSIVE Jun08-Jun19. bk18034 PARTIAL 845/1095. NEIL: Mon 08:00 ask teacher Ernesto level, then INSERT 2 SCA rows WK2 only. Pairs:A2=cls8/9,B1=cls5+12/11,B2-C1=cls4/6,C1=cls13/14."
+      ]
+    ]
+  },
+  {
+    "range": "J28",
+    "values": [
+      [
+        "Jun13 SAT hrly: CONFIRMED UNCHANGED. sca254 cls6 Jun08-Nov27 ACTIVE(Step1 done). pmt17477(EUR727.5 hs=1230788330738 xeroId=null)+pmt17478(EUR728 hs=1230645766331 xeroId=null) BOTH orphaned on CANC bk17909. 2 distinct HS IDs. NEIL: Xero search Sofiia Apr-May 2026. If only EUR1455.5 found: DELETE pmts 17477+17478(NOT RUN). If 3 real pmts: refund EUR1455.5."
+      ]
+    ]
+  },
+  {
+    "range": "J30",
+    "values": [
+      [
+        "Jun13 SAT hrly: CONFIRMED UNCHANGED. att=0 (0 rows DB confirmed). sca255 cls11 B1PM weekEnd=Jul03(20d). s1001 level=B1 visaStatus=null updAt=Jun08. bk18151 CONF 1339.2. 155d enrolled ZERO attendance. NEIL: Mon AM ask cls11 teacher if Saikhantes EVER attended. If absent: IRP escalation immediately (20d to Jul03)."
+      ]
+    ]
+  },
+  {
+    "range": "J31",
+    "values": [
+      [
+        "Jun13 SAT hrly: CONFIRMED UNCHANGED. s88 Giulia JUNIOR 0SCAs currentLevel=null. bk94 CONF 1151.5/1151.5 c104 Jun15-26 (STARTS TOMORROW). bk18044 CONF DUP 1106.5/1106.5 c24836 Jun15-26 (pmt17607 EUR1151.5 dbl-import Mar13 xeroId=null DELETE not refund). bk18152 Milena(s14557) PEND 0/1151.5. ALL 4 STEPS NOT RUN. NEIL: act before Mon 08:00."
+      ]
+    ]
+  },
+  {
+    "range": "J32",
+    "values": [
+      [
+        "Jun13 SAT hrly: CONFIRMED UNCHANGED. TZ=UTC NOT in .env confirmed. 9 stale SCAs weekEnd=null (IDs:39,40,65,66,74,75,81,87,100; all courses ended <=Jun12). Mon Jun15 att sheet WILL show Sun Jun14+9 ghost students. BOTH FIXES NOT RUN <19h. FIX1: echo TZ=UTC>>.env && touch tmp/restart.txt; FIX2 SQL(NOT RUN): UPDATE student_class_assignments SET week_end=(SELECT end_date FROM booking_courses WHERE id=booking_course_id) WHERE id IN(39,40,65,66,74,75,81,87,100). DEADLINE Mon 07:00."
+      ]
+    ]
+  }
+]

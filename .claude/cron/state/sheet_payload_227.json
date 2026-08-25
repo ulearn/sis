@@ -1,0 +1,57 @@
+[
+  {
+    "range": "H4:K4",
+    "values": [
+      [
+        "• Check Wed 12 Aug 2026 UTC — school closures unchanged from Sun 9 Aug check\n• 9 school closures in DB: Good Fridays 2026-2030, Christmas 2026-2030\n• August Bank Holiday 2026-08-03 passed without DB entry — no current impact\n• August Bank Holiday 2027-2030 still absent from school_closures",
+        "Add Aug BH 2027-2030 to school_closures (INSERT, not urgent). Christmas shunt resolved.",
+        "Check Wed 12 Aug UTC. 9 closures unchanged. Aug BH 2027+ still not in DB. See issue-3-christmas-shunt.md",
+        "fixed"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 106th check Wed 12 Aug 2026 UTC — unchanged since 105th check\n• Booking 18151 (Saikhantes Shagdarsuren): CONFIRMED, confirmed = true, EUR 1,339.20 paid, EUR 0 open\n• service_end = 2026-08-07 — expired 5 days (course ends Oct 2 2026)\n• Class Assignment 255: classId = 11, weekEnd = 2026-07-03 — expired 40 days\n• Booking Course 24925 (Academic Year Afternoon, Mar 9 to Oct 2 2026): active = true, 1 class assignment",
+        "Extend booking 18151 service_end to 2026-10-02; extend Class Assignment 255 weekEnd to 2026-10-02. See recipe: issue-15-addendum-12aug-b.md",
+        "106th check Wed 12 Aug UTC. service_end 5d expired (Aug 7). Class Assignment 255 weekEnd 40d expired (Jul 3). Fix NOT RUN.",
+        "SCA expired 40d; svc_end 5d exp"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 139th check Wed 12 Aug 2026 UTC — CRITICAL: 2 school days remain (Thu 13, Fri 14 Aug)\n• Booking Course 25043 (Eduardo Roche Diaz): General English PM, 10-14 Aug 2026, active = true — 0 class assignments\n• 3 school days lost (Mon 10, Tue 11, Wed 12 Aug)\n• Fix must run TODAY (Wed 12) or before Thu 13 to save any school days\n• Class: assign class 6 weekStart 2026-08-10 to 2026-08-14",
+        "INSERT class assignment: Booking Course 25043, class 6, Aug 10-14 for Eduardo. See recipe: issue-38-addendum-12aug-v.md",
+        "139th Wed 12 Aug UTC. Booking Course 25043 STILL 0 class assignments. 3d lost. 2 days remain (Thu 13 + Fri 14). Fix URGENT.",
+        "CRITICAL: ends Fri 14 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 74th check Wed 12 Aug 2026 UTC — stale count unchanged (24,479)\n• Active Booking Courses ended before 12 Aug 2026 (stale): 24,479\n• Currently live Booking Courses (end date on or after 12 Aug 2026): 283\n• No change since 73rd check",
+        "Mass-deactivate all active Booking Courses where end_date < today. See recipe: issue-45-addendum-12aug-c.md",
+        "74th Wed 12 Aug UTC. Stale: 24,479 (unchanged). Live: 283 (unchanged). Fix NOT RUN.",
+        "24,479 stale; fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 103rd check Wed 12 Aug 2026 UTC — unchanged since 102nd check\n• Booking Course 1810 (Academic Year Renewal Morning, Telmuun Enkhsaikhan student 293): ends 1 Jan 2027, active = true — 0 class assignments\n• Booking 1624: PARTIAL, confirmed = false, EUR 1,406 paid, EUR 250 open\n• Booking Course 1810 has been without a class assignment since 29 Jun 2026 (44 days)",
+        "Assign Booking Course 1810 to AM class; clarify EUR 250 open balance. See recipe: issue-48-addendum-12aug-e.md",
+        "103rd Wed 12 Aug UTC. Booking Course 1810: 0 class assignments (44d since Jun 29). EUR 250 open. Fix NOT RUN.",
+        "payment gap; BC1810 44d"
+      ]
+    ]
+  }
+]

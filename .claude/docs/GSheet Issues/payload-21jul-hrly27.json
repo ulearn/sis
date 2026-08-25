@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 86th check Tue 21 Jul 2026 UTC (27th hourly)\n• Payment 16988 (EUR 339.90, type = one_time_or_initial): booking ID null — 84 days since 28 Apr 2026\n• Payment 16989 (EUR 339.90, type = one_time_or_initial): booking ID null — 84 days since 28 Apr 2026\n• Payment 17187 (EUR 6151, type = null): booking ID null — 77 days since 5 May 2026\n• Payment 4781 (EUR 380, type = null): booking ID null — legacy record\n• Stale booking courses: 24,436 with active = true and end date before 21 Jul 2026 — automated deactivation still not running\n• Stale booking accommodations: 11,175 with active = true and end date before 21 Jul 2026",
+        "Link payments to bookings; run booking course and accommodation deactivation. See recipe: issue-1-addendum-21jul-d.md",
+        "86th check Tue 21 Jul (27th hrly). UNCHANGED. 4 orphan payments: 16988+16989 (EUR 339.90 ea), 17187 (EUR 6151), 4781 (EUR 380). Stale BCs: 24,436. Stale BAs: 11,175. Fix NOT RUN.",
+        "4 orphan pmts; 24,436 stale BCs"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 100th check Tue 21 Jul 2026 UTC (27th hourly) — milestone\n• August Bank Holiday Mon 3 Aug 2026: STILL absent from school_closures — 13 days away URGENT\n• October Bank Holiday Mon 26 Oct 2026: also absent from school_closures\n• 202 active booking courses span 3 Aug 2026 — need end-date shunt if bank holiday is added\n• 114 active booking courses span 26 Oct 2026\n• Unchanged from 26th hourly check",
+        "Add Aug BH + Oct BH to school_closures; trigger shunt for 202 affected booking courses. See recipe: issue-38-addendum-21jul-e.md",
+        "100th check (27th hrly) Tue 21 Jul UTC. Aug BH STILL absent. 202 active booking courses span Aug 3. Oct BH also absent (114 BCs affected). Fix NOT RUN.",
+        "Aug BH; 13d URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• 52nd check Tue 21 Jul 2026 UTC (27th hourly)\n• Booking course 24609 (Xuezhen Huang, Morning General, 13 Jul to 31 Jul 2026): confirmed, fee EUR 570, zero class assignments\n• 7 school days missed (Jul 13–17 + Jul 20–21); 8 remaining (Wed 22 – Fri 31 Jul)\n• Accommodation booking 11358 (bed 180, Host Family, Jul 12 – Aug 2 2026): present and active — accommodation OK\n• Xuezhen is one of 18 students in the Issue 45 (row 47) July unassigned sweep\n• Unchanged from 26th hourly check",
+        "Assign via SIS Student 14443 > Booking 17831 > BC24609. See recipe: issue-39-addendum-21jul-d.md",
+        "52nd check 27th hrly Tue 21 Jul UTC. BC24609 still 0 SCAs, 7 days missed, 8 remaining. Part of Issue 45 18-student sweep. Fix NOT RUN.",
+        "BC24609 0 SCAs; 10d left"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 79th check Tue 21 Jul 2026 UTC (27th hourly)\n• Payment 17954 (EUR 2584.96, Bank Transfer, paid 26 Jun 2026): Xero payment ID = null — 25 days unreconciled\n• Booking 18180: confirmed, EUR 2584.96 paid; booking course 24956 (General English AM, 3 Aug – 11 Sep 2026) fee EUR 804.96\n• Booking accommodation 11357 (bed 178, Patty McSweeney, 5 Claremont Close Glasnevin, 2 Aug – 6 Sep 2026): fee EUR 1250 — only accommodation in SIS\n• Fee gap: EUR 804.96 + EUR 1250 = EUR 2054.96 vs EUR 2584.96 paid — EUR 530 unaccounted for\n• Original issue states student booked host family AND Capel Street apartment — Capel accommodation entry missing from SIS\n• Check-in 2 Aug 2026 is 12 days away",
+        "Add Capel accommodation to booking 18180; reconcile payment 17954 in Xero. See recipe: issue-41-addendum-21jul-e.md",
+        "79th check 27th hrly Tue 21 Jul UTC. Bed 178 = Patty McSweeney host family (Glasnevin). Capel apartment MISSING from SIS (EUR 530 gap). xeroPaymentId=null. Fix NOT RUN.",
+        "Xero null; Capel missing; 12d to check-in"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• 6th check Tue 21 Jul 2026 UTC (27th hourly)\n• Booking accommodation 11285 (Jesús Manuel Ramírez Díaz, student 14439, bed 83, booking 17825): stored dates 21 Jun to 5 Jul — 16 days post-checkout — still active = true\n• Booking accommodation 11352 (Verónica Martín, student 278, bed 83, booking 18156): 4 Jul to 11 Jul 2026 — 10 days post-checkout — still active = true\n• Fix NOT RUN",
+        "Set active = false on BA11285 and BA11352. Batch with Issue 36/37 run. See recipe: issue-43-jesus-accomm-dates.md",
+        "6th check Tue 21 Jul UTC (27th hrly). BA11285 Jesús bed83 bk17825 ended Jul05 — 16d stale. BA11352 Verónica bed83 bk18156 ended Jul11 — 10d stale. Fix NOT RUN.",
+        "cosmetic; 16d+10d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 56th check Tue 21 Jul 2026 UTC (27th hourly)\n• EXPANDED SWEEP: 18 students with confirmed July 2026 booking courses and zero class assignments (previous checks tracked 4)\n• Eduardo Roche Diaz (student 14602, booking course 25011 General English PM, 20–24 Jul 2026): course ENDS FRIDAY 24 Jul — 3 school days remaining\n• Sarah Venturini Talizin (booking course 24945 General English AM, 6–31 Jul 2026): 12 school days missed, 8 remaining\n• Mohammed Ibrahimi Alsaidalani (BC24920 GE AM, 6 Jul–9 Oct): 12 days missed — long course\n• Yuxi Ke (BC24965 GE PM, 6 Jul–21 Aug): 12 days missed\n• Gustavo Da Silva: two booking courses (BC24967 GE AM + BC24955 GE AM Plus, 6 Jul–7 Aug): 12 days missed\n• Allison Ayala Vazquez (BC24998 GE PM, 13–31 Jul), Wanqiong Hou (BC1814 AY Morning, 13 Jul–18 Dec), Pedro Campion Teixeira (BC1788 AY Afternoon, 13 Jul–18 Dec), Xuezhen Huang (BC24609, 13–31 Jul), Italo Teixeira (BC24820 AY Afternoon, 13 Jul–18 Dec), Samuele Stenico (BC24990 GE AM, 13 Jul–7 Aug), Minjinsor Buyanbat (BC24988 AY Morning, 13 Jul–15 Jan 2027): all 7 school days missed\n• Lorena Pizarro Araya (BC24942 AY Morning, 20 Jul–22 Jan 2027), Saranzaya Khishigbayar (BC1630 AY Afternoon, 20 Jul–8 Jan 2027): 2 school days missed\n• Already ended with zero class assignments: Verónica Martín (BC24931 6–10 Jul), Lunel Dubost (BC24946 13–17 Jul), Petru Ous (BC24994 13–17 Jul)\n• Unchanged from 26th hourly check",
+        "Assign all 18 to classes. Eduardo URGENT today. See recipe: issue-45-addendum-21jul-e.md",
+        "27th hrly Tue 21 Jul UTC. UNCHANGED. All 18 students 0 SCAs. Eduardo CRITICAL ends Fri 24 Jul. 3 already ended unassigned. Fix NOT RUN.",
+        "CRITICAL; 18 unassigned"
+      ]
+    ]
+  }
+]

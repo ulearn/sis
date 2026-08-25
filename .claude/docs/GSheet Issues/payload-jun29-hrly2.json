@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 + 16989 still unlinked — booking_id = null, xero_payment_id = null — 62 days since 28 Apr\n• Payment 16988 (HubSpot 1204827374829) → Booking 17856 Margherita Galbusera — EUR 339.90\n• Payment 16989 (HubSpot 1204846469317) → Booking 17857 Francesca Fassina — EUR 339.90\n• Both bookings: status = Confirmed, confirmed = false — students blocked from class assignment lists\n• Booking courses 24630 + 24631: General English AM Plus, 29 Jun to 10 Jul — fee = null\n• Classes STARTED Mon 29 Jun — 4-step SQL NOT RUN (106th check, Jun 29 UTC)",
+        "(NOT RUN) (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) UPDATE booking_courses SET fee=339.9 WHERE id IN (24630,24631); (4) UPDATE bookings SET confirmed=true WHERE id IN (17856,17857). See recipe: issue-1-orphan-payments.md",
+        "hrly Jun29 UTC (106th check, fresh DB): Payments 16988+16989 bookingId=STILL null xeroId=null EUR339.90 each. Bookings 17856+17857 CONF confirmed=STILL false 339.9/339.9. Booking courses 24630+24631 GE-AM-Plus startDate=Jun29 fee=STILL null. Classes STARTED Day 1 Mon Jun29 — STUDENTS IN CLASS UNLINKED. SQL STILL NOT RUN — 106 CHECKS. NEIL: RUN 4-STEP SQL NOW.",
+        "DAY 1; SQL UNRUN"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Class assignment 255 (class 11, B1 PM) has week_start = 12 Jan 2026 — wrong (booking course 24925 starts 9 Mar 2026)\n• Week end = 3 Jul 2026 — assignment expires in 4 days (URGENT: student loses class access Thu Jul 03)\n• Correct week_start = 9 Mar 2026, correct week_end = 11 Sep 2026 (booking course 24925 end date)\n• One-line SQL fix not yet applied (13th check, Jun 29 UTC)",
+        "(NOT RUN) UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255. See Issue 29 recipe: issue-29-saikhantes-jan12-start-date.md",
+        "hrly Jun29 UTC (re-check #13, fresh DB): SCA 255 weekStart=STILL 2026-01-12 weekEnd=STILL 2026-07-03. EXPIRES THU JUL03 = 4 DAYS. Booking course 24925 AY-AFT Mar09-Sep11 active UNCHANGED. SQL STILL NOT RUN. NEIL: RUN UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255 BEFORE THU JUL03.",
+        "sca255; Jul03=4d; URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• Student 917 (Uyanga Tungalag) visa status = null — blocks appearance in class to be assigned list\n• Booking 1467 is Confirmed, confirmed = true, fully paid EUR 2405 (amount open = 0)\n• Booking course 1613 (Academic Year Morning, 27 Apr to 16 Oct) — active, student in course\n• Zero class assignments — student cannot be placed in class until visa_status set\n• Fix: single SQL UPDATE, no financial impact (33rd check, Jun 29 UTC)",
+        "(NOT RUN) UPDATE students SET visa_status='Approved' WHERE id=917; then assign Uyanga to class via SIS admin. See recipe: issue-25-uyanga-visa-escrow.md",
+        "hrly Jun29 UTC (33rd check, fresh DB): s917 Uyanga visaStatus=STILL null (updAt=May21=39d stale). bk1467 CONF conf=true 2405/2405 fully paid. bc1613 AY-Morn Apr27-Oct16 active. STILL 0 class assignments — Day 64 in class, NO assignment. CRITICAL. Neil: SIS -> Student 917 -> set Visa Status = Approved -> assign class.",
+        "D64; 0SCA; CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Class assignment 255 (class 11, B1 PM) has week_start = 12 Jan 2026 — wrong (booking course 24925 starts 9 Mar 2026)\n• Week end = 3 Jul 2026 — assignment expires in 4 days (CRITICAL: student loses class access Thu Jul 03)\n• Correct week_start = 9 Mar 2026, correct week_end = 11 Sep 2026 (booking course 24925 end date)\n• One-line SQL fix not yet applied (13th check, Jun 29 UTC)",
+        "(NOT RUN) UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255. See Issue 29 recipe: issue-29-saikhantes-jan12-start-date.md",
+        "hrly Jun29 UTC (re-check #13, fresh DB): SCA 255 weekStart=STILL 2026-01-12 weekEnd=STILL 2026-07-03. EXPIRES THU JUL03 = 4 DAYS. Booking course 24925 AY-AFT Mar09-Sep11 active. bk18151 CONF 1339.2/1339.2. SQL STILL NOT RUN — 13 CHECKS. NEIL: CRITICAL — run SQL before Thu Jul03 or student locked out of class.",
+        "sca255; Jul03=4d; CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• Booking 18156 CONFIRMED Jun 29, EUR 573.20 fully paid (amount open = 0)\n• Accommodation 11352 assigned to bed 83 today Jun 29 — but bed 83 CONFLICT with Jesus Ramirez (accommodation 11285, bed 83, Jun 21 to Jul 5)\n• Jul 4 check-in for Veronica overlaps with Jesus Jul 5 checkout — bed 83 double-booked on Jul 4\n• Must reassign Veronica to bed 174, 175, or 176 (Premium, confirmed free Jul 4 to 11)\n• Payment 17953 (EUR 573.20, HubSpot 1268846919923) — xeroPaymentId = null, Xero reconciliation still pending\n• EUR 573.20 paid vs EUR 645 original total — EUR 71.80 balance outstanding or waived",
+        "URGENT: reassign accommodation 11352 from bed 83 to bed 174/175/176 (Student 278 Booking 18156 in SIS). Reconcile payment 17953 in Xero. See recipe: issue-37-veronica-capel-accomm-allocation.md",
+        "hrly Jun29 UTC (fresh DB 16:52): bk18156 CONFIRMED EUR573.2/573.2. accomm11352 bedId=83 (ASSIGNED today) Jul04-Jul11. BED CONFLICT: Jesus Ramirez accomm11285 ALSO bed83 Jun21-Jul05 — Jul04-05 overlap. REASSIGN to 174/175/176. pmt17953 xeroId=null. Jul04=5d.",
+        "bed conflict; reassign"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• Accommodation 11285 in booking 17825: SIS dates Jun 21 to Jul 5 (2 weeks), reporter says should be Jun 20 to Jul 4\n• 1-day forward shift consistent with BST/UTC timezone handling (midnight UTC stored becomes midnight BST = next day)\n• Orphan booking 17836: accommodation 22 has identical start and end date (Apr 24) — placeholder stub, no course, never cancelled\n• Booking 17836 also has payment 17182 (EUR 2008, no HubSpot payment ID) — probable migration duplicate\n• Bed 83 (Jesus, Jun 21 to Jul 5) also assigned to Veronica Martin (Issue 37) Jul 4 to 11 — 1-day overlap risk on Jul 4",
+        "Fix accommodation 11285 dates to Jun 20 to Jul 4 (verify HubSpot deal 498775243984 first). Investigate orphan booking 17836. See recipe: issue-43-jesus-accomm-dates.md",
+        "hrly Jun29 UTC (1st check, fresh DB): s14439 HS-757795710142. accomm11285 bk17825 bed83 Jun21-Jul05 (reporter says Jun20-Jul04 — 1-day shift). Orphan bk17836 accomm22 Apr24-Apr24 stub (fee=700, no course). pmt17182 EUR2008 bk17836 no HS id (dup?). Bed83 ALSO allocated to Veronica bk18156 Jul04-Jul11 (Issue 37) — overlap Jul04-05. Await Neil to confirm correct dates from HS deal 498775243984.",
+        ""
+      ]
+    ]
+  }
+]

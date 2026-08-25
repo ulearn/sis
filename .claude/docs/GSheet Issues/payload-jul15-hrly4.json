@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payment 16988 (EUR 339.90, HubSpot ID 1204827374829): booking ID = null — still unlinked (52nd check, Wednesday 15 July UTC)\n• Payment 16989 (EUR 339.90, HubSpot ID 1204846469317): booking ID = null — still unlinked\n• Booking 17856 (Margherita Galbusera): Confirmed, confirmed = false, amount paid = EUR 339.90, amount open = null\n• Booking 17857 (Francesca Fassina): Confirmed, confirmed = false, amount paid = EUR 339.90, amount open = null\n• Booking courses 24630 and 24631 (General English AM Plus, ended 10 July 2026): active = still true — 5 days stale",
+        "Link payment 16988 to booking 17856, payment 16989 to booking 17857; set active = false on booking courses 24630 and 24631. See recipe: issue-1-orphan-payments.md",
+        "52nd check Wed 15 Jul UTC. UNCHANGED. Pmts 16988+16989 bookingId=null. BK17856 CONF confirmed=false paid=EUR339.90 open=null. BK17857 same. BCs 24630+24631 ended Jul10 active=STILL true (5d stale).",
+        "unlinked; 5d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• Accommodation 11162 (Massimiliano Cameran, booking 97, bed 179): 21 April to 23 May 2026 — active = still true — 53 days stale (Wednesday 15 July UTC)\n• Accommodation 11319 (booking 18034, no bed assigned): 31 May to 31 May 2026 — active = still true — 45 days stale\n• Both accommodations confirmed unchanged",
+        "Set active = false on accommodation 11162; assign a bed to accommodation 11319 or close it. See recipe: issue-12-accomm-dates-mismatch.md",
+        "15 Jul WED UTC. CONFIRMED UNCHANGED. BA11162 bed179 Apr21-May23 active=STILL true (53d stale). BA11319 bedId=null May31-May31 active=STILL true (45d stale).",
+        "BA11162 stale 53d; BA11319 no-bed"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student class assignment 255 (Saikhantes Shagdarsuren, student 1001, booking course 24925): week end = 3 July 2026 — still the only class assignment (46th check, Wednesday 15 July UTC)\n• Missing week ending 10 July 2026 — expired 12 days ago\n• Missing week ending 17 July 2026 — this Friday, 2 days away\n• Booking course 24925 (Academic Year Afternoon, 9 March to 2 October 2026): fee = EUR 1102.20, still active",
+        "Assign Saikhantes (student 1001) to PM class for weeks ending 10 Jul and 17 Jul via SIS Admin > Classes > To Be Assigned. See recipe: issue-15-saikhantes-class.md",
+        "46th check Wed 15 Jul UTC. SCA255 (B1 PM) weekEnd=Jul3 STILL only record. Missing: weekEnd Jul10 (12d expired) + weekEnd Jul17 (Fri, 2d). BC24925 AY Aft Mar9-Oct2 active=true fee=EUR1102.20.",
+        "CRITICAL; 2 weeks missing; Fri"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• Student 983 (Flávia Nascimento Mariano): visa status = null — Prisma save error prevents update (Wednesday 15 July UTC)\n• Student record updated 14 July 2026 (unrelated field); visa status still null\n• Booking 1534: Confirmed, fully paid EUR 1308\n• Root cause: Prisma enum mismatch on visa_status column blocks save",
+        "UPDATE students SET visa_status='Approved' WHERE id=983 (after confirming approved in HubSpot). See recipe: issue-18-flavia-visa-save-error.md",
+        "15 Jul WED UTC. UNCHANGED. s983 Flavia visaStatus=STILL null. updatedAt=Jul14 (unrelated field change). BK1534 CONFIRMED EUR1308/1308.",
+        "visa null; cosmetic"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking course 24686 (Alberto Squillace, Morning General, 20 July to 18 September 2026): fee = still null — 5 days to course start — URGENT (48th check, Wednesday 15 July UTC)\n• Booking course 1797 (Morning General, 6 April to 26 June 2026): active = still true — 19 days stale after end date\n• Payment 17124 (EUR 1280.12, booking 1611): type = null, xero payment ID = null — 113+ days unreconciled",
+        "Set fee on booking course 24686 BEFORE Monday 20 July; deactivate booking course 1797; reconcile payment 17124 in Xero. See recipe: issue-24-alberto-fidelo-course-split.md",
+        "48th check Wed 15 Jul UTC. BC24686 MG Jul20-Sep18 fee=STILL null — 5 DAYS TO START MON 20 JUL. BC1797 Apr6-Jun26 active=STILL true (19d stale). Pmt17124 EUR1280.12 type=null xeroPaymentId=null bookingId=1611 (113d unreconciled).",
+        "fee null; 5d MONDAY URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 8 booking courses ending Friday 17 July 2026 still have zero class assignments — 79th check, Wednesday 15 July UTC\n• All 8 UNCHANGED — 2 calendar days to Friday deadline\n• Priority (confirmed enrolled, zero SCAs): BC1719 Maria Magdalena Hermosilla Ogaz (Academic Year Afternoon), BC24946 Lunel Dubost (General English AM), BC24994 Petru Ous (General English AM)\n• Pending (zero SCAs): BC26 Kritchana Ratcha-Anan (AY Morning), BC95 Florian Baury (MG Plus), BC24985 Silvia Cecilia Maza Valladolid (Gen Eng PM), BC24986 Gladis Patricia Maza Valladolid (Gen Eng PM), BC24992 Luz Maria Sobrino Blanco (Gen Eng AM)\n• Also 4 booking courses with zero SCAs ending Friday 24 July: BC81 Pietro Colombo, BC24828 Martina Tartaro (IELTS combo), BC24989 Marcos Abrego Tofe, BC20 Lalita Champakhong",
+        "Assign all 8 students ending Fri 17 Jul via SIS Admin > Classes > To Be Assigned; also action 4 zero-SCA booking courses ending Fri 24 Jul. See recipe: issue-45-renewal-no-class.md",
+        "79th check Wed 15 Jul UTC (2nd check today). UNCHANGED: 8 BCs ending Fri 17 Jul zero SCAs (2d to deadline). BC26 Kritchana, BC95 Florian, BC1719 Maria Magdalena, BC24946 Lunel, BC24985 Silvia Maza, BC24986 Gladis Maza, BC24992 Luz Maria, BC24994 Petru. Also 4 zero-SCA BCs ending Jul24: BC20 Lalita, BC81 Pietro, BC24828 Martina IELTS, BC24989 Marcos.",
+        "CRITICAL; 2d to Fri; +4 Jul24"
+      ]
+    ]
+  }
+]

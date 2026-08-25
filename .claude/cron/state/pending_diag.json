@@ -1,0 +1,21 @@
+[
+  {
+    "issue": "29 & 15",
+    "row": 30,
+    "cells": {
+      "A": "29 & 15",
+      "B": "Saikhantes Shagdasuren",
+      "C": "18151",
+      "D": "1001",
+      "E": "pg",
+      "F": "booking / class",
+      "G": "course dates are wrong - where did 12/01/2026 come from? I remember she showed up in Fidelo arrivals for a renewal restart date much earlier on than we expected (possibliy January 12?) and Antonella checked with me and we confirmed her IRP didn't expire till March so she wasn't due to start  till March  9 - another migration bug?",
+      "H": "• Tue 28 Jul 2026 UTC — UNCHANGED\n• Duplicate of Issue 15 (row 16): same student, Saikhantes Shagdarsuren (student 1001)\n• Student record bulk-touched today at 09:38 UTC — holiday status unchanged\n• Student on holiday 20 Jul – 21 Aug 2026; new class assignment needed on return (24 Aug)",
+      "I": "See Issue 15 for actions. Recipe: issue-29-addendum-28jul.md",
+      "J": "Tue 28 Jul UTC. Dup of issue 15. Student 1001 bulk touched 09:38 UTC today — holiday status unchanged. Returns 24 Aug, new SCA needed.",
+      "K": "window closed; see row 16"
+    },
+    "hash": "ac591061304ff0d5d85de588748fc98f055f27d2",
+    "key": "29 & 15_r30"
+  }
+]

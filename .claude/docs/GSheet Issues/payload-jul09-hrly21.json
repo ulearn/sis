@@ -1,0 +1,82 @@
+[
+  {
+    "range": "J2",
+    "values": [
+      [
+        "9 Jul UTC hrly21 FINAL CHECK. CONFIRMED UNCHANGED (fresh DB). Pmts 16988+16989 bookingId=STILL null xeroId=null EUR339.90 each type=one_time_or_initial method=Bank. BKs 17856(Margherita s14461)+17857(Francesca s14462) CONFIRMED confirmed=false amtPaid=339.90/339.90 updAt=Jul8. BCs 24630+24631 GE-AM-Plus Jun29-Jul10 fee=STILL null active=true. COURSES END TOMORROW FRI JUL10 = LAST SCHOOL DAY. 4-STEP SQL NOT RUN 74d. NEIL: run today."
+      ]
+    ]
+  },
+  {
+    "range": "J16",
+    "values": [
+      [
+        "9 Jul UTC hrly21. CONFIRMED UNCHANGED (fresh DB). SCA255 student=1001 classId=11 weekEnd=STILL 2026-07-03 EXPIRED (6 days). BC24925 AY-Afternoon Mar9-Oct2 active=true fee=EUR1102.20. BK18151 CONFIRMED EUR1339.20/1339.20. 5 school days missed Mon Jul6 to Fri Jul10. D5=TOMORROW FRI JUL10 = FINAL DAY. SQL NOT RUN. NEIL: UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255 to extend to BC end date."
+      ]
+    ]
+  },
+  {
+    "range": "K16",
+    "values": [
+      [
+        "D5 Fri Jul10 FINAL; SQL not run"
+      ]
+    ]
+  },
+  {
+    "range": "J23",
+    "values": [
+      [
+        "39th check 9 Jul UTC hrly21. CONFIRMED UNCHANGED (fresh DB). BK18158 CONF confirmed=true EUR740/740 updAt=Jul8. BC24933 GE-AM Jun15-Jul10 fee=380 active=true. BC24934 DUP GE-AM same dates fee=360 active=STILL true. Last SCAs student 1015: SCA146 weekEnd=May15, SCA48 weekEnd=Apr17 — ZERO SCAs during Jun15-Jul10 period. COURSES END TOMORROW FRI JUL10. NEIL: let expire; delete duplicate bc24934 after Jul10."
+      ]
+    ]
+  },
+  {
+    "range": "J37",
+    "values": [
+      [
+        "19th code check 9 Jul UTC hrly21. Code STILL unchanged: (1) renderSheetHtml() routes/attendance.ts L36-128 — no homework block present; (2) holiday fetch fetchStudentHolidays at L364 is inside getClassAttendance NOT getWeekAttendance — students on holiday still appear on printed sheet. Hash appeared changed — false positive: two rows share issue#36 in col A; seen.json key collision with row 38. Awaiting Paul/Neil homework layout spec."
+      ]
+    ]
+  },
+  {
+    "range": "I41",
+    "values": [
+      [
+        "Verify pmts 17987+17988 vs 17180 (Fidelo pair); reconcile in Xero; submit HF claim before Sat Jul12; recipe: issue-39-xuezhen-huang-accomm-missing.md"
+      ]
+    ]
+  },
+  {
+    "range": "J41",
+    "values": [
+      [
+        "22nd check 9 Jul UTC hrly21. CONFIRMED UNCHANGED (fresh DB). BK17831 CONF EUR1396.90/1396.90 (confirmed Jul7). BA11358 bed180 HF Jul12-Aug2 active=true fee=EUR900 claimStatus=STILL null — CHECK-IN SAT JUL12 = 3 DAYS. 4 pmts ALL type=null xeroId=STILL null: pmt17180(EUR431.90 Fidelo Apr27 hsId=null), pmt17963(EUR965 Jul1 HS1273784562922), pmt17987(EUR131.90 Jun25 HS1277724782804), pmt17988(EUR300 Jun12 HS1277795367133). pmt17987+17988=EUR431.90=pmt17180 (HubSpot re-entry of Fidelo payment — verify before reconciling all 4 separately). NEIL: submit HF claim + reconcile Xero TODAY."
+      ]
+    ]
+  },
+  {
+    "range": "H47",
+    "values": [
+      [
+        "• Veronica Martin (student 278, booking course 24931 General English AM, 6-10 Jul 2026): ZERO class assignments EVER — course ENDS TOMORROW 10 Jul — MOST URGENT\n• Pietro Colombo (student 72, booking course 81 Morning General Plus, 6-24 Jul 2026): ZERO class assignments ever — unassigned since course start 6 Jul (4 school days missed; confirmed fresh DB 9 Jul)\n• Ettore Iovinella (student 14564, booking course 24968 General English AM Plus, 6-13 Jul 2026): last class assignment 281 expired 3 Jul — no assignment for current booking course 24968\n• None of the 3 appear in arrivals list — by design: arrivals shows first-timers only\n• Correction: prev runs incorrectly labelled student 72 as Tuguldurtugs — student 72 is Pietro Colombo (Tuguldurtugs = student 858, already addressed)"
+      ]
+    ]
+  },
+  {
+    "range": "I47",
+    "values": [
+      [
+        "Assign Veronica (bc24931) TODAY — last day; assign Pietro (bc81) + Ettore (bc24968) this week; recipe: issue-45-renewal-arrivals.md"
+      ]
+    ]
+  },
+  {
+    "range": "J47",
+    "values": [
+      [
+        "36th check 9 Jul UTC hrly21. CONFIRMED UNCHANGED (fresh DB). s278 Veronica bc24931 GE-AM Jul6-Jul10 ZERO SCAs EVER — ENDS TOMORROW FRI JUL10 — MOST URGENT. s14564 Ettore sca281 weekEnd=Jul3 class4 expired; bc24968 GE-AM-Plus Jul6-Jul13 active no SCA for new course. s72 Pietro Colombo bc81 Morning-Gen-Plus Jul6-Jul24 ZERO SCAs (CORRECTION: prev J named s72 as Tuguldurtugs — s72 = Pietro Colombo; Tuguldurtugs=s858 was separate). NEIL: assign all 3; Veronica TODAY."
+      ]
+    ]
+  }
+]

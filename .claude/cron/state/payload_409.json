@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 245th check Thu 20 Aug 2026 UTC — no change from 244th check (same day)\n• Booking Accommodation 11393 (bed 88): 22 Aug to 13 Sep 2026, fee = null — STARTS SAT 22 AUG (2 days); fee must be set TODAY\n• Booking Accommodation 11311 (bed 84): 28 Jun to 22 Aug 2026, fee = EUR 3,850, active — checkout Sat 22; deactivate after\n• Booking Course 24772 (General English AM): ends 11 Sep 2026 — no action until September\n• Booking 17980 (Pietro Caccianiga, student 14521): CONFIRMED, fully paid EUR 5,331",
+        "Set fee on Booking Accommodation 11393 before Sat 22; deactivate BA 11311 after checkout. See recipe: issue-36b-addendum-20aug-b.md",
+        "245th Thu 20 Aug UTC. No change from 244th. BA 11393 fee null, starts Sat 22 (2d). URGENT: set fee TODAY.",
+        "URGENT: fee null Sat 22"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 142nd check Thu 20 Aug 2026 UTC — no change from 141st check (same day)\n• Booking Accommodation 11394 (bed 89): 14 Jun to 9 Aug 2026, fee = null, STILL ACTIVE — 11 days stale; deactivate TODAY before bed conflict Sat 22\n• Booking Accommodation 11397 (bed 89): 22 Aug to 6 Sep 2026, fee = null — starts Sat 22 (2 days); set fee before move-in\n• Booking Accommodation 11396 (bed 44): 15 Aug to 22 Aug 2026, fee = null — checkout Sat 22; set fee and deactivate\n• Booking Accommodation 11357 (bed 178): 2 Aug to 15 Aug 2026, fee = EUR 1,250, active — 5 days stale; deactivate",
+        "Deactivate BA 11394 (TODAY — bed conflict); set fees on BAs 11396+11397; deactivate BA 11357. See recipe: issue-41-addendum-20aug.md",
+        "142nd Thu 20 Aug UTC. No change. Sat 22 = 2 days. Bed 89 conflict still active. 4 BAs need action TODAY.",
+        "URGENT: bed89 conflict Sat22"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 180th check Thu 20 Aug 2026 UTC — no change from 179th check (same day)\n• Booking 18151 (Saikhantes Shagdarsuren, student 1001): CONFIRMED, confirmed = true, fully paid EUR 1,339.20\n• Booking Course 24925 (Academic Year Afternoon): 9 Mar to 2 Oct 2026, active\n• Last class assignment: week ending 3 Jul 2026 (class 11) — 48 days with no new assignment\n• Student returns Tue 25 Aug 2026 (5 days) — class assignment needed before first class back\n• Booking Course 1982 (Academic Year Morning, 2025): ended 19 Dec 2025, active — 244 days stale; deactivate",
+        "Create class assignment on Booking Course 24925 (class 11, week ending 28 Aug); deactivate Booking Course 1982. See recipe: issue-15-addendum-20aug.md",
+        "180th Thu 20 Aug UTC. Returns Tue 25 Aug (5d). No class assignment since 3 Jul (48d). Needs SCA for week Mon 24 Aug. URGENT.",
+        "URGENT: no SCA; returns 25 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• 143rd check Thu 20 Aug 2026 UTC — no change from 142nd check (same day)\n• Duplicate of Issue 15 (row 16) — same student: Saikhantes Shagdarsuren (student 1001)\n• Returns Tue 25 Aug 2026 (5 days) — still no class assignment since 3 Jul 2026 (48 days)",
+        "See Issue 15 (row 16). See recipe: issue-15-addendum-20aug.md",
+        "143rd Thu 20 Aug UTC. Duplicate of Issue 15. Returns Tue 25 Aug (5d). URGENT.",
+        "URGENT: no SCA; returns 25 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 191st check Thu 20 Aug 2026 UTC — no change from 190th check (same day)\n• Booking Course 25043 (General English PM): ended 14 Aug 2026 — 6 days stale, active = true\n• Student Eduardo Roche Diaz (student 14602, booking 18265): CONFIRMED, fully paid",
+        "Deactivate Booking Course 25043. See recipe: issue-38-addendum-18aug.md",
+        "191st Thu 20 Aug UTC. Booking Course 25043 6 days stale (ended 14 Aug). No change. Fix NOT RUN.",
+        "BC25043 6d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 114th check Thu 20 Aug 2026 UTC — no change from 113th check (same day)\n• Stale active Booking Courses (end date before 20 Aug 2026): 24,497 — unchanged\n• Impacts arrivals list: renewal students with stale active Booking Courses do not appear",
+        "Run bulk deactivation of 24,497 stale Booking Courses. See recipe: issue-45-addendum-20aug.md",
+        "114th Thu 20 Aug UTC. 24,497 stale Booking Courses unchanged. Fix NOT RUN.",
+        "24,497 stale; fix pending"
+      ]
+    ]
+  }
+]

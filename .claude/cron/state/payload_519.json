@@ -1,0 +1,57 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "519th check Tue 25 Aug 2026 UTC -- no change since 510th (earlier today)\n• 6 orphan payments remain unlinked: P4781, P16988, P16989, P17187, P18122, P18123\n• Payment 4781: EUR 380, Flywire, 2019-08-20, dataSource = FIDELO, fideloPaymentId 32056 -- 2019 migration orphan\n• Payment 16988: EUR 339.90, Bank, Apr 2026 -- linkable to booking 17856 (Margherita Galbusera)\n• Payment 16989: EUR 339.90, Bank, Apr 2026 -- linkable to booking 17857 (Francesca Fassina)\n• Payment 17187: EUR 6,151, TransferMate Escrow, May 2026 -- linkable via reference ULEARNP2026124\n• Payment 18122: EUR 250, Card, 23 Aug 2026 (2 days ago) -- clearance deposit, student unknown\n• Payment 18123: EUR 250, Card, 23 Aug 2026 (2 days ago, 56-min gap) -- clearance deposit, student unknown",
+        "Link P16988 to bk17856, P16989 to bk17857; identify P18122/P18123 via HubSpot Commerce; trace P4781 (2019 Fidelo -- write-off?). See recipe: issue-1-addendum-25aug.md",
+        "519th Tue 25 Aug UTC. All 6 orphan pmts unchanged. P18122/P18123 now 2 days old. Fix NOT RUN.",
+        "6 orphan pmts; P4781=2019 Fidelo orphan"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "519th check Tue 25 Aug 2026 UTC -- no change since 512th (earlier today)\n• Booking Accommodation 11173 (Alessandro Signorotti, bed 83): ends 30 Aug 2026 -- 5 DAYS AWAY, cleanedAt = null\n• Booking Accommodation 25 (Rosa Maria Mollica, bed 83): starts 30 Aug 2026 -- 5 DAYS AWAY, fee EUR 2,100\n• 5 stale Booking Accommodations on bed 83 still active = true: BA11239 (93d), BA11168 (66d), BA11285 (51d, fee null), BA11352 (45d, uncleaned), BA11179 (16d)\n• BA11173 needs cleaning before Rosa Mollica moves in on 30 Aug\n• DEADLINE in 5 days -- deactivation fix NOT RUN",
+        "Deactivate BA11239/11168/11285/11352/11179 before 30 Aug; set fee on BA11285; clean BA11173 on checkout. See recipe: issue-37-addendum-25aug.md",
+        "519th Tue 25 Aug UTC. Aug 30 handover: BA11173 ends, BA25 starts. 5 stale BAs unchanged. URGENT.",
+        "5 stale BAs; Aug30 = 5d"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "519th check Tue 25 Aug 2026 UTC -- no change since 514th (earlier today)\n• Booking Accommodation 11285 (Jesus Manuel Ramirez Diaz, bed 83): ended 5 Jul 2026 -- 51 days stale, fee = null\n• Booking Accommodation 11352 (bed 83, Veronica Martin, Jul 4-11 2026): stale 45 days, active = true, cleanedAt = null\n• Current occupant: Alessandro Signorotti (BA11173, ends 30 Aug 2026) -- 5 DAYS\n• Next occupant: Rosa Maria Mollica (BA25, starts 30 Aug 2026) -- 5 DAYS\n• BA11285 cleaned (Jul 6) but fee still null -- confirm rate for Jun 21 to Jul 5 (2 weeks)",
+        "Set fee on BA11285 (2 weeks Jun 21-Jul 5, confirm rate with KC); deactivate with batch fix. See recipe: issue-43-addendum-25aug.md",
+        "519th Tue 25 Aug UTC. BA11285 fee null; BA11352 stale uncleaned. Aug 30 handover imminent.",
+        "5 stale BAs; Aug30 = 5d"
+      ]
+    ]
+  },
+  {
+    "range": "H54:K54",
+    "values": [
+      [
+        "519th check Tue 25 Aug 2026 UTC -- no change since 514th (earlier today)\n• Booking Accommodation 11267 (bed 23, 29 Aug to 4 Oct 2026): fee EUR 3,840, active = true -- READY for arrival\n• Booking Accommodation 11399 (bed 54, 4 Oct to 19 Dec 2026): fee = null, active = true -- NOT YET SET\n• Student Fanny Scelles ARRIVES IN 4 DAYS (29 Aug 2026) -- BA11267 is confirmed ready\n• BA11399 fee null (40 days until Oct 4 move-in) -- set bed-54 rate x 11 weeks",
+        "Set BA11399.fee = bed-54 rate x 11 weeks before Oct 4; confirm rate with KC. See recipe: issue-52-addendum-25aug.md",
+        "519th Tue 25 Aug UTC. Arrival imminent (4d). BA11267 ready. BA11399 fee null unchanged.",
+        "ARRIVES AUG 29 (4d); BA11399 fee null"
+      ]
+    ]
+  },
+  {
+    "range": "H56:K56",
+    "values": [
+      [
+        "519th check Tue 25 Aug 2026 UTC -- no change since 518th (earlier today)\n• Booking Accommodation 11160 (Maicol Moretti, Bed B, A1/Room 1): cleanedAt = 24 Aug 17:11 IST -- CLEANED\n• Booking Accommodation 11161 (Lucia Borroni, Bed A, A1/Room 1): ended 22 Aug 2026 -- 3 days ago, cleanedAt = null -- STILL UNCLEANED\n• Design gap: cleaning queue counts per person (2 per shared room) vs per room (1 per room)\n• BA11161 now 3 days past checkout -- needs manual cleaning mark (escalate)",
+        "Mark BA11161 as cleaned (manual or DB); implement per-room grouping in getCleaningQueue. See recipe: issue-54-addendum-25aug.md",
+        "519th Tue 25 Aug UTC. BA11161 still uncleaned (3 days). BA11160 cleaned Aug 24.",
+        "BA11161 uncleaned; design gap open"
+      ]
+    ]
+  }
+]

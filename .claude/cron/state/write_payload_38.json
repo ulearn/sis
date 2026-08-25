@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 12th check Tue 4 Aug 2026 UTC — 3 URGENT booking courses end Fri 7 Aug (BC 24967 Gustavo Da Silva NEWLY found)\n• Booking course 88 (Africa Mera Bachir, student 76, booking 82): Morning General, ends Fri 7 Aug — 0 class assignments, URGENT\n• Booking course 24967 (Gustavo Da Silva, student 14570, booking 18179): General English AM, ends Fri 7 Aug — 0 class assignments, URGENT — not previously flagged\n• Booking course 25038 (Eduardo Roche Diaz, student 14602, booking 18258): General English PM, ends Fri 7 Aug — 0 class assignments, URGENT\n• 5 more booking courses end Fri 14 Aug with 0 class assignments: BCs 1144 (Anar-Erdene Batbayar), 1305 (Nomin Nergui), 1344 (Bat-Orgil Baljinnyam), 1572 (Ganchimeg Ganbaatar), 1591 (Turbold Altankhuyag)\n• Booking course 25003 (Aleix Cervera, booking 18225): duplicate of BC 25002 — deactivate only, do not assign\n• Booking course 25006 (Marina Larripa, ended 2026-08-03): active = true — 2 days stale\n• Aug Bank Holiday 2026-08-03: confirmed absent from school_closures — holiday passed yesterday; BC 24956 (Giampaolo Russo) started on BH without shunting; add 2027+ BH dates to prevent recurrence",
+        "Assign BCs 88+24967+25038 TODAY (ends Fri); BCs 1144/1305/1344/1572/1591 by Thu 13 Aug; deactivate BCs 25003+25006; add Aug BH 2027-2030 to school_closure. See recipe: issue-38-addendum-4aug-h.md",
+        "12th hrly Tue 4 Aug UTC. 3 urgent BCs end Fri Aug 7 (BC 24967 Gustavo Da Silva is new — was missing from prev H). 5 more end Fri Aug 14. Aug BH absent from DB (past harm). Fix NOT RUN.",
+        "CRITICAL; 3 urgent Aug 7"
+      ]
+    ]
+  }
+]

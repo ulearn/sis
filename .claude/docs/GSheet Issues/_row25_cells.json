@@ -1,0 +1,8 @@
+{
+  "row": 25,
+  "issue": "24",
+  "H": "• Booking 1611 is Confirmed, paid EUR 1280.12 / 1280.12\n• Booking course 1797 (Morning General) runs 6 Apr to 26 Jun — FINAL WEEK this week; course ends Fri Jun 26 (4 days)\n• Only class assignment sca229 (class 12, B1 AM 2) expired 26 Apr — 57 days without class assignment; no attendance recorded\n• Booking course 24686 (Morning General, 20 Jul to 18 Sep) exists with fee = null — needs fee and class assignment before Jul 20\n• Neil decision needed today (Mon): Is Alberto in school this week Mon 22 to Fri 26 Jun?",
+  "I": "Neil to decide: if Alberto returning this week assign SCA bc1797 cls12 ws=Jun22 we=Jun26; else bc1797 expires unused + SCA for bc24686 Jul20 when he returns. Also: bc24686.fee=null must be set. See recipe: issue-24-alberto-fidelo-course-split.md",
+  "J": "Jun22 hrly x4 (Mon, 4d to Jun26): bc1797 Morning-General ends Fri Jun26 — NO SCA since sca229 expired Apr26 (57d). bc24686 Jul20-Sep18 fee=null (updAt=May14). bk1611 CONF 1280.12 (updAt=Jun11). NEIL TODAY: if Alberto in school this wk, INSERT SCA bc1797 cls12 ws=Jun22 we=Jun26. Then set bc24686.fee before Jul20.",
+  "K": "Jun26; 4d; DECIDE"
+}

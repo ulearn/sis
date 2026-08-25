@@ -1,0 +1,50 @@
+[
+  {
+    "range": "J23",
+    "values": [
+      [
+        "Jun20 hrly: bc24934 DUP still present (fresh DB). 0 SCAs on bc24933/bc24934. bk18158 CONF 740/740 (updAt=Jun15). Att=10 Jun15-19 (no SCA on bc24933). bk18131+18133 DELETED Jun17 (confirmed). URGENT: week Jun22-Jul10 needs SCA cls7 bc24933. Steps NOT RUN: (1) DELETE booking_courses WHERE id=24934; (2) INSERT INTO student_class_assignments(booking_course_id,class_id,week_start,week_end,student_id) VALUES(24933,7,2026-06-22,2026-07-10,1015)."
+      ]
+    ]
+  },
+  {
+    "range": "J25",
+    "values": [
+      [
+        "Jun20 hrly: bc1797 Morning General Apr06-Jun26 ACTIVE — final week Mon22-Fri26. sca229 cls12-B1AM2 weekEnd=Apr26 STILL EXPIRED 54d (fresh DB). att=0 ALL TIME confirmed (s1052). bc24686 Jul20-Sep18 future (0 SCAs). bk1611 CONF 1280.12. 0 booking_holidays. NEIL: Is Alberto returning Mon Jun22? If yes INSERT (NOT RUN): INSERT INTO student_class_assignments(booking_course_id,class_id,week_start,week_end,student_id) VALUES(1797,12,2026-06-22,2026-06-26,1052). After Fri Jun26 bc1797 expires — absolute last window."
+      ]
+    ]
+  },
+  {
+    "range": "J26",
+    "values": [
+      [
+        "Jun20 hrly: s917 visaStatus=null hubspotContactId=null (updAt=May21=30d stale, fresh DB). bk1467 CONF 2405/2405 (updAt=Jun11). bc1613 AY-MORN Apr27-Oct16 ACTIVE. 0 SCAs all time (Day 55 cal, ~40 school days). Cannot auto-verify visa (no HS link). SQL NOT RUN. NEIL: confirm visa from IRP/paperwork; UPDATE students SET visa_status=Approved WHERE id=917; then assign B1-MORN class (id=5 or 12) via SIS."
+      ]
+    ]
+  },
+  {
+    "range": "J39",
+    "values": [
+      [
+        "Jun20 hrly: phantom row STILL PRESENT (F=278 only, all other fields empty, 40+ days since ~May11). NEIL: delete row 39 or fill in issue number, student name, and description."
+      ]
+    ]
+  },
+  {
+    "range": "J40",
+    "values": [
+      [
+        "Jun20 hrly: s356 gender=null (updAt=Jun03=17d stale, fresh DB). doc238 STILL ISSUED Jun18T08:53UTC — 2 days elapsed, wrong Ms./she/her pronouns on exit letter. bk560 CONF 3168.75/3168.75 (only one document on this booking). NEIL: (1) set gender=Male via SIS personal details for student 356; (2) revoke doc238; (3) regenerate exit letter. NOT YET RUN."
+      ]
+    ]
+  },
+  {
+    "range": "J41",
+    "values": [
+      [
+        "Jun20 hrly: grep confirms _bulkEmailRecipientIds (L1349) declared but NOT set in openBulkEmailModal (L1367). sendBulkEmail (L1494) reads live bulkSelectedStudents Set, which showStudentsInSchoolReport (L2219) clears on every render. Bug persists. Fix = 2 lines in public/admin.html (no build/restart). NOT YET APPLIED."
+      ]
+    ]
+  }
+]

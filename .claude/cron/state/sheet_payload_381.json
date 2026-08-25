@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H9:K9",
+    "values": [
+      [
+        "• 33rd check Wed 19 Aug 2026 UTC — no change since 32nd check (Tue 18 Aug)\n• Booking Course 1482 (Diego da Silva Molina, student 840, Academic Year Afternoon): ended 2025-12-19 — 242 days stale, active = true, 0 class assignments\n• Booking Course 1484 (Diego da Silva Molina, student 840, Academic Year Afternoon): ended 2026-06-05 — 75 days stale, active = true, 1 class assignment — verify before deactivating\n• Booking Course 1486 (Aurora Madril Oliveira Molina, student 841, Academic Year Afternoon): ended 2026-02-13 — 186 days stale, active = true, 0 class assignments\n• Booking Course 1488 (Cibele dos Santos Eugenio, student 842, Afternoon General): ended 2025-09-19 — 333 days stale, active = true, 0 class assignments\n• Booking Course 1490 (Cibele dos Santos Eugenio, student 842, Afternoon General): ended 2026-02-13 — 186 days stale, active = true, 0 class assignments\n• Booking Course 1492 (Jin Jingying, student 844, Academic Year Morning): ended 2026-03-13 — 159 days stale, active = true, 0 class assignments\n• Fix NOT RUN",
+        "Deactivate BCs 1482, 1486, 1488, 1490, 1492 (0 class assignments); verify BC 1484 SCA first. See recipe: issue-8-addendum-19aug.md",
+        "33rd Wed 19 Aug UTC. No change. BC 1484 has 1 SCA (newly confirmed — verify before deactivating). BC 1488 now 333d stale. Fix NOT RUN.",
+        "6 stale BCs; 333d max"
+      ]
+    ]
+  },
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "• 70th check Wed 19 Aug 2026 UTC — no change since 69th check (Tue 18 Aug)\n• Document 171 (booking 1498, Suvderdene Bayartsog): DRAFT, version 1, created 5 Jun 2026 — 75 days unissued, template: Certificate of Completion\n• Booking Course 1660 (ULearn Renewal MORN): ended 2026-06-05 — 75 days stale, active = true, 0 class assignments\n• Fix NOT RUN",
+        "Deactivate BC 1660 (0 SCAs); delete draft 171 and regenerate Certificate of Completion. See recipe: issue-9-addendum-19aug.md",
+        "70th Wed 19 Aug UTC. No change. Document 171 DRAFT 75d unissued. BC 1660 stale 75d. Fix NOT RUN.",
+        "doc DRAFT 75d; BC stale"
+      ]
+    ]
+  },
+  {
+    "range": "H11:K11",
+    "values": [
+      [
+        "• 56th check Wed 19 Aug 2026 UTC — no change since 55th check (Tue 18 Aug)\n• Booking 97 (Massimiliano Cameran, student 91): CONFIRMED, confirmed = false — fully paid EUR 1,741, amountOpen = 0 (anomaly)\n• Booking Course 107 (Morning General): ended 2026-05-22 — 89 days stale, active = true, 1 class assignment\n• Booking Course 24793 (General English AM): ended 2026-06-05 — 75 days stale, active = true, 1 class assignment\n• Documents on booking 97: doc 63 REVOKED (Net-to-Gross Invoice), doc 64 ISSUED (Net-to-Gross Invoice) — no certificate issued\n• Fix NOT RUN",
+        "Set confirmed = true on booking 97; deactivate BCs 107 and 24793 (verify SCAs); generate and issue Certificate of Completion. See recipe: issue-10-addendum-19aug.md",
+        "56th Wed 19 Aug UTC. BC 107 89d stale, BC 24793 75d stale. No certificate — only 2 invoice docs. confirmed = false anomaly persists. Fix NOT RUN.",
+        "no cert; BC107 89d; BC24793 75d"
+      ]
+    ]
+  },
+  {
+    "range": "H12:K12",
+    "values": [
+      [
+        "• 27th check Wed 19 Aug 2026 UTC — no change since 26th check (Tue 18 Aug)\n• Booking Course 24696 (General English AM Plus): ended 2026-07-03 — 47 days stale, active = true, 1 class assignment (last week: 3 Jul 2026)\n• Student 1063 (Valeriya Salauyova): hubspotContactId = null, visaStatus = null — unchanged\n• Fix NOT RUN",
+        "Deactivate BC 24696 (verify SCA last week 3 Jul); link HubSpot contact for student 1063. See recipe: issue-11-addendum-19aug.md",
+        "27th Wed 19 Aug UTC. BC 24696 now 47 days stale. HubSpot contact still null. Fix NOT RUN.",
+        "BC24696 47d stale; HS null"
+      ]
+    ]
+  },
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• 187th check Wed 19 Aug 2026 UTC — no change since 186th check (Tue 18 Aug)\n• Student Class Assignment 288: student 14444 (Rakan Alghamdi), class 12, booking_course_id = 24697 (WRONG), week_end = 2026-12-18\n• Booking Course 24697 (Academic Year Morning): ended 2026-07-31 — 19 days stale, active = true (old course)\n• Booking Course 25035 (General English Academic Year AM Plus): 2026-08-03 to 2026-12-18, active = true — current course, 0 class assignments, 16 days elapsed\n• SCA 288 week_end (2026-12-18) exactly matches BC 25035 end date — confirms SCA belongs on BC 25035 not BC 24697\n• Fix NOT RUN",
+        "Move SCA 288 bookingCourseId from 24697 to 25035; deactivate BC 24697. See recipe: issue-12-addendum-19aug.md",
+        "187th Wed 19 Aug UTC. SCA 288 week_end Dec 18 matches BC 25035 end date (confirmed wrong BC). BC 24697 19d stale. BC 25035 16d with 0 SCAs. Fix NOT RUN.",
+        "SCA on wrong BC; BC24697 19d"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• 85th check Wed 19 Aug 2026 UTC — no change since 84th check (Tue 18 Aug)\n• Booking 1611 (Alberto Squillace, student 1052): CONFIRMED, confirmed = true, fully paid EUR 1,280.12, amountOpen = 0\n• Booking Course 1797 (Morning General): ended 2026-06-26 — 54 days stale, active = true, 1 class assignment (migration artifact)\n• Booking Course 24686 (Morning General): 2026-07-20 to 2026-09-18, active = true, 0 class assignments — 30 days remaining\n• No holidays in database — original Fidelo holiday records not migrated to SIS\n• visaStatus = null\n• Fix NOT RUN",
+        "Deactivate BC 1797 (verify SCA); assign class to BC 24686 before it ends 18 Sep 2026. See recipe: issue-24-addendum-19aug.md",
+        "85th Wed 19 Aug UTC. BC 1797 54d stale. BC 24686 0 SCAs, ends Sep 18 (30d remaining). No holidays in DB. Fix NOT RUN.",
+        "BC24686 30d; 0 SCAs; ends Sep 18"
+      ]
+    ]
+  }
+]

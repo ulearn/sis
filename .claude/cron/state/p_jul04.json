@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• Accommodation 11352 (Verónica Martín, booking 18156): bed 83, 4 Jul to 11 Jul — student is in the building today (90th check, 4 Jul 2026 UTC)\n• Accommodation 11285 (Jesús Manuel Ramírez Díaz, booking 17825): bed 83, 21 Jun to 5 Jul — checks out tomorrow 5 Jul\n• Bed 83 conflict is live: both guests in the same room tonight and tomorrow night\n• Beds 174, 175, 176 (City Centre Apartment): zero conflicts 4–11 Jul — confirmed free (fresh query)\n• Separate anomaly: accommodation 11346 (Fabrizio Mauro, booking 17826) type = Host Family but references bed 83, 12 Jul to 9 Aug — lower priority",
+        "(NOT RUN) Move ba11352 to bed 174/175/176: SIS Student 278 > Booking 18156 > Accommodation > edit 11352. See recipe: issue-37-veronica-capel-accomm-allocation.md",
+        "90th check 4 Jul UTC. ba11352 (Veronica, bed83, Jul4-11) + ba11285 (Jesus, bed83, Jun21-Jul5): STILL BOTH ACTIVE — LIVE CONFLICT. Jesus out TOMORROW 5 Jul. Beds 174/175/176 free. STUDENT IN BUILDING. NEIL: SIS Student 278 > Booking 18156 > Accommodation > edit 11352 > change to bed 174/175/176 NOW.",
+        "LIVE; Jesus out Jul5"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Tuguldurtugs Enkhtugs (student 858, booking 1601): course 1786 (Academic Year Renewal Morning) starts Monday 6 Jul — zero class assignments since SCA 55 expired 1 May 2026 — EUR 250 outstanding (10th check, 4 Jul 2026 UTC)\n• Kayque Tauann Lopes Coelho (student 852, booking 1633): course 1821 (Academic Year Renewal Afternoon) started 29 Jun — 5 days in already — zero class assignments since SCA 26 expired 24 Apr 2026 — fully paid EUR 1405.50\n• Sophia Emilly Gallo Borim (student 853, booking 1632): course 1820 (Academic Year Renewal Afternoon) started 29 Jun — 5 days in already — zero class assignments since SCA 23 expired 24 Apr 2026 — fully paid EUR 1405.50\n• All three booking courses still have is_renewal = false — webhook not setting the flag for RNW-* SKUs\n• Arrivals list omits all three by design (query uses globally-earliest course start = Oct 2025)",
+        "(NOT RUN) Assign all 3 to classes urgently: Kayque+Sophia overdue 5 days; Tuguldurtugs starts Monday 6 Jul. SQL: UPDATE booking_courses SET is_renewal=true WHERE name ILIKE '%Renewal%'. See recipe: issue-45-renewal-arrivals.md",
+        "10th check 4 Jul UTC. s858 Tuguldurtugs: bc1786 AY-Morn-Renewal Jul6-Dec25 starts MON, ZERO SCA, EUR250 outstanding. s852 Kayque: bc1821 AY-Aft-Renewal Jun29-Dec18 started Jun29 = 5d in, ZERO SCA, fully paid EUR1405.50. s853 Sophia: bc1820 AY-Aft-Renewal Jun29-Dec18 started Jun29 = 5d in, ZERO SCA, fully paid EUR1405.50. NEIL: assign all 3 to classes URGENTLY.",
+        "0SCA; Jul6=2d"
+      ]
+    ]
+  },
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payment 16988 (HubSpot payment 1204827374829): EUR 339.90 — booking ID = null, Xero payment ID = null — still unlinked (199th check, 4 Jul 2026 UTC)\n• Payment 16989 (HubSpot payment 1204846469317): EUR 339.90 — booking ID = null, Xero payment ID = null — still unlinked\n• Booking 17856: Confirmed, confirmed = false — booking course 24631 (General English AM Plus, 29 Jun to 10 Jul 2026), fee = null\n• Booking 17857: Confirmed, confirmed = false — booking course 24630 (General English AM Plus, 29 Jun to 10 Jul 2026), fee = null\n• Courses end 10 Jul 2026 — 6 days remaining — 199 hourly checks — SQL still not run",
+        "(NOT RUN) (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) UPDATE booking_courses SET fee=339.9 WHERE id IN (24630,24631); (4) UPDATE bookings SET confirmed=true WHERE id IN (17856,17857). See recipe: issue-1-orphan-payments.md",
+        "4 Jul UTC (199th check): pmts 16988+16989 booking_id=STILL null. bk17856+17857 CONF confirmed=false amtPaid=339.9. bc24630+24631 GE-AM-Plus Jun29-Jul10 fee=null. Jul10=6d. 199 CHECKS SQL NOT RUN. NEIL: RUN NOW — COURSE ENDS JUL10.",
+        "6d to end; UNRUN"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 (Edith Nunes, student 1015): Confirmed, confirmed = true, fully paid EUR 740 (51st check, 4 Jul 2026 UTC)\n• Duplicate booking courses on booking 18158: course 24933 (General English AM, EUR 380) and course 24934 (General English AM, EUR 360) — same dates 15 Jun to 10 Jul 2026 — both still active\n• Last class assignment: SCA 146, class 7, expired 15 May 2026 — zero active class assignments (Day 50+ in school without formal class record)\n• Course ends 10 Jul 2026 — 6 days remaining — both fixes still not run after 51 checks",
+        "(NOT RUN) (1) UPDATE booking_courses SET active=false WHERE id=24934; (2) assign s1015 to class 7 (A1 AM) via SIS admin for bc24933 before Jul10. See recipe: issue-22-edith-nunes-payment-dups.md",
+        "51st check 4 Jul UTC. bk18158 CONF 740/740. bc24933(GE-AM EUR380)+bc24934(DUP EUR360) BOTH active Jun15-Jul10. ZERO SCAs (last sca146 cls7 expired May15 = 50d ago). Course ends Jul10=6d. 51 checks, both steps NOT RUN. NEIL: (1) deactivate bc24934; (2) assign s1015 to class 7 A1-AM — URGENT 6 days left.",
+        "0SCA; Jul10=6d; Day51"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Class assignment 255 (Saikhantes Shagdasuren, student 1001, class 11 B1 Afternoon): week end = 3 Jul 2026 — expired yesterday (95th check, 4 Jul 2026 UTC)\n• No future class assignments for student 1001 — student is now fully unassigned\n• Active booking course 24925 (Academic Year Afternoon, 9 Mar to 2 Oct 2026, booking 18151): confirmed, EUR 1102.20 — course runs until October\n• Old booking course 1982 (Academic Year Morning, Jun 2025 to Dec 2025): still active = true in database — data hygiene issue, lower priority\n• Action needed: re-assign student 1001 to a B1 Afternoon class from week beginning 6 Jul 2026",
+        "(NOT RUN) SIS admin: assign student 1001 (Saikhantes) to B1 PM class for bc24925 (AY Aft, active until Oct 2). See recipe: issue-15-saikhantes-course-dates.md",
+        "95th check 4 Jul UTC. SCA255 expired yesterday (week_end=Jul3). No future SCAs for s1001. bc24925 AY-Aft Mar09-Oct02 active (bk18151 CONF EUR1339.20). bc1982 AY-Morning 2025 STILL active=true (data hygiene). NEIL: SIS s1001 bk18151 > assign to B1 PM class from wb 6 Jul 2026.",
+        "SCA expired; reassign"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Booking 17831 (Xuezhen Huang, student 14443): status = Partial, confirmed = false — EUR 965 paid of EUR 1396.90 total; amount open = EUR 431.90 (18th check, 4 Jul 2026 UTC)\n• Payment 17963 (EUR 965, HubSpot 1273784562922, created 2 Jul 2026): Xero payment ID = null — not yet Xero-reconciled\n• Payment 17180 (EUR 431.90, created 5 May 2026): no HubSpot ID, no Xero ID, type = null — possible manual or pre-migration entry\n• Combined payments 17963 + 17180 = EUR 1396.90 = booking total — student appears fully paid but booking status not updated\n• Accommodation 11358 (Host Family, bed 180, 12 Jul to 2 Aug 2026): 8 days until check-in, claim status = null — not yet assigned to a host family provider",
+        "(NOT RUN) Verify pmt17180 is valid; confirm bk17831 (total paid = total amount). Reconcile pmt17963 in Xero. Assign ba11358 to provider before Jul12. See recipe: issue-39-xuezhen-huang-accomm-missing.md",
+        "18th check 4 Jul UTC. bk17831 PARTIAL confirmed=false EUR965/1396.90 (open=431.90). pmt17963 EUR965 HS=1273784562922 xero=null (Jul2). pmt17180 EUR431.90 no HS no xero type=null (May5). Total pmts=1396.90=total. ba11358 bed180 HF Jul12-Aug02 claim_status=null. Jul12=8d. NEIL: (1) verify pmt17180; (2) reconcile pmt17963 in Xero; (3) assign bed 180 to HF provider before Jul12.",
+        "PARTIAL; Xero TBD; Jul12=8d"
+      ]
+    ]
+  }
+]

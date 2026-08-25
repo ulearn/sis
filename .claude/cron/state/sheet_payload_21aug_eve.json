@@ -1,0 +1,46 @@
+[
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 261st check Fri 21 Aug 2026 (late evening UTC) — no change since 260th (morning)\n• Booking Accommodation 11311 (bed 84, booking 17980): ends Sat 22 Aug, fee EUR 3,850, active — checkout in < 8 hours\n• Booking Accommodation 11393 (bed 88, booking 17980): starts Sat 22 Aug to 13 Sep, fee = null, active — CRITICAL: checkin in < 8 hours, fee still not set\n• Booking 17980: CONFIRMED, fully paid EUR 5,331, open EUR 0\n• Fee for Booking Accommodation 11393 = EUR 5,331 minus EUR 3,850 = EUR 1,481\n• Fix NOT RUN",
+        "Set fee EUR 1,481 on Booking Accommodation 11393; deactivate 11311 after checkout Sat 22. See recipe: issue-36b-addendum-21aug-d.md",
+        "261st Fri 21 Aug late evening UTC. CRITICAL: Sat 22 < 8h. BA 11393 fee null. DB confirmed no change. Fix NOT RUN.",
+        "URGENT: Sat22 checkin"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 158th check Fri 21 Aug 2026 (late evening UTC) — no change since 157th (morning)\n• Booking Accommodation 11396 (bed 44, booking 18180): ends Sat 22 Aug, fee = null, active — checkout in < 8 hours\n• Booking Accommodation 11397 (bed 89, booking 18180): starts Sat 22 Aug to 6 Sep, fee = null, active — CRITICAL: checkin < 8 hours, fee still not set\n• Booking Accommodation 11357 (bed 178, booking 18180): ended 15 Aug, fee EUR 1,250, active — 6 days stale\n• Booking Accommodation 11394 (bed 89, booking 17826): ended 9 Aug, fee = null, active — 12 days stale\n• Booking 18180: CONFIRMED, fully paid EUR 2,584.96\n• Fee split: BA 11396 = EUR 306.65 (1 week); BA 11397 = EUR 613.31 (2 weeks); note EUR 415 gap vs total — verify with Neil\n• Fix NOT RUN",
+        "Set fees: BA 11396 EUR 306.65, BA 11397 EUR 613.31; deactivate 11357+11394. Verify EUR 415 gap. See recipe: issue-41-addendum-21aug-d.md",
+        "158th Fri 21 Aug late evening UTC. CRITICAL: Sat 22 < 8h. BAs 11396+11397 fee null. DB confirmed no change. Fix NOT RUN.",
+        "URGENT: Sat22 checkin"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 193rd check Fri 21 Aug 2026 (late evening UTC) — no change since 192nd (morning)\n• Student 1001 (Saikhantes Shagdarsuren): Booking 18151 CONFIRMED, confirmed = true, paid = EUR 1,339.20, open = EUR 0\n• Booking Course 24925 (Academic Year Afternoon): active = true, runs 9 Mar 2026 to 2 Oct 2026 (42 days remaining)\n• Class Assignment 255: class 11, week_start = 12 Jan 2026, week_end = 3 Jul 2026 — last assignment, gap now 49 days\n• No class assignment created since 3 Jul 2026 — DB confirmed by query of recent SCAs\n• Booking Course 1982 (Academic Year Morning): ended 19 Dec 2025, active = true — 245 days stale\n• URGENT: Student returns Tue 25 Aug; Mon 24 Aug = deadline to create SCA for week of 24 Aug\n• Fix NOT RUN",
+        "Create SCA for BC 24925, class 11 (B1 PM), week of 24 Aug; deactivate BC 1982. See recipe: issue-15-addendum-21aug-b.md",
+        "193rd Fri 21 Aug late evening. SCA gap 49d (since 3 Jul). Returns Tue 25 Aug. Mon 24 = DEADLINE. BC 24925 ends Oct 2. Fix NOT RUN.",
+        "URGENT: no SCA 49d; Mon24 deadline"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• 153rd check Fri 21 Aug 2026 (late evening UTC) — unchanged since 152nd (morning)\n• Duplicate of Issue 15 (row 16) — same student: Saikhantes Shagdarsuren (student 1001)\n• Booking Course 24925 (Academic Year Afternoon): active, ends 2 Oct 2026 (42 days left)\n• Class Assignment 255: class 11 (B1 PM), week ending 3 Jul 2026 — SCA gap 49 days confirmed by DB\n• No SCAs created since 3 Jul 2026 (DB query confirmed)\n• Returns Tue 25 Aug — assign for week ending Fri 28 Aug by Mon 24 Aug\n• Fix NOT RUN",
+        "See Issue 15 (row 16). Recipe: issue-29-15-addendum-21aug-b.md",
+        "153rd Fri 21 Aug late evening. Returns Tue 25 Aug. Mon 24 = DEADLINE. SCA gap 49d. DB confirmed. Fix NOT RUN.",
+        "URGENT: no SCA; Mon24 deadline"
+      ]
+    ]
+  }
+]

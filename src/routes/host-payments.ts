@@ -15,6 +15,16 @@ export function hostPaymentRoutes(prisma: PrismaClient) {
     } catch (e) { res.status(500).json({ error: String(e) }); }
   });
 
+  // Manually trigger the Xero bill-status sync (same job as the daily cron) so
+  // staff can pull just-paid bills into SIS on demand instead of waiting for the
+  // next cron pass. Whole-DB sweep; idempotent — only re-checks submitted/null bills.
+  router.post('/sync-xero', async (_req, res) => {
+    try {
+      const result = await scripts.syncXeroBillStatuses();
+      res.json(result);
+    } catch (e) { res.status(500).json({ error: String(e) }); }
+  });
+
   // List recent payment runs
   router.get('/runs', async (_req, res) => {
     try { res.json(await scripts.listPaymentRuns()); }

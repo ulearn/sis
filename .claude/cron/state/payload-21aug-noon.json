@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 263rd check Fri 21 Aug 2026 ~12:00 UTC — no change since 262nd (11:02 UTC)\n• Booking Accommodation 11311 (bed 84, booking 17980): ends Sat 22 Aug, fee EUR 3,850, active — checkout ~12 hours\n• Booking Accommodation 11393 (bed 88, booking 17980): starts Sat 22 Aug to 13 Sep, fee = null, active — CRITICAL: checkin ~12 hours, fee still not set\n• Booking 17980: CONFIRMED, fully paid EUR 5,331, open EUR 0\n• Fee for Booking Accommodation 11393 = EUR 5,331 minus EUR 3,850 = EUR 1,481\n• Fix NOT RUN",
+        "Set fee EUR 1,481 on Booking Accommodation 11393; deactivate 11311 after checkout Sat 22. Recipe: issue-36b-addendum-21aug-e.md",
+        "263rd Fri 21 Aug ~12:00 UTC. CRITICAL: Sat 22 ~12h. Booking Accommodation 11393 fee null. DB confirmed no change. Fix NOT RUN.",
+        "URGENT: Sat22 checkin"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 160th check Fri 21 Aug 2026 ~12:00 UTC — no change since 159th (11:02 UTC)\n• Booking Accommodation 11396 (bed 44, booking 18180): ends Sat 22 Aug, fee = null, active — CRITICAL: checkout ~12 hours\n• Booking Accommodation 11397 (bed 89, booking 18180): starts Sat 22 Aug to 6 Sep, fee = null, active — CRITICAL: checkin ~12 hours, fee not set\n• Booking Accommodation 11357 (bed 178, booking 18180): ended 15 Aug, fee EUR 1,250, active — 6 days stale\n• Booking Accommodation 11394 (bed 89, booking 17826): ended 9 Aug, fee = null, active — 12 days stale\n• Booking 18180: CONFIRMED, fully paid EUR 2,584.96\n• Fee split: Booking Accommodation 11396 = EUR 306.65 (1 week); Booking Accommodation 11397 = EUR 613.31 (2 weeks); EUR 415 gap vs total — verify with Neil\n• Fix NOT RUN",
+        "Set fees: Booking Accommodation 11396 EUR 306.65, Booking Accommodation 11397 EUR 613.31; deactivate 11357+11394. Verify EUR 415 gap. Recipe: issue-41-addendum-21aug-e.md",
+        "160th Fri 21 Aug ~12:00 UTC. CRITICAL: Sat 22 ~12h. Booking Accommodations 11396+11397 fee null. DB no change. Fix NOT RUN.",
+        "URGENT: Sat22 checkin"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• 63rd check Fri 21 Aug 2026 ~12:00 UTC — no change since 62nd (11:02 UTC)\n• 5 stale Booking Accommodations on bed 83, all active:\n  - Booking Accommodation 11239 (ended 24 May, 89 days stale, fee EUR 1,050, booking 22)\n  - Booking Accommodation 11168 (ended 20 Jun, 62 days stale, fee EUR 700, booking 92)\n  - Booking Accommodation 11285 (ended 5 Jul, 47 days stale, fee = null, booking 17825)\n  - Booking Accommodation 11352 (ended 11 Jul, 41 days stale, fee EUR 360, booking 18156)\n  - Booking Accommodation 11179 (ended 9 Aug, 12 days stale, fee EUR 1,360, booking 82)\n• Booking 17825 (BA 11285): CONFIRMED, fully paid EUR 2,008 — fee not set on Booking Accommodation\n• Next occupant Booking Accommodation 25 (booking 17844): starts 30 Aug — 9 days\n• Fix NOT RUN",
+        "Set fee EUR 2,008 on Booking Accommodation 11285 (booking 17825); deactivate Booking Accommodations 11239, 11168, 11285, 11352, 11179. Recipe: issue-37-addendum-21aug-b.md",
+        "63rd Fri 21 Aug ~12:00 UTC. No change. 5 stale Booking Accommodations. BA 11285 fee null (booking 17825). Aug 30 = 9 days. Fix NOT RUN.",
+        "5 stale BAs; Aug 30 = 9d"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• 55th check Fri 21 Aug 2026 ~12:00 UTC — no change since 54th (11:02 UTC)\n• Current occupant Booking Accommodation 11173 (booking 88): 9 Aug to 30 Aug, fee EUR 1,080 — active\n• Next occupant Booking Accommodation 25 (booking 17844): starts 30 Aug, fee EUR 2,100 — 9 days\n• 5 stale Booking Accommodations on bed 83, all active:\n  - Booking Accommodation 11239 (ended 24 May, 89 days stale, booking 22)\n  - Booking Accommodation 11168 (ended 20 Jun, 62 days stale, booking 92)\n  - Booking Accommodation 11285 (ended 5 Jul, 47 days stale, fee null, booking 17825)\n  - Booking Accommodation 11352 (ended 11 Jul, 41 days stale, booking 18156)\n  - Booking Accommodation 11179 (ended 9 Aug, 12 days stale, booking 82)\n• Fix NOT RUN",
+        "Set fee EUR 2,008 on Booking Accommodation 11285 (booking 17825); deactivate Booking Accommodations 11239, 11168, 11285, 11352, 11179. See Issue 37 (row 39). Recipe: issue-43-addendum-21aug-b.md",
+        "55th Fri 21 Aug ~12:00 UTC. 5 stale Booking Accommodations unchanged. BA 11285 fee null (booking 17825). Aug 30 = 9 days. Fix NOT RUN.",
+        "5 stale BAs; Aug 30 = 9d"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 122nd check Fri 21 Aug 2026 ~12:00 UTC — no change since 121st (late morning)\n• Stale active Booking Courses (end date on or before 21 Aug 2026): 24,515 — unchanged\n• (Courses ending before 21 Aug: 24,497 — 18 courses end exactly today)\n• Renewal students with stale active Booking Courses do not appear correctly on arrivals list\n• Fix NOT RUN",
+        "Run bulk deactivation of 24,515 stale Booking Courses. Recipe: issue-45-addendum-21aug-c.md",
+        "122nd Fri 21 Aug ~12:00 UTC. 24,515 stale Booking Courses (24,497 if excluding today). Fix NOT RUN.",
+        "24,515 stale; fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 153rd check Fri 21 Aug 2026 ~12:00 UTC — no change since 152nd (morning)\n• Booking 1624 (Telmuun Enkhsaikhan, student 293): PARTIAL, confirmed = false\n• Amount paid = EUR 1,406; total = EUR 1,656; EUR 250 open\n• Only 1 payment in database: ID 17956, EUR 100, payment date 31 Mar 2026\n• EUR 1,306 gap between amount paid field and database payments\n• Booking Course 1810 (Academic Year Renewal Morning): 29 Jun to 1 Jan 2027, active, 0 class assignments — day 54\n• Fix NOT RUN",
+        "Investigate EUR 1,306 payment gap via Hub fins/; create class assignment on Booking Course 1810; settle EUR 250; set confirmed = true. Recipe: issue-48-addendum-21aug.md",
+        "153rd Fri 21 Aug ~12:00 UTC. No change. Booking Course 1810 day 54, 0 class assignments. EUR 1,306 gap. Fix NOT RUN.",
+        "payment gap; BC1810 54d; SCA 0"
+      ]
+    ]
+  }
+]

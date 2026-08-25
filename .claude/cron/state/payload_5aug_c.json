@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H4:K4",
+    "values": [
+      [
+        "• 155th check Wed 5 Aug 2026 UTC — still fixed (Christmas shunt operational)\n• 9 school closures in DB: Good Fridays 2026-2030, Christmas 2026-2029\n• August Bank Holiday 2026-08-03 passed without DB entry — shunt did not fire for Aug 3 starters\n• August Bank Holiday 2027+ still not in school_closure — add before next AY booking season",
+        "Add Aug BH 2027-2030 to school_closure (INSERT, not urgent today). Christmas shunt resolved.",
+        "155th hrly Wed 5 Aug UTC. Closures unchanged, 9 entries. Aug BH 2027+ still not in DB. See Issue 38 recipe.",
+        "fixed"
+      ]
+    ]
+  },
+  {
+    "range": "H6:K6",
+    "values": [
+      [
+        "• Check Wed 5 Aug 2026 UTC — still RESOLVED\n• Letter of Acceptance 204: ISSUED (8 Jun 2026) — barcode and accommodation block correct\n• Booking 17915: CONFIRMED, confirmed = true, fully paid EUR 9,138.75 (revised up from EUR 8,682 — accommodation end date extended from 12 Dec to 19 Dec 2026)\n• Accommodation 11287: bed 190, 4 Jul to 19 Dec 2026, active — dates revised since last check\n• Insurance document 346 (template 87): ISSUED 6 Jul 2026 — new since last check\n• Issue RESOLVED — no new anomaly",
+        "",
+        "Check Wed 5 Aug UTC. Amount revised EUR 8,682 → EUR 9,138.75 (accomm end extended Dec 12→19). Insurance doc 346 ISSUED Jul 6. RESOLVED.",
+        "RESOLVED"
+      ]
+    ]
+  },
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• 30th check Wed 5 Aug 2026 UTC — day 20\n• 975 students with non-E.164 phone numbers (unchanged)\n• Recently updated (4 Aug 2026): student 852 Kayque Lopes (+55 11 95457 2928 — spaces), student 14615 Edgar Gilabert Mata (+34667755221 (mother) — annotation in phone field), student 979 Monica Breier Fiametti (083 4891303 — local format, no country code)\n• Fix recipe: issue-6-addendum-5aug-b.md",
+        "Strip annotations; normalise to E.164. See recipe: issue-6-addendum-5aug-b.md",
+        "30th hrly Wed 5 Aug UTC. Day 20. 975 non-E.164 phones. Latest: students 852, 14615, 979 updated 4 Aug. Fix NOT RUN.",
+        "975 phones; 20d"
+      ]
+    ]
+  },
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• 124th check Wed 5 Aug 2026 UTC — all 3 stale booking accommodations confirmed unchanged\n• Booking accommodation 11162 (booking 97, Massimiliano Cameran, student 91, bed 179): ends 23 May 2026, active — 74 days stale\n• Booking accommodation 11314 (booking 18002, Massimiliano Cameran, student 91, bed 179): ends 6 Jun 2026, active — 60 days stale\n• Booking accommodation 11319 (booking 18034, Ernesto Pesoa Gil, student 14532, no bed): start = end = 31 May 2026 (zero-length), booking status = PARTIAL, active — 66 days stale\n• Bed 179 blocked by booking accommodations 11162 and 11314 (both Massimiliano Cameran)",
+        "Set active = false on booking accommodations 11162, 11314, 11319. See recipe: issue-12-addendum-5aug-c.md",
+        "124th hrly Wed 5 Aug UTC. 3 stale BAs (74d/60d/66d) unchanged. BA 11319 zero-length, booking PARTIAL. Bed 179 blocked. Fix NOT RUN.",
+        "3 stale BAs; 74d max"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 35th check Wed 5 Aug 2026 UTC — URGENT: booking 18151 service end = Fri 7 Aug 2026 (2 days)\n• Student 1001 (Saikhantes Shagdarsuren) on holiday: 20 Jul to 21 Aug 2026, returns Mon 24 Aug\n• Holiday 2500 pushed booking course 24925 end date by 25 weekdays — course now runs to 2 Oct 2026\n• Booking 18151 service end NOT updated after holiday was added — still Fri 7 Aug 2026\n• Conflict: booking expires Fri 7 Aug; student returns Mon 24 Aug (17 days after booking expires)\n• Booking course 24925 (bk 18151, Academic Year Afternoon): active, last assignment weekEnd 3 Jul 2026 (33 days stale)\n• Booking course 1982 (prior year bk 1724, Academic Year Morning, ended Dec 2025): active — 228 days stale\n• Action needed before Fri 7 Aug: extend booking 18151 service end to 2 Oct 2026",
+        "Extend bk 18151 serviceEnd to 2 Oct; add SCA on BC 24925 weekEnd 28 Aug; deactivate BC 1982. See recipe: issue-15-addendum-5aug-c.md",
+        "35th hrly Wed 5 Aug UTC. URGENT: bk 18151 expires Fri 7 Aug in 2 days but student returns Aug 24. Booking end not updated after holiday added. BC 1982 stale 228d. Fix NOT RUN.",
+        "URGENT: bk18151 expires Fri"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• 8th check Wed 5 Aug 2026 UTC — unchanged since 7th check\n• Student 983 (Flavia Nascimento Mariano): visa_status = null, last DB update 28 Jul 2026\n• Booking 1534: CONFIRMED, confirmed = true, service 1 Jun to 20 Nov 2026\n• Booking course 1710 (Academic Year Afternoon, Jun–Nov 2026): active, 2 class assignments (weekEnd 14 Jun + 20 Nov)\n• Student actively in class — visa null does not block attendance\n• Save error persists: PrismaClientKnownRequestError when updating visa via dropdown",
+        "Set visa_status = Approved via SQL. See recipe: issue-18-addendum-5aug-b.md",
+        "8th hrly Wed 5 Aug UTC. Visa still null. SCAs present, class active. Low priority. Fix NOT RUN.",
+        "visa null; class OK"
+      ]
+    ]
+  }
+]

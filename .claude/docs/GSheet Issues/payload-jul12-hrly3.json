@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payment 16988 (EUR 339.90): booking ID = null — not linked to booking 17856 (27th check, 12 Jul UTC)\n• Payment 16989 (EUR 339.90): booking ID = null — not linked to booking 17857\n• Booking 17856 (Margherita Galbusera): Confirmed but confirmed flag = false — EUR 339.90 fully paid, amount open = null\n• Booking 17857 (Francesca Fassina): Confirmed but confirmed flag = false — EUR 339.90 fully paid, amount open = null\n• Booking courses 24630 and 24631 (ended 10 July 2026): both still active = true — 2 days stale",
+        "Link payment 16988 to booking 17856 and payment 16989 to booking 17857; set confirmed = true on both bookings; deactivate booking courses 24630 and 24631. See recipe: issue-1-orphan-payments.md",
+        "27th check 12 Jul SUN UTC (fresh DB). PMT16988 booking_id=STILL null (hsId=1204827374829 TM-Escrow). PMT16989 booking_id=STILL null (hsId=1204846469317 Bank). BK17856+17857 CONF confirmed=false EUR339.90/339.90 amtOpen=null (updAt=Jul8). BC24630+24631 ended Jul10 STILL active=true (2d stale). NOT RUN.",
+        "unlinked; 2d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H9:K9",
+    "values": [
+      [
+        "• Booking course 24959 (Academic Year Morning, student 840 Diego Seidel Goncalves): ILEP code still null — course starts 3 August 2026 — 22 days remaining (21st check, 12 Jul UTC)\n• Booking course fee = EUR 1365 (confirmed set in DB)\n• Booking 18183: PARTIAL payment — EUR 1485 paid of EUR 1735, EUR 250 open, confirmed = false",
+        "Set ILEP code on booking course 24959 via SIS admin (student 840 > booking 18183 > course 24959). See recipe: issue-7-ilep-codes.md",
+        "21st check 12 Jul SUN UTC (fresh DB). BC24959 AY Morning Aug3-Feb5 2027 ilepCode=STILL null fee=1365.00 active=true (updAt=Jun29). BK18183 PARTIAL EUR1485/1735 EUR250 open confirmed=false (updAt=Jul8). Aug3=22 DAYS. NEIL: set ILEP code for BC24959 before Aug3.",
+        "ilep null; 22d"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student 1001 (Saikhantes Shagdasuren): class assignment 255 (class 11) week end = 3 July 2026 — expired 9 days ago (3rd check 12 Jul UTC)\n• 5 school days missed 6 to 10 July — Monday 13 July = TOMORROW (second consecutive week without assignment)\n• Booking course 1982 (Academic Year Morning, ended December 2025): still active = true — 205 days stale\n• Fix: extend class assignment 255 week end to 2026-10-02; deactivate booking course 1982",
+        "Extend class assignment 255 week end to 2026-10-02; deactivate booking course 1982. See recipe: issue-15-saikhantes-course-dates.md",
+        "3rd check 12 Jul SUN UTC (fresh DB). SCA255 weekEnd=Jul3 classId=11 bookingCourseId=24925 STILL expired (9d). BC1982 AY-Morning endDate=Dec2025 STILL active=true (205d stale). 5 school days missed Jul6-10. Mon13=TOMORROW — 2nd consecutive week with expired SCA. NEIL: UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255; UPDATE booking_courses SET active=false WHERE id=1982 — before Mon 09:00.",
+        "CRITICAL; Mon13 TOMORROW"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking course 24686 (Morning General, 20 July to 18 September 2026): fee = null — not included in financial reporting — 8 days to course start (25th check, 12 Jul UTC)\n• Booking 1611 (Alberto Squillace): Confirmed, confirmed = true, EUR 1280.12 fully paid (last updated 8 July 2026)\n• ILEP code = null — Morning General is not an ILEP course, this is expected",
+        "Set fee on booking course 24686 via SIS admin before 20 July. See recipe: issue-24-alberto-fidelo-course-split.md",
+        "25th check 12 Jul SUN UTC (fresh DB). BC24686 Morning General Jul20-Sep18 fee=STILL null ilepCode=null active=true (updAt=May14). BK1611 CONFIRMED EUR1280.12/1280.12 confirmed=true (updAt=Jul8). Jul20=8 DAYS. NEIL: set fee on BC24686 before Jul20.",
+        "Jul20; fee null; 8 days"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Booking accommodation 11358 (bed 180, Host Family Mary Carver): student check-in DAY TODAY 12 July 2026 — host family NOT notified — claim status = null (28th check, 12 Jul UTC)\n• Booking 17831 (Xuezhen Huang, student 14443): Confirmed, EUR 1396.90 fully paid (confirmed 7 July 2026)\n• 4 payments linked to booking 17831, all Xero payment ID = null — none reconciled in Xero: payment 17180 (EUR 431.90, Fidelo escrow, 27 April 2026, no HubSpot ID); payment 17963 (EUR 965.00, Bank, 1 July 2026, HubSpot 1273784562922); payment 17987 (EUR 131.90, Bank, 25 June 2026, HubSpot 1277724782804); payment 17988 (EUR 300.00, Bank, 12 June 2026, HubSpot 1277795367133)\n• Payments 17987 + 17988 sum to EUR 431.90 = payment 17180 — likely Fidelo installment pair, verify before reconciling all 4 separately in Xero\n• Host family contact: Mary Carver, +353 87 927 1130, mary.carver28@gmail.com",
+        "Contact Mary Carver NOW (+353 87 927 1130 / mary.carver28@gmail.com); submit host family claim for accommodation 11358 via SIS admin; reconcile payments in Xero. See recipe: issue-39-xuezhen-huang-accomm-missing.md",
+        "28th check 12 Jul SUN UTC (fresh DB). BA11358 bed180 HF startDate=TODAY Jul12 endDate=Aug2 claimedAt=STILL null claimStatus=STILL null active=true fee=EUR900. BK17831 CONF EUR1396.90/1396.90 (updAt=Jul8). 4 pmts ALL xeroPaymentId=null type=null: pmt17180(EUR431.90 Fidelo-Escrow Apr27 no-HS-ID), pmt17963(EUR965 Bank Jul1 HS1273784562922), pmt17987(EUR131.90 Bank Jun25 HS1277724782804), pmt17988(EUR300 Bank Jun12 HS1277795367133). pmt17987+17988=EUR431.90=pmt17180 (Fidelo pair, verify before reconciling all 4 separately). STUDENT IS NOW CHECKING IN TODAY. HOST NOT NOTIFIED. NEIL: call +353 87 927 1130 / email mary.carver28@gmail.com URGENTLY.",
+        "CRITICAL; HF not notified"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Pietro Colombo (student 72, booking course 81, Morning General Plus, 6 to 24 July 2026): zero class assignments ever — 5 school days missed 7 to 11 July — 10 school days remaining from Monday 13 July — booking 78 Confirmed, EUR 1880 / 1880 (28th check, 12 Jul UTC)\n• Kayque Alves Marques (student 852, booking course 1821, Academic Year Renewal Afternoon, 29 June to 18 December 2026): zero class assignments for current course — 10 school days missed since 29 June — booking 1633 Confirmed, EUR 1405.50 / 1405.50 fully paid\n• Tuguldurtugs Enkhtugs (student 858, booking course 1786, Academic Year Renewal Morning, 6 July to 25 December 2026): zero class assignments — 5 school days missed since 7 July — booking 1601 Confirmed, EUR 1356.50 / 1606.50 (EUR 250 outstanding)\n• Monday 13 July TOMORROW — all 3 students begin a new week with no class assigned",
+        "Assign Pietro (student 72, booking course 81), Kayque (student 852, booking course 1821), Tuguldurtugs (student 858, booking course 1786) to classes via SIS admin TODAY before Monday 13 July. See recipe: issue-45-renewal-arrivals.md",
+        "28th check 12 Jul SUN UTC (fresh DB). BC81 Pietro(s72) STILL 0 SCAs — 5d missed Jul7-11, BC81 ends Jul24 (12d remain). BC1821 Kayque(s852) STILL 0 SCAs — 10 school days missed Jun29-Jul11. BC1786 Tuguldurtugs(s858) STILL 0 SCAs — 5d missed Jul7-11. All bookings CONFIRMED. bk1601 EUR1356.50/1606.50 EUR250 outstanding. Mon13=TOMORROW. NEIL: assign all 3 to classes via SIS admin TODAY before Mon 09:00.",
+        "CRITICAL; 0 SCAs; Mon13"
+      ]
+    ]
+  }
+]

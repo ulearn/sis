@@ -1,0 +1,57 @@
+[
+  {
+    "range": "H24:K24",
+    "values": [
+      [
+        "• 10th check Tue 11 Aug 2026 UTC — unchanged from 9th check (Mon 10 Aug)\n• Booking Course 828 (Academic Year Morning, booking 787, student 397 Enshi Lu): start 2 Mar 2026, end 27 Feb 2026 — backwards dates (DST migration bug), active = true\n• Booking Course 826 (ended 28 Nov 2025): active = true — 256 days stale\n• Booking Course 827 (ended 30 Jan 2026): active = true — 192 days stale\n• Booking Course 829 (ended 5 Jun 2026): active = true — 67 days stale",
+        "Fix BC 828 end date; deactivate BCs 826, 827, 828, 829. See recipe: issue-23-addendum-11aug.md",
+        "10th hrly Tue 11 Aug UTC. Unchanged. BC 828 backwards; 826/827/829 stale (256d/192d/67d). Low-priority. Fix NOT RUN.",
+        "backwards dates; low-pri"
+      ]
+    ]
+  },
+  {
+    "range": "H33:K33",
+    "values": [
+      [
+        "• 9th check Tue 11 Aug 2026 UTC — unchanged (~123 days)\n• Only content is value 278 in column F (Veronica Martin student ID)\n• Veronica Martin accommodation resolved in Issue 37 (row 39)\n• No database record involved — sheet admin issue only",
+        "Delete row 33 in Google Sheets. See recipe: issue-32-addendum-11aug.md",
+        "9th hrly Tue 11 Aug UTC (~123d). Awaiting Neil to delete manually.",
+        "phantom row; delete"
+      ]
+    ]
+  },
+  {
+    "range": "H37:K37",
+    "values": [
+      [
+        "• Code check 36 Tue 11 Aug 2026 UTC — no changes since check 35 (Mon 10 Aug)\n• Bug A — Homework block: absent from renderSheetHtml() in src/routes/attendance.ts (lines 36-128) — awaiting spec\n• Bug B — Holiday filter: getWeekAttendance() in src/scripts/attendance.ts creates occurrences for all 5 days (lines 103-106) without checking school closures; filterOutHolidayDates() only used in attendance-pct context (line 351+)\n• Both bugs unchanged",
+        "Fix holiday filter (Bug B, no spec needed); add homework block after spec. See: issue-36-addendum-11aug.md",
+        "Code check 36 Tue 11 Aug UTC. Both bugs open. Bug B implementable now. Awaiting spec for Bug A.",
+        "code open; awaiting spec"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 118th check Tue 11 Aug 2026 UTC — confirmed no change from 117th check (earlier today)\n• Eduardo Roche Diaz (BC 25043, General English PM): STILL 0 class assignments, ends Fri 2026-08-14 — 3 days left — CRITICAL\n• Ana Luiza De Sousa (BC 1313, AY Afternoon): 0 assignments, ends 2026-08-28\n• Tsengelbayar Mendsaikhan (BC 24970, AY Afternoon): 0 assignments, ends 2027-01-29\n• BC 25039 (Cristian Ravai): 1 assignment confirmed\n• BC 25024 (Josimar Roberto): 1 assignment confirmed\n• BC 25036 (Jorge Perez Aldana): 1 assignment confirmed",
+        "Assign Eduardo (BC 25043) to PM class immediately — 3 days left. Then assign BCs 1313 + 24970. See recipe: issue-38-addendum-11aug-d.md",
+        "118th Tue 11 Aug UTC. Eduardo STILL 0 assignments, ends Fri 14 Aug. BCs 25024/25036/25039 confirmed assigned. BCs 1313/24970 still 0.",
+        "CRITICAL: Eduardo ends Fri; 2 more open"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• 23rd check Tue 11 Aug 2026 UTC — unchanged from 22nd check (Mon 10 Aug)\n• Booking Accommodation 11239 (booking 22, Ivan Rodriguez, bed 83): ended 24 May 2026 — 79 days stale, active = true\n• Booking Accommodation 11168 (booking 92, Diego Da Silva Saldanha, bed 83): ended 20 Jun 2026 — 52 days stale, active = true\n• Booking Accommodation 11285 (booking 17825, bed 83): ended 5 Jul 2026 — 37 days stale, active = true\n• Booking Accommodation 11352 (booking 18156, bed 83): ended 11 Jul 2026 — 31 days stale, active = true\n• Booking Accommodation 11179 (booking 82, bed 83): ended 9 Aug 2026 — 2 days stale, active = true (newly stale)",
+        "Deactivate BAs 11239, 11168, 11285, 11352, 11179 on bed 83. See recipe: issue-43-addendum-11aug.md",
+        "23rd hrly Tue 11 Aug UTC. 5 stale BAs (79d max). BA 11179 newly stale (ended 9 Aug). Fix NOT RUN.",
+        "5 stale BAs; 79d max"
+      ]
+    ]
+  }
+]

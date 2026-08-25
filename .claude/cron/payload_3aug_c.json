@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 74th check Mon 3 Aug 2026 UTC (3rd today) — Bank Holiday today, shunt still not run\n• school_closures: Aug Bank Holiday 2026-08-03 absent from database\n• 21 active booking courses still have start date 2026-08-03 — all unshunted\n• NEW: Booking course 25006 (General English AM Plus, booking 18228, Marina Larripa) ends 2026-08-03, active — course complete, needs deactivation\n• First teaching day this week: Tuesday 4 Aug\n• Recipes: issue-38-addendum-3aug-b.md (full list); issue-38-addendum-3aug-c.md (BC25006)",
+        "Run Issue 38 BH shunt (see recipe issue-38-addendum-3aug-b.md); deactivate BC 25006 first",
+        "74th hrly Mon 3 Aug UTC (3rd today). STILL NOT RUN. BC25006 (ends Aug3, complete, active) now flagged. 21 unshunted start-Aug3 BCs unchanged. First class Tue 4 Aug.",
+        "URGENT; BH TODAY; shunt pending"
+      ]
+    ]
+  }
+]

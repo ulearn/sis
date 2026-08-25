@@ -95,14 +95,14 @@ async function main() {
   console.log(`Distinct contacts with passport data: ${byContactId.size}\n`);
 
   let matched = 0, missing = 0;
-  let wPass = 0, wPassFrom = 0, wPassUntil = 0, wVisaFrom = 0, wVisaUntil = 0, wVisaReq = 0;
+  let wPass = 0, wPassFrom = 0, wPassUntil = 0, wVisaFrom = 0, wVisaUntil = 0;
   const noMatch: number[] = [];
 
   for (const [contactId, e] of byContactId) {
     const student = await (prisma as any).student.findFirst({
       where: { fideloContactId: contactId },
       select: { id: true, passportNumber: true, passportValidFrom: true, passportValidUntil: true,
-                visaFrom: true, visaUntil: true, visaRequired: true, firstName: true, lastName: true },
+                visaFrom: true, visaUntil: true, firstName: true, lastName: true },
     });
     if (!student) { missing++; noMatch.push(contactId); continue; }
     matched++;
@@ -124,15 +124,6 @@ async function main() {
 
     const vu = parseFideloDate(e.visum_date_until_original);
     if (vu && want(student.visaUntil)) { patch.visaUntil = vu; wVisaUntil++; }
-
-    if (typeof e.visa_required === 'boolean' && want(student.visaRequired === false ? null : student.visaRequired)) {
-      // visaRequired is a boolean (default false). Only flip when Fidelo
-      // says true AND SIS is at the default — never blank a manual flip.
-      if (e.visa_required === true && !student.visaRequired) {
-        patch.visaRequired = true;
-        wVisaReq++;
-      }
-    }
 
     if (Object.keys(patch).length === 0) continue;
 
@@ -156,7 +147,6 @@ async function main() {
   console.log(`  passportValidUntil:  ${wPassUntil}`);
   console.log(`  visaFrom:            ${wVisaFrom}`);
   console.log(`  visaUntil:           ${wVisaUntil}`);
-  console.log(`  visaRequired:        ${wVisaReq}`);
   console.log(`\n${apply ? 'Applied.' : 'Dry-run only — pass --apply to write.'}`);
 
   await prisma.$disconnect();

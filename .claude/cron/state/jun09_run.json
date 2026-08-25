@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "bk1498.confirmed=false (bool; status=CONFIRMED). doc171 DRAFT cert(c1660 Dec15-Jun05, ended). Not issued.",
+        "Issue doc171 via SIS->bk1498->Docs. If blocked: SET confirmed=true WHERE id=1498 (NOT RUN). see recipe: issue-8-suvderdene-cert-dates.md",
+        "bk1498.confirmed=false. doc171 DRAFT cert(c1660 Dec15-Jun05 ENDED 4d). Not yet issued.\nNEIL: SIS->student947->bk1498->Docs->Issue. If blocked: UPDATE bookings SET confirmed=true WHERE id=1498 (NOT RUN) then retry.\nLast verified Jun09 hrly: UNCHANGED. 4d overdue. Await Neil.",
+        "cert pending"
+      ]
+    ]
+  },
+  {
+    "range": "H11:K11",
+    "values": [
+      [
+        "2 separate bookings. bk97 c107 Apr27-May22, bk18002 c24793 May25-Jun05",
+        "bk18002 cert ISSUED Jun05. Generate cert for bk97(Apr27-May22). see recipe: issue-9-massimiliano-cert-split.md",
+        "bk97.confirmed=false. No cert on bk97(c107 Apr27-May22 ENDED 18d). doc63+doc64=invoices only.\nNEIL: (1) UPDATE bookings SET confirmed=true WHERE id=97 (NOT RUN) (2) SIS->bk97->gen cert c107 Apr27-May22.\nLast verified Jun09 hrly: UNCHANGED. 18d overdue. Await Neil.",
+        "bk97 no cert"
+      ]
+    ]
+  },
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "extra96 INSURANCE fee=NULL. bk17981.confirmed=false. c24773 AY Aft Jun1-Nov20 ongoing.",
+        "Set fee on extra96. SET confirmed=true WHERE id=17981 (NOT RUN). see recipe: issue-13-lizbeth-insurance.md",
+        "extra96(INSURANCE) fee=null. bk17981.confirmed=false. CONFIRMED status, fully paid EUR1407.50. Course c24773 Jun1-Nov20 ongoing. 8+ school days uninsured.\nNEIL: What is insurance fee? Set extra96.fee. UPDATE bookings SET confirmed=true WHERE id=17981 (NOT RUN).\nLast verified Jun09 hrly: UNCHANGED. Await Neil.",
+        "HI urgent"
+      ]
+    ]
+  },
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "Accidental cancel Jun07 20:41 (changedBy=null). FULLY PAID 1530. Course c1350 AY Aft May25-Nov13 ACTIVE. 2d+ unresolved.",
+        "UPDATE bookings SET status='CONFIRMED', confirmed=true WHERE id=1308 (NOT RUN). see recipe: issue-17-ana-jessica-accidental-cancel.md",
+        "bk1308 STILL CANCELLED (2d). c1350 May25-Nov13 active; student mid-course. EUR1530 fully paid.\nMay28 anomaly: payment-webhook set CONFIRMED->PENDING (check HS deal 1308 for reversal ~May28).\nNEIL: URGENT restore per recipe Step 1. Last verified Jun09 hrly.",
+        "cancel urgent"
+      ]
+    ]
+  },
+  {
+    "range": "H28:K28",
+    "values": [
+      [
+        "sca14 week_start=Mar30 premature (bc24623 Jun08). bk17909 CANCELLED confirmed=true(!) amtPaid=1455.5>amtTotal=727.5. pmt17477+17478 orphaned.",
+        "Fix sca14 week_start=Jun08 (NOT RUN). Resolve bk17909 pmts. see recipe: issue-27-sofiia-sca-cancelled-booking.md",
+        "sca14: UPDATE student_class_assignments SET week_start='2026-06-08' WHERE id=14 (NOT RUN). bk17909: CANCELLED but confirmed=true (anomaly). amtPaid=1455.5>amtTotal=727.5. pmt17477(727.5)+pmt17478(728)=EUR1455.5 orphaned.\nNEIL: (1) Fix sca14 week_start (safe, low-risk). (2) Refund EUR1455.5 to Sofiia OR delete if dup charge. Recipe Step 2.",
+        "pmts+sca open"
+      ]
+    ]
+  },
+  {
+    "range": "H29:K29",
+    "values": [
+      [
+        "Won-webhook never fired. bk17850 PENDING; pmt17519 EUR321.35 Bank May07 exists. Course c24624 ENDED Jun05.",
+        "UPDATE bookings SET status='CONFIRMED', confirmed=true, amount_paid=321.35 WHERE id=17850 (NOT RUN). see recipe: issue-28-paola-pending-won-deal.md",
+        "bk17850 still PENDING. Course c24624 ENDED Jun05 (4d ago). pmt17519 EUR321.35 Bank May07 exists but amount_paid=null (not summed). Won-webhook never fired.\nNEIL: Confirm bk17850 per recipe (NOT RUN). Retrospective class record at your discretion.",
+        "course ended"
+      ]
+    ]
+  }
+]

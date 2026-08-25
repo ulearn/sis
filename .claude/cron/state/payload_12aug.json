@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 128th check Wed 12 Aug 2026 UTC — CRITICAL: course ends Fri 14 Aug (2 days left)\n• Booking Course 25043 (Eduardo Roche Diaz, student 14602): General English PM, 10-14 Aug 2026, active = true — 0 class assignments (day 3 of 5)\n• Prior week pattern confirmed: Booking Course 25011 (Jul 20-24) → Class Assignment 358, class 6; BC 25023 (Jul 27-31) → CA 359, class 6; BC 25038 (Aug 3-7) → CA 421, class 6\n• Eduardo consistently assigned to Class 6 (B2+C1 PM) — Booking Course 25043 needs class assignment for class 6, week Aug 10-14",
+        "INSERT class assignment for Booking Course 25043: class 6, week 10-14 Aug URGENTLY. See recipe: issue-38-addendum-12aug-c.md",
+        "128th Wed 12 Aug UTC. BC 25043 STILL 0 class assignments day 3/5. Class 6 confirmed from prior 3 weeks. Course ends Fri 14 Aug. Fix NOT RUN.",
+        "CRITICAL: ends Fri 14 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H8:K8",
+    "values": [
+      [
+        "• 40th check Wed 12 Aug 2026 UTC — unchanged (65 days open)\n• Booking 17909 (Sofiia Korkishchenko, student 768): status = CANCELLED, confirmed = true (anomaly)\n• Amount paid = EUR 0, amount open = EUR 727.50, no payment records\n• Last updated 2026-06-17 — 56 days since last change\n• Booking Course 24693 (Renewal - Academic Year PM, 25 May to 13 Nov 2026): active = true on cancelled booking, 0 class assignments\n• Student enrolled correctly on booking 17849 / Booking Course 24623 — no current student impact\n• Same booking 17909 anomaly also tracked under Issue 27 (row 28)",
+        "Set booking 17909 confirmed=false; deactivate Booking Course 24693. See recipe: issue-7-addendum-12aug.md",
+        "40th hrly Wed 12 Aug UTC. Unchanged 65d. Fix NOT RUN.",
+        "bk17909 CANCELLED+confirmed; 65d"
+      ]
+    ]
+  },
+  {
+    "range": "H28:K28",
+    "values": [
+      [
+        "• 47th check Wed 12 Aug 2026 UTC — unchanged (56 days since booking last updated Jun 17)\n• Booking 17909 (Sofiia Korkishchenko): status = CANCELLED, confirmed = true (anomaly)\n• Booking Course 24693 (Renewal - Academic Year PM, ends 13 Nov 2026): active = true on cancelled booking, 0 class assignments\n• Same anomaly also tracked under Issue 7 (row 8)",
+        "Set booking 17909 confirmed = false; deactivate Booking Course 24693. See recipe: issue-27-addendum-12aug.md",
+        "47th hrly Wed 12 Aug 2026 UTC. Unchanged 56d. Booking 17909 CANCELLED + confirmed. Fix NOT RUN.",
+        "bk17909 anomaly; 56d"
+      ]
+    ]
+  },
+  {
+    "range": "H22:K22",
+    "values": [
+      [
+        "• 20th check Wed 12 Aug 2026 UTC — CORRECTION: Booking Course 1604 has 2 historical class assignments (prior checks incorrectly stated 0)\n• Booking Course 1604 (Morning General, booking 1461, student 912 Maurivan Kuhl): ended 3 Jul 2026 — 40 days stale, active = true\n• Class Assignment 46: week start 2026-03-30, week end 2026-04-05, class 7\n• Class Assignment 156: week start 2026-04-06, week end 2026-07-02, class 8 (bulk 12-week span)\n• Both class assignments are historical (within course active period, ended Jul 3) — deactivating Booking Course 1604 is still safe; class assignments will not be deleted",
+        "Deactivate Booking Course 1604 (2 historical class assignments present, safe to deactivate). See recipe: issue-21-addendum-12aug.md",
+        "20th hrly Wed 12 Aug UTC. CORRECTED: Booking Course 1604 has 2 historical class assignments (IDs 46 + 156), not 0. Course ended Jul 3, 40d stale. Deactivation still safe. Fix NOT RUN.",
+        "BC1604 stale 40d; 2 hist CAs"
+      ]
+    ]
+  },
+  {
+    "range": "H9:K9",
+    "values": [
+      [
+        "• 25th check Wed 12 Aug 2026 UTC — unchanged from 24th check\n• Booking Course 1482 (Academic Year Afternoon): ended 2025-12-19 — 236 days stale, active = true, 0 class assignments\n• Booking Course 1483 (Academic Year Afternoon): ended 2026-02-13 — 180 days stale, active = true, 0 class assignments\n• Booking Course 1485 (Academic Year Afternoon): ended 2025-12-19 — 236 days stale, active = true, 0 class assignments\n• Booking Course 1486 (Academic Year Afternoon): ended 2026-02-13 — 180 days stale, active = true, 0 class assignments\n• Booking Course 1487 (Academic Year Afternoon): ended 2026-06-05 — 68 days stale, active = true, 2 class assignments (verify before deactivating)\n• Booking Course 1488 (Afternoon General): ended 2025-09-19 — 327 days stale, active = true, 0 class assignments",
+        "Deactivate Booking Courses 1482/1483/1485/1486/1488 (0 class assignments, safe); verify Booking Course 1487 2 class assignments first. See recipe: issue-8-addendum-12aug.md",
+        "25th hrly Wed 12 Aug UTC. Unchanged. 6 stale Booking Courses (327d max). Fix NOT RUN.",
+        "6 stale BCs; 327d max"
+      ]
+    ]
+  },
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "• 63rd check Wed 12 Aug 2026 UTC — unchanged from 62nd check\n• Document 171 (booking 1498, template 82): DRAFT v1, created 5 Jun 2026 — 68 days unissued\n• Booking 1498 (Suvderdene Bayartsog): CONFIRMED (status), confirmed = false, amounts null (no payments)\n• Service end 5 Jun 2026 — course ended 68 days ago\n• Booking Course 1660 (ULearn Renewal MORN, 15 Dec 2025 to 5 Jun 2026): active = true — 68 days stale, 0 class assignments\n• No payments on booking 1498 — Fidelo migration artefact; course completed Jun 5",
+        "Issue or delete document 171; set booking 1498 confirmed = true; deactivate Booking Course 1660. See recipe: issue-9-addendum-12aug.md",
+        "63rd hrly Wed 12 Aug UTC. Unchanged. Document 171 DRAFT 68d. Course ended Jun 5. Booking Course 1660 stale 68d. Fix NOT RUN.",
+        "doc DRAFT 68d; BC stale"
+      ]
+    ]
+  }
+]

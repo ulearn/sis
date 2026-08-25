@@ -34,7 +34,7 @@ async function hsGet(path: string): Promise<any> {
   return res.json();
 }
 
-// Normalise HubSpot commission values to an integer percent (22 means 22%).
+// Normalise HubSpot commission to a percent, preserving up to 2 decimals (0.225 → 22.5).
 // Post-2026-04 migration HubSpot stores decimals (0.22 = 22%) for the Percentage-
 // format property; we still accept legacy integer storage and clamp mis-entered
 // over-scaled values so one data-entry mistake can't propagate into payroll.

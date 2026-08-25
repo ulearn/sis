@@ -1,0 +1,57 @@
+[
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 121st check Friday 17 July 2026 (end of day) — all 7 confirmed Monday starters STILL zero class assignments (fresh DB)\n• Booking course 1630: Saranzaya Khishigbayar, Academic Year Afternoon, student 931 — fee EUR 2620 — 0 class assignments\n• Booking course 24616: Mia Wehrli, General English AM Plus, student 14450 — fee null — 0 class assignments\n• Booking course 24686: Alberto Squillace, Morning General, student 1052 — fee null; see Issue 24 — 0 class assignments\n• Booking course 24942: Lorena Pizarro Araya, Academic Year Morning, student 14565 — fee EUR 2362.50 — 0 class assignments\n• Booking course 24966: Filippo Corazzini, General English AM Plus, student 14578 — fee EUR 549.90 — 0 class assignments\n• Booking course 24989: Marcos Abrego Tofe, General English AM, student 14587 — fee EUR 152 — 0 class assignments\n• Booking course 25000: Giorgio Sau, General English AM Plus, student 14595 — fee EUR 940 — 0 class assignments\n• Booking course 24932: Stephany Martins Pardinho, Life Pass Morning, PENDING 105 weeks — do not assign until booking confirmed and paid\n• Booking course 25001: Neil McMahon, General English AM, PENDING — likely test/admin record, verify before assigning\n• 8 courses ended 17 July with zero class assignments: BC1719 Maria Hermosilla (24-week Academic Year), BC26 Kritchana (EUR 3370 unpaid), BC95 Florian Baury, BC24946 Lunel Dubost, BC24985 and BC24986 Maza sisters (EUR 240 each), BC24992 Luz Sobrino, BC24994 Petru Ous",
+        "Assign 7 confirmed starters before Mon 20 Jul; back-fill today-enders where appropriate. See recipe: issue-45-addendum-17jul.md",
+        "121st check Fri 17 Jul UTC. CONFIRMED UNCHANGED fresh DB. All 7 confirmed starters STILL 0 class assignments. BC24616 Mia fee=STILL null. BC24686 Alberto fee=STILL null. WEEKEND — last window to assign before Mon 20 Jul. Fix NOT RUN.",
+        "CRITICAL; assign before Mon"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• August Bank Holiday 2026 (Monday 3 August): missing from school closures — 17 days away\n• October Bank Holiday 2026 (Monday 26 October): missing from school closures — 101 days away\n• Current school closures: 9 records — Good Friday 2026/2027/2028/2029/2030 and Christmas 2026–2027 through 2029–2030\n• Risk: booking course end dates landing on 3 August or 26 October will not be shunted to the next school day",
+        "Add August Bank Holiday (Monday 3 August 2026) and October Bank Holiday (Monday 26 October 2026) to school_closures table. See recipe: issue-38-course-date-ux.md",
+        "38th check Fri 17 Jul UTC. CONFIRMED UNCHANGED. Aug Bank Holiday (Mon 3 Aug): STILL absent from school_closures — 17 days away. Oct Bank Holiday (Mon 26 Oct): also absent. 9 closures: Good Friday 2026-2030 + Christmas 2026-2029. Fix NOT RUN.",
+        "Aug BH missing; 17d"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• Payment 17954 (Giampaolo Russo, EUR 2584.96, Bank Transfer, 26 June 2026): Xero payment ID = null — 21 days unreconciled\n• HubSpot payment ID 1268783973563 linked — payment received but not recorded in Xero\n• Booking 18180: Confirmed, EUR 2584.96 fully paid — only 1 accommodation record found\n• Accommodation 11357 (Host Family, bed 178, 2 August to 6 September 2026): claim status confirmed — bed assigned 6 July 2026\n• Capel Street accommodation (6–14 September 2026): missing from booking 18180 — genuinely absent from SIS database (confirmed 46th check)",
+        "Reconcile payment 17954 (EUR 2584.96, HubSpot 1268783973563) in Xero; add Capel Street accommodation (6–14 September) to booking 18180 via SIS admin. See recipe: issue-41-giampaolo-dual-accomm.md",
+        "46th check Fri 17 Jul UTC. PMT17954 EUR2584.96 xeroPaymentId=STILL null type=null (21d since Jun26). BA11357 bed178 HF Aug2-Sep6 claimStatus=confirmed. Only 1 accommodation on bk18180 — Capel Sep6-14 STILL MISSING (fresh DB). Check-in Aug2 = 16d. Fix NOT RUN.",
+        "Xero null; Capel missing"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Accommodation resolved — booking accommodation 11358 (bed 180, host Mary Carver, Xuezhen Huang, booking 17831, 12 July to 2 August 2026): active = true, fee = EUR 900 — correctly in SIS\n• Booking course 24609 (Xuezhen Huang, student 14443, Morning General, 13 to 31 July 2026): zero class assignments — full first week ended Friday 17 July — 42nd check Fri 17 Jul UTC\n• Booking 17831: Confirmed, confirmed = true, EUR 1396.90 fully paid, amount open = EUR 0\n• Four payments on booking 17831 (IDs 17180, 17987, 17988, 17963): all type = null — payment types unclassified\n• 2 weeks of course remain (20 to 31 July 2026)",
+        "Assign student 14443 (Xuezhen Huang) to a class on booking course 24609 (Morning General). See recipe: issue-39-addendum-17jul.md",
+        "42nd check Fri 17 Jul UTC. CONFIRMED UNCHANGED fresh DB. BC24609 Morning General Jul13-Jul31: 0 class assignments after full first week (Mon 13-Fri 17 Jul). 2 weeks remain (Jul 20-31). BA11358 bed180 correct. Fix NOT RUN.",
+        "Wk1 missed; 2wks left"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• Accommodation 11285 (Jesus Manuel Ramirez Diaz, bed 83, booking 17825): stored dates 21 June to 5 July — requested 20 June to 4 July — 1-day discrepancy on both ends\n• Student checked out 5 July 2026, 12 days ago — no guest impact remaining\n• Accommodation 11285: active = still true (last updated 6 July 2026) — deactivation needed cosmetically\n• Accommodation 11352 (Veronica Martin, bed 83, booking 18156): checked out 11 July 2026, 6 days ago — active = still true — deactivation needed cosmetically\n• Cleanup SQL (NOT YET RUN): UPDATE booking_accommodations SET active = false WHERE id IN (11285, 11352)",
+        "Deactivate accommodations 11285 and 11352 (both bed 83, both post-checkout). Batch with Issue 37. See recipe: issue-43-jesus-accomm-dates.md",
+        "2nd check Fri 17 Jul UTC. CONFIRMED UNCHANGED fresh DB. BA11285 Jesus bed83 Jun21-Jul05 active=STILL true (12d post-checkout Jul05). BA11352 Veronica bed83 Jul04-Jul11 active=STILL true (6d post-checkout Jul11). Shared fix: UPDATE booking_accommodations SET active=false WHERE id IN (11285, 11352). Fix NOT RUN.",
+        "cosmetic; 12d post-checkout"
+      ]
+    ]
+  }
+]

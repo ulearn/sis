@@ -1,0 +1,57 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "Orphaned Payments",
+        "Remove spurious pmts in SIS. see recipe: issue-1-orphan-payments.md",
+        "Jun08 hrly#15: STILL present. pmt16988+16989 EUR339.9ea Apr28. 41d. bookingId=NULL. HS 1204827374829+1204846469317.",
+        "2 remain"
+      ]
+    ]
+  },
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "5 bad mobiles: emails in phone field - Dolgormaa#1897, Aki#8567; notes-not-numbers - Jieun#1194, Lisa#5345; unicode - Alessandra#10343.",
+        "5 bad mobiles listed; clean per recipe. recipe: issue-5-mobile-numbers.md",
+        "Jun08 hrly#15: all 5 STILL unchanged. Awaiting Neil. Recipe has exact fixes.",
+        "info needed"
+      ]
+    ]
+  },
+  {
+    "range": "H8:K8",
+    "values": [
+      [
+        "Returning student: earliest course Sep25(bk1310). /arrivals=1st-timers only. bk17909(May25) already CANCELLED.",
+        "bk17849 CONFIRMED Jun8-Nov27 is correct booking. Dup(bk17909) already cancelled. Arrivals gap=by design. Neil: add /renewals view? see recipe: issue-6-sofiia-dup-booking.md",
+        "Jun08 hrly#15: STARTED TODAY. bk17849 CONFIRMED confirmed=true. hubspotContactId=765074576630 SET. c24623 Jun8-Nov27.",
+        "started Jun8"
+      ]
+    ]
+  },
+  {
+    "range": "H11:K11",
+    "values": [
+      [
+        "2 separate bookings. bk97 c107 Apr27-May22, bk18002 c24793 May25-Jun05",
+        "bk18002 cert ISSUED Jun05. Generate cert for bk97(Apr27-May22). see recipe: issue-9-massimiliano-cert-split.md",
+        "Jun08 hrly#15: bk97 NO CERT still. doc63+doc64=accounts only. c107 Apr27-May22 ended 17d ago. OVERDUE. Staff: SIS->bk97->generate cert.",
+        "bk97 no cert"
+      ]
+    ]
+  },
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "extra96 INSURANCE fee=NULL->not billed. Student started Jun1, no HI arranged.",
+        "Set extra96.fee, invoice, arrange HI provider. see recipe: issue-13-lizbeth-health-insurance.md",
+        "Jun08 hrly#15: extra96 fee=NULL STILL. bk17981 confirmed=false. c24773 Jun1 (7d in school uninsured). NO docs/invoices. ESCALATE NEIL URGENT.",
+        "HI urgent"
+      ]
+    ]
+  }
+]

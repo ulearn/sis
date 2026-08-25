@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H17:K17",
+    "values": [
+      [
+        "• 6th check Mon 27 Jul 2026 UTC — unchanged\n• Booking accommodation 11282 (bed 66, booking 17897, Mélie Villard): ran 15 May to 5 Jun 2026, active = still true — 52 days stale\n• Term completed 5 Jun 2026, no guest impact; data hygiene only\n• Fix NOT RUN",
+        "Deactivate BA 11282 (active → false). See recipe: issue-16-melie-accomm-dates.md",
+        "6th check Mon 27 Jul UTC. BA11282 bed66 May15-Jun05 active=STILL true (52d stale). Fix NOT RUN.",
+        "52d stale; cosmetic"
+      ]
+    ]
+  },
+  {
+    "range": "H22:K22",
+    "values": [
+      [
+        "• 6th check Mon 27 Jul 2026 UTC — unchanged\n• Booking course 1604 (Morning General, booking 1461): active = true, ended 3 Jul 2026 — 24 days stale\n• Original double-class issue (A1 AM + A2 AM): RESOLVED Jun 2026\n• Student term complete; data hygiene only\n• Fix NOT RUN",
+        "Deactivate BC 1604 (active → false). See recipe: issue-21-maurivan-double-class.md",
+        "6th check Mon 27 Jul UTC — UNCHANGED. BC1604 Morning General ended Jul 3 active=STILL true (24d stale). Cosmetic. Fix NOT RUN.",
+        "bc stale 24d; cosmetic"
+      ]
+    ]
+  },
+  {
+    "range": "H29:K29",
+    "values": [
+      [
+        "• 27th check Mon 27 Jul 2026 UTC — unchanged\n• Booking 17850 (Paola Moreira, student 14456): status Confirmed — confirmed flag = still false (19 days since Jul 8 update)\n• Amount paid = null — payment type = null blocking amount calculation, amount total = EUR 321.35\n• Payment 17519 (EUR 321.35, Bank, 7 May 2026): type = null, xeroPaymentId = null — 81 days unreconciled\n• Booking course 24624 (Morning General, 18 May–5 Jun 2026): active = still true — 52 days stale\n• Fix NOT RUN",
+        "Set pmt17519 type; set bk17850 confirmed=true; deactivate BC24624. See recipe: issue-28-paola-pending-won-deal.md",
+        "27th check Mon 27 Jul UTC. UNCHANGED. BK17850 CONFIRMED confirmed=false amtPaid=null (updAt=Jul08, 19d). PMT17519 EUR321.35 type=null xeroId=null (81d since May07). BC24624 May18-Jun05 active=true (52d stale). Fix NOT RUN.",
+        "bk confirmed=false; low-pri"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Check Mon 27 Jul 2026 UTC — unchanged\n• Duplicate of Issue 15 (row 16): same student, Saikhantes Shagdarsuren (student 1001)\n• Class assignment 255 (class 11): expired week ending 3 Jul 2026 — 2 full weeks missed (6-17 Jul, irrecoverable)\n• Student on holiday: 20 Jul - 21 Aug 2026; returns Mon 24 Aug\n• Full diagnosis and fix recipe tracked in Issue 15 (row 16)",
+        "See Issue 15 (row 16) for full fix recipe",
+        "Mon 27 Jul UTC. Window closed (Jul 17). Student on holiday Jul 20 - Aug 21. Returns Mon 24 Aug. Full detail in row 16 (Issue 15).",
+        "window closed; see row 16"
+      ]
+    ]
+  },
+  {
+    "range": "H33:K33",
+    "values": [
+      [
+        "• Check Mon 27 Jul 2026 UTC — stray row, unchanged\n• Only content is 278 in column F (Area field); all other columns are empty\n• Student 278 is Veronica Martin — her accommodation issue is resolved in Issue 37 (row 39)\n• Phantom row estimated present since Apr 2026 — 107 days\n• No diagnosis possible — NEIL: please delete this row",
+        "Delete this phantom row manually",
+        "Mon 27 Jul UTC. Phantom row ~107 days old. Student 278 = Veronica Martin, resolved Issue 37/row 39. NEIL: delete this row.",
+        "phantom row; delete"
+      ]
+    ]
+  },
+  {
+    "range": "H37:K37",
+    "values": [
+      [
+        "• Mon 27 Jul 2026 UTC (code check 18) — unchanged, no new commits\n• Git HEAD: 9008d10 (Classes/Financial 17 Jul 2026) — no attendance file changes since 17 Jul\n• Homework section: renderSheetHtml() in src/routes/attendance.ts (lines 36-128) — no homework block present — awaiting layout spec\n• Holiday display bug: getWeekAttendance() in src/scripts/attendance.ts (line 31) — students on holiday still appear with live checkboxes\n• Fix NOT RUN — awaiting layout spec from Neil and Paul",
+        "Fix holiday filter in getWeekAttendance(); add homework block after spec confirmed. See recipe: issue-36-attendance-homework-section.md",
+        "Mon 27 Jul UTC (code check 18). UNCHANGED. No attendance commits since Jul 17 (HEAD 9008d10). 2 open bugs: homework block absent, holiday not filtered. Fix NOT RUN.",
+        "code open; awaiting spec"
+      ]
+    ]
+  }
+]

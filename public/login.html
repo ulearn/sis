@@ -55,11 +55,22 @@
     outline: none;
     transition: border-color 0.2s;
   }
-  input:focus { border-color: #4f46e5; }
+  input:focus { border-color: #6FB42C; }
+  .pw-wrap { position: relative; margin-bottom: 16px; }
+  .pw-wrap input { margin-bottom: 0; padding-right: 40px; }
+  .pw-toggle {
+    position: absolute; top: 50%; right: 6px; transform: translateY(-50%);
+    width: 32px; height: 32px;
+    background: transparent; border: 0; padding: 0;
+    cursor: pointer; font-size: 18px; line-height: 1;
+    color: #9b9ea6; opacity: 0.85;
+  }
+  .pw-toggle:hover { opacity: 1; }
+  .pw-toggle:active { transform: translateY(-50%) scale(0.94); }
   button {
     width: 100%;
     padding: 11px;
-    background: #4f46e5;
+    background: #6FB42C;
     color: #fff;
     border: none;
     border-radius: 6px;
@@ -68,7 +79,7 @@
     cursor: pointer;
     transition: background 0.2s;
   }
-  button:hover { background: #4338ca; }
+  button:hover { background: #5d9c24; }
   .error {
     background: #fef2f2;
     color: #dc2626;
@@ -82,21 +93,42 @@
 </head>
 <body>
 <div class="login-card">
-  <div class="logo">ULearn</div>
-  <div class="subtitle">Student Information System</div>
+  <div class="logo">ULearn Student System</div>
   <div class="error" id="error"></div>
   <form id="loginForm">
     <label for="username">Username</label>
-    <input type="text" id="username" name="username" autocomplete="username" required autofocus>
+    <!-- inputmode="text" + no restrictive autocomplete keeps Gboard/SwiftKey
+         glide-typing enabled. autocapitalize/spellcheck off so usernames
+         aren't "corrected". autocomplete is unset (rather than =off or
+         =username) so password managers still match via form heuristics. -->
+    <input type="text" id="username" name="username" required autofocus
+           inputmode="text" autocapitalize="none" spellcheck="false">
     <label for="password">Password</label>
-    <input type="password" id="password" name="password" autocomplete="current-password" required>
+    <!-- Password glide-typing is disabled by the OS for type="password" on
+         both iOS and Android. The eye toggle briefly switches to type="text"
+         so a student who wants to glide can — defaults stay masked. -->
+    <div class="pw-wrap">
+      <input type="password" id="password" name="password" autocomplete="current-password" required>
+      <button type="button" class="pw-toggle" aria-label="Show password"
+              onclick="togglePassword(this)">👁</button>
+    </div>
     <button type="submit">Sign In</button>
-    <div style="text-align:center;margin-top:16px;">
-      <a href="/sis/forgot" style="font-size:13px;color:#4f46e5;text-decoration:none;">Forgot password?</a>
+    <div style="text-align:center;margin-top:16px;font-size:13px;">
+      <a href="/sis/forgot" style="color:#6FB42C;text-decoration:none;font-weight:600">Forgot password?</a>
+      <span style="color:#9b9ea6;margin:0 8px">|</span>
+      <a href="/sis/register" style="color:#6FB42C;text-decoration:none;font-weight:600">Create account</a>
     </div>
   </form>
 </div>
 <script>
+function togglePassword(btn) {
+  const input = document.getElementById('password');
+  const showing = input.type === 'text';
+  input.type = showing ? 'password' : 'text';
+  btn.textContent = showing ? '👁' : '🙈';
+  btn.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+}
+
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const errEl = document.getElementById('error');

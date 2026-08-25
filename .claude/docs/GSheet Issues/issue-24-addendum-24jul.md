@@ -1,0 +1,1 @@
+Issue 24 Alberto Squillace BC24686 Zero CAs + Null Fee 54th hourly 149th total Fri 24 Jul 2026. BC24686 Morning General 20 Jul - 18 Sep 2026 active=true fee=null CAs=0. 5 school days missed (20-24 Jul). ~40 remaining. Fix NOT RUN.

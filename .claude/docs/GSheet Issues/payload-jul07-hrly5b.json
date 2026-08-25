@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking course 1797 (Morning General, 6 April to 26 June 2026): ended 11 days ago — still active = true (44th check, 7 July 2026 UTC)\n• Booking course 24686 (Morning General, 20 July to 18 September 2026): starts in 13 days — fee = null; set fee before 20 July\n• Payment 17124 (EUR 1280.12, 25 March 2026): type = null, Xero payment ID = null, HubSpot payment ID = null — 104 days unreconciled; booking ID = 1611 (correctly linked)\n• Booking 1611 (Alberto Squillace, student 1052): Confirmed, confirmed = true, EUR 1280.12 / EUR 1280.12 (fully paid — booking course 1797 fee EUR 1836 is a Fidelo migration artefact)",
+        "",
+        "44th check 7 Jul UTC. UNCHANGED (fresh DB). BC24686 starts Jul20=13 days fee=STILL null active=true. BC1797 ended Jun26 STILL active=true. PMT17124 EUR1280.12 type=null xeroPaymentId=null booking_id=1611 payment_date=Mar25 (104d unreconciled). BK1611 CONFIRMED EUR1280.12/1280.12. NEIL: (1) set bc24686 fee before Jul20; (2) deact bc1797; (3) reconcile pmt17124 in Xero.",
+        "13d to Jul20 deadline"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• All 6 students still have zero valid class assignments — 6th check 7 Jul 2026 UTC, zero action taken\n• Pietro Colombo (student 72, booking course 81, Morning General Plus, 6–24 Jul): zero assignments ever — 2 school days missed (Mon 6, Tue 7 Jul); booking 78 CONFIRMED EUR 1880/1880\n• Tuguldurtugs Enkhtugs (student 858, booking course 1786, AY Renewal Morning, 6 Jul – 25 Dec): old assignment 55 expired 1 May; booking 1601 EUR 1356.50/1606.50 (EUR 250 outstanding)\n• Verónica Martín (student 278, booking course 24931, General English AM, 6–10 Jul): zero assignments — ENDS FRIDAY 10 JULY (3 school days: Wed 8, Thu 9, Fri 10); booking 18156 CONFIRMED EUR 573.20/573.20\n• Sarah Venturini Talizin (student 1055, booking course 24945, General English AM, 6–31 Jul): zero assignments; booking 18169 CONFIRMED EUR 611/611\n• Yuxi Ke (student 14577, booking course 24965, General English PM, 6 Jul – 21 Aug): zero assignments; booking 18189 CONFIRMED EUR 792.56/792.56\n• Ettore Iovinella (student 14564, booking course 24968, General English AM Plus, 6–13 Jul): assignment 281 on expired booking course 24941 (ended 3 Jul, still active = true); zero assignment for current booking course 24968; booking 18191 CONFIRMED EUR 190.63/190.63\n• Booking course 24941 (Ettore old course, ended 3 Jul 2026): still active = true — deactivate after assigning Ettore to booking course 24968",
+        "Assign all 6 students to classes in SIS: (1) Pietro s72 to AM class; (2) Tuguldurtugs s858 to AY Morning class; (3) Veronica s278 to any AM class before Fri Jul10; (4) Sarah s1055 to AM class; (5) Yuxi s14577 to PM class; (6) Ettore s14564 to booking course 24968; then deactivate booking course 24941. See recipe: issue-45-renewal-arrivals.md",
+        "6th check 7 Jul UTC. UNCHANGED (fresh DB). All 6 STILL 0 valid SCAs. Pietro s72/bc81 2 days missed (Day 3 tomorrow Wed Jul8). Veronica s278/bc24931 GE-AM ENDS FRI JUL10=3 SCHOOL DAYS — MOST URGENT. SCA281 Ettore s14564 on old bc24941 (ended Jul3 STILL active=true); 0 SCA on bc24968. Tuguldurtugs s858 bk1601 EUR250 outstanding. NEIL: ASSIGN ALL 6 + deact bc24941 TODAY.",
+        "URGENT; Veronica ends Fri"
+      ]
+    ]
+  }
+]

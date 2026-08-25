@@ -1,0 +1,246 @@
+# Duplicate Students — candidate list (2026-06-03)
+
+Accent-insensitive (NFD-stripped) name match + exact email match. **Review before merging** — some are namesakes / shared agency emails, not true dups.
+
+## By email (same email on >1 student)
+
+- `solovyov.by@gmail.com` — _review_
+    - #1063 Valeriya Salauyova (1 bookings)
+    - #14502 Egor Solovyov (1 bookings)
+- `fdezruizpedro@gmail.com` — _**AGENCY/SHARED — likely NOT a student dup**_
+    - #2081 Manuel Jesus Sanchez Sese (136 bookings)
+    - #2015 David Fernandez (773 bookings)
+- `saraa.tpb@gmail.com` — _review_
+    - #2517 Baigalinaran Munkhbat (1 bookings)
+    - #922 Munkhtsetseg Tserennadmid (3 bookings)
+- `jacopo.cianchi@alice.it` — _review_
+    - #3257 JACOPI CIANCHI (1 bookings)
+    - #3258 Jacopo Cianchi (2 bookings)
+- `chabao1571504793@gmail.com` — _review_
+    - #3462 Stone Xu (1 bookings)
+    - #3497 Zhenxu Ye (1 bookings)
+- `odko1619@gmail.com` — _review_
+    - #1065 Odgerel Oyuntsetseg (1 bookings)
+    - #323 Odgerel Oyuntsetseg (2 bookings)
+- `info@azureducation.com` — _**AGENCY/SHARED — likely NOT a student dup**_
+    - #161 Paula Gomez Mullor (Azur Alhambra2) (801 bookings)
+    - #1691 ANA ARANDA CASAS (15 bookings)
+- `ameliamariaucedaplaza@gmail.com` — _review_
+    - #4688 Amelia Uceda Plaza (1 bookings)
+    - #4771 Amelia Maria Uceda Plaza (1 bookings)
+- `mazen1213456@gmail.com` — _review_
+    - #4513 ABDULAZIZ HEJAZI (1 bookings)
+    - #4520 Abdulmajeed Hijazi (2 bookings)
+
+## By name (accent-stripped, >1 student)
+
+- **Marta Arroyo Vallejo** — _**HIGH — backfill dup (one has no email)**_
+    - #126 <martarroyo1811@gmail.com> (1 bookings)
+    - #217 <no-email> (1 bookings)
+- **Mario Roggi** — _review — different emails (could be namesake)_
+    - #14528 <roggimario99@gmail.com> (1 bookings)
+    - #3276 <m-roggi@libero.it> (1 bookings)
+- **Natanael Reis Lourenço de Sales** — _review — different emails (could be namesake)_
+    - #14541 <annacharlotte.88@gmail.com> (1 bookings)
+    - #1071 <natan.r.l.s.05.05@gmail.com> (1 bookings)
+- **Rocío Jiménez Vilchez** — _**HIGH — backfill dup (one has no email)**_
+    - #112 <rocio.jv001@gmail.com> (1 bookings)
+    - #202 <no-email> (1 bookings)
+- **Minerva Ramos Rodriguez** — _**HIGH — backfill dup (one has no email)**_
+    - #116 <minervaramosrodriguez183@gmail.com> (1 bookings)
+    - #207 <no-email> (1 bookings)
+- **Leire Rico Liñán** — _**HIGH — backfill dup (one has no email)**_
+    - #118 <leirerico05@gmail.com> (1 bookings)
+    - #209 <no-email> (1 bookings)
+- **Samuel Quintero Alcántara** — _**HIGH — backfill dup (one has no email)**_
+    - #123 <Quinteroalcantarasamuel@gmail.com> (1 bookings)
+    - #214 <no-email> (1 bookings)
+- **Marta Ruiz Fernández** — _**HIGH — backfill dup (one has no email)**_
+    - #124 <martalojamalaga1@gmail.com> (1 bookings)
+    - #215 <no-email> (1 bookings)
+- **Laurence Demians** — _review — different emails (could be namesake)_
+    - #14544 <rouemaella@gmail.com> (1 bookings)
+    - #1022 <dlaurence.2@hotmail.fr> (1 bookings)
+- **Arnau Farré** — _**HIGH — backfill dup (one has no email)**_
+    - #694 <angels.piro@gmail.com> (1 bookings)
+    - #7816 <no-email> (1 bookings)
+- **Ivan Ramirez** — _**HIGH — backfill dup (one has no email)**_
+    - #1980 <ifan19921992@gmail.com> (1 bookings)
+    - #9274 <no-email> (1 bookings)
+- **Ayako Shimizu** — _**HIGH — backfill dup (one has no email)**_
+    - #2108 <no-email> (1 bookings)
+    - #2109 <chacooo523@gmail.com> (1 bookings)
+- **Maria Aranzazu Alonso Muñoz** — _**HIGH — backfill dup (one has no email)**_
+    - #3339 <arancha17032001@hotmail.com> (1 bookings)
+    - #3681 <no-email> (1 bookings)
+- **Diana Biliaieva** — _review — different emails (could be namesake)_
+    - #3235 <dianabiliaieva@gmail.com> (1 bookings)
+    - #12238 <ukmissdi@gmail.com> (1 bookings)
+- **laura marozzi** — _review — different emails (could be namesake)_
+    - #3056 <laura.mrozzi@unipg.it> (1 bookings)
+    - #4587 <laura.marozzi@unipg.it> (1 bookings)
+- **Juan Bolaños** — _review — different emails (could be namesake)_
+    - #3266 <sebastian33319@gmail.com> (1 bookings)
+    - #10831 <jb1548612@gmail.com> (1 bookings)
+- **Maria Rosa Ghiani** — _review — different emails (could be namesake)_
+    - #3368 <ghiro53@tiscali.it> (2 bookings)
+    - #14437 <ghiro53@gmail.com> (1 bookings)
+- **Jose Francisco Carmona Albornoz** — _**HIGH — backfill dup (one has no email)**_
+    - #3338 <josefrancarmona@gmail.com> (1 bookings)
+    - #3684 <no-email> (1 bookings)
+- **Ana Moyano Rambla** — _**HIGH — backfill dup (one has no email)**_
+    - #3337 <montillana2@gmail.com> (1 bookings)
+    - #2422 <no-email> (2 bookings)
+- **Jiaojiao Yu** — _review — different emails (could be namesake)_
+    - #957 <y15927400782@outlook.com> (1 bookings)
+    - #14503 <2026899376@qq.com> (1 bookings)
+- **Odgerel Oyuntsetseg** — _review_
+    - #1065 <odko1619@gmail.com> (1 bookings)
+    - #323 <odko1619@gmail.com> (2 bookings)
+- **Mohammed Aljohani** — _review — different emails (could be namesake)_
+    - #4145 <hmoody5x5@gmail.com> (1 bookings)
+    - #6896 <mego11211@gmail.com> (1 bookings)
+- **JUAN MONTECRISTO URBINA** — _review — different emails (could be namesake)_
+    - #4658 <jmontecristo2013@gmail.com> (1 bookings)
+    - #4659 <jmontecristourbina2013@gmail.com> (1 bookings)
+- **Chiara Crescini** — _review — different emails (could be namesake)_
+    - #11047 <chiaracrescini95@virgilio.it> (1 bookings)
+    - #5403 <chiaracrescinibocconi@gmail.com> (1 bookings)
+- **Lu Zhang** — _review — different emails (could be namesake)_
+    - #1157 <962406926@qq.com> (1 bookings)
+    - #4603 <zl634418750@gmail.com> (1 bookings)
+- **Anna Lekston** — _**HIGH — backfill dup (one has no email)**_
+    - #5686 <ewelina.wojcik@interia.pl> (2 bookings)
+    - #5788 <no-email> (1 bookings)
+- **Carole Cerraccio** — _**HIGH — backfill dup (one has no email)**_
+    - #7138 <no-email> (1 bookings)
+    - #7025 <carolecerracchio@yahoo.fr> (1 bookings)
+- **Frédéric Gonier** — _**HIGH — backfill dup (one has no email)**_
+    - #7139 <no-email> (1 bookings)
+    - #7069 <frederic.gonier@wanadoo.fr> (1 bookings)
+- **María Isabel Ruiz Sánchez** — _**HIGH — backfill dup (one has no email)**_
+    - #7140 <no-email> (1 bookings)
+    - #7028 <mruiz38@xtec.cat> (1 bookings)
+- **María Dolors Pijuan Trilla** — _**HIGH — backfill dup (one has no email)**_
+    - #7141 <no-email> (1 bookings)
+    - #7029 <mpijuan4@xtec.cat> (1 bookings)
+- **Luigi Casna** — _**HIGH — backfill dup (one has no email)**_
+    - #8635 <no-email> (2 bookings)
+    - #8361 <no-email> (1 bookings)
+- **Maria Sanchez Garcia** — _review — different emails (could be namesake)_
+    - #8918 <maria-san40@hotmail.com> (1 bookings)
+    - #8966 <mariasanchezga48@gmail.com> (1 bookings)
+- **Matteo Sala** — _review — different emails (could be namesake)_
+    - #11319 <mattesala3@gmail.com> (1 bookings)
+    - #10643 <matteo.pessano@hotmail.it> (1 bookings)
+- **Victor Garcia Blanco** — _review — different emails (could be namesake)_
+    - #9137 <saurioloco@gmail.com> (1 bookings)
+    - #12447 <vigarciablanco@gmail.com> (1 bookings)
+- **Pedro Henrique Adao** — _review — different emails (could be namesake)_
+    - #9458 <pedrinho_pc@hotmail.com> (1 bookings)
+    - #9721 <PEDRINHOH_PC@HOTMAIL.COM> (1 bookings)
+- **Ewa Dziergas-Wegrzyn** — _**HIGH — backfill dup (one has no email)**_
+    - #9884 <no-email> (1 bookings)
+    - #4588 <dzzziergas@poczta.onet.pl> (2 bookings)
+- **Alvise Chiais** — _review — different emails (could be namesake)_
+    - #10238 <alvise.chiais@libero.it> (1 bookings)
+    - #10256 <i.cavaggioni@libero.it> (1 bookings)
+- **Paula Lopez** — _**HIGH — backfill dup (one has no email)**_
+    - #10574 <no-email> (1 bookings)
+    - #2804 <escalera.lopez.delia@gmail.com> (1 bookings)
+- **Mirko del Curto** — _review — different emails (could be namesake)_
+    - #3705 <mirkodelcurto@outlook.it> (1 bookings)
+    - #5416 <fabiodm87@gmail.com> (2 bookings)
+- **Nicola Migliori** — _**HIGH — backfill dup (one has no email)**_
+    - #11454 <no-email> (1 bookings)
+    - #10405 <nicola.migliori1@yahoo.it> (1 bookings)
+- **Eric Hofstetter** — _review — different emails (could be namesake)_
+    - #12253 <jh.mail@laposte.net> (1 bookings)
+    - #10137 <er.hofstetter@laposte.net> (1 bookings)
+- **Carolina Sirio Lima** — _**HIGH — backfill dup (one has no email)**_
+    - #9090 <sirio.carol84@gmail.com> (1 bookings)
+    - #5144 <no-email> (1 bookings)
+- **Manuel Jimenez Sanchez** — _**HIGH — backfill dup (one has no email)**_
+    - #8761 <no-email> (1 bookings)
+    - #8623 <manuel.jimenez.sanchez@hotmail.com> (1 bookings)
+- **Sandra Villanueva** — _**HIGH — backfill dup (one has no email)**_
+    - #4284 <vios18@hotmail.com> (2 bookings)
+    - #7682 <no-email> (1 bookings)
+- **ALEX GARCIA** — _**HIGH — backfill dup (one has no email)**_
+    - #5518 <no-email> (1 bookings)
+    - #5443 <no-email> (2 bookings)
+- **Cyril Ines** — _review — different emails (could be namesake)_
+    - #4617 <cyril.run@gmail.com> (1 bookings)
+    - #2899 <cyril.ines@ac-reunion.fr> (1 bookings)
+- **Jose Carlos Fernandes Junior** — _review — different emails (could be namesake)_
+    - #4670 <carlos.fernandes1987@gmail.com> (1 bookings)
+    - #4669 <carlosfernandes.jcfj@gmail.com> (2 bookings)
+- **asas asas** — _review — different emails (could be namesake)_
+    - #11019 <unqui@pass.com> (1 bookings)
+    - #11020 <asas@asas.come> (1 bookings)
+- **Rocio Parejo Gonzalez** — _review — different emails (could be namesake)_
+    - #8298 <parejogonzalezro@hotmail.com> (1 bookings)
+    - #5554 <parejogonzalro@hotmail.com> (1 bookings)
+- **Beatriz Sanchez Corsini** — _review — different emails (could be namesake)_
+    - #4804 <beatrizscorsini@gmail.com> (1 bookings)
+    - #4510 <beita.1994@hotmail.com> (1 bookings)
+- **Silvia Gunisova** — _review — different emails (could be namesake)_
+    - #4910 <silviagunisova@centrum.sk> (1 bookings)
+    - #4882 <vivien.bielik@gmail.com> (1 bookings)
+- **Enkhtsetseg Ganbold** — _review — different emails (could be namesake)_
+    - #4861 <enkhtsetsegg1204@gmail.com> (1 bookings)
+    - #5718 <enkhtsetseg@shiidel.info> (1 bookings)
+- **Carla Zanella** — _**HIGH — backfill dup (one has no email)**_
+    - #8781 <no-email> (1 bookings)
+    - #8640 <no-email> (2 bookings)
+- **Sofia Mathe** — _**HIGH — backfill dup (one has no email)**_
+    - #5753 <no-email> (2 bookings)
+    - #6226 <no-email> (2 bookings)
+- **Nicolas PERJOC** — _review — different emails (could be namesake)_
+    - #6675 <nic.perj@hotmail.com> (1 bookings)
+    - #6576 <nic.perj@hotmail.fr> (1 bookings)
+- **Rachel Muller** — _review — different emails (could be namesake)_
+    - #11786 <rachelmueller2000@yahoo.fr> (1 bookings)
+    - #7407 <benjaminpadrixe-gratuit@yahoo.fr> (1 bookings)
+- **Sergio Boccaletti** — _review — different emails (could be namesake)_
+    - #7843 <ebecchi@libero.it> (1 bookings)
+    - #9785 <sergio-bo@hotmail.it> (1 bookings)
+- **Beatriz Moraes Attorre** — _**HIGH — backfill dup (one has no email)**_
+    - #8617 <beatrizmoraes444@gmail.com> (1 bookings)
+    - #8406 <no-email> (1 bookings)
+- **Ana Romero** — _review — different emails (could be namesake)_
+    - #5344 <anro12c@gmail.com> (1 bookings)
+    - #7013 <bil.isasa.ana@gmail.com> (1 bookings)
+- **Paula Martin Ballester** — _review — different emails (could be namesake)_
+    - #6113 <elvaba@hotmail.com> (1 bookings)
+    - #8237 <paulapilar1999@gmail.com> (1 bookings)
+- **Hector Garcia** — _review — different emails (could be namesake)_
+    - #7646 <h.garcigon@gmail.com> (1 bookings)
+    - #9941 <hergch@hotmail.com> (1 bookings)
+- **Corine Rautureau** — _**HIGH — backfill dup (one has no email)**_
+    - #5170 <cprautureau@orange.fr> (1 bookings)
+    - #9539 <no-email> (2 bookings)
+- **Patrizia Caruso** — _review — different emails (could be namesake)_
+    - #6801 <pattycar1967@gmail.com> (1 bookings)
+    - #8928 <patrizia.caruso718@alice.it> (1 bookings)
+- **Ana Batista** — _review — different emails (could be namesake)_
+    - #6413 <ambatista@aepaa.pt> (1 bookings)
+    - #4784 <batista_ana@outlook.com> (3 bookings)
+- **Hyunjun Kim** — _**HIGH — backfill dup (one has no email)**_
+    - #6689 <vv0327@gmail.com> (1 bookings)
+    - #6611 <no-email> (1 bookings)
+- **Lucrezia Bissoli** — _**HIGH — backfill dup (one has no email)**_
+    - #6294 <no-email> (1 bookings)
+    - #8705 <no-email> (1 bookings)
+- **Martina Vachova** — _review — different emails (could be namesake)_
+    - #9176 <vachovka151@email.cz> (1 bookings)
+    - #8253 <megivachu@email.cz> (3 bookings)
+- **Jesús Prieto** — _review — different emails (could be namesake)_
+    - #8107 <prietocodias@gmail.com> (1 bookings)
+    - #9858 <jesus1999prieto@gmail.com> (1 bookings)
+- **Daria Stefanik** — _**HIGH — backfill dup (one has no email)**_
+    - #9798 <dar.stef3012@gmail.com> (1 bookings)
+    - #9800 <no-email> (1 bookings)
+
+---
+Summary: 9 email groups, 69 name groups (32 high-confidence backfill dups, 37 need review).

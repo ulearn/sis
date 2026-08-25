@@ -1,0 +1,50 @@
+[
+  {
+    "range": "K7:K7",
+    "values": [
+      [
+        "7 Jul UTC. UNCHANGED (fresh DB). All 5 erroneous phone records still present: s1897 Dolgormaa phone=email saraa.tpb@gmail.com (Apr28=70d); s8567 Aki phone=email aki-hinaaki1116@ezudo.he.jp (Apr10=88d); s1194 Jieun annotation (May7=61d); s5345 Lisa annotation (Apr10=88d); s10343 Alessandra unicode trailing chars (Apr28=70d). Fixable now: s1194/5345/10343. Need real number: s1897/s8567."
+      ]
+    ]
+  },
+  {
+    "range": "K17:K17",
+    "values": [
+      [
+        "7 Jul UTC (20th check). UNCHANGED (fresh DB). ba11282 bed66 May15-Jun05 active=STILL true (32d stale). Student left Jun05. Historical cleanup only."
+      ]
+    ]
+  },
+  {
+    "range": "K19:K19",
+    "values": [
+      [
+        "7 Jul UTC (fresh DB). UNCHANGED. s983 Flavia visaStatus=STILL null (updAt=Jun15=22d stale). bk1534 CONF EUR1308/1308. Prisma UI save error prevents visa update — direct SQL needed."
+      ]
+    ]
+  },
+  {
+    "range": "K20:K20",
+    "values": [
+      [
+        "7 Jul UTC (fresh DB, 12d since last check). UNCHANGED. bk83 CONF confirmed=true amtPaid=2629.8 (updAt=May21=47d). bc89 Morning IELTS Apr13-May22 active=STILL true (46d stale). bc90 Private Apr13-May22 active=STILL true. bk2606 Fidelo historical. Cosmetic stale-active cleanup only."
+      ]
+    ]
+  },
+  {
+    "range": "K24:K24",
+    "values": [
+      [
+        "7 Jul UTC (9th check). UNCHANGED. bc828 AY-Morning start=2026-03-02 end=2026-02-27 STILL BACKWARDS active=true fee=null (updAt=May11=57d stale). Low-priority cosmetic. See recipe."
+      ]
+    ]
+  },
+  {
+    "range": "K27:K27",
+    "values": [
+      [
+        "7 Jul UTC (25th check). UNCHANGED. bc24826 Ernesto Pesoa Gil (ended Jun19=18d) active=STILL true. bc23 Ivan Rodriguez (ended May22=46d) active=STILL true. Both await deactivation. Xero EUR 250 Ernesto reconciliation also pending."
+      ]
+    ]
+  }
+]

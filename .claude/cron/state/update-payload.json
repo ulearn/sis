@@ -1,0 +1,57 @@
+[
+ {
+  "range": "H2:K2",
+  "values": [
+   [
+    "Pmts unlinked (not spurious): pmt16988->bk17856 Margherita, pmt16989->bk17857 Francesca",
+    "UPDATE payments SET booking_id=17856 WHERE id=16988; +17857/16989. see recipe: issue-1-orphan-payments.md",
+    "Jun06 hrly: DIAGNOSIS RESOLVED. HS lookup: pmt16988->deal498984295669->bk17856 MargheritaG EUR339.9(MATCH). pmt16989->deal500880898270->bk17857 FrancescaF EUR339.9(MATCH). SAFE to link. NOT spurious.\nJun06 hrly(2): UNCHANGED. pmt16988/16989 booking_id=null. ~39d. Await Neil.\nJun06 hrly(3): UNCHANGED. ~40d. bk17856+bk17857 also confirmed=false (cosmetic, unrelated). Await Neil.\nJun06 hrly(4): UNCHANGED. 41d. Await Neil.\nJun06 hrly(5): UNCHANGED. pmt16988/16989 bookingId=null. 42d. Await Neil.\nJun06 hrly(6): UNCHANGED. pmt16988/16989 booking_id=null. 43d. Await Neil.\nJun06 hrly(7): UNCHANGED. pmt16988/16989 booking_id=null. 44d. Await Neil.\nJun06 hrly(8): UNCHANGED. pmt16988/16989 bookingId=null. Await Neil.\nJun06 hrly(9): UNCHANGED. pmt16988/16989 booking_id=null. Bank Apr28. ~39d. Await Neil.\nJun07 hrly(10): SUN. UNCHANGED. pmt16988/16989 booking_id=null. ~40d unlinked. Await Neil.\nJun07 hrly(11): SUN. UNCHANGED. pmt16988/16989 booking_id=null. ~41d unlinked. Await Neil.\nJun07 hrly(12): SUN. UNCHANGED. pmt16988/16989 booking_id=null. ~41d unlinked. Await Neil.\nJun07 hrly(13): SUN. UNCHANGED. pmt16988/16989 booking_id=null. ~41d unlinked. Await Neil.\nJun07 hrly(14): SUN. UNCHANGED. pmt16988/16989 booking_id=null. ~41d unlinked. Await Neil.\nJun07 hrly(15): SUN. UNCHANGED. pmt16988/16989 booking_id=null. ~41d unlinked. Await Neil.\nJun07 hrly(16): UNCHANGED. pmt16988/16989 booking_id=null. ~41d. Await Neil.",
+    "link needed"
+   ]
+  ]
+ },
+ {
+  "range": "H7:K7",
+  "values": [
+   [
+    "5 bad mobiles: emails in phone field - Dolgormaa1897, Aki8567; notes-not-numbers - Jieun1194, Lisa5345; unicode - Alessandra10343.",
+    "5 bad mobiles listed; clean per recipe. recipe: issue-5-mobile-numbers.md",
+    "Jun06 hrly: all 5 STILL unchanged. 1194/5345/10343 fixable now (strip annotation/unicode). 1897/8567 blocked - need real mob from HS/staff.\nJun06 hrly(2): CONFIRMED unchanged. recipe:issue-5-mobile-numbers.md\nJun06 hrly(3): UNCHANGED. 1194/5345/10343 fixable (strip). 1897/8567 need real mob.\nJun06 hrly(4): UNCHANGED.\nJun06 hrly(5): UNCHANGED. Low priority. Await Neil.\nJun06 hrly(6): UNCHANGED. Low priority. Await Neil.\nJun06 hrly(7): UNCHANGED. All 5 bad mobiles unchanged. Low priority. Await Neil.\nJun07 hrly(8): SUN. UNCHANGED. All 5 bad mobiles. 1194/5345/10343 strip-fixable. 1897/8567 await real mob.\nJun07 hrly(9): SUN. UNCHANGED. All 5 bad mobiles unchanged. Low priority. Await Neil.\nJun07 hrly(10): SUN. UNCHANGED. All 5 bad mobiles. Low priority. Await Neil.\nJun07 hrly(11): SUN. UNCHANGED. All 5 bad mobiles. Low priority. Await Neil.\nJun07 hrly(12): SUN. UNCHANGED. All 5 bad mobiles. Low priority. Await Neil.\nJun07 hrly(13): SUN. UNCHANGED. All 5 bad mobiles. 1194/5345/10343 strip-fixable. 1897/8567 await real mob.\nJun07 hrly(14): UNCHANGED. All 5 mobiles. Low pri. Await Neil.",
+    "info needed"
+   ]
+  ]
+ },
+ {
+  "range": "H10:K10",
+  "values": [
+   [
+    "bk1498.confirmed=false (bool; status=CONFIRMED). doc171 DRAFT cert(c1660 Dec15-Jun05, ended). Not issued.",
+    "Issue doc171 via SIS->bk1498->Docs. If blocked: SET confirmed=true WHERE id=1498 (NOT RUN). see recipe: issue-8-suvderdene-cert-dates.md",
+    "Jun06 hrly(4): CORRECTED. bk1498 confirmed=false (bool). doc171 DRAFT cert created Jun5. Course c1660 ended Jun5. Prior J refs to bk97 were error.\nJun06 hrly(5): UNCHANGED. doc171 DRAFT cert. bk1498.confirmed=false. c1660 ended Jun5. Open SIS->bk1498->Issue cert.\nJun06 hrly(6): UNCHANGED. doc171 DRAFT. bk1498.confirmed=false. Open bk1498 in SIS->issue cert.\nJun06 hrly(7): UNCHANGED. doc171 DRAFT. bk1498.confirmed=false. c1660 ended Jun5. Open bk1498->issue cert.\nJun06 hrly(8): UNCHANGED. doc171 DRAFT. bk1498.confirmed=false. c1660 ended Jun5 (1d ago). Open bk1498->issue cert.\nJun06 hrly(9): UNCHANGED. doc171 DRAFT. bk1498.confirmed=false. c1660 ended Jun5 (1d ago). Cert overdue. Open bk1498->issue cert.\nJun07 hrly(10): SUN. UNCHANGED. doc171 DRAFT. bk1498.confirmed=false. c1660 ended Jun5 (2d ago). Cert overdue. Open bk1498->issue cert.\nJun07 hrly(11): SUN. UNCHANGED. doc171 DRAFT. bk1498.confirmed=false. c1660 ended Jun5 (2d ago). Cert overdue. Open bk1498->issue cert.\nJun07 hrly(12): SUN. UNCHANGED. doc171 DRAFT. bk1498.confirmed=false. c1660 ended Jun5 (2d ago). Cert overdue. Open bk1498->issue cert.\nJun07 hrly(13): SUN. UNCHANGED. doc171 DRAFT. bk1498.confirmed=false. c1660 ended Jun5 (2d ago). Cert overdue. Await Neil.\nJun07 hrly(14): SUN. UNCHANGED. doc171 DRAFT. bk1498.confirmed=false. c1660 ended Jun5 (2d ago). Cert overdue. Await Neil.\nJun07 hrly(15): SUN. UNCHANGED. doc171 DRAFT. bk1498.confirmed=false. c1660 ended Jun5 (2d ago). Cert 2d overdue. Await Neil.\nJun07 hrly(16): UNCHANGED. doc171 DRAFT. bk1498.confirmed=false. c1660 ended Jun5 (2d). Cert 2d overdue. Open SIS->bk1498->issue cert.",
+    "cert pending"
+   ]
+  ]
+ },
+ {
+  "range": "H11:K11",
+  "values": [
+   [
+    "2 separate bookings. bk97 c107 Apr27-May22, bk18002 c24793 May25-Jun05",
+    "bk18002 cert ISSUED Jun05. Generate cert for bk97(Apr27-May22). see recipe: issue-9-massimiliano-cert-split.md",
+    "Jun06 hrly: bk97.confirmed=false STILL. No cert. c107 ended 15d ago. OVERDUE. Open bk97 in SIS->gen cert. If blocked by confirmed=false: set confirmed=true (NOT RUN) then retry.\nJun06 hrly(2): UNCHANGED. ~15d overdue. confirmed=false blocking cert gen. recipe:issue-9.\nJun06 hrly(3): bk97 confirmed=false. docs=invoices only(doc63+doc64). NO cert. SET confirmed=true WHERE id=97 (NOT RUN) then gen cert c107.\nJun06 hrly(4): UNCHANGED. bk97.confirmed=false. doc64=invoice ISSUED. NO cert. c107 ended May22. 15d overdue.\nJun06 hrly(5): UNCHANGED. bk97.confirmed=false. NO cert. c107 ended May22 15d+ overdue. See recipe:issue-9-massimiliano-cert-split.md\nJun06 hrly(6): UNCHANGED. bk97.confirmed=false. docs=2 invoices only. NO cert. c107 ended May22. 16d overdue.\nJun06 hrly(7): UNCHANGED. bk97.confirmed=false. docs=2 invoices only. NO cert. c107 ended May22. 15d overdue.\nJun06 hrly(8): UNCHANGED. bk97.confirmed=false. docs=2 invoices only. NO cert. c107 ended May22. ~15d overdue.\nJun07 hrly(9): SUN. UNCHANGED. bk97.confirmed=false. docs=doc63(REVOKED)+doc64(ISSUED)=invoices. NO cert. c107 ended May22 (~16d overdue). recipe:issue-9.\nJun07 hrly(10): SUN. UNCHANGED. bk97.confirmed=false. docs=doc63(REVOKED)+doc64(ISSUED)=invoices. NO cert. c107 ended May22 (~16d overdue). recipe:issue-9-massimiliano-cert-split.md\nJun07 hrly(11): SUN. UNCHANGED. bk97.confirmed=false. docs=2 invoices only. NO cert. c107 ended May22 (~16d overdue). recipe:issue-9-massimiliano-cert-split.md\nJun07 hrly(12): SUN. UNCHANGED. bk97.confirmed=false. docs=2 invoices only. NO cert. c107 ended May22 (~16d overdue). recipe:issue-9-massimiliano-cert-split.md\nJun07 hrly(13): SUN. UNCHANGED. bk97.confirmed=false. docs=2 invoices only. NO cert. c107 ended May22 (~16d overdue). recipe:issue-9-massimiliano-cert-split.md\nJun07 hrly(14): SUN. UNCHANGED. bk97.confirmed=false. NO cert. c107 ended May22 (~16d overdue). recipe:issue-9-massimiliano-cert-split.md\nJun07 hrly(15): UNCHANGED. bk97.confirmed=false. NO cert. c107 ended May22 (16d overdue). recipe:issue-9-massimiliano-cert-split.md",
+    "bk97 no cert"
+   ]
+  ]
+ },
+ {
+  "range": "H14:K14",
+  "values": [
+   [
+    "extra96 INSURANCE fee=NULL. bk17981.confirmed=false. 5 school days uninsured (Jun1-5). Mon Jun8=6th.",
+    "Set extra96 fee, confirm bk, gen invoice, arrange HI. see recipe: issue-13-lizbeth-health-insurance.md",
+    "Jun06 hrly: extra96.fee=NULL. active=true. c24773 Jun1-Nov20 (5d uninsured). bk17981.confirmed=false. No docs/invoices. ESCALATE NEIL URGENT.\nJun06 hrly(2): UNCHANGED. 5+ school days uninsured. ESCALATE NOW.\nJun06 hrly(3): UNCHANGED. extra96.fee=null. bk17981.confirmed=false. deal 503569276136. 5 school days uninsured. ESCALATE.\nJun06 hrly(4): DAY 6 UNINSURED. extra96.fee=null. No invoices. CRITICAL.\nJun06 hrly(5): UNCHANGED. extra96 INSURANCE fee=NULL. bk17981.confirmed=false. No docs. 6+ DAYS UNINSURED.\nJun06 hrly(6): Sat. Mon Jun8=6th day uninsured. extra96.fee=NULL. ESCALATE.\nJun06 hrly(7): SAT. extra96.fee=NULL. bk17981.confirmed=false. 5 school days uninsured. Mon Jun8=6th day. ESCALATE.\nJun06 hrly(8): SAT. UNCHANGED. extra96.fee=NULL. bk17981.confirmed=false. Mon Jun8=6th school day. CRITICAL.\nJun06 hrly(9): SAT. UNCHANGED. extra96 INSURANCE fee=null. bk17981.confirmed=false. No docs. 5 school days (Jun1-5). Mon Jun8=6th. CRITICAL.\nJun07 hrly(10): SUN. UNCHANGED. extra96 INSURANCE fee=NULL. bk17981.confirmed=false. Jun8=6th school day TOMORROW. No docs. CRITICAL. ESCALATE NEIL.\nJun07 hrly(11): SUN. UNCHANGED. extra96 INSURANCE fee=NULL. bk17981.confirmed=false. Jun8=6th school day TOMORROW. No docs. CRITICAL. ESCALATE NEIL.\nJun07 hrly(12): SUN. UNCHANGED. extra96 INSURANCE fee=NULL. bk17981.confirmed=false. No docs. Jun8(MON) TOMORROW=6th school day. CRITICAL. ESCALATE NEIL.\nJun07 hrly(13): SUN. UNCHANGED. extra96 INSURANCE fee=null. bk17981.confirmed=false. No docs. Jun8(MON) TOMORROW=6th school day. CRITICAL. ESCALATE NEIL NOW.\nJun07 hrly(14): SUN. UNCHANGED. extra96 INSURANCE fee=null. bk17981.confirmed=false. No docs. Jun8(MON)=TOMORROW. 7th school day uninsured. CRITICAL. Neil action required NOW.\nJun07 hrly(15): SUN. UNCHANGED. extra96 INSURANCE fee=null. bk17981.confirmed=false. No docs. Jun8(MON)=TOMORROW=6th school day. CRITICAL. Neil MUST act Mon morning.\nJun07 hrly(16): SUN. UNCHANGED. extra96.fee=null. amtPaid=amtTotal=EUR1407.50 FULLY PAID. No docs. Jun8=6th school day TOMORROW. NEIL MUST ACT MON MORNING.\nJun07 hrly(17): UNCHANGED. extra96.fee=null. bk17981 FULLY PAID EUR1407.50. Jun8(MON)=TOMORROW=6th school day uninsured. Neil: (1)set extra96 fee (2)issue invoice (3)arrange HI Mon morning.",
+    "HI urgent"
+   ]
+  ]
+ }
+]

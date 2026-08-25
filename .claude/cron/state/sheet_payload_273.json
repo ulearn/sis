@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 75th check Fri 14 Aug 2026 UTC — CHANGED since 74th check (accommodation restructured today)\n• Booking Accommodation 11357 (host family, bed 178): Aug 2–Aug 15, fee = EUR 1,250 — end date shortened from Sep 6 to Aug 15, updated today\n• Booking Accommodation 11396 (NEW today, bed 44): Aug 15–22, fee = null ⚠️ — created 2026-08-14\n• Booking Accommodation 11397 (NEW today, bed 89): Aug 22–Sep 6, fee = null ⚠️ — created 2026-08-14\n• Booking Accommodation 11392 (apartment, bed = null): Sep 6–Sep 14, fee = EUR 415 — still no bed assigned (Sep 6 = 23 days)\n• Bed 89 same-day overlap: Booking Accommodation 11387 (Vincenzo Gagliano, booking 18175) ends Aug 22; Booking Accommodation 11397 starts Aug 22 — checkout/check-in same day, verify housekeeping\n• Bed 44: clear for Aug 15–22 (no conflicts)\n• Beds 168 + 194: clear for Sep 6–14 (available for apartment assignment)",
+        "Set fee on Booking Accommodations 11396 + 11397; assign bed to Booking Accommodation 11392 (bed 168 or 194); verify bed 89 same-day Aug 22 turnaround. See recipe: issue-41-addendum-14aug-c.md",
+        "75th Fri 14 Aug UTC. CHANGED: 3 BAs restructured/created today. 2 fees null (11396, 11397). Apartment (11392) bed null. Bed 89 same-day overlap Aug 22 (Vincenzo Gagliano checks out). Sep 6 check-in (23d). Fix NOT RUN.",
+        "2 fees null; bed null 11392; Sep 6 (23d)"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 123rd check Fri 14 Aug 2026 UTC — no change since 122nd check\n• Booking 1624 (Telmuun Enkhsaikhan, student 293): status = PARTIAL, confirmed = false, amount paid = EUR 1,406, amount open = EUR 250 — service May 18 to Nov 20 2026\n• Booking Course 1810 (Academic Year Renewal Morning): Jun 29 2026 to Jan 1 2027, active = true, 0 class assignments (47 days)\n• Payment 17956: EUR 100, Bank, Xero payment id = null, created Jun 29 2026 (47 days unreconciled)\n• Booking status PARTIAL + confirmed = false — student likely excluded from active listings and class assignment search",
+        "Assign Booking Course 1810 to AM class; reconcile Payment 17956 in Xero; settle EUR 250 open balance; set booking 1624 confirmed = true once settled. See recipe: issue-48-addendum-14aug-d.md",
+        "123rd hrly Fri 14 Aug UTC. No change. Booking 1624 PARTIAL + confirmed=false. BC 1810: 0 class assignments (47d). Payment 17956 Xero null (47d). EUR 250 open. Fix NOT RUN.",
+        "payment gap; BC1810 47d; bk PARTIAL"
+      ]
+    ]
+  }
+]

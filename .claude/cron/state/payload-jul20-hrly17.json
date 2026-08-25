@@ -1,0 +1,35 @@
+[
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 36th check Mon 20 Jul 2026 UTC (17th hourly)\n• NEW: 4 additional stale booking accommodations found — total tracked now 11\n• Booking accommodation 9917 (bed 84, booking 1274, Kanna Hasegawa): ended 16 May 2026 — 65 days stale\n• Booking accommodation 11246 (bed 161, booking 17, Felix Lopez Rivera): ended 6 Jun 2026 — 44 days stale\n• Booking accommodation 30 (bed 33, booking 17826, Fabrizio Mauro): ended 14 Jun 2026 — 36 days stale\n• Booking accommodation 11280 (bed 188, booking 17912, Valeriya Salauyova): ended 27 Jun 2026 — 23 days stale\n• Prior 7 all still active: 11167 (bed 168, 16d), 11247 (bed 161, 16d), 11339 (bed 59, 16d), 11345 (bed 89, 8d), 11257 (bed 168, 2d), 11365 (bed 174, 2d), 11265 (bed 157, 1d)\n• SYSTEM-WIDE: 11,175 total active booking accommodations with end date before today — automated deactivation job needed",
+        "Deactivate 11 tracked BAs; schedule nightly automated job for 11k+ system-wide. See recipe: issue-36b-addendum-20jul-c.md",
+        "36th check Mon 20 Jul (17th hrly). 4 NEW stale BAs: BA9917 bed84 bk1274 Kanna (65d), BA11246 bed161 bk17 Felix (44d), BA30 bed33 bk17826 Fabrizio (36d), BA11280 bed188 bk17912 Valeriya (23d). CRITICAL: 11,175 total stale BAs system-wide (same systemic issue as 24k stale BCs in Issue 1). Fix NOT RUN.",
+        "11k stale BAs; 11 tracked"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 47th check Mon 20 Jul 2026 UTC (17th hourly)\n• Booking course 25011 (Eduardo Roche Diaz, booking 18233, General English PM, 20 Jul to 24 Jul 2026): STILL 0 class assignments — day 1 of final week, 4 school days remaining after today\n• Booking course 24945 (Sarah Venturini Talizin, student 1055, booking 18169, General English AM, 6 Jul to 31 Jul 2026): STILL 0 class assignments — 11 school days missed (corrected: prior count of 14 overcounted; course has 20 total school days), 9 remaining\n• Booking course 24998 (Allison Guadalupe Ayala Vazquez, booking 18221, General English PM, 13 Jul to 31 Jul 2026): STILL 0 class assignments — 6 days missed, 9 remaining\n• Booking course 24990 (Samuele Stenico, booking 18213, General English AM, 13 Jul to 7 Aug 2026): STILL 0 class assignments — 6 days missed, 13 remaining (Aug 3 Bank Holiday not in school_closures)\n• Booking course 24991 (Edith Nunes, booking 18214, General English AM, 13 Jul to 7 Aug 2026): STILL 0 class assignments — tracked Issue 22\n• Booking course 24609 (Xuezhen Huang, booking 17831, Morning General, 13 Jul to 31 Jul 2026): STILL 0 class assignments — tracked Issue 39",
+        "Assign class: BC25011 Eduardo (ends Friday, do first); BC24945 Sarah (11d missed); BC24998 Allison; BC24990 Samuele. See recipe: issue-45-addendum-20jul-c.md",
+        "47th check Mon 20 Jul (17th hrly). BC25011 Eduardo GE PM ends FRIDAY — day 1, 4 days left. BC24945 Sarah 11 school days missed (corrected from 14 — was overcounted, course has 20 total school days), 9 left. BC24998 Allison + BC24990 Samuele 6d missed. Fix NOT RUN.",
+        "CRITICAL; BC25011 ends Fri; BC24945 11d missed"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• 5th check Mon 20 Jul 2026 UTC\n• Booking accommodation 11285 (Jesús Manuel Ramírez Díaz, student 14439, bed 83, booking 17825): stored dates 21 Jun to 5 Jul — 15 days post-checkout — still active = true\n• Booking accommodation 11352 (Verónica Martín, student 278, bed 83, booking 18156): 4 Jul to 11 Jul 2026 — 9 days post-checkout — still active = true\n• Correction: prior entries listed booking 18114 for BA11352 — DB confirms correct booking is 18156\n• Fix NOT RUN",
+        "Set active = false on BA11285 and BA11352. Batch with Issue 36/37 run. See recipe: issue-43-addendum-20jul.md",
+        "5th check Mon 20 Jul UTC. BA11285 Jesús bed83 bk17825 ended Jul05 — 15d stale. BA11352 Verónica bed83 bk18156 (corrected from 18114) ended Jul11 — 9d stale. Fix NOT RUN.",
+        "cosmetic; 15d+9d stale"
+      ]
+    ]
+  }
+]

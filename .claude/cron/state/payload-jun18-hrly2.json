@@ -1,0 +1,56 @@
+[
+  {
+    "range": "J2:K2",
+    "values": [
+      [
+        "Jun18 hrly #2: UNCHANGED (fresh DB). pmt16988 bookingId=null xeroId=null EUR339.90. pmt16989 bookingId=null xeroId=null EUR339.90. bk17856 CONF conf=false 339.9/339.9. bk17857 CONF conf=false 339.9/339.9. Students arrive Jun29=11 cal days. SQL NOT RUN. Escalating urgency.",
+        "11d to Jun29"
+      ]
+    ]
+  },
+  {
+    "range": "J6:K6",
+    "values": [
+      [
+        "Jun18 hrly #2: UNCHANGED. bk17871 ESCROW EUR300/2313.62 conf=true. 0 doc records — LOA still not generated. Arrival Jun27=9 cal days. CRITICAL: generate LOA via SIS (s14473 → bk17871 → Documents) before student arrives.",
+        "9d;LOA CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "J18:K18",
+    "values": [
+      [
+        "Jun18 hrly #3: UNCHANGED. bk1308 CANCELLED conf=false 1530/1530 (updAt=Jun07). bc1350 AFT May25–Nov13 ACTIVE. Day 19 (school days elapsed since May25). 0 SCAs for s766 all term — never assigned to class. Await Neil: restore bk1308 to CONFIRMED + assign AFT class.",
+        "D19;urgent;0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "J27:K27",
+    "values": [
+      [
+        "Jun18 hrly #2 FINAL DAY: bc24826 INTENSIVE Jun08–Jun19 ends TOMORROW (Fri Jun19). 0 SCAs all 2-week course — Ernesto (s14532) never assigned to class. bk18034 PARTIAL EUR845/1095 (EUR250 outstanding). Collect EUR250 via HubSpot after Jun19. Fully historical post-Jun19.",
+        "ends Jun19;EUR250"
+      ]
+    ]
+  },
+  {
+    "range": "J28:K28",
+    "values": [
+      [
+        "Jun18 hrly #3: UNCHANGED. bk17909 CANCELLED conf=true (anomaly). 0 pmts in DB on bk17909 (17477+17478 deleted Jun17, DB-clean). HS pmts 1230788330738 (EUR727.50) + 1230645766331 (EUR728.00) still NOT voided (confirmed live in prior HS API check Jun18 #2). Await Neil: void via HubSpot Commerce → Payments.",
+        "void 2 HS pmts"
+      ]
+    ]
+  },
+  {
+    "range": "J40:K40",
+    "values": [
+      [
+        "Jun18 hrly #2: UNCHANGED. s356 gender=null (updAt=Jun03 stale). doc238 STILL ISSUED (created Jun17 15:19 UTC — wrong pronouns Ms./she/her on exit letter). NEIL: 1) SIS personal details s356 → set gender = Male; 2) revoke doc238; 3) regenerate exit letter.",
+        "urgent; set gender"
+      ]
+    ]
+  }
+]

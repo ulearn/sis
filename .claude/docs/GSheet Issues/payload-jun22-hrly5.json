@@ -1,0 +1,46 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Two payments are unlinked — bookingId = null and xeroPaymentId = null\n• Payment 16988 maps to Booking 17856 (Margherita Galbusera) — EUR 339.90, created 28 Apr (55 days orphaned)\n• Payment 16989 maps to Booking 17857 (Francesca Fassina) — EUR 339.90, created 28 Apr (55 days orphaned)\n• Both bookings are Confirmed (status), confirmed = false, amountPaid = 339.90 — payment audit trail broken\n• Booking courses 24630 + 24631 (General English AM Plus) start 29 Jun — 7 days away; fee = null (updated Jun 19 — touched but not set)",
+        "UPDATE payments SET booking_id=17856 WHERE id=16988; UPDATE payments SET booking_id=17857 WHERE id=16989. See recipe: issue-1-orphan-payments.md",
+        "Jun22 hrly x10: pmt16988+16989 bookingId=null xeroId=null (UNCHANGED, 55d orphaned). bk17856+17857 CONF conf=false amtPaid=339.9. bc24630+24631 starts Jun29=7d fee=null. SQL NOT RUN. NEIL URGENT: link pmts + set bc fees BEFORE Jun29.",
+        "Jun29=7d; URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 is Confirmed, paid EUR 740 / 740 (since 15 Jun)\n• Two duplicate booking courses: bc24933 (General English AM, fee = EUR 380) and bc24934 (General English AM, fee = EUR 360) — both Jun 15 to Jul 10\n• Zero class assignments for student Edith Nunes (student 1015, level A1) — in school since 15 Jun; Day 8 (Week 2 started Mon 22 Jun)\n• Duplicate booking course bc24934 not yet deleted (active = true, last updated Jun 11)\n• OVERDUE — student in school 8 days with no class assignment (live DB check Jun22: still 0 SCAs)",
+        "Deactivate bc24934 in SIS + INSERT SCA for bc24933 class A1-AM from ws=Jun23 we=Jul10. see recipe: issue-22-edith-nunes-dup-bc.md",
+        "Jun22 hrly x12 (Day8): bc24934 STILL active=true dup (Jun11=11d stale). 0 SCAs live Jun22 (2 fresh checks). ws should be Jun23 (Tue, Day9). NEIL URGENT: SIS → deactivate bc24934 + assign SCA bc24933 cls7 A1-AM weekStart=Jun23 weekEnd=Jul10 (NOT RUN).",
+        "D8; 0SCA; URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Booking 18044 is a duplicate of original booking 94 for Giulia Avallone (student 88) — created by HubSpot webhook\n• Original booking 94 is correct: class assignment sca270 (class 12, B1 AM 2, Jun 15 to Jun 26) active — Giulia is in class\n• Duplicate booking 18044 still Confirmed (not yet cancelled) — last updated Jun 07 (15 days stale)\n• Payment 17607: EUR 1151.50 on booking 18044, HubSpot payment ID 1239529228498, xeroPaymentId = null — duplicate of pmt17102 on bk94\n• Course bc24836 on duplicate (Jun 15 to Jun 26, fee = EUR 301.50) ends Fri 26 Jun — 4 days away — DEADLINE\n• bk18044 amountPaid = EUR 1106.50 vs pmt17607 = EUR 1151.50 — EUR 45 excess on duplicate",
+        "Cancel bk18044 via SIS UI + void pmt17607 via HubSpot Commerce. See recipe: issue-30-giulia-duplicate-booking.md",
+        "Jun22 hrly x11 (Jun26=4d DEADLINE): bk18044 CONF amtPaid=1106.5/total=1106.5 (Jun07=15d stale). pmt17607 EUR1151.5 xeroId=null (EUR45 excess). bc24836 ends Fri Jun26 active=true. sca270 bk94 OK. NEIL URGENT: cancel bk18044 SIS UI + void pmt17607 HS Commerce BEFORE Fri Jun26 (NOT RUN).",
+        "Jun26; 4d; deadline"
+      ]
+    ]
+  },
+  {
+    "range": "H44:K44",
+    "values": [
+      [
+        "• Accommodation 11311: bed 84, check-in Jun 28, end Aug 23 (8 weeks actual), weeks field = 10, fee = EUR 3500\n• Three-way inconsistency: end Aug 23 = 8 weeks; weeks = 10 field = Sep 6; Diego says 11 weeks = Sep 13\n• NEWLY FOUND: 4 stale active = true records on bed 84 with past end dates (ba 9917 May 10–16, ba 11157 May 02–10, ba 11159 May 17–30, ba 11180 Jun 06–20) — likely blocking the SIS date-edit UI overlap check\n• Accommodation 11180 was cleaned today Jun 22 but active flag not cleared — freshest stale record\n• Booking 17980 is Confirmed and fully paid EUR 5331",
+        "Step 1: deactivate stale bed 84 records (ba 9917/11157/11159/11180 UPDATE active=false); Step 2: update ba11311 dates/weeks/fee once Diego confirms week count. See recipe: issue-36b-pietro-accomm-dates.md",
+        "Jun22 hrly x2: ba11311 UNCHANGED (updAt=Jun18=4d). 4 stale active=true on bed84 STILL unchanged: ba9917 May10-16 (cleaned May19), ba11157 May02-10 (cleaned May19), ba11159 May17-30 (cleaned Jun02), ba11180 Jun06-20 (cleaned Jun22T13:31). Pietro arrives Jun28=6d. Awaiting Diego week count (8=Aug23, 10=Sep6, 11=Sep13). Step1 NOT RUN.",
+        "awaiting Diego"
+      ]
+    ]
+  }
+]

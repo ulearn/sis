@@ -1,0 +1,56 @@
+[
+  {
+    "range": "J2:K2",
+    "values": [
+      [
+        "Jun15 MON hrly11: pmt16988+16989 bookingId=null UNCHANGED. Arrival Jun29=14d. UPDATE not run.",
+        "14d to arrival"
+      ]
+    ]
+  },
+  {
+    "range": "J23:K23",
+    "values": [
+      [
+        "Jun15 MON hrly11: STARTED TODAY. bk18158 PEND 0/740 UNCHANGED. bc24933+bc24934 DUP Jun15-Jul10. s1015 0 active SCAs(sca48/sca146 expired). bk18131/18133 CONF ghost NOT cancelled. Revised recipe: 1)CANCEL bk18131+18133 2)void pmts17730+17852 via HS 3)DELETE bc24934 4)assign s1015 cls7/c24933. NEIL: run NOW.",
+        "URGENT 0SCA STARTED"
+      ]
+    ]
+  },
+  {
+    "range": "J27:K27",
+    "values": [
+      [
+        "Jun15 MON hrly11: WK2 STARTED TODAY. bk18034 PARTIAL 845/1095 UNCHANGED. s14532 0 SCAs ALL TIME. bc24826 INTENSIVE Jun08-19. Level=null. INSERT AM+PM bci=24826 ws=Jun15 we=Jun19 NOW (ask teacher level first). Level pairs: A2=cls8/9,B1=cls5+12/11,B2-C1=cls4/6,C1=cls13/14.",
+        "WK2 NOW 0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "J30:K30",
+    "values": [
+      [
+        "Jun15 MON hrly11: att=0 confirmed(attendance table). sca255 cls11/B1PM bc24925 Jul3=18d. visa_status=null Mongolia. NEIL: ask cls11/B1PM teacher URGENTLY re Saikhantes attendance - IRP at risk if she has not attended.",
+        "IRP CRITICAL 18d"
+      ]
+    ]
+  },
+  {
+    "range": "J31:K31",
+    "values": [
+      [
+        "Jun15 MON hrly11: STARTED TODAY. s88 0SCA confirmed. bk94 bc104 Jun15-26. bk18044 CONF DUP UNCHANGED(not cancelled). 4 steps NOT RUN. NEIL: (1)get Giulia level from staff (2)assign cls SIS s88 bk94 c104 (3)cancel bk18044+handle pmt17607 (4)cancel bk18152+delete s14557 Milena. Do step 1+2 FIRST.",
+        "Mon 08:00 URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "J32:K32",
+    "values": [
+      [
+        "Jun15 MON hrly11: TZ STILL missing .env(grep ^TZ= = 0). 43 null week_end(9 ghost IDs:39/40/65/66/74/75/81/87/100). Att sheet shows Sun Jun14 heading+9 ghost students THIS MORNING. BOTH FIXES NOT RUN. FIX1: echo TZ=UTC >> .env && touch tmp/restart.txt. FIX2 SQL: UPDATE student_class_assignments SET week_end=(SELECT end_date FROM booking_courses WHERE id=booking_course_id) WHERE week_end IS NULL; Apply IMMEDIATELY.",
+        "URGENT APPLY NOW"
+      ]
+    ]
+  }
+]

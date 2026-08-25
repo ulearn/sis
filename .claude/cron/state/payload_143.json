@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 69th hourly check Thu 23 Jul 2026 UTC (143rd total)\n• Booking course 25011 (Eduardo Roche Diaz, student 14602): General English PM, 20-24 Jul 2026 — STILL zero class assignments\n• Course EXPIRES TOMORROW Fri 24 Jul — attendance window closes permanently tonight\n• 4 school days already lost: Mon 20, Tue 21, Wed 22, Thu 23 Jul\n• 1 school day remaining: Fri 24 Jul only\n• Booking 18233: Confirmed, fully paid EUR 178.50\n• No change from 68th check (142nd total)",
+        "Assign BC25011 to Class 6 PM via SIS student 14602 > booking 18233. See recipe: issue-45-addendum-23jul-g.md",
+        "69th hrly 143rd check Thu 23 Jul UTC. BC25011 STILL 0 CAs — EXPIRES TOMORROW Fri 24 Jul. 4 days lost (Jul 20-23). 1 day left. Fix NOT RUN.",
+        "EXPIRES TOMORROW Fri 24 Jul"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 70th hourly check Thu 23 Jul 2026 UTC (143rd total)\n• August Bank Holiday Mon 3 Aug 2026: STILL absent from school_closures — 11 calendar days away — CRITICAL\n• October Bank Holiday Mon 27 Oct 2026: STILL absent — 96 calendar days away\n• Next closure in DB: Christmas 2026-12-21 (9 closures total, none between now and Dec)\n• Consequence: all bookings crossing Aug 3 will have incorrect end-date calculations\n• No change from 69th check (142nd total)",
+        "INSERT school_closures: Aug BH 2026-08-03, Oct BH 2026-10-27 (is_paid_holiday=true). See recipe: issue-38-addendum-23jul-g.md",
+        "70th hrly 143rd check Thu 23 Jul UTC. Aug BH STILL absent — 11d to Aug 3 (CRITICAL). Oct BH STILL absent. Fix NOT RUN.",
+        "Aug BH; 11d CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• 67th hourly check Thu 23 Jul 2026 UTC (143rd total)\n• Booking course 24609 (Xuezhen Huang, student 14443): Morning General, 13 Jul to 31 Jul 2026 — STILL zero class assignments\n• Booking 17831: Confirmed, fully paid EUR 1,396.90\n• School days remaining: 6 (Fri 24, Mon 27, Tue 28, Wed 29, Thu 30, Fri 31 Jul)\n• 9 school days already missed (13-23 Jul)\n• No change from 66th check (142nd total)",
+        "Assign BC24609 to a Morning General class via SIS student 14443 > booking 17831. See recipe: issue-39-addendum-23jul-f.md",
+        "67th hrly 143rd check Thu 23 Jul UTC. BC24609 STILL 0 CAs — 6 school days left (ends Jul 31). Fix NOT RUN.",
+        "BC24609 0 CAs; 6d left"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 66th hourly check Thu 23 Jul 2026 UTC (143rd total)\n• Booking 18180 (Giampaolo Russo, student 14571): Confirmed, fully paid EUR 2,584.96\n• Booking accommodation 11357: Host Family, active = true, Aug 2 to Sep 6 2026 (provider = Home, Room 2)\n• Capel Street apartment (Sep 6-14 2026): STILL NOT in database — booking accommodation record missing\n• Payment 17954 (EUR 2,584.96, Bank, 26 Jun 2026): xeroPaymentId = STILL null\n• Host Family check-in: Aug 2 = 10 days away\n• No change from 65th check (142nd total)",
+        "Add Capel apt (Sep 6-14) to booking 18180; reconcile Xero payment 17954. See recipe: issue-41-addendum-23jul-g.md",
+        "66th hrly 143rd check Thu 23 Jul UTC. Capel apt STILL missing. xeroPaymentId=null. Check-in Aug 2 (10d). Fix NOT RUN.",
+        "Xero null; Capel missing; 10d to check-in"
+      ]
+    ]
+  },
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• 79th check Thu 23 Jul 2026 UTC (143rd total) — all 5 phones still wrong\n• Dolgormaa Bayaraa (student 1897): email saraa.tpb@gmail.com in phone field — last touched 17 Jul 2026, phone unchanged\n• Aki Miura (student 8567): email aki-hinaaki1116@ezudo.he.jp in phone field — 104 days\n• Jieun Lee (student 1194): annotation 00821097366523 (home contry) — 77 days\n• Lisa Li (student 5345): annotation 0864645297 (Husband) — 104 days\n• Alessandra Saito de Araujo (student 10343): Unicode trailing chars in +353 (83) 885 9162 — 86 days",
+        "Strip annotations on students 1194 and 5345; strip Unicode on 10343; get real numbers for 1897 and 8567 from HubSpot. See recipe: issue-5-mobile-numbers.md",
+        "79th check 143rd hrly Thu 23 Jul UTC. UNCHANGED. Same 5 phones wrong: 1897 (email, touched Jul17), 8567 (email 104d+), 1194 (annotation 77d+), 5345 (annotation 104d+), 10343 (Unicode 86d+). Fix NOT RUN.",
+        "5 phones wrong; 104d+"
+      ]
+    ]
+  },
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 51st hourly check Thu 23 Jul 2026 UTC (143rd total)\n• Payment 16988 (EUR 339.90, Bank, 28 Apr 2026): booking ID null — 86 days since payment date\n• Payment 16989 (EUR 339.90, Bank, 28 Apr 2026): booking ID null — 86 days since payment date\n• Payment 17187 (EUR 6,151, TransferMate Escrow, 1 May 2026): booking ID null — fideloPaymentId = 37587 — Fidelo-migrated orphan — 83 days\n• Payment 4781 (EUR 380, Flywire): Fidelo legacy, fideloPaymentId = 32056, payment date Aug 2019 — permanently unresolvable\n• Stale booking courses: 24,436 with active = true and end date before 23 Jul 2026 — unchanged\n• Stale booking accommodations: 11,175 with active = true and end date before 23 Jul 2026 — unchanged",
+        "Link payments 16988, 16989 to correct bookings; investigate fideloId=37587 on payment 17187. Deactivate stale BCs + BAs. See recipe: issue-1-addendum-23jul-c.md",
+        "51st hrly 143rd check Thu 23 Jul UTC. UNCHANGED. Same 4 orphan pmts. Stale BCs: 24,436. Stale BAs: 11,175. Fix NOT RUN.",
+        "4 orphan pmts; 24,436 stale BCs"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,54 @@
+[
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Accommodation 11358 (bed 180) CREATED by staff TODAY Jun 25 at 14:25 UTC — booking 17831, Xuezhen Huang\n• Start Jul 12 to Aug 02 (3 weeks host family), active = true\n• Booking 17831 Confirmed, fully paid EUR 431.9 / 431.9 (updated Jun 04)\n• Payment 17180 EUR 431.9 — Xero ID = null, HubSpot ID = null (not yet in Xero)\n• Accommodation issue RESOLVED by staff today; Xero reconciliation of payment 17180 still pending",
+        "Accommodation created Jun 25 (staff action — resolved). Reconcile payment 17180 EUR 431.9 in Xero when ready. See recipe: issue-39-xuezhen-huang-accomm-missing.md",
+        "Jun25 14:25 UTC: accomm 11358 (bed 180) CREATED by staff today bk17831. HF Jul12-Aug02 3wks. pmt17180 EUR431.9 xeroId=null (Xero still pending). Accomm RESOLVED.",
+        "accomm fixed; Xero TBD"
+      ]
+    ]
+  },
+  {
+    "range": "J25:K25",
+    "values": [
+      [
+        "hrly Jun25 UTC (16th check, fresh DB): bc1797 ends TOMORROW Jun26 (bereavement leave, att=0 all time). bc1797 fee=1836 (IS set, not null as K previously said). bc24686 Morning General Jul20-Sep18 fee=STILL NULL (25d to Jul20). pmt17124 EUR1280.12 xeroId=null. bk1611 CONF 1280.12/1280.12. NEIL: (1) set bc24686 fee before Jul20; (2) reconcile pmt17124 in Xero.",
+        "bc24686 fee=null; Jul20=25d"
+      ]
+    ]
+  },
+  {
+    "range": "J2",
+    "values": [
+      [
+        "hrly Jun25 UTC (35th check, fresh DB): pmt16988+pmt16989 STILL booking_id=null xeroPaymentId=null (Apr28=58d). bc24630+bc24631 (General English AM Plus) startDate=Jun29 fee STILL NULL. bk17856+17857 confirmed=false. Jun29=Mon=4d. NEIL FINAL CALL: must act by Fri Jun27 EOD. (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) set bc24630+bc24631 fees before Mon arrivals."
+      ]
+    ]
+  },
+  {
+    "range": "J44",
+    "values": [
+      [
+        "hrly Jun25 UTC (20th check, fresh DB): ba9917(bk1274 ended May16=40d)+ba11157(bk100 ended May10=46d)+ba11159(bk100 ended May30=26d)+ba11180(bk81 ended Jun20=5d) ALL STILL active=true bed84 UNCHANGED. ba11311 Pietro Jun28-Sep13 active. Jun28=3d=SUNDAY. EMERGENCY: UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180) - NOT RUN."
+      ]
+    ]
+  },
+  {
+    "range": "J16",
+    "values": [
+      [
+        "hrly Jun25 UTC (14th check, fresh DB): sca255 classId=11 (B1 PM) weekStart=Jan12 weekEnd=Jul03 STILL WRONG. bc24925 AY-Aft Mar09-Sep11 active. bk18151 CONF. Jul03=8d — Saikhantes drops from scheduling Thu Jul03 if not fixed. SQL NOT RUN: UPDATE student_class_assignments SET week_start=2026-03-09, week_end=2026-09-11 WHERE id=255."
+      ]
+    ]
+  },
+  {
+    "range": "J30",
+    "values": [
+      [
+        "hrly Jun25 UTC (15th check, fresh DB): sca255 classId=11 (B1 PM) weekStart=Jan12 weekEnd=Jul03 STILL WRONG. bc24925 AY-Aft Mar09-Sep11 active. Jul03=8d — same as Issue 15. SQL NOT RUN: UPDATE student_class_assignments SET week_start=2026-03-09, week_end=2026-09-11 WHERE id=255."
+      ]
+    ]
+  }
+]

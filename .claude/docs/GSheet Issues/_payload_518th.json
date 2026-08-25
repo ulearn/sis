@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 518th check Tue 25 Aug 2026 UTC — no change since Mon 24 Aug\n• Booking Course 25043 (General English PM, booking 18265): started 10 Aug, ended 14 Aug 2026 — 11 days stale, active = true\n• 0 class assignments — safe to deactivate\n• Fix NOT RUN",
+        "Set Booking Course 25043 active = false (0 class assignments, safe). See recipe: issue-38-bc25043-stale.md",
+        "518th Tue 25 Aug UTC. BC25043 11d stale (unchanged). Fix NOT RUN.",
+        "BC25043 11d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 518th check Tue 25 Aug 2026 UTC — no change since Mon 24 Aug\n• Stale active Booking Courses (ended before 25 Aug 2026): 24,516 — count unchanged\n• Oldest entry: end date 1899-12-31, Booking Course id 24047 (migration artefact)\n• Fix NOT RUN",
+        "Bulk deactivate 24,516 stale Booking Courses. See recipe: issue-45-addendum-24aug.md",
+        "518th Tue 25 Aug UTC. Count 24,516 unchanged. Fix NOT RUN.",
+        "24,516 stale; fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H56:K56",
+    "values": [
+      [
+        "• 518th check Tue 25 Aug 2026 UTC — PARTIAL PROGRESS: Booking Accommodation 11160 cleaned 24 Aug 16:11 UTC\n• Booking Accommodation 11160 (Maicol Moretti, Bed B, A1/Room 1): active = true, ended 22 Aug 2026, cleanedAt = 24 Aug 17:11 IST — CLEANED\n• Booking Accommodation 11161 (Lucia Borroni, Bed A, A1/Room 1): active = true, ended 22 Aug 2026, cleanedAt = null — STILL UNCLEANED\n• Design gap remains: cleaning queue emits 2 entries per couple room (1 per bed), not 1 per room",
+        "Mark Booking Accommodation 11161 cleaned manually; implement room-level grouping in getCleaningQueue. See recipe: issue-54-addendum-25aug.md",
+        "518th Tue 25 Aug UTC. BA11160 cleaned (Aug 24). BA11161 still uncleaned. Design gap open. Fix NOT RUN.",
+        "BA11161 uncleaned; design gap open"
+      ]
+    ]
+  },
+  {
+    "range": "H20:K20",
+    "values": [
+      [
+        "• 518th check Tue 25 Aug 2026 UTC — no change since Mon 24 Aug\n• Booking Course 89 (Morning IELTS): ended 22 May 2026 — 95 days stale, active = true, 1 class assignment (historical)\n• Booking Course 90 (Private Lessons): ended 22 May 2026 — 95 days stale, active = true, 0 class assignments\n• Booking 83 (Mai Lan Chu): CONFIRMED, amount paid = EUR 2,629.80 — EUR 2,385 excess vs total\n• Payment 27 likely migration duplicate — requires investigation\n• Fix NOT RUN",
+        "Investigate EUR 2,385 payment gap (payment 27 likely migration duplicate); deactivate Booking Courses 89 and 90. See recipe: issue-19-addendum-24aug.md",
+        "518th Tue 25 Aug UTC. Booking Courses 89+90 now 95d stale (was 94d). EUR 2,385 gap unchanged. Fix NOT RUN.",
+        "BC89+90 stale 95d; EUR2385 gap"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• 518th check Tue 25 Aug 2026 UTC — no change since Mon 24 Aug\n• Booking Course 23 (Intensive General 30, booking 22): active = true, ended 22 May 2026 — 95 days stale, 2 class assignments still linked\n• Booking Course 24826: active = true, ended 19 Jun 2026 — 67 days stale, 0 class assignments\n• Payment 17683: EUR 845, 23 Apr 2026, xeroPaymentId = null — 124 days unreconciled\n• Booking 22 (Ivan Rodriguez): CONFIRMED, amount paid = EUR 1,948, EUR 250 open balance\n• Fix NOT RUN",
+        "Verify class assignments on Booking Course 23 then deactivate; deactivate Booking Course 24826 (0 class assignments); reconcile Payment 17683 in Xero. See recipe: issue-26-addendum-24aug.md",
+        "518th Tue 25 Aug UTC. Booking Course 23: 95d stale (2 class assignments). Booking Course 24826: 67d stale. Payment 17683: 124d Xero null. EUR 250 open. Fix NOT RUN.",
+        "stale BCs; pmt unreconciled"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• 518th check Tue 25 Aug 2026 UTC — no change since Mon 24 Aug\n• Booking Course 82: active = true, ended 6 Mar 2026 — 172 days stale\n• Booking Course 83 (Afternoon General Plus, booking 79): active = true, ended 8 May 2026 — 109 days stale\n• Booking Course 104 (Morning General Plus, booking 94): active = true, ended 26 Jun 2026 — 60 days stale\n• Payment 945: EUR 4,231, 30 Jan 2026, xeroPaymentId = null — 207 days unreconciled\n• Payment 17102: EUR 1,151.50, 13 Mar 2026, xeroPaymentId = null — 165 days unreconciled\n• Fix NOT RUN",
+        "Deactivate Booking Courses 82, 83, 104; reconcile Payments 17102 and 945 in Xero; verify Milena Vinci record. See recipe: issue-30-addendum-24aug.md",
+        "518th Tue 25 Aug UTC. Booking Courses 82/83/104 stale (172d/109d/60d). Payments 945+17102 unreconciled (207d/165d). Fix NOT RUN.",
+        "3 stale BCs; 2 pmts Xero null"
+      ]
+    ]
+  }
+]

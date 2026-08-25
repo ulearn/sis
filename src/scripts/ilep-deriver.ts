@@ -29,6 +29,17 @@ const NON_VISA_NATIONALITIES = new Set([
   'RO','HU','BG','GR','SK','SI','EE','LV','LT','IS','LU','CH','MT','CY','HR',
 ]);
 
+/** True when the course name is an ILEP-listed Academic Year programme (AM or PM). */
+export function isAyIlepCourse(courseName: string | null): boolean {
+  const n = (courseName || '').toLowerCase().trim();
+  return MORNING_AY_NAMES.has(n) || AFTERNOON_AY_NAMES.has(n);
+}
+
+/** True for EU/UK/Swiss nationals — they never receive visa letters, so an ILEP code is not required. */
+export function isNonVisaNationality(nationality: string | null): boolean {
+  return !!nationality && NON_VISA_NATIONALITIES.has(nationality.toUpperCase());
+}
+
 export function deriveIlepCode(courseName: string | null, level: string | null, nationality: string | null): string | null {
   if (nationality && NON_VISA_NATIONALITIES.has(nationality.toUpperCase())) return null;
   const n = (courseName || '').toLowerCase().trim();

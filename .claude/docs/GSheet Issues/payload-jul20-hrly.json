@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• 31st check Mon 20 Jul 2026 UTC (90th overall)\n• Booking course 24991 (Edith Nunes, General English AM, 13 Jul to 7 Aug 2026): STILL 0 class assignments\n• Week 1 (Mon 13 Jul to Fri 17 Jul): ended — 5 school days permanently missed\n• Week 2 starts TODAY Mon 20 Jul — assign immediately\n• 3 weeks remain (until 7 Aug)\n• Booking courses 24933 + 24934 (General English AM, ended 10 Jul): STILL active = true — 10 days stale",
+        "Assign BC 24991 to class immediately. Deactivate BCs 24933+24934. See recipe: issue-22-addendum-20jul.md",
+        "31st check today, 90th overall. BC24991 STILL 0 SCAs (fresh DB Mon 20 Jul). TODAY is the deadline — week 2 starts now. BCs 24933+24934 ended Jul 10 (10d stale). Fix NOT RUN.",
+        "CRITICAL; assign NOW"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• Mon 20 Jul 2026 UTC — 6 booking accommodations STILL active past end date\n• Booking accommodation 11265 (Kanna Hasegawa, bed 157): ended 19 Jul — 1 day post-checkout\n• Booking accommodation 11175 (Juan Carlos Guerra Nunez): ended 29 Mar — 113 days stale\n• Booking accommodation 11156 (Hugo Tavernier): ended 2 May — 79 days stale\n• Booking accommodation 11271 (Salvatore Cumia): ended 7 May — 74 days stale\n• Booking accommodation 11264 (Leandre Le Coz-Bruhmüller): ended 9 May — 72 days stale\n• Booking accommodation 11270 (Neil Mc Mahon): ended 23 May — 58 days stale\n• Note: B/F/G hash changed since last run — column B updated on sheet",
+        "Deactivate booking accommodations 11265, 11156, 11175, 11264, 11270, 11271. See recipe: issue-36b-addendum-20jul.md",
+        "29th check Mon 20 Jul UTC (fresh DB). All 6 BAs still active=true: BA11265 Jul19 (1d), BA11175 Mar29 (113d), BA11156 May02 (79d), BA11271 May07 (74d), BA11264 May09 (72d), BA11270 May23 (58d). Fix NOT RUN.",
+        "6 stale BAs; 113d max"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 79th check Mon 20 Jul 2026 UTC (30th today)\n• August Bank Holiday Mon 3 Aug 2026: STILL absent from school closures — 14 days away\n• October Bank Holiday Mon 26 Oct 2026: STILL absent — 99 days away\n• 9 closures confirmed in DB: Good Fridays 2026-2030, Christmas 2026-2029 — no bank holidays among them",
+        "Add school closure for Aug Bank Holiday (Mon 3 Aug 2026) and Oct Bank Holiday (Mon 26 Oct 2026). See recipe: issue-38-addendum-20jul.md",
+        "30th check today, 79th overall. Aug BH Mon 3 Aug = 14 days. Oct BH Mon 26 Oct = 99 days. 9 closures in DB (fresh), none are bank holidays. Fix NOT RUN.",
+        "Aug BH missing; 14d URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• 31st check Mon 20 Jul 2026 UTC (84th overall)\n• Booking course 24609 (Xuezhen Huang, Morning General, 13 Jul to 31 Jul 2026): STILL 0 class assignments\n• Week 1 (Mon 13 Jul to Fri 17 Jul): ended — 5 school days permanently missed\n• Week 2 starts TODAY Mon 20 Jul — assign immediately; 2 weeks remain\n• Booking accommodation: not re-checked this run (see prior notes)",
+        "Assign BC 24609 to class immediately (today Mon 20 Jul). See recipe: issue-39-addendum-20jul.md",
+        "31st check today, 84th overall. BC24609 STILL 0 SCAs (fresh DB Mon 20 Jul). TODAY is the deadline. 2 weeks remain (until 31 Jul). Fix NOT RUN.",
+        "CRITICAL; assign NOW"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 7th check Mon 20 Jul 2026 UTC (68th overall)\n• Payment 17954 (Giampaolo Russo, EUR 2584.96, Bank Transfer, 26 Jun 2026): Xero payment ID = STILL null — 24 days unreconciled (type = null)\n• Booking 18180: CONFIRMED, EUR 2584.96 fully paid\n• Booking accommodation 11357 (bed 178, Host Family, 2 Aug to 6 Sep 2026): active = true — check-in in 13 days\n• Capel accommodation (6 Sep to 14 Sep 2026): STILL absent — only 1 booking accommodation on booking 18180\n• Capel fix still needed before 6 Sep arrival",
+        "Reconcile payment 17954 in Xero. Add Capel accommodation 6-14 Sep to booking 18180. See recipe: issue-41-giampaolo-dual-accomm.md",
+        "7th check today, 68th overall. PMT17954 Xero ID STILL null (24d since Jun 26, type=null). Capel Sep 6-14 STILL absent (fresh DB). Host family check-in Aug 2 = 13 days. Fix NOT RUN.",
+        "Xero null; Capel missing; 24d"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 32nd check Mon 20 Jul 2026 UTC (167th overall)\n• Mon 20 Jul starters — 7 confirmed booking courses with 0 class assignments — ASSIGN NOW\n• BC 1630 Saranzaya Khishigbayar (Academic Year Afternoon, starts today): 0 class assignments\n• BC 24616 Mia Wehrli (General English AM Plus, starts today): 0 class assignments\n• BC 24686 Alberto Squillace (Morning General, starts today): 0 class assignments\n• BC 24942 Lorena Fernanda Pizarro Araya (Academic Year Morning, starts today): 0 class assignments\n• BC 24966 Filippo Corazzini (General English AM Plus, starts today): 0 class assignments\n• BC 24989 Marcos Abrego Tofe (General English AM, starts today — 1 week, ends 24 Jul): 0 class assignments\n• BC 25000 Giorgio Sau (General English AM Plus, starts today): 0 class assignments\n• Skip BC 24932 Stephany Martins Pardinho (status = PENDING) and BC 25009 Neil Mc Mahon (status = PARTIAL)\n• Jul 13 actives (9 unassigned): BC1619 Munkhtsetseg, BC1788 Pedro Campion, BC1814 Wanqiong Hou, BC24820 Italo Teixeira, BC24988 Minjinsor, BC24990 Samuele, BC24998 Allison, BC24609 Xuezhen, BC24991 Edith — all STILL 0 SCAs (see issues 22 and 39)\n• Stale (ended 17 Jul, still active): BC24946 Lunel Dubost, BC24992 Luz Maria Sobrino, BC24994 Petru Ous — deactivate",
+        "Assign 7 Mon 20 Jul confirmed starters + 9 Jul 13 actives to classes. Deactivate BC24946/24992/24994. See recipe: issue-45-addendum-20jul.md",
+        "32nd check today, 167th overall. All 7 Mon 20 Jul confirmed starters STILL 0 SCAs (fresh DB). 9 Jul 13 actives STILL 0 SCAs. BC24946/24992/24994 STILL active=true (3d stale). BC25009 PARTIAL EUR0/192.50 — do not assign. Fix NOT RUN.",
+        "CRITICAL; assign NOW"
+      ]
+    ]
+  }
+]

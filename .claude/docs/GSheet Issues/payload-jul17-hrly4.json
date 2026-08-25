@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• Booking accommodation 11311 (Pietro Caccianiga, student 14521, bed 84, 28 June–13 September 2026): active = true — valid in-stay, day 19, Friday 17 July UTC\n• Pietro accommodation resolved (Jun 23 2026) — current stay correct; student in residence\n• Hash changed (staff edited sheet row B/F/G) — database confirmed unchanged from previous check\n• Booking accommodation 11157 (Hugo Tavernier, booking 100, ended 10 May 2026): active = still true — 68 days stale\n• Booking accommodation 9917 (Kanna Hasegawa, booking 1274, ended 16 May 2026): active = still true — 62 days stale\n• Booking accommodation 11159 (Hugo Tavernier, booking 100, ended 30 May 2026): active = still true — 48 days stale\n• Booking accommodation 11180 (Daniela Perozo Gil, booking 81, ended 20 June 2026): active = still true — 27 days stale\n• Low priority — no date overlap with Pietro current stay, no operational impact",
+        "Deactivate 4 stale bed 84 records: BA 9917, 11157, 11159, 11180. See recipe: issue-36b-pietro-accomm-dates.md",
+        "13th check Fri 17 Jul UTC. Hash changed (B/F/G staff edit). DB confirmed unchanged. BA11311 Pietro bed84 Jun28-Sep13 active=true (day19). BA11157 Hugo bk100 ended May10 (68d stale), BA9917 Kanna bk1274 ended May16 (62d stale), BA11159 Hugo bk100 ended May30 (48d stale), BA11180 Daniela bk81 ended Jun20 (27d stale). Fix NOT RUN: UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180).",
+        "low-pri; bed84 cleanup"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• August Bank Holiday 2026 (Monday 3 August): missing from school closures — 17 days away\n• October Bank Holiday 2026 (Monday 26 October): missing from school closures — 101 days away\n• Current school closures: 9 records — Good Friday 2026/2027/2028/2029/2030 and Christmas 2026–2027 through 2029–2030\n• Risk: booking course end dates landing on 3 August or 26 October will not be shunted to the next school day",
+        "Add August Bank Holiday (Monday 3 August 2026) and October Bank Holiday (Monday 26 October 2026) to school_closures table. See recipe: issue-38-course-date-ux.md",
+        "42nd check Fri 17 Jul UTC. CONFIRMED UNCHANGED (fresh DB). Aug Bank Holiday (Mon 3 Aug 2026): STILL absent — 17 days away. Oct BH (Mon 26 Oct 2026): STILL absent — 101 days away. 9 school closures total (Good Friday 2026-2030 + Christmas 2026-2029). Fix NOT RUN.",
+        "Aug BH missing; 17d"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Accommodation resolved — booking accommodation 11358 (bed 180, host Mary Carver, Xuezhen Huang, booking 17831, 12 July to 2 August 2026): active = true, fee = EUR 900 — correctly in SIS\n• Booking course 24609 (Xuezhen Huang, student 14443, Morning General, 13 to 31 July 2026): zero class assignments — full first week ended Friday 17 July — 45th check Fri 17 Jul UTC\n• Booking 17831: Confirmed, confirmed = true, EUR 1396.90 fully paid, amount open = EUR 0\n• Four payments on booking 17831 (IDs 17180, 17987, 17988, 17963): all type = null — payment types unclassified\n• 2 weeks of course remain (20 to 31 July 2026) — URGENT: week 2 starts Monday 20 July",
+        "Assign student 14443 (Xuezhen Huang) to a class on booking course 24609 (Morning General). See recipe: issue-39-addendum-17jul.md",
+        "45th check Fri 17 Jul UTC. BC24609 (Xuezhen Huang, student 14443, Morning General Jul13-31, fee=EUR570) STILL 0 SCAs (fresh DB). Week 1 (Jul13-17) MISSED. Week 2 starts Mon 20 Jul — LAST WORKING DAY today (Fri). 2 weeks remain (Jul 20-31). Fix NOT RUN.",
+        "Wk1 missed; 2wks left"
+      ]
+    ]
+  },
+  {
+    "range": "H34:K34",
+    "values": [
+      [
+        "• Student 356 (Shih-Wei Huang): gender field = null — not set (last updated 3 June 2026, 44 days ago)\n• Document 238 (exit letter, template 4): status = ISSUED at 18 June 2026 — 29 days with wrong Ms. and she/her pronouns\n• Code bug in documents.ts: null gender defaults to female — all null-gender students get wrong pronouns on any document\n• Fix requires: (1) set gender = Male for student 356, (2) revoke document 238, (3) regenerate exit letter, (4) guard null gender in documents.ts",
+        "Set student 356 gender = Male; revoke document 238; regenerate exit letter; fix null-gender guard in documents.ts. See recipe: issue-32-shih-wei-gender-default.md",
+        "2nd check Fri 17 Jul UTC. CONFIRMED UNCHANGED (fresh DB). Student 356 Shih-Wei Huang: gender=STILL null (updatedAt=Jun03, 44 days). Document 238 (exit letter bk560): STILL ISSUED since Jun18 — 29 days with wrong Ms. and she/her pronouns. Null-gender code fix in documents.ts also pending. Fix NOT RUN.",
+        "44d; doc238 wrong pronouns"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• Payment 17954 (Giampaolo Russo, EUR 2584.96, Bank Transfer, 26 June 2026): Xero payment ID = null — 18 days unreconciled\n• HubSpot payment ID 1268783973563 linked — payment received but not recorded in Xero\n• Booking 18180: Confirmed, EUR 2584.96 fully paid — only 1 accommodation record found\n• Accommodation 11357 (bed 178, host family, 2 August to 6 September 2026): claim status = confirmed (6 July 2026), active = true\n• Capel Street accommodation (6–14 September 2026): STILL NOT PRESENT in booking 18180 — student arrives Aug 2, Capel stage begins Sep 6",
+        "Reconcile payment 17954 (EUR 2584.96, HubSpot 1268783973563) in Xero; add Capel Street accommodation (6–14 September) to booking 18180 via SIS admin. See recipe: issue-41-giampaolo-dual-accomm.md",
+        "48th check Fri 17 Jul UTC. PMT17954 EUR2584.96 xeroPaymentId=STILL null type=null (18d since Jun29). BA11357 bed178 HF bk18180 Aug2-Sep6 active=true claimStatus=confirmed. Capel Sep6-Sep14 STILL MISSING from bk18180 (fresh DB, only 1 accomm record). Student arrives Aug2 = 16 days. Fix NOT RUN.",
+        "Xero null; Capel missing"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 125th check Friday 17 July 2026 — all 7 confirmed Monday starters STILL zero class assignments (fresh DB)\n• Booking course 1630: Saranzaya Khishigbayar, Academic Year Afternoon, student 931 — fee EUR 2620 — 0 class assignments\n• Booking course 24616: Mia Wehrli, General English AM Plus, student 14450 — fee null (booking 17842 CONFIRMED EUR 1149.90) — 0 class assignments\n• Booking course 24686: Alberto Squillace, Morning General, student 1052 — fee null; see Issue 24 — 0 class assignments\n• Booking course 24942: Lorena Pizarro Araya, Academic Year Morning, student 14565 — fee EUR 2362.50 — 0 class assignments\n• Booking course 24966: Filippo Corazzini, General English AM Plus, student 14578 — fee EUR 549.90 — 0 class assignments\n• Booking course 24989: Marcos Ábrego Tofé, General English AM, student 14587 — fee EUR 152 — 0 class assignments\n• Booking course 25000: Giorgio Sau, General English AM Plus, student 14595 — fee EUR 940 — 0 class assignments\n• Booking course 24932: Stephany Martins Pardinho, Life Pass Morning, PENDING 105 weeks — do not assign until booking confirmed and paid\n• Booking course 25001: Neil Mc Mahon (student 97, booking 18224 PENDING, confirmed = false) — confirmed admin/test record 17 Jul; do not assign\n• Anomaly: booking course 24832 (Marcos André de Souza Santos, student 14536, Academic Year Afternoon): start date = end date = 31 May 2026 — zero-day booking course; booking 18040 CONFIRMED EUR 2473 fully paid; separate investigation needed\n• 8 courses ended 17 July with zero class assignments: booking course 1719 Maria Hermosilla (24-week Academic Year, zero SCAs throughout), booking course 26 Kritchana (EUR 3370 unpaid), booking course 95 Florian Baury, booking courses 24946 Lunel Dubost, 24985 and 24986 Maza sisters (EUR 240 each), 24992 Luz Sobrino, 24994 Petru Ous",
+        "Assign 7 confirmed Monday starters before 20 Jul; set fee on BC24616 Mia (null); investigate BC24832 zero-day anomaly. See recipe: issue-45-addendum-17jul.md",
+        "125th check Fri 17 Jul UTC. 7 real starters STILL 0 SCAs (fresh DB): BC1630 Saranzaya, BC24616 Mia fee=null bk17842 EUR1149.90, BC24686 Alberto fee=null, BC24942 Lorena EUR2362.50, BC24966 Filippo EUR549.90, BC24989 Marcos EUR152, BC25000 Giorgio EUR940. BC24932 Stephany PENDING hold. BC25001 Neil test skip. NEW: BC24832 Marcos Andre start=end=May31 (zero-day anomaly, bk18040 CONF EUR2473). WEEKEND — last window before Mon 20 Jul. Fix NOT RUN.",
+        "CRITICAL; assign before Mon"
+      ]
+    ]
+  }
+]

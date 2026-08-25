@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "• 62nd check Tue 11 Aug 2026 UTC — unchanged from 61st check\n• Document 171 (booking 1498, template 82): DRAFT v1, created 5 Jun 2026 — 67 days unissued\n• Booking 1498 (Suvderdene Bayartsog): CONFIRMED (status), confirmed = false, amounts null (no payments)\n• Service end 5 Jun 2026 — course ended 67 days ago\n• Booking Course 1660 (ULearn Renewal MORN, 15 Dec 2025 to 5 Jun 2026): active = true — 67 days stale\n• No payments on booking 1498 — Fidelo migration artefact; course completed Jun 5",
+        "Issue or delete document 171; set booking 1498 confirmed = true; deactivate BC 1660. See recipe: issue-9-addendum-11aug.md",
+        "62nd hrly Tue 11 Aug UTC. Unchanged. Doc 171 DRAFT 67d. Course ended Jun 5. BC 1660 stale 67d. Fix NOT RUN.",
+        "doc DRAFT 67d; BC stale"
+      ]
+    ]
+  },
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "• 49th check Tue 11 Aug 2026 UTC — day 71 in course (started 1 Jun 2026), unchanged\n• Student 14522 (Lizbeth del Carmen Sierra Martinez): medical_from = null, medical_until = null — insurance not recorded\n• Visa dates set (1 Jun 2026 to 1 Feb 2027) but visa_status = null; HubSpot contact 756514173114 linked\n• Booking 17981: CONFIRMED (status), confirmed = false, EUR 1,407.50 paid, amount_open = null\n• Booking last updated 23 Jun 2026 (49 days ago); student last updated 28 Jul 2026 (14 days ago)",
+        "Set medical_from / medical_until on student 14522; set visa_status; set booking 17981 confirmed = true; reconcile payment 17520 in Xero. See recipe: issue-13-addendum-11aug.md",
+        "49th hrly Tue 11 Aug UTC. Day 71. Insurance null, visa null, bk confirmed=false. EUR 1,407.50 paid. Fix NOT RUN.",
+        "insurance null; day 71"
+      ]
+    ]
+  },
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "• 30th check Tue 11 Aug 2026 UTC — unchanged (65 days since booking last updated 7 Jun 2026)\n• Booking 1308 (Ana Jessica Rosa de Paula Santos, student 766): CANCELLED, confirmed = false, EUR 1,530 paid, amount open = null\n• No other bookings for student 766 — EUR 1,530 stranded on cancelled booking, no successor booking\n• Payment 17186: EUR 1,280, Bank Transfer, 5 May 2026 — xeroPaymentId = null (98 days unreconciled)\n• Payment 17050: EUR 250, Bank Transfer, 5 May 2026 — xeroPaymentId = null (98 days unreconciled)",
+        "Decide: refund EUR 1,530 or create new booking for student 766; reconcile payments 17186 + 17050 in Xero. See recipe: issue-17-addendum-11aug.md",
+        "30th hrly Tue 11 Aug UTC. Unchanged 65d. EUR 1,530 on CANCELLED booking. Both payments xeroId=null 98d. Student 766 has no other booking. Fix NOT RUN.",
+        "EUR 1,530 cancelled; Xero 98d"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• 70th check Tue 11 Aug 2026 UTC — unchanged (Day 22)\n• Booking Course 24686 (Alberto Squillace, student 1052): Morning General, started 20 Jul 2026, ends 18 Sep 2026 — 38 days remaining\n• 0 class assignments — 22 days of attendance unrecorded\n• Booking Course 1797 (Morning General, ended 26 Jun 2026): active = true — 46 days stale\n• Booking 1611: CONFIRMED, confirmed = true, EUR 1,280.12 paid, EUR 0 open",
+        "Deactivate BC 1797; assign BC 24686 to morning class. See recipe: issue-24-addendum-11aug.md",
+        "70th hrly Tue 11 Aug UTC. BC 24686 still 0 SCAs — 22d attendance lost. Course ends Sep 18 (38d left). Fix NOT RUN.",
+        "BC24686 22d; 0 SCAs; ends Sep 18"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• 156th check Tue 11 Aug 2026 UTC — day 106 since course start (27 Apr 2026), unchanged\n• Student 917 (Uyanga Tungalag): visa_status = null, HubSpot contact ID = null; last updated 28 Jul 2026 (14 days ago)\n• Booking 1467: CONFIRMED, confirmed = true, EUR 2,405 paid, EUR 0 open, service_end 30 Oct 2026\n• Booking Course 1613 (Academic Year Morning, 27 Apr to 30 Oct 2026): active = true — 0 class assignments across 106 days\n• Payment 17258: EUR 3,066 (8 May 2026) — xeroPaymentId = null (95 days); booking total only EUR 2,405 (EUR 661 discrepancy)",
+        "Set visa_status; link HubSpot contact; assign BC 1613 to class; reconcile payment 17258 (EUR 3,066 discrepancy). See recipe: issue-25-addendum-11aug.md",
+        "156th hrly Tue 11 Aug UTC. Day 106. 0 SCAs — 106d attendance unrecorded. Visa null (blocks to-be-assigned). HubSpot null. Fix NOT RUN.",
+        "visa null; 0 SCAs; day 106"
+      ]
+    ]
+  },
+  {
+    "range": "H29:K29",
+    "values": [
+      [
+        "• 47th check Tue 11 Aug 2026 UTC — unchanged\n• Booking 17850 (Paola Sthefane Missias Moreira): CONFIRMED (status), confirmed = false — anomaly\n• Amount paid = null, amount open = EUR 321.35, amount total = EUR 321.35\n• Payment 17519: EUR 321.35, Bank, 23 May 2026 — linked to booking 17850, xeroPaymentId = null\n• Booking Course 24624 (Morning General, 18 May to 5 Jun 2026): active = true — 67 days stale, 0 class assignments\n• Booking last updated 8 Jul 2026 (34 days ago)",
+        "Set booking 17850 confirmed=true, amount_paid=321.35, amount_open=0; deactivate BC 24624; reconcile payment 17519 in Xero. See recipe: issue-28-addendum-11aug.md",
+        "47th hrly Tue 11 Aug UTC. Unchanged. Booking confirmed=false, amountPaid=null (payment 17519 EUR 321.35 linked). BC 24624 67d stale. xeroId=null. Fix NOT RUN.",
+        "bk conf=false; pmt 34d"
+      ]
+    ]
+  }
+]

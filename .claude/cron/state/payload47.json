@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H49:K49",
+    "values": [
+      [
+        "• Student 830 (RAFAEL FERREIRA DE LIMA): SCA moved from class 7 (A1) to class 8 (A2 AM) on 2026-07-06 (SCA 153 ended Jul 5, SCA 296 started Jul 6)\n• Attendance was pre-generated for class 7 on 2026-07-03 for the whole week of Jul 6-10, marking him ABSENT_UNCERTIFIED\n• Class 8 teacher entered correct PRESENT records (3h/day) retroactively on 2026-07-13\n• Result: 10 attendance records for the week — 5 orphaned ABSENT (att IDs 4886-4890, occ 1825-1829, class 7 A1) + 5 correct PRESENT (att IDs 5956-5960, occ 1959-1963, class 8 A2 AM)\n• Attendance impact: 47P/8A = 85.5% with orphans; 47P/3A = 94% after fix",
+        "Delete att IDs 4886-4890 (class 7 A1 stale absences). See recipe: issue-47-rafael-stale-attendance.md",
+        "5 orphaned ABSENT_UNCERTIFIED rows for class 7 (A1). Stale pre-generated before SCA switch on Jul 6. Class 8 PRESENT records are correct and intact. Delete 5 rows only.",
+        ""
+      ]
+    ]
+  }
+]

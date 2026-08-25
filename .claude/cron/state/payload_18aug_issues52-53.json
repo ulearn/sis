@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H54:K54",
+    "values": [
+      [
+        "Feature request (KC): Host templates have no Host badge in To: field\n- Student comms block (admin.html ~line 4442-4446) has Student + Partner badges only\n- When Host Booking / Host Availability / Host Cancel template selected, To: still shows student email\n- Staff must manually delete student email and enter host email\n- Token accommodation.email already resolves correctly in body (documents.ts line 863) - shortcut missing from UI only\n- Example: Fanny Scelles (student 14451, bk 17843): 2 hosts: Bob + Ann OSullivan (bobosullivan5016@gmail.com) Aug 29-Oct 4, Linda Land (lindaland027@gmail.com) Oct 4-Dec 19",
+        "Add Host badge(s) to student comms To: field - derive from bookings[].accommodations[].provider.email. See recipe: issue-52-host-email-badge.md",
+        "Check if s.bookings[].accommodations[] already carries providerEmail; if not update student detail API. Optional: auto-switch To: when Host template selected.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H55:K55",
+    "values": [
+      [
+        "Feature request (KC): no template covers a student with 2 accommodation periods in one email\n- Token resolver (documents.ts line 499) picks ONE accommodation via pickAccommByArrival - no multi-period support\n- Fanny Scelles (student 14451, bk 17843): 2 hosts - OSullivan Aug 29-Oct 4, Land Oct 4-Dec 19 (requires 2 separate emails)\n- Romain Verlut (student 74, bk 80): same host Patty McSweeney, 2 periods Sep 12-Dec 19 + Jan 3-Mar 21 (split over Christmas)",
+        "Add indexed tokens accommodation_1.* / accommodation_2.* to resolveTokens(); create Host Booking (Multiple) template. See recipe: issue-53-multi-accomm-template.md",
+        "Option A (recommended): indexed tokens, low risk. Option B: loop token, more complex. Prioritise when KC confirms frequency of multi-host students.",
+        ""
+      ]
+    ]
+  }
+]

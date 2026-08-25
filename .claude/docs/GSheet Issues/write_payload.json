@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H54:K54",
+    "values": [
+      [
+        "• 503rd check Mon 24 Aug 2026 UTC — no change since 501st\n• Booking Accommodation 11267 (bed 23, 29 Aug to 4 Oct 2026): fee EUR 3,840, active — OK\n• Booking Accommodation 11399 (bed 54, 4 Oct to 19 Dec 2026): fee null — NOT YET SET, 41 days to move-in\n• Booking 17843 (Fanny Scelles): CONFIRMED, fully paid EUR 5,595.16\n• Fanny ARRIVES 29 Aug 2026 — 5 days away",
+        "Set fee on Booking Accommodation 11399 (Oct 4 to Dec 19, 11 weeks). Confirm rate with KC. See recipe: issue-52-addendum-24aug-d.md",
+        "503rd Mon 24 Aug UTC. BA11267 fee EUR 3,840 OK. BA11399 fee null. Arrival Aug 29 (5d). No change since 501st.",
+        "ARRIVES AUG 29 (5d); BA11399 fee null"
+      ]
+    ]
+  },
+  {
+    "range": "H55:K55",
+    "values": [
+      [
+        "• 503rd check Mon 24 Aug 2026 UTC — Booking Accommodation 11399 fee null persists; same student as issue 52\n• Booking Accommodation 11267 (bed 23, 29 Aug to 4 Oct 2026): fee EUR 3,840, arrival 5 days (29 Aug)\n• Booking Accommodation 11399 (bed 54, 4 Oct to 19 Dec 2026): fee null — 41 days to set\n• Multi-host email template feature: spec still open, no code changes\n• Fix NOT RUN",
+        "Set fee on Booking Accommodation 11399 (see issue 52); multi-host template spec open. Recipe: issue-53-addendum-24aug.md",
+        "503rd Mon 24 Aug UTC. Fanny arrives Aug 29 (5d). BA11399 fee null (41d to Oct 4). Multi-host template spec open. No change.",
+        "BA11399 fee null; spec open"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• 503rd check Mon 24 Aug 2026 UTC — 5 stale Booking Accommodations unchanged; deadline 6 days\n• Current occupant Alessandro Signorotti (Booking Accommodation 11173): ends 30 Aug 2026, fee EUR 1,080\n• Next occupant Rosa Maria Mollica (Booking Accommodation 25): starts 30 Aug 2026 — 6 DAYS AWAY, fee EUR 2,100\n• 5 stale Booking Accommodations on bed 83 still active — must deactivate before Rosa arrives:\n• BA 11239 (Ivan Rodriguez Solares): ended 24 May 2026 — 92 days stale, fee EUR 1,050\n• BA 11168 (Diego Da Silva Saldanha): ended 20 Jun 2026 — 65 days stale, fee EUR 700\n• BA 11285 (Jesus Manuel Ramirez Diaz): ended 5 Jul 2026 — 50 days stale, fee null\n• BA 11352 (Veronica Martin): ended 11 Jul 2026 — 44 days stale, fee EUR 360\n• BA 11179 (Africa Mera Bachir): ended 9 Aug 2026 — 15 days stale, fee EUR 1,360\n• Fix NOT RUN",
+        "Deactivate Booking Accommodations 11239, 11168, 11285, 11352, 11179 on bed 83 before Aug 30. See recipe: issue-37-addendum-24aug.md",
+        "503rd Mon 24 Aug UTC. 5 stale BAs unchanged. Rosa Mollica (BA 25) starts Aug 30 = 6d. Signorotti (BA 11173) current until Aug 30. Fix NOT RUN.",
+        "5 stale BAs; DEADLINE Aug30 = 6d"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• 503rd check Mon 24 Aug 2026 UTC — unchanged\n• Booking Accommodation 11285 (Jesus Manuel Ramirez Diaz, bed 83): ended 5 Jul 2026, active — 50 days stale, fee null\n• One of 5 stale Booking Accommodations on bed 83 (see issue 37 for full list)\n• Next occupant Rosa Maria Mollica (Booking Accommodation 25) starts bed 83 on 30 Aug — 6 DAYS AWAY",
+        "Deactivate Booking Accommodation 11285 (part of 5-item fix on bed 83). See recipe: issue-37-addendum-24aug.md",
+        "503rd Mon 24 Aug UTC. BA 11285 50 days stale, fee null. Rosa Mollica starts Aug 30 = 6d. Fix NOT RUN.",
+        "5 stale BAs; Aug30 = 6d"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 503rd check Mon 24 Aug 2026 UTC — no change since 502nd\n• Student Class Assignment 255: class 11, weekEnd 3 Jul 2026 — expired 52 days ago\n• Booking Course 24925 (Academic Year Afternoon): active, ends 2 Oct 2026 — 39 days left\n• Booking Course 24925 has only 1 Student Class Assignment (id 255, expired) — zero current assignment\n• Attendance not tracked since 3 Jul 2026 — 52-day gap",
+        "Add new Student Class Assignment to Booking Course 24925: class 11, weekStart 6 Jul 2026, weekEnd 2 Oct 2026. See recipe: issue-15-addendum-24aug-d.md",
+        "503rd Mon 24 Aug UTC. Student Class Assignment 255 expired 3 Jul. Booking Course 24925 ends 2 Oct. Student 1001. 52d gap. Fix NOT RUN.",
+        "CRITICAL: SCA needed NOW"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• 503rd check Mon 24 Aug 2026 UTC — no change since 502nd\n• Student Class Assignment 255: class 11, weekEnd 3 Jul 2026 — expired 52 days ago\n• Booking Course 24925 (Academic Year Afternoon): active, ends 2 Oct 2026 — 39 days left\n• Student (Saikhantes Shagdasuren, student 1001) attends class with no valid Student Class Assignment\n• See row 16 (issue 15) for full diagnosis and recipe",
+        "Add Student Class Assignment to Booking Course 24925. See recipes: issue-15-addendum-24aug-d.md and issue-29-15-addendum-24aug-b.md",
+        "503rd Mon 24 Aug UTC. Student Class Assignment 255 expired 3 Jul. Booking Course 24925 ends 2 Oct (39d). Fix NOT RUN.",
+        "CRITICAL: class today, no SCA; 39d left"
+      ]
+    ]
+  }
+]

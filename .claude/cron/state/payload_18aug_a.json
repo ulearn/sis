@@ -1,0 +1,35 @@
+[
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• 33rd check Tue 18 Aug 2026 UTC — no change since 32nd check\n• Student 983 (Flávia Nascimento Mariano): visa_status = null — day 79\n• Booking 1534: CONFIRMED, confirmed = true, amount paid = EUR 1,308, amount open = EUR 0\n• Booking Course 1710 (Academic Year Afternoon): 2026-06-01 to 2026-11-27, active = true\n• Payment 17035: EUR 250, Bank Transfer, 17 Feb 2026 — xeroPaymentId = null (unreconciled)\n• Payment 17527: EUR 1,058, Bank, 19 May 2026 — xeroPaymentId = null (unreconciled)",
+        "Set visa_status = APPROVED on student 983; reconcile Payments 17527+17035 Xero IDs. See recipe: issue-18-addendum-18aug.md",
+        "33rd Tue 18 Aug UTC. Day 79. visa_status null unchanged. Both payments Xero-unreconciled. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H24:K24",
+    "values": [
+      [
+        "• 16th check Tue 18 Aug 2026 UTC — no change since 15th check (Sun 16 Aug)\n• Student 397 (Enshi Lu), booking 787\n• Booking Course 828 (Academic Year Morning): start 2026-03-02, end 2026-02-27 — backwards dates (end before start), active = true, 0 class assignments\n• Booking Course 826 (Academic Year Morning): ended 2025-11-28 — 263 days stale, active = true, 0 class assignments\n• Booking Course 827 (Academic Year Morning): ended 2026-01-30 — 200 days stale, active = true, 0 class assignments\n• Booking Course 829 (Academic Year Morning): ended 2026-06-05 — 74 days stale, active = true, 1 historical class assignment (class 8, week-end 31 May)",
+        "Fix Booking Course 828 backwards end date; deactivate Booking Courses 826/827/829. See recipe: issue-23-addendum-18aug.md",
+        "16th Tue 18 Aug UTC. Booking Course 828 backwards dates unchanged. Booking Courses 826/827/829 stale (263d/200d/74d). Low-priority. Fix NOT RUN.",
+        "backwards dates; low-pri"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• 83rd check Tue 18 Aug 2026 UTC — no change since 82nd check (Mon 17 Aug)\n• Booking Course 24686 (Morning General, Alberto Squillace): 20 Jul to 18 Sep 2026, active = true, 0 class assignments — 29 calendar days elapsed, 31 days remaining\n• Booking Course 1797 (Morning General): ended 26 Jun 2026, active = true — 53 days stale, 1 historical class assignment (class 12, week-end Apr 26)\n• Booking 1611: CONFIRMED, fully paid EUR 1,280.12, amount open = EUR 0",
+        "Assign class to Booking Course 24686; deactivate Booking Course 1797. See recipe: issue-24-addendum-18aug.md",
+        "83rd Tue 18 Aug UTC. 29d elapsed, 31d remain. Booking Course 1797 53d stale. Fix NOT RUN.",
+        "BC24686 29d; 0 SCAs; ends Sep 18"
+      ]
+    ]
+  }
+]

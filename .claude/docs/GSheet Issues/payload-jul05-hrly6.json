@@ -1,0 +1,98 @@
+[
+ {
+  "range": "J2",
+  "values": [
+   [
+    "219th check 5 Jul UTC — UNCHANGED. pmt16988+pmt16989 (EUR339.90 each) bookingId=STILL null xeroId=null. bk17856+bk17857 CONFIRMED confirmed=false amtPaid=339.90. bc24630+bc24631 GE-AM-Plus end=Fri Jul10 active=true fee=null. COURSES END FRIDAY — 5 school days. NEIL: run 4-step SQL before Friday Jul10."
+   ]
+  ]
+ },
+ {
+  "range": "K2",
+  "values": [
+   [
+    "URGENT; Fri Jul10"
+   ]
+  ]
+ },
+ {
+  "range": "J16",
+  "values": [
+   [
+    "110th check 5 Jul SUN UTC — CONFIRMED UNCHANGED. sca255 cls11 weekEnd=2026-07-03 EXPIRED 2 DAYS AGO. Student 1001 ZERO SCAs. bc24925 AY-Afternoon Mar09-Oct02 active=true. bk18151 CONFIRMED EUR1339.20. STUDENT MISSED Fri Jul4. WILL MISS Mon Jul6 TOMORROW if fix not run before 09:00. NEIL: UPDATE student_class_assignments SET week_end=2026-10-02 WHERE id=255 — BEFORE 09:00 MON JUL 6."
+   ]
+  ]
+ },
+ {
+  "range": "K16",
+  "values": [
+   [
+    "SCA expired; Mon6"
+   ]
+  ]
+ },
+ {
+  "range": "J23",
+  "values": [
+   [
+    "74th check 5 Jul UTC — UNCHANGED. bk18158 CONFIRMED conf=true EUR740/740. bc24933 (GE-AM Jun15-Jul10 EUR380): active=true ZERO SCAs. bc24934 (GE-AM Jun15-Jul10 EUR360): active=STILL true — DUPLICATE. s1015 scas: sca48 bc1751 expired Apr17; sca146 bc24668 expired May15 — ZERO current. Courses end FRIDAY JUL10 = 5 school days. NEIL: (1) deactivate bc24934; (2) assign s1015 to class 7 (A1-AM) for bc24933 before Fri Jul10."
+   ]
+  ]
+ },
+ {
+  "range": "K23",
+  "values": [
+   [
+    "dup BC; 0SCA; Fri10"
+   ]
+  ]
+ },
+ {
+  "range": "J25",
+  "values": [
+   [
+    "35th check 5 Jul UTC — UNCHANGED. bc1797 ended Jun26=9d still active=true fee=1836 (Fidelo artefact). bc24686 starts Jul20=15 days fee=STILL null. pmt17124 EUR1280.12 type=null xeroId=null Mar25. bk1611 CONFIRMED EUR1280.12/1280.12. Deadline: set bc24686 fee + deactivate bc1797 before Jul20."
+   ]
+  ]
+ },
+ {
+  "range": "K25",
+  "values": [
+   [
+    "bc fee null; Jul20"
+   ]
+  ]
+ },
+ {
+  "range": "J41",
+  "values": [
+   [
+    "39th check 5 Jul UTC — UNCHANGED. bk17831 STILL PARTIAL confirmed=false EUR965/1396.9. pmt17963 (EUR965 Jul1 HS1273784562922): type=null xeroId=null. pmt17180 (EUR431.9 Apr27): type=null xeroId=null — 69d unreconciled. ba11358 bed180 Host Family Jul12-Aug02 active=true fee=EUR900 — 7 days to checkin. Booking unconfirmed (may not show in provider view). NEIL: reconcile pmt17180+pmt17963 in Xero, then confirm bk17831 BEFORE Jul12 checkin."
+   ]
+  ]
+ },
+ {
+  "range": "K41",
+  "values": [
+   [
+    "PARTIAL; Jul12"
+   ]
+  ]
+ },
+ {
+  "range": "J47",
+  "values": [
+   [
+    "41st check 5 Jul SUN UTC — UNCHANGED. 16 booking courses start Mon Jul6=TOMORROW, ALL 0 SCAs (fresh DB). Confirmed (11): Aitana s7 bc7, Pietro s72 bc81, Tuguldurtugs s858 bc1786 (EUR250 open bk1601), Rakan s14444 bc24697, Mario s14528 bc24776, Ettore s14564 bc24968, Veronica s278 bc24931 (ends Fri Jul10!), Sarah s1055 bc24945, Hugo s14572 bc24960, Kiyoshi s14445 bc24907 (ends Fri Jul10!), Yuxi s14577 bc24965. Pending (4): Zeyad s32 bc38, Shih-Wei s356 bc24913, Sulaiman s7309 bc24930, Gustavo s14570 bc24955+bc24967 (dup). NEIL: ASSIGN ALL CONFIRMED + DEACTIVATE bc24967 BEFORE MON 09:00."
+   ]
+  ]
+ },
+ {
+  "range": "K47",
+  "values": [
+   [
+    "URGENT; 0 assigned"
+   ]
+  ]
+ }
+]

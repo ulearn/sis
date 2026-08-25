@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H32:K32",
+    "values": [
+      [
+        "TZ=UTC NOT in .env. 9 ghost SCAs week_end=null(IDs:39,40,65,66,74,75,81,87,100; all bc ended<=Jun12). Mon att sheet shows Sun Jun14+9 ghost students.",
+        "FIX1(NOT RUN): echo TZ=UTC>>.env && touch tmp/restart.txt. FIX2 SQL(NOT RUN): UPDATE student_class_assignments SET week_end=(SELECT end_date FROM booking_courses WHERE id=booking_course_id) WHERE id IN(39,40,65,66,74,75,81,87,100). see recipe: issue-31-attendance-sheet-week-bug.md",
+        "Jun14 SUN: BOTH FIXES NOT RUN. Stale: 39=Aika/cls6/May22, 40=Isabela/cls6/Jun12, 65=Willians/cls9/Jun12, 66=Eduardo/cls9/May15, 74=Gabriel/cls10/May15, 75=Javkhlan/cls10/Jun12, 81=Diego/cls11/Jun05, 87=Teofilo/cls11/Jun05, 100=Luca/cls12/May29.",
+        "URGENT Mon 07:00"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "bk18158 PEND 0/740. c24933(GE-AM fee=380)+c24934(DUP fee=360) BOTH Jun15-Jul10. bk18131 CONF 1185+bk18133 CONF 648 ghost(0crs). pmt17728/17730/17852 xeroId=null. 0 SCAs s1015.",
+        "Steps(NOT RUN): (1)DELETE pmts WHERE id IN(17728,17730,17852); (2)UPDATE bks SET status=CANCELLED WHERE id IN(18131,18133); (3)DELETE bc24934; (4)check HS 505836060909+assign s1015 cls7(A1) c24933 Jun15. see recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun14 SUN: COURSE STARTS TODAY. bk18158 PEND 0/740 conf=false = no pmt+no SCA. Ghost bks 18131(1185)+18133(648) have 0 courses. pmt17730(648 bk18133 xeroId=null)+pmt17852(1185 bk18131 xeroId=null) available to re-link to bk18158 once dup course resolved.",
+        "CRITICAL today"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "s88 Giulia JUNIOR level=null 0SCAs. bk94 CONF 1151.5 c104 Jun15-26(REAL). bk18044 CONF DUP 1106.5 c24836 Jun15-26(pmt17607 EUR1151.5 dbl-import Mar13 xeroId=null). bk18152 Milena(s14557) PEND 0/1151.5. STARTS TODAY.",
+        "Steps(NOT RUN): (1)get Giulia level from staff; (2)assign s88 std AM class SIS bk94/c104; (3)cancel bk18044+DELETE pmt17607(dbl-import); (4)cancel bk18152+delete s14557. see recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun14 SUN: COURSE STARTS TODAY. 0 SCAs on bc104 and bc24836. No MORN-PLUS class in DB use std AM class. pmt17607 xeroId=null = DELETE not Xero credit. bk18152 Milena PEND 0 pmts = safe to cancel.",
+        "CRITICAL today"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "s14532 Ernesto Pesoa Gil level=null 0SCAs ALL TIME. bc24826 INTENSIVE Jun08-19. WK1(Jun08-12) MISSED. WK2(Jun15-19) TODAY. bk18034 PARTIAL 845/1095 conf=false(EUR250 short).",
+        "Steps(NOT RUN): (1)ask teacher Ernesto level; (2)INSERT 2 SCAs AM+PM Jun15-19 bci=24826 pairs A2=cls8/9,B1=cls5+12/11,B2-C1=cls4/6,C1=cls13/14; (3)collect EUR250. see recipe: issue-26-intensive-class-assign-once.md",
+        "Jun14 SUN: WK2 FINAL WEEK TODAY. No INTENSIVE class in DB use AM+PM pair. Level null in DB+HS(id=3344151). WK1 entirely missed. bk18034 conf=false partly due to partial pmt.",
+        "Mon AM LAST CHANCE"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "s1001 att=0 ALL TIME(156d enrolled, att table started May02). sca255 cls11(B1 PM) Jan12-Jul03(19d left). bk18151 CONF 1339.2. visaStatus=null. No alias in DB. Genuine zero-attendance.",
+        "Steps: (1)ask cls11 teacher Mon AM if Saikhantes ever physically attended; (2)if YES: backfill+mark daily; (3)if NO: IRP compliance escalation. see recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun14 SUN: att COUNT=0 confirmed (global att table=3025 records May2-Jun9). sca255 B1PM weekEnd=Jul03(19d). Global att has other cls11 students Saikhantes genuinely absent. 19 school days to Jul03.",
+        "0att URGENT 19d"
+      ]
+    ]
+  },
+  {
+    "range": "H28:K28",
+    "values": [
+      [
+        "bk17909 confirmed=TRUE(NOT cancelled in DB). amtTotal=727.5 amtPaid=1455.5(EUR728 excess=pmt17478 May15). pmt17477(727.5)+pmt17478(728) xeroId=null. bk17849 CONF active sca254 Jun08-Nov27.",
+        "Steps(NOT RUN): (1)Xero check Sofiia Apr-May 2026; (2)if 1 real pmt: DELETE pmts WHERE id IN(17477,17478); if 3 real pmts: refund EUR728; (3)UPDATE bookings SET confirmed=false WHERE id=17909. see recipe: issue-27-sofiia-sca-cancelled-booking.md",
+        "Jun14 SUN: bk17909.confirmed=true(anomaly). EUR728 excess: paid 1455.5 vs total 727.5. pmt17477(727.5) = original amount; pmt17478(728) = excess. Both xeroId=null. sca254(cls6 Jun08-Nov27) ACTIVE student correctly in class.",
+        "refund TBC check Xero"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H9:K9",
+    "values": [
+      [
+        "• Original ILEP certificate issue resolved — Diego (document 181), Pedro (document 184), Aurora (document 183) all issued June 2026\n• Diego (student 840): booking course 24959 (Academic Year Morning, 3 August 2026) — ILEP code 0318/0010 set\n• Aurora (student 841): booking course 24958 (Academic Year Morning, 3 August 2026) — ILEP code 0318/0010 set\n• Pedro (student 911): no 2026–27 booking course in SIS — may not have renewed\n• 8 stale booking courses still active = true: booking courses 1482, 1483, 1484 (Diego, ended December 2025/February 2026/June 2026); 1485, 1486, 1487 (Aurora, same periods); 1602, 1603 (Pedro, ended December 2025/June 2026)\n• All UNCHANGED — verified 16 July 2026 UTC (2nd check today)",
+        "Set active = false on booking courses 1482, 1483, 1484, 1485, 1486, 1487, 1602, 1603. See recipe: issue-8-ilep-certs.md",
+        "2nd check Thu 16 Jul UTC. CONFIRMED UNCHANGED. 8 stale BCs still active=true: BCs 1482+1485+1602 ended Dec2025 (~209d), BCs 1483+1486 ended Feb2026 (~153d), BCs 1484+1487+1603 ended Jun2026 (~41d). Diego BC24959 ILEP=0318/0010 set. Aurora BC24958 ILEP=0318/0010 set. Pedro no 2026-27 BC. Fix NOT RUN.",
+        "cert resolved; 8 stale BCs"
+      ]
+    ]
+  },
+  {
+    "range": "H20:K20",
+    "values": [
+      [
+        "• Booking course 89 (Morning IELTS, ended 22 May 2026): active = still true — 55 days stale\n• Booking course 90 (Private Lessons, ended 22 May 2026): active = still true — 55 days stale\n• Student 77 (Mai Lan Chu): no current or future booking — both courses are historical\n• Private Lessons is one-on-one tuition — no class slot was ever required\n• Data hygiene only — UNCHANGED, verified 16 July 2026 UTC",
+        "Set active = false on booking courses 89 and 90 (both ended 22 May 2026, 55 days stale). See recipe: issue-19-mailan-class-assign.md",
+        "Thu 16 Jul UTC. CONFIRMED UNCHANGED. BC89 Morning IELTS ended May22 active=STILL true (55d stale). BC90 Private Lessons ended May22 active=STILL true (55d stale). Student 77 has no current booking. Fix NOT RUN.",
+        "BC89+90 stale 55d"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• Booking course 23 (Ivan Rodriguez Solares, Intensive General 30, ended 22 May 2026): active = still true — 55 days stale\n• Booking course 24826 (Ernesto Pesoa Gil, Intensive General 30, ended 19 June 2026): active = still true — 27 days stale\n• Booking 18034 (Ernesto Pesoa Gil): Partial, EUR 845 paid of EUR 1095 total — EUR 250 outstanding (last updated 7 June 2026, 39 days ago)\n• Payment 17683 (EUR 845, HubSpot payment 1241215836360): Xero payment ID = null, type = null — not reconciled in Xero\n• Note: column B shows Ivan Rodriguez — EUR 250 debt belongs to Ernesto Pesoa Gil (student 14532, booking 18034)\n• All UNCHANGED — verified 16 July 2026 UTC",
+        "Deactivate booking courses 23 and 24826; reconcile payment 17683 in Xero; chase EUR 250 from Ernesto Pesoa Gil (booking 18034). See recipe: issue-26-intensive-class-assign-once.md",
+        "Thu 16 Jul UTC (34th check). CONFIRMED UNCHANGED. BC23 (Ivan Rodriguez, ended May22) active=STILL true (55d). BC24826 (Ernesto Pesoa Gil, ended Jun19) active=STILL true (27d). BK18034 PARTIAL EUR845/1095 EUR250 outstanding conf=false (updAt=Jun7=39d). PMT17683 EUR845 xeroId=STILL null type=null. Fix NOT RUN.",
+        "bc stale 55d; open"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Booking course 104 (Morning General Plus, ended 26 June 2026): active = still true — 20 days stale\n• Payment 17102 (EUR 1151.50, booking 94, Giulia Avallone, student 88): Xero payment ID = null, type = null — not reconciled in Xero\n• Booking 94: Confirmed, EUR 1151.50 fully paid\n• All UNCHANGED — verified 16 July 2026 UTC (35th check)",
+        "Set active = false on booking course 104; reconcile payment 17102 in Xero. See recipe: issue-30-giulia-bc-xero.md",
+        "35th check Thu 16 Jul UTC. CONFIRMED UNCHANGED. BC104 Morning General Plus Jun15-Jun26 active=STILL true (20d stale). Pmt17102 EUR1151.50 xeroId=STILL null. BK94 CONF EUR1151.50/1151.50. Fix NOT RUN.",
+        "35th check; bc104 stale 20d"
+      ]
+    ]
+  },
+  {
+    "range": "H34:K34",
+    "values": [
+      [
+        "• Student 356 (Shih-Wei Huang): gender field = null — not set (last updated 3 June 2026, 43 days ago)\n• Document 238 (exit letter, template 4): status = ISSUED at 18 June 2026 — 28 days with wrong Ms./she/her pronouns\n• Code bug in documents.ts: null gender defaults to female — all null-gender students get wrong pronouns on any document\n• Fix requires: (1) set gender = Male for student 356, (2) revoke document 238, (3) apply null-gender guard in code\n• All UNCHANGED — verified 16 July 2026 UTC",
+        "Set student 356 gender = Male; revoke document 238; regenerate exit letter; fix null-gender guard in documents.ts. See recipe: issue-32-shih-wei-gender-default.md",
+        "Thu 16 Jul UTC. CONFIRMED UNCHANGED. Student 356 (Shih-Wei Huang) gender=STILL null (updatedAt=Jun03=43d). Document 238 STILL ISSUED issuedAt=Jun18=28d — wrong Ms./she/her pronouns on active exit letter. Code fix (null-gender guard in documents.ts) also pending. Fix NOT RUN.",
+        "43d; doc238 wrong pronouns"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• Accommodation 11352 (Verónica Martín, bed 83, booking 18156, July 4–11 2026): student checked out 11 July — active = still true, 5 days stale\n• Accommodation 11285 (Jesús Manuel Ramírez Díaz, bed 83, booking 17825, June 21–July 5 2026): student checked out 5 July — active = still true, 11 days stale (see Issue 43)\n• Both records on bed 83 — cosmetic data hygiene only, no guest impact\n• Fix: UPDATE booking_accommodations SET active = false WHERE id IN (11285, 11352)\n• All UNCHANGED — verified 16 July 2026 UTC",
+        "Set active = false on accommodations 11352 and 11285 (both on bed 83, both post-checkout). See recipe: issue-37-veronica-capel-accomm-allocation.md",
+        "Thu 16 Jul UTC. CONFIRMED UNCHANGED. BA11352 (Veronica Martin, bed 83, Jul4-Jul11): active=STILL true (5d post-checkout, student departed Jul11). BA11285 (Jesus Manuel, bed 83, Jun21-Jul5): active=STILL true (11d post-checkout — Issue 43). Fix NOT RUN.",
+        "BA stale 5d; cleanup"
+      ]
+    ]
+  }
+]

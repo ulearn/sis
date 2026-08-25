@@ -1,0 +1,2 @@
+Issue 1 - Orphan Payments (262nd check Sun 16 Aug 2026)
+No change from prior check. Same 4 orphan payments all bookingId=null: 4781 EUR380 Flywire legacy 2019, 16988 EUR339.90 Bank (Margherita Galbusera Bk17856), 16989 EUR339.90 Bank (Francesca Fassina Bk17857), 17187 EUR6151 TransferMate D2026226. BCs 24630+24631 ended Jul10 still active (37d stale). Fix steps unchanged from addendum-15aug. Status: NOT RUN.

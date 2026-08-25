@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 489th check Mon 24 Aug 2026 UTC — 4 NEW orphan payments found\n• Payment 4781: EUR 380.00, 20 Aug 2019, booking = null (legacy pre-SIS)\n• Payment 16988: EUR 339.90, 28 Apr 2026, booking = null (known) — link to booking 17857 (Francesca Fassina)\n• Payment 16989: EUR 339.90, 28 Apr 2026, booking = null (known) — link to booking 17856 (Margherita Galbusera)\n• Payment 17187: EUR 6,151.00, TransferMate Escrow, 1 May 2026, receipt R20261478, txId D2026226, comment ULEARNP2026124 — large, linkable\n• Payment 18122: EUR 250.00, Card, 23 Aug 2026 — no paidBy, no receipt, no txId (NEW)\n• Payment 18123: EUR 250.00, Card, 23 Aug 2026 — no paidBy, no receipt, no txId (NEW)\n• Total orphan value: EUR 7,710.80 across 6 payments\n• Booking Courses 24630+24631: active = true, ended 10 Jul 2026 (45 days stale)\n• Fix NOT RUN",
+        "Link 16989→bk17856, 16988→bk17857; investigate 17187 via TransferMate ULEARNP2026124; check Stripe for 18122+18123 (EUR 250 x2, 23 Aug); deactivate BCs 24630+24631",
+        "489th Mon 24 Aug UTC. 4 NEW orphans found. Prior run tracked only 16988+16989. P17187 has receipt — linkable. P18122+18123 appeared yesterday (Card, no metadata). Recipe files blocked in headless session — full data in H.",
+        "6 orphan pmts; EUR 7,710"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 489th check Mon 24 Aug 2026 UTC — CLASS DAY ARRIVED\n• Student Class Assignment 255 (class 11 B1 PM): weekEnd 2026-07-03 — expired 52 days, no new SCA created\n• Booking 18151: serviceEnd 2026-08-07 (17 days ago); BC 24925 (Academic Year Afternoon) still active until 2026-10-02\n• Holiday ended 2026-08-21 — Saikhantes Shagdarsuren was due back Mon 24 Aug (today)\n• No class assignment covers today — student in school with no class\n• Stale Booking Course 1982 (Academic Year Morning, booking 1724): ended 2025-12-19 — 248 days stale\n• Fix NOT RUN — URGENT",
+        "Insert new SCA (class 11) from 2026-08-24 to 2026-10-02 for BC 24925 (student 1001); deactivate BC 1982. Recipe: issue-15-addendum-24aug.md",
+        "489th Mon 24 Aug UTC. Class started today — student has no SCA since 3 Jul. Booking serviceEnd was 7 Aug but course runs to Oct 2. Neil to decide: extend SCA to Oct 2 or close BC 24925 at Aug 7.",
+        "CRITICAL: class today, no SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• 489th check Mon 24 Aug 2026 UTC — CLASS DAY ARRIVED (same root cause as issue 15, row 16)\n• Student Class Assignment 255: weekEnd 2026-07-03 — expired 52 days, no new SCA\n• Booking 18151: serviceEnd 2026-08-07 (17 days past), BC 24925 active until 2026-10-02\n• Stale Booking Course 1982 (booking 1724, Academic Year Morning): ended 2025-12-19 — 248 days stale\n• Fix NOT RUN — URGENT",
+        "See issue 15 (row 16) — identical fix applies. Recipe: issue-29-15-addendum-24aug.md",
+        "489th Mon 24 Aug UTC. Saikhantes in school today with no class assignment.",
+        "CRITICAL: class today, no SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• 488th check Mon 24 Aug 2026 UTC — no DB change since 487th\n• Bed 83: 5 stale Booking Accommodations, fix NOT RUN\n• Booking Accommodation 11239 (Ivan Rodriguez Solares): ended 2026-05-24 — 92 days stale, fee EUR 1,050\n• Booking Accommodation 11168 (Diego Da Silva Saldanha): ended 2026-06-20 — 65 days stale, fee EUR 700\n• Booking Accommodation 11285 (Jesus Manuel Ramirez Diaz): ended 2026-07-05 — 50 days stale, fee null\n• Booking Accommodation 11352 (Veronica Martin): ended 2026-07-11 — 44 days stale, fee EUR 360\n• Booking Accommodation 11179 (Africa Mera Bachir): ended 2026-08-09 — 15 days stale, fee EUR 1,360\n• DEADLINE: BA 11173 ends 2026-08-30; new BA 25 (Rosa Maria Mollica) starts 2026-08-30 — 6 DAYS away\n• Do NOT deactivate 11173 or 25",
+        "Deactivate BAs 11239, 11168, 11285, 11352, 11179 (all ended). Do NOT touch 11173 or BA 25. See recipe: issue-37-addendum-24aug.md",
+        "488th Mon 24 Aug UTC. Aug 30 deadline now 6 days away. Data unchanged.",
+        "5 stale BAs; DEADLINE Aug30 = 6d"
+      ]
+    ]
+  },
+  {
+    "range": "H52:K52",
+    "values": [
+      [
+        "• 489th run Mon 24 Aug 2026 UTC — stale 2026 BA count: 158 (+1 from yesterday)\n• Total stale active Booking Accommodations (endDate < 24 Aug 2026, year 2026 filter): 158\n• Count increases daily as more accommodations pass their end date without being deactivated\n• Fix NOT RUN",
+        "Batch deactivate 2026 BAs where active=true and endDate < today. See recipe: issue-50-addendum-24aug.md",
+        "489th Mon 24 Aug UTC. Count 158 (was 157). Growing daily.",
+        "158 stale BAs (+1 today)"
+      ]
+    ]
+  },
+  {
+    "range": "H54:K54",
+    "values": [
+      [
+        "• 488th check Mon 24 Aug 2026 UTC — no DB change since 484th\n• Student 14451 (Fanny Scelles), booking 17843: CONFIRMED, confirmed = true, paid EUR 5,595.16 (fully paid)\n• Booking Accommodation 11267 (bed 23, Host Family, Individual): starts 2026-08-29 (IN 5 DAYS), ends 2026-10-04, fee EUR 3,840 — active\n• Booking Accommodation 11399 (bed 54, Host Family, Individual): starts 2026-10-04, ends 2026-12-19, fee = null — STILL MISSING\n• Booking Course 24617 (General English AM): starts 2026-08-31 — active\n• Fix NOT RUN",
+        "Set fee on BA 11399 before student arrives Aug 29. See recipe: issue-52-addendum-24aug.md",
+        "488th Mon 24 Aug UTC. Arrival in 5 days (29 Aug). BA11399 fee still null — no change.",
+        "ARRIVE Aug29 5d; BA11399 fee null"
+      ]
+    ]
+  }
+]

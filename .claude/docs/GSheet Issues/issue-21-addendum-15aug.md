@@ -1,0 +1,1 @@
+23rd check Sat 15 Aug 2026 UTC. No change since 22nd (Fri 14 Aug). BC 1604 43d stale. Both SCAs historical. See issue-21-addendum-14aug.md for full recipe.

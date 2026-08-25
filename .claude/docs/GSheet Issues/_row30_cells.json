@@ -1,0 +1,8 @@
+{
+  "row": 30,
+  "issue": "29 & 15",
+  "H": "• Class assignment 255 (class 11, B1 PM) has weekStart = 12 Jan and weekEnd = 3 Jul — both dates are wrong\n• Booking course 24925 (Academic Year Afternoon, 9 Mar to 11 Sep) is the correct course for student Saikhantes Shagdarsuren (student 1001)\n• The class assignment weekEnd expires in 11 days (3 Jul) — leaves 10 weeks uncovered through 11 Sep",
+  "I": "UPDATE sca255: set weekEnd = 2026-09-11, weekStart = 2026-03-09. See recipe: issue-29-saikhantes-jan12-start-date.md",
+  "J": "Jun22 hrly x3: UNCHANGED (confirmed fresh DB). sca255 cls11 weekStart=Jan12 weekEnd=Jul03 NOT FIXED. bc24925 AY-Afternoon Mar09-Sep11 (updAt=Jun16=6d). Jul03=11d then 10 weeks uncovered to Sep11. SQL NOT RUN: UPDATE student_class_assignments SET week_start=2026-03-09, week_end=2026-09-11 WHERE id=255.",
+  "K": "sca255; Jul03=11d"
+}

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• 5 students have bad mobile-number data — all 5 UNCHANGED (max 83 days stale, 2 Jul 2026 UTC)\n• Email in phone field — Dolgormaa Bayaraa (student 1897): saraa.tpb@gmail.com; Aki Miura (student 8567): aki-hinaaki1116@ezudo.he.jp\n• Annotation in phone field — Jieun Lee (student 1194): 00821097366523 (home contry); Lisa Li (student 5345): 0864645297 (Husband)\n• Invisible Unicode trailing characters — Alessandra Saito de Araujo (student 10343): +353 (83) 885 9162 + U+202C chars\n• Earliest staleness: Aki and Lisa since 10 Apr (83 days); Dolgormaa and Alessandra since 28 Apr (65 days); Jieun since 7 May (56 days)",
+        "Clean per recipe; students 1194/5345/10343 fixable now (strip annotation/unicode); students 1897/8567 need real number from HubSpot/staff. See recipe: issue-5-mobile-numbers.md",
+        "2 Jul UTC (83d max stale, fresh DB): all 5 UNCHANGED. s1897 Dolgormaa phone=email (Apr28=65d). s8567 Aki phone=email (Apr10=83d). s1194 Jieun annotation (May07=56d). s5345 Lisa annotation (Apr10=83d). s10343 Alessandra unicode (Apr28=65d). 3 self-fixable (1194/5345/10343); 2 need real# from HubSpot (1897/8567). Await Neil.",
+        "info needed"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student class assignment 255 (Saikhantes, student 1001, class 11, B1 Afternoon): week_end = 3 Jul 2026 — EXPIRES TOMORROW FRIDAY (68th check, 2 Jul 2026 UTC)\n• CORRECTION: Booking course 24925 (Academic Year Afternoon, booking 18151) ends 2 Oct 2026 — prior checks incorrectly stated Sep 11; fresh DB confirms Oct 2\n• SQL fix (UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255) has NOT been run — student loses class access from Monday 6 Jul\n• 68 checks, SQL still unrun — NEIL: run TODAY before midnight Thursday",
+        "(NOT RUN) UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255; [CORRECTED end date — Oct 2 not Sep 11]. See recipe: issue-15-saikhantes-course-dates.md",
+        "2 Jul 2026 UTC (68th check, fresh DB): sca255 cls11 B1-PM weekEnd=Jul03=EXPIRES TOMORROW FRI. CORRECTION bc24925 AY-Aft ends Oct02 2026 (not Sep11). Recipe updated. SQL UNRUN 68 checks. NEIL: run before midnight Thu — student loses class Mon 6 Jul.",
+        "SCA exp TOMORROW; CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H24:K24",
+    "values": [
+      [
+        "• Booking course 828 (Academic Year Morning, booking 787): end date 27 Feb 2026 — 3 days before start date 2 Mar 2026 (backwards dates; 7th check, 2 Jul 2026 UTC)\n• Legacy DST off-by-one bug from Issue 2 — one of 56 flagged rows — course actually ended approximately 20 Mar 2026\n• All courses for student 397 (Enshi Lu) complete — student left approximately March 2026\n• Cosmetic data-hygiene fix: correct end date to 2026-03-20, deactivate course",
+        "(NOT RUN, low-priority cosmetic) UPDATE booking_courses SET end_date='2026-03-20', active=false WHERE id=828; See recipe: issue-23-enshi-lu-backwards-course.md",
+        "2 Jul UTC (7th check, fresh DB): bc828 AY-Morning start=Mar02 end=Feb27 STILL BACKWARDS active=true fee=null (updAt=May11=52d stale). bk787 CONF 2147.5/2147.5. Student left ~Mar2026. Low-pri cosmetic. Fix NOT RUN.",
+        "ended; date bug"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking course 1797 (Morning General, 6 Apr to 26 Jun 2026): ended 6 days ago — still active = true (stale flag; 21st check, 2 Jul 2026 UTC)\n• Booking course 24686 (Morning General, 20 Jul to 18 Sep 2026): starts in 18 days — fee = null (must be set before course start)\n• Booking 1611: Confirmed, confirmed = true, fully paid EUR 1280.12\n• Payment 17124 (EUR 1280.12): Xero payment ID = null — not yet reconciled in Xero\n• Action needed before 20 Jul: deactivate course 1797, set fee on course 24686, reconcile payment 17124 in Xero",
+        "(NOT RUN) (1) UPDATE booking_courses SET active=false WHERE id=1797; (2) UPDATE booking_courses SET fee=<amount> WHERE id=24686; (3) Reconcile payment 17124 in Xero. See recipe: issue-24-alberto-fidelo-course-split.md",
+        "2 Jul UTC (21st check, fresh DB): bc1797 ended Jun26=6d active=STILL true fee=1836. bc24686 Jul20-Sep18 fee=STILL null (18d to start). bk1611 CONF 1280.12/1280.12. pmt17124 EUR1280.12 xeroId=STILL null. All 3 steps unrun. Neil: deadline Jul20.",
+        "bc1797 ended+active; Jul20=18d"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• Accommodation 11352 (Verónica Martín, bed 83, booking 18156): 4 Jul to 11 Jul — ARRIVES SATURDAY 4 JUL (57th check, 2 Jul 2026 UTC)\n• Accommodation 11285 (Jesús Ramírez Díaz, bed 83, booking 17825): 21 Jun to 5 Jul — Jesús does not vacate until Sunday 5 Jul\n• Bed 83 double-booked: Verónica checks in Saturday 4 Jul; Jesús not out until Sunday 5 Jul — one-night conflict Friday–Saturday night\n• Alternative beds free 4 to 11 Jul: bed 174, bed 175, bed 176 (zero conflicts re-confirmed 2 Jul UTC)\n• Fix still NOT run — Verónica arrives in 2 days — 57 hourly checks with no action — NEIL: MOVE BED TODAY",
+        "(NOT RUN) SIS: Student 278 > Booking 18156 > Accommodation > edit 11352 > change bed from 83 to 174 (or 175/176). See recipe: issue-37-veronica-capel-accomm-allocation.md",
+        "2 Jul 2026 UTC (57th check, fresh DB): ba11352 Veronica bed83 Jul04-Jul11 active=true. ba11285 Jesus bed83 Jun21-Jul05 active=true. Conflict Sat Jul4 night confirmed in DB. Beds 174/175/176 still free (0 conflicts). NEIL: move ba11352 to bed 174/175/176 TODAY — arrives Sat 4 Jul (2 days).",
+        "BED83; Jul4=2d; CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• Accommodation 11285 (Jesús Manuel Ramírez Díaz, bed 83, booking 17825): stored 21 Jun to 5 Jul — Verónica Martín (accommodation 11352) starts bed 83 on 4 Jul\n• Bed 83 double-booked Saturday 4 Jul night — fix still NOT run (33rd check, 2 Jul 2026 UTC)\n• Preferred fix: reassign Verónica (accommodation 11352) to bed 174, 175, or 176 — see Issue 37 (row 39)\n• Jesús stored dates (21 Jun to 5 Jul) are 1 day off from original request (20 Jun to 4 Jul) — low-priority secondary fix\n• Booking 17825 fully paid EUR 2008",
+        "(NOT RUN) Preferred: move accommodation 11352 (Verónica) to bed 174/175/176 per Issue 37. Optional: UPDATE booking_accommodations SET end_date='2026-07-04' WHERE id=11285; See recipe: issue-43-jesus-accomm-dates.md",
+        "2 Jul 2026 UTC (33rd check): ba11285 Jesus bed83 Jun21-Jul05. ba11352 Veronica bed83 Jul04-Jul11. Overlap Sat Jul4 night. Primary fix: see row 39 (move Veronica to 174/175/176). Jesus end date 1d off (low-pri). Veronica ARRIVES Sat 4 Jul (2 days).",
+        "CRITICAL; see row 39"
+      ]
+    ]
+  }
+]

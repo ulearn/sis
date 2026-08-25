@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Pietro Colombo (student 72, booking course 81, Morning General Plus, 6 to 24 July 2026): zero class assignments — 5 school days missed 7 to 11 July — 8 school days remaining from Monday 13 July (40th check, 12 Jul UTC)\n• Kayque Tauann Lopes Coelho (student 852, booking course 1821, Academic Year Renewal Afternoon, 29 June to 18 December 2026): zero class assignments — 10 school days missed since 29 June\n• Tuguldurtugs Enkhtugs (student 858, booking course 1786, Academic Year Renewal Morning, 6 July to 25 December 2026): zero class assignments — 5 school days missed since 7 July",
+        "Assign Pietro (student 72, booking course 81), Kayque (student 852, booking course 1821), and Tuguldurtugs (student 858, booking course 1786) to classes via SIS admin before Monday 13 July. See recipe: issue-45-renewal-arrivals.md",
+        "40th check 12 Jul SUN UTC. UNCHANGED (fresh DB). Pietro(s72/bc81 ends Jul24) STILL 0 SCAs, 5d missed Jul7-11. Kayque(s852/bc1821 Jun29-Dec18) STILL 0 active SCAs, 10d missed. Tuguldurtugs(s858/bc1786 Jul6-Dec25) STILL 0 active SCAs, 5d missed. bk1601 EUR250 outstanding. Mon13=TOMORROW. NEIL: assign all 3 via SIS before Mon.",
+        "CRITICAL; 0 SCAs; Mon13"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Accommodation 11358 (bed 180, Host Family — Mary Carver): check-in = 12 July 2026 — student has ARRIVED TODAY — host family STILL NOT notified — claim status = null (41st check, 12 Jul UTC)\n• Host contact: Mary Carver, +353 87 927 1130, mary.carver28@gmail.com\n• Booking 17831 (Xuezhen Huang, student 14443): Confirmed, fully paid EUR 1396.90\n• 4 payments all unreconciled in Xero (Xero payment ID = null): payment 17180 (EUR 431.90, April 2026), payment 17963 (EUR 965, July 2026), payment 17987 (EUR 131.90, June 2026), payment 17988 (EUR 300, June 2026)\n• Note: payments 17987 + 17988 = EUR 431.90 = payment 17180 (likely Fidelo installment pair — verify before reconciling all four in Xero separately)",
+        "Contact Mary Carver NOW (+353 87 927 1130 / mary.carver28@gmail.com); submit host family claim for accommodation 11358 via SIS admin; reconcile payments in Xero (verify 17987+17988 vs 17180 first). See recipe: issue-39-xuezhen-huang-accomm-missing.md",
+        "41st check 12 Jul SUN UTC. UNCHANGED. BA11358 bed180 HF startDate=TODAY Jul12 endDate=Aug2 claimStatus=STILL null. STUDENT ARRIVED. HOST NOT NOTIFIED. BK17831 CONF EUR1396.90. 4 pmts xeroId=null. NEIL: call Mary Carver NOW +353 87 927 1130.",
+        "URGENT; TODAY; HF unnotified"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student 1001 (Saikhantes Shagdasuren): class assignment 255 (class 11, B1 PM) week end = 3 July 2026 — expired 9 days ago (15th check, 12 Jul UTC)\n• No active class assignment from Monday 7 July — 5 school days missed; Monday 13 July = TOMORROW\n• Booking course 24925 (Academic Year Afternoon, 9 March to 2 October 2026): active = true — correct current course\n• Booking 18151: confirmed, EUR 1339.20 fully paid\n• Booking course 1982 (Academic Year Morning, 30 June to 19 December 2025): still active = true — course ended 205 days ago (December 2025), must be deactivated",
+        "Extend class assignment 255 week end to 2026-10-02 via SIS admin; deactivate booking course 1982. See recipe: issue-15-saikhantes-course-dates.md",
+        "15th check 12 Jul SUN UTC. UNCHANGED (fresh DB). SCA 255 weekEnd=2026-07-03 STILL expired 9d. BC 1982 ended Dec 2025 STILL active=true (205d stale). BC 24925 active correct. BK 18151 CONFIRMED EUR1339.20. Fix NOT RUN. NEIL: extend SCA255 weekEnd to Oct2 AND deactivate BC1982 TONIGHT before Mon Jul13 09:00.",
+        "CRITICAL; SCA 9d expired"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Duplicate of issue 15 (row 16): student 1001 Saikhantes Shagdasuren — class assignment 255 (class 11) week end = 3 July 2026 — expired 9 days ago (14th check, 12 Jul UTC)\n• 5 school days missed 7 to 11 July — Monday 13 July = TOMORROW\n• See row 16 (issue 15) for full diagnosis and fix recipe",
+        "Extend class assignment 255 week end to 2026-10-02; deactivate booking course 1982. See recipe: issue-15-saikhantes-course-dates.md",
+        "14th check 12 Jul SUN UTC. Duplicate of row 16. UNCHANGED. SCA255 weekEnd=Jul3 STILL expired 9d. BC1982 ended Dec2025 STILL active=true (205d stale). Mon13=TOMORROW. NEIL: extend SCA255 weekEnd to Oct2 + deactivate BC1982 before Mon Jul13 09:00.",
+        "Mon13 TOMORROW; see row 16"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking course 24686 (Morning General, 20 July to 18 September 2026): fee = null — not included in financial reporting — 8 days to course start (33rd check, 12 Jul UTC)\n• Booking 1611 (Alberto Squillace): confirmed, EUR 1280.12 fully paid\n• Booking course 1797 (Morning General, 6 April to 26 June 2026): still active = true — 16 days stale\n• Payment 17124 (EUR 1280.12): Xero payment ID = null, type = null — not reconciled in Xero (68+ days)",
+        "Set fee on booking course 24686 via SIS admin before 20 July; deactivate booking course 1797; reconcile payment 17124 in Xero. See recipe: issue-24-alberto-fidelo-course-split.md",
+        "33rd check 12 Jul SUN UTC. UNCHANGED (fresh DB). BC24686 Morning-General Jul20-Sep18 fee=STILL null ilep_code=null. BC1797 Apr6-Jun26 STILL active=true (16d stale). PMT17124 EUR1280.12 xeroPaymentId=STILL null type=null. Jul20=8 DAYS. NEIL: set fee before Jul20.",
+        "Jul20; fee null; 8d"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Booking course 104 (Morning General Plus, 15 to 26 June 2026): ended 26 June — active = still true (16 days stale) (28th check, 12 Jul UTC)\n• Payment 17102 (EUR 1151.50, booking 94): Xero payment ID = null, type = null — not reconciled in Xero\n• Booking 94 (Giulia Avallone, student 88): confirmed, EUR 1151.50 fully paid",
+        "Set booking course 104 active = false; reconcile payment 17102 with Xero. See recipe: issue-30-giulia-milena-parent-student.md",
+        "28th check 12 Jul SUN UTC. UNCHANGED. BC104 Morning-Gen-Plus Jun15-Jun26 active=STILL true (16d stale). PMT17102 EUR1151.50 xeroPaymentId=STILL null type=null. BK94 CONF EUR1151.50/1151.50. Low priority.",
+        "28th check; bc104 stale 16d"
+      ]
+    ]
+  }
+]

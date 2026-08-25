@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 128th check Sun 16 Aug 2026 UTC — no change since 127th check\n• Student 1001 (Saikhantes Shagdarsuren), booking 18151 — CONFIRMED, fully paid EUR 1,339.20\n• Holiday 2500: Jul 20 – Aug 21 2026 — student on holiday; RETURNS IN 5 DAYS (Thu Aug 21)\n• Booking Course 24925 (Academic Year Afternoon): Mar 9 – Oct 2 2026, active = true\n• serviceEnd = Aug 7 2026 — expired 9 days ago (stale; course continues to Oct 2)\n• Student Class Assignment 255: weekEnd Jul 3 2026 — 44 days without active assignment\n• ACTION NEEDED before Aug 21: assign new SCA and update serviceEnd",
+        "Create new SCA class 11 week Aug 24 – Oct 2; update serviceEnd to Oct 2. See recipe: issue-15-addendum-16aug.md",
+        "128th Sun 16 Aug UTC. No change. Student returns Aug 21 (5d). SCA 255 expired Jul 3 (44d). serviceEnd Aug 7 expired 9d. Fix NOT RUN.",
+        "URGENT: return Aug21 5d; SCA+svcEnd"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• 93rd check Sun 16 Aug 2026 UTC — no change since 92nd check\n• Booking 18151 (Saikhantes Shagdarsuren, student 1001): CONFIRMED, confirmed = true, EUR 1,339.20 paid, fully paid\n• serviceEnd = 2026-08-07 — expired 9 days ago (student still in class per BC 24925)\n• Booking Course 24925: Academic Year Afternoon, end 2026-10-02, active = true\n• Student Class Assignment 255: week end = 2026-07-03 — expired 44 days ago, class 11\n• Student on holiday Jul 20 – Aug 21; returns Thu Aug 21 (5 days) — URGENT action needed\n• No newer booking for student 1001",
+        "Update booking 18151 service_end to 2026-10-02; create new SCA week Aug 24 – Oct 2 class 11. See recipe: issue-29-addendum-16aug.md",
+        "93rd Sun 16 Aug UTC. No change. service_end expired 9d (Aug 7). SCA 255 expired 44d (Jul 3). Student returns Aug 21 (5d) — URGENT. Fix NOT RUN.",
+        "URGENT: return Aug21 5d; svc_end+SCA exp"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 197th check Sun 16 Aug 2026 UTC — no change since 196th check\n• Student: Pietro Caccianiga (booking 17980, student 14521) — CONFIRMED, fully paid EUR 5,331\n• Booking Course 24772 (General English AM): ends Aug 21 2026 (5 days), active = true\n• Booking Accommodation 11311 (bed 84): Jun 28 – Aug 22, fee = EUR 3,850, accommodationType = null, active — current stay, ends 6 days\n• Booking Accommodation 11393 (bed 88, Capel Street): Aug 22 – Sep 13, fee = null, accommodationType = null — check-in in 6 days (Aug 22) — URGENT\n• Payment 17733: EUR 5,331, transactionId = null (unreconciled)",
+        "Set fee + accommodationType on Booking Accommodation 11393 before Aug 22 (6 days). See recipe: issue-36b-addendum-16aug.md",
+        "197th Sun 16 Aug UTC. No change. Fee null on BA 11393, check-in Aug 22 (6d). Course ends Aug 21 (5d). Payment 17733 unreconciled. Fix NOT RUN.",
+        "fee null; course ends Aug 21 (5d); check-in Aug 22 (6d)"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• 37th check Sun 16 Aug 2026 UTC — no change since 36th check\n• Bed 83: 5 stale Booking Accommodations, all past end date, still active\n• BA 11239 (booking 22): May 3 – May 24 2026, fee = EUR 1,050 — 84 days stale\n• BA 11168 (booking 92): Jun 6 – Jun 20 2026, fee = EUR 700 — 57 days stale\n• BA 11285 (booking 17825): Jun 21 – Jul 5 2026, fee = null — 42 days stale (also Issue 43)\n• BA 11352 (booking 18156): Jul 4 – Jul 11 2026, fee = EUR 360 — 36 days stale\n• BA 11179 (booking 82): Jul 12 – Aug 9 2026, fee = EUR 1,360 — 7 days stale\n• Next occupant Booking Accommodation 25 (booking 17844): Aug 30 check-in — 14 days",
+        "Deactivate BAs 11239/11168/11285/11352/11179; verify bed 83 is clear for Aug 30. See recipe: issue-37-addendum-16aug.md",
+        "37th hrly Sun 16 Aug UTC. No change. 5 stale BAs (84d max). Aug 30 check-in in 14d. Fix NOT RUN.",
+        "5 stale BAs; Aug 30 check-in (14d)"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 172nd check Sun 16 Aug 2026 UTC — no change since 171st check\n• Booking Course 25043 (General English PM, booking 18265, student Eduardo Roche Diaz): ended Aug 14 2026, active = true\n• Now 2 days past end — not deactivated\n• Part of 24,497 total stale Booking Courses (see Issue 45) — low-priority data hygiene",
+        "Set active = false on BC 25043. See recipe: issue-38-addendum-16aug.md",
+        "172nd Sun 16 Aug UTC. No change. 2 days past end, still active. Part of bulk stale BC problem (Issue 45).",
+        "BC25043 2d past end"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 93rd check Sun 16 Aug 2026 UTC — no change since 92nd check\n• Student: Giampaolo Russo (booking 18180, student 14571) — CONFIRMED, fully paid EUR 2,584.96\n• Booking Accommodation 11357 (bed 178): Aug 2 – Aug 15 — ended yesterday, still active (1 day overdue)\n• Booking Accommodation 11396 (bed 44, Jenny Manders): Aug 15 – Aug 22, fee = null — DAY 2 check-in; fee still not set (URGENT)\n• Booking Accommodation 11397 (bed 89, Capel Street): Aug 22 – Sep 6, fee = null — 6 days to check-in\n• Booking Accommodation 11392 (no bed): Sep 6 – Sep 14, fee = EUR 415 — bedId null, 21 days away",
+        "Set fee on BA 11396 urgently (student in situ); deactivate BA 11357 (1d overdue); set fee BA 11397 (before Aug 22); assign bed to BA 11392 (before Sep 6). See recipe: issue-41-addendum-16aug.md",
+        "93rd Sun 16 Aug UTC. No change. BA 11357 still active (1d overdue). BA 11396 day-2 fee still null — URGENT. BA 11397 6d check-in fee null. BA 11392 bed null 21d. Fix NOT RUN.",
+        "URGENT: BA11396 day2; fee null"
+      ]
+    ]
+  }
+]

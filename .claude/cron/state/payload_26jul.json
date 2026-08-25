@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Orphan payments: 4 (unchanged, 89d/89d/86d/legacy)\n• Payment 16988: EUR 339.90, Bank, Apr 28 2026, 89 days, hubspotPaymentId = 1204827374829\n• Payment 16989: EUR 339.90, Bank, Apr 28 2026, 89 days, hubspotPaymentId = 1204846469317\n• Payment 17187: EUR 6,151, TransferMate Escrow, May 1 2026, 86 days, fideloPaymentId = 37587, transactionId = D2026226\n• Payment 4781: EUR 380, Flywire, Aug 2019, legacy/unresolvable, fideloPaymentId = 32056",
+        "Link pmts 16988+16989 to bookings; investigate fideloPaymentId=37587 on pmt 17187. See recipe: issue-1-addendum-25jul-f.md",
+        "105th hrly Sun 26 Jul UTC. 4 orphan pmts unchanged (89d/89d/86d/legacy). Fix NOT RUN.",
+        "4 orphan pmts; 86d+"
+      ]
+    ]
+  },
+  {
+    "range": "H8:K8",
+    "values": [
+      [
+        "• 13th check Sun 26 Jul 2026 UTC — unchanged\n• Booking 17909 (Sofiia Korkishchenko): CANCELLED, confirmed = true (anomaly), 39 days since 17 Jun 2026\n• Amount open = EUR 727.50, amount paid = EUR 0 — phantom balance on cancelled booking\n• Booking course 24693 (Renewal Academic Year PM, ends Nov 2026): active = true — anomalous on cancelled booking\n• Document 94 (Letter of Acceptance, version 2): still ISSUED — not revoked",
+        "Set confirmed = false on BK 17909; close EUR 727.50 phantom balance; revoke document 94; deactivate BC 24693. See recipe: issue-7-addendum-26jul.md",
+        "13th check Sun 26 Jul UTC (110th hrly). UNCHANGED. BK17909 CANCELLED confirmed=STILL true, amtOpen=EUR727.50 (39d). BC24693 active=STILL true. Doc94 LOA STILL ISSUED. Fix NOT RUN.",
+        "bk17909 anomaly; 39d"
+      ]
+    ]
+  },
+  {
+    "range": "H11:K11",
+    "values": [
+      [
+        "• 35th check Sun 26 Jul 2026 UTC — unchanged\n• Massimiliano Cameran (student 91, booking 97): EUR 1,741 / 1,741 fully paid\n• Booking course 107 (Morning General, 27 Apr–22 May 2026): active = true — 65 days stale\n• Documents on booking 97: doc63 accounts REVOKED, doc64 accounts ISSUED — no completion certificate present",
+        "Generate completion certificate for booking 97; set BC 107 active = false. See recipe: issue-10-addendum-26jul.md",
+        "35th check Sun 26 Jul UTC. UNCHANGED. BC107 65d stale. No completion cert on bk97. Fix NOT RUN.",
+        "no cert bk97; BC107 65d"
+      ]
+    ]
+  },
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "• 10th check Sun 26 Jul 2026 UTC — unchanged\n• Booking 1308 (Ana Jessica Rosa de Paula Santos): CANCELLED — accidental click 7 Jun 2026, confirmed = false — 48 days since cancellation\n• Amount paid = EUR 1,530 / 1,530 (fully paid) despite cancelled status\n• Payment 17186 (EUR 1,280): type = null, xeroPaymentId = null — 48 days unreconciled\n• Payment 17050 (EUR 250): type = null, xeroPaymentId = null — unreconciled\n• Booking course 1350 (Academic Year Afternoon, ends Nov 2026): active = true — anomalous on cancelled booking",
+        "Reconcile payments 17186 (EUR 1,280) and 17050 (EUR 250) in Xero; deactivate booking course 1350. See recipe: issue-17-ana-jessica-accidental-cancel.md",
+        "10th check Sun 26 Jul UTC. UNCHANGED. BK1308 CANCELLED EUR1530/1530 confirmed=false (updAt=Jun07, 48d). PMT17186 EUR1280 + PMT17050 EUR250 both type=null xeroPaymentId=null. BC1350 AY Aft active=STILL true. Fix NOT RUN.",
+        "pmts 48d; BC stale"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• 53rd hourly check Sun 26 Jul 2026 UTC — unchanged\n• Booking 1605 (Ariunsarnai Batbayar, student 1047): status = PENDING, confirmed = false — Day 110 since 6 Apr 2026\n• Amount paid = EUR 0; amount total = EUR 1,509 — no payments received; 0 payment records\n• Booking course 1791 (Academic Year Renewal Morning, ends 23 Oct 2026): active = true — 89 days remain",
+        "Confirm or cancel booking 1605; chase EUR 1,509 payment or close. See recipe: issue-20-addendum-26jul.md",
+        "53rd hrly Sun 26 Jul UTC. UNCHANGED. BK1605 PENDING Day 110 (since Apr 06 2026). EUR 0 / EUR 1,509. 0 payment records. BC1791 active (ends Oct 23 2026). Fix NOT RUN.",
+        "Day 110; EUR 0 / 1509"
+      ]
+    ]
+  },
+  {
+    "range": "H34:K34",
+    "values": [
+      [
+        "• 10th check Sun 26 Jul 2026 UTC — unchanged\n• Student 356 (Shih-Wei Huang): gender = null — 53 days since last update (3 Jun 2026)\n• Document 238 (exit letter, booking 560): ISSUED since 18 Jun 2026 — 38 days with wrong Ms. / she / her pronouns\n• Code defect in src/scripts/documents.ts ~line 338: null gender defaults to female pronouns",
+        "Set student 356 gender = male; revoke and regenerate doc 238; fix null-gender default in documents.ts ~L338. See recipe: issue-33-addendum-26jul.md",
+        "10th check Sun 26 Jul UTC. UNCHANGED. Student 356 (Shih-Wei Huang) gender=null (53d). Doc 238 ISSUED v1 wrong Ms/she/her (38d since Jun18). Code defect: null gender defaults to female (documents.ts ~L338). Fix NOT RUN.",
+        "53d; doc238 wrong pronouns"
+      ]
+    ]
+  }
+]

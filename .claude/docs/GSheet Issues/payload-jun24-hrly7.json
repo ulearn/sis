@@ -1,0 +1,66 @@
+[
+  {
+    "range": "J2",
+    "values": [
+      [
+        "hrly Jun24 18UTC EMERGENCY (Jun29=5d STILL UNACTED, fresh DB): pmts 16988+16989 bookingId=null xeroId=null CONFIRMED. bks 17856+17857 CONFIRMED confirmed=false amtPaid=339.9. bcs 24630+24631 startJun29 fee=null active. 57d orphaned. NEIL: run recipe issue-1-orphan-payments.md Steps 1+2 NOW — classes start Monday Jun29."
+      ]
+    ]
+  },
+  {
+    "range": "H25",
+    "values": [
+      [
+        "• Course bc1797 (Morning General Apr06-Jun26) ends Thu Jun26 — 2 days from today (Jun24)\n• Student 1052 (Alberto Squillace) zero attendance records all time — bereavement leave since late Apr confirmed\n• Class assignment 229 (class 12, weekEnd Apr26) expired 59 days ago — no new SCA ever created\n• Booking 1611 Confirmed, fully paid EUR 1280.12\n• Booking course 24686 (Morning General Jul20-Sep18) fee = null — must be set before Jul20\n• Payment 17124 (EUR 1280.12) Xero payment ID = null — not reconciled in Xero"
+      ]
+    ]
+  },
+  {
+    "range": "J25",
+    "values": [
+      [
+        "hrly Jun24 18UTC (bc1797 ends THU Jun26=2d, fresh DB): bc1797 Morning General Apr06-Jun26 active fee=1836 (May03=52d stale). bc24686 Jul20-Sep18 fee=null STILL (May14=41d stale). pmt17124 EUR1280.12 xeroId=null hsId=null. Zero attendance bc1797 (bereavement). NEIL: set bc24686 fee BEFORE Jul20; reconcile pmt17124 in Xero."
+      ]
+    ]
+  },
+  {
+    "range": "J26",
+    "values": [
+      [
+        "hrly Jun24 18UTC (D60 CRITICAL, 11th consecutive check, fresh DB): s917 visaStatus=null hubspotContactId=null (May21=34d stale). bc1613 AY-AM Apr27-Oct16 active fee=3370. bk1467 CONF confirmed=true amtPaid=2405 amtTotal=2405 amtOpen=0 fully paid. SCA=[] CONFIRMED. 60 calendar days zero class assignments. NEIL: assign class for bc1613 via SIS UI immediately; set visaStatus."
+      ]
+    ]
+  },
+  {
+    "range": "K26",
+    "values": [
+      [
+        "D60; 0SCA; CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "J16",
+    "values": [
+      [
+        "hrly Jun24 18UTC (Jul03=9d URGENT, fresh DB UNCHANGED): sca255 weekStart=2026-01-12 weekEnd=2026-07-03 STILL WRONG. bc24925 AY-Aft Mar09-Sep11 active fee=1102.2. Jul03 in 9d Saikhantes drops off B1-PM class leaving 10-week gap through Sep11. NEIL: UPDATE student_class_assignments SET week_start=2026-03-09, week_end=2026-09-11 WHERE id=255."
+      ]
+    ]
+  },
+  {
+    "range": "J30",
+    "values": [
+      [
+        "hrly Jun24 18UTC (Jul03=9d URGENT, fresh DB UNCHANGED): sca255 weekStart=2026-01-12 weekEnd=2026-07-03 STILL WRONG. bc24925 AY-Aft Mar09-Sep11 active fee=1102.2. Jul03 in 9d Saikhantes drops off B1-PM class leaving 10-week gap through Sep11. NEIL: UPDATE student_class_assignments SET week_start=2026-03-09, week_end=2026-09-11 WHERE id=255."
+      ]
+    ]
+  },
+  {
+    "range": "J44",
+    "values": [
+      [
+        "hrly Jun24 18UTC EMERGENCY (Jun28=4d STILL BLOCKED, fresh DB UNCHANGED): ba9917 bk1274 ended May16 39d active=true. ba11157 bk100 ended May10 45d active=true. ba11159 bk100 ended May30 25d active=true. ba11180 bk81 ended Jun20 4d active=true. All 4 CONFIRMED blocking bed 84. ba11311 Pietro Jun28-Sep13 weeks=11 fee=3850 CORRECT. NEIL: UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180) BEFORE Jun28."
+      ]
+    ]
+  }
+]

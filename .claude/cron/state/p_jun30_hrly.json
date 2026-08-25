@@ -1,0 +1,50 @@
+[
+  {
+    "range": "J2",
+    "values": [
+      [
+        "hrly 30 Jun UTC (130th check, fresh DB): pmts 16988+16989 bookingId=STILL null xeroId=null EUR339.9 each. bk17856+17857 CONF confirmed=STILL false amtPaid=339.9 amtOpen=null. bc24630+24631 GE-AM-Plus Jun29-Jul10 fee=STILL null. Students IN CLASS day 2/10 (9d left, ends Jul10). 4-STEP SQL NOT RUN — 130 CHECKS. NEIL: RUN NOW. (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) UPDATE booking_courses SET fee=339.9 WHERE id IN (24630,24631); (4) UPDATE bookings SET confirmed=true WHERE id IN (17856,17857)."
+      ]
+    ]
+  },
+  {
+    "range": "J16",
+    "values": [
+      [
+        "hrly 30 Jun UTC (37th check, fresh DB): sca255 STILL weekStart=Jan12 weekEnd=Jul03 classId=11. BC24925 AY-Afternoon Mar09-Sep11 active. EXPIRES FRI 3 JUL = 3 DAYS. UPDATE NOT RUN. NEIL: RUN TODAY — UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255; Without this Saikhantes drops from class lists on Jul03."
+      ]
+    ]
+  },
+  {
+    "range": "J30",
+    "values": [
+      [
+        "hrly 30 Jun UTC (37th check, fresh DB): sca255 STILL weekStart=Jan12 weekEnd=Jul03 classId=11. BC24925 AY-Afternoon Mar09-Sep11 active. EXPIRES FRI 3 JUL = 3 DAYS. UPDATE NOT RUN. NEIL: RUN TODAY — UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255; Without this Saikhantes drops from class lists on Jul03."
+      ]
+    ]
+  },
+  {
+    "range": "J26",
+    "values": [
+      [
+        "hrly 30 Jun UTC (53rd check, fresh DB): s917 Uyanga visaStatus=STILL null (updAt=May21=40d stale). bk1467 CONF 2405/2405 amtOpen=0. bc1613 AY-Morning Apr27-Oct16 active Day65. SCAs=STILL 0. UNCHANGED 53 checks. NEIL: UPDATE students SET visa_status='Approved' WHERE id=917; THEN ASSIGN CLASS."
+      ]
+    ]
+  },
+  {
+    "range": "J39",
+    "values": [
+      [
+        "hrly 30 Jun UTC (23rd check, fresh DB): accomm11352 Veronica bed83 Jul04-Jul11 STILL NOT REASSIGNED (updAt=Jun29). accomm11285 Jesus bed83 Jun21-Jul05 STILL active (updAt=Jun16=14d stale). BED 83 DOUBLE-BOOKED Jul04-Jul05 CONFIRMED. BEDS 174+175+176 ALL FREE Jul04-Jul11 (fresh 30Jun). VERONICA ARRIVES SAT 4 JUL = 4 DAYS. NEIL: reassign accomm11352 to bed 174, 175, or 176 NOW."
+      ]
+    ]
+  },
+  {
+    "range": "J43",
+    "values": [
+      [
+        "hrly 30 Jun UTC (10th check, fresh DB): bk18180 CONF 2584.96/2584.96 (updAt=Jun29). ba11357 HF Aug02-Sep06 fee=1250 bedId=STILL null (updAt=Jun24=6d stale). 0 Capel records on bk18180. HF beds taken Aug2-Sep6: 83(Jul12-Aug09), 112(Jul25-Sep04), 179(Jun28-Sep19), 190(Jun27-Dec12); bed180 ends Aug02 (checkout day, borderline). Student arrives Aug02=33d. Neil: (1) assign HF bed to ba11357; (2) add Capel Sep6-14 to bk18180."
+      ]
+    ]
+  }
+]

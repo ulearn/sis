@@ -1,0 +1,57 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 + 16989 still unlinked — bookingId = null, xeroPaymentId = null — 60 days since creation on 28 Apr\n• Payment 16988 (HubSpot 1204827374829) → Booking 17856 Margherita Galbusera — EUR 339.90\n• Payment 16989 (HubSpot 1204846469317) → Booking 17857 Francesca Fassina — EUR 339.90\n• Both bookings: status = Confirmed, confirmed = false — students blocked from class assignment lists\n• Booking courses 24630 + 24631: General English AM Plus, Jun 29 to Jul 10 — fee = null\n• Classes start MON JUN 29 — TODAY IS SAT JUN 27 — 2 DAYS AWAY — MAXIMUM EMERGENCY — 4-step SQL NOT YET RUN (84th check)",
+        "(NOT RUN) (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) UPDATE booking_courses SET fee=339.9 WHERE id IN (24630,24631); (4) UPDATE bookings SET confirmed=true WHERE id IN (17856,17857). See recipe: issue-1-orphan-payments.md",
+        "hrly Jun27 SAT UTC (84th check, fresh DB): pmt16988 bookingId=STILL null xeroId=null EUR339.90 (Apr28=60d). pmt16989 bookingId=STILL null xeroId=null EUR339.90 (Apr28=60d). bk17856+17857 CONF conf=STILL false amtPaid=339.9/339.9. bc24630+24631 GE-AM-Plus Jun29-Jul10 fee=STILL null. CLASSES MON JUN29=2 DAYS. 4-STEP SQL NOT RUN. NEIL: run BEFORE 09:00 Mon Jun29.",
+        "Jun29 2d EMERG"
+      ]
+    ]
+  },
+  {
+    "range": "H6:K6",
+    "values": [
+      [
+        "• Rakan Alghamdi LOA resolved — doc 204 issued Jun 08 via booking 17915 (see Issue 14)\n• Khongorzul Uranaa booking 17871 remains in ESCROW — confirmed = true (database anomaly)\n• Amount paid EUR 300 of EUR 2313.62 total — EUR 2013.62 outstanding, 50 days since last booking update\n• Payment 17375 (EUR 300) linked to booking 17871, type = Escrow, no Xero payment ID, no HubSpot payment ID\n• Last booking update: 08 May 2026 (50 days stale) — no action taken",
+        "Rakan LOA done (Issue 14). Decide fate of bk17871 Khongorzul: write off, pursue, or reclassify EUR 2013.62 stale ESCROW. See recipe: issue-4-rakan-loa-barcode.md",
+        "hrly Jun27 SAT UTC (11th check, fresh DB): bk17871 ESCROW conf=true amtPaid=300/2313.62 (EUR2013.62 outstanding) UNCHANGED. pmt17375 EUR300 bookingId=17871 (IS linked) xeroId=null hsId=null type=Escrow. 50d stale no action. Neil: decide write off / pursue / reclassify EUR2013.62.",
+        "EUR2013; 50d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• 5 students have bad mobile-number data\n• Email in phone field — Dolgormaa (1897): saraa.tpb@gmail.com; Aki (8567): aki-hinaaki1116@ezudo.he.jp\n• Annotation in phone field — Jieun Lee (1194): 00821097366523 (home contry); Lisa Li (5345): 0864645297 (Husband)\n• Invisible unicode trailing chars — Alessandra Saito de Araujo (10343): +353 (83) 885 9162 + U+202C chars\n• All 5 UNCHANGED since first reported (max 78 days stale)",
+        "Clean per recipe; 1194/5345/10343 fixable now (strip annotation/unicode); 1897/8567 need real# from HubSpot/staff. See recipe: issue-5-mobile-numbers.md",
+        "hrly Jun27 UTC (fresh DB): all 5 UNCHANGED. s1897 Dolgormaa phone=saraa.tpb@gmail.com (Apr28=60d). s8567 Aki phone=aki-hinaaki1116@ezudo.he.jp (Apr10=78d). s1194 Jieun phone=00821097366523 (home contry) (May07=51d). s5345 Lisa phone=0864645297 (Husband) (Apr10=78d). s10343 Alessandra unicode trailing chars (Apr28=60d). Max stale 78d. 3 self-fixable (1194/5345/10343); 2 need real# from HubSpot (1897/8567). Await Neil.",
+        "info needed"
+      ]
+    ]
+  },
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "• Document 171 is a DRAFT certificate (template 82) — last updated Jun 05, now 22 days stale\n• Booking 1498 is CONFIRMED (status), but confirmed = false and amount paid = null\n• Booking course 1660 (ULearn Renewal Morning) ended Jun 05 — certificate was never issued after course ended\n• Simple action needed: issue the document via SIS UI",
+        "(NOT RUN) SIS student 947 booking 1498 Documents Issue button. See recipe: issue-8-suvderdene-cert-dates.md",
+        "hrly Jun27 UTC (9th check, fresh DB): doc171 STILL DRAFT (updAt=Jun05=22d stale). bk1498 CONF conf=false amtPaid=null (updAt=May21=37d stale). bc1660 ended Jun05=22d ago active=true stale. UNCHANGED. Neil: SIS student 947 -> bk1498 -> Documents -> Issue button.",
+        "cert DRAFT; 22d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H11:K11",
+    "values": [
+      [
+        "• Booking 97 is CONFIRMED, paid EUR 1741 / 1741\n• Documents 63 and 64 are INVOICES (template 78), not certificates\n• Booking 97 has 0 certificate documents\n• Booking course 107 (Morning General Apr 27 to May 22) ended 36 days ago — certificate still not generated",
+        "(NOT RUN) Generate cert for bk97 (Apr27-May22) via SIS student 91 bk97 Documents Generate Certificate. See recipe: issue-9-massimiliano-cert-split.md",
+        "hrly Jun27 UTC (9th check, fresh DB): bk97 CONF 1741/1741. 0 cert docs (tmpl82) for bk97. doc63 REVOKED + doc64 ISSUED both tmpl78 (invoices only). bc107 ended May22=36d ago (active=true stale). UNCHANGED. Neil: SIS student 91 bk97 Documents Generate Certificate.",
+        "cert bk97 36d"
+      ]
+    ]
+  }
+]

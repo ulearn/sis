@@ -1,0 +1,56 @@
+[
+ {
+  "range": "J17:K17",
+  "values": [
+   [
+    "14 Jul TUE UTC (fresh DB). CONFIRMED UNCHANGED. BA11282 bed66 May15-Jun05 active=STILL true (39d stale). No fix run.",
+    "39d stale; cosmetic"
+   ]
+  ]
+ },
+ {
+  "range": "J24:K24",
+  "values": [
+   [
+    "14 Jul TUE UTC (fresh DB, 11th check). UNCHANGED. BC828 AY Morning bk787: start Mar02 end Feb27 (backwards) active=STILL true (updatedAt May11=64d).",
+    "backwards dates; low-pri"
+   ]
+  ]
+ },
+ {
+  "range": "J34:K34",
+  "values": [
+   [
+    "14 Jul TUE UTC (fresh DB). UNCHANGED. s356 gender=STILL null (updatedAt Jun03=41d). doc238 STILL ISSUED issuedAt Jun18=26d.",
+    "41d; doc238 issued"
+   ]
+  ]
+ },
+ {
+  "range": "J38:K38",
+  "values": [
+   [
+    "11th check 14 Jul TUE UTC (fresh DB). BA11311 Pietro bed84 Jun28-Sep13 active=true (day 16 ongoing). Stale: BA11157 bk100 bed84 May02-May10 active=STILL true (65d stale). UNCHANGED.",
+    "low-pri; bed84 cleanup"
+   ]
+  ]
+ },
+ {
+  "range": "J45:K45",
+  "values": [
+   [
+    "14 Jul TUE UTC (fresh DB). UNCHANGED. BA11285 bed83 Jun21-Jul05 active=STILL true (9d since checkout Jul05, updatedAt Jul06=8d). Cosmetic only.",
+    "cosmetic; checked out"
+   ]
+  ]
+ },
+ {
+  "range": "J47:K47",
+  "values": [
+   [
+    "67th check Tue 14 Jul UTC. STILL 8 BCs 0 SCAs ending Fri Jul17 (3d). BC26 Kritchana PENDING. BC95 Florian PENDING. BC1719 Maria Magdalena CONF. BC24946 Lunel CONF. BC24985 Silvia PENDING. BC24986 Gladis PENDING. BC24992 Luz Maria PENDING. BC24994 Petru PENDING. Fix NOT RUN.",
+    "CRITICAL; 3d to Fri; 8 SCAs"
+   ]
+  ]
+ }
+]

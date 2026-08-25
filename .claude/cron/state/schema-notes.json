@@ -1,0 +1,38 @@
+{
+  "updated": "2026-06-15",
+  "note": "Prisma schema migrated. Use these field names in Prisma client queries:",
+  "Booking": {
+    "amountPaid": "was amtPaid",
+    "amountTotal": "was amtTotal",
+    "amountOpen": "new field",
+    "amountRefund": "new field"
+  },
+  "Payment": {
+    "removed": [
+      "status",
+      "updatedAt"
+    ],
+    "available": [
+      "id",
+      "createdAt",
+      "bookingId",
+      "amount",
+      "method",
+      "paymentDate",
+      "transactionId",
+      "paidBy",
+      "type",
+      "comment",
+      "receiptNumber",
+      "fideloPaymentId",
+      "hubspotPaymentId",
+      "xeroPaymentId",
+      "dataSource"
+    ]
+  },
+  "StudentClassAssignment": {
+    "weekStart": "was startDate",
+    "weekEnd": "was endDate"
+  },
+  "rawSQL": "For Payment queries needing date range or ordering, use raw SQL: SELECT id, booking_id, amount, payment_date FROM payments WHERE ..."
+}

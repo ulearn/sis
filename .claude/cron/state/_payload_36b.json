@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 225th check Wed 19 Aug 2026 UTC — ESCALATED: Course ends Fri 21 Aug (2 days), no second course\n• Booking 17980 (Pietro Caccianiga, student 14521): CONFIRMED, fully paid EUR 5,331\n• Booking Course 24772 (General English AM): 29 Jun to 21 Aug 2026 — ends Fri (2 days), active — confirmed no second booking course in database\n• Accommodation 11311 (bed 84): Jun 28 to Aug 22, active, fee EUR 3,850\n• Accommodation 11393 (bed 88): Aug 22 to Sep 13, fee = null (URGENT) — check-in Sat 22 Aug (3 days)\n• Payment 17733: EUR 5,331, Bank (2 Jun 2026) — Xero payment ID = null (80 days)",
+        "Set fee on Accommodation 11393; deactivate BC 24772 + BA 11311; reconcile Payment 17733. See recipe: issue-36b-addendum-19aug-b.md",
+        "225th Wed 19 Aug UTC. CONFIRMED: no second BC in DB — Diego to confirm course status. BA 11393 fee null (check-in Sat 22 Aug). Payment 17733 Xero null 80d. Fix NOT RUN.",
+        "URGENT: course Aug21 (2d); fee null"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,29 @@
+[
+  {
+    "range": "J28:K28",
+    "values": [
+      [
+        "Jun15 hrly16: bk17909 CANCELLED amtPaid=1455.5/727.5 UNCHANGED. pmt17477(EUR727.5 Apr28)+pmt17478(EUR728 May15) BOTH xeroId=null. All 3 distinct HS payment IDs. NEIL: search Xero Sofiia Korkishchenko Apr-May 2026. If only EUR1455.5 found: DELETE FROM payments WHERE id IN(17477,17478)(NOT RUN). If 3 real pmts found: refund EUR1455.5.",
+        "Xero chk needed"
+      ]
+    ]
+  },
+  {
+    "range": "J31:K31",
+    "values": [
+      [
+        "Jun15 hrly16: COURSE DAY1 ACTIVE. s88 Giulia STILL 0 SCAs. bk18044 DUP STILL CONFIRMED not cancelled. bk18152 Milena STILL PENDING 0/1151.5. bk94 CONF 1151.5/1151.5 c104 Jun15-26 OK. ALL 4 STEPS NOT RUN. NEIL: student in school with NO CLASS. (1)get level from prev teacher; (2)assign s88 std AM cls via SIS bk94/c104 ws=Jun15 we=Jun26; (3)cancel bk18044+DELETE pmt17607(dbl-import Mar13 xeroId=null); (4)cancel bk18152+delete Milena s14557. TODAY.",
+        "DAY1 0SCA NOW"
+      ]
+    ]
+  },
+  {
+    "range": "J32:K32",
+    "values": [
+      [
+        "Jun15 hrly16: SCHOOL OPEN. TZ STILL absent .env. 43 null week_end SCAs: 9 ghost past-end (IDs:39/40/65/66/74/75/81/87/100 bc_end<=Jun12)+34 active. Att sheet showing Sun Jun14 heading+9 ghost students LIVE. FIX1(NOT RUN): echo TZ=UTC>>.env && touch tmp/restart.txt. FIX2(NOT RUN): UPDATE student_class_assignments SET week_end=(SELECT end_date FROM booking_courses WHERE id=booking_course_id) WHERE week_end IS NULL;",
+        "APPLY NOW"
+      ]
+    ]
+  }
+]

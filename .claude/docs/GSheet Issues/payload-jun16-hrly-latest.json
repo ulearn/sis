@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "• Booking 1308 is CANCELLED, confirmed = false (stale since Jun 07)\n• Amount paid = 1530 = total (fully paid — genuine enrolment)\n• Course bc1350 Academic Year Afternoon, May 25 – Nov 13 is ACTIVE\n• Student Ana Jessica (A2, s766) has 0 class assignments — Day 23 in school with no booking or class",
+        "(NOT RUN) UPDATE bookings SET status=CONFIRMED,confirmed=true WHERE id=1308; then assign A2-AFT class. see recipe: issue-17-ana-jessica-accidental-cancel.md",
+        "Jun16 hrly D23: bk1308 CANCELLED conf=false 1530/1530 stale (Jun07). bc1350 AY-AFT May25-Nov13 ACTIVE. s766(Ana Jessica, A2) 0 SCAs. hubspotDealId=151536832724. Day 23 in school with no class or confirmed booking. SQL NOT RUN.",
+        "D23;0SCA;cancelled"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• Booking 1534 is CONFIRMED, fully paid 1308 / 1308\n• Course bc1710 Academic Year Afternoon, Jun 01 – Nov 20 (A2 level) is ACTIVE\n• Student has 2 class assignments: sca256 (cls9, Jun 01–14) + sca265 (cls11 B1 PM, Jun 15–Nov 20) — currently in class\n• visaStatus is null — was never saved to approved (original Prisma save error unresolved)\n• Issue self-resolved: student is in class via sca265",
+        "visaStatus=null may block cert/letter — UPDATE students SET visa_status=approved WHERE id=983 if visa confirmed. see recipe: issue-18-flavia-visa-save-error.md",
+        "Jun16 hrly: Flavia s983 IN CLASS via sca265 (cls11 B1 PM, Jun15-Nov20). bk1534 CONF 1308/1308. visaStatus=null (save error unresolved — may block cert/letter). Self-resolved. H corrected (was wrongly showing Ana Jessica booking data).",
+        "in class; visa null"
+      ]
+    ]
+  },
+  {
+    "range": "H22:K22",
+    "values": [
+      [
+        "• Student 912 (Maurivan Kuhl, A2) has 2 class assignment records\n• sca46 (cls7 A1 AM) ran Mar 30 – Apr 05 — EXPIRED 72 days ago\n• sca156 (cls8 A2 AM) runs Apr 06 – Jul 02 — CURRENT and correct\n• Booking 1461 is CONFIRMED, fully paid 1509.6 / 1509.6\n• Historical display bug (WB 11.05): attendance view was not filtering expired assignments (see issue 31)",
+        "No action needed — sca46 expired Apr05, sca156 (A2 AM) active = correct. See issue 31 for attendance view fix. see recipe: issue-21-maurivan-double-class.md",
+        "Jun16 hrly: sca46(A1) expired Apr05 (72d ago). sca156(A2-AM) active Apr06-Jul02 = correct. bk1461 CONF 1509.6/1509.6. Issue was historical display anomaly — self-resolved. H corrected (was wrongly showing Ariunsarnai booking data).",
+        "fixed"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 is CONFIRMED, paid 740 / 740 (Jun 15) — the active booking\n• Booking courses bc24933 and bc24934 are DUPLICATES: both General English AM, Jun 15 – Jul 10 on bk18158\n• Old bookings bk18131 (paid 1185) and bk18133 (paid 648) still CONFIRMED — not cancelled\n• Student 1015 (Edith, A1) has 0 current class assignments — previous SCAs expired May 15\n• Day 2 of new course with no class assignment",
+        "(NOT RUN) 1) CANCEL bk18131+bk18133; 2) void HubSpot/Xero payments; 3) DELETE bc24934; 4) assign cls7 (A1-AM) to bc24933. see recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun16 hrly D2: STILL 0 current SCAs (prev expired May15). bc24933+bc24934 DUP both Jun15-Jul10 on bk18158. bk18131 CONF 1185 + bk18133 CONF 648 NOT cancelled. NEIL: assign cls7(A1-AM) bc24933 TODAY — student in school Day 2 with no class.",
+        "D2;0SCA;dup bks"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• Booking 18034 is PARTIAL, confirmed = false, paid 845 / 1095 (EUR250 outstanding) — stale since Jun 07\n• Course bc24826: 2-week Intensive, Jun 08 – Jun 19 — ENDS THIS FRIDAY\n• 0 class assignments all time — 8 school days missed (Jun 08–15)\n• Today = Tue Jun 16: 4 school days remaining (Tue 16 / Wed 17 / Thu 18 / Fri 19)\n• Student level = null — must obtain from teacher before assigning class",
+        "(NOT RUN) 1) Get Ernesto level from class teacher urgently; 2) INSERT 2 SCAs AM+PM bc24826 ws=2026-06-16 we=2026-06-19. see recipe: issue-26-intensive-class-assign-once.md",
+        "Jun16 hrly: STILL 0 SCAs (db=[]). 4 school days remaining incl. today (Tue16/Wed17/Thu18/Fri19). bk18034 PARTIAL 845/1095 conf=false (stale Jun07). currentLevel=null. NEIL: get Ernesto level from teacher URGENTLY — assign 2 SCAs AM+PM ws=2026-06-16 we=2026-06-19 or student misses entire 2-week intensive.",
+        "CRIT;0SCA;ends Fri19"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Booking 94 is CONFIRMED, paid 1151.5 / 1151.5 — correct booking\n• Booking 18044 is CONFIRMED, paid 1106.5 / 1106.5 — DUPLICATE, not cancelled\n• Course bc104 Morning General Plus, Jun 15 – Jun 26 (on bk94) — 7 school days left\n• Course bc24836 same dates (on bk18044) — duplicate\n• Student s88 (Giulia, currentLevel = null) has 0 class assignments — Day 2 in school with no class",
+        "Cancel bk18044 + DELETE pmt17607 (xeroId=null); get level from previous teacher; assign s88 AM class ws=Jun16 we=Jun26 via SIS bk94/bc104. see recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun16 hrly D2: STILL 0 SCAs (db=[]). bk94/bc104 Morning Jun15-Jun26 ACTIVE (correct). bk18044 DUP CONF 1106.5 NOT cancelled. currentLevel=null. 7 school days remaining. NEIL: get Giulia level from previous teacher; assign s88 AM class ws=Jun16 we=Jun26; cancel bk18044.",
+        "D2;0SCA;ends Jun26"
+      ]
+    ]
+  }
+]

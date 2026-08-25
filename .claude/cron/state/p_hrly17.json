@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "extra96 INSURANCE fee=NULL. bk17981.confirmed=false. c24773 Jun1-Nov20 active. pmt17520 EUR1407.50 PAID.",
+        "Set extra96 fee=150 (World2GO rate), confirm bk17981, gen supp inv, arrange HI. see recipe: issue-13-lizbeth-health-insurance.md",
+        "extra96 INSURANCE fee=NULL active=true details=PEL;Health. bk17981.confirmed=false, status=CONFIRMED.\nc24773 AY Afternoon Jun1-Nov20 ACTIVE. EUR1407.50 FULLY PAID May22. World2GO rate ref: bk18149 extra218=EUR150.\nNEIL CRITICAL: (1) arrange HI retro Jun1 (2) UPDATE booking_extras SET fee=150 WHERE id=96 (NOT RUN) (3) gen supp invoice deal 503569276136.\nLast verified Jun08 hrly(17): UNCHANGED. 8 cal/6 school days UNINSURED. Student IN SCHOOL Mon Jun8.",
+        "HI urgent"
+      ]
+    ]
+  }
+]

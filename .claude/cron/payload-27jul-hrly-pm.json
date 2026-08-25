@@ -1,0 +1,68 @@
+[
+ {
+  "range": "H38:K38",
+  "values": [
+   [
+    "• 123rd check Mon 27 Jul 2026 UTC PM — stale BA count NOW 47 (up from 46)\n• Oldest stale: BA 11183 (bed 89, ended Mar 6), BA 11185 (bed 182, May 3), BA 9905 (bed 47, May 3)\n• BA 11229 (bed 89, May 9), BA 11216 (bed 66, May 9) — 5 oldest of 47\n• Pietro BA 11311 (bed 84, Jun 28–Sep 13): active = true — NOT stale (current, correct)\n• Pietro payment 17733: EUR 5,331, Bank, xeroPaymentId = null, booking 17980, 54 days old",
+    "Deactivate 47 stale BAs; reconcile Pietro pmt 17733 in Xero. See recipe: issue-36b-addendum-27jul-b.md",
+    "123rd hrly Mon 27 Jul UTC PM. Stale BAs (bed assigned): 47 (up 1 from 46). Pietro PMT17733 EUR5331 xeroId=null (54d). Fix NOT RUN.",
+    "47 stale BAs; Pietro Xero 54d"
+   ]
+  ]
+ },
+ {
+  "range": "H40:K40",
+  "values": [
+   [
+    "• 134th check Mon 27 Jul 2026 UTC PM — Aug Bank Holiday STILL ABSENT, DEADLINE Fri 31 Jul (4 days left)\n• School closures: 9 entries confirmed fresh — Aug 3 2026 absent\n• 17 active booking courses start Aug 3 2026 — auto-shunt blocked until closure record added\n• All 17 BC IDs: 88, 97, 1755, 1766, 24627, 24908, 24956, 24958, 24959, 24964, 24970, 24984, 24999, 25002, 25003, 25010, 25016",
+    "Insert Aug BH closure; shunt 17 BCs to Aug 4. Deadline Fri 31 Jul. See recipe: issue-38-addendum-27jul-e.md",
+    "134th hrly Mon 27 Jul 2026 UTC PM. Aug BH still absent confirmed fresh (9 closures only). 17 BCs start Aug 3. DEADLINE Fri Jul 31 (4 days). Fix NOT RUN.",
+    "Aug BH; DEADLINE Fri; 4 days"
+   ]
+  ]
+ },
+ {
+  "range": "H41:K41",
+  "values": [
+   [
+    "• 134th check Mon 27 Jul 2026 UTC PM — 0 SCAs confirmed fresh, COURSE ENDS FRI 31 JUL\n• Booking course 24609 (Morning General, Jul 13–Jul 31 2026): active = true, 0 SCAs\n• Accommodation BA 11358 (bed 180, Jul 12–Aug 2): active = true, bed assigned (allocation resolved)\n• Xuezhen Huang (student 14443), booking 17831, EUR 570 paid\n• 4 school days remain: Tue 28 – Fri 31 Jul\n• ASSIGN TONIGHT: last chance before course ends Friday",
+    "Assign BC 24609 to Morning General class tonight. See recipe: issue-39-addendum-27jul-f.md",
+    "134th hrly Mon 27 Jul UTC PM. BC24609 0 SCAs confirmed fresh. BA 11358 bed 180 active (accommodation present). Course ends Fri Jul 31 (4d remain). ASSIGN TONIGHT. Fix NOT RUN.",
+    "CRITICAL; 4d left; assign tonight"
+   ]
+  ]
+ },
+ {
+  "range": "H23:K23",
+  "values": [
+   [
+    "• 132nd check Mon 27 Jul 2026 UTC PM — 0 SCAs confirmed fresh\n• Booking course 24991 (General English AM, Jul 13–Aug 7 2026): active = true, 0 SCAs\n• Edith Nunes (student 1015), booking 18214, EUR 608 paid\n• 11 school days lost Jul 13–27 (irrecoverable)\n• 8 days remain: Jul 28–31 (4d) + Aug 4–7 (4d); Aug 4 depends on Issue 38 fix\n• Assign TONIGHT: class starts Tue 28 Jul AM",
+    "Assign BC 24991 to GE AM class tonight. See recipe: issue-22-addendum-27jul-f.md",
+    "132nd hrly Mon 27 Jul 2026 UTC PM. BC24991 0 SCAs confirmed fresh. 8d remain (4 this week + 4 next if issue 38 fixed). ASSIGN TONIGHT. Fix NOT RUN.",
+    "CRITICAL; 8d left (needs #38)"
+   ]
+  ]
+ },
+ {
+  "range": "H25:K25",
+  "values": [
+   [
+    "• 133rd check Mon 27 Jul 2026 UTC PM — 0 SCAs confirmed fresh\n• Booking course 24686 (Morning General, Jul 20–Sep 18 2026): active = true, fee = null, 0 SCAs\n• Alberto Squillace (student 1052), booking 1611\n• 6 school days lost irrecoverably (week 1 Jul 20–24 + Mon Jul 27)\n• Course runs to Sep 18 — recovery still possible if assigned tonight\n• Assign TONIGHT: Tue AM class starts tomorrow",
+    "Set fee + assign BC 24686 tonight. See recipe: issue-24-addendum-27jul-f.md",
+    "133rd hrly Mon 27 Jul 2026 UTC PM. BC24686 0 SCAs, fee=null confirmed fresh. 6d lost. ASSIGN TONIGHT. Fix NOT RUN.",
+    "URGENT; 6d lost; assign tonight"
+   ]
+  ]
+ },
+ {
+  "range": "H43:K43",
+  "values": [
+   [
+    "• 134th check Mon 27 Jul 2026 UTC PM — Capel Street BA still absent — CHECK-IN SUN AUG 2 (6 days)\n• Booking 18180 (Giampaolo Russo, student 14571): confirmed, EUR 2,584.96 fully paid\n• Booking accommodation 11357 (bed 178, host family): present, active, Aug 2–Sep 6 confirmed\n• Capel Street booking accommodation (Sep 6–Sep 14 2026): ABSENT — 1 BA only confirmed fresh\n• Booking course 24956 (General English AM, Aug 3–Sep 11, EUR 804.96): 0 SCAs; blocked by Issue 38",
+    "Create Capel BA; assign BC 24956 after Issue 38 fix. See recipe: issue-41-addendum-27jul-d.md",
+    "134th hrly Mon 27 Jul UTC PM. Capel BA still absent (1 BA: bed 178 HF, Aug 2–Sep 6, confirmed fresh). BC24956 0 SCAs. Check-in Aug 2 (6 days). Fix NOT RUN.",
+    "Capel missing; check-in 6d"
+   ]
+  ]
+ }
+]

@@ -1,0 +1,46 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 92nd hourly check Sat 25 Jul 2026 UTC (166th total)\n• August Bank Holiday Mon 3 Aug 2026: STILL absent from school_closures — 9 calendar days away — CRITICAL\n• October Bank Holiday Mon 26 Oct 2026: also absent from school_closures\n• Booking courses starting 2026-08-03: 11 confirmed active (prior count; not re-queried this run)\n• Giampaolo Russo (Issue 41) booking course BC 24956 (General English AM) starts Mon 3 Aug — directly affected\n• Issue 22 (Edite Nunes, BC 24991 ends Fri 7 Aug) still depends on this fix first",
+        "Insert school closures: Aug BH 3 Aug 2026 (isPaidHoliday=true); Oct BH 26 Oct 2026. See recipe: issue-38-addendum-25jul-c.md",
+        "92nd hrly 166th check Sat 25 Jul UTC. Aug BH 9 days away (was 8 this AM). 11 courses start Aug 3. BC 24956 (Issue 41) starts Aug 3. Fix NOT RUN.",
+        "Aug BH; 9d CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• 87th hourly check Sat 25 Jul 2026 UTC (166th total)\n• Booking course BC 24609 (Morning General, booking 17831, student 14443): STILL zero class assignments\n• Course ends Fri 31 Jul 2026 — FINAL WEEK starts Mon 27 Jul (2 calendar days away)\n• 10 school days already missed (weeks 13-18 Jul and 21-25 Jul)\n• Zero assignments confirmed by both student_id = 14443 and booking_course_id = 24609\n• Accommodation BA 11358 (Host Family, bed 180, 12 Jul - 2 Aug 2026): active = true — unchanged\n• NOT blocked by Issue 38 — course ends 31 Jul before Aug 3 Bank Holiday\n• Payment: fully settled EUR 1,396.90",
+        "Assign BC 24609 to Morning General class from Mon 27 Jul — URGENT (final week; last chance). See recipe: issue-39-addendum-25jul-c.md",
+        "87th hrly 166th check Sat 25 Jul UTC. 0 SCAs. FINAL WEEK Mon 27 Jul (2 days). Course ends Fri 31 Jul. Not blocked by Issue 38. Fix NOT RUN.",
+        "CRITICAL; FINAL WEEK; Mon 27 Jul"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• 84th hourly check Sat 25 Jul 2026 UTC (166th total)\n• Booking course BC 24991 (General English AM, booking 18214, student 1015): STILL zero class assignments\n• Course ends Fri 7 Aug 2026 — 9 effective school days remaining\n• School days remaining: Mon 27-Fri 31 Jul (5) + Tue 4-Fri 7 Aug (4) = 9 (Aug 3 Bank Holiday not yet in school_closures)\n• 10 school days already missed — student attended zero assigned classes\n• Blocked by Issue 38 (Aug BH must be added first)\n• Fix order: 1) Add Aug BH closure (Issue 38) — 2) Assign BC 24991 to General English AM from Mon 27 Jul",
+        "Fix Issue 38 first (Aug BH closure), then assign BC 24991 to General English AM from Mon 27 Jul. See recipe: issue-22-addendum-25jul-c.md",
+        "84th hrly 166th check Sat 25 Jul UTC. 0 SCAs. 10d missed, 9d remain (ends Fri 7 Aug, Aug 3 BH pending). Depends on Issue 38. Fix NOT RUN.",
+        "CRITICAL; 10d missed; 9d remain"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 85th hourly check Sat 25 Jul 2026 UTC (164th total)\n• Booking 18180 (Giampaolo Russo, student 14571): confirmed = true, fully paid EUR 2,584.96\n• Accommodation BA 11357 (Host Family, Half Board, bed 178, 2 Aug - 6 Sep 2026): active = true — check-in Sun 2 Aug = 8 days away\n• Host family address confirmed this run: Room 2, property Home, 5 Claremont Close, Glasnevin\n• Booking course BC 24956 (General English AM, 3 Aug - 11 Sep 2026): starts Mon 3 Aug = August Bank Holiday (Issue 38 not yet fixed — needs shifting to Tue 4 Aug)\n• Second accommodation (Capel Street, 6 Sep - 14 Sep 2026): NOT YET ADDED to booking 18180\n• Payment 17954 (EUR 2,584.96, Bank, 29 Jun 2026): xeroPaymentId = null — 26 days unreconciled",
+        "Add Capel Street accomm to booking 18180 (6 Sep - 14 Sep); reconcile payment 17954 in Xero; fix BC 24956 start vs Aug BH (Issue 38). See recipe: issue-41-addendum-25jul-b.md",
+        "85th hrly 164th check Sat 25 Jul UTC. Check-in Aug 2 = 8d. Capel still missing. Host family: 5 Claremont Close Glasnevin (new). Xero null 26d. Fix NOT RUN.",
+        "Xero null; Capel missing; 8d check-in"
+      ]
+    ]
+  }
+]

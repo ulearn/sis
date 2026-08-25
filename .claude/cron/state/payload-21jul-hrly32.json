@@ -1,0 +1,57 @@
+[
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• 32nd hourly check Tue 21 Jul 2026 UTC (45th check) — correction: amountTotal was mis-read as null in prior H entries\n• Booking 1605 (Ariunsarnai Batbayar, student 1047): status = PENDING, confirmed = false — Day 99 since 13 Apr 2026\n• Amount paid: EUR 0; amount total: EUR 1509; amount open: EUR 1509 — fully unpaid, zero payments on file\n• Booking last updated 23 Jun 2026 — 28 days with no activity\n• Booking course 1791 (Academic Year Renewal Morning, 13 Apr to 23 Oct 2026): active = true\n• HubSpot deal 502951083215 — enrolment decision still needed",
+        "Enrolment decision needed — advance HubSpot deal 502951083215 to Won or cancel booking 1605. See recipe: issue-20-addendum-21jul-e.md",
+        "32nd hrly Tue 21 Jul UTC. CORRECTION: amountTotal was mis-read as null in prior checks — actual = EUR 1509, fully unpaid. Booking 1605 STILL PENDING Day 99 (Apr 13). BC1791 AY Morning active. Last updated Jun 23. Fix NOT RUN.",
+        "Day99; EUR 0 / 1509"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• 32nd hourly check Tue 21 Jul 2026 UTC (55th check)\n• Booking course 24991 (Edite Nunes, student 1015, booking 18214): General English AM, 13 Jul–7 Aug 2026 — confirmed, fee EUR 608, zero class assignments — confirmed this run\n• CRITICAL: 8 school days missed (Jul 13–17 and Jul 20–21); 11 remaining (Jul 22–24 and Jul 27 to Aug 7)\n• Duplicate booking courses 24933 and 24934 in booking 18158 still active",
+        "Assign via SIS Student 1015 > Booking 18214 > BC24991. Deactivate BC24933 + BC24934. See recipe: issue-22-addendum-21jul-e.md",
+        "32nd hrly Tue 21 Jul UTC. BC24991 Edite Nunes bk18214 STILL 0 class assignments — 8 missed, 11 remaining (ends 7 Aug). Unchanged from 31st hrly. Fix NOT RUN.",
+        "CRITICAL; assign NOW; 11 days left"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 32nd hourly check Tue 21 Jul 2026 UTC (105th check)\n• August Bank Holiday Mon 3 Aug 2026: STILL absent from school closures — 13 days away — URGENT\n• October Bank Holiday Mon 26 Oct 2026: also absent from school closures\n• 202 active booking courses span 3 Aug 2026 (unchanged)\n• 114 active booking courses span 26 Oct 2026 (unchanged)\n• School closures confirmed: Good Fridays 2026–2030, Christmas 2026–2029 (9 records total)",
+        "Add Aug Bank Holiday + Oct Bank Holiday to school_closures; trigger end-date shunt for 202 affected booking courses. See recipe: issue-38-addendum-21jul-f.md",
+        "32nd hrly (105th check) Tue 21 Jul UTC. Aug Bank Holiday STILL absent — 13 days to Aug 3. 202 active booking courses span Aug 3. Oct BH also absent (114 BCs). Unchanged from 31st hrly. Fix NOT RUN.",
+        "Aug BH; 13d URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• 32nd hourly check Tue 21 Jul 2026 UTC (57th check)\n• Booking course 24609 (Xuezhen Huang, student 14443, booking 17831): Morning General, 13–31 Jul 2026 — zero class assignments — confirmed this run\n• 8 school days missed (Jul 13–17 and Jul 20–21); 8 remaining (Jul 22–24 and Jul 27–31) — ends 31 Jul (10 calendar days)\n• Accommodation 11358 (bed 180, Host Family, 12 Jul–2 Aug 2026): present and correct",
+        "Assign via SIS Student 14443 > Booking 17831 > BC24609. See recipe: issue-39-addendum-21jul-e.md",
+        "32nd hrly Tue 21 Jul UTC. BC24609 Xuezhen Morning General bk17831 STILL 0 class assignments — 8 missed, 8 remaining (ends 31 Jul). Accommodation correct. Unchanged from 31st hrly. Fix NOT RUN.",
+        "BC24609 0 SCAs; 8d left (ends Jul 31)"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 32nd hourly check Tue 21 Jul 2026 UTC (61st check)\n• CRITICAL: Booking course 24828 (Martina Tartaro, student 14441, booking 18036): Morning General Plus + IELTS Easter Promo, 5 May–24 Jul 2026 — zero class assignments — 3 days to end (Fri 24 Jul)\n• CRITICAL: Booking course 25011 (Eduardo Roche Diaz, student 14602, booking 18233): General English PM, 20–24 Jul 2026 — zero class assignments — 3 days to end (Fri 24 Jul)\n• Both bookings fully paid and confirmed\n• Also urgent: BC24609 Xuezhen (ends 31 Jul) and BC24991 Edite (ends 7 Aug) — zero class assignments",
+        "Assign BC24828 (Martina Tartaro, bk18036) + BC25011 (Eduardo Roche Diaz, bk18233) TODAY (end Fri 24 Jul). Then BC24609 (ends 31 Jul), BC24991 (ends 7 Aug). See recipe: issue-45-addendum-21jul-i.md",
+        "32nd hrly Tue 21 Jul UTC. BC24828 Martina (ends Fri 24 Jul, 3d): STILL 0 class assignments. BC25011 Eduardo (ends Fri 24 Jul, 3d): STILL 0. Unchanged from 31st hrly. Fix NOT RUN.",
+        "CRITICAL; Martina+Eduardo end Fri 24 Jul"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H22:K22",
+    "values": [
+      [
+        "• 4th check Fri 24 Jul 2026 UTC — unchanged\n• Booking course 1604 (Morning General, booking 1461): active = true, ended 3 Jul 2026 — 21 days stale\n• Original double-class issue (A1 AM + A2 AM): RESOLVED Jun 2026\n• Student term complete; data hygiene only",
+        "Deactivate BC 1604 (set active = false). See recipe: issue-21-addendum-23jul.md",
+        "4th check Fri 24 Jul UTC — UNCHANGED. BC 1604 Morning General ended Jul 3 active=STILL true (21d stale). Cosmetic. Fix NOT RUN.",
+        "bc stale 21d; cosmetic"
+      ]
+    ]
+  },
+  {
+    "range": "H24:K24",
+    "values": [
+      [
+        "• 15th check Fri 24 Jul 2026 UTC — unchanged\n• Booking course 828 (AY Morning, booking 787): start 2 Mar 2026, end 27 Feb 2026 — backwards dates (legacy DST bug)\n• Booking course 826 (ended 28 Nov 2025): 238 days stale, active = true\n• Booking course 827 (ended 30 Jan 2026): 175 days stale, active = true\n• Booking course 829 (ended 5 Jun 2026): 49 days stale, active = true\n• Student 397 (Enshi Lu) left approximately March 2026 — cosmetic data hygiene",
+        "Set BC 828 end date = 2026-03-20 and deactivate; deactivate BC 826, 827, 829. See recipe: issue-23-enshi-lu-backwards-course.md",
+        "15th check Fri 24 Jul UTC — UNCHANGED. BC828 backwards dates still. BCs 826/827/828/829 active=STILL true (238d/175d/stale/49d). Student left ~Mar 2026. Fix NOT RUN.",
+        "backwards dates; low-pri"
+      ]
+    ]
+  }
+]

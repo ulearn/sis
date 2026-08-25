@@ -581,6 +581,84 @@ class ZohoPeopleAPI {
             return 0;
         }
     }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Teacher onboarding pull ("+ Zoho Teacher"). P_EmployeeView is a summary
+    // view (no Designation), so we list it for recordIds then hit the full
+    // employee form (getDataByID) per record to read Designation + the contract
+    // merge fields. Values come back as flat keys; the "<key>.displayValue"
+    // variant (e.g. Salary.displayValue) is preferred when present.
+    // ─────────────────────────────────────────────────────────────────────
+    _fieldVal(rec, key) {
+        const dv = rec[key + '.displayValue'];
+        if (dv !== undefined && dv !== null && dv !== '') return dv;
+        const v = rec[key];
+        return (v !== undefined && v !== null && v !== '') ? v : null;
+    }
+
+    _mapEmployee(rec, summary = {}) {
+        const g = (k) => this._fieldVal(rec, k);
+        return {
+            zohoRecordId: summary.recordId || rec.recordId || null,
+            zohoEmployeeId: g('EmployeeID') || summary.EmployeeID || null,
+            firstName: g('FirstName') || summary['First Name'] || '',
+            lastName: g('LastName') || summary['Last Name'] || '',
+            email: g('EmailID') || summary['Email ID'] || null,
+            designation: g('Designation'),
+            title: g('Designation'),
+            department: g('Department'),
+            reportingTo: g('Reporting_To'),
+            contractType: g('Employee_type'),
+            standardHours: g('standard_hours'),
+            salary: g('Salary'),
+            address: g('Address'),
+            dateOfBirth: g('Date_of_birth'),
+            startDate: g('Dateofjoining'),
+            pps: g('PPS'),
+        };
+    }
+
+    async getFullEmployeeById(recordId) {
+        if (!this.accessToken) await this.loadTokens();
+        const url = `${this.baseUrl}/forms/employee/getDataByID`;
+        const doReq = () => axios.get(url, { params: { recordId }, headers: { Authorization: `Zoho-oauthtoken ${this.accessToken}` } });
+        let r;
+        try { r = await doReq(); }
+        catch (e) { if (e.response?.status === 401) { await this.refreshAccessToken(); r = await doReq(); } else throw e; }
+        let x = r.data;
+        if (x && x.response && x.response.result) x = Array.isArray(x.response.result) ? x.response.result[0] : x.response.result;
+        return x || null;
+    }
+
+    // Normalised single employee (used on import — authoritative re-fetch).
+    async getMappedEmployee(recordId) {
+        const full = await this.getFullEmployeeById(recordId);
+        return full ? this._mapEmployee(full, { recordId }) : null;
+    }
+
+    // All Zoho employees whose Designation === "Teacher", normalised.
+    async listTeacherEmployees() {
+        if (!this.accessToken) {
+            const ok = await this.loadTokens();
+            if (!ok) throw new Error('Zoho not authorized — reconnect at /sis/zoho/auth/start');
+        }
+        const url = `${this.baseUrl}/forms/P_EmployeeView/records`;
+        const doReq = () => axios.get(url, { headers: { Authorization: `Zoho-oauthtoken ${this.accessToken}` } });
+        let r;
+        try { r = await doReq(); }
+        catch (e) { if (e.response?.status === 401) { await this.refreshAccessToken(); r = await doReq(); } else throw e; }
+        const list = Array.isArray(r.data) ? r.data : [];
+        const out = [];
+        for (const s of list) {
+            let full;
+            try { full = await this.getFullEmployeeById(s.recordId); } catch (_) { continue; }
+            if (!full) continue;
+            const desig = (this._fieldVal(full, 'Designation') || '').toString().trim();
+            if (desig.toLowerCase() !== 'teacher') continue;
+            out.push(this._mapEmployee(full, s));
+        }
+        return out;
+    }
 }
 
 module.exports = ZohoPeopleAPI;

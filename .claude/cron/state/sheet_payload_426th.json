@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H4:K4",
+    "values": [
+      [
+        "• 231st check Fri 21 Aug 2026 UTC — no change since 230th (Fri 14 Aug)\n• 9 closures in database: Good Fridays 2026–2030, Christmas 2026–2029\n• August Bank Holiday 2026-08-03 passed without database entry — no impact on active bookings\n• August Bank Holidays 2027, 2028, 2029, 2030 absent from school_closures table",
+        "Add August Bank Holidays 2027–2030 to school_closures (low priority). See recipe: issue-3-addendum-14aug.md",
+        "231st Fri 21 Aug UTC. 9 closures unchanged. August Bank Holidays 2027+ still absent.",
+        "fixed"
+      ]
+    ]
+  },
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• 189th check Fri 21 Aug 2026 UTC — no change since 188th (Thu 20 Aug)\n• Student Class Assignment 288: student 14444 (Rakan Alghamdi), bookingCourseId = 24697 (wrong course) — not fixed\n• Booking Course 24697 (Academic Year Morning): ended 31 Jul 2026 — 21 days stale, active = true\n• Booking Course 25035 (General English Academic Year AM Plus): 3 Aug to 18 Dec 2026, active = true — 18 days elapsed, 0 class assignments\n• Fix NOT RUN",
+        "Move class assignment 288 bookingCourseId from 24697 to 25035; deactivate Booking Course 24697. See recipe: issue-12-addendum-21aug.md",
+        "189th Fri 21 Aug UTC. Class assignment 288 still on Booking Course 24697. BC 24697 21d stale. BC 25035 18d elapsed, 0 assignments. Fix NOT RUN.",
+        "SCA on wrong BC; BC24697 21d"
+      ]
+    ]
+  },
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "• 61st check Fri 21 Aug 2026 UTC — no change since 60th (Thu 20 Aug)\n• Student 14522 (Lizbeth del Carmen Sierra Martinez): visaStatus = null\n• Booking 17981: CONFIRMED, confirmed = false (anomaly) — amountPaid = €1,407.50, amountOpen = null\n• Document 213 (Letter of Acceptance, template 1): ISSUED 10 Jun 2026\n• Document 211 (Letter of Acceptance, template 1): REVOKED 9 Jun 2026\n• No insurance document found — day 81 without insurance\n• Fix NOT RUN",
+        "Set visaStatus; fix confirmed flag on booking 17981; generate insurance document. See recipe: issue-13-lizbeth-health-insurance.md",
+        "61st Fri 21 Aug UTC. Visa null. No insurance document — day 81. Booking 17981 confirmed=false on CONFIRMED status. AmountOpen = null. Fix NOT RUN.",
+        "insurance null; day 81"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• 38th check Fri 21 Aug 2026 UTC — no change since 37th (Thu 20 Aug)\n• Student 983 (Flávia Nascimento Mariano): visaStatus = null\n• Booking 1534: CONFIRMED, confirmed = true, amountPaid = €1,308, amountOpen = €0 — fully paid in SIS\n• Payment 17035: €250, Bank Transfer, 5 May 2026 — xeroPaymentId = null (unreconciled)\n• Payment 17527: €1,058, Bank, 28 May 2026 — xeroPaymentId = null (unreconciled)\n• Total unreconciled in Xero: €1,308 — visa must be set before student can be class-assigned",
+        "Set visaStatus on student 983; reconcile payments 17035 + 17527 in Xero. See recipe: issue-18-addendum-19aug.md",
+        "38th Fri 21 Aug UTC. Visa null. Booking 1534 fully paid (EUR 1,308). Payments 17035 + 17527 xeroPaymentId null. Fix NOT RUN.",
+        "visa null; pmts unreconciled"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• 60th check Fri 21 Aug 2026 UTC — no change since 59th (Thu 20 Aug)\n• Booking 1605 (Ariunsarnai Batbayar, student 1047): PENDING, confirmed = false, €0 paid, €1,509 open\n• Booking Course 1791 (Academic Year Renewal Morning): 13 Apr to 23 Oct 2026, active = true — 0 class assignments\n• Day 130 since course start (13 Apr 2026); 63 days until course end (23 Oct 2026)\n• No payments linked in SIS database",
+        "Confirm payment via HubSpot or Xero; if paid, set confirmed=true and assign to class. See recipe: issue-20-addendum-19aug.md",
+        "60th Fri 21 Aug UTC. Day 130, EUR 1,509 open, 0 payments. Booking Course 1791 0 class assignments, 63d to end (Oct 23). Fix NOT RUN.",
+        "EUR 1,509; day 130; 63d left"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• 168th check Fri 21 Aug 2026 UTC — no change since 167th (Thu 20 Aug)\n• Student 917 (Uyanga Tungalag): visaStatus = null — day 116 since course start (27 Apr 2026)\n• Booking Course 1613 (Academic Year Morning): 27 Apr to 30 Oct 2026, active = true\n• 0 class assignments in database; 70 days until course end (30 Oct 2026)",
+        "Set visaStatus = approved on student 917; assign to class. See recipe: issue-25-addendum-19aug.md",
+        "168th Fri 21 Aug UTC. Day 116. Visa null. Booking Course 1613 Apr 27 to Oct 30. 0 class assignments, 70d left. Fix NOT RUN.",
+        "visa null; 0 SCAs; day 116; 70d left"
+      ]
+    ]
+  }
+]

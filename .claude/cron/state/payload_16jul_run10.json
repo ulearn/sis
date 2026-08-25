@@ -1,0 +1,46 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student class assignment 255 (Saikhantes Shagdarsuren, student 1001, booking course 24925): week start 12 January 2026, week end 3 July 2026 — still the only assignment — 69th check, Thursday 16 July UTC\n• Zero class assignments for week ending 17 July 2026 — TODAY IS THE LAST DAY to assign for the week beginning 13 July\n• Two weeks of class missed since last assignment: week ending 10 July (past, retroactive possible) and week ending 17 July (LAST CHANCE)\n• Booking course 24925 (Academic Year Afternoon): active = true, runs to 2 October 2026 — 11 weeks remaining after this week",
+        "Assign student 1001 (Saikhantes Shagdarsuren) to class 11 for WB 17 July TODAY (last chance); then assign all remaining weeks to 2 October. See recipe: issue-15-saikhantes-class.md",
+        "69th check Thu 16 Jul UTC (2nd check today). CONFIRMED UNCHANGED. Only SCA 255 weekEnd=Jul03. WB Jul17 = TODAY IS LAST DAY. BC24925 AY Aft active ends Oct 02. Fix NOT RUN.",
+        "CRITICAL; TODAY=last day for WB Jul17"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking course 24991 (Edith Nunes, student 1015, General English AM, 13 July to 7 August 2026): zero class assignments — Day 4, Thursday 16 July UTC — 44th check\n• Booking 18214: Confirmed, EUR 608 / EUR 608 — fully paid\n• Booking courses 24933 and 24934 (General English AM, ended 10 July 2026): active = still true — 6 days stale\n• Four school days missed without a class: Monday 13, Tuesday 14, Wednesday 15, Thursday 16 July",
+        "Assign BC24991 (Edith Nunes) to a class in To Be Assigned. Deactivate BC24933 + BC24934 (stale). See recipe: issue-22-edith-nunes-sca.md",
+        "44th check Thu 16 Jul UTC (2nd check today). BC24991 (Edith) Gen AM Jul13-Aug07 still 0 SCAs (Day 4, Mon-Thu missed). BC24933+24934 ended Jul10 still active=true (6d stale). Fix NOT RUN.",
+        "Day4 URGENT; 0 SCAs"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Duplicate of issue 15 (row 16) — same student: Saikhantes Shagdarsuren (student 1001)\n• Class assignment 255 (week ending 3 July 2026): last and only assignment — no assignment for weeks ending 10 July (past) or 17 July (TODAY — LAST DAY) — 27th check, Thursday 16 July UTC\n• Fix has not been run",
+        "See issue 15 (row 16) for fix. Same root cause.",
+        "27th check Thu 16 Jul UTC (2nd check today). CONFIRMED UNCHANGED. TODAY=LAST DAY for WB Jul17. SCA255 weekEnd=Jul03 still only SCA. See row 16. Fix NOT RUN.",
+        "CRITICAL; TODAY IS LAST DAY"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 3 confirmed students end TOMORROW Friday 17 July — zero class assignments — 104th check, Thursday 16 July UTC\n• Booking course 1719 (Maria Magdalena Hermosilla Ogaz, student 992): Academic Year Afternoon, 26 Jan to 17 Jul 2026 — 0 class assignments — never assigned a class for entire AY course\n• Booking course 24946 (Lunel Dubost, student 14566): General English AM, 13 to 17 Jul 2026 — 0 class assignments\n• Booking course 24994 (Petru Ous, student 14591): General English AM, 13 to 17 Jul 2026 — 0 class assignments\n• 3 additional PENDING bookings end tomorrow with 0 class assignments — booking 25 (Kritchana RATCHA-ANAN, Academic Year Morning, PENDING), bookings 18208 + 18209 (Silvia and Gladis Maza Valladolid, General English PM, both PENDING, started 6 July)",
+        "Assign booking courses 1719/24946/24994 in To Be Assigned TODAY (last chance); accounts review PENDING bookings 25/18208/18209. See recipe: issue-45-addendum-16jul.md",
+        "104th check Thu 16 Jul UTC (2nd check today). CONFIRMED UNCHANGED. BC1719 (Maria Magdalena AY Aft), BC24946 (Lunel Gen AM), BC24994 (Petru Gen AM) — all end Fri Jul17 with 0 SCAs. TODAY IS LAST DAY. Fix NOT RUN.",
+        "CRITICAL; LAST DAY TODAY"
+      ]
+    ]
+  }
+]

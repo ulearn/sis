@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 219th check Wed 12 Aug 2026 UTC — no change since 218th check\n• Payment 4781: EUR 380, comment ULS771773625 / 21022 — orphaned (booking_id = null)\n• Payment 16988: EUR 339.90, 2026-04-28 — orphaned (booking_id = null); likely for Booking 17856\n• Payment 16989: EUR 339.90, 2026-04-28 — orphaned (booking_id = null); likely for Booking 17857\n• Payment 17187: EUR 6,151, comment ULEARNP2026124 — orphaned (booking_id = null)\n• Booking 17856 (Margherita Galbusera): Confirmed, confirmed = false, amountPaid = 339.90, amountOpen = null\n• Booking 17857 (Francesca Fassina): Confirmed, confirmed = false, amountPaid = 339.90, amountOpen = null\n• Booking Courses 24630 + 24631 (General English AM Plus): ended 2026-07-10, active = true (33 days stale)",
+        "Link Payments 16988/16989 to Bookings 17856/17857; set confirmed=true; deactivate Booking Courses 24630+24631. See recipe: issue-1-addendum-12aug.md",
+        "219th hrly Wed 12 Aug UTC. No change since 218th. Payments 16988/16989 still booking_id=null. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H9:K9",
+    "values": [
+      [
+        "• 26th check Wed 12 Aug 2026 UTC — unchanged from 25th check\n• Booking Course 1482 (Academic Year Afternoon): ended 2025-12-19 — 236 days stale, active = true, 0 class assignments\n• Booking Course 1483 (Academic Year Afternoon): ended 2026-02-13 — 180 days stale, active = true, 0 class assignments\n• Booking Course 1485 (Academic Year Afternoon): ended 2025-12-19 — 236 days stale, active = true, 0 class assignments\n• Booking Course 1486 (Academic Year Afternoon): ended 2026-02-13 — 180 days stale, active = true, 0 class assignments\n• Booking Course 1487 (Academic Year Afternoon): ended 2026-06-05 — 68 days stale, active = true, 2 class assignments (verify before deactivating)\n• Booking Course 1488 (Afternoon General): ended 2025-09-19 — 327 days stale, active = true, 0 class assignments",
+        "Deactivate Booking Courses 1482/1483/1485/1486/1488 (0 SCAs, safe); verify BC 1487 (2 SCAs) first. See recipe: issue-8-addendum-12aug.md",
+        "26th hrly Wed 12 Aug UTC. Unchanged. 6 stale Booking Courses (327d max). Fix NOT RUN.",
+        "6 stale BCs; 327d max"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 166th check Wed 12 Aug 2026 UTC — unchanged since 165th check\n• Booking Accommodation 11393: bed_id = 88, active = true, start 22 Aug, end 13 Sep 2026 — fee = null (still unset)\n• Booking Accommodation 11311: bed_id = 84, start 28 Jun, end 22 Aug 2026 — fee = EUR 3,850; BA transition in 10 days\n• Booking Course 24772 (General English AM): ends 21 Aug 2026, active = true, 2 class assignments (9 days remaining)\n• Payment 17733: EUR 5,331, paid 2 Jun 2026 — xero_payment_id = null (71 days without Xero reconciliation)",
+        "Set Booking Accommodation 11393 fee; reconcile Payment 17733 in Xero. See recipe: issue-36b-addendum-12aug-d.md",
+        "166th Wed 12 Aug UTC. BA 11393 fee null unchanged. Payment 17733 xero null 71d. BC ends Aug 21 (9d). BA transition Aug 22 (10d). Fix NOT RUN.",
+        "Xero pending; BC ends Aug 21"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 132nd check Wed 12 Aug 2026 UTC — STILL 0 class assignments; CRITICAL: 2 school days remain\n• Booking Course 25043 (General English PM): 10-14 Aug 2026, student 14602 Eduardo Roche Diaz, booking 18265 — 0 class assignments\n• Prior 3 weeks all in Class 6 (B2&C1 PM): SCA 358 (BC 25011, Jul 20-24), SCA 359 (BC 25023, Jul 27-31), SCA 421 (BC 25038, Aug 3-7)\n• Fix: INSERT into student_class_assignments — booking_course_id = 25043, class_id = 6, week Aug 10-14, student_id = 14602\n• Course ends Friday 14 Aug — Mon, Tue, Wed attendance already unrecorded; Thu and Fri remain",
+        "INSERT class assignment for Booking Course 25043: Class 6, week 10-14 Aug. See recipe: issue-38-addendum-12aug-g.md",
+        "132nd Wed 12 Aug UTC. BC 25043 STILL 0 class assignments. Pattern clear: Class 6 all 4 weeks. Ends Fri 14 Aug. CRITICAL — 2 school days left. Fix NOT RUN.",
+        "CRITICAL: ends Fri 14 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 68th check Wed 12 Aug 2026 UTC — stale count unchanged (24,479)\n• Total active Booking Courses: 24,762; stale (ended before 2026-08-12): 24,479 (98.9%)\n• Current (ending 2026-08-12 or later): 283 — same as 67th check\n• Mass deactivation fix not yet run",
+        "Mass-deactivate all active Booking Courses where end_date < today. See recipe: issue-45-addendum-12aug.md",
+        "68th Wed 12 Aug UTC. 24,479 stale unchanged. 283 current unchanged. Fix NOT RUN.",
+        "24,479 stale; fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 100th check Wed 12 Aug 2026 UTC — unchanged since 99th check\n• Booking Course 1810 (Academic Year Renewal Morning, Telmuun Enkhsaikhan, student 293): ends 1 Jan 2027, active = true, 0 class assignments — 45 days since start\n• Booking 1624: Partial, confirmed = false, EUR 1,406 paid, EUR 250 open, EUR 1,656 total — balance unchanged",
+        "Assign Booking Course 1810 to AM class; clarify EUR 250 open balance. See recipe: issue-48-addendum-12aug-c.md",
+        "100th Wed 12 Aug UTC. Booking Course 1810: 0 class assignments (45 days). EUR 250 open unchanged. Fix NOT RUN.",
+        "payment gap; BC1810 45d"
+      ]
+    ]
+  }
+]

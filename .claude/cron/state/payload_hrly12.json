@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "CANCELLED Jun7 accidental. StatusHist: CONF>PEND May28(unexplained), CONF>CANCEL Jun7 20:41UTC. amtPaid=1530 full.",
+        "UPDATE bookings SET status=CONFIRMED,confirmed=true WHERE id=1308 (NOT RUN). see recipe: issue-17-ana-jessica-accidental-cancel.md",
+        "Jun10 hrly12: bk1308 STILL CANCELLED conf=false paid=1530. c1350 AFT May25-Nov13 ACTIVE. D13. NEIL: RUN Step1 SQL immediately.",
+        "cancel D13 CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "bk1611 CONF paid=1280.12. c1797 MORN Apr6-Jun26(16d). c24686 MORN Jul20-Sep18. 0 holidays. sca229(cls12) we=Apr26 ENDED(45d no class).",
+        "1)Confirm hol dates BEFORE Jun26. 2)Add holiday(est Apr27-Jul17). 3)Add SCA c24686 Jul20. see recipe: issue-24-alberto-fidelo-course-split.md",
+        "Jun10 hrly12: sca229 cls12 bci=c1797 we=Apr26 ENDED. 0 holidays. c1797 ends Jun26(16d). c24686 Jul20-Sep18. Alberto NO class 45d. NEIL: URGENT confirm hol dates + add holiday.",
+        "holiday/SCA urgent 16d"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "s917 Uyanga visaStatus=null. bk1467 CONF c1613 AY-MORN Apr27-Oct16. 0 SCAs. TBA filter requires visa_approved.",
+        "UPDATE students SET visa_status=approved WHERE id=917 (NOT RUN if visa confirmed). Then assign AY-MORN class. see recipe: issue-25-uyanga-visa-escrow.md",
+        "Jun10 hrly12: s917 visa=null D45. bk1467 CONF. c1613 AY-MORN Apr27-Oct16 ACTIVE. 0 SCAs(bci1613). NEIL: confirm visa approved then run SQL + assign class.",
+        "visa null D45 urgent"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "CRITICAL. bk18034 PARTIAL 845/1095. s14532 Ernesto 0 SCAs. c24826 INTENSIVE Jun8-Jun19(9d left).",
+        "Assign Ernesto AM+PM INTENSIVE class TODAY. Daniela+Fabrizio: add PM. see recipe: issue-26-intensive-class-assign-once.md",
+        "Jun10 hrly12: s14532 0SCAs D4. c24826 INTENSIVE ends Jun19(9d). NEIL: confirm Ernesto level then assign AM+PM intensive TODAY.",
+        "CRITICAL D4 9d left"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "s1001 Saikhantes 0 att ALL TIME. sca255 cls11(B1-PM) bci24925 we=Jul03(ACTIVE). c24925 Jan12-Jul03(23d left).",
+        "Check cls11 register: is Saikhantes present under alias? If never attended: IRP/immigration emergency. see recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun10 hrly12: s1001 att=0 ALL TIME. sca255 ACTIVE(cls11 we=Jul03). She IS assigned but never shows. Course ends Jul03(23d). NEIL: check cls11 register TODAY - absent or alias?",
+        "0 att CRITICAL 23d left"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "s88 Giulia 0 SCAs. bk94 CONF c104 Jun15-26. bk18044 CONF dup c24836 Jun15-26. Milena s14557 PENDING.",
+        "URGENT 1)Assign Giulia cls Mon Jun15. 2)Cancel dup bk18044. 3)Fix pmt17607. 4)Del Milena. see recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun10 hrly12: s88 0SCAs. bk94+bk18044 both CONF MORNING_PLUS Jun15-26. 5 days to start. NEIL: ASSIGN CLASS BEFORE WEEKEND - MON JUN15.",
+        "class CRITICAL Mon Jun15"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 107th check Mon 10 Aug 2026 UTC\n• URGENT — 7 Booking Courses end Fri 14 Aug 2026 with 0 SCAs\n• Group A (new Aug-10 starters, end Fri, need class TODAY): BC 25004 (Vincenzo Contu, General English AM Plus), BC 25005 (Claudia Mereu, General English AM), BC 25043 (Eduardo Roche Diaz, General English PM)\n• Group B (old Fidelo migration Booking Courses, started Feb–Apr, end Fri): BC 1144 (Anar-Erdene Batbayar, started 23 Feb), BC 1305 (Nomin Nergui, started 27 Apr), BC 1344 (Bat-Orgil Baljinnyam, started 23 Feb), BC 1591 (Turbold Altankhuyag, started 23 Feb) — no other active Booking Courses, likely stale artefacts\n• Aug-10 starters with 0 SCAs: 18 (15 Confirmed + 3 non-Confirmed: BC 833 Settiyanee Duangjai Escrow, BC 25007 Nominjin Amartsogt Partial, BC 25042 Edith Nunes Pending) — unchanged\n• Aug-3 stragglers with 0 SCAs: 6 — down from 8 (2 assigned since last check)",
+        "Assign classes for BC 25004/25005/25043 (end Fri) immediately; investigate BC 1144/1305/1344/1591 for deactivation. See recipe: issue-38-addendum-10aug-f.md",
+        "107th hrly Mon 10 Aug UTC. Aug-3 stragglers: 6 (down from 8, progress). 18 Aug-10 starters all 0 SCAs. 3 new Aug-10 starters end Fri — critical. 4 old migration BCs also end Fri. Fix NOT RUN.",
+        "CRITICAL: 18 Aug-10 + 6 Aug-3 + 3 Fri urgent"
+      ]
+    ]
+  }
+]

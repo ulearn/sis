@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payment 16988 (EUR 339.90, HubSpot 1204827374829): booking ID = null — not linked to booking 17856 (38th check, 13 July UTC)\n• Payment 16989 (EUR 339.90, HubSpot 1204846469317): booking ID = null — not linked to booking 17857\n• Booking 17856 (Margherita Galbusera, student 14461): status = Confirmed — EUR 339.90 total, confirmed = false\n• Booking 17857 (Francesca Fassina, student 14462): status = Confirmed — EUR 339.90 total, confirmed = false\n• Booking courses 24630 and 24631 (General English AM Plus, ended 10 July 2026): both still active = true — 3 days stale",
+        "Link payment 16988 to booking 17856, payment 16989 to booking 17857; deactivate booking courses 24630 and 24631. See recipe: issue-1-orphan-payments.md",
+        "38th check 13 Jul UTC. UNCHANGED. PMT16988+16989 bookingId=STILL null. BC24630+24631 ended Jul10 STILL active=true (3d stale). BK17856+17857 CONF confirmed=false EUR339.9/339.9. SQL NOT RUN.",
+        "unlinked; 3d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student class assignment 255 (class 11, B1 PM): week end = 3 July 2026 — expired 10 days ago\n• Student 1001 (Saikhantes Shagdarsuren) in school unassigned for 6 school days (7 to 13 July)\n• Booking course 24925 (Academic Year Afternoon, 9 March to 2 October 2026): active — ILEP code 0318/0003 — extend class assignment to 2 October\n• Booking course 1982 (Academic Year Morning, ended 19 December 2025): still active = true — 206 days stale\n• Staff note added 13 Jul: compare renewal pattern with Adriana Zamora",
+        "Extend class assignment 255 week end to 2026-10-02; deactivate booking course 1982. See recipe: issue-15-saikhantes-course-dates.md",
+        "21st check 13 Jul UTC. UNCHANGED. SCA255 weekEnd=Jul3 STILL expired (10 cal days, 6 school days missed Jul7-13). BC24925 AY Afternoon active to Oct2 2026 ilepCode=0318/0003. BC1982 ended Dec2025 STILL active=true (206d stale). NEIL: UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255 AND deactivate BC1982 NOW.",
+        "CRITICAL; 10d expired; TODAY"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking course 24933 (General English AM, 15 June to 10 July 2026): ended 3 days ago — still active = true (11th pass, 13 Jul UTC)\n• Booking course 24934 (General English AM, 15 June to 10 July 2026): ended 3 days ago — still active = true — duplicate course, same dates as 24933\n• Booking 18158 (Edite Nunes, student 1015): zero documents — no completion certificate issued\n• Payment 17895 (EUR 740, 12 June 2026): Xero payment ID = null — not reconciled in Xero",
+        "Deactivate booking courses 24933 + 24934; generate completion certificate for booking 18158; reconcile payment 17895 in Xero. See recipe: issue-22-edith-nunes-payment-dups.md",
+        "11th pass 13 Jul UTC. UNCHANGED. BC24933+24934 ended Jul10 both active=true (3d stale). Zero docs on booking 18158. PMT17895 EUR740 xeroPaymentId=null. Deactivate courses + issue cert when ready.",
+        "cert+Xero needed; 3d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Booking course 104 (Morning General Plus, 15 to 26 June 2026): ended 26 June — active = still true (17 days stale) (30th check, 13 Jul UTC)\n• Payment 17102 (EUR 1151.50, booking 94): Xero payment ID = null, type = null — not reconciled in Xero\n• Booking 94 (Giulia Avallone, student 88): confirmed, EUR 1151.50 fully paid",
+        "Set booking course 104 active = false; reconcile payment 17102 with Xero. See recipe: issue-30-giulia-milena-parent-student.md",
+        "30th check 13 Jul UTC. UNCHANGED. BC104 active=STILL true (17d stale, ended Jun26). PMT17102 EUR1151.5 xeroPaymentId=STILL null. BK94 CONF EUR1151.5/1151.5.",
+        "30th check; bc104 stale 17d"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Accommodation 11358 (Xuezhen Huang, student 14443, bed 180): check-in 12 July 2026 — Day 2 of stay — host family claim status = null\n• Host family: Kathleen Delahunty, +353 87 639 8049, ctdelahunty@gmail.com — host has not claimed via portal\n• Booking 17831: Confirmed, amount total EUR 1396.90, amount paid EUR 1396.90 — fully paid\n• Payment discrepancy: 4 payments on booking 17831 total EUR 1828.80 vs booking total EUR 1396.90 — payment 17180 (EUR 431.90) is a Fidelo TransferMate Escrow import and may be double-counted\n• 48th check 13 Jul UTC — claim status still null; host not notified",
+        "Call Kathleen Delahunty (+353 87 639 8049) immediately; submit host family claim for accommodation 11358; reconcile payment discrepancy. See recipe: issue-39-xuezhen-huang-accomm-missing.md",
+        "48th check 13 Jul UTC. Day 2 of stay. Accommodation 11358 claimStatus=STILL null. Host Kathleen Delahunty +353 87 639 8049 NOT claimed. BK17831 CONF EUR1396.9/1396.9. PMTs 17180+17987+17988+17963 all xeroPaymentId=null. Fix NOT RUN.",
+        "URGENT; Day2; call +353 87 639 8049"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Pietro Colombo (student 72, booking course 81, Morning General Plus 6–24 July 2026): zero class assignments ever — 7 school days missed (6–13 July) — 9 school days remaining\n• Sophia Emilly Gallo Borim (student 853, booking course 1820, Academic Year Renewal Afternoon 29 June – 18 December 2026): last assignment expired 24 April on old course — zero assignments on current course\n• Kayque Tauann Lopes Coelho (student 852, booking course 1821, Academic Year Renewal Afternoon 29 June – 18 December 2026): last assignment expired 24 April on old course — zero assignments on current course\n• Tuguldurtugs Enkhtugs (student 858, booking course 1786, Academic Year Renewal Morning 6 July – 25 December 2026): last assignment expired 1 May on old course — zero assignments on current course\n• Stale old booking courses still active: Sophia BC1508+1509, Kayque BC1506+1507, Tuguldurtugs BC1520+1521 (all ended Dec 2025 – May 2026)\n• 47th check 13 Jul UTC — all four unchanged; no class assignments added",
+        "Create class assignments for students 72, 853, 852, and 858 starting week of 13 July; deactivate 6 stale old booking courses (BCs 1506, 1507, 1508, 1509, 1520, 1521). See recipe: issue-45-addendum-13jul.md",
+        "47th check 13 Jul UTC. UNCHANGED. All 4 students still 0 class assignments on current courses. Pietro (BC81) ends Jul24 — 9 school days left incl today, MOST URGENT. 6 stale old BCs (1506-1509+1520-1521) still active. Fix NOT RUN.",
+        "CRITICAL; 4 students; TODAY"
+      ]
+    ]
+  }
+]

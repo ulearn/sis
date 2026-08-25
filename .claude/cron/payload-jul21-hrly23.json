@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• 37th check Tue 21 Jul 2026 UTC (23rd hourly)\n• Booking 1605 (Ariunsarnai Batbayar, student 1047): status = PENDING — Day 99 (started 13 Apr 2026)\n• Amount paid = EUR 0 / 1509 total — zero payments on file; no class assignments on BC1791 ever\n• Booking last updated 23 Jun 2026 — no activity in 28 days\n• HubSpot deal 502951083215 not advanced to Won",
+        "Enrolment decision needed — advance HubSpot deal 502951083215 to Won or cancel booking 1605. See recipe: issue-20-ariunsarnai-payment-due.md",
+        "37th check Tue 21 Jul (23rd hrly). Booking 1605 STILL PENDING — Day 99 (started 13 Apr 2026). EUR 0/1509. Last updated 23 Jun (28d ago). No action taken.",
+        "Day99; PENDING"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 75th check Tue 21 Jul 2026 UTC (23rd hourly)\n• Payment 17954 (Giampaolo Russo, student 14571, EUR 2584.96, Bank Transfer, booking 18180, paid 26 Jun 2026): xero_payment_id = STILL null — 26 days unreconciled in Xero\n• Booking 18180 accommodation: only BA11357 (Host Family, bed 178, 2 Aug to 6 Sep 2026, active = true) — Capel accommodation (6 Sep to 14 Sep 2026) STILL not added to SIS",
+        "Reconcile payment 17954 in Xero; add Capel accommodation to booking 18180 in SIS. See recipe: issue-41-giampaolo-dual-accomm.md",
+        "75th check Tue 21 Jul (23rd hrly). PMT17954 EUR2584.96 xero_payment_id=STILL null (26d since Jun26). BK18180: only BA11357 (Host Family bed178 Aug2-Sep6). Capel Sep6-14 STILL not in SIS. Fix NOT RUN.",
+        "Xero null; Capel missing; 26d"
+      ]
+    ]
+  },
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "• Document 171 is a DRAFT Certificate of Completion — created 5 Jun 2026, 46 days old, never issued (43rd check, 21 Jul 2026 UTC)\n• Booking 1498 (Suvderdene Bayartsog, student 947): Confirmed, confirmed flag = false, amount paid = null, amount total = null\n• Only document on booking 1498 is doc 171 (DRAFT cert) — no issued certificate exists\n• Root cause: migration-era booking with no payment records — bot cannot auto-confirm",
+        "Issue document 171 via SIS student 947 > booking 1498 > Documents. See recipe: issue-9-suvderdene-draft-cert.md",
+        "43rd check Tue 21 Jul (23rd hrly). UNCHANGED. Doc171 STILL DRAFT (46d since Jun05, never updated). BK1498 CONF confirmed=false amtPaid=null. Fix NOT RUN.",
+        "43d; unissued"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 84th check Tue 21 Jul 2026 UTC (23rd hourly)\n• Student 1001 (Saikhantes Shagdarsuren): class assignment 255 (class 11) expired — week end was 3 Jul 2026 (18 days ago)\n• Weeks 6-10 Jul 2026 and 13-17 Jul 2026: both permanently missed — irrecoverable\n• Student holiday (booking holiday 2500): 20 Jul to 21 Aug 2026 — active now; resume Mon 24 Aug\n• Booking course 24925 (Academic Year Afternoon, 9 Mar to 2 Oct 2026): active — assign class 11 before 09:00 Mon 24 Aug 2026\n• Booking course 1982 (Academic Year Morning, ended 19 Dec 2025): still active = true — 213 days stale",
+        "Assign student 1001 to class 11 (BC24925) before 09:00 Mon 24 Aug 2026. Deactivate booking course 1982. See recipe: issue-15-addendum-19jul.md",
+        "84th check Tue 21 Jul (23rd hrly). UNCHANGED from Sun 19. Holiday 2500 active Jul20-Aug21. SCA255 expired Jul03 (18d ago). 2 missed weeks irrecoverable. Next: assign BC24925 to class 11 before Mon 24 Aug 09:00. BC1982 still active 213d stale. Fix NOT RUN.",
+        "2 wks missed; assign Mon 24 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• 37th check Tue 21 Jul 2026 UTC (23rd hourly)\n• Booking course 23 (Ivan Rodriguez Solares, Intensive General 30, ended 22 May 2026): active = still true — 60 days stale\n• Booking course 24826 (Ernesto Pesoa Gil, Intensive General 30, ended 19 Jun 2026): active = still true — 32 days stale\n• Booking 18034 (Ernesto Pesoa Gil): Partial, EUR 845 paid of EUR 1095 total — EUR 250 outstanding (updated 7 Jun 2026, 44 days ago)\n• Payment 17683 (EUR 845, booking 18034): xero_payment_id = null — not reconciled in Xero\n• Note: column B shows Ivan Rodriguez — EUR 250 debt belongs to Ernesto Pesoa Gil (student 14532, booking 18034)",
+        "Set active = false on booking courses 23 and 24826; chase EUR 250 from Ernesto Pesoa (booking 18034); reconcile payment 17683 in Xero. See recipe: issue-26-intensive-class-assign-once.md",
+        "37th check Tue 21 Jul (23rd hrly). UNCHANGED from Sat 18. BC23 (Ivan, ended May22): active STILL true — 60d stale. BC24826 (Ernesto, ended Jun19): active STILL true — 32d stale. BK18034 PARTIAL EUR845/1095 EUR250 open (44d). PMT17683 xeroId=null. Fix NOT RUN.",
+        "2 BCs stale; EUR250 open"
+      ]
+    ]
+  },
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• 8th check Tue 21 Jul 2026 UTC (23rd hourly)\n• Booking Accommodation 11162 (Massimiliano Cameran, booking 97, bed 179): end date 23 May 2026 — still active = true (59 days stale)\n• Booking Accommodation 11314 (Massimiliano Cameran, booking 18002, bed 179): end date 6 Jun 2026 — still active = true (45 days stale)\n• Booking Accommodation 11319 (booking 18034, no bed): zero-day record (31 May = start = end) — still active = true (51 days stale)\n• Booking Accommodation 11287 (Rakan Alghamdi, booking 17915): 4 Jul to 19 Dec 2026 — active = true (correct ongoing stay, do not touch)",
+        "Set active = false on booking accommodations 11162, 11314, 11319. Do not touch 11287 (Rakan active stay). See recipe: issue-12-accomm-dates-mismatch.md",
+        "8th check Tue 21 Jul (23rd hrly). UNCHANGED from Sun 19. BA11162 (59d), BA11314 (45d), BA11319 zero-day (51d) all still active=true. BA11287 Rakan ongoing (correct). Fix NOT RUN.",
+        "3 stale BAs; 59d"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,50 @@
+[
+  {
+    "range": "J47:J47",
+    "values": [
+      [
+        "53rd check 13 Jul UTC. UNCHANGED. All 11 students still zero class assignments (fresh DB). MOST URGENT: Lunel Dubost (BC24946 GE-AM Jul13-17) ends FRIDAY 17 July — 4 school days remain, never assigned. Pietro Colombo (BC81 Jul6-Jul24) Day 8, 0 SCAs. All 7 Jul13 starters (BC1619/1788/1814/24820/24946/24990/24991) Day 1 no class. AY renewals Sophia/Kayque/Tuguldurtugs 14+ days untracked. Fix NOT RUN. Neil: assign Lunel FIRST via SIS Classes > To Be Assigned — ends this Friday."
+      ]
+    ]
+  },
+  {
+    "range": "J16:J16",
+    "values": [
+      [
+        "28th check 13 Jul UTC. UNCHANGED. SCA255 weekEnd=Jul3 STILL expired (10 days). BC24925 AY Afternoon Mar9-Oct2 active, zero new SCAs. WB Jul7 + WB Jul14 = 11 school days untracked. Fix NOT RUN. Neil: extend or replace SCA255 for student 1001 from weekStart=2026-07-14."
+      ]
+    ]
+  },
+  {
+    "range": "J41:J41",
+    "values": [
+      [
+        "53rd check 13 Jul UTC. UNCHANGED. BA11358 claimStatus=null (Day 2; host Mary Carver provider 146, +353 87 927 1130, portal-enabled, not claiming). BC24609 Morning General Jul13-31 started today, zero class assignments. Payments 17180/17963/17987/17988 all xeroId=null. Fix NOT RUN. Neil: call host to claim + assign class for BC24609 today."
+      ]
+    ]
+  },
+  {
+    "range": "J25:J25",
+    "values": [
+      [
+        "37th check 13 Jul UTC. UNCHANGED. BC24686 Morning General Jul20-Sep18 fee=STILL null (7 days to course start). BC1797 ended Jun26 active=true (17d stale). PMT17124 EUR1280.12 type=null xeroId=null. Fix NOT RUN. Neil: set fee on BC24686 BEFORE Jul20; deactivate BC1797; reconcile PMT17124 in Xero."
+      ]
+    ]
+  },
+  {
+    "range": "J21:J21",
+    "values": [
+      [
+        "25th check 13 Jul UTC. UNCHANGED. BK1605 STILL PENDING — day 91 since Apr13. amountPaid=EUR0/EUR1509. Zero payments in DB. BC1791 AY-Renewal Morning Apr13-Oct23 active. Zero SCAs. Neil: ESCALATION — contact student or agency re EUR1509 outstanding. See recipe: issue-20-ariunsarnai-payment-due.md."
+      ]
+    ]
+  },
+  {
+    "range": "J9:J9",
+    "values": [
+      [
+        "27th check 13 Jul UTC. UNCHANGED. BC24959 ILEP code=STILL null — 21 days to course start Aug3. BK18183 CONFIRMED confirmed=true, fully paid EUR1735/1735. PMT17995 (EUR1265 Jul8) + PMT18012 (EUR250 Jul13) both xeroId=null. Fix NOT RUN. Neil: set ILEP code on BC24959 via SIS admin before Aug3; push both payments to Xero."
+      ]
+    ]
+  }
+]

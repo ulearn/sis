@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 3 confirmed booking courses end Friday 17 July 2026 with zero class assignments — 87th check, Wednesday 15 July UTC\n• Booking course 1719 (María Magdalena Hermosilla Ogaz): Academic Year Afternoon, started 26 January 2026, booking 1543 Confirmed EUR 1356/1500\n• Booking course 24946 (Lunel Dubost): General English AM 13–17 July, booking 18171 Confirmed EUR 206.13/206.13\n• Booking course 24994 (Petru Ous): General English AM 13–17 July, booking 18217 Confirmed EUR 202/202\n• 5 pending courses also end 17 July with zero assignments — booking courses 26, 95, 24985, 24986, 24992 (not yet confirmed)",
+        "Assign classes for BC1719 (María Magdalena), BC24946 (Lunel Dubost), BC24994 (Petru Ous) via SIS Admin > Classes > To Be Assigned; see recipe issue-45-renewal-arrivals.md",
+        "87th check Wed 15 Jul UTC (9th today). UNCHANGED. BC1719 María Magdalena AY Afternoon 0 SCAs; BC24946 Lunel Dubost 0 SCAs; BC24994 Petru Ous 0 SCAs. All 3 CONFIRMED. 5 PENDING also 0-SCA. All end Fri Jul17.",
+        "CRITICAL; 2d to Fri"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking course 24991 (Edith Nunes, student 1015, General English AM, 13 July to 7 August 2026): zero class assignments — Day 3 today (Wednesday 15 July) — URGENT (30th check)\n• Booking 18214: Confirmed, EUR 608/608 fully paid\n• Booking courses 24933 and 24934 (ended 10 July 2026): still active — 5 days stale",
+        "Assign student 1015 to class for BC24991 via SIS Admin > Classes > To Be Assigned; deactivate BC24933 and BC24934; see recipe issue-22-edith-nunes-payment-dups.md",
+        "30th check Wed 15 Jul UTC (5th today). UNCHANGED. BC24991 0-SCA Day3 (Mon13+Tue14+Wed15). BK18214 CONF EUR608/608. BC24933+24934 ended Jul10 STILL active (5d stale).",
+        "Day3 URGENT; 0 SCAs"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Booking course 24609 (Xuezhen Huang, student 14443, Morning General, 13 July to 31 July 2026): zero class assignments — Day 3 today (Wednesday 15 July) — URGENT (15th check)\n• Booking 17831: Confirmed, EUR 1396.90/1396.90 fully paid\n• Accommodation 11358 (bed 180, host Mary Carver, 12 July to 2 August 2026): active, claim status = still null — host has not claimed",
+        "Assign student 14443 to class for booking course 24609 via SIS Admin > Classes > To Be Assigned; call host Mary Carver +353 87 927 1130 or confirm accommodation 11358 in SIS admin; see recipe issue-39-xuezhen-host-class.md",
+        "15th check Wed 15 Jul UTC (10th today). UNCHANGED. BC24609 0-SCA Day3. BK17831 CONF EUR1396.90/1396.90. BA11358 bed180 claimStatus=STILL null (host unclaimed, updatedAt=Jun26). Student in accommodation but not in class.",
+        "Day3; 0 SCAs URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student class assignment 255 (Saikhantes Shagdarsuren, student 1001, booking course 24925): week end = 3 July 2026 — still the only class assignment (53rd check, Wednesday 15 July UTC)\n• Missing week ending 10 July 2026 — student unassigned for that full school week (12 days past)\n• Missing week ending 17 July 2026 — student unassigned this week too (ends this Friday)\n• Booking course 24925 (Academic Year Afternoon): active, ends 2 October 2026, booking 18151 Confirmed",
+        "Create student class assignments for weeks ending 10 Jul and 17 Jul on booking course 24925; see recipe issue-15-saikhantes-class.md",
+        "53rd check Wed 15 Jul UTC. UNCHANGED. SCA255 weekEnd=Jul03 only. Missing Jul10 (12d ago) + Jul17 (this week, ends Fri). 10 school days without class assignment. BC24925 AY Afternoon active ends Oct02.",
+        "CRITICAL; 2 weeks missing; Fri"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking course 24686 (Alberto Squillace, Morning General, 20 July to 18 September 2026): fee = still null — 5 days to course start Monday 20 July — URGENT (56th check, Wednesday 15 July UTC)\n• Booking course 1797 (Morning General, ended 26 June 2026): still active — 19 days stale\n• Booking 1611: Confirmed, EUR 1280.12/1280.12 fully paid, amount open = 0\n• No fee set = invoice calculation will be wrong when course starts Monday",
+        "Set fee on booking course 24686 before Mon 20 Jul; set active = false on booking course 1797; see recipe issue-24-alberto-fidelo-course-split.md",
+        "56th check Wed 15 Jul UTC. UNCHANGED. BC24686 fee=STILL null (5d to start Mon Jul20). BC1797 ended Jun26 STILL active (19d stale). BK1611 CONF EUR1280.12/1280.12. Fix NOT RUN.",
+        "fee null; 5d URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• August Bank Holiday 2026 (Monday 3 August) still missing from school closures — 19 days away (19th check, Wednesday 15 July UTC)\n• October Bank Holiday 2026 (Monday 26 October) still missing from school closures — 103 days away\n• Current school closures: 9 records total — Christmas 2026-2029 (4 records) and Good Friday 2026-2030 (5 records)\n• No Irish public bank holidays recorded; AY bookings could miscalculate end dates around August",
+        "Add school closure rows for August Bank Holiday (3 Aug 2026) and October Bank Holiday (26 Oct 2026) via SIS Admin > School Setup > Closures; see recipe issue-38-course-date-ux.md",
+        "19th check Wed 15 Jul UTC. UNCHANGED. No August BH (3 Aug 2026) or October BH (26 Oct 2026) in school_closures. 9 records: Christmas 2026-2029 + Good Friday 2026-2030. Fix NOT RUN.",
+        "Aug BH missing; 19d"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,50 @@
+[
+  {
+    "range": "J2:J2",
+    "values": [
+      [
+        "hrly Jun27 SAT UTC (74th check, fresh DB): pmt16988+16989 STILL booking_id=null xeroPaymentId=null — 62d since Apr28. bk17856(Margherita CONF confirmed=false amtPaid=339.9)+bk17857(Francesca CONF confirmed=false amtPaid=339.9) updAt=Jun04=23d stale. bc24630+bc24631 (General English AM Plus) start Mon Jun29=2 DAYS, BOTH fee=null STILL. SQL NOT RUN. NEIL: MAXIMUM EMERGENCY — run before 09:00 Mon Jun29: (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) set bc24630+bc24631 fees; (4) UPDATE bookings SET confirmed=true WHERE id IN (17856,17857)."
+      ]
+    ]
+  },
+  {
+    "range": "J44:J44",
+    "values": [
+      [
+        "hrly Jun27 SAT UTC (57th check, fresh DB): 4 stale bed84 records STILL active=true (ba9917+ba11157+ba11159+ba11180) — UNCHANGED. ba11311 Pietro Jun28-Sep13 bedId=84 fee=3850 active=true CONFIRMED. bk17980 FULLY PAID 5331/5331. NEIL: EMERGENCY — Pietro arrives TOMORROW Sun Jun28. Run NOW: UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180)."
+      ]
+    ]
+  },
+  {
+    "range": "J30:J30",
+    "values": [
+      [
+        "hrly Jun27 SAT UTC (46th check, fresh DB): sca255 STILL weekStart=Jan12(WRONG) weekEnd=Jul03(WRONG) — UNCHANGED. bc24925 AY-Aft Mar09-Sep11 active. 6 days to Jul03 expiry — after that Saikhantes invisible to B1-PM for 10 weeks through Sep11. SQL NOT RUN: UPDATE student_class_assignments SET week_start=2026-03-09, week_end=2026-09-11 WHERE id=255. NEIL: run before Thu Jul03."
+      ]
+    ]
+  },
+  {
+    "range": "J16:J16",
+    "values": [
+      [
+        "hrly Jun27 SAT UTC (31st check, fresh DB): sca255 STILL weekStart=Jan12(WRONG) weekEnd=Jul03(WRONG) — UNCHANGED. 6 days to Jul03 expiry; Saikhantes disappears from B1-PM scheduling for 10 weeks (Jul03-Sep11) if not fixed. SQL NOT RUN: UPDATE student_class_assignments SET week_start=2026-03-09, week_end=2026-09-11 WHERE id=255. NEIL: run before Thu Jul03. See issue-29-saikhantes-jan12-start-date.md."
+      ]
+    ]
+  },
+  {
+    "range": "J40:J40",
+    "values": [
+      [
+        "hrly Jun27 SAT UTC (6th check today, fresh DB): s356 gender=STILL null (updAt=Jun03=24d stale). doc238 STILL ISSUED (exit letter tmpl4 bk560 updAt=Jun18=9d stale). UNCHANGED. Neil: (1) SIS student 356 → set Gender=Male. (2) SIS booking 560 → Documents → Revoke doc238 → Regenerate. See recipe: issue-32-shih-wei-gender-default.md."
+      ]
+    ]
+  },
+  {
+    "range": "J25:J25",
+    "values": [
+      [
+        "hrly Jun27 SAT UTC (27th check, fresh DB): bc1797 (Apr06-Jun26) ENDED Jun26 — 1d stale active=STILL true (updAt=May03=55d). bc24686 (Jul20-Sep18) fee=STILL NULL — starts 23d (updAt=May14=44d). pmt17124 EUR1280.12 xeroPaymentId=STILL null. UNCHANGED. Neil: acknowledge bc1797 (bereavement leave, ended) + set bc24686 fee before Jul20 + reconcile pmt17124 in Xero."
+      ]
+    ]
+  }
+]

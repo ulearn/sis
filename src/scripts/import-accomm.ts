@@ -77,13 +77,12 @@ async function main() {
     const existing = await prisma.accommodationProvider.findFirst({ where: { name } });
     if (existing) { skipped++; continue; }
 
-    const contactPerson = [firstName, surname].filter(Boolean).join(' ') || null;
-
     await prisma.accommodationProvider.create({
       data: {
         name,
         type: category,
-        contactPerson,
+        contactFirstName: firstName || null,
+        contactLastName: surname || null,
         email,
         phone: phone || mobile || null,
         phone2: phone2 || null,

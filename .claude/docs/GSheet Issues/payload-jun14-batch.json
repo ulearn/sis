@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "Pmts unlinked(not spurious): pmt16988->bk17856 Margherita, pmt16989->bk17857 Francesca",
+        "UPDATE payments SET booking_id=17856 WHERE id=16988; +17857/16989. see recipe: issue-1-orphan-payments.md",
+        "Jun14 SUN D47: pmt16988(EUR339.9 hsId=1204827374829)+pmt16989(EUR339.9 hsId=1204846469317) STILL bookingId=null. bk17856(Margherita s14461)+bk17857(Francesca s14462) arrive JUN29=15d. payments[]=0 both(amtPaid=339.9 booking-level ok but pmts unlinked). NEIL: run UPDATE before JUN29.",
+        "15d to arrival"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "bk18158 PEND 0/740(updAt Jun11). bk18131/18133 CONFIRMED ghosts(pmts attached). c24934 DUP live. s1015 0 active SCAs. STARTS TOMORROW.",
+        "(1)CANCEL bk18131+18133; (2)delete/reassign pmts 17730/17852; (3)DELETE bc24934; (4)confirm bk18158; (5)assign s1015 SCA c24933 Jun15. see recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun14 SUN: bk18158 PEND 0/740 updAt=Jun11. bk18131 CONF(ghost 0bc)+bk18133 CONF(ghost 0bc) NOT cancelled. pmt17730(EUR648->bk18133)+pmt17852(EUR1185->bk18131) xeroId=null. c24934(DUP GE-AM fee=360 Jun15-Jul10) still live. s1015 0 active SCAs. ALL 5 STEPS NOT RUN. COURSE STARTS JUN15 TOMORROW. NEIL: URGENT.",
+        "Mon 08:00 URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "Ernesto s14532 0SCAs ENTIRE COURSE. bc24826 INTENSIVE Jun8-19 WK2=Jun15-19 starts TOMORROW. Level=null.",
+        "Mon 08:00: (1)ask teacher Ernesto level; (2)INSERT 2 SCAs AM+PM bc24826 Jun15-19. see recipe: issue-26-intensive-class-assign-once.md",
+        "Jun14 SUN D7: Ernesto s14532 Pesoa Gil currentLevel=null 0SCAs ALL TIME. WK1(Jun08-12) ENTIRELY MISSED. WK2(Jun15-19) FINAL WEEK starts TOMORROW. bc24826 INTENSIVE active. bk18034 PARTIAL 845/1095. NEIL: Mon 08:00 get level from teacher(HS id=3344151), then INSERT 2 SCAs(AM+PM) for Jun15-19. Level pairs: A2=cls8/9,B1=cls5+12/11,B2-C1=cls4/6,C1=cls13/14. LAST CHANCE.",
+        "LAST WEEK urgent"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "s1001 att=0 ALL TIME(156d enrolled). sca255 bc24925(AY Afternoon) Jan12-Jul03(19d). No alias. Genuine zero-attendance. IRP risk.",
+        "(1)ask cls11 teacher Mon AM if ever physically attended; (2)if YES backfill; (3)if NO IRP escalation. see recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun14 SUN: att COUNT=0(DB confirmed, attendance.occurrence_id). sca255 bc24925 AY-AFT weekEnd=Jul03(19d). 156d enrolled ZERO att. Not in cls11 register, no alias. visaStatus=null. NEIL: Mon AM ask cls11(B1 PM) teacher if Saikhantes EVER physically attended. If absent: IRP escalation immediately(19d to Jul03).",
+        "0att IRP 19d"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "s88 Giulia JUNIOR 0SCAs confirmed. bk18044 DUP CONFIRMED(amtPaid=1106.5). bk18152 Milena PENDING. c104 Jun15 STARTS TOMORROW.",
+        "(1)assign s88 AM cls bk94/c104; (2)CANCEL bk18044+DELETE pmt17607(dbl-import xeroId=null); (3)CANCEL bk18152+DELETE s14557. see recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun14 SUN: s88 Giulia JUNIOR currentLevel=null 0SCAs. bk94 CONF 1151.5/1151.5 c104 Jun15-26. bk18044 CONF DUP 1106.5/1106.5(pmt17607 EUR1151.5 xeroId=null=dbl-import Mar13 DELETE not refund). bk18152 Milena(s14557) PEND conf=false. ALL 4 STEPS NOT RUN. COURSE STARTS TOMORROW MON JUN15 08:00. NEIL: URGENT.",
+        "Mon 08:00 URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H32:K32",
+    "values": [
+      [
+        "TZ NOT SET(.env)+setHours unfixed(routes:214+scripts:34). 9 stale SCAs week_end=null(all bc ended<=Jun12). Mon att sheet WILL show Sun Jun14+9 ghosts.",
+        "FIX1(NOT RUN): echo TZ=UTC>>.env && touch tmp/restart.txt. FIX2 SQL(NOT RUN): UPDATE student_class_assignments SET week_end=(SELECT end_date FROM booking_courses WHERE id=booking_course_id) WHERE id IN(39,40,65,66,74,75,81,87,100). see recipe: issue-31-attendance-sheet-week-bug.md",
+        "Jun14 SUN: TZ NOT SET .env confirmed. routes/attendance.ts:214+scripts/attendance.ts:34 STILL setHours(0,0,0,0). 9 stale SCA IDs:39(Aika/May22),40(Isabela/Jun12),65(Willians/Jun12),66(Eduardo/May15),74(Gabriel/May15),75(Javkhlan/Jun12),81(Diego/Jun05),87(Teofilo/Jun05),100(Luca/May29) week_end=null. BOTH FIXES NOT RUN. NEIL: BOTH FIXES BEFORE 08:00 MON or att sheets BROKEN ALL WEEK.",
+        "URGENT Mon 08:00"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "63rd check Sat 18 Jul 2026 UTC (11th today)\n• Booking course 24609 (Xuezhen Huang, student 14443, Morning General, 13 Jul to 31 Jul 2026): STILL 0 class assignments — confirmed fresh query\n• Week 1 (Mon 13 Jul to Fri 17 Jul 2026): ended with 0 class assignments — attendance permanently missed\n• Week 2 (Mon 20 Jul to Fri 24 Jul 2026): starts MONDAY — assign before 09:00\n• Week 3 (Mon 27 Jul to Fri 31 Jul 2026): final week of course\n• Booking accommodation 11358 (bed 180, host Mary Carver, 12 Jul to 2 Aug 2026, EUR 900): active = true — correct",
+        "Assign Xuezhen Huang (student 14443) to Morning General class on booking course 24609 before Monday 20 July 09:00. See recipe: issue-39-addendum-18jul.md",
+        "63rd check Sat 18 Jul UTC (11th today). BC24609 STILL 0 class assignments — confirmed fresh DB. Week 2 starts MONDAY 20 Jul. Fix NOT RUN.",
+        "CRITICAL; assign Mon 20 Jul"
+      ]
+    ]
+  }
+]

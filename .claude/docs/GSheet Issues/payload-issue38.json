@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H46:K46",
+    "values": [
+      [
+        "• UX feature request, not a data bug\n• Admin course start-date input (admin.html line 5609) accepts any calendar date — no Monday restriction\n• calcCourseEnd() at line 12562 calculates end from weeks but does not snap/warn on non-Monday start\n• Student portal already enforces Monday-snapping (student.html snapCourseStart lines 778-793) — admin lacks this\n• Holiday modal (lines 5901-5932) has only holStart + holEnd date inputs — no weeks field; staff must calculate end date manually\n• SchoolClosure table (9 rows) holds only Christmas and Good Friday — Irish BH Mondays (May/Jun/Aug/Oct) absent, Tuesday-after-BH-Monday snap cannot be auto-applied",
+        "Add snapAdminCourseStart() + BH_MONDAYS set to admin JS; wire to course startDate onchange; add holWeeks input + calcHolEnd() to holiday modal. See recipe: issue-38-course-date-ux.md",
+        "Parts: (A) Monday-snap JS helper + onchange wire on admin course startDate; (B) weeks input in holiday modal auto-computing holEnd; (C) BH list C1=hardcode 3yr of BH Mondays. No DB/backend changes for A+B+C1.",
+        ""
+      ]
+    ]
+  }
+]

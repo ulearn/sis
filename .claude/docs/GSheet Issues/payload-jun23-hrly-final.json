@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• 5 students have bad mobile-number data\n• Email in phone field — Dolgormaa (1897): saraa.tpb@gmail.com; Aki (8567): aki-hinaaki1116@ezudo.he.jp\n• Annotation in phone field — Jieun Lee (1194): 00821097366523 (home contry); Lisa Li (5345): 0864645297 (Husband)\n• Invisible unicode trailing chars — Alessandra Saito de Araujo (10343): +353 (83) 885 9162 + U+202C chars\n• All 5 UNCHANGED since first reported (day 74+)",
+        "Clean per recipe; 1194/5345/10343 fixable now (strip annotation/unicode); 1897/8567 need real# from HubSpot/staff. See recipe: issue-5-mobile-numbers.md",
+        "Jun23 hrly: all 5 UNCHANGED (fresh DB). s1897 phone=email (Apr28=56d). s8567 phone=email (Apr10=74d). s1194 annotated phone (May07=47d). s5345 annotated phone (Apr10=74d). s10343 unicode U+202C (Apr28=56d). Max stale 74d. 3 self-fixable (1194/5345/10343); 2 need real# (1897/8567). Await Neil.",
+        "info needed"
+      ]
+    ]
+  },
+  {
+    "range": "H11:K11",
+    "values": [
+      [
+        "• Booking 97 is CONFIRMED, paid EUR 1741 / 1741\n• Documents 63 and 64 are INVOICES (template 78), not certificates\n• Booking 97 has 0 certificate documents\n• Booking course 107 (Morning General Apr 27 – May 22) ended 32 days ago — still not generated",
+        "(NOT RUN) Generate cert for bk97 (Apr27-May22) via SIS student 91 bk97 Documents Generate Certificate. See recipe: issue-9-massimiliano-cert-split.md",
+        "Jun23 hrly: UNCHANGED. bk97 CONFIRMED 1741/1741 (updAt=Jun05=18d stale). 0 cert docs (tmpl82) for bk97. doc63 REVOKED + doc64 ISSUED both tmpl78 (invoices only). bc107 ended May22=32d ago (active=true stale flag). Neil: SIS student 91 bk97 Documents Generate Certificate.",
+        "cert bk97 32d"
+      ]
+    ]
+  },
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "• Extra 96 (INSURANCE) has fee = null — details = PEL and Health; active = true\n• Created and last updated May 25 — 29 days stale, no action taken\n• Booking 17981 is CONFIRMED, paid EUR 1407.50 / 1407.50, but confirmed = false (minor anomaly)\n• No health insurance has been arranged; student in class since Jun 01 (22 days uninsured)",
+        "Set fee for extra 96 via SIS bk17981 Extras INSURANCE; or UPDATE booking_extras SET fee=<amount> where id=96 (NOT RUN). See recipe: issue-13-lizbeth-health-insurance.md",
+        "Jun23 hrly: UNCHANGED. extra96 INSURANCE fee=null (updAt=May25=29d stale). bk17981 CONF conf=false paid=1407.5/1407.5 (updAt=Jun04=19d stale). Student in class since Jun01 (22d) uninsured. Neil: arrange PEL+Health insurance via WORLD2GO+provider, set extra96 fee, supp invoice HS deal 503569276136.",
+        "ins; 22d uninsured"
+      ]
+    ]
+  },
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "• Booking 1308 is CANCELLED, confirmed = false — student has fully paid EUR 1530 (amount paid = amount total)\n• Payment 17186 (EUR 1280, HubSpot ID 1243664915703) + Payment 17050 (EUR 250, HubSpot ID 1243648063725): both Xero ID = null, unreconciled\n• Booking course 1350 (Academic Year Afternoon, May 25 – Nov 13) is ACTIVE — Day 29 calendar, zero class assignments all time\n• Cancellation appears accidental — no refund issued, course still running; student 766 (Ana Jessica Rosa de Paula Santos) is in limbo",
+        "(NOT RUN) UPDATE bookings SET status=CONFIRMED, confirmed=true WHERE id=1308; then assign AY-AFT class bc1350 via SIS. See recipe: issue-17-ana-jessica-accidental-cancel.md",
+        "Jun23 hrly: UNCHANGED. bk1308 CANCELLED conf=false paid=1530/1530 (updAt=Jun07=16d stale). bc1350 AY-AFT May25-Nov13 Day29cal active=true. 0 SCAs (s766 all time). pmt17186 EUR1280 hsId=1243664915703 xeroId=null; pmt17050 EUR250 hsId=1243648063725 xeroId=null. Neil: UPDATE bookings SET status=CONFIRMED, confirmed=true WHERE id=1308; then assign AY-AFT class via SIS.",
+        "D29cal;CANCELLED;0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• Booking 1605 is PENDING, confirmed = false — amount paid = EUR 0 of EUR 1509\n• Booking course 1791 (Academic Year Renewal Morning) started Apr 13 — Day 71 calendar, approximately 52 school days elapsed\n• Zero class assignments for student 1047 all time\n• Zero attendance records all time\n• HubSpot deal 502951083215 is at ENROLMENT stage in B2B Sales pipeline — webhook to confirm booking has not fired",
+        "Advance HubSpot deal 502951083215 to WON stage (104175589) in B2B pipeline to auto-confirm booking 1605. See recipe: issue-20-ariunsarnai-payment-due.md",
+        "Jun23 hrly: UNCHANGED. bk1605 PENDING conf=false (updAt=Jun11=12d stale). amtPaid=0/1509. bc1791 AY-Renewal-AM Apr13-Oct02 Day71cal active=true. 0 SCAs (s1047 all time). HS deal 502951083215 NOT WON. Neil: advance deal 502951083215 to WON in B2B pipeline — webhook auto-confirms bk1605.",
+        "D71cal;PENDING;0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Bug in sendBulkEmail() (admin.html line 1494) reads live bulkSelectedStudents instead of frozen snapshot\n• showStudentsInSchoolReport() clears bulkSelectedStudents on every reload (line 2219) — including while modal is open\n• openBulkEmailModal() (line 1367) captures ids=[...bulkSelectedStudents] into local var but never stores into _bulkEmailRecipientIds\n• _bulkEmailRecipientIds declared at line 1349 as the intended frozen snapshot — but is never populated",
+        "Set _bulkEmailRecipientIds=ids in openBulkEmailModal + read it in sendBulkEmail. See recipe: issue-33-khulan-reports-email-send.md",
+        "Jun23 hrly: Bug CONFIRMED STILL PRESENT (fresh code check). admin.html: _bulkEmailRecipientIds (L1349) declared but NEVER assigned in openBulkEmailModal — L1367 captures local ids only. sendBulkEmail (L1494) reads live [...bulkSelectedStudents] — cleared at L2219 by showStudentsInSchoolReport on any render. Fix: assign _bulkEmailRecipientIds=ids at L1367 and read it at L1494. NOT YET APPLIED.",
+        "code fix pending"
+      ]
+    ]
+  }
+]

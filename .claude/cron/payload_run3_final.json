@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• 5 students have bad mobile-number data:\n• Email address in the phone field — Dolgormaa (1897), Aki (8567)\n• Notes/annotations in the field — Jieun (1194), Lisa (5345)\n• Unicode characters — Alessandra (10343)",
+        "Clean per recipe; 2 need real# from HS/staff. see recipe: issue-5-mobile-numbers.md",
+        "Jun15 hrly run3: All 5 mobile #s UNCHANGED (updAt Apr-May). s1897/s8567=email; s1194/s5345=annotation; s10343=unicode. Awaiting real numbers from HubSpot/staff.",
+        "info needed"
+      ]
+    ]
+  },
+  {
+    "range": "H28:K28",
+    "values": [
+      [
+        "• Booking 17909 status = CANCELLED (OK) but confirmed = true (anomaly)\n• Amount paid = 1455.5 vs total = 727.5 (€728 excess)\n• Payments 17477 (727.5) + 17478 (728.0), both with xeroId = null",
+        "Steps (NOT RUN): (1) Xero check Sofiia Apr-May 2026; (2) if 1 real payment: DELETE FROM payments WHERE id IN(17477,17478); if 2 real payments: refund EUR728; (3) UPDATE bookings SET confirmed=false WHERE id=17909. see recipe: issue-27-sofiia-sca-cancelled-booking.md",
+        "Jun15 UTC run3: bk17909 CANCELLED amtPaid=1455.5/727.5 — updatedAt CHANGED to 15:46 UTC Jun15 (after run2/hrly16), values unchanged; possible admin or webhook touch. pmt17477(EUR727.5 Apr28 hsId=1230788330738)+pmt17478(EUR728 May15 hsId=1230645766331) xeroId=null. NEIL: search Xero Sofiia Korkishchenko Apr-May 2026. If only EUR1455.5 found: DELETE pmts 17477+17478 (NOT RUN). If 3 real pmts found: refund EUR1455.5.",
+        "Xero chk needed"
+      ]
+    ]
+  }
+]

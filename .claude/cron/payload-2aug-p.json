@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 69th check Sun 2 Aug 2026 UTC (19th today) — Bank Holiday TOMORROW Mon 3 Aug\n• Aug BH 2026-08-03 confirmed absent from school_closures (9 entries only: Good Fridays 2026-2030 + Christmas 2026-2029)\n• 21 active booking courses start 2026-08-03, all 0 class assignments — unchanged\n• Duplicate booking course 25003 (Aleix Cervera Gonzalez, booking 18225): still active alongside BC 25002 — deactivate first\n• Booking course 24697 (Rakan bk17915, Academic Year Morning, Jul6–Jul31): ended 2 days ago, NOW stale, active = true — deactivate before shunt\n• Booking course 25035 (Rakan bk17915, General English AY AM Plus, Aug3–Dec18): confirmed sequential to BC 24697, non-overlapping — safe to shunt\n• Step order: (1a) deactivate BC 24697; (1b) deactivate BC 25003; (2) insert Aug BH; (3) shunt 19 BCs Aug3→Aug4; (4) create class assignments",
+        "Step 1a: deactivate BC 24697; Step 1b: deactivate BC 25003; Step 2: insert Aug BH; Step 3: shunt 19 BCs; Step 4: create SCAs. See recipe: issue-38-addendum-2aug-p.md",
+        "69th check Sun 2 Aug UTC (19th today). BH TOMORROW. BC 24697 (Rakan) NOW stale (ended Jul31). BC 25035 sequential confirmed. BC 25003 dup still active. 21 BCs → 19 after dedup. Fix NOT RUN.",
+        "URGENT; BH tomorrow"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 63rd check Sun 2 Aug 2026 UTC (18th today) — student arrived today (Aug 2)\n• Booking course 24956 (General English AM, Aug3–Sep11): active, 0 class assignments — in Aug3 BH shunt list\n• After Issue 38 BH shunt, BC 24956 shifts to Aug4 — class assignment for week Tue 4 Aug needed\n• Booking accommodation 11357: Host Family, bed 178, Aug2–Sep6, active, fee EUR 1250 — OK\n• Capel St apartment (Sep6–Sep14): still NO booking accommodation in database\n• Booking 18180: xero_id = null, EUR 2584.96 paid, confirmed = true — Xero invoice 39 days overdue",
+        "Step 1: Issue 38 shunt (BC 24956→Aug4); Step 2: create SCA week Aug4; Step 3: add Capel BA Sep6-14; Step 4: chase Xero bk18180. See recipe: issue-41-addendum-2aug-p.md",
+        "63rd check Sun 2 Aug UTC (18th today). Arrived today. BC 24956 in BH shunt list, 0 SCAs. Capel BA absent. Xero null 39d. Fix NOT RUN.",
+        "SCA+Capel urgent; arrived"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• 37th check Sun 2 Aug 2026 UTC (17th today) — student returns TOMORROW Tue 4 Aug\n• Booking course 24686 (Morning General, Jul20–Sep18): active, 0 class assignments — 13 days since BC start with no assignment\n• Booking course 1797 (Morning General, Apr6–Jun26): still active — 37 days stale, 1 class assignment (migration artifact)\n• No booking holiday in SIS for booking 1611 — holiday was Fidelo-only, no SIS record\n• BC 24686 start = Jul20 — NOT in Aug3 BH shunt list (pre-dates Aug3)\n• Class assignment urgently needed on BC 24686 for week starting Tue 4 Aug (BH Mon Aug3 → school starts Tue)",
+        "Deactivate BC 1797; create class assignment on BC 24686 week starting Tue Aug4. See recipe: issue-24-addendum-2aug-n.md",
+        "37th check Sun 2 Aug UTC (17th today). Returns TOMORROW Tue Aug4. BC 24686 0 SCAs (Jul20 start). No SIS holiday on bk1611. BC 1797 stale 37d. Fix NOT RUN.",
+        "SCA needed; Aug 4 start; fee null"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 21st check Sun 2 Aug 2026 UTC (13th today) — student returns Mon 24 Aug (22 days)\n• Last class assignment: id 255, class 11, week_start 12 Jan 2026, week_end 3 Jul 2026 — expired 30 days ago\n• Holiday 2500: 20 Jul to 21 Aug 2026 — student on holiday now (3 weeks remain)\n• Booking course 24925 (Academic Year Afternoon, 9 Mar to 2 Oct 2026): active — live course\n• Booking course 1982 (Academic Year Morning, 30 Jun to 19 Dec 2025): still active — 226+ days stale, 0 class assignments\n• New class assignment needed: class 11, week starting Mon 24 Aug on BC 24925",
+        "Deactivate BC 1982; create class assignment class 11 week Aug24 on BC 24925. See recipe: issue-15-addendum-2aug-j.md",
+        "21st check Sun 2 Aug UTC (13th today). Returns Mon Aug24 (22d). Holiday Jul20-Aug21. Last SCA 255 ended Jul3 (30d ago). BC 1982 stale 226d+. Fix NOT RUN.",
+        "SCA needed; returns 24 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• 3rd check Sun 2 Aug 2026 UTC (2 days since last check Fri 31 Jul)\n• Student 983 (Flávia Nascimento Mariano): visa_status = null — unchanged\n• Class assignment 265 (class 11, week end 20 Nov 2026): active — student IS attending\n• visa_status is TEXT column — correct value is Approved (title case, not APPROVED)\n• UI save throws PrismaClientKnownRequestError — direct SQL update required",
+        "UPDATE students SET visa_status = 'Approved' WHERE id = 983. See recipe: issue-18-addendum-2aug.md",
+        "3rd check Sun 2 Aug UTC (2d since Fri 31 Jul). Visa null unchanged. Class assignment 265 class 11 active to Nov20. Fix NOT RUN.",
+        "visa null; class OK; UI blocked"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 18th check Sun 2 Aug 2026 UTC (4th today) — 24,466 stale booking courses unchanged\n• All active booking courses with end date before 2026-08-02: 24,466 (stable)\n• Booking course 24697 (Rakan bk17915, AY Morning, ended Jul31): today joins stale pool\n• Arrivals-list bug caused by stale booking course backlog — confirmed\n• Awaiting Neil decision: Option A (bulk deactivate all 24,466) or Option B (27-item named subset)\n• Option A resolves multiple other open issues (7, 8, 10, 11, 12, 16, 19, 21, 22, 23, 26, 30 etc.) simultaneously",
+        "Bulk deactivate 24,466 stale booking courses (Option A) or 27-item subset (Option B). Neil decision needed. See recipe: issue-45-addendum-2aug.md",
+        "18th hrly Sun 2 Aug UTC (4th today). 24,466 stale BCs (stable). BC 24697 Rakan now stale (Jul31). Awaiting Neil decision. Fix NOT RUN.",
+        "24,466 stale; awaiting decision"
+      ]
+    ]
+  }
+]

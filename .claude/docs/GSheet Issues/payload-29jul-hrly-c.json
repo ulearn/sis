@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• August Bank Holiday 2026-08-03: still absent from school_closures — 157th check\n• 12 active booking courses start on 2026-08-03 (down from 20; 8 already shunted in prior run)\n• Booking course 25006 (Marina Larripa, General English AM Plus, booking 18228): ends 2026-08-03 — end date needs extending to 2026-08-04\n• Booking course 25003: duplicate of BC 25002 on booking 18225 (Aleix Cervera Gonzalez, same Aug 3–Sep 18 dates) — deactivate BC 25003\n• Deadline: Fri 31 Jul 2026 — 2 days away (not tomorrow as previously stated)",
+        "Insert Aug BH closure + shunt 11 BCs to Aug 4 + extend BC 25006 end to Aug 4 + deactivate BC 25003. See recipe: issue-38-addendum-29jul-e.md",
+        "157th hrly Wed 29 Jul UTC. Aug BH absent. 12 BCs start Aug 3 (was 20; 8 shunted). BC 25006 ends Aug 3 (bk18228 Marina). BC 25003 dup. Deadline Fri 31 Jul (2 days). Fix NOT RUN.",
+        "Aug BH; DEADLINE Fri 31 Jul"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Booking course 24609 (Morning General, booking 17831): active = true, still 0 class assignments — 155th check\n• Student 14443 (Xuezhen Huang): EUR 1396.90 fully paid, booking confirmed = true\n• Course ends Fri 31 Jul 2026 — 2 school days remaining (Thu 30 Jul + Fri 31 Jul)\n• TODAY (Wed 29 Jul) and Thu 30 Jul are the only remaining action days before course expires",
+        "Assign student 14443 to Morning General class on BC 24609 for remaining days (WB 27 Jul). TODAY or Thu 30 Jul — LAST CHANCE. See recipe: issue-39-addendum-29jul-e.md",
+        "155th hrly Wed 29 Jul UTC. BC 24609 still 0 class assignments. Course ends Fri 31 Jul — 2 school days left. Fix NOT RUN.",
+        "CRITICAL; ends Fri 31 Jul"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• Booking 18180 (Giampaolo Russo, student 14571): 1 accommodation only — BA 11357 host family bed 178, Aug 2–Sep 6, fee EUR 1250 — 154th check\n• Capel Street apartment (Sep 6–Sep 14 2026): absent — only 1 accommodation record on this booking\n• Booking course 24956 (General English AM): starts Aug 3 — also needs Issue 38 Aug BH shunt to Aug 4\n• Host family check-in: Sun 2 Aug 2026 — 4 days away",
+        "Add Capel Street apartment BA (Sep 6–14) via SIS admin + run Issue 38 fix for BC 24956. See recipe: issue-41-addendum-29jul-d.md",
+        "154th hrly Wed 29 Jul UTC. Capel still absent. BA 11357 bed 178 OK (host family). BC 24956 needs Issue 38 shunt. Check-in Sun Aug 2 (4 days). Fix NOT RUN.",
+        "Capel missing; check-in Sun Aug 2"
+      ]
+    ]
+  },
+  {
+    "range": "H37:K37",
+    "values": [
+      [
+        "• Wed 29 Jul 2026 UTC (code check 22) — latest commit touching attendance.ts: 9008d10 (May 8 2026)\n• Change in 9008d10: compressUploads() middleware on upload routes only — not related to homework or holiday display\n• Homework section: renderSheetHtml() in src/routes/attendance.ts — no homework block — awaiting spec from Neil and Paul\n• Holiday display bug: getWeekAttendance() in src/scripts/attendance.ts — no holiday filter — students on holiday still show with live checkboxes\n• Hash change on row detected: minor G cell formatting edit; content and code status unchanged",
+        "Fix holiday filter in getWeekAttendance(); add homework block after spec confirmed. See recipe: issue-36-addendum-29jul.md",
+        "Wed 29 Jul UTC (code check 22). Attendance code unchanged since May 8. Hash change = minor G cell edit. Both bugs still open. Fix NOT RUN.",
+        "code open; awaiting spec"
+      ]
+    ]
+  },
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 112th check Wed 29 Jul 2026 UTC — 4 orphan payments unchanged\n• Payment 16988: EUR 339.90, HubSpot, booking ID = null (93 days)\n• Payment 16989: EUR 339.90, HubSpot, booking ID = null (93 days)\n• Payment 17187: EUR 6,151, Fidelo (D2026226), booking ID = null (86 days)\n• Payment 4781: EUR 380, Fidelo legacy (D20191404), booking ID = null (111 days)",
+        "Link payments 16988+16989 to bookings; investigate payment 17187. See recipe: issue-1-addendum-29jul-b.md",
+        "112th hrly Wed 29 Jul UTC. 4 orphan pmts unchanged (93d/93d/86d/111d). Fix NOT RUN.",
+        "4 orphan pmts; 93d+"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 127th check Wed 29 Jul 2026 UTC — stale accommodation bookings remain 46 (active=true, ended before today, bed assigned)\n• Oldest stale: BA 11183 (bed 89, ended 2026-03-06, 145 days stale)\n• Pietro payment 17733: EUR 5,331, booking 17980 (Pietro Caccianiga, student 14521), xeroPaymentId = null — 57 days without Xero reconciliation\n• Stale count unchanged — none self-resolved",
+        "Deactivate 46 stale accommodation bookings; reconcile Pietro payment 17733 in Xero. See recipe: issue-36b-addendum-29jul-b.md",
+        "127th hrly Wed 29 Jul UTC. Stale BAs: 46 (unchanged). Pietro PMT17733 EUR5331 xeroId=null (57d). Fix NOT RUN.",
+        "46 stale BAs; Pietro Xero 57d"
+      ]
+    ]
+  }
+]

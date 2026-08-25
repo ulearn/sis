@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../generated/prisma/client';
-import { extractFees } from './fidelo-fee-extractor';
+import { extractFees, pickBestInvoice } from './fidelo-fee-extractor';
 
 dotenv.config();
 
@@ -70,6 +70,32 @@ const toArg = process.argv.find(a => a.startsWith('--to='))?.split('=')[1];
 const FROM_DATE = fromArg || process.env.FIDELO_FROM_DATE || '2026-01-01';
 const TO_DATE = toArg || null;
 
+// Include-inactive — when set, switches the list source to Fidelo's GUI2
+// search endpoint and pulls bookings whose courses are NOT all_active. The
+// regular /api/1.0/ts/bookings endpoint silently filters out inactive ones,
+// so we have no other way to surface them. School staff use the Inactive
+// flag in Fidelo as a workaround for visa-pending students whose money is
+// in TransferMate escrow — these need to land in SIS with payment status
+// ESCROW + student visa status Pending so the existing exclusion gates
+// (balances, profit margin, accommodation matching, LoA gate) keep them
+// out of operational views until their visa resolves.
+//   --include-inactive             enable inactive-bookings sweep
+const INCLUDE_INACTIVE = process.argv.includes('--include-inactive');
+
+// Patch-existing — when set, bookings already in our DB get their top-level
+// fields (status/confirmed/service dates/amounts) refreshed from the Fidelo
+// list entry instead of being skipped. Original behaviour was "skip if exists",
+// which left the DB stale whenever a course start date or amount changed in
+// Fidelo after first import. Only applies to bookings whose existing
+// serviceStart is on/after PATCH_START_AFTER (default 2025-07-01) to avoid
+// churning historical records.
+//   --patch-existing               enable update-on-exists
+//   --start-after=YYYY-MM-DD       lower bound on existing serviceStart (default 2025-07-01)
+const PATCH_EXISTING = process.argv.includes('--patch-existing');
+const startAfterArg = process.argv.find(a => a.startsWith('--start-after='))?.split('=')[1];
+const PATCH_START_AFTER = startAfterArg || '2025-07-01';
+const patchStartAfterDate = new Date(PATCH_START_AFTER + 'T00:00:00Z');
+
 // Territory filter — skip bookings whose student is from an unsupported country.
 // OFF by default (nightly cron doesn't need it — staff gatekeep unsupported nationalities
 // at the Fidelo entry point). Opt in with --filter-territory for historical backfills,
@@ -110,6 +136,40 @@ function isUnsupportedTerritory(country: string | null | undefined): boolean {
     } catch { /* not a valid ISO code — ignore */ }
   }
   return false;
+}
+
+// POST to Fidelo's GUI2 search endpoint with form-encoded filters. Used to
+// reach bookings the regular ts/bookings list silently filters out (notably:
+// inactive course-status, which schools use as a visa-pending workaround).
+// The search-id hash is the GUI2 saved-search identifier; school's bookings
+// list uses this fixed hash.
+function fideloGui2Post(searchId: string, filters: Record<string, string | string[]>): Promise<any> {
+  const params = new URLSearchParams();
+  params.set('_token', API_TOKEN);
+  for (const [k, v] of Object.entries(filters)) {
+    if (Array.isArray(v)) for (const item of v) params.append(k, item);
+    else params.set(k, v);
+  }
+  const body = params.toString();
+  return new Promise((resolve, reject) => {
+    const req = https.request({
+      hostname: API_HOST,
+      path: `/api/1.0/gui2/${searchId}/search`,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': Buffer.byteLength(body),
+        'Authorization': 'Bearer ' + API_TOKEN,
+      },
+    }, (res) => {
+      let buf = '';
+      res.on('data', (c) => buf += c);
+      res.on('end', () => { try { resolve(JSON.parse(buf)); } catch (e) { reject(e); } });
+    });
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
 }
 
 function fideloGet(path: string): Promise<any> {
@@ -162,22 +222,126 @@ async function main() {
   const dateFilter = TO_DATE ? `${FROM_DATE},${TO_DATE}` : FROM_DATE;
   console.log(`Date range: ${TO_DATE ? `${FROM_DATE} → ${TO_DATE} (narrow window)` : `≥ ${FROM_DATE} (cumulative)`}`);
   console.log(`Territory filter: ${FILTER_TERRITORY ? `ACTIVE (skipping ${unsupportedCountries.size} unsupported countries from ${TERRITORY_MAP_FILE})` : 'OFF — pass --filter-territory to enable'}`);
+  if (INCLUDE_INACTIVE) {
+    console.log(`Include-inactive: ON — using GUI2 search to surface inactive bookings (force ESCROW + visaStatus=Pending)`);
+  }
   console.log('Fetching bookings list from Fidelo API...');
 
-  // Phase 1: Fetch bookings list
-  const listData = await fideloGet(`/api/1.0/ts/bookings?filter[all_end_original]=${dateFilter}`);
+  // Phase 1: Fetch bookings list. Two source endpoints:
+  //   - GUI2 saved-search: surfaces inactive course bookings (school's
+  //     visa-pending workaround). Different schema (POST + form-encoded).
+  //   - ts/bookings: the regular list, active only.
+  let listData: any;
+  if (INCLUDE_INACTIVE) {
+    // The school's GUI2 saved-search hash for the bookings list.
+    const SEARCH_ID = 'b56eab683e450abb7100bfa45fc238fd';
+    // Fidelo's confirmed_date filter expects DD/MM/YYYY,DD/MM/YYYY (range).
+    // Convert FROM_DATE (YYYY-MM-DD) → DD/MM/YYYY. TO is open-ended (just trailing comma).
+    const [yy, mm, dd] = FROM_DATE.split('-');
+    const fromDmy = `${dd}/${mm}/${yy}`;
+    const toDmy = TO_DATE ? (() => { const [y, m, d] = TO_DATE.split('-'); return `${d}/${m}/${y}`; })() : '';
+    listData = await fideloGui2Post(SEARCH_ID, {
+      'filter[courses_status_original][]': 'all_active',
+      'filter[courses_status_original_negate]': '1',
+      'filter[confirmed_date_original]': `${fromDmy},${toDmy}`,
+      limit: '500',
+      per_page: '500',
+    });
+  } else {
+    listData = await fideloGet(`/api/1.0/ts/bookings?filter[all_end_original]=${dateFilter}`);
+  }
   const entries = Object.entries(listData.entries || {});
   console.log(`Found ${entries.length} bookings`);
 
-  const stats = { students: 0, studentsUpdated: 0, bookings: 0, bookingsSkipped: 0, territorySkipped: 0, courses: 0, coursesWithFee: 0, accommodations: 0, accommsWithFee: 0, holidays: 0, agencies: 0, errors: 0 };
+  const stats = { students: 0, studentsUpdated: 0, bookings: 0, bookingsSkipped: 0, bookingsPatched: 0, territorySkipped: 0, courses: 0, coursesWithFee: 0, accommodations: 0, accommsWithFee: 0, holidays: 0, agencies: 0, errors: 0 };
 
   for (let i = 0; i < entries.length; i++) {
     const [bookingIdStr, listEntry] = entries[i] as [string, any];
     const fideloBookingId = parseInt(bookingIdStr);
 
-    // Skip if already imported
+    // Already imported? Skip — or, with --patch-existing, refresh fields that
+    // commonly drift after first import: payments/amounts on the booking, and
+    // visa/passport/contact fields on the linked student. Everything we need
+    // is on the LIST entry — no per-booking detail fetch required, which keeps
+    // the nightly diff cheap. Nested course / accommodation / holiday rows are
+    // deliberately left alone (those need fideloCourseId-level matching).
     const existing = await prisma.booking.findUnique({ where: { fideloBookingId } });
-    if (existing) { stats.bookingsSkipped++; continue; }
+    if (existing) {
+      const le = listEntry as any;
+      const eligibleForPatch = PATCH_EXISTING
+        && existing.serviceStart
+        && existing.serviceStart >= patchStartAfterDate;
+      if (eligibleForPatch) {
+        // Resolve agency from list entry (cheap — DB only).
+        let patchAgencyId: number | null = existing.agencyId ?? null;
+        if (le.agency_id) {
+          const fideloAgencyId = parseInt(le.agency_id);
+          const ag = await prisma.agency.findFirst({ where: { fideloAgencyId } });
+          if (ag) patchAgencyId = ag.id;
+        }
+
+        // Patch booking top-level (payments are the main thing that drifts).
+        // Note on amountTotal: we deliberately DON'T overwrite the existing
+        // value from le.amount because Fidelo sometimes serves gross there,
+        // which would unwind the net total computed at create time. Cap
+        // amountPaid at the existing net total so gross-side over-payments
+        // don't manifest as phantom overpayments. See net-gross.md.
+        const existingTotal = existing.amountTotal !== null && existing.amountTotal !== undefined
+          ? Number(existing.amountTotal) : null;
+        const grossPaidPatch = le.payments ? parseFloat(le.payments) : null;
+        const cappedPaid = (grossPaidPatch !== null && existingTotal !== null && grossPaidPatch > existingTotal)
+          ? existingTotal : grossPaidPatch;
+        const computedOpen = (existingTotal !== null && cappedPaid !== null)
+          ? Math.max(0, existingTotal - cappedPaid)
+          : (le.amount_open ? parseFloat(le.amount_open) : null);
+        await prisma.booking.update({
+          where: { id: existing.id },
+          data: {
+            agencyId: patchAgencyId,
+            status: mapStatus(le.status, le.confirmed),
+            confirmed: !!le.confirmed,
+            serviceStart: parseDate(le.all_start),
+            serviceEnd: parseDate(le.all_end),
+            // amountTotal intentionally NOT updated — preserves net total set at create time.
+            amountPaid: cappedPaid,
+            amountOpen: computedOpen,
+            amountRefund: le.amount_refund ? parseFloat(le.amount_refund) : null,
+          } as any,
+        });
+
+        // Patch linked student — visa/passport/contact occasionally update.
+        // Empty Fidelo values are dropped so we never blank hand-entered SIS data.
+        const visumPass = (le.visum_passport_number_original || '').toString().trim() || null;
+        const visumPassFrom = parseDate(le.visum_date_of_issue_original);
+        const visumPassUntil = parseDate(le.visum_due_date_original);
+        const visumVisaFrom = parseDate(le.visum_date_from_original);
+        const visumVisaUntil = parseDate(le.visum_date_until_original);
+        const rawEmailP = le.email || le.customer_email || '';
+        const normEmailP = Array.isArray(rawEmailP) ? (rawEmailP[0] || '') : String(rawEmailP);
+        const studentPatch: any = {
+          ...(normEmailP ? { email: normEmailP } : {}),
+          ...(le.customer_tel ? { phone: (stripHtml(le.customer_tel) || '').substring(0, 50) || null } : {}),
+          ...(le.customer_mobile ? { phoneMobile: (stripHtml(le.customer_mobile) || '').substring(0, 50) || null } : {}),
+          ...(le.customer_address ? { address: stripHtml(le.customer_address) } : {}),
+          ...(le.customer_city ? { city: stripHtml(le.customer_city) } : {}),
+          ...(le.customer_zip ? { zip: stripHtml(le.customer_zip) } : {}),
+          ...(le.customer_country_original ? { countryIso: (le.customer_country_original || '').substring(0, 2) } : {}),
+          ...(visumPass       ? { passportNumber:     visumPass       } : {}),
+          ...(visumPassFrom   ? { passportValidFrom:  visumPassFrom   } : {}),
+          ...(visumPassUntil  ? { passportValidUntil: visumPassUntil  } : {}),
+          ...(visumVisaFrom   ? { visaFrom:           visumVisaFrom   } : {}),
+          ...(visumVisaUntil  ? { visaUntil:          visumVisaUntil  } : {}),
+        };
+        if (Object.keys(studentPatch).length > 0) {
+          await prisma.student.update({ where: { id: existing.studentId }, data: studentPatch });
+        }
+
+        stats.bookingsPatched++;
+        continue;
+      }
+      stats.bookingsSkipped++;
+      continue;
+    }
 
     // Early territory filter — skip unsupported nationalities BEFORE the expensive detail fetch.
     // Fidelo list entries sometimes carry the full name, sometimes only the ISO code.
@@ -274,7 +438,12 @@ async function main() {
         ...(visumPassUntil  ? { passportValidUntil: visumPassUntil  } : {}),
         ...(visumVisaFrom   ? { visaFrom:           visumVisaFrom   } : {}),
         ...(visumVisaUntil  ? { visaUntil:          visumVisaUntil  } : {}),
-        ...(typeof le.visa_required === 'boolean' ? { visaRequired: le.visa_required } : {}),
+        // --include-inactive sweep: Fidelo's Inactive flag is the school's
+        // visa-pending escrow workaround, so any student arriving via this
+        // path defaults to visaStatus='Pending' (won't blank a hand-set value
+        // because the upsert path only writes this when we're explicitly in
+        // the inactive sweep AND no value is already set on the SIS side).
+        ...(INCLUDE_INACTIVE && !dbStudent?.visaStatus ? { visaStatus: 'Pending' } : {}),
       };
 
       // Auto-set student type from DOB
@@ -369,6 +538,35 @@ async function main() {
         if (fees.accommodationFees[i] > 0) { a.fee = fees.accommodationFees[i]; stats.accommsWithFee++; }
       });
 
+      // Derive the canonical NET total from the chosen invoice's line items.
+      // This is what ULearn actually invoices the student/agent — the agent's
+      // commission slice has already been subtracted out. Falling back to
+      // le.amount only when no invoice exists keeps legacy bookings importable.
+      // See .claude/docs/agencies/net-gross.md — gross is a display fiction;
+      // the legal demand and the SIS source of truth is net.
+      const canonicalInvoice = pickBestInvoice(invoices as any[]);
+      let netTotal: number | null = null;
+      if (canonicalInvoice?.items?.length) {
+        netTotal = canonicalInvoice.items.reduce(
+          (sum: number, it: any) => sum + (Number(it.amount_net) || 0), 0
+        );
+        // Non-positive net = picked a credit-note or refund-side invoice; fall back.
+        if (netTotal <= 0) netTotal = null;
+      }
+      const fallbackTotal = le.amount ? parseFloat(le.amount) : null;
+      const finalTotal = netTotal ?? fallbackTotal;
+      // Cap amount_paid at the net total so gross/net mismatch stops manifesting
+      // as a phantom overpayment in the SIS ledger. Real overpayments (rare —
+      // someone genuinely paid extra) get clamped, which is acceptable for the
+      // 99% case; we can revisit if Antonella spots a true overpayment masked.
+      const grossPaid = le.payments ? parseFloat(le.payments) : null;
+      const finalPaid = (grossPaid !== null && finalTotal !== null && grossPaid > finalTotal)
+        ? finalTotal
+        : grossPaid;
+      const finalOpen = (finalTotal !== null && finalPaid !== null)
+        ? Math.max(0, finalTotal - finalPaid)
+        : (le.amount_open ? parseFloat(le.amount_open) : null);
+
       // Map holidays
       const holidaysData: any[] = [];
       if (booking.holidays) {
@@ -384,18 +582,22 @@ async function main() {
       }
 
       // Create booking with nested data
+      // --include-inactive forces booking status to ESCROW so the existing
+      // gating in balances/profitMargin/partner totals/accommodation matching
+      // keeps these out of operational views until the visa decision lands.
+      const computedStatus = INCLUDE_INACTIVE ? 'ESCROW' : mapStatus(le.status, le.confirmed);
       await prisma.booking.create({
         data: {
           studentId: dbStudent!.id,
           agencyId,
-          status: mapStatus(le.status, le.confirmed),
+          status: computedStatus,
           confirmed: !!le.confirmed,
           serviceStart: parseDate(le.all_start),
           serviceEnd: parseDate(le.all_end),
           currency: 'EUR',
-          amountTotal: le.amount ? parseFloat(le.amount) : null,
-          amountPaid: le.payments ? parseFloat(le.payments) : null,
-          amountOpen: le.amount_open ? parseFloat(le.amount_open) : null,
+          amountTotal: finalTotal,
+          amountPaid: finalPaid,
+          amountOpen: finalOpen,
           amountRefund: le.amount_refund ? parseFloat(le.amount_refund) : null,
           fideloBookingId,
           dataSource: 'FIDELO',
@@ -417,7 +619,7 @@ async function main() {
 
   console.log('\n\n=== Import Complete ===');
   console.log(`Students: ${stats.students} created, ${stats.studentsUpdated} updated`);
-  console.log(`Bookings: ${stats.bookings} created, ${stats.bookingsSkipped} skipped (already imported), ${stats.territorySkipped} skipped (unsupported territory)`);
+  console.log(`Bookings: ${stats.bookings} created, ${stats.bookingsPatched} patched (existing refreshed from Fidelo), ${stats.bookingsSkipped} skipped (already imported), ${stats.territorySkipped} skipped (unsupported territory)`);
   console.log(`Courses: ${stats.courses} (${stats.coursesWithFee} with fee), Accommodation: ${stats.accommodations} (${stats.accommsWithFee} with fee), Holidays: ${stats.holidays}`);
   console.log(`Agencies matched/created: ${stats.agencies}`);
   console.log(`Errors: ${stats.errors}`);

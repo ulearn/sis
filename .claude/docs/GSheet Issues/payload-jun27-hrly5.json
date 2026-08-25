@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 + 16989 still unlinked — bookingId = null, xeroPaymentId = null — 60 days since creation on 28 Apr\n• Payment 16988 (HubSpot 1204827374829) → Booking 17856 Margherita Galbusera — EUR 339.90\n• Payment 16989 (HubSpot 1204846469317) → Booking 17857 Francesca Fassina — EUR 339.90\n• Both bookings: status = Confirmed, confirmed = false — students blocked from class assignment lists\n• Booking courses 24630 + 24631: General English AM Plus, Jun 29 to Jul 10 — fee = null\n• Classes start MON JUN 29 — 2 DAYS AWAY — MAXIMUM EMERGENCY — 4-step SQL not yet run",
+        "(NOT RUN) (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) UPDATE booking_courses SET fee=339.9 WHERE id IN (24630,24631); (4) UPDATE bookings SET confirmed=true WHERE id IN (17856,17857). See recipe: issue-1-orphan-payments.md",
+        "hrly Jun27 SAT UTC (77th check, fresh DB): pmt16988 bookingId=null xeroId=null EUR339.90 (Apr28=60d unlinked). pmt16989 bookingId=null xeroId=null EUR339.90 (Apr28=60d unlinked). bk17856 CONFIRMED conf=false amtPaid=339.9/339.9 (updAt=Jun04). bk17857 CONFIRMED conf=false amtPaid=339.9/339.9 (updAt=Jun04). bc24630+24631 GE-AM-Plus Jun29-Jul10 fee=STILL null active=true. CLASSES START MON JUN29 — 2 DAYS. 4-STEP SQL NOT RUN. NEIL: action before Mon Jun29 morning.",
+        "Jun29 2d EMERG"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Class assignment 255 (class 11, B1 PM) weekStart = 12 Jan 2026 (wrong — course started 9 Mar) and weekEnd = 3 Jul 2026 (wrong — course ends 11 Sep)\n• After Jul 03 Saikhantes will vanish from class list — 10 weeks uncovered through 11 Sep\n• Booking course 24925 (Academic Year Afternoon, 9 Mar to 11 Sep) is correct course for student 1001 (booking 18151)\n• Student 1001 (Saikhantes Shagdarsuren) status = ACTIVE, B1 level, visa valid Mar 09 to Nov 09",
+        "(NOT RUN) UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255. (Verify table name first.) See recipe: issue-29-saikhantes-jan12-start-date.md",
+        "hrly Jun27 SAT UTC (48th check, fresh DB): sca255 STILL weekStart=2026-01-12(WRONG) weekEnd=2026-07-03(WRONG) classId=11 bookingCourseId=24925. bc24925 AY Afternoon Mar09-Sep11 active. bk18151 CONF 1339.2/1339.2. weekEnd Jul03 = 6 DAYS AWAY — then Saikhantes invisible to B1-PM for 10 weeks through Sep11. SQL NOT RUN: UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255. NEIL: must run before Thu Jul03.",
+        "sca255; Jul03=6d; URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• Student 917 (Uyanga Tungalag) confirmed in school since 27 Apr — 61 days with zero class assignments (fresh DB Jun 27)\n• Booking 1467 is Confirmed (confirmed = true), paid EUR 2405 / 2405 — Fidelo student migrated\n• Booking course 1613 (Academic Year Morning, Apr 27 to Oct 16) is active — no class assigned\n• Visa status = null — prevents appearance in class-to-be-assigned list\n• Student has been attending without a formal class assignment for over 2 months",
+        "Assign class for bc1613 via SIS UI (no SQL needed). Set visaStatus on student 917. See recipe: issue-25-uyanga-visa-escrow.md",
+        "hrly Jun27 SAT UTC (8th check, fresh DB): s917 visaStatus=STILL NULL (updAt=May21=37d stale) hubspotContactId=null. 0 SCAs (bc1613 AY-Morn Apr27-Oct16 active, booking_id=1467). bk1467 CONF conf=true amtPaid=2405/2405. 61+ days unassigned. UNCHANGED. Neil: (1) SIS student 917 set visaStatus=approved; (2) assign class for bc1613.",
+        "D61; 0SCA; CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Student 356 (Shih-Wei Huang) gender = null — 24 days stale (last updated Jun 03)\n• Document record 238 (exit letter, template 4, booking 560) status = STILL ISSUED — issued Jun 18 at 08:53 UTC (9 days ago)\n• Exit letter doc 238 shows incorrect pronouns (she/her) because gender field is null — must be revoked and regenerated after gender is set\n• Code-level fix also needed: documents.ts should guard against null gender",
+        "(NOT RUN) SIS student 356 → set Gender = Male. Then SIS booking 560 Documents → Revoke doc 238 → Regenerate. Code fix: add null-gender guard in documents.ts. See recipe: issue-32-shih-wei-gender-default.md",
+        "hrly Jun27 SAT UTC (8th check, fresh DB): s356 gender=STILL null (updAt=Jun03=24d stale). doc238 STILL ISSUED (exit letter tmpl4 bk560 updAt=Jun18=9d stale). UNCHANGED — 9 days with wrong Ms./she/her pronouns on issued exit letter. Neil: (1) SIS student 356 Personal Details set Gender=Male; (2) SIS bk560 Documents Revoke doc238 (via SIS workflow, not delete); (3) Regenerate exit letter.",
+        "urgent; revoke doc238"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• Accommodation 11352 EXISTS in SIS for booking 18156 (City Centre Apartment Premium, Jul 4-11, EUR 360, active = true)\n• Bed ID = null — no specific bed assigned; this is why it does not appear in the allocation view\n• Booking 18156 is PENDING, EUR 0 of EUR 645 paid — 10 days stale (last updated Jun 17)\n• Available Premium beds 174, 175, 176 confirmed free Jul 4-11 (zero conflicts)",
+        "SIS: Student 278 (Veronica Martin) → booking 18156 → Accommodation → assign Premium bed 174, 175, or 176. Confirm booking once EUR 645 paid. See recipe: issue-37-veronica-capel-accomm-allocation.md",
+        "hrly Jun27 SAT UTC (10th check, fresh DB): accom11352 bedId=STILL null (updAt=Jun17=10d stale). bk18156 STILL PENDING EUR 0/645 confirmed=false. Beds 174/175/176 confirmed free Jul4-11 (0 conflicts). Jul4 arrival in 7 days. No change since Jun17. Neil: assign Premium bed once EUR 645 payment received.",
+        "await bed; Jul4=7d"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• Booking course 24826 (Intensive General 30, Jun 08 to Jun 19) ended Jun 19 — course is over, still active = true (8 days stale)\n• Booking 18034 is PARTIAL, confirmed = false — EUR 845 paid of EUR 1095 total (EUR 250 outstanding)\n• Payment 17683 = EUR 845, HubSpot payment ID 1241215836360, Xero payment ID = null — not Xero-reconciled\n• Student on booking 18034 is Ernesto Pesoa Gil (student 14532), not Ivan Rodriguez\n• Ivan Rodriguez (student 18) has booking 22 CONFIRMED and fully paid — no outstanding issue on his record\n• Column B student name is a mismatch — the EUR 250 debt belongs to Ernesto Pesoa Gil",
+        "Chase EUR 250 from Ernesto Pesoa Gil (student 14532, booking 18034). Reconcile payment 17683 in Xero. See recipe: issue-26-intensive-class-assign-once.md",
+        "hrly Jun27 SAT UTC (11th check, fresh DB): bc24826 STILL active=true (ended Jun19=8d stale). bk18034 PARTIAL EUR845/1095 (EUR250 outstanding) conf=false (updAt=Jun07=20d stale). pmt17683 EUR845 bookingId=18034 xeroId=NULL hsId=1241215836360. UNCHANGED. Neil: (1) deactivate bc24826 in SIS; (2) chase EUR250 from Ernesto Pesoa Gil (s14532, bk18034); (3) reconcile pmt17683 in Xero.",
+        "EUR250; bc24826 8d stale"
+      ]
+    ]
+  }
+]

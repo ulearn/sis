@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "100th check Mon 10 Aug 2026 UTC — CRITICAL: Classes in session NOW\n• All 17 Booking Courses starting 2026-08-10 still have 0 class assignments\n• 13 confirmed, must assign today: BC 108 (Lucia Borroni), 109 (Maicol Moretti), 1313 (Ana Luiza De Sousa), 1818 (Natanael Reis Lourenco), 24915 (Toshimi Hanakawa), 24970 (Tsengelbayar Mendsaikhan), 25004 (Vincenzo Contu), 25005 (Claudia Mereu), 25024 (Josimar Roberto), 25027 (Jacqueline Burgos), 25031 (Brisia Garcia Roman), 25036 (Jorge Perez Aldana), 25039 (Cristian Ravai)\n• 4 unconfirmed — hold: BC 96 (Alessandro Signorotti), 833 (Settiyanee Duangjai), 25007 (Nominjin Amartsogt), 25042 (Edith Nunes)",
+        "Assign 13 confirmed Aug-10 BCs via SIS Admin — classes in session. See recipe: issue-38-addendum-10aug-a.md",
+        "100th hrly Mon 10 Aug UTC. All 17 BCs start Aug 10, 0 SCAs. Classes started. Assign NOW.",
+        "CRITICAL: classes started"
+      ]
+    ]
+  },
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "145th check Mon 10 Aug 2026 UTC — CRITICAL: day 8, 0 class assignments\n• Booking Course 25035 (Rakan Alghamdi, General English Academic Year AM Plus, 2026-08-03 to 2026-12-18): active = true, 0 class assignments — day 8 with no placement\n• Old Booking Course 24697 (Academic Year Morning): still active = true, has 1 SCA — Student Class Assignment 288 (week_start 2026-07-06, pointing to wrong BC)\n• Fix: deactivate BC 24697; move SCA 288 to BC 25035 with week_start = 2026-08-10",
+        "Deactivate BC 24697; move SCA 288 to BC 25035 (week_start=2026-08-10). See recipe: issue-12-addendum-10aug-a.md",
+        "145th hrly Mon 10 Aug UTC. BC 25035 still 0 SCAs day 8. BC 24697 still active. Fix NOT RUN.",
+        "CRITICAL: day 8 no class"
+      ]
+    ]
+  },
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "206th check Mon 10 Aug 2026 UTC — unchanged since 205th check\n• Payment 4781: EUR 380, Flywire, 2019-08-20 — 2,550 days orphaned (booking_id = null)\n• Payment 16988: EUR 339.90, Bank, 2026-04-28 — 104 days orphaned (booking_id = null)\n• Payment 16989: EUR 339.90, Bank, 2026-04-28 — 104 days orphaned (booking_id = null)\n• Payment 17187: EUR 6,151, TransferMate Escrow, 2026-05-01 — 101 days orphaned (booking_id = null)\n• Booking 17856: confirmed = false, 0 payments linked, amount_open = null\n• Booking 17857: confirmed = false, 0 payments linked, amount_open = null\n• Booking Courses 24630 and 24631 (General English AM Plus): ended 2026-07-10, active = true — 31 days stale",
+        "Link payments 16988/16989 to bookings 17856/17857; set confirmed=true; deactivate BCs 24630+24631. See recipe: issue-1-addendum-10aug-a.md",
+        "206th hrly Mon 10 Aug UTC. Unchanged. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "85th check Mon 10 Aug 2026 UTC — unchanged since 84th check\n• Student 293 (Telmuun Enkhsaikhan): 6 stale Booking Courses still active\n• BC 482 (Academic Year Afternoon): ended 2025-03-14 — 514 days stale\n• BC 483 (Academic Year Afternoon): ended 2025-07-11 — 395 days stale\n• BC 1609 (Academic Year Renewal Afternoon): ended 2025-12-19 — 234 days stale\n• BC 1610 (Academic Year Renewal Afternoon): ended 2026-01-09 — 213 days stale\n• BC 1611 (Academic Year Renewal Afternoon): ended 2026-03-06 — 157 days stale\n• BC 1612 (Academic Year Renewal Afternoon): ended 2026-05-01 — 101 days stale\n• BC 1810 (Academic Year Renewal Morning, ends 2027-01-01): active = true — current course, keep\n• Ana Jessica Rosa de Paula Santos: EUR 1,530 refund/reallocation still unresolved",
+        "Deactivate BCs 482, 483, 1609-1612 (Telmuun); decide EUR 1,530 for Ana Jessica. See recipe: issue-48-addendum-10aug-a.md",
+        "85th hrly Mon 10 Aug UTC. Unchanged. Fix NOT RUN.",
+        "6 stale BCs; EUR 1,530"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "37th check Mon 10 Aug 2026 UTC — 27 days to Sep 6 check-in\n• Booking Accommodation 11392 (Giampaolo Russo, City Centre Apartment Premium): bed_id = null\n• Check-in 2026-09-06, check-out 2026-09-14, fee = EUR 415\n• Booking 18180: confirmed = true, EUR 2,584.96 paid, EUR 0 open\n• Beds 168, 177, 194 were free per 9 Aug check — re-verify before assigning",
+        "Re-verify beds 168/177/194 free Sep 6-14; assign one to BA 11392. See recipe: issue-41-addendum-10aug-a.md",
+        "37th hrly Mon 10 Aug UTC. Bed null. 27d to Sep 6. Fix NOT RUN.",
+        "bed null; 27d to Sep 6"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "53rd check Mon 10 Aug 2026 UTC — unchanged since 52nd check\n• Total active booking courses: 24,762\n• Stale (ended before 2026-08-10): 24,479 — 99% of all active records\n• Current (ending on or after 2026-08-10): 283\n• Mass deactivation not yet run",
+        "Mass-deactivate all active Booking Courses where endDate < today. See recipe: issue-45-addendum-10aug-a.md",
+        "53rd check Mon 10 Aug UTC. 24,479 stale (99% of 24,762). 283 current. Fix NOT RUN.",
+        "24,479 stale; fix pending"
+      ]
+    ]
+  }
+]

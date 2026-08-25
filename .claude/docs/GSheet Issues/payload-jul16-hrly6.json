@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student class assignment 255 (Saikhantes Shagdarsuren, student 1001, booking course 24925): week ending 3 July 2026 — STILL the only assignment — 65th check, Thursday 16 July UTC\n• No class assignment for week ending 10 July 2026 (past) or 17 July 2026 (TOMORROW — TODAY IS THE LAST DAY to assign)\n• 14 school days without assignment: Monday 7 July through Thursday 16 July (today)\n• Booking course 24925 (Academic Year Afternoon, 9 March to 2 October 2026): active = true, fee = EUR 1102.20\n• Booking course 1982 (Academic Year Morning, ended December 2025): active = still true — 209+ days stale, should be false",
+        "Create class assignment for week ending 17 Jul on booking course 24925; set booking course 1982 active = false; see recipe: issue-15-addendum-16jul.md",
+        "65th check Thu 16 Jul UTC (7th check today). SCA255 weekEnd=Jul03 STILL only SCA. TODAY=LAST DAY to assign WB Jul17. BC24925 AY-Afternoon active ends Oct02. BC1982 ended Dec25 STILL active (209+d stale). Fix NOT RUN.",
+        "CRITICAL; TODAY=last day for WB Jul17"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 3 booking courses all end TOMORROW Friday 17 July — zero class assignments confirmed (99th check, Thursday 16 July UTC)\n• Booking course 1719 (María Magdalena Hermosilla Ogaz, student 992): Academic Year Afternoon, 26 January to 17 July 2026, booking 1543 Confirmed EUR 1356 paid of EUR 1500 (EUR 144 outstanding)\n• Booking course 24946 (Lunel Dubost, student 14566): General English AM, 13 to 17 July 2026, booking 18171 Confirmed EUR 206.13 fully paid\n• Booking course 24994 (Petru Ous, student 14591): General English AM, 13 to 17 July 2026, booking 18217 Confirmed EUR 202 fully paid\n• All three booking courses: active = true, zero class assignments ever — students cannot attend tomorrow without assignment\n• Hermosilla Ogaz: EUR 144 outstanding on booking 1543",
+        "Assign classes for booking courses 1719 (Hermosilla), 24946 (Dubost), 24994 (Ous) via SIS Admin > Classes > To Be Assigned TODAY; see recipe issue-45-addendum-16jul.md",
+        "99th check Thu 16 Jul UTC (7th check today). LAST DAY TODAY. BC1719 Hermosilla 0-SCA AY-Afternoon ends Jul17. BC24946 Dubost 0-SCA ends Jul17. BC24994 Ous 0-SCA ends Jul17. All 3 CONFIRMED. BK1543 EUR1356/1500 (EUR144 owed). Fix NOT RUN.",
+        "CRITICAL; LAST DAY TODAY"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Duplicate of issue 15 (row 16) — same student: Saikhantes Shagdarsuren (student 1001)\n• Class assignment 255 (week ending 3 July 2026): last and only assignment — no assignment for weeks ending 10 July (past) or 17 July (TOMORROW — TODAY IS THE LAST DAY) — 24th check, Thursday 16 July UTC\n• Fix has not been run",
+        "See issue 15 (row 16) for fix. Same root cause.",
+        "24th check Thu 16 Jul UTC (5th check today). TODAY=LAST DAY to assign WB Jul17. SCA255 weekEnd=Jul03 STILL only SCA. See row 16 for full detail. Fix NOT RUN.",
+        "CRITICAL; TODAY IS LAST DAY"
+      ]
+    ]
+  },
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• Email address in phone field — Dolgormaa Bayaraa (student 1897): saraa.tpb@gmail.com — unchanged since 28 April 2026 (79 days)\n• Email address in phone field — Aki Miura (student 8567): aki-hinaaki1116@ezudo.he.jp — unchanged since 10 April 2026 (97 days)\n• Annotation in phone field — Jieun Lee (student 1194): 00821097366523 (home contry) — unchanged since 7 May 2026 (70 days)\n• Annotation in phone field — Lisa Li (student 5345): 0864645297 (Husband) — unchanged since 10 April 2026 (97 days)\n• Unicode trailing characters in phone field — Alessandra Saito de Araujo (student 10343): +353 (83) 885 9162 with trailing Unicode right-to-left marks — unchanged since 28 April 2026 (79 days)\n• All 5 records confirmed unchanged — fresh query 16 July 2026",
+        "Strip annotations on students 1194 + 5345; strip Unicode on 10343; get real numbers for 1897 + 8567 from HubSpot; recipe: issue-5-mobile-numbers.md",
+        "16 Jul THU UTC (2nd pass today). UNCHANGED. s8567 Aki email in phone (97d). s1897 Dolgormaa email in phone (79d). s1194 Jieun annotation (70d). s5345 Lisa annotation (97d). s10343 Alessandra Unicode trailing (79d). All 5 STILL wrong. NOT RUN.",
+        "5 phones wrong; 97d"
+      ]
+    ]
+  },
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• Accommodation 11162 (Massimiliano Cameran, booking 97, bed 179): 21 April to 23 May 2026 — active = still true — 54 days stale (Thursday 16 July UTC)\n• Accommodation 11319 (booking 18034, no bed assigned): 31 May to 31 May 2026 — active = still true — 46 days stale\n• Both accommodations confirmed unchanged",
+        "Set active = false on accommodation 11162; assign a bed to accommodation 11319 or close it. See recipe: issue-12-accomm-dates-mismatch.md",
+        "16 Jul THU UTC (2nd pass today). CONFIRMED UNCHANGED. BA11162 bed179 Apr21-May23 active=STILL true (54d stale). BA11319 bedId=null May31-May31 active=STILL true (46d stale).",
+        "BA11162 stale 54d; BA11319 no-bed"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• Student 983 (Flávia Nascimento Mariano): visa status = null — Prisma save error prevents update (Thursday 16 July UTC)\n• Student record updated 14 July 2026 (unrelated field); visa status still null\n• Booking 1534: Confirmed, fully paid EUR 1308\n• Root cause: Prisma enum mismatch on visa_status column blocks save\n• Note: student is attending normally via class assignment 265 (class 11, B1 PM) — no operational impact",
+        "UPDATE students SET visa_status='Approved' WHERE id=983 (after confirming approved in HubSpot). See recipe: issue-18-flavia-visa-save-error.md",
+        "16 Jul THU UTC (2nd pass today). UNCHANGED. s983 Flavia visaStatus=STILL null. updatedAt=Jul14 (unrelated field change). BK1534 CONFIRMED EUR1308/1308. Attending normally via SCA265.",
+        "visa null; cosmetic"
+      ]
+    ]
+  }
+]

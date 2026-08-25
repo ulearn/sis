@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 14th check Tue 4 Aug 2026 UTC — 3 URGENT booking courses still 0 assigned, end Thu 7 Aug (3 days)\n• Booking course 88 (Africa Mera Bachir, student 76): Morning General, ends Thu 7 Aug — 0 class assignments, URGENT\n• Booking course 24967 (Gustavo Da Silva, student 14570): General English AM, ends Thu 7 Aug — 0 class assignments, URGENT; booking 18179 also has BC 24955 (AM Plus, 2 SCAs assigned) — possible duplicate\n• Booking course 25038 (Eduardo Roche Diaz, student 14602): General English PM, ends Thu 7 Aug — 0 class assignments, URGENT\n• 8 booking courses end Fri 14 Aug with 0 class assignments: BC 24 (Amine Ibrani), BC 1144 (Anar-Erdene Batbayar), BC 1305 (Nomin Nergui), BC 1344 (Bat-Orgil Baljinnyam), BC 1572 (Ganchimeg Ganbaatar), BC 1591 (Turbold Altankhuyag), BC 25004 (Vincenzo Contu), BC 25005 (Claudia Mereu)\n• Booking course 25006 (Marina Larripa, ended 2026-08-03): 1 day stale, active = true\n• Aug Bank Holiday 2026-08-03: absent from school_closures — add 2027+ to prevent recurrence",
+        "Assign classes to BC 88 + BC 24967 (or deactivate if duplicate) + BC 25038 before Thu Aug 7. Deactivate BC 25006. See recipe: issue-38-addendum-4aug-j.md",
+        "14th hrly Tue 4 Aug UTC. 3 urgent BCs end Thu Aug 7 UNCHANGED. 8 BCs end Aug 14 with 0 SCAs unchanged. Fix NOT RUN.",
+        "CRITICAL; 3 Aug 7; 8 Aug 14"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• 53rd check Tue 4 Aug 2026 UTC — unchanged\n• Student 1052 (Alberto Squillace), booking 1611\n• Booking course 1797 (Morning General, ended 2026-06-26): active = true — 39 days stale, 1 class assignment\n• Booking course 24686 (Morning General, 2026-07-20 to 2026-09-18): active = true — 0 class assignments, 16 days into course without class assignment",
+        "Create class assignment for BC 24686 (Alberto); deactivate BC 1797. See recipe: issue-24-addendum-4aug-c.md",
+        "53rd hrly Tue 4 Aug UTC. BC 24686: 0 SCAs, 16d into course (started Jul 20). BC 1797 stale 39d. Fix NOT RUN.",
+        "SCA overdue 16d"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• 145th check Tue 4 Aug 2026 UTC — Day 100 without class assignment, unchanged\n• Student 917 (Uyanga Tungalag): visa_status = null, hubspot_contact_id = null — confirmed\n• Booking course 1613 (Academic Year Morning, Apr 27 to Oct 30 2026): active = true — 0 class assignments, 100 days since course start\n• Booking fully paid: EUR 2,405 paid = EUR 2,405 total",
+        "Create class assignment for BC 1613; fill visa_status and HubSpot contact ID for student 917. See recipe: issue-25-addendum-4aug-b.md",
+        "145th hrly Tue 4 Aug UTC. Day 100 (Apr 27 to Aug 4). Visa = null, HubSpot = null. BC 1613: 0 SCAs. Fix NOT RUN.",
+        "visa null; 0 SCAs; day 100"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 27th check Tue 4 Aug 2026 UTC — count unchanged at 24,467\n• Booking course 25006 (Marina Larripa, ended 2026-08-03): 1 day stale, still in count (corrected from previous \"2 days\" error)\n• Issue 38 booking courses (started 2026-08-03, future end dates) excluded — safe\n• Bulk deactivation still not run — awaiting decision",
+        "Run bulk deactivation of 24,467 stale booking courses. See recipe: issue-45-addendum-4aug-c.md",
+        "27th hrly Tue 4 Aug UTC. Count unchanged at 24,467. BC 25006 1d stale (corrected). Awaiting decision.",
+        "24,467 stale; awaiting decision"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 10th check Tue 4 Aug 2026 UTC — no change since 9th check\n• Booking 18180 (Giampaolo Russo, student 14571): CONFIRMED, confirmed = true, EUR 2,584.96 fully paid\n• Booking course 24956 (General English AM, 2026-08-03 to 2026-09-11): active, class assignment in place — done\n• Booking accommodation 11357 (bed 178, host family, 2026-08-02 to 2026-09-06): active, fee EUR 1,250 — in place\n• Capel Street accommodation (2026-09-06 to 2026-09-14): still absent from booking_accommodations — not created\n• Payment 17954 (EUR 2,584.96, booking 18180): xeroPaymentId = null — 40 days unreconciled (since 2026-06-26)",
+        "Create Capel BA for booking 18180 (Sep 6-14); reconcile payment 17954 in Xero. See recipe: issue-41-addendum-4aug-g.md",
+        "10th hrly Tue 4 Aug UTC. Class + host family BA done. Capel BA still absent. Payment 17954 xeroId=null 40d (since Jun 26). Fix NOT RUN.",
+        "Capel BA + Xero pmt open"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• 22nd check Tue 4 Aug 2026 UTC — day 114 since course start Apr 13\n• Booking 1605 (Ariunsarnai Batbayar, student 1047): status = PENDING, confirmed = false\n• Amount paid = EUR 0, amount open = EUR 1,509 — unchanged, no payments on record\n• Booking course 1791 (Academic Year Renewal Morning, Apr 13 to Oct 23 2026): active = true, 0 class assignments",
+        "Collect EUR 1,509 payment for booking 1605; create class assignment for BC 1791 if payment received. See recipe: issue-20-addendum-4aug-b.md",
+        "22nd hrly Tue 4 Aug UTC. Day 114. EUR 0/1,509. 0 class assignments. 0 payments. Fix NOT RUN.",
+        "Day 114; EUR 0 / 1,509"
+      ]
+    ]
+  }
+]

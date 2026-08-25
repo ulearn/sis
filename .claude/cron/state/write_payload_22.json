@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "69th check Sat 18 Jul 2026 UTC (11th today)\n• Booking course 24991 (Edith Nunes, student 1015, General English AM, 13 Jul to 7 Aug 2026): STILL 0 class assignments — confirmed fresh query\n• Week 1 (Mon 13 Jul to Fri 17 Jul 2026): ended with 0 class assignments — attendance permanently missed\n• Week 2 (Mon 20 Jul to Fri 24 Jul 2026): starts MONDAY — assign before 09:00\n• Booking courses 24933 + 24934 (General English AM, ended 10 Jul 2026): both active = still true — 8 days stale\n• Booking course 1797 (Morning General, ended 26 Jun 2026): active = still true — 22 days stale\n• Booking 18214: Confirmed, EUR 608 fully paid",
+        "Assign Edith Nunes (student 1015) to General English AM on booking course 24991 before Monday 20 July 09:00; set active = false on booking courses 24933, 24934, 1797. See recipe: issue-22-addendum-17jul.md",
+        "69th check Sat 18 Jul UTC (11th today). BC24991 STILL 0 class assignments — confirmed fresh DB. Week 2 starts MONDAY 20 Jul. Stale BCs 24933+24934 (ended Jul10) and 1797 (ended Jun26): all active=true. Fix NOT RUN.",
+        "CRITICAL; assign Mon 20 Jul"
+      ]
+    ]
+  }
+]

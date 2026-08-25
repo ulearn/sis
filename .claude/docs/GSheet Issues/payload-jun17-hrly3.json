@@ -1,0 +1,46 @@
+[
+  {
+    "range": "H6:K6",
+    "values": [
+      [
+        "• Bed assignment 11287 had bedId = null until Jun 16 18:14 UTC — bed 179 now confirmed assigned\n• Booking 17871 is ESCROW status — partial payment: EUR 300 paid of EUR 2313.62 total (EUR 2013 outstanding)\n• LOA document 204 (version 1) was issued Jun 08 — before bed was assigned; accommodation block is missing\n• Bed assignment active Jun 27 – Dec 12\n• Arrival Jun 27 = 10 days",
+        "Bed assigned. Regenerate LOA via SIS → Rakan → booking 17871 → Documents → Regenerate. See recipe: issue-4-rakan-loa-barcode.md",
+        "Jun17 hrly (this run): ba11287 bedId=179 confirmed (set Jun16 18:14 UTC). doc204 ISSUED v1 Jun08 — pre-bed, accom block missing. bk17871 ESCROW confirmed=true paid=300/2313.62 (EUR2013 outstanding). Arrival Jun27=10d. NEIL: regen LOA in SIS.",
+        "regen LOA; 10d"
+      ]
+    ]
+  },
+  {
+    "range": "H17:K17",
+    "values": [
+      [
+        "• Bed assignment 11282 (bed 66) ran May 15 – Jun 05 but active = true (stale flag — ended 12 days ago)\n• Historical issue — Melie term completed Jun 05\n• Overlap constraint from bed assignment 11158 (ended May 17) is also cleared",
+        "UPDATE booking_accommodations SET active=false WHERE id=11282 (low-priority cleanup). Re-issue doc148 only if student requests. See recipe: issue-16-melie-accomm-dates.md",
+        "Jun17 hrly: ba11282 STILL active=true (bedId=66, May15-Jun05, ended 12d ago, updatedAt=Jun05). Hugo ba11158 ended May17. Overlap constraint gone. Low-priority stale-flag cleanup. No change since Jun11.",
+        "historical"
+      ]
+    ]
+  },
+  {
+    "range": "H20:K20",
+    "values": [
+      [
+        "• Booking 83 courses — IELTS (bc89) and Private (bc90) — both ended May 22 (26 days ago)\n• Second booking 2606 also exists, fully paid 2135 / 2135 — but course bc3034 has suspicious 2024 dates (Apr 29 – May 24 2024)\n• Booking 2606 is a Fidelo 2024 migration import — course ended whether dates are 2024 or 2026\n• Private lessons (bc90) is 1-to-1 tuition — no class slot needed by design\n• No active courses for student 77 — not appearing in class list is expected behaviour",
+        "Close: all courses ended. bk2606 is Fidelo 2024 migration (historical). See recipe: issue-19-mailan-class-assign.md",
+        "Jun17 hrly: bk83 confirmed, courses ended May22. bk2606 confirmed 2135/2135 — bc3034 has 2024 dates (Apr29-May24 2024), Fidelo migration artifact. Either way course ended. No active booking for student 77. Expected behaviour.",
+        "no fix needed"
+      ]
+    ]
+  },
+  {
+    "range": "H29:K29",
+    "values": [
+      [
+        "• Booking 17850 is PENDING, confirmed = false\n• Amount paid = null despite payment 17519 (EUR 321.35) being linked (bookingId = 17850)\n• Course 24624 (Morning General) ended Jun 05 — this is now a historical data-integrity cleanup",
+        "(NOT RUN) UPDATE bookings SET status=CONFIRMED, confirmed=true, amount_paid=321.35 WHERE id=17850. See recipe: issue-28-paola-pending-won-deal.md",
+        "Jun17 hrly: bk17850 UNCHANGED (PENDING confirmed=false amtPaid=null updatedAt=Jun04). pmt17519 EUR321.35 (hubspotPaymentId=1231805396201) xeroPaymentId=null. bc24624 ended Jun05 (12d ago). Low-priority historical data cleanup.",
+        "historical; low-pri"
+      ]
+    ]
+  }
+]

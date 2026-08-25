@@ -1,0 +1,68 @@
+[
+ {
+  "range": "H43:K43",
+  "values": [
+   [
+    "• 122nd check Tue 18 Aug 2026 UTC — G hash changed (staff updated issue text), DB data unchanged\n• Booking 18180 (Giampaolo Russo, student 14571): CONFIRMED, fully paid EUR 2,584.96\n• Booking Course 24956 (General English AM): 3 Aug to 11 Sep 2026, active = true\n• Accommodation 11357 (bed 178): ended 15 Aug, fee EUR 1,250 — still active (3 days stale)\n• Accommodation 11396 (bed 44): ends 22 Aug, fee = null — URGENT: 4 days to checkout Sat\n• Accommodation 11397 (bed 89): starts 22 Aug, fee = null — URGENT: 4 days to check-in Sat\n• Accommodation 11392 (bed 168): 6 Sep to 14 Sep, fee EUR 415 — future, OK\n• Class Assignment 424 (class 12, 17 Aug to 11 Sep): DUPLICATE of Assignment 426\n• Class Assignment 426 (class 12, 10 Aug to 11 Sep): CORRECT\n• Payment 17954: EUR 2,584.96, Bank — Xero payment ID = null (unreconciled)",
+    "Set fees on Accommodations 11396+11397; deactivate Accommodation 11357; delete duplicate Assignment 424; reconcile Payment 17954. See recipe: issue-41-addendum-18aug.md",
+    "122nd Tue 18 Aug UTC. URGENT: fees null on Accommodations 11396+11397 (Sat 22 Aug check-in/out). Accommodation 11357 stale 3d. Duplicate Assignment 424 active. Fix NOT RUN.",
+    "SCA424 dup; Aug22 (4d); fees null"
+   ]
+  ]
+ },
+ {
+  "range": "H38:K38",
+  "values": [
+   [
+    "• 223rd check Tue 18 Aug 2026 UTC — ESCALATED: Booking Course 24772 ends TOMORROW (Fri 21 Aug)\n• Booking 17980 (Pietro Caccianiga, student 14521): CONFIRMED, fully paid EUR 5,331, amount open = 0\n• Booking Course 24772 (General English AM): 29 Jun to 21 Aug 2026 — ends TOMORROW, still active\n• Accommodation 11311 (bed 84): ends 22 Aug (Sat), fee EUR 3,850, active — checkout in 4 days\n• Accommodation 11393 (bed 88): starts 22 Aug (Sat), fee = null — URGENT: set fee before check-in\n• Payment 17733: EUR 5,331, Bank (2 Jun 2026) — Xero payment ID = null (78 days unreconciled)\n• Confirm whether a second Booking Course is needed after 21 Aug",
+    "Set fee on Accommodation 11393; deactivate Booking Course 24772 (Fri 21 Aug) + Accommodation 11311 (Sat 22 Aug); reconcile Payment 17733. See recipe: issue-36b-addendum-18aug.md",
+    "223rd Tue 18 Aug UTC. URGENT: Booking Course 24772 ends TOMORROW Fri 21 Aug. Accommodation 11393 fee null — check-in Sat 22 Aug (4d). Payment 17733 Xero null 78d. Fix NOT RUN.",
+    "fee null; check-in Aug22 (4d)"
+   ]
+  ]
+ },
+ {
+  "range": "H54:K54",
+  "values": [
+   [
+    "• Feature request (KC): Host templates have no Host badge in the To: field\n• Student comms block (admin.html approx line 4435-4447): Student + Partner badges only, no Host badge\n• When Host Booking / Host Availability / Host Cancel template selected, To: defaults to student email\n• Student Fanny Scelles (14451, booking 17843): 2 active accommodations confirmed in database\n• Accommodation 11267 (29 Aug to 4 Oct 2026, fee EUR 3,840, active) — first host period\n• Accommodation 11399 (4 Oct to 19 Dec 2026, fee = null, active) — second host period, fee missing\n• G text updated by staff this run (hash changed) — diagnosis unchanged\n• Recipe at issue-52-host-email-badge.md confirmed correct — fix NOT applied",
+    "Add Host badge to admin.html comms To: field; derive host emails from student accommodation providers. See recipe: issue-52-host-email-badge.md",
+    "18 Aug UTC. G updated by staff. Recipe confirmed correct. Low-risk UI-only change (admin.html client-side only). Fix NOT applied. Also: Accommodation 11399 (Fanny, Oct-Dec) has fee = null.",
+    ""
+   ]
+  ]
+ },
+ {
+  "range": "H53:K53",
+  "values": [
+   [
+    "• 372nd check Tue 18 Aug 2026 UTC — recipe now written (was blocked in 371st run)\n• src/routes/email.ts line 327: finalHtml = applyTokens(t.htmlTemplate, tokens) overwrites staff edits\n• Condition at line 325 checks t.htmlTemplate for {if} blocks — triggers on any conditional template\n• Staff edits made in commsEditor before send are discarded when template contains {if} blocks\n• Fix: change line 327 to applyTokens(finalHtml, tokens) to preserve edits and still resolve tokens\n• Also: add room_name token to resolveTokens(); fix template 30 to use the new token\n• Introduced 2026-08-14 (Antonella Day-1 email fix) — correct intent, wrong source HTML",
+    "Fix email.ts line 327: applyTokens(finalHtml) not applyTokens(t.htmlTemplate); add room_name token; fix template 30. See recipe: issue-51-template-edits-lost-on-send.md",
+    "372nd Tue 18 Aug UTC. Recipe written (blocked in 371st run). One-line code fix in src/routes/email.ts — LOW RISK. Fix NOT RUN.",
+    "recipe ready; fix pending"
+   ]
+  ]
+ },
+ {
+  "range": "H16:K16",
+  "values": [
+   [
+    "• 161st check Tue 18 Aug 2026 UTC — no change since 160th check\n• Booking 18151 (Saikhantes Shagdasuren): CONFIRMED, confirmed = true, amount paid EUR 1,339.20\n• Booking serviceEnd = 7 Aug 2026 — stale (student returns Mon 25 Aug; serviceEnd not updated)\n• Booking Course 24925 (Academic Year Afternoon): 9 Mar to 2 Oct 2026, active, ILEP code 0318/0003\n• No class assignment exists for return period (Mon 25 Aug to 2 Oct)\n• Holiday ends Fri 21 Aug (3 days) — student back in class from Mon 25 Aug",
+    "Update booking 18151 serviceEnd to 2026-10-02; create Class Assignment for class 11, 25 Aug to 2 Oct. See recipe: issue-15-saikhantes-class.md",
+    "161st Tue 18 Aug UTC. Returns Mon 25 Aug (7d). Holiday ends Fri 21 Aug (3d). No return assignment. Fix NOT RUN.",
+    "URGENT: return Aug25 (7d)"
+   ]
+  ]
+ },
+ {
+  "range": "H30:K30",
+  "values": [
+   [
+    "• 124th check Tue 18 Aug 2026 UTC — no change since 123rd check\n• Booking 18151 (Saikhantes Shagdasuren): CONFIRMED, confirmed = true, amount paid EUR 1,339.20\n• Booking serviceEnd = 7 Aug 2026 — stale; student returns Mon 25 Aug\n• Booking Course 24925 (Academic Year Afternoon): 9 Mar to 2 Oct 2026, active — no return assignment\n• Assignment 255 ended Jul 31 — no class assignment for 25 Aug to 2 Oct return period",
+    "Extend serviceEnd to Oct 2; create return Class Assignment class 11, 25 Aug to 2 Oct. See recipe: issue-15-saikhantes-class.md",
+    "124th Tue 18 Aug UTC. No change. Returns Mon 25 Aug (7d). Fix NOT RUN.",
+    "URGENT: return Aug25 (7d)"
+   ]
+  ]
+ }
+]

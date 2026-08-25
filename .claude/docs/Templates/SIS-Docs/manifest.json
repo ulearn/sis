@@ -1,0 +1,764 @@
+{
+  "generatedAt": "2026-05-16T12:05:59Z",
+  "scope": "SIS document templates (templateType=document, active=true)",
+  "source": {
+    "db": "sis_db.document_templates",
+    "resolver": "sis/src/scripts/documents.ts:resolveTokens + issueDocument"
+  },
+  "legend": {
+    "resolved": "token is produced by the SIS token resolver — value present at draft time",
+    "custom_editable": "custom.* — intentional staff-fillable editable region, rendered empty by default",
+    "unresolved": "token is referenced in template but the resolver does not produce it",
+    "legacy_fidelo_name": "token name matches a known Fidelo placeholder — flagged for review even when resolved",
+    "empty_risk": "token resolves, but the underlying SIS data is frequently empty/null — common cause of \"blank gaps\" in output"
+  },
+  "summary": {
+    "templatesTotal": 9,
+    "templatesWithUnresolvedTokens": 0,
+    "templatesWithEmptyRiskTokens": 9,
+    "fideloTemplatesScanned": 61,
+    "keyFindings": [
+      "Zero {{...}} tokens are unresolved — no Fidelo paste-ins are leaking through as literal {{token}} text.",
+      "Exit Letter uses an {if absences_list} conditional — confirmed handled by the resolver (Fidelo-style).",
+      "No stray single-brace {x} placeholders or triple-brace {{{x}}} found.",
+      "Reported \"not outputting properly\" symptoms are most likely empty-data conditions (see empty_risk section) — not template authoring bugs."
+    ]
+  },
+  "templates": {
+    "Holiday-Letter": {
+      "id": 5,
+      "name": "Holiday Letter",
+      "documentType": "letters",
+      "category": "academic",
+      "version": 1,
+      "htmlLength": 2082,
+      "tokenCount": 15,
+      "unresolvedCount": 0,
+      "emptyRiskCount": 5,
+      "controlBlocks": [],
+      "tokens": [
+        {
+          "token": "booking.end_date",
+          "status": "resolved",
+          "legacyFideloName": true,
+          "emptyRisk": "EMPTY if no booking linked OR booking has no courses[0]"
+        },
+        {
+          "token": "booking.hours_per_week",
+          "status": "resolved",
+          "emptyRisk": "EMPTY if no booking linked"
+        },
+        {
+          "token": "booking.start_date",
+          "status": "resolved",
+          "legacyFideloName": true,
+          "emptyRisk": "EMPTY if no booking linked OR booking has no courses[0]"
+        },
+        {
+          "token": "custom.holiday_dates",
+          "status": "custom_editable"
+        },
+        {
+          "token": "document.issue_date",
+          "status": "resolved"
+        },
+        {
+          "token": "document.number",
+          "status": "resolved",
+          "legacyFideloName": true
+        },
+        {
+          "token": "document.version",
+          "status": "resolved"
+        },
+        {
+          "token": "student.attendance_rate",
+          "status": "resolved",
+          "emptyRisk": "Empty if no Attendance rows yet (new arrivals)"
+        },
+        {
+          "token": "student.current_level",
+          "status": "resolved",
+          "emptyRisk": "null until a placement is recorded"
+        },
+        {
+          "token": "student.first_name",
+          "status": "resolved"
+        },
+        {
+          "token": "student.last_name",
+          "status": "resolved"
+        },
+        {
+          "token": "student.pronoun_possessive",
+          "status": "resolved"
+        },
+        {
+          "token": "student.pronoun_possessive_cap",
+          "status": "resolved"
+        },
+        {
+          "token": "student.pronoun_subject",
+          "status": "resolved"
+        },
+        {
+          "token": "student.salutation",
+          "status": "resolved"
+        }
+      ]
+    },
+    "Exit-Letter": {
+      "id": 4,
+      "name": "Exit Letter",
+      "documentType": "exit_letter",
+      "category": "academic",
+      "version": 1,
+      "htmlLength": 2387,
+      "tokenCount": 18,
+      "unresolvedCount": 0,
+      "emptyRiskCount": 7,
+      "controlBlocks": [],
+      "tokens": [
+        {
+          "token": "absences_list",
+          "status": "resolved"
+        },
+        {
+          "token": "booking.course_name",
+          "status": "resolved",
+          "legacyFideloName": true,
+          "emptyRisk": "EMPTY if no booking linked"
+        },
+        {
+          "token": "booking.end_date",
+          "status": "resolved",
+          "legacyFideloName": true,
+          "emptyRisk": "EMPTY if no booking linked OR booking has no courses[0]"
+        },
+        {
+          "token": "booking.hours_per_week",
+          "status": "resolved",
+          "emptyRisk": "EMPTY if no booking linked"
+        },
+        {
+          "token": "booking.start_date",
+          "status": "resolved",
+          "legacyFideloName": true,
+          "emptyRisk": "EMPTY if no booking linked OR booking has no courses[0]"
+        },
+        {
+          "token": "booking.weeks",
+          "status": "resolved",
+          "emptyRisk": "EMPTY if no booking linked"
+        },
+        {
+          "token": "custom.exam_info",
+          "status": "custom_editable"
+        },
+        {
+          "token": "document.issue_date",
+          "status": "resolved"
+        },
+        {
+          "token": "document.number",
+          "status": "resolved",
+          "legacyFideloName": true
+        },
+        {
+          "token": "document.version",
+          "status": "resolved"
+        },
+        {
+          "token": "student.attendance_rate",
+          "status": "resolved",
+          "emptyRisk": "Empty if no Attendance rows yet (new arrivals)"
+        },
+        {
+          "token": "student.current_level",
+          "status": "resolved",
+          "emptyRisk": "null until a placement is recorded"
+        },
+        {
+          "token": "student.first_name",
+          "status": "resolved"
+        },
+        {
+          "token": "student.last_name",
+          "status": "resolved"
+        },
+        {
+          "token": "student.pronoun_possessive",
+          "status": "resolved"
+        },
+        {
+          "token": "student.pronoun_possessive_cap",
+          "status": "resolved"
+        },
+        {
+          "token": "student.pronoun_subject",
+          "status": "resolved"
+        },
+        {
+          "token": "student.salutation",
+          "status": "resolved"
+        }
+      ]
+    },
+    "Confirm-Provider": {
+      "id": 6,
+      "name": "Confirmation to Provider",
+      "documentType": "accomm",
+      "category": "accomm",
+      "version": 2,
+      "htmlLength": 2590,
+      "tokenCount": 14,
+      "unresolvedCount": 0,
+      "emptyRiskCount": 8,
+      "controlBlocks": [],
+      "tokens": [
+        {
+          "token": "accommodation.board",
+          "status": "resolved",
+          "emptyRisk": "EMPTY if no accomm row"
+        },
+        {
+          "token": "accommodation.contact_name",
+          "status": "resolved",
+          "emptyRisk": "EMPTY if no accomm or unplaced (no bedId)"
+        },
+        {
+          "token": "accommodation.end_date",
+          "status": "resolved",
+          "emptyRisk": "EMPTY if no accomm row"
+        },
+        {
+          "token": "accommodation.room_type",
+          "status": "resolved",
+          "emptyRisk": "EMPTY if no accomm row"
+        },
+        {
+          "token": "accommodation.start_date",
+          "status": "resolved",
+          "emptyRisk": "EMPTY if no accomm row"
+        },
+        {
+          "token": "accommodation.weeks",
+          "status": "resolved",
+          "legacyFideloName": true,
+          "emptyRisk": "EMPTY if no accomm row"
+        },
+        {
+          "token": "document.issue_date",
+          "status": "resolved"
+        },
+        {
+          "token": "document.number",
+          "status": "resolved",
+          "legacyFideloName": true
+        },
+        {
+          "token": "student.allergies",
+          "status": "resolved",
+          "emptyRisk": "Free-text, frequently blank"
+        },
+        {
+          "token": "student.dob",
+          "status": "resolved",
+          "legacyFideloName": true,
+          "emptyRisk": "Student.birthday may be null for some imported rows"
+        },
+        {
+          "token": "student.first_name",
+          "status": "resolved"
+        },
+        {
+          "token": "student.gender",
+          "status": "resolved"
+        },
+        {
+          "token": "student.last_name",
+          "status": "resolved"
+        },
+        {
+          "token": "student.nationality",
+          "status": "resolved",
+          "legacyFideloName": true
+        }
+      ]
+    },
+    "AccommInfo-Student": {
+      "id": 7,
+      "name": "Confirmation to Student",
+      "documentType": "accomm",
+      "category": "accomm",
+      "version": 2,
+      "htmlLength": 2332,
+      "tokenCount": 10,
+      "unresolvedCount": 0,
+      "emptyRiskCount": 6,
+      "controlBlocks": [],
+      "tokens": [
+        {
+          "token": "accommodation.address",
+          "status": "resolved",
+          "legacyFideloName": true,
+          "emptyRisk": "EMPTY if no accomm or unplaced"
+        },
+        {
+          "token": "accommodation.contact_name",
+          "status": "resolved",
+          "emptyRisk": "EMPTY if no accomm or unplaced (no bedId)"
+        },
+        {
+          "token": "accommodation.email",
+          "status": "resolved",
+          "emptyRisk": "EMPTY if no accomm or unplaced"
+        },
+        {
+          "token": "accommodation.end_date",
+          "status": "resolved",
+          "emptyRisk": "EMPTY if no accomm row"
+        },
+        {
+          "token": "accommodation.phone",
+          "status": "resolved",
+          "legacyFideloName": true,
+          "emptyRisk": "EMPTY if no accomm or unplaced"
+        },
+        {
+          "token": "accommodation.start_date",
+          "status": "resolved",
+          "emptyRisk": "EMPTY if no accomm row"
+        },
+        {
+          "token": "custom.arrival_info",
+          "status": "custom_editable"
+        },
+        {
+          "token": "document.issue_date",
+          "status": "resolved"
+        },
+        {
+          "token": "document.number",
+          "status": "resolved",
+          "legacyFideloName": true
+        },
+        {
+          "token": "student.first_name",
+          "status": "resolved"
+        }
+      ]
+    },
+    "Net-to-Gross-Invoice": {
+      "id": 78,
+      "name": "Net-to-Gross Invoice",
+      "documentType": "accounts",
+      "category": "accounts",
+      "version": 1,
+      "htmlLength": 2931,
+      "tokenCount": 11,
+      "unresolvedCount": 0,
+      "emptyRiskCount": 5,
+      "controlBlocks": [],
+      "tokens": [
+        {
+          "token": "agency.name",
+          "status": "resolved"
+        },
+        {
+          "token": "booking.course_name",
+          "status": "resolved",
+          "legacyFideloName": true,
+          "emptyRisk": "EMPTY if no booking linked"
+        },
+        {
+          "token": "booking.end_date",
+          "status": "resolved",
+          "legacyFideloName": true,
+          "emptyRisk": "EMPTY if no booking linked OR booking has no courses[0]"
+        },
+        {
+          "token": "booking.gross_from_net",
+          "status": "resolved",
+          "emptyRisk": "Falls back to net if HubSpot commission rate unavailable"
+        },
+        {
+          "token": "booking.start_date",
+          "status": "resolved",
+          "legacyFideloName": true,
+          "emptyRisk": "EMPTY if no booking linked OR booking has no courses[0]"
+        },
+        {
+          "token": "booking.weeks",
+          "status": "resolved",
+          "emptyRisk": "EMPTY if no booking linked"
+        },
+        {
+          "token": "document.issue_date",
+          "status": "resolved"
+        },
+        {
+          "token": "document.number",
+          "status": "resolved",
+          "legacyFideloName": true
+        },
+        {
+          "token": "student.first_name",
+          "status": "resolved"
+        },
+        {
+          "token": "student.last_name",
+          "status": "resolved"
+        },
+        {
+          "token": "student.nationality",
+          "status": "resolved",
+          "legacyFideloName": true
+        }
+      ]
+    },
+    "Agency-Net-Statement": {
+      "id": 77,
+      "name": "Agency Net Statement",
+      "documentType": "accounts",
+      "category": "accounts",
+      "version": 1,
+      "htmlLength": 3082,
+      "tokenCount": 14,
+      "unresolvedCount": 0,
+      "emptyRiskCount": 6,
+      "controlBlocks": [],
+      "tokens": [
+        {
+          "token": "agency.commission_rate",
+          "status": "resolved",
+          "emptyRisk": "EMPTY when Agency.commissionRate is null (intentional — \"not set\" signal)"
+        },
+        {
+          "token": "agency.name",
+          "status": "resolved"
+        },
+        {
+          "token": "booking.course_commission",
+          "status": "resolved"
+        },
+        {
+          "token": "booking.course_fee",
+          "status": "resolved",
+          "emptyRisk": "Falls back to amountTotal if Course.fee null"
+        },
+        {
+          "token": "booking.course_name",
+          "status": "resolved",
+          "legacyFideloName": true,
+          "emptyRisk": "EMPTY if no booking linked"
+        },
+        {
+          "token": "booking.course_net",
+          "status": "resolved"
+        },
+        {
+          "token": "booking.end_date",
+          "status": "resolved",
+          "legacyFideloName": true,
+          "emptyRisk": "EMPTY if no booking linked OR booking has no courses[0]"
+        },
+        {
+          "token": "booking.start_date",
+          "status": "resolved",
+          "legacyFideloName": true,
+          "emptyRisk": "EMPTY if no booking linked OR booking has no courses[0]"
+        },
+        {
+          "token": "booking.weeks",
+          "status": "resolved",
+          "emptyRisk": "EMPTY if no booking linked"
+        },
+        {
+          "token": "document.issue_date",
+          "status": "resolved"
+        },
+        {
+          "token": "document.number",
+          "status": "resolved",
+          "legacyFideloName": true
+        },
+        {
+          "token": "student.first_name",
+          "status": "resolved"
+        },
+        {
+          "token": "student.last_name",
+          "status": "resolved"
+        },
+        {
+          "token": "student.nationality",
+          "status": "resolved",
+          "legacyFideloName": true
+        }
+      ]
+    },
+    "Confirmation-General": {
+      "id": 3,
+      "name": "Confirmation (General)",
+      "documentType": "confirmation_letter",
+      "category": "success/student",
+      "version": 1,
+      "htmlLength": 1807,
+      "tokenCount": 14,
+      "unresolvedCount": 0,
+      "emptyRiskCount": 4,
+      "controlBlocks": [],
+      "tokens": [
+        {
+          "token": "booking.end_date",
+          "status": "resolved",
+          "legacyFideloName": true,
+          "emptyRisk": "EMPTY if no booking linked OR booking has no courses[0]"
+        },
+        {
+          "token": "booking.hours_per_week",
+          "status": "resolved",
+          "emptyRisk": "EMPTY if no booking linked"
+        },
+        {
+          "token": "booking.start_date",
+          "status": "resolved",
+          "legacyFideloName": true,
+          "emptyRisk": "EMPTY if no booking linked OR booking has no courses[0]"
+        },
+        {
+          "token": "custom.additional_info",
+          "status": "custom_editable"
+        },
+        {
+          "token": "document.issue_date",
+          "status": "resolved"
+        },
+        {
+          "token": "document.number",
+          "status": "resolved",
+          "legacyFideloName": true
+        },
+        {
+          "token": "document.version",
+          "status": "resolved"
+        },
+        {
+          "token": "student.current_level",
+          "status": "resolved",
+          "emptyRisk": "null until a placement is recorded"
+        },
+        {
+          "token": "student.first_name",
+          "status": "resolved"
+        },
+        {
+          "token": "student.last_name",
+          "status": "resolved"
+        },
+        {
+          "token": "student.pronoun_possessive",
+          "status": "resolved"
+        },
+        {
+          "token": "student.pronoun_possessive_cap",
+          "status": "resolved"
+        },
+        {
+          "token": "student.pronoun_subject",
+          "status": "resolved"
+        },
+        {
+          "token": "student.salutation",
+          "status": "resolved"
+        }
+      ]
+    },
+    "ISD-Confirm": {
+      "id": 2,
+      "name": "ISD Confirmation",
+      "documentType": "confirmation_letter",
+      "category": "success/visa",
+      "version": 1,
+      "htmlLength": 1809,
+      "tokenCount": 12,
+      "unresolvedCount": 0,
+      "emptyRiskCount": 3,
+      "controlBlocks": [],
+      "tokens": [
+        {
+          "token": "booking.end_date",
+          "status": "resolved",
+          "legacyFideloName": true,
+          "emptyRisk": "EMPTY if no booking linked OR booking has no courses[0]"
+        },
+        {
+          "token": "booking.hours_per_week",
+          "status": "resolved",
+          "emptyRisk": "EMPTY if no booking linked"
+        },
+        {
+          "token": "booking.start_date",
+          "status": "resolved",
+          "legacyFideloName": true,
+          "emptyRisk": "EMPTY if no booking linked OR booking has no courses[0]"
+        },
+        {
+          "token": "document.issue_date",
+          "status": "resolved"
+        },
+        {
+          "token": "document.number",
+          "status": "resolved",
+          "legacyFideloName": true
+        },
+        {
+          "token": "document.version",
+          "status": "resolved"
+        },
+        {
+          "token": "student.first_name",
+          "status": "resolved"
+        },
+        {
+          "token": "student.id",
+          "status": "resolved"
+        },
+        {
+          "token": "student.last_name",
+          "status": "resolved"
+        },
+        {
+          "token": "student.pronoun_possessive",
+          "status": "resolved"
+        },
+        {
+          "token": "student.pronoun_possessive_cap",
+          "status": "resolved"
+        },
+        {
+          "token": "student.salutation",
+          "status": "resolved"
+        }
+      ]
+    },
+    "LOA-NonEU-QR": {
+      "id": 1,
+      "name": "LOA Non-EU (QR)",
+      "documentType": "letter_of_acceptance",
+      "category": "success/visa",
+      "version": 1,
+      "htmlLength": 4961,
+      "tokenCount": 20,
+      "unresolvedCount": 0,
+      "emptyRiskCount": 9,
+      "controlBlocks": [],
+      "tokens": [
+        {
+          "token": "booking.amount_total",
+          "status": "resolved",
+          "emptyRisk": "EMPTY if no booking linked OR amountTotal is 0"
+        },
+        {
+          "token": "booking.course_level",
+          "status": "resolved",
+          "emptyRisk": "EMPTY if no booking linked"
+        },
+        {
+          "token": "booking.course_name",
+          "status": "resolved",
+          "legacyFideloName": true,
+          "emptyRisk": "EMPTY if no booking linked"
+        },
+        {
+          "token": "booking.end_date",
+          "status": "resolved",
+          "legacyFideloName": true,
+          "emptyRisk": "EMPTY if no booking linked OR booking has no courses[0]"
+        },
+        {
+          "token": "booking.hours_per_week",
+          "status": "resolved",
+          "emptyRisk": "EMPTY if no booking linked"
+        },
+        {
+          "token": "booking.start_date",
+          "status": "resolved",
+          "legacyFideloName": true,
+          "emptyRisk": "EMPTY if no booking linked OR booking has no courses[0]"
+        },
+        {
+          "token": "booking.weeks",
+          "status": "resolved",
+          "emptyRisk": "EMPTY if no booking linked"
+        },
+        {
+          "token": "custom.accommodation_details",
+          "status": "custom_editable"
+        },
+        {
+          "token": "document.issue_date",
+          "status": "resolved"
+        },
+        {
+          "token": "document.number",
+          "status": "resolved",
+          "legacyFideloName": true
+        },
+        {
+          "token": "document.qr",
+          "status": "resolved",
+          "legacyFideloName": true
+        },
+        {
+          "token": "document.verification_url",
+          "status": "resolved"
+        },
+        {
+          "token": "document.version",
+          "status": "resolved"
+        },
+        {
+          "token": "student.dob",
+          "status": "resolved",
+          "legacyFideloName": true,
+          "emptyRisk": "Student.birthday may be null for some imported rows"
+        },
+        {
+          "token": "student.first_name",
+          "status": "resolved"
+        },
+        {
+          "token": "student.id",
+          "status": "resolved"
+        },
+        {
+          "token": "student.last_name",
+          "status": "resolved"
+        },
+        {
+          "token": "student.nationality",
+          "status": "resolved",
+          "legacyFideloName": true
+        },
+        {
+          "token": "student.passport_number",
+          "status": "resolved",
+          "emptyRisk": "Student.passportNumber often null until visa workflow"
+        },
+        {
+          "token": "student.salutation",
+          "status": "resolved"
+        }
+      ]
+    }
+  },
+  "recommendations": [
+    "Wrap empty-risk tokens in {if ...} blocks where the surrounding sentence breaks without them (e.g. {if student.passport_number}Passport: {{student.passport_number}}{/if}).",
+    "For accommodation tokens on letters issued before placement, the entire accommodation block should be conditional on accommodation.start_date.",
+    "For booking-derived tokens, gate the letter UI so a draft cannot be generated without a linked booking (already enforced for LoA via assertLoaPaymentGate).",
+    "Consider populating Course.fee on all imported BookingCourse rows so course_fee stops falling back silently to amountTotal.",
+    "Add a \"validate template\" admin action that renders against the actual student+booking + flags every token that resolves to \"\" so staff can see gaps before sending."
+  ]
+}

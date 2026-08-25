@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 (HubSpot 1204827374829) and 16989 (HubSpot 1204846469317): EUR 339.90 each — booking ID = null, Xero payment ID = null — unlinked since 28 April 2026 (222 hourly checks)\n• Booking 17856 (Margherita Galbusera, student 14461): status = Confirmed, confirmed field = false — booking course 24631 (General English AM Plus, 29 June to 10 July, fee = null)\n• Booking 17857 (Francesca Fassina, student 14462): status = Confirmed, confirmed field = false — booking course 24630 (General English AM Plus, 29 June to 10 July, fee = null)\n• Booking courses 24630 + 24631: both active, both end Friday 10 July 2026 — 5 school days remaining\n• Root cause: webhook missed setting booking ID at payment creation on 28 April 2026",
+        "Link payments to bookings, set fees, confirm bookings. See recipe: issue-1-orphan-payments.md",
+        "222nd check 5 Jul UTC UNCHANGED — pmt16988+pmt16989 (EUR339.90 each) still booking_id=null xeroId=null. bk17856 EUR339.9/339.9 confirmed=false; bk17857 EUR339.9/339.9 confirmed=false. bc24630+bc24631 active end Jul10 fee=null. COURSES END FRI JUL10 (5 SCHOOL DAYS). STUDENTS IN CLASS DAY 6/10. SQL NOT RUN 222 CHECKS. NEIL: run 4-step SQL NOW — (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) UPDATE booking_courses SET fee=339.9 WHERE id IN (24630,24631); (4) UPDATE bookings SET confirmed=true WHERE id IN (17856,17857).",
+        "URGENT; Fri Jul10"
+      ]
+    ]
+  },
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "• Document 171 is a DRAFT certificate (Certificate of Completion template) — created 5 Jun 2026, 30 days old, never issued (25th check, 5 Jul 2026 UTC)\n• Booking 1498: status = Confirmed, confirmed = false, amount paid = null\n• Booking course 1660 (ULearn Renewal Morning): ended 5 Jun 2026, still active = true (anomaly) — certificate still in DRAFT after 30 days\n• Certificate content is complete: student Suvderdene Bayartsog, dates 15 Dec 2025 to 5 Jun 2026, ILEP code 0318/0010\n• Action needed: open SIS student 947 > booking 1498 > Documents > click Issue button",
+        "Issue the DRAFT certificate via SIS student 947 > booking 1498 > Documents > Issue button",
+        "25th check 5 Jul UTC UNCHANGED — doc171 STILL DRAFT (templateId=82, created Jun05=30d stale, issuedAt=null). bk1498 confirmed=false amountPaid=null. bc1660 ended Jun05 STILL active=true. NEIL: SIS student 947 > bk1498 > Documents > Issue button.",
+        "cert DRAFT; 30d"
+      ]
+    ]
+  },
+  {
+    "range": "H11:K11",
+    "values": [
+      [
+        "• Booking 97 is Confirmed, paid EUR 1741 / 1741\n• Documents 63 and 64 are invoices (Net-to-Gross Invoice template), not certificates\n• Booking 97 has zero certificate documents\n• Booking course 107 (Morning General, 27 Apr to 22 May 2026) ended 44 days ago, still active = true (anomaly) — certificate not generated (19th check, 5 Jul 2026 UTC)",
+        "(NOT RUN) Generate cert for booking 97 via SIS student 91 > booking 97 > Documents > Generate Certificate. See recipe: issue-9-massimiliano-cert-split.md",
+        "5 Jul UTC (19th check, fresh DB): bk97 CONFIRMED confirmed=false 1741/1741. Zero cert docs. Document 63 REVOKED + document 64 ISSUED both accounts type. BC107 ended May22=44d STILL active=true. UNCHANGED 19 checks. Neil: SIS s91 bk97 Documents Generate Certificate.",
+        "cert bk97; 44d"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 (Edite Nunes, student 1015): Confirmed, confirmed = true, fully paid EUR 740 / EUR 740 (77th check, 5 July 2026 UTC)\n• Booking course 24933 (General English AM, 15 June to 10 July, fee EUR 380): active — zero class assignments for current booking course period\n• Booking course 24934 (General English AM, 15 June to 10 July, fee EUR 360): duplicate, still active — should be deactivated\n• Student 1015 has two historical class assignments (class 7) — both expired (last expired 15 May for booking course 24668), none covering booking course 24933\n• Courses end Friday 10 July 2026 — 5 school days remaining — student has attended weeks with no active class assignment",
+        "Deactivate duplicate booking course 24934; assign student 1015 to class 7 for booking course 24933",
+        "77th check 5 Jul UTC UNCHANGED — bk18158 CONFIRMED EUR740/740. bc24933 active 0 SCAs. bc24934 dup STILL active. s1015 last sca146 (class 7, booking course 24668) expired May15 — ZERO current SCAs. COURSES END FRI JUL10 (5 SCHOOL DAYS). NEIL: deactivate bc24934 + assign s1015 to class 7 for bc24933 before Fri Jul10.",
+        "dup BC; 0SCA; Fri10"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Booking 17831 (Xuezhen Huang, student 14443): status = Partial, confirmed = false — EUR 965 paid of EUR 1396.90 total (EUR 431.90 outstanding) (42nd check, 5 July 2026 UTC)\n• Accommodation 11358: bed 180 (Host Family), 12 July to 2 August 2026, active = true, fee = EUR 900 — starts in 7 days\n• Payment 17180: EUR 431.90, TransferMate Escrow, 27 April 2026, transaction ID D2026222, comment ULEARNP2026163 — type = null, Xero payment ID = null, HubSpot payment ID = null (69 days unreconciled, not counted in amountPaid)\n• Payment 17963: EUR 965.00, Bank, 1 July 2026, HubSpot payment ID 1273784562922 — type = null, Xero payment ID = null (4 days unreconciled, counted in amountPaid)\n• Both payments combined = EUR 1396.90 = booking total — fully covered, confirmation blocked by missing Xero reconciliation\n• Booking stays Partial (confirmed = false) until both payments reconciled in Xero",
+        "Reconcile both payments in Xero; then confirm booking 17831. See recipe: issue-39-xuezhen-huang-accomm-missing.md",
+        "42nd check 5 Jul UTC UNCHANGED — bk17831 PARTIAL confirmed=false EUR965/1396.9. pmt17180 (EUR431.9 TransferMate Escrow Apr27, txId=D2026222, comment=ULEARNP2026163) type=null xeroId=null hsId=null (69d). pmt17963 (EUR965 Bank Jul1, hsId=1273784562922) type=null xeroId=null (4d). Combined EUR1396.9=total. ba11358 bed180 Jul12-Aug2 fee=900 STARTS IN 7 DAYS. NEIL: reconcile pmt17180+pmt17963 in Xero then confirm bk17831.",
+        "PARTIAL; Jul12"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 16 active booking courses start Monday 6 July 2026 — all with zero class assignments (43rd check, 5 July 2026 UTC — COURSES START IN HOURS)\n• 11 confirmed starters needing class assignment BEFORE 09:00 MON 6 JUL: Aitana López (bc7, Morning General Jul6-17), Pietro Colombo (bc81, Morning General Plus Jul6-24), Tuguldurtugs Enkhtugs (bc1786, Academic Year Renewal Morning Jul6-Dec25, booking 1601 EUR 250 outstanding), Rakan Alghamdi (bc24697, Academic Year Morning Jul6-Dec18), Mario Roggi (bc24776, General English AM Jul6-24), Kiyoshi Fujino (bc24907, General English AM Jul6-10 — ends Friday), Verónica Martín (bc24931, General English AM Jul6-10 — ends Friday), Sarah Venturini Talizin (bc24945, General English AM Jul6-31), Hugo Lopez Tamayo (bc24960, General English AM Jul6-17), Yuxi Ke (bc24965, General English PM Jul6-Aug21), Ettore Iovinella (bc24968, General English AM Plus Jul6-13)\n• 5 pending — advance HubSpot deal first: Zeyad Alharbi (bc38), Shih-Wei Huang (bc24913), Sulaiman Abdullatif (bc24930), Gustavo Da Silva (bc24955 keep, bc24967 deactivate duplicate)",
+        "Assign all 11 confirmed starters to classes; deactivate duplicate booking course 24967. See recipe: issue-45-renewal-arrivals.md",
+        "43rd check 5 Jul SUN UTC UNCHANGED — ALL 16 BCS START MON JUL6 ZERO SCAs — COURSES START IN HOURS. 11 confirmed: bc7(Aitana) bc81(Pietro) bc1786(Tuguldurtugs EUR250 outstanding bk1601) bc24697(Rakan) bc24776(Mario) bc24907(Kiyoshi ends Fri Jul10) bc24931(Veronica ends Fri Jul10) bc24945(Sarah) bc24960(Hugo) bc24965(Yuxi) bc24968(Ettore). 4 pending: bc38(Zeyad) bc24913(Shih-Wei) bc24930(Sulaiman) bc24955+bc24967(Gustavo dup — deactivate bc24967). NEIL: ASSIGN ALL 11 CONFIRMED + DEACTIVATE bc24967 BEFORE MON 09:00 IST JUL6.",
+        "URGENT; 0 assigned"
+      ]
+    ]
+  }
+]

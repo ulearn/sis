@@ -1,0 +1,57 @@
+[
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• 114th check Sun 26 Jul 2026 UTC — UNCHANGED\n• Booking course 24991 (General English AM, Jul 13-Aug 7 2026): active = true, 0 class assignments\n• Booking courses 24933 + 24934 (ended Jul 10 2026): both active = true, 16 days stale\n• 10 school days missed weeks 1-2 — irrecoverable\n• Penultimate window opens Mon 27 Jul 2026 tomorrow; final window Aug 4-7",
+        "Assign BC24991 wb Mon 27 Jul; deactivate BCs 24933 + 24934. See recipe: issue-22-addendum-26jul-f.md",
+        "114th hrly Sun 26 Jul UTC. BC24991 STILL 0 SCAs. BCs 24933+24934 still active (16d stale). Penultimate window Mon Jul 27 (tomorrow). Fix NOT RUN.",
+        "CRITICAL; 10d missed; 9d remain"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• 114th check Sun 26 Jul 2026 UTC — UNCHANGED\n• Booking course 24686 (Morning General, Jul 20-Sep 18 2026): active = true, fee = null, 0 class assignments\n• Booking course 1797 (Morning General, ended Jun 26 2026): active = still true, 30 days stale\n• Week 1 (Jul 21-25) missed — 5 school days lost\n• Week 2 starts Mon 27 Jul 2026 tomorrow",
+        "Set fee on BC24686; assign to class wb Mon 27 Jul; deactivate BC1797. See recipe: issue-24-addendum-26jul-e.md",
+        "114th hrly Sun 26 Jul UTC. BC24686 STILL 0 SCAs, fee=null. BC1797 still active (30d stale). Week 2 starts Mon Jul 27 (tomorrow). Fix NOT RUN.",
+        "URGENT; week 2 tomorrow"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 114th check Sun 26 Jul 2026 UTC — UNCHANGED\n• Aug 3 Bank Holiday: NOT in school_closures — 8 calendar days away (fix by Fri Jul 31)\n• 17 active booking courses start Aug 3 2026 — all must shunt to Aug 4 (list in recipe)\n• BC25016 (Life Pass Morning, booking 18238, Aug 3 2026 to Aug 29 2028): 2-year course — end date is intentional, NOT a typo\n• 5 days remain to fix deadline (Fri Jul 31)",
+        "Add Aug BH to school_closures; shunt 17 BCs to Aug 4. BC25016 end date correct. See recipe: issue-38-addendum-26jul-f.md",
+        "114th hrly Sun 26 Jul UTC. Aug BH STILL NOT in school_closures (8d to Aug 3, 5d to deadline Fri Jul 31). 17 BCs start Aug 3 confirmed. BC25016 Life Pass 2yr end = intentional. Fix NOT RUN.",
+        "Aug BH; 8d; fix by Fri"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• 114th check Sun 26 Jul 2026 UTC — UNCHANGED\n• Booking course 24609 (Morning General, Jul 13-31 2026): active = true, fee = EUR 570, 0 class assignments\n• Booking 17831 (Xuezhen Huang, student 14443): Confirmed, EUR 1,396.90 fully paid\n• FINAL WINDOW: Mon 27 Jul to Thu 31 Jul 2026 — 5 school days remain\n• 10 school days already lost since Jul 13; if not assigned Monday, all 15 permanently lost",
+        "Assign BC24609 to Morning General wb Mon 27 Jul — FINAL WINDOW. See recipe: issue-39-addendum-26jul-h.md",
+        "114th hrly Sun 26 Jul UTC. BC24609 STILL 0 SCAs (active=true, EUR 570). FINAL WINDOW opens Mon Jul 27 (tomorrow, 5d left). 10d already lost. Fix NOT RUN.",
+        "CRITICAL; Mon 27 FINAL WIN"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 114th check Sun 26 Jul 2026 UTC — UNCHANGED\n• Booking 18180 (Giampaolo Russo, student 14571): Confirmed, EUR 2,584.96 fully paid\n• Booking accommodation 11357 (bed 178, host family, Aug 2-Sep 6 2026): active = true, fee = EUR 1,250 — correct, check-in in 7 days\n• No Capel Street booking accommodation exists on booking 18180\n• Booking course 24956 (General English AM, Aug 3-Sep 11 2026): active = true, 0 class assignments — affected by Issue 38 (Aug Bank Holiday), will shunt to Aug 4 when issue 38 fix runs\n• Payment 17954: EUR 2,584.96, type = null, xeroPaymentId = null",
+        "Add Capel BA (Sep 6-14) to booking 18180; fix payment 17954 type + Xero; shunt BC24956 via issue 38. See recipe: issue-41-addendum-26jul-d.md",
+        "114th hrly Sun 26 Jul UTC. Capel BA STILL missing. BA11357 (host family Aug 2-Sep 6 bed 178) = only BA. BC24956 needs Aug 3 shunt (issue 38). PMT17954 xeroId=null. Check-in Aug 2 (7d). Fix NOT RUN.",
+        "Capel missing; check-in 7d"
+      ]
+    ]
+  }
+]

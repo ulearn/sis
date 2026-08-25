@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H9:K9",
+    "values": [
+      [
+        "• Booking course 24959 (Diego Alves da Silva Molina, Academic Year Morning, 3 Aug 2026-5 Feb 2027): ILEP code = still null — 21 days to course start\n• Booking 18183: NOW CONFIRMED — fully paid EUR 1735/1735, amountOpen = 0 (balance cleared since last check; was PARTIAL)\n• Payment 17995 (EUR 1265): type = null, xeroPaymentId = null — HubSpot payment ID 1278720259290\n• Payment 18012 (EUR 250, NEW since last check): type = null, xeroPaymentId = null — HubSpot payment ID 1282255191233\n• Aurora Madril Oliveira Molina (booking course 24958): ILEP code = 0318/0010 — resolved\n• Pedro De Pauli Pastre (student 911): no active booking course in SIS",
+        "Set ILEP code on booking course 24959 via SIS admin (student 840 > booking 18183 > course 24959); push both payments to Xero. See recipe: issue-7-ilep-codes.md",
+        "26th check 13 Jul MON UTC (fresh DB). CHANGED: booking 18183 NOW CONFIRMED EUR1735/1735 amountOpen=0 (was PARTIAL EUR250 outstanding). NEW pmt18012 EUR250 (hsId 1282255191233). bc24959 ilepCode=STILL null. Aug3=21 DAYS. Both pmts xeroId=null. NEIL: set ILEP code before Aug3.",
+        "ilep null; 21d; balance paid"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student class assignment 255 (Saikhantes Shagdarsuren, student 1001, class 11 B1 Afternoon): weekEnd = 3 July 2026 — expired 10 days ago\n• No class assignment for weeks beginning 7 July or 14 July — 2 full school weeks unassigned, attendance untrackable\n• Booking course 24925 (Academic Year Afternoon, 9 Mar-2 Oct 2026): active = true — needs new class assignment from week beginning 14 July\n• Booking course 1982 (Academic Year Morning, 30 Jun-19 Dec 2025): active = still true — stale from last academic year, should be deactivated\n• Student has been in school since 7 July with no valid class record — 10 school days missed (13 Jul UTC, fresh query)",
+        "Extend SCA255 weekEnd to 2026-10-02 via SQL UPDATE; deactivate booking course 1982. See recipe: issue-15-saikhantes-course-dates.md",
+        "13 Jul MON UTC (fresh DB). SCA255 weekEnd=Jul3 confirmed expired. bc24925 active AY Aft Mar9-Oct2. bc1982 AY Morn 2025 STILL active. 0 valid SCAs for WB Jul7 or WB Jul14. 10 school days missed. NEIL: SQL UPDATE student_class_assignments SET week_end=2026-10-02 WHERE id=255. Fix NOT RUN. CRITICAL.",
+        "CRITICAL; 10d no class; SCA expired"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking course 24686 (Alberto Squillace, Morning General, 20 Jul-18 Sep 2026): fee = still null — 7 days to course start, excluded from financial reporting\n• Booking course 1797 (Morning General, 6 Apr-26 Jun 2026): active = still true — 17 days stale since course ended\n• Booking 1611: CONFIRMED, fully paid EUR 1280.12\n• Payment 17124 (EUR 1280.12): type = null, xeroPaymentId = null, HubSpot payment ID = null — not reconciled in Xero or HubSpot",
+        "Set fee on booking course 24686 via SIS admin; deactivate booking course 1797; reconcile payment 17124 in Xero. See recipe: issue-24-alberto-fidelo-course-split.md",
+        "13 Jul MON UTC (fresh DB). bc24686 fee=STILL null Jul20-Sep18 (7d to start). bc1797 ended Jun26 STILL active=true (17d stale). bk1611 CONF EUR1280.12/1280.12. pmt17124 type=null xeroId=null hsId=null. Fix NOT RUN.",
+        "fee null; 7d to start; bc1797 stale"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Accommodation 11358 (Xuezhen Huang, bed 180, 12 Jul-2 Aug 2026, Host Family): claimStatus = null — host Mary Carver (provider 146, +353 87 927 1130) has NOT claimed placement (Day 2, arrived 12 Jul)\n• Booking course 24609 (Morning General, 13 Jul-31 Jul 2026): started TODAY — zero class assignments\n• Payments 17180/17987/17988/17963: all have xeroPaymentId = null — Xero reconciliation still pending\n• Provider 146 (Mary Carver): portalMatchingEnabled = true — enrolled in portal but not claiming",
+        "Phone/email host Mary Carver (+353 87 927 1130) to claim via portal; assign class for booking course 24609 via SIS; reconcile 4 payments in Xero. See recipe: issue-39-xuezhen-huang-accomm-missing.md",
+        "13 Jul MON UTC (fresh DB). ba11358 claimStatus=STILL null (Day2, arrived Jul12). bc24609 Morning General Jul13-31 STARTED TODAY — 0 class assignments. Pmts 17180/17987/17988/17963 all xeroId=null. Provider 146 portal-enabled, not claiming. Fix NOT RUN.",
+        "Day2; host unclaimed; class 0d overdue"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• Payment 17954 (Giampaolo Russo, EUR 2584.96): xeroPaymentId = still null, type = null — paid 29 Jun 2026, 14 days stale; HubSpot payment ID 1268783973563\n• Booking 18180: CONFIRMED, fully paid EUR 2584.96/2584.96\n• Accommodation 11357 (bed 178, Host Family, 2 Aug-6 Sep 2026): claimStatus = confirmed — host has accepted placement\n• Booking course 24956 (General English AM, 3 Aug-11 Sep 2026): active — starts 21 days\n• Only outstanding issue: payment 17954 not pushed to Xero",
+        "Reconcile payment 17954 (EUR 2584.96, 29 Jun 2026) in Xero against booking 18180 invoice. See recipe: issue-41-giampaolo-dual-accomm.md",
+        "13 Jul MON UTC (fresh DB). pmt17954 EUR2584.96 xeroId=STILL null (29Jun, 14d). hsPaymentId=1268783973563. bk18180 CONF EUR2584.96/2584.96. ba11357 claimStatus=confirmed (bed178, Aug2-Sep6). bc24956 Aug3-Sep11 (21d). Only Xero pmt reconciliation remains. Fix NOT RUN.",
+        "Xero null; Aug2 21d; host confirmed"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Pietro Colombo (student 72, booking course 81, Morning General Plus, 6-24 Jul 2026): zero class assignments ever — 9 school days remaining (today 13 Jul), MOST URGENT\n• Sophia Emilly Gallo Borim (student 853, booking course 1820, Academic Year Renewal Afternoon, 29 Jun-18 Dec 2026): zero class assignments on current course — 14 days in school untracked\n• Tuguldurtugs Enkhtugs (student 858, booking course 1786, Academic Year Renewal Morning, 6 Jul-25 Dec 2026): zero class assignments on current course — 8 days untracked\n• Kayque Tauann Lopes Coelho (student 852, booking course 1821, Academic Year Renewal Afternoon, 29 Jun-18 Dec 2026): zero class assignments on current course — 14 days untracked\n• Six stale old booking courses (1506/1507/1508/1509/1520/1521): still active = true, all ended Dec 2025-May 2026",
+        "Assign class for all 4 students via SIS admin (Classes > To Be Assigned); deactivate 6 stale booking courses. See recipe: issue-45-addendum-13jul.md",
+        "50th check 13 Jul MON UTC (fresh DB). UNCHANGED. 0 class assignments on all 4 current booking courses. Pietro bc81 ends Jul24 — MOST URGENT (9 school days left). 6 stale BCs still active. Fix NOT RUN. NEIL: assign via SIS Classes > To Be Assigned NOW.",
+        "CRITICAL; 0 SCAs; Pietro 9d left"
+      ]
+    ]
+  }
+]

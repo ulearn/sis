@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Class assignment 255 (student 1001 Saikhantes Shagdarsuren, class 11 B1 Afternoon, booking course 24925): week end = 3 July 2026 — expired 7 days ago\n• 5 consecutive school days missed: Monday 6 July through Friday 10 July 2026 (today) — student invisible to attendance tracking\n• Booking course 24925 (Academic Year Afternoon, 9 March to 2 October 2026): active = true — course running until October\n• Holiday 2500 on booking 18151: student off 20 July to 21 August 2026 (school holiday shunt already applied to course end date)\n• If not fixed before Monday 13 July, student will miss a second consecutive full week",
+        "UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255 BEFORE Monday 13 July; see recipe: issue-15-saikhantes-course-dates.md",
+        "5th pass 10 Jul UTC (fresh DB). SCA255 weekEnd=Jul3 STILL EXPIRED (7 days). 5 school days missed Mon Jul6-Fri Jul10 incl today. Mon13=3 calendar days CRITICAL. BC24925 AY-Afternoon Mar9-Oct2 active fee=EUR1102.20. Hol2500 Jul20-Aug21 on bk18151. SQL NOT RUN: UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255. NEIL: RUN BEFORE MONDAY JUL13.",
+        "Mon13 DEADLINE; 5d missed"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• 23rd check, 10 July 2026 UTC — booking still pending, 88 calendar days since course start, zero class assignments ever\n• Booking 1605 (Ariunsarnai Batbayar, student 1047): status = Pending, confirmed = false, EUR 0 paid of EUR 1509 total — zero payments on file\n• Booking course 1791 (Academic Year Renewal Morning, 13 April to 23 October 2026): active = true, ILEP code 0318/0011\n• HubSpot deal 502951083215: still in Enrolment stage — never advanced to Won despite student attending since April\n• No invoice generated; no class assignment ever created",
+        "Advance HubSpot deal 502951083215 to Won in B2B pipeline stage 104175589; see recipe: issue-20-ariunsarnai-payment-due.md",
+        "No-action: Day88 since Apr13. UNCHANGED. BK1605 STILL PENDING confirmed=false EUR0/1509 (zero payments). BC1791 AY-Ren-AM Apr13-Oct23 active ILEP=0318/0011. Zero SCAs all time. HS deal 502951083215 STILL ENROLMENT stage. NEIL: advance HS deal to Won (B2B pipeline stage 104175589).",
+        "Day88; ENROLMENT"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking course 24933 (General English AM, 15 June to 10 July 2026): ended today — still active = true\n• Booking course 24934 (General English AM, 15 June to 10 July 2026): ended today — still active = true — duplicate course (same name and dates)\n• Zero class assignments on either booking course during the entire June 15 to July 10 term\n• Zero document records on booking 18158 — no completion certificate generated\n• Payment 17895 (EUR 740): type = null, xero payment id = null — not reconciled in Xero",
+        "Deactivate booking courses 24933 + 24934; generate completion cert via SIS admin student 1015 > booking 18158 > Documents; reconcile payment 17895 EUR 740 in Xero; recipe: issue-22-edith-nunes-payment-dups.md",
+        "10 Jul UTC 3rd pass (fresh DB). BC24933+BC24934 ENDED TODAY active=STILL true (updAt=Jun11). ZERO SCAs entire Jun15-Jul10 term. ZERO docs on bk18158 (no cert). PMT17895 EUR740 type=null xeroId=null. NEIL: (1) UPDATE booking_courses SET active=false WHERE id IN (24933,24934); (2) SIS admin s1015 > bk18158 > Documents > Generate Cert; (3) reconcile PMT17895 EUR740 in Xero.",
+        "courses ended; cert needed"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• Booking accommodation 11311 (Pietro Caccianiga, student 14521, bed 84, 28 June to 13 September 2026): active = true — current valid in-stay (day 12 of stay 10 July)\n• Pietro accommodation issue resolved 23 June 2026 — original dates and weeks problem fixed\n• Four stale bed 84 records still active = true: booking accommodation 11180 (booking 81, ended 20 June), 11159 (booking 100, ended 30 May), 11157 (booking 100, ended 10 May), 9917 (booking 1274, ended 16 May)\n• No date overlap with Pietro stay — stale records are for different past occupants of bed 84\n• Cleanup is data hygiene only, low priority — no operational impact",
+        "Deactivate 4 stale bed 84 records: UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180); see recipe: issue-36b-pietro-accomm-dates.md",
+        "10 Jul FRI UTC 6th pass (fresh DB). Hash changed (staff edited row). DB UNCHANGED. BA11311 Pietro bed84 Jun28-Sep13 active=true (day 12). Stale: ba11180(bk81 ended Jun20 +20d) ba11159(bk100 ended May30 +41d) ba11157(bk100 ended May10 +61d) ba9917(bk1274 ended May16 +55d) — all STILL active=true. No overlap with Pietro Jun28-Sep13. Low-pri NOT RUN: UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180).",
+        "low-pri; bed84 cleanup"
+      ]
+    ]
+  },
+  {
+    "range": "H46:K46",
+    "values": [
+      [
+        "• Student 1010 (Gretel Merlina Nunez): two confirmed bookings — booking 17917 (Academic Year Morning, booking course 24699, March 2026 to March 2028) and booking 18159 (Life Pass Morning, booking course 24935, March 2026 to April 2028)\n• Both bookings confirmed and fully paid (booking 17917: EUR 997 / 997; booking 18159: EUR 1294 / 1294)\n• Holiday request for 20 to 24 July 2026 — not yet added to either booking (10 days remaining)\n• Visa ceiling error was triggered on booking 17917 (Academic Year) — Life Pass booking 18159 has no 35-week ceiling constraint\n• Decision needed: which booking is Gretel attending the week of 20 to 24 July?",
+        "Add July 20-24 student holiday to booking 18159 via SIS admin if Gretel attends Life Pass that week; see recipe: issue-44-gretel-holiday.md",
+        "10 Jul FRI UTC 5th pass (fresh DB). UNCHANGED. BK18159 Life Pass CONF EUR1294/1294 (updAt Jul8). BC24935 Life Pass Morn Mar9-Apr2028 active. BK17917 AY CONF EUR997/997. BC24699 AY Morn Mar9-Mar2028 active. No Jul20-24 holiday on either booking. Jul20=10 days. NEIL: confirm which booking Gretel attends Jul20-24, then add holiday via SIS admin.",
+        "10d to Jul20; decide"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Pietro Colombo (student 72, booking course 81, Morning General Plus, 6 to 24 July 2026): zero class assignments — level unknown — no prior class history — week 2 starts Monday 13 July 2026 — CRITICAL\n• Ettore Iovinella (student 14564, booking course 24968, General English AM Plus, 6 to 10 July 2026): course ended today — zero class assignments — prior class was class 4 (B2-C1) on booking course 24941 week of June 29 — booking 18191 confirmed EUR 190.63 fully paid\n• Veronica Martin (student 278, booking course 24931, General English AM, 6 to 10 July 2026): course ended today — zero class assignments — no prior class history\n• Booking courses 24968 (Ettore) and 24931 (Veronica): both ended today, both still active = true",
+        "URGENT Pietro: assign class for booking course 81 before Monday 13 July (check level with Paul); Ettore bc24968: retroactive class 4 (B2-C1) today is last chance; Veronica bc24931: same; deactivate bc24968 + bc24931; see recipe: issue-45-renewal-arrivals.md",
+        "10 Jul FRI UTC 6th pass (fresh DB). ALL STILL ZERO SCAs. Pietro bc81 Jul6-Jul24: level unknown Mon13=3 days CRITICAL. Ettore bc24968 ENDED TODAY: prior class=4(B2-C1) bc24941 wk Jun29. Veronica bc24931 ENDED TODAY: no prior class history. NEIL: (1) assign Pietro class TODAY check with Paul; (2) retroactive SCA Ettore cls4 Jul6-11 bc24968 TODAY; (3) check Veronica level+class bc24931 TODAY; (4) deactivate bc24968+bc24931.",
+        "Pietro Mon13 CRITICAL; TODAY Ettore"
+      ]
+    ]
+  }
+]

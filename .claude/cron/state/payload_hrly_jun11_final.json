@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H6:K6",
+    "values": [
+      [
+        "Bug1(barcode) DONE — doc204 ISSUED Jun08. Bug2: ba11287 bed=null → accom block absent LOA.",
+        "Assign bed to ba11287(Jun27-Dec12) then regen LOA. see recipe: issue-4-rakan-loa-barcode.md",
+        "Jun11 hrly: CORRECTED (prev runs wrote mobile# data here by mistake). doc204 ISSUED Jun08(barcode now live). ba11287 bed=null accom Jun27-Dec12 — LOA accom block missing.",
+        "bed assign needed"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "bk18151 Aft CONFIRMED c24925 AY-Aft Jan12-Jul03(22d left). sca255 cls11 active. No 2026 morn bk. HS deal 505658550489 ENROLLED EUR2171.87.",
+        "WON deal 505658550489 before Jul03 if morning renewal needed. recipe: issue-15-saikhantes-course-dates.md",
+        "Jun11 hrly(HS): HS verified deal 505658550489 ENROLLED stage EUR2171.87 lastMod=Jun10. Morn bk won't fire until WON. bk18151 AY-Aft sca255 cls11 22d to Jul03.",
+        "aft done; morn pending"
+      ]
+    ]
+  },
+  {
+    "range": "H17:K17",
+    "values": [
+      [
+        "ba11282 ended Jun05(6d) active=true stale. Hugo ba11158 ended May17 — overlap constraint gone. Historical.",
+        "UPDATE booking_accommodations SET active=false WHERE id=11282 (low-pri cleanup). Re-issue doc148 only if student requests. recipe: issue-16-melie-accomm-dates.md",
+        "Jun11 hrly: ba11282 May15-Jun05 ended 6d ago. Hugo ba11158 ended May17 so bed-overlap constraint now gone. Historical fix only.",
+        "historical"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "bk1605 PENDING 0/1509 D66. HS deal 502951083215 ENROLLED(not WON) stage 109570243 EUR1509 lastMod=Jun10.",
+        "Progress HS deal 502951083215 to WON (fires SIS webhook confirms bk1605). recipe: issue-20-ariunsarnai-payment-due.md",
+        "Jun11 hrly(HS): deal 502951083215 ENROLLED stage EUR1509 lastMod=Jun10(yest). bk1605 PENDING created=Apr06 updated=Jun04. c1791 AY Renewal Morn Apr13-Oct02. D66. NEIL: check deal Jun10 activity; mark WON.",
+        "PENDING D66 urgent"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "HS VERIFIED: d438072533213 CLOSEDWON Jan20 4w-Intensive-EUR1185 + d471541671147 CLOSEDWON Feb16 4w-Morn-EUR648 — old Fidelo courses, no course rows needed.",
+        "DELETE pmts 17728+17730+17852; CANCEL bk18131+bk18133 (Fidelo shells). recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun11 hrly(HS): HS DONE. d438072533213 CLOSEDWON Jan20 EUR1185. d471541671147 CLOSEDWON Feb16 EUR648. Both old Fidelo courses. Step3 N/A. NEIL: DELETE pmts(17728,17730,17852) + CANCEL bk18131+bk18133.",
+        "dup pmts pending"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "bk1611 CONF amtPaid=1280.12. c1797 MORN Apr6-Jun26(15d). sca229 ended Apr26(46d). 0 holidays. NEW: s1052 att=0 ALL TIME.",
+        "URGENT: confirm hol dates + add hol block. If returning: add SCA on c1797. recipe: issue-24-alberto-fidelo-course-split.md",
+        "Jun11 hrly(DB): CRITICAL NEW — s1052 att=0 ALL TIME. c1797 ends Jun26(15d). sca229 ended Apr26(46d). c24686 Jul20-Sep18 0SCAs. 0 hols in DB. Either holiday since Apr06 or attending unrecorded. NEIL: URGENT confirm with student/AC.",
+        "0 att CRITICAL 15d"
+      ]
+    ]
+  }
+]

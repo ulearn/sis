@@ -1,0 +1,35 @@
+[
+  {
+    "range": "H4:K4",
+    "values": [
+      [
+        "Christmas shunt implemented. Academic Year webhook auto-applies school closures.",
+        "",
+        "72nd check Wed 22 Jul UTC. Hash changed (formatting artifact). STILL RESOLVED. 9 school closures: Good Fridays 2026-2030, Christmas 2026-2029. Aug BH + Oct BH absent — Issue 38 (row 40).",
+        "fixed"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 87th check Wed 22 Jul 2026 UTC (26th hourly)\n• Student 1001 (Saikhantes Shagdarsuren): class assignment 255 (class 11) expired — week ended 3 Jul 2026 (19 days ago)\n• Weeks of 6 Jul and 13 Jul 2026: permanently missed — irrecoverable\n• Holiday 2500 (booking 18151): student on holiday 20 Jul to 21 Aug 2026 — nothing to assign during this period\n• Booking course 24925 (Academic Year Afternoon, ends 2 Oct 2026): active, assignment expired — next needed from week of 24 Aug 2026\n• UNCHANGED from 86th check — fix NOT RUN",
+        "Assign booking course 24925 to class 11 from week of Mon 24 Aug 2026. See recipe: issue-15-addendum-22jul-b.md",
+        "87th check Wed 22 Jul UTC (26th hrly). G col changed (formatting hash trigger). Class assignment 255 expired Jul03 (19d). 2 wks missed irrecoverable. Holiday 2500 active Jul20-Aug21. Booking course 24925 AY Afternoon Oct02, 0 active assignments. Assign from Mon Aug24. Fix NOT RUN.",
+        "2 wks missed; assign Mon 24 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 45th hourly check Wed 22 Jul 2026 UTC (74th check)\n• LAST CHANCE: Booking course 24828 (Martina Tartaro): 12-week Morning General Plus & IELTS, ends Fri 24 Jul 2026 — zero class assignments — 2 school days left (Thu 23 + Fri 24)\n• LAST CHANCE: Booking course 25011 (Eduardo Roche Diaz): General English PM, 20 to 24 Jul 2026 — zero class assignments — 3 days missed — 2 school days remaining\n• Booking course 24609 (Xuezhen Huang): Morning General, 13 to 31 Jul 2026 — zero class assignments — 9 days missed — 6 school days remaining\n• Booking course 24991 (Edith Nunes): General English AM, 13 Jul to 7 Aug 2026 — zero class assignments — 9 days missed — approx 12 days remaining\n• All 4 confirmed UNCHANGED — fresh DB query Wed 22 Jul 2026 UTC",
+        "Assign BC24828 + BC25011 to classes by Thu 23 Jul (end Fri 24 Jul). See recipe: issue-45-addendum-22jul-f.md",
+        "45th hrly 74th check Wed 22 Jul UTC. LAST CHANCE: Booking course 24828 Martina + 25011 Eduardo end FRI 24 JUL — 2 school days (Thu 23 + Fri 24). Booking course 24609 Xuezhen 9d missed 6 left. Booking course 24991 Edith 9d missed ~12 left. Fix NOT RUN.",
+        "LAST CHANCE: ends Fri 24 Jul"
+      ]
+    ]
+  }
+]

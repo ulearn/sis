@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "bk1498.confirmed=false (bool drift). doc171 DRAFT cert (c1660 Jun05 ended 6d). amtPaid=null.",
+        "UPDATE bookings SET confirmed=true WHERE id=1498 (NOT RUN); issue doc171 in SIS. see recipe: issue-8-suvderdene-cert-dates.md",
+        "Jun10 hrly6 D6: bk1498 CONFIRMED confirmed=false amtPaid=null. doc171 cert DRAFT issuedAt=null. c1660 ended Jun05 D6. NEIL: run SQL then issue cert.",
+        "cert pending D6"
+      ]
+    ]
+  },
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "Accidental cancel Jun07. bk1308 CANCELLED. c1350 AY-Aft May25-Nov13 ACTIVE. EUR1530 fully paid.",
+        "UPDATE bookings SET status=CONFIRMED,confirmed=true WHERE id=1308; then assign PM SCA. see recipe: issue-17-ana-jessica-accidental-cancel.md",
+        "Jun10 hrly6 D4: STILL CANCELLED confirmed=false. s766 0 SCAs(in school,no class record). c1350 active. EUR1530 2pmts. NEIL: RUN SQL NOW.",
+        "cancel D4 CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "bk1605 PENDING 0/1509. HS deal 502951083215 stage=ENROLMENT not WON — payment not received.",
+        "Contact student/agent re EUR 1509 outstanding. Once deal WON webhook auto-confirms. see recipe: issue-20-ariunsarnai-payment-due.md",
+        "Jun10 hrly6 D59: UNCHANGED. bk1605 PENDING amtPaid=0/1509. 0 pmts. c1791 Oct02. HS ENROLMENT. NEIL: contact Ariunsarnai/agent URGENTLY.",
+        "PENDING D59 urgent"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "Code bug: intensive 1-SCA filter. Ernesto s14532 0 SCAs c24826. Daniela s75 sca161 A1-AM only. Fabrizio s14440 sca174 B2-C1-AM only. Uyanga s917 visaStatus=null.",
+        "Assign Ernesto+Daniela+Fabrizio PM SCA. Set Uyanga visa SQL. Code fix. recipe: issue-26-intensive-class-assign-once.md",
+        "Jun10 hrly6 D7: Ernesto 0 SCAs D3 course(c24826,Jun8-19). Daniela sca161 AM only. Fabrizio sca174 AM only. Uyanga 0 SCAs visaNull. NEIL: assign 3 PM SCAs via roster.",
+        "3 missing D7 URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "Code bug: intensive 1-SCA filter. Ernesto s14532 0 SCAs c24826. Daniela s75 AM-only(no A1-PM). Fabrizio s14440 AM-only(B2-PM avail).",
+        "Ernesto: assess level+AM+PM (Jun19 DL). Fabrizio: add class6(B2-PM). Daniela: ask AM teacher PM level. Code fix per recipe. see recipe: issue-26-intensive-class-assign-once.md",
+        "Jun10 hrly6 D7: Ernesto s14532 bk18034 PARTIAL 0 SCAs c24826 Jun8-19(D3,7 days left). Daniela sca161 AM only. Fabrizio sca174 AM only. 4+ days no PM. Jun19 deadline. NEIL: manual assign NOW.",
+        "3 students D7 URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H29:K29",
+    "values": [
+      [
+        "Won-webhook never fired. bk17850 PENDING; pmt17519 EUR321.35 Bank May07 exists. c24624 ENDED Jun05.",
+        "UPDATE bookings SET status=CONFIRMED,confirmed=true,amount_paid=321.35 WHERE id=17850 (NOT RUN). see recipe: issue-28-paola-pending-won-deal.md",
+        "Jun10 hrly6: bk17850 PENDING confirmed=false amtPaid=null/321.35. c24624 ended Jun05. pmt17519 Bank exists. Data fix only(course ended).",
+        "course ended D5"
+      ]
+    ]
+  }
+]

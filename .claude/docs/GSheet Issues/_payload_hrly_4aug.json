@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 11th check Tue 4 Aug 2026 UTC — 14 booking courses with 0 class assignments (was 15: Luana Salzano now assigned)\n• Booking course 88 (Africa Mera Bachir, booking 82): Morning General, ends Fri 7 Aug — still 0 class assignments, URGENT TODAY\n• Booking course 25038 (Eduardo Roche Diaz, booking 18258): General English PM, ends Fri 7 Aug — still 0 class assignments, URGENT TODAY\n• Booking course 25003 (Aleix Cervera, booking 18225): duplicate of booking course 25002 — deactivate only, do not assign\n• Aug Bank Holiday 2026-08-03 still absent from school_closures (9 records, none covering Aug 3)\n• Booking course 25006 (Marina Larripa, ended 2026-08-03): still active, 2 days stale",
+        "Assign booking course 88 (Africa Mera Bachir) + booking course 25038 (Eduardo Roche Diaz) TODAY (Fri 7 Aug deadline); deactivate booking courses 25003 + 25006. See recipe: issue-38-addendum-4aug-g.md",
+        "11th hrly Tue 4 Aug UTC. 14 unassigned (was 15, Luana Salzano now assigned). Booking courses 88 + 25038 end Fri Aug 7 — assign TODAY. Booking course 25003 is duplicate of 25002. Aug BH still absent from DB. Fix NOT RUN.",
+        "CRITICAL; Fri deadline; 14 unassigned"
+      ]
+    ]
+  },
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 145th check Tue 4 Aug 2026 UTC — 4 orphan payments unchanged (104 days since first flagged)\n• Payment 16988: EUR 339.90, booking_id = null, xero_payment_id = null — matches booking 17856 (Galbusera)\n• Payment 16989: EUR 339.90, booking_id = null, xero_payment_id = null — matches booking 17857 (Fassina)\n• Payment 17187: EUR 6,151, transaction_id = D2026226, booking_id = null — origin unknown\n• Payment 4781: EUR 380, transaction_id = D20191404, legacy 2019 (7 years old)\n• Booking course 24630 (Fassina, ended 2026-07-10): active = true — 25 days stale\n• Booking course 24631 (Galbusera, ended 2026-07-10): active = true — 25 days stale\n• Booking course 25006 (Marina Larripa, ended 2026-08-03): active = true — 2 days stale\n• Bookings 17856 + 17857: CONFIRMED status, confirmed = false — anomaly",
+        "Link payment 16988 to booking 17856 and payment 16989 to booking 17857; deactivate booking courses 24630+24631+25006; fix confirmed on bookings 17856+17857; investigate payment 17187. See recipe: issue-1-addendum-4aug-d.md",
+        "145th hrly Tue 4 Aug UTC. 4 orphan payments unchanged (104d). Booking course 25006 2d stale. Booking courses 24630+24631 25d stale. Bookings 17856/17857 confirmed=false. Fix NOT RUN.",
+        "4 orphan pmts; 104d+"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 32nd check Tue 4 Aug 2026 UTC — student still on holiday, returns Mon 24 Aug 2026 (20 days)\n• Booking course 24925 (Academic Year Afternoon, 2026-03-09 to 2026-10-02): active = true — live course\n• Class assignment 255: class 11 (B1 PM), week_end = 2026-07-03 — expired 32 days ago, no new assignment\n• Booking course 1982 (legacy Academic Year Afternoon): still active — stale 228+ days",
+        "Deactivate booking course 1982; create class assignment on booking course 24925 for class 11 (B1 PM) from 2026-08-24 to 2026-10-02 (confirm class with Paul). See recipe: issue-15-addendum-4aug-b.md",
+        "32nd hrly Tue 4 Aug UTC. Returns Mon 24 Aug (20 days). Class assignment 255 weekEnd Jul 3, expired 32d. Booking course 1982 stale 228d. New assignment needed Aug 24. Fix NOT RUN.",
+        "SCA due Aug 24; 20d"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 26th check Tue 4 Aug 2026 UTC — count unchanged at 24,467\n• Booking course 25006 (Marina Larripa, ended 2026-08-03): 2 days stale, still in count\n• Issue 38 booking courses (started 2026-08-03, future end dates) excluded — safe\n• Bulk deactivation still not run — awaiting decision",
+        "Bulk deactivate: UPDATE booking_courses SET active = false WHERE end_date < 2026-08-04 AND active = true. See recipe: issue-45-addendum-4aug-b.md",
+        "26th hrly Tue 4 Aug UTC. Count 24,467 unchanged. Booking course 25006 2d stale. Awaiting decision on bulk deactivation.",
+        "24,467 stale; awaiting decision"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• 21st check Tue 4 Aug 2026 UTC — day 114 since course start Apr 13\n• Booking 1605 (Ariunsarnai Batbayar, student 1047): status = PENDING, confirmed = false\n• Amount paid = EUR 0, amount open = EUR 1,509 — unchanged, no payments on record\n• Booking course 1791 (Academic Year Renewal Morning, Apr 13-Oct 23 2026): active = true, 0 class assignments",
+        "Chase EUR 1,509 payment or cancel booking 1605; if confirmed create class assignment on booking course 1791. See recipe: issue-20-addendum-4aug.md",
+        "21st hrly Tue 4 Aug UTC. Day 114. EUR 0/1,509. 0 class assignments. 0 payments on record. Fix NOT RUN.",
+        "Day 114; EUR 0 / 1,509"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• 14th check Tue 4 Aug 2026 UTC — no change since 13th check\n• Booking accommodation 11352 (Verónica Martín, student 278, booking 18156): ended 2026-07-11, active = true — 24 days stale, fee EUR 360\n• Booking accommodation 11285 (booking 17825): ended 2026-07-05, active = true — 30 days stale, fee = null\n• Bed 83 currently occupied: Africa Mera Bachir (to Aug 9) then Alessandro Signorotti (Aug 9-30) — stale booking accommodations are cosmetic only",
+        "Set active = false on booking accommodations 11285 + 11352. See recipe: issue-37-addendum-4aug.md",
+        "14th hrly Tue 4 Aug UTC. Booking accommodations 11352+11285 now 24d+30d stale. Bed 83 occupied (Africa to Aug 9; Alessandro Aug 9-30) — cosmetic only. Fix NOT RUN.",
+        "BA stale 24d+30d; cosmetic"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Student 14443 visaStatus = null (8 days, last updated 17 Jul 2026)\n• Booking 17831: Confirmed, fully paid EUR 1,396.90\n• Booking course 24609 (Morning General, 13 Jul–31 Jul): active = true\n• Accommodation 11358 (Jul 12–Aug 2, bed 180 host family): present and correct\n• Class assignments: 0 — student never assigned to any class\n• 10 school days elapsed (weeks 13 Jul + 20 Jul); 5 remain (Mon 27–Fri 31 Jul)\n• Mon 27 Jul = FINAL window — 2 calendar days from now\n• Unchanged from prior checks",
+        "Set visaStatus student 14443; assign Morning General wb Mon 27 Jul. See recipe: issue-39-addendum-25jul-h.md",
+        "97th hrly Sat 25 Jul UTC. UNCHANGED. 0 SCAs still. visaStatus null 8d (Jul 17). Mon 27 Jul = FINAL window (2 days). Course ends Fri 31 Jul. Fix NOT RUN.",
+        "CRITICAL; Mon 27 Jul final window"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Student 1015 Edith Nunes: 2 historical SCAs (IDs 48+146) from Mar–May 2026 prior bookings — 0 SCAs for current BK18214/BC24991\n• Booking 18214 (Jul 13–Aug 7, EUR 608): BC 24991 General English AM; 0 current SCAs\n• Booking 18158 (Jun 15–Jul 10, EUR 740): BCs 24933+24934 both active and stale (ended Jul 10, 15 days)\n• Payments 17895 (EUR 740) + 18004 (EUR 608): both xeroPaymentId = null\n• 10 school days missed (Jul 13–Jul 24); 9 remain (Jul 27–31 + Aug 4–7)\n• Unchanged from prior checks",
+        "Assign student 1015 to AM class wb Mon 27 Jul; deactivate BCs 24933+24934. See recipe: issue-22-addendum-25jul-f.md",
+        "97th hrly 169th check Sat 25 Jul UTC. BK18214 BC24991: 0 SCAs (2 historical from Mar-May 2026). 10d missed, 9d remain. BCs 24933+24934 stale 15d. Fix NOT RUN.",
+        "CRITICAL; 10d missed; 9d remain"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• Student 14571 visaStatus = null (14 days, last updated 11 Jul 2026)\n• Booking 18180: Confirmed, fully paid EUR 2,584.96\n• Booking course 24956 (General English AM, Aug 3–Sep 11): starts on Aug Bank Holiday — needs shunt to Aug 4\n• Accommodation 11357 (Aug 2–Sep 6, bed 178 host family, EUR 1,250): present and correct\n• Capel Street accommodation (Sep 6–Sep 14): still missing — only 1 BA on booking 18180\n• EUR 529.96 unaccounted (paid 2,584.96 − course 804.96 − host family 1,250)\n• Payment 17954: EUR 2,584.96 Bank, 26 Jun 2026 (29 days), xeroPaymentId = null\n• Host family check-in: Aug 2 2026 = 8 calendar days away",
+        "Confirm Capel details; create BA (BK18180, Sep 6–Sep 14, EUR 529.96); reconcile pmt 17954. See recipe: issue-41-addendum-25jul-g.md",
+        "97th hrly Sat 25 Jul UTC. Capel BA STILL missing. Xero null 29d. Check-in Aug 2 = 8 days. visaStatus null 14d. Fix NOT RUN.",
+        "Capel missing; check-in 8d"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Aug 3 Bank Holiday = 9 calendar days away — confirmed NOT in school_closure table\n• 11 non-AY booking courses start Aug 3 needing shunt to Aug 4:\n  BC 88, 1755, 24627, 24908, 24956 (Giampaolo/Issue 41), 24964 (Luana Salzano),\n  24984 (Deva Sofia Onorato), 24999 (Soumaya Bourguiba), 25002 (Aleix Cervera),\n  25010 (Alin Merticariu), 25016 (Anderson da Silva Martins)\n• Aleix Cervera (BK 18225): BC 25002 + BC 25003 both active Aug 3–Sep 18 — deactivate BC 25003 first\n• AY booking courses (BC 97, 1766, 24958, 24959, 24970): no shunt needed\n• Oct 26 Bank Holiday also absent from school_closure\n• 97th hourly check Sat 25 Jul 2026 UTC",
+        "Deactivate BC 25003 (Aleix dup); shunt 11 non-AY BCs from Aug 3 to Aug 4. See recipe: issue-38-addendum-25jul-g.md",
+        "97th hrly Sat 25 Jul UTC. Aug BH 9d. 11 non-AY BCs confirmed (data from 95th hrly earlier today). AY BCs no shunt needed. Oct BH also absent. Fix NOT RUN.",
+        "Aug BH; 9d; 11 non-AY BCs + Aleix dup"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking course 24686 (Alberto Squillace, Morning General, booking 1611): active = true, fee = null\n• Class assignments for BC 24686: 0\n• Week 1 (Jul 20–24): complete — 5 school days missed\n• Week 2 starts Mon 27 Jul 2026 (2 calendar days from now)\n• Approx 38 school days remaining through Sep 18\n• 97th hourly check Sat 25 Jul 2026 UTC",
+        "Confirm fee; assign BC 24686 to Morning General wb Mon 27 Jul. See recipe: issue-24-addendum-25jul.md",
+        "97th hrly 58th check Sat 25 Jul UTC. BC24686 active Jul20-Sep18, fee=null, SCAs=0. Week1 complete (5d missed). Week2 starts Mon 27 Jul. Fix NOT RUN.",
+        "fee null; 0 SCAs; week 2 starts Mon"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• Stale booking accommodations (active=true, endDate past, bed assigned): 43 — unchanged from 90th hourly today\n• Most recently updated stale: BA 11365 (BK 18184, bed 174, ended Jul 18), BA 11167 (BK 93, bed 168, ended Jul 4)\n• Pietro Caccianiga (student 14521, BK 17980): accommodation 11311 dates correct (Jun 28–Sep 13 = 11 weeks)\n• Pietro payment 17733: EUR 5,331, Jun 2 2026, xeroPaymentId = null (53 days unreconciled)\n• 97th hourly check Sat 25 Jul 2026 UTC",
+        "Deactivate 43 stale BAs (bulk UPDATE after preview); reconcile Pietro pmt 17733. See recipe: issue-36b-addendum-25jul-d.md",
+        "97th hrly Sat 25 Jul UTC. Stale BAs: 43 (from 90th hrly earlier today). Pietro dates correct. Pietro pmt 17733 Xero null 53d. Fix NOT RUN.",
+        "43 stale BAs; Pietro Xero 53d"
+      ]
+    ]
+  }
+]

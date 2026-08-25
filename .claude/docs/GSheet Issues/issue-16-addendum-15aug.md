@@ -1,0 +1,1 @@
+27th check Sat 15 Aug 2026 UTC. No change since 26th (Fri 14 Aug). BA 11216 98d stale, BA 11158 90d, BA 11282 71d, BA 11361 6d. See issue-16-addendum-14aug.md for full recipe.

@@ -1,0 +1,16 @@
+Issue 41 Giampaolo Russo 144th check Thu 20 Aug (afternoon)
+
+CORRECTION: amount_paid = EUR 2584.96 (prior H/recipe wrongly said EUR 5331 which is Pietros amount).
+SQL table wrong in all prior recipes: booking_accommodations not BookingAccommodation.
+
+BA 11357 bed178 5d stale deactivate TODAY.
+BA 11396 bed44 fee null ends Sat22 set fee + deactivate.
+BA 11397 bed89 fee null starts Sat22 set fee TODAY.
+BA 11394 booking17826 FabrizioMauro bed89 ended9Aug 11d stale deactivate TODAY.
+
+Fix: UPDATE booking_accommodations SET active=false WHERE id IN (11394, 11357);
+Confirm fees with Diego then: UPDATE booking_accommodations SET fee=AMOUNT WHERE id IN (11396,11397);
+After Sat22: UPDATE booking_accommodations SET active=false WHERE id=11396;
+
+Fee remaining: 2584.96 - 1250 - 415 = 919.96 for beds 44 and 89 combined.
+Deadline: Sat 22 Aug (2 days). NOT RUN.

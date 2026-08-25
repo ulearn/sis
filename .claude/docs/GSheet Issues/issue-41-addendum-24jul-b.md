@@ -1,0 +1,1 @@
+Issue 41 Giampaolo Russo Bk18180 Capel Missing Xero Null 71st hourly 149th total Fri 24 Jul 2026. PMT17954 EUR2584.96 Bank 26 Jun 2026 xeroId=null 28d unreconciled. BA11357 bed178 2 Aug - 6 Sep EUR1250 active=true (Host Family only - Capel still missing). BC24956 General English AM 3 Aug - 11 Sep starts on Aug BH (Issue 38). Check-in 2 Aug 9 days away. Fix NOT RUN.

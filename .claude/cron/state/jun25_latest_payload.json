@@ -1,0 +1,56 @@
+[
+  {
+    "range": "J2:K2",
+    "values": [
+      [
+        "hrly Jun25 UTC (30th check, fresh DB): UNCHANGED. pmt16988+pmt16989 STILL bookingId=null xeroId=null — 58d since Apr28. bc24630(bk17857)+bc24631(bk17856) start Mon Jun29=4d fee=STILL NULL. bk17856/17857 CONF conf=false amtPaid=339.9 (updAt=Jun04). NEIL EMERGENCY: Step2 SQL + set bc fees BEFORE Jun29.",
+        "Jun29=4d; EMERGENCY"
+      ]
+    ]
+  },
+  {
+    "range": "J16:K16",
+    "values": [
+      [
+        "hrly Jun25 UTC (10th check, fresh DB): sca255 classId=11 weekStart=Jan12 weekEnd=Jul03 STILL WRONG. bc24925 AY-Aft Mar09-Sep11 active. bk18151 CONF 1339.2/1339.2 (Jun16). Jul03=8d — sca255 expires; s1001 invisible to B1-PM for 10 weeks through Sep11. SQL NOT RUN. NEIL URGENT: UPDATE student_class_assignments SET week_start=2026-03-09, week_end=2026-09-11 WHERE id=255.",
+        "sca255; Jul03=8d; URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "J25:K25",
+    "values": [
+      [
+        "hrly Jun25 UTC (12th check, fresh DB): bc1797 ENDS TOMORROW Jun26 active=true (bereavement leave). bc24686 Jul20-Sep18 fee=STILL NULL (25d to Jul20). pmt17124 EUR1280.12 bk1611 (linked) xeroId=null. bk1611 CONF 1280.12/1280.12 (Jun11). NEIL: (1) set bc24686 fee before Jul20; (2) reconcile pmt17124 in Xero.",
+        "Jun26=TOMORROW; fee=null"
+      ]
+    ]
+  },
+  {
+    "range": "J30:K30",
+    "values": [
+      [
+        "hrly Jun25 UTC (10th check, fresh DB): sca255 classId=11 weekStart=Jan12 weekEnd=Jul03 STILL WRONG (createdAt=Jun09). bc24925 AY-Aft Mar09-Sep11 correct. bk18151 CONF 1339.2/1339.2 (Jun16). Jul03=8d — 10 weeks of bc24925 uncovered after Jul03 through Sep11. SQL NOT RUN. NEIL URGENT: UPDATE student_class_assignments SET week_start=2026-03-09, week_end=2026-09-11 WHERE id=255.",
+        "sca255; Jul03=8d; URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "J41:K41",
+    "values": [
+      [
+        "Jun25 hrly (2nd check, fresh code): BUG CONFIRMED STILL PRESENT. L1349: _bulkEmailRecipientIds=[] declared but NEVER assigned in openBulkEmailModal() (L1367 captures to local ids only). L1494 sendBulkEmail() reads live bulkSelectedStudents. L2219 clears on re-render. Fix: (1) after L1367 add _bulkEmailRecipientIds=ids; (2) L1494: const ids=_bulkEmailRecipientIds.length?[..._bulkEmailRecipientIds]:[...bulkSelectedStudents]. No rebuild needed.",
+        "code fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "J44:K44",
+    "values": [
+      [
+        "hrly Jun25 UTC (14th check, fresh DB): ba9917(bk1274 May10-16=40d)+ba11157(bk100 May02-10=46d)+ba11159(bk100 May17-30=26d)+ba11180(bk81 Jun06-20=5d, updAt=Jun22) STILL active=true bed84. ba11311 Pietro Jun28-Sep13 active=true (updAt=Jun24). Jun28=3d EMERGENCY. SQL NOT RUN: UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180).",
+        "Jun28=3d; EMERGENCY"
+      ]
+    ]
+  }
+]

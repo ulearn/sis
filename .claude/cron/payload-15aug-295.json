@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 261st check Sat 15 Aug 2026 UTC — no change since 260th check\n• Payment 4781: EUR 380, Flywire, 2019-08-20 — booking_id = null (legacy orphan, Fidelo ref D20191404)\n• Payment 16988: EUR 339.90, Bank, 2026-04-28 — booking_id = null (likely Booking 17856, Margherita Galbusera)\n• Payment 16989: EUR 339.90, Bank, 2026-04-28 — booking_id = null (likely Booking 17857, Francesca Fassina)\n• Payment 17187: EUR 6,151, TransferMate Escrow, ref D2026226 — booking_id = null, no matching booking found\n• Booking 17856 (Margherita Galbusera): CONFIRMED, confirmed = false, amount paid = EUR 339.90\n• Booking 17857 (Francesca Fassina): CONFIRMED, confirmed = false, amount paid = EUR 339.90\n• Booking Courses 24630 + 24631 (General English AM Plus): ended 2026-07-10, active = true — 36 days stale",
+        "Link Payments 16988/16989 to Bookings 17856/17857; set confirmed = true; deactivate Booking Courses 24630 + 24631. See recipe: issue-1-addendum-15aug.md",
+        "261st Sat 15 Aug UTC. No change. Fix NOT RUN. Payment 17187 (EUR 6,151 ref D2026226) needs manual TransferMate lookup. Payment 4781 (Flywire 2019) is a legacy orphan.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 124th check Sat 15 Aug 2026 UTC — no change since 123rd check\n• Student 1001 (Saikhantes Shagdarsuren), booking 18151 — CONFIRMED, fully paid EUR 1,339.20\n• Holiday 2500: Jul 20 – Aug 21 2026 — student on holiday; RETURNS IN 6 DAYS (Thu Aug 21)\n• Booking Course 24925 (Academic Year Afternoon): Mar 9 – Oct 2 2026, active = true\n• serviceEnd = Aug 7 2026 — expired 8 days ago (stale; course continues to Oct 2)\n• Student Class Assignment 255: weekEnd Jul 3 2026 — 43 days without active assignment\n• ACTION NEEDED before Aug 21: assign new Student Class Assignment and update serviceEnd",
+        "Create new Student Class Assignment for class 11 (week starting Aug 24, weekEnd Oct 2); update serviceEnd to Oct 2. See recipe: issue-15-addendum-15aug-c.md",
+        "124th Sat 15 Aug UTC. Student returns Aug 21 (6d). SCA 255 expired Jul 3 (43d). serviceEnd Aug 7 expired 8d. Fix NOT RUN.",
+        "URGENT: return Aug21 6d; SCA+svcEnd"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• 89th check Sat 15 Aug 2026 UTC — no change since 88th check\n• Booking 18151 (Saikhantes Shagdarsuren, student 1001): CONFIRMED, confirmed = true, EUR 1,339.20 paid, fully paid\n• serviceEnd = 2026-08-07 — expired 8 days ago (student still in class per BC 24925)\n• Booking Course 24925: Academic Year Afternoon, end 2026-10-02, active = true\n• Student Class Assignment 255: week end = 2026-07-03 — expired 43 days ago, class 11\n• Student on holiday Jul 20 – Aug 21; returns Thu Aug 21 (6 days) — URGENT action needed\n• No newer booking for student 1001",
+        "Update Booking 18151 service_end to 2026-10-02; create new Student Class Assignment week Aug 24 – Oct 2 class 11. See recipe: issue-29-addendum-15aug-b.md",
+        "89th Sat 15 Aug UTC. service_end expired 8d (Aug 7). SCA 255 expired 43d (Jul 3). Student returns Aug 21 (6d) — URGENT. Fix NOT RUN.",
+        "URGENT: return Aug21 6d; svc_end+SCA exp"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 193rd check Sat 15 Aug 2026 UTC — no change since 192nd check\n• Student: Pietro Caccianiga (booking 17980, student 14521) — CONFIRMED, fully paid EUR 5,331\n• Booking Accommodation 11311 (bed 84): Jun 28 – Aug 22, fee = EUR 3,850, active — current stay, ends in 7 days\n• Booking Accommodation 11393 (bed 88, Capel Street): Aug 22 – Sep 13, fee = null, all types null — check-in in 7 days\n• Payment 17733: EUR 5,331, Bank, Jun 2 2026 — xeroPaymentId null (74 days unreconciled)",
+        "Set fee + types on BA 11393 before Aug 22 (7 days). See recipe: issue-36-addendum-15aug-b.md",
+        "193rd Sat 15 Aug UTC. Fee null, types null, check-in 7d. Payment 17733 unreconciled 74d. No fix applied.",
+        "fee null; check-in 7d"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 89th check Sat 15 Aug 2026 UTC — no change since 88th check\n• Student: Giampaolo Russo (booking 18180, student 14571) — CONFIRMED, fully paid EUR 2,584.96\n• Booking Accommodation 11357 (bed 178): Aug 2 – Aug 15 — ended today, still active (not deactivated)\n• Booking Accommodation 11396 (bed 44, Jenny Manders): Aug 15 – Aug 22, fee = null — DAY 1 check-in; fee not set\n• Booking Accommodation 11397 (bed 89, Capel Street): Aug 22 – Sep 6, fee = null — 7 days to check-in\n• Booking Accommodation 11392 (no bed assigned): Sep 6 – Sep 14, fee = EUR 415 — bedId still null, 22 days away",
+        "Set fee on BA 11396 (urgent today); deactivate BA 11357; set fee BA 11397 (before Aug 22); assign bed to BA 11392 (before Sep 6). See recipe: issue-41-addendum-15aug-f.md",
+        "89th Sat 15 Aug UTC. Day 1 check-in active with no fee. BA 11357 ended today still active. No change. Fix NOT RUN.",
+        "URGENT: BA11396 day1; fee null"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 99th check Sat 15 Aug 2026 UTC — no change since 98th check\n• Stale active Booking Courses (end date before 15 Aug 2026): 24,497 — unchanged\n• 18 Booking Courses ended in past 7 days (8–15 Aug 2026)\n• Fix script prepared; not yet run",
+        "Run staged deactivation SQL (3 stages). See recipe: issue-45-addendum-15aug.md",
+        "99th Sat 15 Aug UTC. Stale=24,497 (unchanged from 98th). 18 ended this week. Fix NOT RUN.",
+        "24,497 stale; fix pending"
+      ]
+    ]
+  }
+]

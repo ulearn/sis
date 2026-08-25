@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Aug Bank Holiday 2026-08-03 still absent from school_closures (65th check, 15th today — CRITICAL: BH IS TOMORROW)\n• 21 active booking courses still start Aug 3 — unchanged across 65 checks\n• BC 25002 + BC 25003 (Aleix Cervera, booking 18225): BOTH have 0 SCAs — deactivate BC 25003 (duplicate)\n• No new closures inserted since last check",
+        "Insert Aug BH closure + shunt 20 BCs to Aug 4 + deactivate BC 25003. See recipe: issue-38-addendum-2aug-l.md",
+        "65th check Sun 2 Aug UTC (15th today). BH TOMORROW. 21 BCs unchanged. Both BC 25002+25003 have 0 SCAs. Fix NOT RUN.",
+        "URGENT; BH tomorrow"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• Student 14571 (Giampaolo Russo) arrived today 2 Aug 2026 — first class Tue 4 Aug (59th check, 14th today)\n• Booking course 24956 (General English AM, Aug 3-Sep 11): active, fee EUR 804.96, 0 class assignments\n• BC 24956 in Aug BH shunt list (Issue 38) — start_date moves to Aug 4 once fix runs\n• Booking accommodation 11357 (bed 178, host family, Aug 2-Sep 6, EUR 1,250): active\n• Capel Street BA (Sep 6-Sep 14): still absent — Neil to confirm bed + fee\n• Payment 17954 (EUR 2,584.96, 26 Jun 2026): xeroPaymentId = null — 37 days unreconciled",
+        "Create SCA for BC 24956 before Tue 4 Aug; Issue 38 fix shunts start to Aug 4. See recipe: issue-41-addendum-2aug-l.md",
+        "59th check Sun 2 Aug UTC (14th today). Arrived today. 0 SCAs. BC 24956 in BH shunt list. Capel BA absent. Xero null 37d. Fix NOT RUN.",
+        "SCA+Capel urgent; arrived"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Student resumes Tue 4 Aug 2026 (after Aug Bank Holiday) — 33rd check, 13th today\n• Booking course 24686 (Morning General, Jul 20-Sep 18 2026): active, fee = null, 0 class assignments\n• BC 24686 starts Jul 20 — not in BH shunt list; manual SCA needed for week of Aug 4\n• Booking course 1797 (Morning General, Apr 6-Jun 26 2026): still active — ended 37 days ago\n• Booking 1611: Confirmed, fully paid EUR 1,280.12, amount open = EUR 0",
+        "Set fee on BC 24686 + create SCA for week Aug 4; deactivate stale BC 1797. See recipe: issue-24-addendum-2aug-j.md",
+        "33rd check Sun 2 Aug UTC (13th today). Returns Tue Aug 4. BC 24686 0 SCAs fee=null. BC 1797 stale 37d. Fix NOT RUN.",
+        "SCA needed; Aug 4 start; fee null"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 17th check Sun 2 Aug 2026 UTC (9th today) — unchanged\n• Holiday BA 18151 (Jul 20-Aug 21 2026): returns Mon 24 Aug 2026 (22 days)\n• Last SCA: id 255, class 11, weekStart Jan 12, weekEnd Jul 3 2026 — 30 days since last\n• Booking course 24925 (AY Afternoon, Mar 9-Oct 2 2026): active, 1 SCA (ends Jul 3)\n• Booking course 1982 (AY Morning, Jun 30-Dec 19 2025): still active — ended 226 days ago\n• Aug BH does not affect Saikhantes (on holiday until Aug 24; BC 24925 starts Mar 9)",
+        "Create SCA class 11 week Aug 24 on BC 24925; deactivate BC 1982. See recipe: issue-15-addendum-2aug-f.md",
+        "17th check Sun 2 Aug UTC (9th today). Returns Mon Aug 24 (22d). Last SCA Jul 3 (30d). BC 1982 stale 226d. Fix NOT RUN.",
+        "SCA needed; returns 24 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 130th check Sun 2 Aug 2026 UTC (4th today) — 4 orphan payments unchanged\n• Payment 16988: EUR 339.90, Bank Transfer, HubSpot payment ID 1204827374829, booking = null (96 days)\n• Payment 16989: EUR 339.90, Bank Transfer, HubSpot payment ID 1204846469317, booking = null (96 days)\n• Payment 17187: EUR 6,151, TransferMate Escrow, fidelo payment ID 37587, transaction ID D2026226, booking = null (89 days)\n• Payment 4781: EUR 380, Flywire, transaction ID D20191404, booking = null (legacy ~7 years)\n• Cross-reference: bookings 17856 + 17857 (Issue 48) still 0 payment records — payments 16988 + 16989 are likely the match",
+        "Verify HubSpot IDs 1204827374829 + 1204846469317 against Galbusera/Fassina; link to bookings 17856+17857. See recipe: issue-1-addendum-2aug-c.md",
+        "130th check Sun 2 Aug UTC (4th today). 4 orphan payments unchanged (96d/96d/89d/7yr). Issue 48 cross-ref confirmed. Fix NOT RUN.",
+        "4 orphan pmts; 96d+"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 33rd check Sun 2 Aug 2026 UTC (8th today) — unchanged\n• Booking 17856 (Galbusera): CONFIRMED, confirmed = false, amount paid = EUR 339.90, 0 payment records linked\n• Booking 17857 (Fassina): CONFIRMED, confirmed = false, amount paid = EUR 339.90, 0 payment records linked\n• Payments 16988 + 16989 (EUR 339.90 each, Bank): booking = null, 96 days orphaned — likely match (cross-ref Issue 1)\n• Booking courses 24630 + 24631 (ended Jul 10 2026): active = true, 23 days stale",
+        "Verify HubSpot IDs 1204827374829 + 1204846469317; link payments 16988+16989 to bookings 17856+17857; deactivate BCs 24630+24631. See recipe: issue-48-addendum-2aug-h.md",
+        "33rd check Sun 2 Aug UTC (8th today). 0 pmts linked. BCs 24630+24631 23d stale. Orphan pmts 96d. Fix NOT RUN.",
+        "4 items open; BCs 23d stale"
+      ]
+    ]
+  }
+]

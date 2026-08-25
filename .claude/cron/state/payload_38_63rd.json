@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 63rd check Fri 7 Aug 2026 UTC — ESCALATED: 17 of 17 unassigned (up from 13)\n• All 17 BCs start Monday 10 Aug (3 days) — 0 SCAs on every one\n• 4 new BCs since recipe 7aug-j: BC25031 (Brisia Garcia Roman AY), BC833 (Settiyanee Duangjai AY), BC25042 (Edith Nunes Gen AM), BC24970 (Tsengelbayar Mendsaikhan AY)\n• BC25004 (Vincenzo Contu, Gen AM Plus) + BC25005 (Claudia Mereu, Gen AM): start AND end 10-14 Aug — MUST assign TODAY\n• BC108 + BC109 + BC25024: end 21 Aug\n• BC96 (Alessandro Signorotti, Intensive 30): BLOCKED — booking 88 confirmed=false, EUR 250 open\n• BC1313 (Ana Luiza De Sousa, AY Afternoon): booking 1286 confirmed=true EUR 120 open — assignable\n• 16 BCs ready to assign (excluding BC96)",
+        "Assign BC25004+BC25005 TODAY; then all others before Mon 10 Aug; unblock BC96 when bk88 paid. See recipe: issue-38-addendum-7aug-k.md",
+        "63rd hrly Fri 7 Aug UTC. ESCALATED 13->17. BC25004 BC25005 expire 14 Aug — must assign TODAY. BC96 blocked bk88. 4 new BCs. Fix NOT RUN.",
+        "URGENT: 17 BCs, start Mon Aug 10"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,46 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payment 16988 (EUR 339.90, HubSpot payment 1204827374829): booking ID = null — still unlinked, Xero payment ID = null\n• Payment 16989 (EUR 339.90, HubSpot payment 1204846469317): booking ID = null — still unlinked, Xero payment ID = null\n• Booking 17856 (Margherita Galbusera): status Confirmed, confirmed = false, amount total = EUR 339.90, amount open = null\n• Booking 17857 (Francesca Fassina): same anomaly as booking 17856\n• Booking course 24630 (General English AM Plus, ended 10 July 2026): active = still true — 8 days stale\n• Booking course 24631 (General English AM Plus, ended 10 July 2026): active = still true — 8 days stale",
+        "Link payment 16988 to booking 17856, payment 16989 to booking 17857; set active = false on booking courses 24630 and 24631. See recipe: issue-1-orphan-payments.md",
+        "65th check Sat 18 Jul UTC (7th today). UNCHANGED. PMTs 16988+16989 bookingId=null xeroPaymentId=null. BC24630+24631 ended Jul10 active=STILL true (8d stale). Fix NOT RUN.",
+        "unlinked; 8d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "57th check Saturday 18 July 2026 UTC (7th check today)\n• August Bank Holiday 2026 (Monday 3 August): STILL missing from school_closures — 16 days away\n• October Bank Holiday 2026 (Monday 26 October): STILL missing from school_closures — 100 days away\n• Database has 9 school closure records: Good Fridays 2026-2030 (IDs 1, 11, 12, 13, 14) and Christmas breaks 2026-2029 (IDs 7, 8, 9, 10) — zero bank holiday records\n• Risk: booking course end dates falling on 3 August will not shunt to the next school day",
+        "Insert August Bank Holiday (Mon 3 Aug 2026) and October Bank Holiday (Mon 26 Oct 2026) into school_closures. See recipe: issue-38-course-date-ux.md",
+        "57th check Sat 18 Jul UTC (7th today). UNCHANGED. Aug BH Mon 3 Aug STILL absent — 16d. Oct BH absent. 9 school closures: GoodFridays 2026-30 + Christmas 2026-29. Fix NOT RUN.",
+        "Aug BH missing; 16d URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "59th check Saturday 18 July 2026 UTC (7th check today)\n• Booking course 24609 (Xuezhen Huang, student 14443, Morning General, 13 July to 31 July 2026): STILL zero class assignments\n• Full week 1 (Monday 13 July to Friday 17 July): ended with zero assignments — attendance permanently missed\n• Week 2 (Monday 20 to Friday 24 July): starts TOMORROW — assign before Monday 09:00\n• Booking accommodation 11358 (bed 180, host Mary Carver, 12 July to 2 August 2026, EUR 900): active = true, correct",
+        "Assign Xuezhen Huang (student 14443) to Morning General class on booking course 24609 before Monday 20 July 09:00. See recipe: issue-39-addendum-18jul.md",
+        "59th check Sat 18 Jul UTC (7th today). UNCHANGED. BC24609 STILL 0 SCAs. WEEK 2 STARTS TOMORROW Mon Jul 20. Fix NOT RUN.",
+        "CRITICAL; assign Mon 20 Jul"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "140th check Saturday 18 July 2026 UTC (7th check today)\n• 7 confirmed Monday 20 July starters STILL have zero class assignments — all start TOMORROW\n• BC1630 Saranzaya Khishigbayar (student 931): Academic Year Afternoon, EUR 2620, confirmed\n• BC24616 Mia Wehrli (student 14450): General English AM Plus, fee null (booking EUR 1149.90 paid), confirmed\n• BC24686 Alberto Squillace (student 1052): Morning General, fee null (booking EUR 1280.12), confirmed\n• BC24942 Lorena Pizarro Araya (student 14565): Academic Year Morning, EUR 2362.50, confirmed\n• BC24966 Filippo Corazzini (student 14578): General English AM Plus, EUR 549.90, confirmed\n• BC24989 Marcos Abrego Tofe (student 14587): General English AM, EUR 152 (1 week), confirmed\n• BC25000 Giorgio Sau (student 14595): General English AM Plus, EUR 940, confirmed\n• Gustavo Da Silva (student 14570), BC24967 General English AM (6 July to 7 August): still zero class assignments — 12 days missed, 20 days remain\n• Hold — do NOT assign: BC24932 Stephany Martins Pardinho (booking 18157 PENDING, confirmed = false)\n• Hold — do NOT assign: BC25001 Neil Mc Mahon (booking 18224 PENDING, amount total = null)",
+        "Assign 7 Monday starters (BC1630, 24616, 24686, 24942, 24966, 24989, 25000) + Gustavo (BC24967) before Mon 20 Jul 09:00. See recipe: issue-45-addendum-18jul.md",
+        "140th check Sat 18 Jul UTC (7th today). UNCHANGED. All 7 Mon20Jul starters + Gustavo BC24967 STILL 0 SCAs. MONDAY IS TOMORROW. Fix NOT RUN.",
+        "CRITICAL; assign Mon 20 Jul"
+      ]
+    ]
+  }
+]

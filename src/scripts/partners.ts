@@ -2,8 +2,105 @@
  * Partner portal — business logic layer
  * All queries are scoped by agencyId (never trust the client).
  */
-import { PrismaClient } from '../generated/prisma/client';
+import { PrismaClient, Prisma } from '../generated/prisma/client';
 import bcrypt from 'bcryptjs';
+import { TERRITORY_MAP, buildBaseDealProps } from './booking-deal';
+import { studentSearchSql } from '../lib/student-search';
+import { sendEmail } from './email';
+import { INSURANCE_META, type InsuranceType } from './insurance-classifier';
+
+// Free / public email providers. Partner registration's domain-match gate must NEVER accept
+// these: a HubSpot company sloppily created with domain "gmail.com" (European Education Center)
+// or "yahoo.com" / "msn.com" would otherwise let EVERY address on that provider pass the gate
+// and inherit the agency's portal — the bot flood cleaned up 2026-07. A free-provider address
+// can still register, but ONLY via an exact HubSpot contact (whole-email) match, never by domain.
+const FREE_EMAIL_PROVIDERS = new Set<string>([
+  'gmail.com', 'googlemail.com',
+  'yahoo.com', 'yahoo.co.uk', 'yahoo.co.jp', 'yahoo.fr', 'yahoo.es', 'ymail.com', 'rocketmail.com',
+  'hotmail.com', 'hotmail.co.uk', 'hotmail.fr', 'hotmail.es', 'hotmail.it',
+  'outlook.com', 'outlook.fr', 'outlook.es', 'live.com', 'live.co.uk', 'msn.com',
+  'icloud.com', 'me.com', 'mac.com', 'aol.com',
+  'gmx.com', 'gmx.net', 'gmx.de', 'mail.com', 'mail.ru',
+  'proton.me', 'protonmail.com', 'tutanota.com',
+  'yandex.com', 'yandex.ru', 'zoho.com',
+  'qq.com', '163.com', '126.com', 'sina.com', 'foxmail.com',
+  'naver.com', 'hanmail.net', 'daum.net',
+]);
+
+// ── Challenge registry ──
+// PRIMARY source = the hub JSON utility (single source of truth, no drift):
+//   GET https://hub.ulearnschool.com/hubapp/challenges/current  → { challenge: {...} | null }
+// The hub's challenges/registry.js is authoritative; SIS just reads it. The table
+// below is a FALLBACK only, used if the hub is briefly unreachable so the form/enrol
+// never breaks. The checkbox stamps the active challenge's NAME onto the Deal's
+// `challenge` property; HubSpot autoQuote reads it and applies the % — SIS never
+// computes the discount.
+type Challenge = { type: string; month?: string; percent: number; starts?: string | null; ends?: string | null; appliesTo?: string | null };
+const HUB_CHALLENGE_URL = process.env.HUB_CHALLENGE_URL || 'https://hub.ulearnschool.com/hubapp/challenges/current';
+const MONTHLY_CHALLENGES_FALLBACK: Record<string, Record<string, { percent: number; starts: string; ends: string; appliesTo: string }>> = {
+  '2026-03': { KickStart: { percent: 33, starts: '2026-03-01', ends: '2026-03-31', appliesTo: 'Course and Accommodation Fees' } },
+  '2026-05': { KickStart: { percent: 25, starts: '2026-05-01', ends: '2026-05-31', appliesTo: 'Course Fees' } },
+  '2026-06': { KickStart: { percent: 22, starts: '2026-06-01', ends: '2026-06-30', appliesTo: 'Course Fees' } },
+};
+function challengeMonthKey(d = new Date()): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+function activeChallengeLocal(d = new Date()): Challenge | null {
+  const entry = MONTHLY_CHALLENGES_FALLBACK[challengeMonthKey(d)];
+  if (!entry) return null;
+  const [type, info] = Object.entries(entry)[0];
+  return { type, month: challengeMonthKey(d), percent: info.percent, starts: info.starts, ends: info.ends, appliesTo: info.appliesTo };
+}
+// Cached hub fetch (10 min TTL) with local fallback — never let a hub blip break enrol.
+let _challengeCache: { at: number; value: Challenge | null } | null = null;
+async function getActiveChallenge(): Promise<Challenge | null> {
+  const now = Date.now();
+  if (_challengeCache && now - _challengeCache.at < 600_000) return _challengeCache.value;
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 4000);
+    const r = await fetch(HUB_CHALLENGE_URL, { signal: ctrl.signal });
+    clearTimeout(t);
+    const j: any = await r.json();
+    const value: Challenge | null = (j && j.success) ? (j.challenge || null) : activeChallengeLocal();
+    _challengeCache = { at: now, value };
+    return value;
+  } catch {
+    return activeChallengeLocal();
+  }
+}
+
+// NEXT month's challenge — read from the hub's full-months endpoint (same single
+// source as /current). Powers the greyed "what's coming" preview pill in the
+// partner portal so partners see the taper (e.g. 22% now → 20% next) and close
+// deals this month. null when next month isn't defined yet (hide the pill).
+const HUB_CHALLENGES_ALL_URL = process.env.HUB_CHALLENGES_ALL_URL || 'https://hub.ulearnschool.com/hubapp/challenges';
+function nextMonthKey(d = new Date()): string {
+  const nd = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1));
+  return `${nd.getUTCFullYear()}-${String(nd.getUTCMonth() + 1).padStart(2, '0')}`;
+}
+let _nextChallengeCache: { at: number; value: Challenge | null } | null = null;
+async function getNextChallenge(): Promise<Challenge | null> {
+  const now = Date.now();
+  if (_nextChallengeCache && now - _nextChallengeCache.at < 600_000) return _nextChallengeCache.value;
+  let value: Challenge | null = null;
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 4000);
+    const r = await fetch(HUB_CHALLENGES_ALL_URL, { signal: ctrl.signal });
+    clearTimeout(t);
+    const j: any = await r.json();
+    const months = (j && j.success) ? (j.months || {}) : {};
+    const key = nextMonthKey();
+    const entry = months[key];
+    if (entry && Object.keys(entry).length) {
+      const [type, info]: any = Object.entries(entry)[0];
+      value = { type, month: key, percent: info.percent, starts: info.starts || null, ends: info.ends || null, appliesTo: info.appliesTo || null };
+    }
+  } catch { value = null; }
+  _nextChallengeCache = { at: now, value };
+  return value;
+}
 
 export function partnerScripts(prisma: PrismaClient) {
 
@@ -20,7 +117,11 @@ export function partnerScripts(prisma: PrismaClient) {
       prisma.booking.count({
         where: {
           agencyId,
-          status: { notIn: ['CANCELLED'] },
+          status: { notIn: ['CANCELLED', 'ESCROW'] },
+          student: { is: { OR: [
+            { visaStatus: null },
+            { visaStatus: { notIn: ['Pending', 'Appeal'] } },
+          ]}},
           serviceEnd: { gte: now },
           serviceStart: { lte: now },
         },
@@ -30,7 +131,11 @@ export function partnerScripts(prisma: PrismaClient) {
         where: {
           agencyId,
           serviceStart: { gte: new Date(todayStr), lte: new Date(weekStr) },
-          status: { notIn: ['CANCELLED'] },
+          status: { notIn: ['CANCELLED', 'ESCROW'] },
+          student: { is: { OR: [
+            { visaStatus: null },
+            { visaStatus: { notIn: ['Pending', 'Appeal'] } },
+          ]}},
         },
       }),
       // Departing this week
@@ -38,12 +143,20 @@ export function partnerScripts(prisma: PrismaClient) {
         where: {
           agencyId,
           serviceEnd: { gte: new Date(todayStr), lte: new Date(weekStr) },
-          status: { notIn: ['CANCELLED'] },
+          status: { notIn: ['CANCELLED', 'ESCROW'] },
+          student: { is: { OR: [
+            { visaStatus: null },
+            { visaStatus: { notIn: ['Pending', 'Appeal'] } },
+          ]}},
         },
       }),
       // Financial summary
       prisma.booking.aggregate({
-        where: { agencyId, status: { notIn: ['CANCELLED'] } },
+        where: { agencyId, status: { notIn: ['CANCELLED', 'ESCROW'] },
+          student: { is: { OR: [
+            { visaStatus: null },
+            { visaStatus: { notIn: ['Pending', 'Appeal'] } },
+          ]}} },
         _sum: { amountTotal: true, amountPaid: true, amountOpen: true },
       }),
     ]);
@@ -68,13 +181,22 @@ export function partnerScripts(prisma: PrismaClient) {
     const where: any = {
       bookings: { some: { agencyId } },
     };
-    if (query?.search) {
-      const s = query.search;
-      where.OR = [
-        { firstName: { contains: s, mode: 'insensitive' } },
-        { lastName: { contains: s, mode: 'insensitive' } },
-        { email: { contains: s, mode: 'insensitive' } },
-      ];
+    if (query?.search && query.search.trim()) {
+      // Use the SAME search engine as the SIS student list (tokenised,
+      // accent-insensitive, matches name/email/fidelo/id) — see studentSearchSql.
+      // It's raw SQL, so resolve matching student ids first (scoped to THIS
+      // agency via the bookings join), then feed them into the Prisma query
+      // below so the rich nested booking/course data still loads.
+      const frag = studentSearchSql(query.search);
+      const idRows = await prisma.$queryRaw<{ id: number }[]>(Prisma.sql`
+        SELECT DISTINCT s.id
+        FROM students s
+        JOIN bookings b ON b.student_id = s.id AND b.agency_id = ${agencyId}
+        WHERE ${frag}
+      `);
+      const ids = idRows.map((r) => Number(r.id));
+      if (ids.length === 0) return { rows: [], total: 0, page, limit };
+      where.id = { in: ids };
     }
 
     const [rows, total] = await Promise.all([
@@ -100,6 +222,13 @@ export function partnerScripts(prisma: PrismaClient) {
               amountOpen: true,
               courses: {
                 select: { name: true, level: true, startDate: true, endDate: true },
+              },
+              // LifePass drawdowns — drives the portal's live recurring-commission
+              // projection (bars light up per ALLOCATED sub, not months elapsed).
+              // Empty for non-LifePass bookings, so this is cheap.
+              paymentInstalments: {
+                where: { cancelledAt: null },
+                select: { sequence: true, allocationStatus: true },
               },
             },
             orderBy: { serviceStart: 'desc' },
@@ -160,7 +289,11 @@ export function partnerScripts(prisma: PrismaClient) {
   async function finance(agencyId: number) {
     const [summary, recentPayments, invoices] = await Promise.all([
       prisma.booking.aggregate({
-        where: { agencyId, status: { notIn: ['CANCELLED'] } },
+        where: { agencyId, status: { notIn: ['CANCELLED', 'ESCROW'] },
+          student: { is: { OR: [
+            { visaStatus: null },
+            { visaStatus: { notIn: ['Pending', 'Appeal'] } },
+          ]}} },
         _sum: { amountTotal: true, amountPaid: true, amountOpen: true },
         _count: true,
       }),
@@ -242,52 +375,33 @@ export function partnerScripts(prisma: PrismaClient) {
     return res.json().catch(() => ({}));
   }
 
-  // Map form course type + sub-options to HubSpot course_type enum value
-  // Exact alignment with Drupal BookingEnrichmentWorker.php resolveCourseType()
-  function mapCourseType(data: any): string {
-    const { courseType, courseSlot, aySlot, lpSlot, courseHours, examType, ieltsSlot } = data;
+  // Course / territory / week-band / accom / extras mappers now live in
+  // ./booking-deal (shared with the student-app booking surface, imported at
+  // top of file as { TERRITORY_MAP, buildBaseDealProps }). TERRITORY_MAP is
+  // still referenced below for partner LifePass eligibility.
 
-    switch (courseType) {
-      case 'group': {
-        const slot = courseSlot || '';
-        if (courseHours === '30') return 'Intensive General English';
-        if (courseHours === '20') return slot === 'morning' ? 'General English AM Plus' : 'General English PM Plus';
-        return slot === 'afternoon' ? 'General English PM' : 'General English';
+  // LifePass tab eligibility — hidden for partners whose company territory is Visa-Before-Departure
+  // (China/Russia/Turkey etc.) or Unsupported; LifePass isn't offered to those markets. Territory is
+  // derived from the HubSpot company `country` (HubSpot is authoritative for agencies). NB: this gates
+  // on the PARTNER's own territory, not the student's — an EU-registered reseller recruiting Non-EU
+  // (No Visa) students keeps the tab. Cached 1h; fails OPEN (show) on any error.
+  const _lpEligibleCache: Record<number, { at: number; eligible: boolean }> = {};
+  async function agencyLifePassEligible(agencyId: number): Promise<boolean> {
+    const hit = _lpEligibleCache[agencyId];
+    if (hit && Date.now() - hit.at < 3600_000) return hit.eligible;
+    let eligible = true;
+    try {
+      const agency = await prisma.agency.findUnique({ where: { id: agencyId }, select: { hubspotCompanyId: true } });
+      if (agency?.hubspotCompanyId && HUBSPOT_PAT) {
+        const c = await hsRequest('GET', `/crm/v3/objects/companies/${agency.hubspotCompanyId}?properties=country`);
+        const country = c?.properties?.country;
+        const territory = country ? (TERRITORY_MAP[country] || 'Unsupported Territory') : null;
+        if (territory === 'Non-EU (VBD)' || territory === 'Unsupported Territory') eligible = false;
       }
-      case 'exam': {
-        const eslot = ieltsSlot || '';
-        if (examType === 'ielts') return eslot === 'afternoon' ? 'IELTS PM' : 'IELTS AM';
-        if (examType === 'fce') return 'Cambridge First FCE AM';
-        if (examType === 'cae') return 'Cambridge Advanced CAE AM';
-        return 'Exam Preparation';
-      }
-      case 'private': return 'Private Lessons';
-      case 'lifepass': return (lpSlot || '') === 'afternoon' ? 'LifePass PM' : 'LifePass AM';
-      case 'academic_year': return (aySlot || '') === 'afternoon' ? 'ay_year_aft' : 'ay_year_morn';
-      case 'junior': return 'Junior';
-      default: return courseType || '';
-    }
+    } catch { eligible = true; } // fail open — never hide LifePass from an eligible partner over a transient error
+    _lpEligibleCache[agencyId] = { at: Date.now(), eligible };
+    return eligible;
   }
-
-  // Resolve week band for course_duration property
-  function resolveWeekBand(weeks: number): string {
-    if (weeks <= 5) return '1 to 5 Weeks';
-    if (weeks <= 7) return '6 to 7 Weeks';
-    if (weeks <= 11) return '8 to 11 Weeks';
-    if (weeks <= 24) return '12 to 24 Weeks';
-    return '25 Weeks';
-  }
-
-  // Resolve territory — exact HubSpot enum values
-  function resolveTerritory(territory: string): string | null {
-    if (territory === 'EU') return 'EU';
-    if (territory === 'Non-EU (VBD)') return 'Non-EU (VBD)';
-    if (territory === 'Non-EU (No Visa)') return 'Non-EU (NO VISA)';
-    return null; // Unsupported Territory — don't send
-  }
-
-  // Territory lookup
-  const TERRITORY_MAP: Record<string, string> = {"Afghanistan":"Unsupported Territory","Albania":"Non-EU (VBD)","Algeria":"Non-EU (VBD)","Andorra":"EU","Argentina":"Non-EU (No Visa)","Armenia":"Non-EU (VBD)","Australia":"Non-EU (VBD)","Austria":"EU","Azerbaijan":"Non-EU (VBD)","Belarus":"Non-EU (VBD)","Belgium":"EU","Bolivia":"Non-EU (No Visa)","Bosnia and Herzegovina":"Non-EU (VBD)","Brazil":"Non-EU (No Visa)","Brunei":"Non-EU (VBD)","Bulgaria":"EU","Cameroon":"Non-EU (VBD)","Canada":"Non-EU (VBD)","Chile":"Non-EU (No Visa)","China":"Non-EU (VBD)","Colombia":"Non-EU (VBD)","Costa Rica":"Non-EU (No Visa)","Croatia":"EU","Cyprus":"EU","Czech Republic":"EU","Denmark":"EU","Ecuador":"Non-EU (VBD)","Egypt":"Non-EU (VBD)","El Salvador":"Non-EU (No Visa)","Estonia":"EU","Fiji":"Non-EU (VBD)","Finland":"EU","France":"EU","Georgia":"Non-EU (VBD)","Germany":"EU","Gibraltar":"EU","Greece":"EU","Guatemala":"Non-EU (No Visa)","Honduras":"Non-EU (No Visa)","Hong Kong":"Non-EU (No Visa)","Hungary":"EU","Iceland":"EU","Indonesia":"Non-EU (VBD)","Ireland":"EU","Israel":"EU","Italy":"EU","Japan":"Non-EU (No Visa)","Jordan":"Non-EU (VBD)","Kazakhstan":"Non-EU (VBD)","Kuwait":"Non-EU (VBD)","Latvia":"EU","Liechtenstein":"EU","Lithuania":"EU","Luxembourg":"EU","Malaysia":"Non-EU (No Visa)","Malta":"EU","Mexico":"Non-EU (No Visa)","Moldova":"Non-EU (VBD)","Monaco":"EU","Mongolia":"Non-EU (VBD)","Montenegro":"Non-EU (VBD)","Morocco":"Non-EU (VBD)","Netherlands":"EU","New Zealand":"Non-EU (VBD)","Nicaragua":"Non-EU (No Visa)","Norway":"EU","Oman":"Non-EU (VBD)","Panama":"Non-EU (No Visa)","Paraguay":"Non-EU (No Visa)","Peru":"Non-EU (VBD)","Poland":"EU","Portugal":"EU","Qatar":"Non-EU (No Visa)","Romania":"EU","Russia":"Non-EU (VBD)","San Marino":"EU","Saudi Arabia":"Non-EU (No Visa)","Serbia":"Non-EU (VBD)","Singapore":"Non-EU (VBD)","Slovakia":"EU","Slovenia":"EU","South Korea":"Non-EU (No Visa)","Spain":"EU","Sweden":"EU","Switzerland":"EU","Taiwan":"Non-EU (No Visa)","Turkey":"Non-EU (VBD)","Ukraine":"Non-EU (VBD)","United Arab Emirates":"Non-EU (VBD)","United Kingdom":"EU","United States":"Non-EU (VBD)","Uruguay":"Non-EU (No Visa)","Uzbekistan":"Non-EU (VBD)","Vatican City":"EU"};
 
   // ── Live HubSpot pull — quotes, invoices, payments, totals ──
   // Single round-trip source for the dashboard. Polled on dashboard load (refresh button).
@@ -314,31 +428,63 @@ export function partnerScripts(prisma: PrismaClient) {
       return { quotes: [], invoices: [], totals: { billed: 0, paid: 0, balance: 0 }, dealCount: 0, commissionRate: Number(agency.commissionRate) || 0, commissionsEarned: 0 };
     }
 
-    // 2. Pull quotes and invoices for all deals in parallel
-    const [quoteLists, invoiceLists] = await Promise.all([
-      Promise.all(dealIds.map(id => hsRequest('GET', `/crm/v4/objects/deals/${id}/associations/quotes`))),
-      Promise.all(dealIds.map(id => hsRequest('GET', `/crm/v4/objects/deals/${id}/associations/invoices`))),
-    ]);
+    // Resolve student names for these deals (for the invoice/quote tables) via
+    // SIS bookings — "INV-1309" is meaningless to a partner without the name.
+    const nameRows = await prisma.booking.findMany({
+      where: { hubspotDealId: { in: dealIds } },
+      select: { id: true, hubspotDealId: true, hubspotInvoiceId: true, student: { select: { firstName: true, lastName: true } } },
+    });
+    const nameByDeal: Record<string, string> = {};
+    // Map the HubSpot invoice id → SIS booking id so the gross-receipt link
+    // (/partners/api/gross-receipt/:bookingId) can be built per invoice row.
+    const bookingIdByInvoice: Record<string, number> = {};
+    // Also map by DEAL: a booking stores only ONE hubspotInvoiceId (the webhook
+    // self-heals it to the LATEST invoice), so an earlier invoice on the same
+    // deal — e.g. INV-1409 alongside a later INV-1464 — would otherwise have no
+    // booking id and thus no gross-receipt link. Every invoice on the deal maps
+    // to the deal's booking. The per-invoice map still wins when present.
+    const bookingIdByDeal: Record<string, number> = {};
+    for (const b of nameRows) {
+      if (b.hubspotDealId && b.student && !nameByDeal[b.hubspotDealId]) {
+        nameByDeal[b.hubspotDealId] = `${b.student.firstName || ''} ${b.student.lastName || ''}`.trim();
+      }
+      if (b.hubspotInvoiceId && bookingIdByInvoice[b.hubspotInvoiceId] == null) {
+        bookingIdByInvoice[b.hubspotInvoiceId] = b.id;
+      }
+      if (b.hubspotDealId && bookingIdByDeal[b.hubspotDealId] == null) {
+        bookingIdByDeal[b.hubspotDealId] = b.id;
+      }
+    }
+
+    // 2. Resolve deal→quote and deal→invoice associations in BATCH (not per-deal).
+    // The old N+1 (one /associations GET per deal) blew HubSpot's ~190 req/10s rate
+    // limit for agencies with many deals — Blue (94 deals) ≈ 190 calls, so the 2nd
+    // dashboard load 429'd on its first request and zeroed the whole dashboard out.
+    // The v4 batch association read collapses 2×N calls into a couple of chunked POSTs.
+    async function assocByDeal(toType: string): Promise<Record<string, string[]>> {
+      const map: Record<string, string[]> = {};
+      for (let i = 0; i < dealIds.length; i += 100) {
+        const chunk = dealIds.slice(i, i + 100);
+        const res = await hsRequest('POST', `/crm/v4/associations/deals/${toType}/batch/read`, { inputs: chunk.map(id => ({ id })) });
+        for (const r of (res.results || [])) {
+          map[String(r.from?.id)] = (r.to || []).map((t: any) => String(t.toObjectId ?? t.id));
+        }
+      }
+      return map;
+    }
+    const [quoteByDeal, invoiceByDeal] = await Promise.all([assocByDeal('quotes'), assocByDeal('invoices')]);
 
     const quoteIds = new Set<string>();
     const dealByQuote: Record<string, string> = {};
-    quoteLists.forEach((lst: any, i: number) => {
-      for (const r of lst.results || []) {
-        const qId = String(r.toObjectId);
-        quoteIds.add(qId);
-        dealByQuote[qId] = dealIds[i];
-      }
-    });
+    for (const [dealId, qids] of Object.entries(quoteByDeal)) {
+      for (const qId of qids) { quoteIds.add(qId); dealByQuote[qId] = dealId; }
+    }
 
     const invoiceIds = new Set<string>();
     const dealByInvoice: Record<string, string> = {};
-    invoiceLists.forEach((lst: any, i: number) => {
-      for (const r of lst.results || []) {
-        const iId = String(r.toObjectId);
-        invoiceIds.add(iId);
-        dealByInvoice[iId] = dealIds[i];
-      }
-    });
+    for (const [dealId, iids] of Object.entries(invoiceByDeal)) {
+      for (const iId of iids) { invoiceIds.add(iId); dealByInvoice[iId] = dealId; }
+    }
 
     // 3. Batch-read quote + invoice details in parallel
     const [quoteBatch, invoiceBatch] = await Promise.all([
@@ -347,7 +493,7 @@ export function partnerScripts(prisma: PrismaClient) {
         inputs: Array.from(quoteIds).map(id => ({ id })),
       }) : Promise.resolve({ results: [] }),
       invoiceIds.size ? hsRequest('POST', '/crm/v3/objects/invoices/batch/read', {
-        properties: ['hs_number', 'hs_invoice_status', 'hs_amount_billed', 'hs_amount_paid', 'hs_balance_due', 'hs_invoice_date', 'hs_due_date', 'hs_pdf_download_link', 'hs_invoice_link', 'hs_title'],
+        properties: ['hs_number', 'hs_invoice_status', 'hs_amount_billed', 'hs_subtotal', 'hs_amount_paid', 'hs_balance_due', 'hs_invoice_date', 'hs_due_date', 'hs_pdf_download_link', 'hs_invoice_link', 'hs_title'],
         inputs: Array.from(invoiceIds).map(id => ({ id })),
       }) : Promise.resolve({ results: [] }),
     ]);
@@ -359,15 +505,33 @@ export function partnerScripts(prisma: PrismaClient) {
     // Look up partner actions for these quotes
     const actionRows = rawPublished.length ? await prisma.partnerQuoteAction.findMany({
       where: { quoteId: { in: rawPublished.map((q: any) => q.id) } },
-      select: { quoteId: true, action: true, comments: true, createdAt: true },
+      select: { quoteId: true, action: true, comments: true, createdAt: true, hubspotTaskId: true },
     }) : [];
     const actionByQuote: Record<string, any> = {};
     for (const a of actionRows) actionByQuote[a.quoteId] = a;
+
+    // Two-way: reflect when staff have COMPLETED the HubSpot task raised by a
+    // QUERIED action → the portal shows "Resolved". One batched read (never a
+    // per-quote loop — HubSpot rate limit). Failure here must not break finance.
+    const taskStatusById: Record<string, string> = {};
+    const queriedTaskIds = actionRows
+      .filter(a => a.action === 'QUERIED' && a.hubspotTaskId)
+      .map(a => a.hubspotTaskId as string);
+    if (queriedTaskIds.length) {
+      try {
+        const tr = await hsRequest('POST', '/crm/v3/objects/tasks/batch/read', {
+          properties: ['hs_task_status'],
+          inputs: queriedTaskIds.map(id => ({ id })),
+        });
+        for (const t of (tr.results || [])) taskStatusById[t.id] = t.properties?.hs_task_status || '';
+      } catch (e) { console.warn('[liveFinance] task status read failed:', (e as any)?.message); }
+    }
 
     const publishedQuotes = rawPublished
       .map((q: any) => ({
         id: q.id,
         dealId: dealByQuote[q.id],
+        studentName: nameByDeal[dealByQuote[q.id]] || null,
         status: q.properties.hs_status,
         title: q.properties.hs_title,
         amount: Number(q.properties.hs_quote_amount || 0),
@@ -379,6 +543,10 @@ export function partnerScripts(prisma: PrismaClient) {
         partnerAction: actionByQuote[q.id]?.action || null,     // 'ACCEPTED' | 'QUERIED' | null
         partnerActionAt: actionByQuote[q.id]?.createdAt || null,
         partnerComments: actionByQuote[q.id]?.comments || null,
+        // QUERIED + the staff HubSpot task is COMPLETED → the query is resolved.
+        resolved: actionByQuote[q.id]?.action === 'QUERIED'
+          && !!actionByQuote[q.id]?.hubspotTaskId
+          && taskStatusById[actionByQuote[q.id].hubspotTaskId] === 'COMPLETED',
       }))
       .sort((a: any, b: any) => (b.createdAt || '').localeCompare(a.createdAt || ''));
 
@@ -388,9 +556,12 @@ export function partnerScripts(prisma: PrismaClient) {
       .map((inv: any) => ({
         id: inv.id,
         dealId: dealByInvoice[inv.id],
+        bookingId: bookingIdByInvoice[inv.id] ?? bookingIdByDeal[dealByInvoice[inv.id]] ?? null,
+        studentName: nameByDeal[dealByInvoice[inv.id]] || null,
         number: inv.properties.hs_number,
         status: inv.properties.hs_invoice_status,
         billed: Number(inv.properties.hs_amount_billed || 0),
+        subtotal: Number(inv.properties.hs_subtotal || 0),
         paid: Number(inv.properties.hs_amount_paid || 0),
         balance: Number(inv.properties.hs_balance_due || 0),
         invoiceDate: inv.properties.hs_invoice_date,
@@ -406,7 +577,11 @@ export function partnerScripts(prisma: PrismaClient) {
     const balance = invoices.reduce((s: number, i: any) => s + i.balance, 0);
 
     const commissionRate = Number(agency.commissionRate) || 0;
-    const commissionsEarned = billed * (commissionRate / 100);
+    // ACTUAL commission earned — read straight off the invoices, not estimated.
+    // HubSpot records the agency commission as the one-time discount between
+    // subtotal and total, so per invoice: commission = hs_subtotal − hs_amount_billed.
+    // Summed across all (non-draft) invoices = the real recorded commission.
+    const commissionsEarned = invoices.reduce((s: number, i: any) => s + Math.max(0, (i.subtotal || 0) - (i.billed || 0)), 0);
 
     return {
       quotes: publishedQuotes,
@@ -474,15 +649,65 @@ export function partnerScripts(prisma: PrismaClient) {
         `/crm/v4/objects/tasks/${taskRes.id}/associations/deals/${data.dealId}`,
         [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 216 }]
       );
+      // Remember the task so the portal can later reflect its completion
+      // (QUERIED → "Resolved") — the two-way signal.
+      await prisma.partnerQuoteAction.update({
+        where: { quoteId: data.quoteId },
+        data: { hubspotTaskId: String(taskRes.id) },
+      });
     }
 
     return { success: true, taskId: taskRes.id || null };
+  }
+
+  // Current month's challenge promotion — drives the enrolment-form label (from the hub utility).
+  async function currentChallenge() {
+    return { success: true, challenge: await getActiveChallenge() };
+  }
+
+  // Blanket "apply this month's Challenge to all my enrolments" toggle (per agency).
+  // ON only when the stored month matches the live challenge month — so it auto-expires
+  // each month and the partner must re-flip it (the monthly cadence).
+  async function getChallengeOptIn(agencyId: number) {
+    const [ch, next] = await Promise.all([getActiveChallenge(), getNextChallenge()]);
+    const month = ch?.month || challengeMonthKey();
+    const row = await prisma.challengeOptIn.findUnique({ where: { agencyId } });
+    return { success: true, on: !!row && row.month === month, challenge: ch, next };
+  }
+  async function setChallengeOptIn(agencyId: number, on: boolean) {
+    const ch = await getActiveChallenge();
+    const month = ch?.month || challengeMonthKey();
+    if (on) {
+      await prisma.challengeOptIn.upsert({ where: { agencyId }, create: { agencyId, month }, update: { month } });
+    } else {
+      await prisma.challengeOptIn.deleteMany({ where: { agencyId } });
+    }
+    return { success: true, on, challenge: ch };
   }
 
   async function enroll(agencyId: number, agencyName: string, data: any, partnerHubspotContactId?: string) {
     if (!HUBSPOT_PAT) throw new Error('HubSpot not configured');
     if (!data.firstName || !data.lastName || !data.nationality) {
       return { success: false, error: 'First name, last name, and nationality are required' };
+    }
+    // Challenge opt-in requires a social handle (Progress Posts) — mirrors the
+    // enrolment form's client-side rule so a direct API call can't bypass it.
+    if (data.challenge && !String(data.instagram || '').trim()) {
+      return { success: false, error: 'Instagram handle is required to join the Challenge.' };
+    }
+
+    // GUARD (Housam→Ahmed incident, 2026-06-05): a partner must NEVER submit a
+    // student under their OWN email. HubSpot dedupes by email, so it collides with
+    // the partner's own contact and the PATCH below would overwrite it with the
+    // student's data. Student email is optional — blank is fine; their own is not.
+    if (data.email && partnerHubspotContactId) {
+      try {
+        const me = await hsRequest('GET', `/crm/v3/objects/contacts/${partnerHubspotContactId}?properties=email`);
+        const partnerEmail = (me?.properties?.email || '').toLowerCase().trim();
+        if (partnerEmail && partnerEmail === String(data.email).toLowerCase().trim()) {
+          return { success: false, error: 'You cannot use your own email address for a student. Leave the student email blank if they do not have one.' };
+        }
+      } catch { /* lookup failed — the conflict guard below still protects us */ }
     }
 
     // 1. Create or update contact.
@@ -498,6 +723,10 @@ export function partnerScripts(prisma: PrismaClient) {
       agent: agencyName,
     };
     if (data.email) contactProps.email = data.email;
+    // Instagram handle → contact `instagram` property (same target as the website
+    // booking form, just wired via the CRM API here). Strip any leading "@".
+    const ig = String(data.instagram || '').trim().replace(/^@+/, '').trim();
+    if (ig) contactProps.instagram = ig;
 
     let contactId: string;
     const contactRes = await hsRequest('POST', '/crm/v3/objects/contacts', { properties: contactProps });
@@ -509,113 +738,57 @@ export function partnerScripts(prisma: PrismaClient) {
       const match = contactRes.message?.match(/Existing ID: (\d+)/);
       if (!match) return { success: false, error: 'Contact already exists but could not resolve ID' };
       contactId = match[1];
+      // GUARD: the student email collided with an EXISTING contact. Never let the
+      // PATCH overwrite the submitting partner's own contact, or any non-student
+      // (Employee/agent) contact, with student form data.
+      if (partnerHubspotContactId && contactId === partnerHubspotContactId) {
+        return { success: false, error: 'That email belongs to your own partner account — leave the student email blank.' };
+      }
+      const existing = await hsRequest('GET', `/crm/v3/objects/contacts/${contactId}?properties=type`);
+      if (/employee/i.test(existing?.properties?.type || '')) {
+        return { success: false, error: 'That email already belongs to an agent/employee contact — use a different email or leave it blank.' };
+      }
       await hsRequest('PATCH', '/crm/v3/objects/contacts/' + contactId, { properties: contactProps });
     } else {
       return { success: false, error: contactRes.message || 'Failed to create contact in HubSpot' };
     }
 
-    // 2. Build deal properties — exact alignment with Drupal BookingEnrichmentWorker
-    const rawTerritory = TERRITORY_MAP[data.nationality] || 'Unsupported Territory';
-    const hsTerritory = resolveTerritory(rawTerritory);
-
+    // 2. Build deal properties — course/territory/dates/accom/extras come from
+    //    the shared builder (identical mapping across all booking surfaces).
     const dealProps: Record<string, any> = {
-      dealname: `${data.firstName} ${data.lastName} — ${agencyName}`,
+      dealname: `${data.firstName} ${data.lastName} | ${data.nationality} | ${agencyName}`,
       pipeline: B2B_PIPELINE,
       dealstage: ENROLMENT_STAGE,
-      course_type: mapCourseType(data),
+      ...buildBaseDealProps(data),
     };
 
-    // Territory — only send if supported
-    if (hsTerritory) dealProps.territory = hsTerritory;
+    // Academic Year renewal — maps the form checkbox to the HubSpot deal
+    // `renewal` boolean (Yes/No). Only AY shows the checkbox, so it's false
+    // for everything else.
+    dealProps.renewal = data.isRenewal ? 'true' : 'false';
 
-    // Course dates and weeks
-    if (data.courseStart) dealProps.course_start = data.courseStart;
-    if (data.courseEnd) dealProps.course_end = data.courseEnd;
-    if (data.courseType !== 'private' && data.courseWeeks) {
-      const weeks = parseInt(data.courseWeeks);
-      dealProps.course_weeks = weeks;
-      dealProps.course_duration = resolveWeekBand(weeks);
+    // Challenge promotion — when the partner opts in, stamp THIS MONTH's active
+    // challenge name onto the deal so HubSpot autoQuote applies the discount.
+    // The value is taken from the server registry (authoritative), never the
+    // client — the client only sends the on/off toggle. No active challenge → no-op.
+    // KickStart/Challenge and LifePass are mutually exclusive programmes — never stamp a
+    // challenge on a LifePass deal, even if the box arrived ticked (course switched late).
+    if (data.challenge && data.courseType !== 'lifepass') {
+      const ch = await getActiveChallenge();
+      if (ch) dealProps.challenge = ch.type;
     }
-
-    // Private hours (only for private lessons)
-    if (data.courseType === 'private' && data.privateHours) {
-      dealProps.private_hours = parseInt(data.privateHours);
-    }
-
-    // Junior pack
-    if (data.courseType === 'junior' && data.juniorPack) {
-      dealProps.junior_pack = data.juniorPack;
-    }
-
-    // Accommodation — exact mapping per resolveAccommType() / resolveRoomType()
-    const accommMap: Record<string, string> = { host: 'Host Family', apartment: 'City Centre Apartment', hostel_hotel: 'Hostel' };
-    if (data.accommType && data.accommType !== 'none') {
-      dealProps.accomm_type = accommMap[data.accommType] || data.accommType;
-
-      // Room type — hostel 'individual' maps to 'Standard', all others pass through
-      if (data.accommRoom) {
-        const hostelRoomMap: Record<string, string> = { individual: 'Standard', dorm: 'Dorm' };
-        const aptRoomMap: Record<string, string> = { premium: 'Premium', superior: 'Superior', standard: 'Standard', twin_shared: 'Twin/Shared' };
-        if (data.accommType === 'hostel_hotel') {
-          dealProps.room_type = hostelRoomMap[data.accommRoom] || data.accommRoom;
-        } else {
-          dealProps.room_type = aptRoomMap[data.accommRoom] || data.accommRoom;
-        }
-      }
-
-      if (data.accommStart) dealProps.accomm_start = data.accommStart;
-      if (data.accommEnd) dealProps.accomm_end = data.accommEnd;
-      if (data.accommWeeks) dealProps.accomm_weeks = parseInt(data.accommWeeks);
-    }
-
-    // Extras — booleans as strings, matching Drupal enrichment behaviour
-    const extras: string[] = Array.isArray(data.extras) ? data.extras : data.extras ? [data.extras] : [];
-    dealProps.airport_pickup = extras.includes('airport_pickup') ? 'true' : 'false';
-    dealProps.airport_dropoff = extras.includes('airport_dropoff') ? 'true' : 'false';
-
-    // AY + LifePass auto-bundle: Exam Fee + PEL/Health Insurance are always included.
-    // Server-side enforced so a frontend that "forgets" to send them still produces a valid deal,
-    // matching the Drupal/B2C enrichment behaviour. exam_type is intentionally left null —
-    // it's filled in once the student sits the level test.
-    const isBundled = data.courseType === 'lifepass' || data.courseType === 'academic_year';
-
-    if (isBundled) {
-      dealProps.exam_fee = 'true';
-      dealProps.insurance = 'PEL;Health';
-    } else {
-      dealProps.exam_fee = extras.includes('exam_fee') ? 'true' : 'false';
-      const insuranceParts: string[] = [];
-      if (extras.includes('insurance_pel')) insuranceParts.push('PEL');
-      if (extras.includes('insurance_health')) insuranceParts.push('Health');
-      if (insuranceParts.length) dealProps.insurance = insuranceParts.join(';');
-    }
-
-    // Extras sub-fields — timestamps as Unix ms at midnight UTC
-    if (extras.includes('airport_pickup') && data.pickupTime) {
-      const d = new Date(data.pickupTime); d.setUTCHours(0,0,0,0);
-      dealProps.airport_pickup_time = d.getTime();
-    }
-    if (extras.includes('airport_dropoff') && data.dropoffTime) {
-      const d = new Date(data.dropoffTime); d.setUTCHours(0,0,0,0);
-      dealProps.airport_dropoff_time = d.getTime();
-    }
-    // Exam type only set when a non-bundled exam fee is selected and a sub-type chosen.
-    // For AY/LifePass we leave exam_type unset (level test happens later).
-    if (!isBundled && extras.includes('exam_fee') && data.examTypeExtra) {
-      const examMap: Record<string, string> = { ielts: 'IELTS', fce: 'FCE', cae: 'CAE' };
-      dealProps.exam_type = examMap[data.examTypeExtra] || data.examTypeExtra;
-    }
-
-    if (data.notes) dealProps.description = data.notes;
 
     // 3. Create deal
     const dealRes = await hsRequest('POST', '/crm/v3/objects/deals', { properties: dealProps });
     if (!dealRes.id) return { success: false, error: dealRes.message || 'Failed to create deal in HubSpot' };
     const dealId = dealRes.id;
 
-    // 4. Associate deal ↔ student contact (B2B Student)
+    // 4. Associate deal ↔ student contact: default Deal↔Contact (3) PLUS the
+    //    "Student-B2B" association label (USER_DEFINED 11) — so the student is
+    //    labelled on the deal association, distinct from the Agent's "Partner".
     await hsRequest('PUT', `/crm/v4/objects/deals/${dealId}/associations/contacts/${contactId}`,
-      [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 3 }]);
+      [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 3 },
+       { associationCategory: 'USER_DEFINED', associationTypeId: 11 }]);
 
     // 5. Associate deal with the Partner's Primary Entity (Company OR Agent Employee Contact).
     //    This is authoritative: stored on the agency record at onboarding, not inferred at login.
@@ -626,16 +799,18 @@ export function partnerScripts(prisma: PrismaClient) {
 
     if (agency?.primaryEntityId) {
       if (agency.primaryEntityType === 'company') {
-        // Deal ↔ Company + Student Contact ↔ Company
+        // Deal ↔ Company ONLY. The student contact is an ENROLMENT, not an
+        // employee — so it must NOT get a contact↔primary-company association
+        // (that link is reserved for Agent-Employee contacts in our model).
+        // The student is tied to the agency via the deal, not the company.
         await hsRequest('PUT', `/crm/v4/objects/deals/${dealId}/associations/companies/${agency.primaryEntityId}`,
           [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 5 }]);
-        await hsRequest('PUT', `/crm/v4/objects/contacts/${contactId}/associations/companies/${agency.primaryEntityId}`,
-          [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 1 }]);
       } else if (agency.primaryEntityType === 'contact') {
-        // Sole trader — deal ↔ Agent Employee contact
+        // Sole trader — deal ↔ Agent Employee contact, labelled "Partner" (13)
         if (agency.primaryEntityId !== contactId) {
           await hsRequest('PUT', `/crm/v4/objects/deals/${dealId}/associations/contacts/${agency.primaryEntityId}`,
-            [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 3 }]);
+            [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 3 },
+             { associationCategory: 'USER_DEFINED', associationTypeId: 13 }]);
         }
       }
     }
@@ -648,9 +823,51 @@ export function partnerScripts(prisma: PrismaClient) {
     if (partnerHubspotContactId && partnerHubspotContactId !== contactId) {
       try {
         await hsRequest('PUT', `/crm/v4/objects/deals/${dealId}/associations/contacts/${partnerHubspotContactId}`,
-          [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 3 }]);
+          [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 3 },
+           { associationCategory: 'USER_DEFINED', associationTypeId: 13 }]); // + "Partner" label
       } catch { /* non-fatal */ }
     }
+
+    // 7. Notify staff. A partner enrolment otherwise lands a deal in the
+    //    pipeline silently (Neil 2026-06-25). Email the team the headline
+    //    details + deal link, AND log a note on the deal timeline so it's also
+    //    visible on the record. Best-effort — never fail the enrolment on this.
+    try {
+      const E = (s: any) => String(s ?? '').replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]!));
+      const dealUrl = `https://app-eu1.hubspot.com/contacts/26488591/record/0-3/${dealId}`;
+      const course = dealProps.course_type || '—';
+      const start  = dealProps.course_start || '—';
+      const weeks  = dealProps.course_weeks || (data.courseType === 'private' ? '(private)' : '—');
+      const rows = [
+        `Student Name: ${E(data.firstName)} ${E(data.lastName)}`,
+        `Nation: ${E(data.nationality || '—')}`,
+        `Course: ${E(course)}`,
+        `Start: ${E(start)}`,
+        `Weeks: ${E(weeks)}`,
+      ];
+      const html = `<strong>New Enrollment from ${E(agencyName)}</strong><br>${rows.join('<br>')}`
+        + `<br><br><a href="${dealUrl}">Open the deal in HubSpot &rarr;</a>`;
+      sendEmail({
+        // From info@ (not partners@): the notify lands in the partners@ TEAM inbox,
+        // and HubSpot treats partners@→partners@ self-sends as spam, so enrolment
+        // alerts were being buried for days. info@ is an allowed sender and surfaces
+        // normally in the shared inbox (Neil, 2026-07-24).
+        from: 'info@ulearnschool.com',
+        to: process.env.PARTNER_ENROLL_NOTIFY || 'partners@ulearnschool.com',
+        subject: `New Enrollment from ${agencyName} — ${data.firstName} ${data.lastName}`,
+        html,
+        houseStyle: false,
+      }).catch(e => console.error('[enroll notify] email failed:', e?.message || e));
+
+      // Deal-timeline note (note → deal association typeId 214).
+      const note = await hsRequest('POST', '/crm/v3/objects/notes', {
+        properties: { hs_timestamp: Date.now(), hs_note_body: `New Enrollment from ${agencyName}\n${rows.join('\n')}` },
+      });
+      if (note?.id) {
+        await hsRequest('PUT', `/crm/v4/objects/notes/${note.id}/associations/deals/${dealId}`,
+          [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 214 }]);
+      }
+    } catch (e) { console.error('[enroll notify] failed:', (e as any)?.message || e); }
 
     return { success: true, dealId, contactId };
   }
@@ -675,6 +892,17 @@ export function partnerScripts(prisma: PrismaClient) {
         currentLevel: true,
         profilePicture: true,
         studentType: true,
+        // Passport fields — the LOA-required trio, partner-editable in the portal.
+        passportNumber: true,
+        passportValidFrom: true,
+        passportValidUntil: true,
+        // Flights (read-only display in the portal) — inbound arrival + outbound return.
+        flightNumber: true,
+        flightDate: true,
+        flightTime: true,
+        outboundFlightNumber: true,
+        outboundFlightDate: true,
+        outboundFlightTime: true,
         // Only bookings belonging to the partner's agency
         bookings: {
           where: { agencyId },
@@ -706,28 +934,85 @@ export function partnerScripts(prisma: PrismaClient) {
       },
     });
     if (!student) return { success: false, error: 'Student not found' };
-    return { success: true, student };
+    // Issued documents (LOAs/certs etc.) for this student, scoped to this
+    // agency's bookings (+ any not tied to a booking). Only ISSUED — drafts stay internal.
+    const agencyBookingIds = student.bookings.map(b => b.id);
+    const [issuedDocuments, allUploads] = await Promise.all([
+      prisma.documentRecord.findMany({
+        where: { studentId, status: 'ISSUED' as any, OR: [{ bookingId: { in: agencyBookingIds } }, { bookingId: null }] },
+        select: { id: true, documentType: true, issuedAt: true, template: { select: { name: true } } },
+        orderBy: { issuedAt: 'desc' },
+      }),
+      prisma.studentDocument.findMany({
+        where: { studentId },
+        select: { id: true, originalName: true, mimeType: true, size: true, createdAt: true, category: true, uploadedBy: true },
+        orderBy: { createdAt: 'desc' },
+      }),
+    ]);
+    // Passport stays in its own block (it drives the passport-fields panel);
+    // everything else the student/staff uploaded — incl. student self-uploads —
+    // surfaces as studentUploads so the agent sees them without an email.
+    const passportUploads = allUploads.filter(d => d.category === 'passport');
+    const studentUploads = allUploads.filter(d => d.category !== 'passport');
+    return { success: true, student, issuedDocuments, passportUploads, studentUploads };
   }
 
-  // ── Documents (Zoho-signed contracts mirrored to SIS) ──
+  // ── Documents ──
+  //    Surfaces both Zoho-imported historicals (partner_documents) and
+  //    internally-signed agreements (agency_signatures), merged + sorted
+  //    by signedAt desc. The frontend uses `source` to pick the right
+  //    PDF URL: 'zoho' → /documents/:id/pdf, 'internal' → /contract/signed.pdf
+  //    (only the latest internal signature is served from there for now;
+  //    historical internal sigs are kept in the table as audit trail).
   async function documents(agencyId: number) {
-    const docs = await prisma.partnerDocument.findMany({
-      where: { agencyId },
-      select: {
-        id: true,
-        zohoRequestId: true,
-        requestName: true,
-        folderName: true,
-        requestStatus: true,
-        signedAt: true,
-        createdAtZoho: true,
-        signerEmail: true,
-        signerName: true,
-        pdfCachedPath: true,
-      },
-      orderBy: { signedAt: 'desc' },
+    const [zohoDocs, sigDocs] = await Promise.all([
+      prisma.partnerDocument.findMany({
+        where: { agencyId },
+        select: { id: true, requestName: true, requestStatus: true, signedAt: true, signerEmail: true, signerName: true, pdfCachedPath: true },
+        orderBy: { signedAt: 'desc' },
+      }),
+      prisma.agencySignature.findMany({
+        where: { agencyId },
+        select: { id: true, contractVersion: true, mode: true, signedAt: true, signerEmail: true, signerName: true, pdfPath: true },
+        orderBy: { signedAt: 'desc' },
+      }),
+    ]);
+
+    const fromZoho = zohoDocs.map(d => ({
+      source: 'zoho' as const,
+      id: d.id,
+      requestName: d.requestName || 'Partner contract',
+      status: d.requestStatus || null,
+      signedAt: d.signedAt,
+      signerEmail: d.signerEmail,
+      signerName: d.signerName,
+      hasPdf: !!d.pdfCachedPath,
+    }));
+
+    const fromInternal = sigDocs.map(s => ({
+      source: 'internal' as const,
+      id: s.id,
+      requestName: s.mode === 'grandfathered'
+        ? 'Partnership Agreement (grandfathered)'
+        : s.mode === 'legacy-zoho'
+          ? 'Partnership Agreement (Zoho legacy import)'
+          : s.mode === 'legacy-paper'
+            ? 'Partnership Agreement (pre-Zoho, signed on paper)'
+            : `Partnership Agreement (${s.contractVersion})`,
+      status: 'completed',
+      signedAt: s.signedAt,
+      signerEmail: s.signerEmail,
+      signerName: s.signerName,
+      hasPdf: !!s.pdfPath,
+    }));
+
+    const merged = [...fromInternal, ...fromZoho].sort((a, b) => {
+      const at = a.signedAt ? a.signedAt.getTime() : 0;
+      const bt = b.signedAt ? b.signedAt.getTime() : 0;
+      return bt - at;
     });
-    return { documents: docs.map(d => ({ ...d, hasPdf: !!d.pdfCachedPath, pdfCachedPath: undefined })) };
+
+    return { documents: merged };
   }
 
   // ── Self-service registration ────────────────
@@ -778,11 +1063,14 @@ export function partnerScripts(prisma: PrismaClient) {
       return { success: false, error: 'An account already exists for this email — use Forgot Password to reset' };
     }
 
-    // ── Gate: are you a known partner in HubSpot? ─────────────────────
-    // Pass if EITHER:
-    //   (a) an Employee-typed Contact exists with this exact email, OR
-    //   (b) the email's domain matches a HubSpot Company.
-    // Student-typed contacts are rejected (gate leak prevention).
+    // ── Gate: are you an agent employee in HubSpot? ───────────────────
+    // ALLOW-LIST: pass ONLY if a Contact with this exact email exists AND its
+    // `type` is "Employee" (our agent-employee value). Everything else —
+    // student, any other type, and crucially BLANK/unclassified — is rejected,
+    // and a domain-matched Company no longer grants access on its own.
+    // (The old reject-list of "student*" leaked: Micael Goulart, a Student-B2C,
+    // registered 2026-08-01 because his contact's `type` was still blank 27 min
+    // after contact-create. Being an Employee contact is now required. Neil, 2026-08.)
     const searchRes = await hsRequest('POST', '/crm/v3/objects/contacts/search', {
       filterGroups: [{ filters: [{ propertyName: 'email', operator: 'EQ', value: email }] }],
       properties: ['email', 'firstname', 'lastname', 'type'],
@@ -795,18 +1083,28 @@ export function partnerScripts(prisma: PrismaClient) {
 
     if (contact) {
       const ctype = String(contact.properties?.type || '').toLowerCase();
-      // Block student contacts from the partner portal
-      if (ctype.startsWith('student')) {
-        console.warn(`[registerPartner] REJECT student-contact ${email} (HS contact ${contact.id}, type="${ctype}")`);
-        return { success: false, error: 'This email belongs to a student account. Partner registration is for agent employees only.' };
+      // ALLOW-LIST: only "Employee" (agent-employee) contacts may register. Reject
+      // students, any other type, and blank/unclassified — the blank case is the
+      // hole that leaked before (type gets classified minutes after contact-create).
+      if (ctype !== 'employee') {
+        console.warn(`[registerPartner] REJECT non-employee-contact ${email} (HS contact ${contact.id}, type="${ctype || 'unset'}")`);
+        const msg = ctype.startsWith('student')
+          ? 'This email belongs to a student account. Partner registration is for agent employees only.'
+          : 'This email is not registered as an agent employee. Please contact partners@ulearnschool.com.';
+        return { success: false, error: msg };
       }
       contactId = contact.id;
     }
 
-    // Domain check — always run (covers: contact missing; also validates Employees
-    // whose type field isn't yet set).
-    const domain = email.split('@')[1] || '';
-    if (domain) {
+    // Domain check — matches a company by the email's domain (covers: contact missing; also
+    // validates Employees whose type field isn't yet set). SKIPPED for free/public providers:
+    // a company mis-configured with a "gmail.com"/"yahoo.com"/"msn.com" domain would otherwise
+    // let every bot on that provider through and inherit its portal (the 2026-07 flood). A
+    // free-provider address only passes via the exact contact match above — the whole email,
+    // not the domain.
+    const domain = (email.split('@')[1] || '').toLowerCase();
+    const isFreeProvider = FREE_EMAIL_PROVIDERS.has(domain);
+    if (domain && !isFreeProvider) {
       const dcSearch = await hsRequest('POST', '/crm/v3/objects/companies/search', {
         filterGroups: [{ filters: [{ propertyName: 'domain', operator: 'EQ', value: domain }] }],
         properties: ['name', 'domain'],
@@ -819,10 +1117,14 @@ export function partnerScripts(prisma: PrismaClient) {
       }
     }
 
-    // If neither a contact nor a domain-matched company — reject
-    if (!contactId && !domainCompanyId) {
-      console.warn(`[registerPartner] REJECT gate-miss ${email} — no HS contact, no domain-matched company (domain="${domain}")`);
-      return { success: false, error: 'Email not recognised. Please contact us at partners@ulearnschool.com.' };
+    // If neither a contact nor a domain-matched company — reject. For a free-provider address
+    // this means "no exact HubSpot contact" → rejected (the durable fix for the bot flood).
+    // Require an Employee contact. A domain-matched Company no longer grants access
+    // on its own — that path let non-Employee people in without a typed contact.
+    // domainCompanyId is still derived above, but now ONLY for downstream company LINKING.
+    if (!contactId) {
+      console.warn(`[registerPartner] REJECT gate-miss ${email} — no Employee-typed HS contact (domainCompany=${domainCompanyId || 'none'})`);
+      return { success: false, error: 'Email not recognised as an agent employee. Please contact us at partners@ulearnschool.com.' };
     }
 
     // Derive display name from HubSpot contact if available — fall back to email local-part
@@ -857,6 +1159,18 @@ export function partnerScripts(prisma: PrismaClient) {
       try {
         const company = await hsRequest('GET', `/crm/v3/objects/companies/${cid}?properties=name`);
         const companyName = company?.properties?.name || domainCompanyName || `HubSpot Company ${cid}`;
+        // Dup guard: adopt an existing unlinked (Fidelo-legacy) same-name row
+        // rather than minting a second row for this partner.
+        const legacy = await prisma.agency.findFirst({ where: { hubspotCompanyId: null, name: { equals: companyName, mode: 'insensitive' } } });
+        if (legacy) {
+          const adopted = await prisma.agency.update({
+            where: { id: legacy.id },
+            data: { hubspotCompanyId: cid, primaryEntityId: cid, primaryEntityType: 'company' } as any,
+          });
+          agencyId = adopted.id;
+          console.log(`[registerPartner] Dup-guard: adopted legacy agency #${adopted.id} "${legacy.name}" → HS company ${cid} (no new row)`);
+          break;
+        }
         const newAgency = await prisma.agency.create({
           data: {
             name: companyName,
@@ -923,6 +1237,78 @@ export function partnerScripts(prisma: PrismaClient) {
     });
     console.log(`[registerPartner] SUCCESS user #${newUser.id} ${email} → agency #${agencyId}`);
 
+    // Mirror the partner's email onto the Agency record. Fidelo-imported agencies carried an
+    // Agency.email, but portal-registered ones didn't — so post-Fidelo partners (e.g. StudyZone)
+    // had a blank Agency.email and the LoA/transport AGENT notify silently skipped them
+    // ("no valid agency email"). Stamp it here. `updateMany` + empty-guard so we NEVER overwrite
+    // an existing (Fidelo-correct) email — only fill the gap.
+    if (agencyId && email) {
+      await prisma.agency.updateMany({
+        where: { id: agencyId, OR: [{ email: null }, { email: '' }] },
+        data: { email } as any,
+      }).catch((e: any) => console.warn(`[registerPartner] Agency.email mirror failed for #${agencyId}: ${e.message}`));
+    }
+
+    // Stamp the SIS ids back onto HubSpot (durable SIS↔HubSpot link + the
+    // "registered on portal" signal) AND email the team a basic registration
+    // notification that doubles as a field-stamp receipt. All fire-and-forget —
+    // registration returns immediately and never fails on any of this.
+    //   • Contact `sis_portal` ← full impersonate URL (?partner=<SisUser.id>)
+    //   • Company `sis_portal` ← full impersonate URL (?agency=<Agency.id>)  (1 company ↔ 1 agency)
+    //   A HubSpot Company→Contact workflow fans the company's link out to any
+    //   other employees who later join threads/deals, so we only need to stamp
+    //   the registering contact + its company here.
+    (async () => {
+      const E = (s: any) => String(s ?? '').replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]!));
+      const IMPERSONATE_BASE = 'https://sis.ulearnschool.com/sis/partners/impersonate';
+      const agency = await prisma.agency.findUnique({ where: { id: agencyId }, select: { name: true, hubspotCompanyId: true } }).catch(() => null);
+      const companyId = agency?.hubspotCompanyId || null;
+      const contactPortalUrl = `${IMPERSONATE_BASE}?partner=${newUser.id}`;
+      const companyPortalUrl = `${IMPERSONATE_BASE}?agency=${agencyId}`;
+
+      // Contact stamp — clickable portal link
+      let contactStamp = 'no HubSpot contact';
+      if (contactId) {
+        contactStamp = await hsRequest('PATCH', `/crm/v3/objects/contacts/${contactId}`, { properties: { sis_portal: contactPortalUrl } })
+          .then(() => { console.log(`[registerPartner] stamped sis_portal on contact ${contactId} → ${contactPortalUrl}`); return `stamped ✓ (${contactPortalUrl})`; })
+          .catch((e: any) => { console.error(`[registerPartner] sis_portal push failed (contact ${contactId}):`, e?.message || e); return 'FAILED ✗'; });
+      }
+      // Company stamp — clickable portal link
+      let companyStamp = 'no HubSpot company';
+      if (companyId) {
+        companyStamp = await hsRequest('PATCH', `/crm/v3/objects/companies/${companyId}`, { properties: { sis_portal: companyPortalUrl } })
+          .then(() => { console.log(`[registerPartner] stamped sis_portal on company ${companyId} → ${companyPortalUrl}`); return `stamped ✓ (${companyPortalUrl})`; })
+          .catch((e: any) => { console.error(`[registerPartner] sis_portal push failed (company ${companyId}):`, e?.message || e); return 'FAILED ✗'; });
+      }
+
+      // Basic registration notification — from partners@ to partners@ so the
+      // thread is visible in the partners mailbox (Neil).
+      try {
+        const contactUrl = contactId ? `https://app-eu1.hubspot.com/contacts/26488591/record/0-1/${contactId}` : null;
+        const rows = [
+          `Name: ${E(displayName || username)}`,
+          `Email: ${E(email)}`,
+          `Username: ${E(username)}`,
+          `Agency: ${E(agency?.name || '—')} (SIS #${agencyId})`,
+          `SIS User ID: ${newUser.id}`,
+          `HubSpot contact ${E(contactId || '—')} — sis_portal: ${E(contactStamp)}`,
+          `HubSpot company ${E(companyId || '—')} — sis_portal: ${E(companyStamp)}`,
+        ];
+        const html = `<strong>New Partner Registration</strong><br>${rows.join('<br>')}`
+          + (contactUrl ? `<br><br><a href="${contactUrl}">Open the contact in HubSpot &rarr;</a>` : '');
+        sendEmail({
+          // From info@ (not partners@): avoids HubSpot flagging partners@→partners@
+          // self-sends as spam in the shared inbox, which was burying onboarding
+          // alerts (Neil, 2026-07-24).
+          from: 'info@ulearnschool.com',
+          to: process.env.PARTNER_REGISTER_NOTIFY || 'partners@ulearnschool.com',
+          subject: `New Partner Registration — ${displayName || username} (${agency?.name || 'agency #' + agencyId})`,
+          html,
+          houseStyle: false,
+        }).catch(e => console.error('[register notify] email failed:', e?.message || e));
+      } catch (e: any) { console.error('[register notify] failed:', e?.message || e); }
+    })();
+
     // Fire-and-forget Zoho contract sync so any historical docs for this
     // partner's domain/agency get mapped + cached locally before they log in.
     // We don't await — the registration response returns immediately.
@@ -938,5 +1324,213 @@ export function partnerScripts(prisma: PrismaClient) {
     return { success: true, userId: newUser.id };
   }
 
-  return { dashboard, students, studentDetail, bookings, finance, enroll, liveFinance, recordQuoteAction, registerPartner, documents };
+  // ── Student passport + uploads (partner-facing) ──
+  async function assertStudentInAgency(agencyId: number, studentId: number) {
+    const s = await prisma.student.findFirst({ where: { id: studentId, bookings: { some: { agencyId } } }, select: { id: true } });
+    return !!s;
+  }
+
+  // UTC-safe @db.Date construction — bare new Date('YYYY-MM-DD') is local-tz and
+  // saves a day early in summer (Dublin DST). Always pin to UTC midnight.
+  const toUtcDate = (v: string | null | undefined) => (v && /^\d{4}-\d{2}-\d{2}$/.test(v)) ? new Date(`${v}T00:00:00Z`) : null;
+
+  async function updateStudentPassport(agencyId: number, studentId: number, data: any) {
+    if (!(await assertStudentInAgency(agencyId, studentId))) return { success: false, error: 'Student not found' };
+    await prisma.student.update({ where: { id: studentId }, data: {
+      passportNumber: (typeof data.passportNumber === 'string' && data.passportNumber.trim()) ? data.passportNumber.trim() : null,
+      passportValidFrom: toUtcDate(data.passportValidFrom),
+      passportValidUntil: toUtcDate(data.passportValidUntil),
+    } as any });
+    return { success: true };
+  }
+
+  async function addPassportUpload(agencyId: number, studentId: number, file: any, uploadedBy: string) {
+    if (!(await assertStudentInAgency(agencyId, studentId))) return { success: false, error: 'Student not found' };
+    const rec = await prisma.studentDocument.create({ data: {
+      studentId, filename: file.filename, originalName: file.originalname, mimeType: file.mimetype, size: file.size,
+      category: 'passport', uploadedBy,
+    } });
+    return { success: true, id: rec.id, originalName: rec.originalName, mimeType: rec.mimeType, size: rec.size, createdAt: rec.createdAt };
+  }
+
+  async function getPassportUpload(agencyId: number, studentId: number, docId: number) {
+    if (!(await assertStudentInAgency(agencyId, studentId))) return null;
+    // Passport AND partner "other" uploads both live in the student-docs dir and
+    // are served by this route.
+    return prisma.studentDocument.findFirst({ where: { id: docId, studentId, category: { in: ['passport', 'other'] } }, select: { filename: true, originalName: true, mimeType: true } });
+  }
+
+  // ── Inbound + outbound flight details (partner-editable in the portal) ──
+  async function updateStudentFlights(agencyId: number, studentId: number, data: any) {
+    if (!(await assertStudentInAgency(agencyId, studentId))) return { success: false, error: 'Student not found' };
+    const t = (v: any) => (typeof v === 'string' && v.trim()) ? v.trim() : null;
+    await prisma.student.update({ where: { id: studentId }, data: {
+      flightNumber: t(data.flightNumber),
+      flightDate: toUtcDate(data.flightDate),
+      flightTime: t(data.flightTime),
+      outboundFlightNumber: t(data.outboundFlightNumber),
+      outboundFlightDate: toUtcDate(data.outboundFlightDate),
+      outboundFlightTime: t(data.outboundFlightTime),
+    } as any });
+    return { success: true };
+  }
+
+  // ── "Other uploads" — partner-uploaded general docs (category 'other').
+  //    Stored alongside passport uploads (student-docs dir), served via /uploads.
+  async function addStudentDoc(agencyId: number, studentId: number, file: any, uploadedBy: string) {
+    if (!(await assertStudentInAgency(agencyId, studentId))) return { success: false, error: 'Student not found' };
+    const rec = await prisma.studentDocument.create({ data: {
+      studentId, filename: file.filename, originalName: file.originalname, mimeType: file.mimetype, size: file.size,
+      category: 'other', uploadedBy,
+    } });
+    return { success: true, id: rec.id, originalName: rec.originalName, createdAt: rec.createdAt };
+  }
+
+  // File an uploaded insurance PDF as an ISSUED "ULearn Document" (Medical /
+  // Learner Protection) so it surfaces in the partner portal + student app +
+  // admin. The file is already on disk (partnerUpload → uploads/student-docs).
+  async function attachInsurance(agencyId: number, studentId: number, file: any, subtype: InsuranceType, uploadedBy: string) {
+    if (!(await assertStudentInAgency(agencyId, studentId))) return { success: false, error: 'Student not found' };
+    const meta = INSURANCE_META[subtype];
+    if (!meta) return { success: false, error: 'Unknown insurance type' };
+    const bk = await prisma.booking.findFirst({ where: { studentId, agencyId }, orderBy: { id: 'desc' }, select: { id: true } });
+    const { documentScripts } = await import('./documents');
+    const rec = await documentScripts(prisma).attachExternalPdf({
+      studentId, bookingId: bk?.id ?? null,
+      templateSlug: meta.slug, templateName: meta.name, documentType: meta.documentType,
+      attachedRelPath: `student-docs/${file.filename}`, originalName: file.originalname, uploadedBy,
+    });
+    return { success: true, recordId: rec.id, classifiedAs: subtype, name: meta.name };
+  }
+
+  // Partners may remove an "other" doc they uploaded (not passports, not staff
+  // docs). Scoped to category 'other' + a partner uploadedBy stamp.
+  async function deleteStudentDoc(agencyId: number, studentId: number, docId: number) {
+    if (!(await assertStudentInAgency(agencyId, studentId))) return { success: false, error: 'Student not found' };
+    const doc = await prisma.studentDocument.findFirst({ where: { id: docId, studentId, category: 'other' }, select: { id: true, uploadedBy: true } });
+    if (!doc || !String(doc.uploadedBy || '').startsWith('partner:')) return { success: false, error: 'Not found' };
+    await prisma.studentDocument.delete({ where: { id: docId } });
+    return { success: true };
+  }
+
+  // Agency-scoped serve of ANY of the student's uploaded docs (student
+  // self-uploads + staff uploads). File lives in uploads/students/<id>/.
+  async function getStudentUpload(agencyId: number, studentId: number, docId: number) {
+    if (!(await assertStudentInAgency(agencyId, studentId))) return null;
+    return prisma.studentDocument.findFirst({ where: { id: docId, studentId }, select: { filename: true, originalName: true, mimeType: true } });
+  }
+
+  async function deletePassportUpload(agencyId: number, studentId: number, docId: number) {
+    if (!(await assertStudentInAgency(agencyId, studentId))) return { success: false, error: 'Student not found' };
+    const doc = await prisma.studentDocument.findFirst({ where: { id: docId, studentId, category: 'passport' }, select: { id: true } });
+    if (!doc) return { success: false, error: 'Not found' };
+    await prisma.studentDocument.delete({ where: { id: docId } });
+    return { success: true };
+  }
+
+  async function assertIssuedDoc(agencyId: number, studentId: number, recordId: number) {
+    if (!(await assertStudentInAgency(agencyId, studentId))) return false;
+    const d = await prisma.documentRecord.findFirst({ where: { id: recordId, studentId, status: 'ISSUED' as any }, select: { id: true } });
+    return !!d;
+  }
+
+  // ── Partner credit ledger (holding area) ──────────────────
+  // SIS is the system of record. Staff record credits (overpayments, goodwill,
+  // services-in-lieu); the partner sees the balance in their Finance tab. Only
+  // OPEN credits count toward the available balance.
+  // Signed ledger: CREDIT rows (+) are granted; DEBIT rows (−) are used.
+  // Balance = sum of amounts over active (non-VOID) rows.
+  async function listCredits(agencyId: number) {
+    const rows = await prisma.agencyCredit.findMany({
+      where: { agencyId },
+      orderBy: [{ issueDate: 'desc' }, { id: 'desc' }],
+      select: {
+        id: true, amount: true, entryType: true, reason: true, issueDate: true, status: true, createdBy: true, createdAt: true,
+        sourceRef: true, appliedToBookingId: true, appliedInvoice: true, appliedAt: true, paymentId: true,
+        xeroCreditNoteNumber: true, hubspotTaskId: true, pushedAt: true, autoFromInvoiceCredit: true,
+      },
+    });
+    const balance = rows
+      .filter(r => r.status !== 'VOID')
+      .reduce((s, r) => s + Number(r.amount || 0), 0);
+    return {
+      credits: rows.map(r => ({
+        id: r.id,
+        amount: Number(r.amount || 0),        // signed
+        entryType: r.entryType,               // CREDIT | DEBIT
+        reason: r.reason,
+        issueDate: r.issueDate,
+        status: r.status,
+        createdBy: r.createdBy,
+        sourceRef: r.sourceRef,
+        appliedToBookingId: r.appliedToBookingId,
+        appliedInvoice: r.appliedInvoice,
+        appliedAt: r.appliedAt,
+        fromPayment: r.paymentId != null,
+        auto: r.autoFromInvoiceCredit,
+        xeroCreditNoteNumber: r.xeroCreditNoteNumber,
+        hubspotTaskId: r.hubspotTaskId,
+        pushed: r.pushedAt != null,
+      })),
+      balance,
+    };
+  }
+
+  // Grant credit (+) — standalone (goodwill / services) or from an overpayment
+  // (pass sourceRef = the origin invoice). Amount is coerced positive.
+  async function addCredit(agencyId: number, input: { amount: number; reason?: string | null; issueDate?: string | null; sourceRef?: string | null; createdBy?: string | null }) {
+    const amount = Math.abs(Number(input.amount));
+    if (!Number.isFinite(amount) || amount === 0) throw new Error('A non-zero amount is required');
+    const issue = input.issueDate && /^\d{4}-\d{2}-\d{2}/.test(input.issueDate)
+      ? new Date(input.issueDate.slice(0, 10) + 'T00:00:00.000Z')
+      : new Date();
+    const c = await prisma.agencyCredit.create({
+      data: {
+        agencyId, amount, entryType: 'CREDIT',
+        reason: input.reason?.trim() || null,
+        sourceRef: input.sourceRef?.trim() || null,
+        issueDate: issue,
+        createdBy: input.createdBy || null,
+      },
+      select: { id: true },
+    });
+    return { success: true, id: c.id };
+  }
+
+  // Use credit (−) — posts a DEBIT drawing the balance down, linked to the
+  // booking/invoice it went to. This is a ledger record of consumption; the
+  // money side (HubSpot credit memo, or a SIS ULearn-Credit Payment) is separate.
+  // Pool-level: not tied to a specific grant (FIFO/net — partials work naturally).
+  async function useCredit(agencyId: number, input: { amount: number; bookingId?: number | null; invoice?: string | null; reason?: string | null; createdBy?: string | null; paymentId?: number | null }) {
+    const amount = Math.abs(Number(input.amount));
+    if (!Number.isFinite(amount) || amount === 0) throw new Error('A positive amount is required');
+    if (!input.bookingId && !input.invoice) throw new Error('Provide the booking or invoice the credit was applied to');
+    let dealId: string | null = null;
+    let bookingId: number | null = null;
+    if (input.bookingId) {
+      const bk = await prisma.booking.findFirst({ where: { id: Number(input.bookingId), agencyId }, select: { id: true, hubspotDealId: true } });
+      if (!bk) throw new Error(`Booking #${input.bookingId} not found for this partner`);
+      bookingId = bk.id;
+      dealId = bk.hubspotDealId || null;
+    }
+    const reason = input.reason?.trim()
+      || (bookingId ? `Applied to booking #${bookingId}` : `Applied to ${input.invoice}`);
+    const c = await prisma.agencyCredit.create({
+      data: {
+        agencyId, amount: -amount, entryType: 'DEBIT', reason,
+        appliedToBookingId: bookingId,
+        appliedInvoice: input.invoice?.trim() || null,
+        appliedToDealId: dealId,
+        appliedAt: new Date(),
+        paymentId: input.paymentId ?? null,
+        createdBy: input.createdBy || null,
+      },
+      select: { id: true },
+    });
+    return { success: true, id: c.id };
+  }
+
+  return { dashboard, students, studentDetail, bookings, finance, enroll, currentChallenge, getChallengeOptIn, setChallengeOptIn, agencyLifePassEligible, liveFinance, recordQuoteAction, registerPartner, documents,
+    updateStudentPassport, addPassportUpload, getPassportUpload, getStudentUpload, deletePassportUpload, assertIssuedDoc,
+    updateStudentFlights, addStudentDoc, deleteStudentDoc, attachInsurance, listCredits, addCredit, useCredit };
 }

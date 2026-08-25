@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payment 16988 (EUR 339.90, HubSpot 1204827374829): booking ID = null — not linked to booking 17856 (41st check, 13 July UTC)\n• Payment 16989 (EUR 339.90, HubSpot 1204846469317): booking ID = null — not linked to booking 17857\n• Booking 17856 (Margherita Galbusera, student 14461): Confirmed, EUR 339.90 fully paid, confirmed = false\n• Booking 17857 (Francesca Fassina, student 14462): Confirmed, EUR 339.90 fully paid, confirmed = false\n• Booking courses 24630 and 24631 (General English AM Plus, ended 10 July 2026): both still active = true — 3 days stale",
+        "Link payment 16988 to booking 17856, payment 16989 to booking 17857; set active = false on BCs 24630/24631. See recipe: issue-1-orphan-payments.md",
+        "41st check 13 Jul UTC. UNCHANGED. Payments 16988+16989 bookingId=STILL null. BCs 24630+24631 ended Jul10, active=STILL true (3d stale). Fix NOT RUN.",
+        "unlinked; 3d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student class assignment 255 (Saikhantes Shagdarsuren, student 1001, class 11 B1 PM): weekEnd = 3 July 2026 — expired 10 days ago (28th check, 13 July UTC)\n• No class assignment for weeks beginning 7 July or 14 July — 10 school days without a class\n• Booking course 24925 (Academic Year Afternoon, 9 March 2026 to 2 October 2026): active, fully paid EUR 1339.20\n• Root cause: SCA 255 was not extended or renewed when the period ended on 3 July",
+        "Assign Saikhantes to a B1 PM class for WB 7 Jul and WB 14 Jul via SIS Classes > To Be Assigned. See recipe: issue-15-saikhantes-class.md",
+        "28th check 13 Jul UTC. UNCHANGED. SCA255 expired Jul03, NO new SCA created. BC24925 AY Afternoon active to Oct02. 10 school days no class. CRITICAL. Fix NOT RUN.",
+        "CRITICAL; 10d no class; SCA expired"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Accommodation 11358 (Xuezhen Huang, student 14443, bed 180, 12 July to 2 August 2026): claimStatus = null — host Mary Carver (provider, +353 87 927 1130) has NOT claimed placement (Day 2, 13 July UTC)\n• Zero class assignments for student 14443 — booking course 24609 (Morning General, 13 July to 31 July 2026) started today, class not yet assigned\n• Booking 17831: Confirmed, fully paid EUR 1396.90",
+        "Nudge host Mary Carver to claim via portal (+353 87 927 1110); assign Xuezhen to AM class via SIS Classes > To Be Assigned. See recipe: issue-39-xuezhen-host-class.md",
+        "Day2 13 Jul UTC. BA11358 claimStatus=STILL null (host not claimed). Xuezhen SCAs=0, BC24609 started TODAY Jul13 (Morning General Jul13-31). Class AND host both unresolved. Fix NOT RUN.",
+        "Day2; host unclaimed; class 1d overdue"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Pietro Colombo (student 72, BC 81): Morning General Plus, 6-24 July 2026 — Day 8, 0 class assignments, 9 school days left\n• Sophia Emilly Gallo Borim (student 853, BC 1820): AY Afternoon, 29 June-18 December 2026 — 0 assignments since Apr 24 (14+ days untracked)\n• Tuguldurtugs Enkhtugs (student 858, BC 1786): AY Morning, 6 July-25 December 2026 — 0 assignments, 8 days untracked\n• Kayque Tauann Lopes Coelho (student 852, BC 1821): AY Afternoon, 29 June-18 December 2026 — 0 assignments, 14+ days\n• Munkhtsetseg Tserennadmid (student 922, BC 1619): AY Morning, 13 July-1 January 2027 — started today, 0 assignments\n• Pedro Campion Teixeira (student 1045, BC 1788): AY Afternoon, 13 July-18 December 2026 — started today, 0 assignments\n• Wanqiong Hou (student 1068, BC 1814): AY Morning, 13 July-18 December 2026 — started today, 0 assignments\n• Italo Teixeira (student 14530, BC 24820): AY Afternoon, 13 July-18 December 2026 — started today, 0 assignments\n• URGENT — Lunel Dubost (student 14566, BC 24946): General English AM, 13-17 July 2026 — started today, 0 assignments, course ends FRIDAY 17 July (4 school days remaining)\n• Samuele Stenico (student 14588, BC 24990): General English AM, 13 July-7 August 2026 — started today, 0 assignments\n• Edith Nunes (student 1015, BC 24991): General English AM, 13 July-7 August 2026 — started today, 0 assignments",
+        "Assign all 11 students via SIS Classes > To Be Assigned. MOST URGENT: Lunel Dubost ends Friday 17 July. See recipe: issue-45-renewal-no-class.md",
+        "54th check 13 Jul UTC. UNCHANGED. All 11 students still 0 SCAs (fresh DB confirmed). Lunel Dubost (BC24946 GE-AM Jul13-17) ends FRIDAY — 4 school days remain, never assigned. Pietro Day8 (9 school days left). 7 new Jul13 starters unassigned. Fix NOT RUN. Neil: assign Lunel FIRST.",
+        "CRITICAL; 11 students; Lunel ends Fri"
+      ]
+    ]
+  },
+  {
+    "range": "H9:K9",
+    "values": [
+      [
+        "• Booking course 24959 (Diego Alves da Silva Molina, student with booking 18183, Academic Year Morning, 3 August 2026 to 5 February 2027): ILEP code = still null — 21 days to course start\n• Booking 18183: Confirmed, fully paid EUR 1735 / 1735 (balance cleared)\n• Aurora Madril Oliveira Molina (booking course 24958): ILEP code = 0318/0010 — resolved\n• Pedro De Pauli Pastre (student 911): no active 2026-27 AY booking course in SIS (older BC 1602/1603 have ILEP 0318/0011 and 0318/0012 from 2025)",
+        "Set ILEP code on BC 24959 (Diego, AY Morning Aug 2026). Pedro: check if renewal booking needed. See recipe: issue-8-ilep-certs.md",
+        "13 Jul UTC (22nd check). Diego BC24959 ILEP=STILL null (21d to Aug3 start). Aurora BC24958 ILEP=0318/0010 (RESOLVED). Pedro has no new AY 2026-27 booking in SIS — may need renewal booking. Fix NOT RUN.",
+        "ilep null; 21d; Aurora resolved"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Booking course 104 (Morning General Plus, 15 to 26 June 2026): ended 26 June — active = still true (17 days stale since ended 26 June) (32nd check, 13 July UTC)\n• Payment 17102 (EUR 1151.50, booking 94, Giulia Avallone, student 88): xeroPaymentId = null, type = null — not reconciled in Xero\n• Booking 94: Confirmed, EUR 1151.50 fully paid",
+        "Set active = false on BC 104; reconcile payment 17102 in Xero. See recipe: issue-30-giulia-bc-xero.md",
+        "32nd check 13 Jul UTC. UNCHANGED. BC104 ended Jun26 active=STILL true (17d stale). Pmt17102 xeroPaymentId=STILL null. Fix NOT RUN.",
+        "32nd check; bc104 stale 17d; xero null"
+      ]
+    ]
+  }
+]

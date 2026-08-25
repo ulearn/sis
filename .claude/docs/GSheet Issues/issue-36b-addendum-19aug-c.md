@@ -1,0 +1,1 @@
+Issue 36b Pietro addendum 19aug-c: 233rd check, no change. BC24772 ends Fri 21 Aug (tomorrow), active. BA11311 bed84 ends Sat22 fee3850 active. BA11393 bed88 22Aug-13Sep FEE NULL URGENT. Fix: deactivate BC24772 after Fri class, deactivate BA11311 after Sat checkout, set fee on BA11393 before Sat move-in. Run 388th.

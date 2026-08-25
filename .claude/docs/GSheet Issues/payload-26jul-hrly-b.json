@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Sun 26 Jul 2026 UTC — UNCHANGED\n• Student 1001 Saikhantes Shagdarsuren: on holiday Jul 20 to Aug 21 2026 (returns Mon Aug 24)\n• Class assignment 255 (class 11 Afternoon B1, booking course 24925): expired Jul 3 2026 — 23 days since expiry\n• 2 weeks of class missed Jul 6–17 2026 before holiday (irrecoverable)\n• Booking course 24925 (Academic Year Afternoon, ends Oct 2 2026): active, running normally\n• Booking course 1982 (Academic Year Morning, ended Dec 19 2025): active = still true — 219 days stale",
+        "Create class assignment on booking course 24925 for class 11 from Mon Aug 24 2026. See recipe: issue-15-addendum-26jul.md",
+        "Sun 26 Jul UTC — UNCHANGED. Student on holiday Jul 20–Aug 21. Class assignment 255 expired Jul 3 (23d). No action until Mon Aug 24 2026. Booking course 1982 stale 219d. Fix NOT RUN.",
+        "2 wks missed; assign Mon 24 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H24:K24",
+    "values": [
+      [
+        "• Sun 26 Jul 2026 UTC — UNCHANGED\n• Booking course 828 (Academic Year Morning, booking 787): start 2 Mar 2026, end 27 Feb 2026 — backwards dates (legacy DST bug)\n• Booking course 826 (ended 28 Nov 2025): 240 days stale, active = true\n• Booking course 827 (ended 30 Jan 2026): 177 days stale, active = true\n• Booking course 829 (ended 5 Jun 2026): 51 days stale, active = true\n• Student Enshi Lu (student 397) left approximately Mar 2026 — data-hygiene only, no urgency\n• Fix NOT RUN",
+        "Set booking course 828 end date = 2026-03-20; deactivate booking courses 826, 827, 828, 829. See recipe: issue-23-enshi-lu-backwards-course.md",
+        "Sun 26 Jul UTC — UNCHANGED. Backwards dates: booking course 828 start=Mar02 end=Feb27. All 4 booking courses stale active=true (240d/177d/51d). Low-priority data hygiene. Fix NOT RUN.",
+        "backwards dates; low-pri"
+      ]
+    ]
+  }
+]

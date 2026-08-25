@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 37th hourly check Wed 22 Jul 2026 UTC (93rd total)\n• Payment 16988 (EUR 339.90, Bank Transfer, 28 Apr 2026): booking ID null — 86 days since creation\n• Payment 16989 (EUR 339.90, Bank Transfer, 28 Apr 2026): booking ID null — 86 days since creation\n• Payment 17187 (EUR 6151, TransferMate Escrow, 5 May 2026): booking ID null — 79 days since creation\n• Payment 4781 (EUR 380, Flywire legacy, 10 Apr 2026): booking ID null — 103 days since creation\n• Stale booking courses: 24,436 with active = true and end date before 22 Jul 2026\n• Stale booking accommodations: 11,175 with active = true and end date before 22 Jul 2026\n• UNCHANGED from previous check",
+        "Link payments to bookings; run deactivation job. See recipe: issue-1-addendum-22jul-d.md",
+        "37th hrly 93rd check Wed 22 Jul UTC. UNCHANGED. 4 orphan pmts: 16988+16989 (EUR 339.90 ea Bank Apr28 86d), 17187 (EUR 6151 TransferMate May5 79d), 4781 (EUR 380 Flywire Apr10 103d). Stale BCs: 24,436. Stale BAs: 11,175. Fix NOT RUN.",
+        "4 orphan pmts; 24,436 stale BCs"
+      ]
+    ]
+  },
+  {
+    "range": "H37:K37",
+    "values": [
+      [
+        "• Homework section: renderSheetHtml() in src/routes/attendance.ts — no homework block present — awaiting layout spec from Paul and Neil\n• Holiday display bug: getWeekAttendance() in src/scripts/attendance.ts — booking holidays not fetched in week query\n• Git HEAD: 9008d10 — no new commits to attendance files since 17 Jul 2026\n• 46th hourly check Wed 22 Jul 2026 UTC (code check 16) — hash change detected, likely G column edit in sheet\n• Fix NOT RUN — awaiting spec",
+        "Get Paul / Neil layout spec, then add homework block to renderSheetHtml() (attendance.ts). See recipe: issue-36-attendance-homework-section.md",
+        "46th hrly Wed 22 Jul UTC (code check 16). Hash changed (G edit). Commit 9008d10 still HEAD — no attendance file commits since Jul 17. renderSheetHtml(): no homework block. Fix NOT RUN — awaiting spec.",
+        "code open; awaiting spec"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 46th hourly check Wed 22 Jul 2026 UTC (119th total)\n• August Bank Holiday Mon 3 Aug 2026: STILL absent from school closures — 11 calendar days away — URGENT\n• October Bank Holiday Mon 27 Oct 2026: STILL absent from school closures — 96 days away\n• DB confirms: no school_closure record covers 3 Aug 2026 (query returned 0)\n• Direct impact: 14 active booking courses end Aug 3–9 (need end-date push of 1 day)\n• Wider window: 31 active booking courses end Aug 3–16\n• School closures present: Good Friday 2026 + Christmas 2026–2030 + Good Fridays 2027–2030 only — no bank holidays ever added\n• Fix NOT RUN",
+        "Add Aug Bank Holiday (3 Aug 2026) + Oct Bank Holiday (27 Oct 2026) to school closures; run end-date recompute. See recipe: issue-38-addendum-22jul-g.md",
+        "46th hrly 119th check Wed 22 Jul UTC. Aug BH STILL absent — 11 days to Aug 3. DB: 0 closures cover Aug 3. 14 BCs end Aug 3-9 (direct impact). Oct BH absent. Fix NOT RUN.",
+        "Aug BH; 11d URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• 46th hourly check Wed 22 Jul 2026 UTC (71st total)\n• Accommodation BA 11358 confirmed in database: Host Family, Individual room, bed 180, 3 weeks, 12 Jul to 2 Aug 2026, EUR 900, active — accommodation IS allocated and bed assigned\n• Original accommodation display issue appears resolved\n• Booking course 24609 (Xuezhen Huang, booking 17831): Morning General, 13 Jul to 31 Jul 2026 — still zero class assignments — 7 school days missed, 6 school days remaining\n• Fix NOT RUN",
+        "Assign BC24609 (Xuezhen Huang) to Morning General class — 6 school days remaining (ends 31 Jul). See recipe: issue-39-addendum-22jul-g.md",
+        "46th hrly 71st check Wed 22 Jul UTC. BA11358 present (Host Family bed 180 Jul12-Aug2 active fee EUR 900). BC24609 STILL 0 CAs — 7 missed (Jul 13-22), 6 remaining (Jul 23-31). Fix NOT RUN.",
+        "BC24609 0 CAs; 6d left (ends Jul 31)"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 46th hourly check Wed 22 Jul 2026 UTC (96th total)\n• Payment 17954 (EUR 2584.96, Bank Transfer, 29 Jun 2026): Xero payment ID still null — 23 days unreconciled\n• Booking 18180 (Giampaolo Russo, student 14571): 1 accommodation in database only — Capel Street apartment STILL MISSING\n• Accommodation present: BA 11357, Host Family, Individual room, bed 178, 5 weeks, 2 Aug to 6 Sep 2026, EUR 1250, active\n• Booking course 24956 (General English AM, 3 Aug to 11 Sep 2026): zero class assignments\n• Check-in 2 Aug 2026 — 11 calendar days away\n• Fix NOT RUN",
+        "Add Capel apartment to booking 18180 (confirm dates/fee with KC/Diego); reconcile payment 17954 in Xero; assign BC24956. See recipe: issue-41-addendum-22jul-f.md",
+        "46th hrly 96th check Wed 22 Jul UTC. Capel apt STILL missing (1 accomm only in DB). Payment 17954 xeroId null (23d). BC24956 0 CAs. Check-in Aug 2 (11 days). Fix NOT RUN.",
+        "Xero null; Capel missing; 11d to check-in"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 46th hourly check Wed 22 Jul 2026 UTC (78th total)\n• LAST CHANCE — Booking course 24828 (Martina Tartaro): Morning General Plus + IELTS, ends Fri 24 Jul 2026 — zero class assignments — 2 school days left (Thu 23 + Fri 24)\n• LAST CHANCE — Booking course 25011 (Eduardo Roche Diaz): General English PM, 20–24 Jul 2026 — zero class assignments — 2 school days left\n• Booking course 24609 (Xuezhen Huang): Morning General, 13–31 Jul 2026 — 7 days missed — 6 school days remaining\n• Booking course 24945 (Sarah Venturini Talizin): ends 31 Jul 2026 — zero class assignments\n• Booking course 24998 (Allison Ayala Vazquez): ends 31 Jul 2026 — zero class assignments\n• Booking course 24990 (Samuele Stenico): ends 7 Aug 2026 — zero class assignments\n• Booking course 24991 (Edith Nunes): ends 7 Aug 2026 — zero class assignments\n• All 7 confirmed unchanged — fresh DB query Wed 22 Jul 2026 UTC — fix NOT RUN",
+        "Assign BC24828 + BC25011 to classes TODAY (last chance — end Fri 24 Jul). See recipe: issue-45-addendum-22jul-i.md",
+        "46th hrly 78th check Wed 22 Jul UTC. LAST CHANCE: BC24828 Martina + BC25011 Eduardo end FRI 24 JUL — 2 school days (Thu 23 + Fri 24). BC24609 Xuezhen 7d missed 6 left. BC24945 Sarah, BC24998 Allison, BC24990 Samuele, BC24991 Edith all 0 CAs. Fix NOT RUN.",
+        "LAST CHANCE: ends Fri 24 Jul"
+      ]
+    ]
+  }
+]

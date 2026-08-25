@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H11:K11",
+    "values": [
+      [
+        "• Booking 97 is Confirmed, paid EUR 1741 / 1741, confirmed = false\n• Documents 63 and 64 are invoices (accounts type), not certificates — zero cert documents for booking 97\n• Booking course 107 (Morning General, 27 Apr to 22 May 2026) ended 46 days ago, still active = true\n• Certificate not generated — student Massimiliano Cameran (student 91) has no completion cert for Apr27-May22 course (22nd check, 7 Jul 2026 UTC)",
+        "(NOT RUN) Generate cert for booking 97 via SIS student 91 > booking 97 > Documents > Generate Certificate. See recipe: issue-9-massimiliano-cert-split.md",
+        "22nd check 7 Jul UTC. UNCHANGED. bk97 CONF confirmed=false EUR1741/1741 (updAt=Jun05). bc107 MGen Apr27-May22 STILL active=true fee=785. Docs 63 (REVOKED accounts) + 64 (ISSUED accounts) — zero cert docs. NEIL: SIS s91 bk97 Documents Generate Certificate.",
+        "cert bk97; 46d"
+      ]
+    ]
+  },
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "• Extra 96 (booking 17981, Lizbeth del Carmen Sierra Martinez, student 14522): type INSURANCE, fee = null, active = true — insurance cost never set\n• Booking 17981: Confirmed, confirmed = false, fully paid EUR 1407.50 — Academic Year Afternoon Jun 1 2026 to Jan 29 2027\n• Student in class without health insurance fee set since course start — 43 calendar days as of 7 July 2026\n• Standard WORLD2GO insurance rate based on comparable booking 18149 (extra 218): EUR 150\n• Extra 95 (EXAM_FEE) is correctly priced at EUR 220 — only the insurance extra has no fee set",
+        "Arrange PEL + health insurance retro Jun01; set extra96.fee=150; supp invoice HS deal 503569276136. See recipe: issue-13-lizbeth-health-insurance.md",
+        "19th check 7 Jul UTC. UNCHANGED. Extra96 INSURANCE fee=STILL null active=true (May25=43d stale). details=PEL;Health. bk17981 CONF confirmed=false EUR1407.5/1407.5. Extra95 EXAM_FEE EUR220 correct. NEIL: set extra96 fee + raise supplemental invoice.",
+        "ins unpriced; D43"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking course 1797 (Morning General, 6 April to 26 June 2026): ended 11 days ago — still active = true (41st check, 7 July 2026 UTC)\n• Booking course 24686 (Morning General, 20 July to 18 September 2026): starts in 13 days — fee = null; set fee before 20 July\n• Payment 17124 (EUR 1280.12, 5 May 2026): type = null, Xero payment ID = null, HubSpot payment ID = null — unreconciled in Xero; booking ID = 1611 (correctly linked)\n• Booking 1611 (Alberto Squillace, student 1052): Confirmed, confirmed = true, EUR 1280.12 / EUR 1280.12 (fully paid — booking course 1797 fee EUR 1836 is a Fidelo migration artefact)",
+        "(1) UPDATE booking_courses SET active=false WHERE id=1797 (NOT RUN); (2) Set booking course 24686 fee via SIS admin before 20 July; (3) Reconcile payment 17124 in Xero. See recipe: issue-24-alberto-fidelo-course-split.md",
+        "41st check 7 Jul UTC. UNCHANGED. BC1797 (ended Jun26=11d) STILL active=true. BC24686 (starts Jul20=13 DAYS TO DEADLINE) fee=STILL null active=true. BK1611 CONF EUR1280.12/1280.12. PMT17124 EUR1280.12 type=STILL null xeroId=null. NEIL: set BC24686 fee + deact BC1797 + reconcile pmt17124 in Xero BEFORE JUL20.",
+        "bc fee null; 13d"
+      ]
+    ]
+  },
+  {
+    "range": "H28:K28",
+    "values": [
+      [
+        "• Booking 17909 is CANCELLED but confirmed = true — database anomaly\n• Payments 17477 and 17478 were DELETED from the database on 17 Jun — amount paid is EUR 0\n• HubSpot Commerce payments 1230788330738 (EUR 727.50) and 1230645766331 (EUR 728.00) are NOT voided — refund deadlines: 25 Oct and 11 Nov 2026\n• Student may have been double-charged EUR 1455.50 — Xero verification required before issuing refund\n• Booking course 24693 (Renewal Academic Year PM, May 25 to Nov 13): STILL active = true — anomaly on a cancelled booking\n• Fix 1 (NOT RUN): Xero check Sofiia Korkishchenko Apr to May 2026 — if 3 real payments found, void both HubSpot Commerce payments before 25 Oct\n• Fix 2 (NOT RUN, low priority): UPDATE bookings SET confirmed=false WHERE id=17909",
+        "(NOT RUN) (1) Xero check Sofiia Korkishchenko Apr-May 2026; if 3 real payments found, void HS Commerce pmts 1230788330738+1230645766331 before Oct 25. (2) UPDATE bookings SET confirmed=false WHERE id=17909. See recipe: issue-27-sofiia-sca-cancelled-booking.md",
+        "19th check 7 Jul UTC. UNCHANGED. bk17909 CANCELLED confirmed=STILL true amtPaid=0 (updAt=Jun17). bc24693 Renewal-AY-PM May25-Nov13 STILL active=true (anomaly on cancelled bk). HS Commerce pmts 1230788330738+1230645766331 NOT voided — refund deadlines Oct25/Nov11. NEIL: Xero check + void HS pmts + UPDATE confirmed=false WHERE id=17909.",
+        "void Oct25; confirmed=true"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Booking 18044 (duplicate Milena Vinci entry) deleted — confirmed Jun 27\n• Giulia Avallone (student 88) retains only booking 94 — Confirmed, EUR 1151.50 fully paid\n• Booking course 104 (Morning General Plus) ended Jun 26 — still active = true (11 days overdue)\n• Milena Vinci no longer appears as a student in the database\n• Payment 17102 (EUR 1151.50, booking 94): Xero payment ID = null, HubSpot payment ID = null — 63 days outstanding (created 5 May 2026, 22nd check, 7 Jul UTC)\n• Outstanding: confirm HubSpot payment 1239529228498 was voided in HubSpot UI",
+        "Database part fixed (booking 18044 deleted). Confirm HubSpot payment 1239529228498 was voided in HubSpot UI. Reconcile payment 17102 in Xero. See recipe: issue-30-giulia-milena-parent-student.md",
+        "22nd check 7 Jul UTC. UNCHANGED. bc104 Morning-Gen-Plus Jun15-Jun26 STILL active=true (ended 11d ago). pmt17102 EUR1151.5 type=null xeroId=null hsId=null (63d since May5). bk94 CONFIRMED EUR1151.5/1151.5 confirmed=true. NEIL: (1) deactivate bc104; (2) reconcile pmt17102 in Xero; (3) confirm HS pmt 1239529228498 voided.",
+        "course ended; HS void?"
+      ]
+    ]
+  },
+  {
+    "range": "H37:K37",
+    "values": [
+      [
+        "• Homework section: renderSheetHtml() in src/routes/attendance.ts (lines 36-128) — no homework block implemented; awaiting Paul/Neil spec\n• Holiday display bug: getWeekAttendance (scripts/attendance.ts L31-184) never fetches bookingHoliday records — students on holiday appear in attendance grid with live checkboxes\n• Note: getStudentAttendance (L346) DOES fetch holidays correctly — only the weekly-grid path is missing it\n• Classes section IS holiday-aware (classes.ts L82-87 + admin.html L7365-7387) — data does not flow to getWeekAttendance or print routes\n• Both bugs confirmed still present (8th code check 7 Jul UTC)",
+        "Homework: get Paul/Neil layout spec then add to renderSheetHtml. Holiday: add bookingHoliday fetch to attend grid + print routes. See recipes: issue-36-attendance-homework-section.md + issue-36c-attendance-holiday-display.md",
+        "8th code check 7 Jul UTC. UNCHANGED. (1) Holiday: getWeekAttendance scripts/attendance.ts L31-184 — no bookingHoliday fetch confirmed 7 Jul; students on holiday appear in grid. (2) Homework: renderSheetHtml routes/attendance.ts L36-128 — no homework section confirmed 7 Jul. Awaiting Paul/Neil spec.",
+        "code; await spec"
+      ]
+    ]
+  }
+]

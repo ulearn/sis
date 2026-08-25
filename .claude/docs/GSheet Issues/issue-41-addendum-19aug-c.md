@@ -1,0 +1,1 @@
+Issue 41 Giampaolo addendum 19aug-c: 131st check, no change. BA11357 bed178 ended Aug15 4d stale active. BA11396 bed44 15Aug-22Aug FEE NULL URGENT (3d to checkout). BA11397 bed89 22Aug-6Sep FEE NULL URGENT. BA11392 bed168 6Sep-14Sep fee415 OK. Fix: deactivate BA11357 now, set fee on BA11396+11397 before Sat22. Run 388th.

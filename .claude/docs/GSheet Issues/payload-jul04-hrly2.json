@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Tuguldurtugs Enkhtugs (student 858, booking 1601): Course 1786 (Academic Year Renewal Morning, Jul 6 to Dec 25) starts Monday — zero class assignments (last SCA #55 expired May 1)\n• Kayque Lopes Coelho (student 852, booking 1633): Course 1821 (Academic Year Renewal Afternoon, Jun 29 to Dec 18) started Jun 29 — 5 days in with zero class assignments (last SCA #26 expired Apr 24)\n• Sophia Gallo Borim (student 853, booking 1632): Course 1820 (Academic Year Renewal Afternoon, Jun 29 to Dec 18) started Jun 29 — 5 days in with zero class assignments (last SCA #23 expired Apr 24)\n• Booking 1601 (Tuguldurtugs): EUR 1356.50 paid of EUR 1606.50 — EUR 250 outstanding\n• Root cause: renewals excluded from arrivals list — earliest course = Oct 2025 (year 1); is_renewal flag not set by webhook for RNW-* SKUs",
+        "(1) Assign Tuguldurtugs (student 858) to AY Morning class via SIS admin — course starts Monday. (2) Assign Kayque (student 852) and Sophia (student 853) to AY Afternoon class — 5 days overdue. (3) Chase EUR 250 on booking 1601. (4) UPDATE booking_courses SET is_renewal = true WHERE name ILIKE '%Renewal%' AND is_renewal = false (NOT RUN). See recipe: issue-45-renewal-arrivals.md",
+        "4 Jul UTC (14th check): booking 1601 EUR1356.50/1606.50 (EUR250 short). Course 1786 starts Jul6 Mon = 2 days. SCAs: student 858 last = May1 (bc1521 expired); student 852 last = Apr24 (bc1507 expired); student 853 last = Apr24 (bc1509 expired). All 3 zero SCAs for current courses. Kayque+Sophia 5 days overdue. NEIL: assign all 3 to classes NOW.",
+        "0SCA; Jul6=Mon"
+      ]
+    ]
+  },
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 (HubSpot 1204827374829) and 16989 (HubSpot 1204846469317): EUR 339.90 each — booking ID = null, Xero payment ID = null — still unlinked\n• Booking 17856 (Margherita Galbusera, student 14461): Confirmed, confirmed = false — booking course 24631 (General English AM Plus, Jun 29 to Jul 10, fee = null)\n• Booking 17857 (Francesca Fassina, student 14462): Confirmed, confirmed = false — booking course 24630 (General English AM Plus, Jun 29 to Jul 10, fee = null)\n• Root cause: webhook missed setting booking ID at payment creation 28 Apr 2026\n• Courses end Jul 10 — 6 days remaining — 4-step SQL not run after 200+ hourly checks",
+        "(NOT RUN) (1) UPDATE payments SET booking_id = 17856 WHERE id = 16988; (2) UPDATE payments SET booking_id = 17857 WHERE id = 16989; (3) UPDATE booking_courses SET fee = 339.9 WHERE id IN (24630, 24631); (4) UPDATE bookings SET confirmed = true WHERE id IN (17856, 17857). See recipe: issue-1-orphan-payments.md",
+        "4 Jul UTC (200+ checks): pmts 16988+16989 booking_id = STILL null, xeroId = null. Bookings 17856+17857 Confirmed confirmed = false amtPaid = 339.9. Booking courses 24630+24631 fee = null, active = true. Jul10 = 6 days. Fix UNRUN. NEIL: RUN STEPS 1-4 NOW.",
+        "Jul10=6d; UNRUN"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 (Edite Nunes, student 1015): Confirmed, confirmed = true, fully paid EUR 740\n• Booking course 24933 (General English AM, Jun 15 to Jul 10, fee = EUR 380): active — the valid course\n• Booking course 24934 (General English AM, Jun 15 to Jul 10, fee = EUR 360): duplicate — same date range, STILL active (53rd check, 4 Jul 2026 UTC)\n• No class assignment since SCA 146 (class 7, booking course 24668) expired May 15 — 50 days overdue\n• Course ends Jul 10 — 6 days remaining",
+        "(NOT RUN) (1) UPDATE booking_courses SET active = false WHERE id = 24934; (2) Assign student 1015 to class 7 (A1 AM) via SIS for booking course 24933 before Jul 10. See recipe: issue-22-edith-nunes-payment-dups.md",
+        "4 Jul UTC (53rd check): booking courses 24933 (EUR380) + 24934 (duplicate EUR360) BOTH active GE-AM Jun15-Jul10. Last SCA id146 (class 7, bc24668, expired May15 = 50d). Jul10 = 6 days. NEIL: (1) deactivate bc24934 in SIS; (2) assign student 1015 class 7 A1-AM.",
+        "dup active; Jul10=6d"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Booking 17831 (Xuezhen Huang, student 14443): PARTIAL, confirmed = false — EUR 965 paid of EUR 1396.90 total (EUR 431.90 outstanding)\n• Payment 17180 (EUR 431.90, TransferMate Escrow, Apr 27 2026): Xero payment ID = null, HubSpot payment ID = null — not counted in amount paid\n• Payment 17963 (EUR 965.00, Jul 1 2026, HubSpot 1273784562922): Xero payment ID = null — counted in amount paid but not reconciled in Xero\n• Both payments together = EUR 1396.90 = booking total — fully covered pending Xero reconciliation\n• Accommodation 11358 (bed 180, Host Family, Jul 12 to Aug 2): starts in 8 days\n• Booking course 24609 (Morning General, Jul 13 to Jul 31): starts in 9 days",
+        "(1) Reconcile payment 17180 (EUR 431.90 TransferMate Escrow Apr 27) in Xero to assign xero_payment_id. (2) Reconcile payment 17963 (EUR 965 Jul 1) in Xero. (3) Then confirm booking 17831 via SIS. Urgent: accommodation starts Jul 12. See recipe: issue-39-xuezhen-huang-accomm-missing.md",
+        "4 Jul UTC: booking 17831 PARTIAL EUR965/1396.9 (EUR431.9 escrow not counted). Payment 17180 Apr27 no Xero/HubSpot IDs. Payment 17963 Jul1 HubSpot ok, no Xero ID. Accommodation starts Jul12 = 8 days; course Jul13 = 9 days. Xero reconciliation urgent.",
+        "PARTIAL; Jul12=8d"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• Student 917 (Uyanga Tungalag): visa status = null — unchanged since 21 May 2026 (44 days stale)\n• Booking 1467: Confirmed, confirmed = true, fully paid EUR 2405\n• Payment 17258 (EUR 3066): type = Escrow, Xero payment ID = null, HubSpot payment ID = null — still Escrow; may have been released by TransferMate but not converted in SIS\n• Escrow amount EUR 3066 exceeds booking total EUR 2405 — possibly includes agency hold-back or accommodation outside SIS\n• Booking course 1613 (Academic Year Morning, Apr 27 to Oct 16 2026): Day 69 of course — zero class assignments across all 69 days\n• 66th check, 4 Jul 2026 UTC",
+        "(NOT RUN) (1) Check Hub fins/TransferMate: has payment 17258 (EUR 3066 Escrow) been released? (2) If released: UPDATE payments SET type = 'one_time_or_initial' WHERE id = 17258. (3) UPDATE students SET visa_status = 'Approved' WHERE id = 917. (4) Assign Uyanga to AY Morning class via SIS admin. See recipe: issue-25-uyanga-visa-escrow.md",
+        "4 Jul UTC (66th check): student 917 visa status = STILL null. Payment 17258 EUR3066 type = STILL Escrow, xeroId = null, hsId = null. Booking 1467 Confirmed EUR2405/2405. Booking course 1613 AY-Morning Apr27-Oct16 Day69, SCAs = STILL zero. NEIL: check TransferMate release of payment 17258; then set visa to Approved and assign class.",
+        "Escrow; 0SCA; Day69"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• Booking course 24826 (Ernesto Pesoa Gil, student 14532: Intensive General 30, Jun 8 to Jun 19) ended Jun 19 — STILL active = true (15 days stale, 22nd check)\n• Booking course 23 (Ivan Rodriguez Solares, student 18: Intensive General 30, May 4 to May 22) ended May 22 — STILL active = true (43 days stale)\n• Booking 18034 (Ernesto Pesoa Gil): PARTIAL, confirmed = false — EUR 845 paid of EUR 1095 (EUR 250 outstanding)\n• Payment 17683 (EUR 845, HubSpot 1241215836360): Xero payment ID = null — not reconciled\n• Note: column B shows Ivan Rodriguez — EUR 250 debt belongs to Ernesto (student 14532); Ivan (student 18) is fully paid",
+        "(NOT RUN) (1) UPDATE booking_courses SET active = false WHERE id IN (24826, 23); (2) Reconcile payment 17683 (EUR 845) in Xero; (3) Chase EUR 250 outstanding from Ernesto Pesoa Gil (student 14532, booking 18034). See recipe: issue-26-intensive-class-assign-once.md",
+        "4 Jul UTC (22nd check): Booking course 24826 Ernesto Jun19 STILL active (15d stale). Booking course 23 Ivan May22 STILL active (43d stale). Booking 18034 PARTIAL EUR845/1095 (EUR250 open). Payment 17683 EUR845 Xero ID = null. NEIL: deactivate bc23+bc24826; reconcile payment 17683; chase EUR250 from Ernesto.",
+        "EUR250; bc stale"
+      ]
+    ]
+  }
+]

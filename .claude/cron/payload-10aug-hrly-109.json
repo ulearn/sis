@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H33:K33",
+    "values": [
+      [
+        "• 8th check Mon 10 Aug 2026 UTC — unchanged (~122 days)\n• Only content is value 278 in column F (Veronica Martin student ID)\n• Veronica Martin accommodation resolved in Issue 37 (row 39)\n• No database record involved — sheet admin issue only",
+        "Delete row 33 in Google Sheets. See recipe: issue-32-addendum-10aug.md",
+        "8th hrly Mon 10 Aug UTC (~122d). Awaiting Neil to delete manually.",
+        "phantom row; delete"
+      ]
+    ]
+  },
+  {
+    "range": "H34:K34",
+    "values": [
+      [
+        "• 23rd check Mon 10 Aug 2026 UTC — unchanged\n• Student 356 (Shih-Wei Huang): gender = null, last updated 2026-07-28 (13 days with no correction)\n• Document 238 (Exit Letter, booking 560): status = ISSUED — 54 days since issued (17 Jun 2026) with incorrect she/her pronouns",
+        "Set gender on student 356; revoke doc 238 and regenerate. See recipe: issue-33-addendum-10aug.md",
+        "23rd hrly Mon 10 Aug UTC. Unchanged. Gender null 13d since Jul 28. Doc 238 ISSUED 54d wrong pronouns. Fix NOT RUN.",
+        "54d; doc238 wrong pronouns"
+      ]
+    ]
+  },
+  {
+    "range": "H37:K37",
+    "values": [
+      [
+        "• Mon 10 Aug 2026 UTC (code check 35) — no changes since check 34\n• Bug A — Homework block: still absent from renderSheetHtml() in src/routes/attendance.ts (lines 36-182)\n• Bug B — Holiday filter: still absent from getWeekAttendance() in src/scripts/attendance.ts\n• filterOutHolidayDates() exists in attendance-pct.ts but is NOT used in the sheet render path\n• Bug B ready to implement now (no spec needed); Bug A still awaiting spec from Paul/Neil",
+        "Fix holiday filter (Bug B, no spec needed); add homework block after spec. See: issue-36-addendum-10aug.md",
+        "Mon 10 Aug UTC (code check 35). Both bugs open. Bug B implementable now. Awaiting spec for Bug A.",
+        "code open; awaiting spec"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 109th check Mon 10 Aug 2026 UTC — unchanged from 108th check\n• Booking Course 25043 (Eduardo Roche Diaz, General English PM, Aug 10-14): Day 1 today, ends Friday, 0 class assignments — most urgent\n• Fidelo ghosts ending Fri: Booking Course 1144 (Anar-Erdene Batbayar), 1305 (Nomin Nergui), 1344 (Bat-Orgil Baljinnyam), 1591 (Turbold Altankhuyag) — 0 class assignments throughout\n• Aug-10 starters with 0 class assignments: Booking Courses 1313 (Ana Luiza De Sousa), 24970 (Tsengelbayar Mendsaikhan), 25024 (Josimar Roberto), 25036 (Jorge Perez Aldana), 25039 (Cristian Ravai)\n• Aug-3 stragglers: 6 still unassigned (Booking Courses 1766, 25003, 25010, 25016, 25029, 25035 incl. Rakan)",
+        "Assign Eduardo Booking Course 25043 NOW (ends Fri). Assign 5 other Aug-10 starters. Investigate Fidelo ghosts 1144/1305/1344/1591. See recipe: issue-38-addendum-10aug-h.md",
+        "109th hrly Mon 10 Aug UTC. No change from 108th. Eduardo most urgent (Day 1, ends Fri). Aug-3 stragglers unchanged (6 Booking Courses). Fix NOT RUN.",
+        "CRITICAL: 10 BCs open"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• 21st check Mon 10 Aug 2026 UTC — 5 stale booking accommodations on bed 83 (max 78 days)\n• Booking Accommodation 11239 (booking 22): ended 24 May 2026 — 78 days stale, active = true\n• Booking Accommodation 11168 (booking 92): ended 20 Jun 2026 — 51 days stale, active = true\n• Booking Accommodation 11285 (booking 17825): ended 5 Jul 2026 — 36 days stale, active = true (fee = null)\n• Booking Accommodation 11352 (booking 18156): ended 11 Jul 2026 — 30 days stale, active = true\n• Booking Accommodation 11179 (booking 82): ended 9 Aug 2026 — 1 day stale, active = true (newly stale)\n• Booking Accommodation 11173 (booking 88): 9 Aug–30 Aug 2026 — current, keep active\n• Booking Accommodation 25 (booking 17844): 30 Aug–11 Oct 2026 — future, keep active",
+        "Deactivate booking accommodations 11239, 11168, 11285, 11352, 11179 on bed 83. See recipe: issue-43-addendum-10aug.md",
+        "21st hrly Mon 10 Aug UTC. Booking Accommodation 11179 now 1d stale (ended Aug 9). 5 stale total. Fix NOT RUN.",
+        "cosmetic; 5 stale; bed 83"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 87th check Mon 10 Aug 2026 UTC — unchanged from 86th check\n• Booking Course 1810 (Telmuun Enkhsaikhan, Academic Year Renewal Morning, Jun 29 2026–Jan 1 2027): 0 class assignments — 42 days into course with no assignment\n• Student 293 (Telmuun): 6 stale active Booking Courses (482 ended Mar 2025, 483 ended Jul 2025, 1609 ended Dec 2025, 1610 ended Jan 2026, 1611 ended Mar 2026, 1612 ended May 2026)\n• Booking 1624 status: PARTIAL\n• Ana Jessica Rosa de Paula Santos (student 766): booking 1308 CANCELLED, EUR 1,530 paid — money unresolved",
+        "Deactivate Booking Courses 482, 483, 1609-1612; assign Booking Course 1810 to class; resolve EUR 1,530 for Ana Jessica. See recipe: issue-48-addendum-10aug-c.md",
+        "87th hrly Mon 10 Aug UTC. Unchanged. Booking Course 1810 42 days 0 class assignments. 6 stale Booking Courses. EUR 1,530 unresolved. Fix NOT RUN.",
+        "6 stale BCs + BC1810 42d; EUR 1,530"
+      ]
+    ]
+  }
+]

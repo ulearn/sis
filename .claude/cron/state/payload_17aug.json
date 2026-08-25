@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 151st check Mon 17 Aug 2026 UTC — no change since 150th check\n• service_end = 2026-08-07: 10 days past (must extend to 2026-10-02, course end)\n• Booking Course 24925 (Academic Year Afternoon): active, 9 Mar to 2 Oct 2026\n• Holiday 2500: Jul 20 to Aug 21 — ends Fri 21 Aug (4 days)\n• Student Class Assignment 255: class 11, weekEnd 2026-07-03 — 45 days expired\n• Return Mon 24 Aug (7 days) — no SCA created yet",
+        "Extend service_end to 2026-10-02; create SCA class 11 BC 24925 Aug 24. See recipe: issue-15-addendum-17aug-h.md",
+        "151st Mon 17 Aug UTC. No change. service_end Aug 7 (10d past). Holiday ends Fri Aug 21 (4d). Return Mon Aug 24 (7d). Fix NOT RUN. URGENT.",
+        "URGENT: return Mon24 Aug; SCA+svc_end"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• 115th check Mon 17 Aug 2026 UTC — no change since 114th check\n• Booking 18151: CONFIRMED, paid EUR 1,339.20, amount open EUR 0\n• Booking Course 24925 (Academic Year Afternoon): active, 9 Mar to 2 Oct 2026\n• Holiday 2500: Jul 20 to Aug 21 — ends Fri Aug 21 (4 days)\n• Student Class Assignment 255: class 11, weekEnd 2026-07-03 — 45 days expired\n• service_end = 2026-08-07: wrong by 56 days (must extend to 2026-10-02)\n• Return Mon Aug 24 (7 days) — no SCA created (same fix as Issue 15)",
+        "Same as Issue 15 — extend service_end to 2026-10-02; insert SCA class 11 BC 24925 Aug 24. See recipe: issue-29-15-addendum-17aug-d.md",
+        "115th Mon 17 Aug UTC. No change. Duplicate of Issue 15. service_end Aug 7 (10d past, 56d wrong). Returns Mon Aug 24 (7d). Fix NOT RUN.",
+        "URGENT: return Aug24 7d; svc_end+SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• 130th check Mon 17 Aug 2026 UTC — no change since 129th check (Sun 16 Aug)\n• Booking Course 104 (Morning General Plus): active, ended 2026-06-26 — 52 days stale\n• Payment 17102 (booking 94): EUR 1,151.50, xeroPaymentId = null — 157 days without Xero (paid 2026-03-13)\n• Payment 945 (booking 79): EUR 4,231, xeroPaymentId = null — 199 days without Xero (paid 2026-01-30)",
+        "Deactivate BC 104; reconcile payments 17102 + 945 in Xero. See recipe: issue-30-addendum-17aug.md",
+        "130th Mon 17 Aug UTC. No change. BC 104 52d stale. Payment 17102 Xero 157d (bk94). Payment 945 Xero 199d (bk79). Fix NOT RUN.",
+        "BC104 stale 52d; Xero 157d+199d"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 215th check Mon 17 Aug 2026 UTC — no change since 214th check\n• Booking Accommodation 11393: fee = null, bed 88, Aug 22 to Sep 13 (4 weeks) — check-in 5 days\n• Booking Accommodation 11311: bed 84, Jun 28 to Aug 22, fee EUR 3,850 — check-out 5 days\n• Booking 17980: service_end = 2026-08-21 (1 day before BA 11393 starts — mismatch, must extend to Sep 13)\n• Implied fee for BA 11393: EUR 1,360 (4 weeks x EUR 340/wk)",
+        "Set fee on BA 11393 (EUR 1,360); extend service_end to Sep 13; verify Xero. See recipe: issue-36b-addendum-17aug-e.md",
+        "215th Mon 17 Aug UTC. No change. Check-in Aug 22 (5d). service_end Aug 21 < BA start Aug 22 (1d mismatch). BA 11393 fee null. Fix NOT RUN.",
+        "fee null; svc_end short; Aug22 (5d)"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 183rd check Mon 17 Aug 2026 UTC — no change since 182nd check\n• Booking Course 25043 (General English PM): active, ended 2026-08-14 — 3 days stale\n• Student Eduardo Roche Diaz (14602), Booking 18265: CONFIRMED\n• 0 student class assignments on this course",
+        "Set active = false on Booking Course 25043. See recipe: issue-38-addendum-17aug-c.md",
+        "183rd Mon 17 Aug UTC. No change. BC 25043 still active 3d past end (Aug 14). 0 SCAs. Fix NOT RUN.",
+        "BC25043 3d past end"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• 41st check Mon 17 Aug 2026 UTC — no change since 40th check\n• Booking Accommodation 11239 (bed 83, bk22): ended May 24, 85 days stale, active, fee EUR 1,050\n• Booking Accommodation 11168 (bed 83, bk92): ended Jun 20, 58 days stale, active, fee EUR 700\n• Booking Accommodation 11285 (bed 83, bk17825): ended Jul 5, 43 days stale, active, fee null\n• Booking Accommodation 11352 (bed 83, bk18156): ended Jul 11, 37 days stale, active, fee EUR 360\n• Booking Accommodation 11179 (bed 83, bk82): ended Aug 9, 8 days stale, active, fee EUR 1,360\n• Current: BA 11173 (bed 83, Aug 9 to Aug 30) — unaffected\n• Upcoming: BA 25 (bed 83, Aug 30 to Oct 11, EUR 2,100) — check-in 13 days",
+        "Deactivate BAs 11239, 11168, 11285, 11352, 11179 (confirm BA 11285 fee null before closing). See recipe: issue-43-addendum-17aug-c.md",
+        "41st Mon 17 Aug UTC. No change. 5 stale BAs bed 83 (85d max). BA 11285 fee null. Aug 30 check-in 13d. Fix NOT RUN.",
+        "5 stale BAs; Aug 30 check-in (13d)"
+      ]
+    ]
+  }
+]

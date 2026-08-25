@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "Pmts unlinked(not spurious): pmt16988->bk17856 Margherita, pmt16989->bk17857 Francesca",
+        "UPDATE payments SET booking_id=17856 WHERE id=16988; +17857/16989. see recipe: issue-1-orphan-payments.md",
+        "Jun15 hrly13: pmt16988(EUR339.9)+pmt16989(EUR339.9) bookingId=null UNCHANGED. Jun29 arrival=14d. UPDATE not run.",
+        "14d to arrival"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "bk18158 PEND 0/740 c24933+c24934(DUP) GE-AM Jun15-Jul10 STARTS TODAY. bk18131(CONF 1185 ghost pmt17852)+bk18133(CONF 648 ghost pmt17730). 0SCA. NOTE: pmt17728 on OLD bk1567=DO NOT DELETE.",
+        "(NOT RUN) CANCEL bk18131+18133; DEL c24934; refund/re-link pmt17852(1185)+pmt17730(648) via HS; collect EUR740 for bk18158; assign cls7 c24933. DO NOT touch pmt17728. see recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun15 hrly13: 0 current SCAs. sca48(cls7 ended Apr17)+sca146(cls7 ended May15)=EXPIRED(old bk1567). bk18158 PEND 0/740. bk18131+18133 CONF uncancelled. Steps 1-4 NOT RUN. Edith in school no class record.",
+        "URGENT 0SCA STARTED"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "s14532 Ernesto 0SCA ENTIRE COURSE. bc24826 INTENSIVE Jun08-Jun19. bk18034 conf=false PARTIAL 845/1095. WK2 DAY1 ONGOING.",
+        "(NOT RUN) ask teacher Ernesto level; INSERT 2 SCAs AM+PM bc24826 wkStart=Jun15 wkEnd=Jun19. see recipe: issue-26-intensive-class-assign-once.md",
+        "Jun15 hrly13: Ernesto 0SCAs CONFIRMED. bc24826 INTENSIVE ends Jun19=4d. bk18034 PARTIAL 845/1095 conf=false. WK2 DAY1. NEIL: get level from teacher NOW + INSERT AM+PM SCAs ws=Jun15 we=Jun19.",
+        "WK2 4d URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "s1001 att=0 ALL TIME. sca255 B1PM bc24925 bkId=18151 Jan12-Jul03(18d). visa_status=null nationality=Mongolia. IRP risk.",
+        "(1)ask cls11/B1PM teacher if Saikhantes attended; (2)YES: backfill att; (3)NO: IRP escalation. see recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun15 hrly13: att=0 CONFIRMED ALL TIME (attendance table). sca255 cls11/B1PM bc24925 ends Jul03=18d. bk18151 CONF 1339.2/1339.2. bk1605 PEND 0/1509. NEIL: ask cls11 teacher TODAY if Saikhantes attends.",
+        "IRP CRITICAL 18d"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "s88 Giulia JUNIOR 0SCA. bk94(REAL CONF 1151.5/1151.5 c104)+bk18044(DUP CONF 1106.5/1106.5 pmt17607 EUR1151.5 xero=null=dbl-import total=1106.5). c104 Morning General Plus STARTS TODAY Jun15.",
+        "(1)get level; (2)assign cls bk94/c104; (3)CANCEL bk18044+DELETE pmt17607(dbl-import); (4)CANCEL bk18152+del s14557 Milena. see recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun15 hrly13: s88 0SCA DAY2. bk94 CONF 1151.5. bk18044 DUP CONF NOT cancelled. bk18152 Milena PEND. Steps 1-4 NOT RUN. Giulia in school no class record.",
+        "URGENT 0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H32:K32",
+    "values": [
+      [
+        "TZ NOT SET .env. 43 SCAs week_end=null: 9 ghost(IDs:39/40/65/66/74/75/81/87/100 bc<=Jun12)+34 active ongoing. Att sheet shows Sun Jun14.",
+        "FIX1(NOT RUN): echo TZ=UTC>>.env && touch tmp/restart.txt. FIX2(NOT RUN): UPDATE student_class_assignments SET week_end=(SELECT end_date FROM booking_courses WHERE id=booking_course_id) WHERE week_end IS NULL; see recipe: issue-31-attendance-sheet-week-bug.md",
+        "Jun15 hrly13: TZ MISSING CONFIRMED. null_we=43 UNCHANGED. Att sheet Sun Jun14 heading. BOTH FIXES NOT APPLIED. NEIL: apply both fixes NOW - school day ongoing.",
+        "URGENT APPLY NOW"
+      ]
+    ]
+  }
+]

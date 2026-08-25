@@ -1,0 +1,1 @@
+14th check Sat 15 Aug 2026 UTC. No change since 13th (Fri 14 Aug). BC 826 260d stale, BC 827 197d stale, BC 828 backwards dates, BC 829 71d stale. See issue-23-addendum-12aug.md for full recipe.

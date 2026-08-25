@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• 180th check Mon 17 Aug 2026 UTC — no change since 179th check\n• Student Class Assignment 288 (Rakan Alghamdi): bookingCourseId = 24697 (wrong), classId = 12, weekEnd = 18 Dec 2026\n• Booking Course 24697 (Academic Year Morning): ended 31 Jul 2026, active = true — now 17 days stale, 1 class assignment (SCA 288)\n• Booking Course 25035 (General English Academic Year AM Plus): 3 Aug to 18 Dec 2026, active = true, 0 class assignments — correct target for SCA 288\n• Fix not applied",
+        "Move Student Class Assignment 288 to Booking Course 25035; deactivate Booking Course 24697. See recipe: issue-12-addendum-17aug.md",
+        "180th Mon 17 Aug UTC. BC24697 now 17d stale. SCA 288 still on wrong BC. Fix NOT RUN.",
+        "SCA on wrong BC; BC24697 17d"
+      ]
+    ]
+  },
+  {
+    "range": "H17:K17",
+    "values": [
+      [
+        "• 29th check Mon 17 Aug 2026 UTC — no change since 28th check\n• Booking Accommodation 11216 (booking 46, bed 66): active, ended 2026-05-09 — 100 days stale\n• Booking Accommodation 11158 (booking 100, bed 66): active, ended 2026-05-17 — 92 days stale\n• Booking Accommodation 11282 (Melie Villard, booking 17897, bed 66): active, ended 2026-06-05 — 73 days stale\n• Booking Accommodation 11361 (booking 18190, bed 66): active, ended 2026-08-09 — 8 days stale\n• Bed 66: no active booking after 9 Aug 2026 — bed free but appears occupied in system",
+        "Deactivate Booking Accommodations 11216/11158/11282/11361. See recipe: issue-16-addendum-17aug.md",
+        "29th Mon 17 Aug UTC. 4 stale BAs bed 66 (100d max). Bed free after Aug 9. Fix NOT RUN.",
+        "4 BAs stale; 100d max"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• 82nd check Mon 17 Aug 2026 UTC — no change since 81st check\n• Booking Course 24686 (Morning General, Alberto Squillace): 20 Jul to 18 Sep 2026, active = true, 0 class assignments — 28 calendar days elapsed, 32 days remaining\n• Booking Course 1797 (Morning General): ended 26 Jun 2026, active = true — 52 days stale, 1 historical class assignment\n• Booking 1611: CONFIRMED, fully paid EUR 1,280.12, confirmed = true",
+        "Assign class to BC 24686; deactivate BC 1797. See recipe: issue-24-alberto-class.md",
+        "82nd Mon 17 Aug UTC. 28d elapsed, 32d remain. BC1797 52d stale. Fix NOT RUN.",
+        "BC24686 28d; 0 SCAs; ends Sep 18"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• 164th check Mon 17 Aug 2026 UTC — no change since 163rd check — Day 112 in course\n• Student 917 (Uyanga Tungalag): visaStatus = null, hubspotContactId = null — updatedAt 28 Jul 2026\n• Booking 1467: CONFIRMED, confirmed = true, amountPaid = EUR 2,405, amountOpen = EUR 0\n• Booking Course 1613 (Academic Year Morning): 27 Apr to 30 Oct 2026, active = true, 0 class assignments — Day 112, 74 days remaining\n• Payment 17258: EUR 3,066, TransferMate Escrow, xeroPaymentId = null — 101 days unreconciled (paid 8 May 2026)\n• EUR 3,066 paid vs amountPaid EUR 2,405 — EUR 661 gap unchanged",
+        "Set visa_status=approved; link HubSpot contact; assign BC 1613 to AM class; investigate EUR 661 payment gap. See recipe: issue-25-addendum-17aug.md",
+        "164th Mon 17 Aug UTC. Day 112. 0 SCAs. Payment 17258 now 101d unreconciled. EUR 661 gap unchanged. 74d to course end. Fix NOT RUN.",
+        "visa null; 0 SCAs; day 112; EUR661 gap"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 104th check Mon 17 Aug 2026 UTC — no change since 103rd check\n• Stale active Booking Courses (endDate before 17 Aug 2026): 24,497 — unchanged\n• Most recent ended Booking Courses: several Academic Year and general courses ending 14 Aug 2026\n• No new stale Booking Courses added Aug 15–16 (count stable)\n• Fix script prepared; not yet run",
+        "Run bulk deactivation of 24,497 stale Booking Courses. See recipe: issue-45-addendum-17aug.md",
+        "104th Mon 17 Aug UTC. 24,497 stale BCs unchanged. No new ended BCs Aug 15–16. Fix NOT RUN.",
+        "24,497 stale; fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 140th check Mon 17 Aug 2026 UTC — no change since 139th check\n• Booking 1624 (Telmuun Enkhsaikhan, student 293): PARTIAL, amount paid = EUR 1,406, amount open = EUR 250 — last updated 5 Aug 2026 (12 days ago)\n• Booking Course 1810 (Academic Year Renewal Morning, Jun 29 2026 to Jan 1 2027): active = true, 0 class assignments — now 49 days without class\n• Single payment ID 17956 (EUR 100 Bank, Jun 29) vs amountPaid = EUR 1,406 — likely legacy migration artefact",
+        "Assign class to Booking Course 1810; chase EUR 250 balance. See recipe: issue-48-addendum-17aug.md",
+        "140th Mon 17 Aug UTC. BC1810 now 49d, 0 SCAs. Booking updated Aug 5. EUR 250 open. Fix NOT RUN.",
+        "payment gap; BC1810 49d; SCA 0"
+      ]
+    ]
+  }
+]

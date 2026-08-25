@@ -1,0 +1,67 @@
+/**
+ * Smoke test for partner-contract rendering.
+ * Picks the first portal-user agency, renders both the preview PDF and a
+ * fully-signed PDF (with a fake signature image) and writes them to /tmp
+ * so we can eyeball field placement before going live.
+ */
+import dotenv from 'dotenv';
+dotenv.config();
+import fs from 'fs';
+import path from 'path';
+import { gatherContractData, renderTemplateFilled, applySignatureAndSave } from './partner-contract';
+
+async function main() {
+  const { Pool } = await import('pg');
+  const { PrismaPg } = await import('@prisma/adapter-pg');
+  const { PrismaClient } = await import('../generated/prisma/client');
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const adapter = new PrismaPg(pool as any);
+  const prisma = new PrismaClient({ adapter } as any);
+
+  try {
+    const arg = process.argv.find(a => a.startsWith('--agency='));
+    let agencyId: number;
+    if (arg) {
+      agencyId = parseInt(arg.split('=')[1]);
+    } else {
+      const a = await prisma.agency.findFirst({
+        where: { portalUsers: { some: { userType: 'partner' } } },
+        select: { id: true, name: true },
+      });
+      if (!a) throw new Error('No portal-user agency found');
+      agencyId = a.id;
+      console.log(`[smoke] Using agency #${a.id} ${a.name}`);
+    }
+
+    const data = await gatherContractData(prisma, agencyId);
+    console.log('[smoke] data:', JSON.stringify(data, null, 2));
+
+    // Preview
+    const { pdfDoc } = await renderTemplateFilled(data);
+    const previewBytes = await pdfDoc.save();
+    const previewPath = `/tmp/contract-preview-agency-${agencyId}.pdf`;
+    fs.writeFileSync(previewPath, previewBytes);
+    console.log(`[smoke] preview → ${previewPath}`);
+
+    // Signed (with fake signature PNG built externally via imagemagick at /tmp/fake-sig.png)
+    const fakeSigPath = '/tmp/fake-sig.png';
+    if (fs.existsSync(fakeSigPath)) {
+      const pngBuf = fs.readFileSync(fakeSigPath);
+      const signedPath = await applySignatureAndSave({
+        prisma,
+        agencyId,
+        data,
+        signaturePngBytes: pngBuf,
+        signedAt: new Date(),
+      });
+      console.log(`[smoke] signed → ${signedPath}`);
+    } else {
+      console.log('[smoke] skipping signed render (no /tmp/fake-sig.png)');
+    }
+  } finally {
+    await prisma.$disconnect();
+    await pool.end();
+  }
+}
+
+main().catch(e => { console.error('[smoke] Fatal:', e); process.exit(1); });

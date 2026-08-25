@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 114th check Thu 30 Jul 2026 UTC — 4 orphan payments unchanged\n• Payment 16988: EUR 339.90, Bank, booking ID = null (94 days)\n• Payment 16989: EUR 339.90, Bank, booking ID = null (94 days)\n• Payment 17187: EUR 6,151, TransferMate Escrow (Fidelo D2026226), booking ID = null (87 days)\n• Payment 4781: EUR 380, Flywire 2019, booking ID = null (legacy)",
+        "Link payments 16988+16989 to bookings; investigate 17187 via HubSpot deal D2026226. See recipe: issue-1-addendum-30jul-a.md",
+        "114th hrly Thu 30 Jul UTC. 4 orphan pmts unchanged (94d/94d/87d/legacy). Fix NOT RUN.",
+        "4 orphan pmts; 94d+"
+      ]
+    ]
+  },
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• 113th check Thu 30 Jul 2026 UTC — 6 erroneous phone numbers unchanged\n• Student 1897 Dolgormaa Bayaraa: email saraa.tpb@gmail.com in phone field (13 days, updated 17 Jul)\n• Student 8567 Aki Miura: email aki-hinaaki1116@ezudo.he.jp in phone field (111 days, updated 10 Apr)\n• Student 1194 Jieun Lee: annotation 00821097366523 (home contry) in phone field (84 days)\n• Student 5345 Lisa Li: annotation 0864645297 (Husband) in phone field (111 days)\n• Student 10343 Alessandra Saito de Araujo: Unicode trailing chars after +353 (83) 885 9162 (93 days)\n• Student 14556 Theodore Bolt: +1 (984) 389-3888 (7 days, updated 23 Jul) — US NC area code; verify via HubSpot",
+        "Strip annotations on 1194, 5345; strip Unicode on 10343; get correct phones from HubSpot for 1897, 8567; verify 14556. See recipe: issue-6-addendum-30jul.md",
+        "113th hrly Thu 30 Jul UTC. All 6 unchanged (13d/111d/84d/111d/93d/7d). Fix NOT RUN.",
+        "6 phones wrong; 13d+"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• Booking 1605 (Ariunsarnai Batbayar, student 1047): status = PENDING, confirmed = false — 65th check Thu 30 Jul UTC\n• Amount open = EUR 1,509; zero payments in SIS payments table — UNCHANGED\n• Booking last updated 2026-06-23 (37 days ago); data source = FIDELO\n• HubSpot deal ID: 502951083215\n• Booking course 1791 (Academic Year Renewal Morning, Apr 13–Oct 23 2026): active = true (student in session)",
+        "Check HubSpot deal 502951083215 and Hub/Xero for payment; if found, add to SIS and confirm booking. See recipe: issue-20-addendum-30jul-a.md",
+        "65th hrly Thu 30 Jul UTC. UNCHANGED. Day 116, EUR 0/1509, zero payments. Last booking update 23 Jun (37d ago). Fix NOT RUN.",
+        "Day 116; EUR 0 / 1509"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Student 1015 (Edith Nunes): visaStatus = null — blocks class-to-be-assigned — 154th check Thu 30 Jul UTC\n• Booking course 24991 (General English AM): Jul 13–Aug 7 2026, active = true, zero class assignments\n• Course ends 2026-08-07 — 5 teaching days remain after today (Jul 31, Aug 4, 5, 6, 7; Aug 3 = bank holiday)\n• HubSpot contact ID: 790679262424",
+        "Set visa status on student 1015 (check HubSpot 790679262424); assign BC 24991 to class. See recipe: issue-22-addendum-30jul-a.md",
+        "154th hrly Thu 30 Jul UTC. visaStatus=null confirmed. BC 24991 zero assignments, ends Aug 7. 5 teaching days left. Fix NOT RUN.",
+        "CRITICAL; 5d left; visa null"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• August Bank Holiday 2026-08-03: still absent from school_closures — 165th check Thu 30 Jul UTC\n• 20 active booking courses start on 2026-08-03 — unchanged\n• Booking course 25006 (booking 18228, General English AM Plus): ends 2026-08-03 — extend end_date to 2026-08-04\n• Booking course 25003 (booking 18225, Aleix Cervera): duplicate of BC 25002 — deactivate, do not shunt\n• 19 booking courses need start_date shunted Aug 3 to Aug 4\n• DEADLINE: Thu 30 Jul 2026 EOD — fix still not run as of this check",
+        "Insert Aug BH closure + shunt 19 BCs to Aug 4 + extend BC 25006 end + deactivate BC 25003. See recipe: issue-38-addendum-30jul-a.md",
+        "165th hrly Thu 30 Jul UTC. 20 BCs start Aug 3, no closure. DEADLINE TODAY EOD. BC25006 ends Aug3 needs +1d. BC25003 dup. Fix NOT RUN.",
+        "Aug BH; DEADLINE TODAY"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• Booking 18180 (Giampaolo Russo, student 14571): CONFIRMED, confirmed = true — 161st check Thu 30 Jul UTC\n• Booking accommodation 11357: bed 178, Aug 2–Sep 6, host family, fee EUR 1,250, active = true (correct)\n• Capel Street accommodation (Sep 6–Sep 14 2026): still absent — only 1 accommodation record on booking 18180\n• Booking course 24956 (General English AM, Aug 3–Sep 11): in Issue 38 shunt list (start moves to Aug 4)\n• Host family check-in: Sun 2 Aug 2026 — 3 days away. Fix NOT RUN.",
+        "Add Capel Street BA via SIS admin (Sep 6–14) + run Issue 38 fix for BC 24956. See recipe: issue-41-addendum-30jul-a.md",
+        "161st hrly Thu 30 Jul UTC. Capel still absent. BA11357 bed178 Aug2-Sep6 OK. Check-in THIS SUNDAY Aug 2 (3 days). Fix NOT RUN.",
+        "Capel missing; check-in Sun Aug 2"
+      ]
+    ]
+  }
+]

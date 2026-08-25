@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Two payments are unlinked — booking_id = null and xeroPaymentId = null\n• Payment 16988 → Booking 17856 (Margherita Galbusera) — EUR 339.90\n• Payment 16989 → Booking 17857 (Francesca Fassina) — EUR 339.90\n• Both bookings are CONFIRMED, confirmed = false, amountPaid = 339.90 / amountTotal = 339.90\n• Linking payments reconciles Xero and HubSpot\n• Students arrive Jun 29 — 10 days",
+        "UPDATE payments SET booking_id=17856 WHERE id=16988; UPDATE payments SET booking_id=17857 WHERE id=16989. See recipe: issue-1-orphan-payments.md",
+        "Jun19 hrly: UNCHANGED (fresh DB). pmt16988 bookingId=null xeroId=null EUR339.90. pmt16989 bookingId=null xeroId=null EUR339.90. bk17856+bk17857 CONFIRMED conf=false amtPaid=339.9. Jun29 = 10 cal days. SQL NOT RUN. Urgent — students arrive in 10 days, Xero unreconciled.",
+        "10d to Jun29"
+      ]
+    ]
+  },
+  {
+    "range": "H6:K6",
+    "values": [
+      [
+        "• No document records in SIS for booking 17871 — letter of acceptance never generated via SIS\n• Booking 17871 is ESCROW — EUR 300 paid of EUR 2313.62 total (EUR 2013 outstanding), confirmed = true\n• Accommodation confirmed: bed 179 assigned Jun 27 – Dec 12 (bed assignment system)\n• The LOA mentioned in the issue was manually created outside SIS — no SIS barcode attached\n• Arrival Jun 27 = 8 days",
+        "Generate LOA via SIS → Rakan → booking 17871 → Documents → Generate. See recipe: issue-4-rakan-loa-barcode.md",
+        "Jun19 hrly: UNCHANGED. bk17871 ESCROW EUR300/2313.62 conf=true. 0 doc records — LOA STILL NOT generated. Arrival Jun27 = 8 cal days. CRITICAL: Neil must generate LOA via SIS (s14473 → bk17871 → Documents) TODAY — student arrives next Friday.",
+        "8d;LOA CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "• Booking 1308 is CANCELLED, confirmed = false — stale since Jun 07\n• Amount paid = 1530 / 1530 (fully paid genuine enrolment)\n• Booking course 1350 (Academic Year Afternoon, May 25 – Nov 13) is ACTIVE\n• Student 766 (Ana Jessica Rosa, A2) has 0 class assignments all time\n• HubSpot contact ID = 777791875262\n• Student in school since May 25 — Day 20 (Jun 19) with no confirmed booking and no class record",
+        "(NOT RUN) UPDATE bookings SET status=CONFIRMED, confirmed=true WHERE id=1308; then assign A2-AFT class to booking course 1350. See recipe: issue-17-ana-jessica-accidental-cancel.md",
+        "Jun19 hrly: UNCHANGED. bk1308 STILL CANCELLED conf=false 1530/1530 (updAt=Jun07=12d stale). 0 SCAs s766 all term. Day 20 since May25 (school days). Course bc1350 AFT runs to Nov13. Await Neil: restore bk1308 CONFIRMED + assign AFT class.",
+        "D20;urgent;0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 confirmed, paid 740 / 740 — active booking for Edith Nunes (student 1015, A1)\n• Ghost bookings 18131 and 18133 and their payments deleted from database on Jun 17 (done)\n• Booking course 24934 (duplicate of 24933) still present — both General English AM, Jun 15 – Jul 10, on booking 18158\n• Class 7 confirmed active (A1 Morning) — correct class for Edith\n• 0 active class assignments — 2 expired SCAs exist (sca48 Mar30-Apr17, sca146 Apr20-May15)\n• Edith in school since Jun 15 — Day 5 (Jun 19) with no class record for current course",
+        "(NOT RUN) 1) DELETE FROM booking_courses WHERE id=24934; 2) INSERT INTO student_class_assignments(booking_course_id,class_id,week_start,week_end,student_id) VALUES(24933,7,'2026-06-15','2026-07-10',1015). See recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun19 hrly: UNCHANGED DB. bc24934(DUP fee=360)+bc24933(fee=380) BOTH Jun15-Jul10 on bk18158. Correction: student ID = 1015 (prior J said s14607 — wrong). s1015 has 2 expired SCAs (sca48 Apr17 exp; sca146 May15 exp) — 0 active SCAs for current Jun15-Jul10 course. Day 5 (Jun19). Steps NOT RUN: delete bc24934; insert SCA bc24933 cls7 Jun15-Jul10 s1015.",
+        "Day5;0SCA;dup course"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• Booking course 24826 (Intensive General 30, Jun 08 – Jun 19) — course ended today Jun 19\n• Student Ernesto Pesoa Gil (id 14532; sheet shows Ivan Rodriguez) had currentLevel = null in SIS and HubSpot\n• Zero class assignments for the entire 2-week course — student never assigned to a class\n• Booking 18034 is PARTIAL, paid EUR 845 / 1095 (EUR 250 outstanding), confirmed = false\n• Fully historical — 10 school days elapsed, course complete with no class record",
+        "Course over Jun 19 — historical. Chase EUR 250 outstanding in bk18034 via HubSpot / Xero. See recipe: issue-26-intensive-class-assign-once.md",
+        "Jun19 hrly: COURSE ENDED TODAY (Jun19). bc24826 Intensive Jun08-Jun19 complete. 0 SCAs for entire 2-week course — Ernesto (s14532) never assigned to class. bk18034 PARTIAL EUR845/1095 (EUR250 outstanding, updAt=Jun07=12d). Fully historical post-today. Collect EUR250 via HubSpot/Xero.",
+        "ended;EUR250 due"
+      ]
+    ]
+  },
+  {
+    "range": "H28:K28",
+    "values": [
+      [
+        "• Booking 17909 CANCELLED, confirmed = true — anomaly, NOT yet fixed\n• Payments 17477 + 17478 DELETED from SIS database Jun 17 (xeroId = null, database-safe)\n• HubSpot payment 1230788330738 (EUR 727.50): archived = false — STILL NOT VOIDED (confirmed Jun 19)\n• HubSpot payment 1230645766331 (EUR 728.00): archived = false — STILL NOT VOIDED (confirmed Jun 19)\n• Booking 17849 (active renewal) confirmed, payment 17468 EUR 1455.50 — correct\n• Class assignment 254 (B2-C1 PM, Jun 08 – Nov 27) — active and correct",
+        "(NOT RUN) 1) UPDATE bookings SET confirmed = false WHERE id = 17909; 2) Void HubSpot payments 1230788330738 + 1230645766331 via HubSpot UI (Commerce → Payments or Contacts → Sofiia → Payments). See recipe: issue-27-sofiia-sca-cancelled-booking.md",
+        "Jun19 hrly: UNCHANGED. bk17909 CANCELLED conf=true (anomaly). HubSpot API Jun19: pmt 1230788330738 archived=false + pmt 1230645766331 archived=false — BOTH STILL NOT VOIDED. Await Neil: void both via HubSpot UI → Contact Sofiia → Commerce/Payments.",
+        "void 2 HS pmts"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Challenges — HubApp</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%23ff7a59'/><text x='32' y='34' font-family='Arial,Helvetica,sans-serif' font-size='46' font-weight='bold' fill='%23ffffff' text-anchor='middle' dominant-baseline='central'>H</text></svg>">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); min-height: 100vh; padding: 30px 20px; color: #333; }
+    .container { max-width: 1040px; margin: 0 auto; }
+    .back { display: inline-block; color: rgba(255,255,255,0.85); text-decoration: none; margin-bottom: 20px; font-size: 0.95em; }
+    .back:hover { color: white; }
+    .header { text-align: center; color: white; margin-bottom: 28px; }
+    .header h1 { font-size: 2.2em; margin-bottom: 6px; letter-spacing: -0.5px; }
+    .header p { opacity: 0.85; font-size: 0.95em; }
+    .panel { background: white; border-radius: 14px; padding: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.13); }
+    .live { background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 10px; padding: 12px 16px; margin-bottom: 18px; font-size: 0.95em; color: #065f46; }
+    .live.none { background: #fff7ed; border-color: #fed7aa; color: #9a3412; }
+    .ro { background: #fef9c3; border: 1px solid #fde047; border-radius: 10px; padding: 12px 16px; margin-bottom: 14px; font-size: 0.9em; color: #854d0e; }
+    .ro strong { color: #713f12; }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; font-size: 0.72em; text-transform: uppercase; letter-spacing: 0.04em; color: #94a3b8; padding: 8px; border-bottom: 2px solid #e2e8f0; }
+    td { padding: 7px 8px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+    tr.now td { background: #fff7ed; }
+    input, select { font: inherit; font-size: 0.9em; padding: 7px 9px; border: 1px solid #cbd5e1; border-radius: 8px; width: 100%; background: #fff; }
+    input[type=number] { text-align: right; }
+    input:focus, select:focus { outline: none; border-color: #2a5298; box-shadow: 0 0 0 3px rgba(42,82,152,0.12); }
+    .badge-now { display: inline-block; font-size: 0.62em; font-weight: 800; color: #9a3412; background: #fed7aa; border-radius: 999px; padding: 2px 7px; margin-left: 6px; vertical-align: middle; }
+    .del { background: none; border: none; color: #cbd5e1; font-size: 1.15em; cursor: pointer; line-height: 1; }
+    .del:hover { color: #ef4444; }
+    .actions { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; gap: 12px; }
+    .btn { font: inherit; font-weight: 700; border: none; border-radius: 10px; padding: 10px 18px; cursor: pointer; }
+    .btn-add { background: #eef2ff; color: #4338ca; }
+    .btn-add:hover { background: #e0e7ff; }
+    .btn-save { background: #16a34a; color: #fff; box-shadow: 0 4px 12px rgba(22,163,74,0.3); }
+    .btn-save:hover { background: #15803d; }
+    .btn-save:disabled { opacity: 0.5; cursor: default; }
+    .status { font-size: 0.9em; font-weight: 600; }
+    .status.ok { color: #16a34a; } .status.err { color: #dc2626; }
+    .col-month { width: 118px; } .col-type { width: 140px; } .col-pct { width: 84px; } .col-date { width: 150px; } .col-del { width: 34px; }
+    .note { font-size: 0.8em; color: #94a3b8; margin-top: 16px; line-height: 1.55; }
+    code { background: #f1f5f9; padding: 1px 5px; border-radius: 4px; font-size: 0.85em; color: #475569; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a class="back" href="/hubapp/public/dashboard.html">← HubApp Dashboards</a>
+    <div class="header">
+      <h1>🏷️ Monthly Challenges</h1>
+      <p>The discount schedule that drives autoQuote, the partner portal &amp; the booking form. Saves instantly — no restart.</p>
+    </div>
+    <div class="panel">
+      <div class="ro" id="roBanner" style="display:none">🔒 <strong>View-only.</strong> Inline editing unlocks once the hub dashboards are secured (lockdown handover prepared). Until then, edit the schedule in <code>challenges.json</code> on the hub — it goes live instantly.</div>
+      <div class="live" id="liveBox">Loading…</div>
+      <table>
+        <thead><tr>
+          <th class="col-month">Month</th><th class="col-type">Challenge</th><th class="col-pct">% Off</th>
+          <th class="col-date">Starts</th><th class="col-date">Ends</th><th>Applies To</th><th class="col-del"></th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="actions">
+        <button class="btn btn-add" onclick="addRow()">+ Add month</button>
+        <div style="display:flex;align-items:center;gap:14px">
+          <span class="status" id="status"></span>
+          <button class="btn btn-save" id="saveBtn" onclick="save()">Save changes</button>
+        </div>
+      </div>
+      <div class="note">
+        Month key is <code>YYYY-MM</code>. <strong>Challenge</strong> must match the HubSpot Deal <code>challenge</code> dropdown (KickStart / CashBack).
+        Never change a <em>past</em> month — issued quotes already snapshot their %. A month with no row = no offer that month (the form line hides itself).
+        Saving writes <code>challenges.json</code> and is live everywhere immediately (portal within ~10&nbsp;min).
+      </div>
+    </div>
+  </div>
+  <script>
+    // Editing is gated until the hub dashboards are secured (see .claude/challenges-handover/).
+    // Flip to false once the auth gate + POST /hubapp/challenges are live.
+    const READONLY = true;
+    const TYPES = ['KickStart', 'CashBack'];
+    function mkNow() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+    const NOW = mkNow();
+    let data = {};
+
+    async function load() {
+      try {
+        const r = await fetch('/hubapp/challenges').then(r => r.json());
+        data = (r && r.months) || {};
+      } catch (e) { data = {}; }
+      render();
+    }
+    function esc(s) { return String(s == null ? '' : s).replace(/"/g, '&quot;'); }
+    function cells(r) {
+      const now = r.mk === NOW;
+      return `
+        <td class="col-month"><input value="${esc(r.mk)}" placeholder="2026-07" data-f="mk"></td>
+        <td class="col-type"><select data-f="type">${TYPES.map(t => `<option ${t === r.type ? 'selected' : ''}>${t}</option>`).join('')}</select>${now ? '<span class="badge-now">LIVE</span>' : ''}</td>
+        <td class="col-pct"><input type="number" min="0" max="100" value="${r.info.percent ?? ''}" data-f="percent"></td>
+        <td class="col-date"><input type="date" value="${esc(r.info.starts)}" data-f="starts"></td>
+        <td class="col-date"><input type="date" value="${esc(r.info.ends)}" data-f="ends"></td>
+        <td><input value="${esc(r.info.appliesTo)}" placeholder="Course Fees" data-f="appliesTo"></td>
+        <td class="col-del"><button class="del" title="Remove" onclick="this.closest('tr').remove(); updateLive();">✕</button></td>`;
+    }
+    function render() {
+      const rows = [];
+      Object.keys(data).sort().forEach(mk => {
+        Object.entries(data[mk]).forEach(([type, info]) => rows.push({ mk, type, info }));
+      });
+      const tb = document.getElementById('rows');
+      if (!rows.length) { tb.innerHTML = '<tr><td colspan="7" style="color:#94a3b8;padding:18px">No challenges scheduled. Click “Add month”.</td></tr>'; }
+      else { tb.innerHTML = rows.map(r => `<tr class="${r.mk === NOW ? 'now' : ''}">${cells(r)}</tr>`).join(''); }
+      updateLive();
+      applyReadonly();
+    }
+    function applyReadonly() {
+      if (!READONLY) return;
+      document.getElementById('roBanner').style.display = '';
+      document.querySelectorAll('#rows input, #rows select, #rows .del').forEach(el => { el.disabled = true; el.style.cursor = 'default'; });
+      const actions = document.querySelector('.actions'); if (actions) actions.style.display = 'none';
+    }
+    function addRow() {
+      const d = new Date(); d.setMonth(d.getMonth() + 1);
+      const mk = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+      const end = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+      const endStr = end.getFullYear() + '-' + String(end.getMonth() + 1).padStart(2, '0') + '-' + String(end.getDate()).padStart(2, '0');
+      const tr = document.createElement('tr');
+      tr.innerHTML = cells({ mk, type: 'KickStart', info: { percent: '', starts: mk + '-01', ends: endStr, appliesTo: 'Course Fees' } });
+      const empty = document.querySelector('#rows tr td[colspan]');
+      if (empty) empty.closest('tr').remove();
+      document.getElementById('rows').appendChild(tr);
+      updateLive();
+    }
+    function collect() {
+      const months = {};
+      document.querySelectorAll('#rows tr').forEach(tr => {
+        const g = f => { const el = tr.querySelector('[data-f="' + f + '"]'); return el ? el.value.trim() : ''; };
+        const mk = g('mk'); if (!mk) return;
+        const type = g('type') || 'KickStart';
+        months[mk] = months[mk] || {};
+        months[mk][type] = { percent: Number(g('percent')), starts: g('starts'), ends: g('ends'), appliesTo: g('appliesTo') };
+      });
+      return months;
+    }
+    function updateLive() {
+      const box = document.getElementById('liveBox');
+      const e = collect()[NOW];
+      if (e) {
+        const [t, info] = Object.entries(e)[0];
+        box.className = 'live';
+        box.innerHTML = `<strong>Live now (${NOW}):</strong> ${t} — ${info.percent || 0}% off ${info.appliesTo || ''}`;
+      } else {
+        box.className = 'live none';
+        box.innerHTML = `<strong>No challenge live this month (${NOW}).</strong> The offer line is hidden on the portal &amp; booking form until you add one.`;
+      }
+    }
+    function setStatus(msg, cls) { const s = document.getElementById('status'); s.textContent = msg; s.className = 'status' + (cls ? ' ' + cls : ''); }
+    async function save() {
+      const months = collect();
+      for (const mk of Object.keys(months)) {
+        if (!/^\d{4}-\d{2}$/.test(mk)) return setStatus('Bad month "' + mk + '" — use YYYY-MM', 'err');
+        for (const [t, info] of Object.entries(months[mk])) {
+          if (!(info.percent >= 0 && info.percent <= 100)) return setStatus('Bad % for ' + mk + ' ' + t, 'err');
+        }
+      }
+      const btn = document.getElementById('saveBtn'); btn.disabled = true; setStatus('Saving…', '');
+      try {
+        const r = await fetch('/hubapp/challenges', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ months }) }).then(r => r.json());
+        if (!r || !r.success) throw new Error((r && r.error) || 'Save failed');
+        data = r.months || months; render(); setStatus('Saved ✓ — live now', 'ok');
+        setTimeout(() => setStatus('', ''), 4000);
+      } catch (e) { setStatus(e.message, 'err'); }
+      finally { btn.disabled = false; }
+    }
+    document.getElementById('rows').addEventListener('input', updateLive);
+    load();
+  </script>
+</body>
+</html>

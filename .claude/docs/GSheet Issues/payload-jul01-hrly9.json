@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 + 16989 still unlinked — booking_id = null, xero_payment_id = null — 64 days since 28 Apr\n• Payment 16988 (HubSpot 1204827374829) → Booking 17856 Margherita Galbusera — EUR 339.90\n• Payment 16989 (HubSpot 1204846469317) → Booking 17857 Francesca Fassina — EUR 339.90\n• Both bookings: status = Confirmed, confirmed = false, amount paid = EUR 339.90\n• Booking courses 24630 + 24631: General English AM Plus, 29 Jun to 10 Jul — fee = null\n• Students in class Day 3 of 10 (Wednesday 1 Jul) — 4-step SQL not run (150th check, 1 Jul UTC)",
+        "(NOT RUN) (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) UPDATE booking_courses SET fee=339.9 WHERE id IN (24630,24631); (4) UPDATE bookings SET confirmed=true WHERE id IN (17856,17857). See recipe: issue-1-orphan-payments.md",
+        "hrly 1 Jul UTC (150th check, fresh DB): pmts 16988+16989 bookingId=STILL null xeroId=null EUR339.9 each. bk17856+17857 CONF conf=STILL false amtPaid=339.9. bc24630+24631 GE-AM-Plus Jun29-Jul10 fee=STILL null. Day 3/10; Jul10=9d. 4-STEP SQL NOT RUN. NEIL: RUN NOW.",
+        "Day 3/10; 9d; SQL UNRUN"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Class assignment 255 (class 11, B1 PM): week start = 12 Jan 2026 — migration artefact (wrong)\n• Week end = 3 Jul 2026 (FRIDAY) — EXPIRES IN 2 DAYS\n• After Friday, student invisible to class B1 PM scheduling for 10 weeks through Sep 11 2026\n• SQL still not run after 55+ checks — RUN TODAY (Wed 1 Jul) OR TOMORROW (Thu 2 Jul) AT LATEST",
+        "(NOT RUN) UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255; See recipe: issue-15-saikhantes-course-dates.md",
+        "hrly 1 Jul UTC (55th check, fresh DB): sca255 cls11 B1-PM weekStart=2026-01-12(WRONG) weekEnd=STILL 2026-07-03 (EXPIRES FRI 3 JUL). bc24925 AY-Afternoon Mar09-Sep11 active=true. SQL NOT RUN 55 CHECKS. NEIL: TODAY (Wed 1 Jul) or THU 2 JUL = last chance before Fri expiry. 10 weeks class coverage lost after Fri.",
+        "EXPIRES FRI; Thu=LAST CHANCE"
+      ]
+    ]
+  },
+  {
+    "range": "H28:K28",
+    "values": [
+      [
+        "• Booking 17909 is CANCELLED but confirmed = true — database anomaly (updated Jun 17, 14 days stale)\n• Database payments 17477 + 17478 deleted Jun 17 — booking now shows amount paid = 0, zero payment records\n• HubSpot Commerce payments 1230788330738 (EUR 727.50) + 1230645766331 (EUR 728.00) STILL LIVE — status = succeeded, not refunded\n• Refund deadlines: payment 1230788330738 expires Oct 25 2026 | payment 1230645766331 expires Nov 11 2026\n• Renewal booking 17849 confirmed and paid correctly (payment 17468, EUR 1455.50)\n• Class assignment 254 (class 6, B2-C1 PM, Jun 08 to Nov 27) is active and correct (15th check, 1 Jul UTC)",
+        "(NOT RUN) (1) Check Xero Sofiia Apr-May 2026 — refund via HubSpot Commerce before Oct 25; (2) UPDATE bookings SET confirmed=false WHERE id=17909. See recipe: issue-27-sofiia-sca-cancelled-booking.md",
+        "hrly 1 Jul UTC (15th check, fresh DB): bk17909 CANCELLED confirmed=STILL TRUE amtPaid=0 (updAt=Jun17=14d stale). 0 payments on bk17909. HS Commerce pmts EUR727.50+EUR728.00 NOT VERIFIABLE from DB (refund deadlines Oct25/Nov11-26). bk17849 CONF 1455.5/1455.5 pmt17468 xeroId=null. Neil: (1) Xero check Apr-May26 for Sofiia HS pmts; (2) refund via HS Commerce before Oct 25; (3) UPDATE bookings SET confirmed=false WHERE id=17909 (NOT RUN).",
+        "void HS pmts; Oct25 deadline"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Duplicate entry for Issue 15 (row 16) — same student Saikhantes Shagdarsuren (student 1001)\n• Class assignment 255 (class 11, B1 PM): week end = 3 Jul 2026 (FRIDAY) — EXPIRES IN 2 DAYS\n• After Friday, student invisible to class B1 PM scheduling for 10 weeks through Sep 11 2026\n• SQL still not run — RUN TODAY (Wed 1 Jul) OR TOMORROW MORNING (Thu 2 Jul) AT LATEST",
+        "Same fix as Issue 15. See recipe: issue-15-saikhantes-course-dates.md",
+        "hrly 1 Jul UTC (51st check, fresh DB): sca255 cls11 B1-PM weekStart=2026-01-12(WRONG) weekEnd=STILL 2026-07-03 (EXPIRES FRI 3 JUL). Same as Issue 15 row16. SQL NOT RUN 51 CHECKS. NEIL: TODAY (Wed 1 Jul) or THU 2 JUL = last chance before Fri expiry.",
+        "EXPIRES FRI; Thu=LAST CHANCE"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• Accommodation 11352 (Veronica Martin, bed 83): 4 Jul to 11 Jul, active = true — not yet reassigned\n• Accommodation 11285 (Jesus Manuel, bed 83): 21 Jun to 5 Jul, active = true\n• Overlap confirmed: 2 nights (4 and 5 Jul) — Veronica arrives Saturday, Jesus departs Sunday\n• Booking 18156: Confirmed, EUR 573.20 / 573.20 fully paid; payment 17953 not yet in Xero\n• Beds 174 (A1 Room 1), 175 (A1 Room 2), 176 (A2 Room 1) all verified free for 4 to 11 Jul\n• Veronica check-in Saturday 4 Jul — today (Wednesday 1 Jul) is the last business day (42nd check, 1 Jul UTC)",
+        "(NOT RUN) Reassign accommodation 11352 from bed 83 to bed 174, 175, or 176 via SIS (Student 278 Booking 18156 Accommodation). Fallback SQL: UPDATE booking_accommodations SET bed_id=174 WHERE id=11352; See recipe: issue-37-veronica-capel-accomm-allocation.md",
+        "hrly 1 Jul UTC (42nd check, fresh DB): accomm11352 Veronica bed83 Jul04-Jul11 STILL NOT REASSIGNED (updAt=Jun29=2d stale). accomm11285 Jesus bed83 Jun21-Jul05 active (updAt=Jun16=15d stale). BED 83 DOUBLE-BOOKED Jul04-Jul05 (2-night overlap) CONFIRMED. Beds 174/175/176 RE-VERIFIED FREE for Jul04-Jul11 (fresh DB 1 Jul, 0 conflicts). bk18156 CONF EUR573.2/573.2 amtOpen=0. pmt17953 xeroId=STILL null. VERONICA CHECK-IN SAT 4 JUL = 3 DAYS. TODAY (Wed 1 Jul) = LAST BUSINESS DAY. Fix (NOT RUN): UPDATE booking_accommodations SET bed_id=174 WHERE id=11352.",
+        "BED83; SAT 4 JUL; FIX TODAY"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• Accommodation 11285 (Jesus Manuel, bed 83): 21 Jun to 5 Jul, active = true — 4 days remaining\n• Bed 83 conflict with Veronica Martin (accommodation 11352): 4–5 Jul overlap (2 nights)\n• Veronica arrives Saturday 4 Jul — fix needed TODAY (last business day before arrival)\n• Beds 174, 175, 176 free for 4 to 11 Jul — fix: reassign Veronica to one of these (see Issue 37)\n• Option A: correct Jesus dates to 20 Jun–4 Jul (verify HubSpot deal 498775243984 first)",
+        "Option A (verify HS deal first): correct accommodation 11285 dates to Jun 20–Jul 4. Option B: reassign Veronica accommodation 11352 to bed 174/175/176. See recipe: issue-43-jesus-accomm-dates.md",
+        "hrly 1 Jul UTC (19th check, fresh DB): accomm11285 Jesus bed83 Jun21-Jul05 STILL UNCHANGED (updAt=Jun16=15d stale). BED 83 CONFLICT accomm11352 Veronica Jul04-Jul11 = 2-night overlap Jul04-05 CONFIRMED. Veronica CHECK-IN SAT 4 JUL = 3 DAYS. TODAY (Wed 1 Jul) = last business day. Beds 174/175/176 CONFIRMED FREE Jul04-Jul11 (fresh DB 1 Jul, 0 conflicts). Fix Issue 37 (row39): reassign accomm11352 bed83 to 174/175/176. Option A: HS deal 498775243984 check for Jesus dates Jun20-Jul04.",
+        "BED83; SAT 4 JUL; FIX TODAY"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H37:K37",
+    "values": [
+      [
+        "• Homework section: renderSheetHtml() in src/routes/attendance.ts — no homework block; awaiting Paul / Neil layout spec\n• Holiday display bug: getWeekAttendance() in src/scripts/attendance.ts line 31 — no bookingHoliday fetch; students on holiday appear as absent in attendance sheets\n• Code confirmed unchanged since commit 9008d10 — no attendance output or holiday handling changes",
+        "Get Paul / Neil layout spec then add homework block to renderSheetHtml() (attendance.ts); add bookingHoliday fetch to getWeekAttendance() (attendance.ts:31); see recipe: issue-36-attendance-homework-section.md",
+        "Thu 16 Jul UTC (12th code check). G column edited again by staff (hash changed — same false-trigger as prior runs). Code at 9008d10 UNCHANGED. renderSheetHtml() no homework block. getWeekAttendance() no bookingHoliday fetch. Both bugs open. Awaiting Paul/Neil layout spec. Fix NOT RUN.",
+        "code open; awaiting spec"
+      ]
+    ]
+  }
+]

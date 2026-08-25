@@ -1,0 +1,35 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 45th check Thu 6 Aug 2026 UTC — service_end EXPIRES IN ~11 HOURS (tonight 00:00 UTC)\n• Fix still not applied — booking 18151 service_end confirmed 2026-08-07 at 13:02 UTC\n• Booking 18151 (Saikhantes Shagdarsuren, student 1001): CONFIRMED, fully paid EUR 1,339.20\n• Booking Course 24925 (Academic Year Afternoon): end_date 2026-10-02, active true\n• Student on holiday until Mon 24 Aug 2026 — returns to expired booking without fix\n• See recipe: issue-15-addendum-6aug-f.md",
+        "Extend booking 18151 service_end to 2026-10-02 TONIGHT; see recipe: issue-15-addendum-6aug-f.md",
+        "45th hrly Thu 6 Aug UTC. service_end 2026-08-07 expires TONIGHT ~11h. Fix NOT RUN.",
+        "CRITICAL: expires TONIGHT"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 40th check Thu 6 Aug 2026 UTC — DEADLINE TOMORROW Fri 7 Aug EOD\n• All 18 booking courses starting Mon 10 Aug still 0 class assignments at 13:02 UTC\n• 14 confirmed ready to assign: Booking Courses 108, 109, 1313, 1818, 24874, 24915, 24970, 25004, 25005, 25024, 25027, 25031, 25036, 25039\n• 4 blocked: Booking Courses 96 (confirmed false), 833 (ESCROW), 25007 (PARTIAL), 25042 (PENDING)\n• See recipe: issue-38-addendum-6aug-g.md",
+        "Assign 14 confirmed booking courses via SIS admin before Fri 7 Aug EOD; see recipe: issue-38-addendum-6aug-g.md",
+        "40th hrly Thu 6 Aug UTC. DEADLINE TOMORROW Fri 7 Aug EOD. All 18 BCs starting Mon Aug 10 still 0 assigned. Fix NOT RUN.",
+        "URGENT: deadline Fri 7 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• 4th check Thu 6 Aug 2026 UTC — student on holiday until Mon 24 Aug 2026 (18 days)\n• Booking course 24925 (Academic Year Afternoon, Mar 9 to Oct 2 2026): active, booking 18151\n• Last class assignment (Student Class Assignment 255): class 11 (B1 PM), week end 3 Jul 2026 — 34 days expired\n• CRITICAL: booking 18151 service_end 2026-08-07 expires TONIGHT — see Issue 15 (row 16)\n• If service_end fix not applied: student returns Aug 24 to expired booking and no class assignment\n• See recipe: issue-29-addendum-6aug.md",
+        "See Issue 15 for actions. New SCA class 11 Aug 24 to Oct 2; deactivate BC 1982. Recipe: issue-29-addendum-6aug.md",
+        "4th hrly Thu 6 Aug UTC. On holiday until Aug 24 (18d). Issue 15 service_end fix needed TONIGHT.",
+        "window closed; see row 16"
+      ]
+    ]
+  }
+]

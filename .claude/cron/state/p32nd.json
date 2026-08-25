@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student 1001 (Saikhantes Shagdasuren): class assignment 255 (class 11) week end = 3 July 2026 — expired 9 days ago (7th check, 12 Jul UTC)\n• 5 school days missed 7 to 11 July — Monday 13 July = TOMORROW\n• Booking course 24925 (Academic Year Afternoon, booking 18151): active = true, runs 9 March to 2 October 2026 — current course\n• Booking course 1982 (Academic Year Morning): ended 19 December 2025, still active = true (205 days stale)\n• No valid class assignment for week starting Monday 13 July 2026",
+        "Extend class assignment 255 week end to 2026-10-02; deactivate booking course 1982. See recipe: issue-15-saikhantes-course-dates.md",
+        "7th check 12 Jul SUN UTC (fresh DB). SCA255 weekEnd=Jul3 cls11(B1-PM) bcId=24925 STILL expired 9d — only 1 SCA on BC24925. BC1982 AY-Morn endDec25 STILL active=true (205d stale). BC24925 AY-Aft Mar9-Oct2 active=true. 5 school days missed Jul7-11. Mon13=TOMORROW. NEIL: (1) UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255 — BEFORE Mon 09:00; (2) UPDATE booking_courses SET active=false WHERE id=1982.",
+        "CRITICAL; Mon13 TOMORROW"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Duplicate of issue 15 (row 16): student 1001 Saikhantes Shagdasuren — class assignment 255 (class 11) week end = 3 July 2026 — expired 9 days ago (5th check 12 Jul UTC)\n• 5 school days missed 7 to 11 July — Monday 13 July = TOMORROW\n• See row 16 (issue 15) for full diagnosis and fix recipe",
+        "Extend class assignment 255 week end to 2026-10-02; deactivate booking course 1982. See recipe: issue-15-saikhantes-course-dates.md",
+        "5th check 12 Jul SUN UTC. Duplicate of row 16 (issue 15). SCA255 weekEnd=Jul3 cls11 BC24925 STILL expired 9d. Mon13=TOMORROW. NEIL: see row 16 for recipe.",
+        "Mon13 TOMORROW; SCA 9d exp"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Booking accommodation 11358 (bed 180, Host Family Mary Carver): student check-in TODAY 12 July 2026 — host family NOT notified — claimStatus = null (32nd check 12 Jul UTC)\n• Booking 17831 (Xuezhen Huang, student 14443): Confirmed, fully paid EUR 1396.90 (confirmed 7 July)\n• Stay runs 12 July to 2 August 2026 — fee = EUR 900 — bed 180 active = true\n• Host: Mary Carver, mary.carver28@gmail.com, +353 87 927 1130 (property 147, room 159)\n• Student has arrived TODAY — host has not been notified (claimedAt = null since accommodation created Jun 25)\n• 4 payments all Xero-unreconciled: payment 17180 (EUR 431.90 TransferMate Escrow Apr 27) + payment 17963 (EUR 965 Bank Jul 1) + payments 17987 and 17988 (Fidelo installment pair)",
+        "Contact Mary Carver NOW (+353 87 927 1130 / mary.carver28@gmail.com); submit host family claim for accommodation 11358 via SIS admin; reconcile payments in Xero. See recipe: issue-39-xuezhen-huang-accomm-missing.md",
+        "32nd check 12 Jul SUN UTC (fresh DB). UNCHANGED. BA11358 bed180 HF Jul12-Aug2 claimedAt=STILL null claimStatus=STILL null fee=EUR900 active=true (updAt=Jun26). BK17831 CONFIRMED EUR1396.90/1396.90 (confirmed Jul7). CHECK-IN TODAY SUN 12 JUL. Host Mary Carver mary.carver28@gmail.com +353 87 927 1130 NOT NOTIFIED. 4 pmts ALL xeroId=null. NEIL: call Mary Carver NOW + submit HF claim + reconcile Xero.",
+        "URGENT; HF unnotified; TODAY"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Pietro Colombo (student 72, booking course 81, Morning General Plus, 6 to 24 July 2026): zero class assignments — 5 school days missed 7 to 11 July — 10 school days remaining from Monday 13 July (32nd check 12 Jul UTC)\n• Kayque Tauann Lopes Coelho (student 852, booking course 1821, Academic Year Renewal Afternoon, June 29 to December 18 2026): zero class assignments — 10+ school days missed since course start\n• Tuguldurtugs Enkhtugs (student 858, booking course 1786, Academic Year Renewal Morning, July 6 to December 25 2026): zero class assignments — 5 school days missed\n• Monday 13 July = TOMORROW — all 3 students will arrive without class assignments",
+        "Assign Pietro (student 72, booking course 81), Kayque (student 852, booking course 1821), Tuguldurtugs (student 858, booking course 1786) to classes via SIS admin TODAY before Monday 13 July. See recipe: issue-45-renewal-arrivals.md",
+        "32nd check 12 Jul SUN UTC (fresh DB). UNCHANGED. BC81 Pietro(s72) STILL 0 SCAs — ends Jul24 (10 school days from Mon13). BC1821 Kayque(s852) STILL 0 SCAs — 10+ school days missed since Jun29. BC1786 Tuguldurtugs(s858) STILL 0 SCAs — 5 school days missed since Jul6. bk1601 EUR1356.50/1606.50 EUR250 outstanding. Mon13=TOMORROW 09:00. NEIL: assign all 3 TODAY before Mon 09:00.",
+        "CRITICAL; 0 SCAs; Mon13"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking course 24933 (General English AM, 15 June to 10 July 2026): ended 2 days ago — still active = true (2 days stale, 6th pass 12 Jul UTC)\n• Booking course 24934 (General English AM, 15 June to 10 July 2026): ended 2 days ago — still active = true (2 days stale) — duplicate course (same name and dates)\n• Zero class assignments on either booking course during the entire June 15 to July 10 term\n• Zero document records on booking 18158 (student Edith Nunes, id 1015) — no completion certificate generated\n• Payment 17895 (EUR 740, Bank, 12 June 2026): Xero payment ID = null, HubSpot payment ID 1254474444002 — not reconciled in Xero",
+        "Deactivate booking courses 24933 + 24934; generate completion cert via SIS admin student 1015 > booking 18158 > Documents; reconcile payment 17895 EUR 740 in Xero; recipe: issue-22-edith-nunes-payment-dups.md",
+        "6th pass 12 Jul SUN UTC (fresh DB). UNCHANGED. BC24933+BC24934 GE-AM Jun15-Jul10 BOTH STILL active=true (2 days stale, ended Jul10). Zero class assignments entire Jun15-Jul10 term. Zero docs on bk18158 — no completion cert generated. PMT17895 EUR740 xeroId=STILL null type=STILL null (HS=1254474444002). BK18158 CONF EUR740/740. NEIL: (1) UPDATE booking_courses SET active=false WHERE id IN (24933,24934); (2) SIS admin student 1015 > bk18158 > Documents > Generate Certificate; (3) reconcile pmt17895 EUR740 in Xero.",
+        "cert+Xero needed"
+      ]
+    ]
+  },
+  {
+    "range": "H28:K28",
+    "values": [
+      [
+        "• Booking 17909 is CANCELLED but confirmed = true — database anomaly\n• Payments 17477 and 17478 were DELETED from the database on 17 Jun — amount paid is EUR 0\n• HubSpot Commerce payments 1230788330738 (EUR 727.50) and 1230645766331 (EUR 728.00) are NOT voided — refund deadlines: 25 Oct and 11 Nov 2026\n• Student may have been double-charged EUR 1455.50 — Xero verification required before issuing refund\n• Booking course 24693 (Renewal Academic Year PM, May 25 to Nov 13): STILL active = true — anomaly on a cancelled booking\n• Fix 1 (NOT RUN): Xero check Sofiia Korkishchenko Apr to May 2026 — if 3 real payments found, void both HubSpot Commerce payments before 25 Oct\n• Fix 2 (NOT RUN, low priority): UPDATE bookings SET confirmed=false WHERE id=17909",
+        "",
+        "22nd check 12 Jul SUN UTC (fresh DB). UNCHANGED. BK17909 CANCELLED confirmed=STILL true amtPaid=0 (pmts 17477+17478 DELETED Jun17 — confirmed not in DB). BC24693 Renewal-AY-PM May25-Nov13 STILL active=true (anomaly on cancelled booking). HS Commerce pmts 1230788330738(EUR727.50)+1230645766331(EUR728.00): NOT voided — deadlines Oct25/Nov11 2026. Void deadline Oct25 = 105 days away. NEIL: Xero check Sofiia Apr-May 2026 + void HS pmts before Oct25 + UPDATE bk17909 confirmed=false. Recipe: issue-27-sofiia-sca-cancelled-booking.md",
+        "void before Oct25"
+      ]
+    ]
+  }
+]

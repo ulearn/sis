@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "bk1308 CANCELLED conf=false. paid=1530=amtTotal(fully paid). c1350 AY-Aft May25-Nov13 ACTIVE. 0SCAs.",
+        "UPDATE bookings SET status=CONFIRMED,confirmed=true WHERE id=1308; then assign class. see recipe: issue-17-ana-jessica-accidental-cancel.md",
+        "Jun15-UTC hrly: bk1308 CANCELLED 1530/1530 updAt=Jun07(D8). c1350 May25-Nov13 active. 0SCAs. D21 cancelled+paid. SQL NOT RUN. NEIL: confirm fix?",
+        "D21 cancelled+paid"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "bk1605 PENDING 0/1509 D74. HS deal 502951083215 B2B-Sales ENROLMENT not WON.",
+        "Move HS deal 502951083215 to WON stage to trigger webhook. see recipe: issue-20-ariunsarnai-payment-due.md",
+        "Jun15-UTC hrly: bk1605 PEND 0/1509 updAt=Jun11 UNCHANGED. c1791 AY-Ren-Morn Apr13-Oct02 ongoing. 0SCAs. HS deal 502951083215 not WON per DB. D78 pending.",
+        "D78 pending"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "bk18158 PEND 0/740 bc24933+bc24934(DUP) GE-AM Jun15-Jul10. bk18131(CONF 1185)+bk18133(CONF 648) NOT cancelled.",
+        "(NOT RUN) 1)CANCEL bk18131+18133; 2)void pmt17852+17730 via HS; 3)DELETE bc24934; 4)assign cls7 c24933 after bk18158 paid. see recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun15-UTC hrly: COURSE DAY1. bk18158 PEND 0/740 UNCHANGED. bc24933+bc24934 DUP Jun15-Jul10 both active. bk18131 CONF 1185+bk18133 CONF 648 NOT cancelled. 0SCAs s1015. Steps 1-4 NOT RUN. NEIL: execute steps IMMEDIATELY.",
+        "STARTED 0SCA urgent"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "s14532 Ernesto 0SCA ENTIRE COURSE. bc24826 INTENSIVE Jun08-Jun19. bk18034 PARTIAL 845/1095 conf=false",
+        "(NOT RUN) get Ernesto level from teacher; INSERT 2 SCAs AM+PM bc24826 ws=Jun15 we=Jun19. see recipe: issue-26-intensive-class-assign-once.md",
+        "Jun15-UTC hrly: WK2 DAY1. s14532 Ernesto 0SCAs ALL COURSE (DB confirmed). bc24826 INTENSIVE Jun08-Jun19. WK1 MISSED. WK2(Jun15-19) started today, 4d to Jun19. bk18034 PARTIAL 845/1095 conf=false. INSERT NOT RUN. NEIL: get Ernesto level from teacher NOW.",
+        "course ends Jun19 4d"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "s88 Giulia JUNIOR 0SCA. bk94 CONF 1151.5 c104 MORN-GEN-PLUS Jun15-Jun26. bk18044 DUP CONF 1106.5 NOT cancelled.",
+        "(1)get level; (2)assign SCA cls[?] bk94/c104 ws=Jun15 we=Jun26; (3)CANCEL bk18044+handle pmt17607 EUR44.5; (4)CANCEL bk18152+del s14557. see recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun15-UTC hrly: DAY1 IN SESSION. s88 0SCAs confirmed (DB). bk94 CONF 1151.5/1151.5 c104 STARTED. bk18044 DUP CONF 1106.5 NOT cancelled. bk18152 Milena CONF 0/1151.5. Steps 1-4 NOT RUN. NEIL: get Giulia level+assign AM class TODAY.",
+        "DAY1 0SCA NOW"
+      ]
+    ]
+  },
+  {
+    "range": "H32:K32",
+    "values": [
+      [
+        "TZ NOT SET .env. 43 SCAs week_end=null. Att sheet date bug active.",
+        "FIX1(NOT RUN): append TZ=UTC to .env then touch tmp/restart.txt. FIX2(NOT RUN): UPDATE 43 SCA rows SET week_end. see recipe: issue-31-attendance-sheet-week-bug.md",
+        "Jun15-UTC hrly: TZ still ABSENT from .env (grep confirmed). 43 SCAs week_end=null UNCHANGED. Att sheets broken. NEIL: FIX1 = append TZ=UTC to .env + touch tmp/restart.txt NOW.",
+        "APPLY NOW"
+      ]
+    ]
+  }
+]

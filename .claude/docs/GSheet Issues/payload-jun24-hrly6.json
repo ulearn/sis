@@ -1,0 +1,54 @@
+[
+  {
+    "range": "J2",
+    "values": [
+      [
+        "hrly#7 Jun24 EMERGENCY (Jun29=5d — COURSES START MONDAY STILL UNACTED): pmts 16988+16989 bookingId=null xeroId=null CONFIRMED FRESH. bk17856+17857 CONF conf=false amtPaid=339.9 (updAt=Jun04=20d stale). bc24630+24631 start Jun29 fee=null STILL. 57 days orphaned. NEIL: run recipe Step1+2 NOW — Monday courses start."
+      ]
+    ]
+  },
+  {
+    "range": "J25:K25",
+    "values": [
+      [
+        "hrly#7 Jun24 (bc1797 ends Fri Jun26=2d): bc1797 Morning General Apr06-Jun26 active fee=1836 (updAt=May03=52d). bc24686 Jul20-Sep18 fee=null STILL (updAt=May14=41d). NEIL: set bc24686 fee ASAP; acknowledge bc1797 zero-attendance (bereavement).",
+        "bc24686 fee=null; bc1797 ends Fri"
+      ]
+    ]
+  },
+  {
+    "range": "H42:K42",
+    "values": [
+      [
+        "• CONFIRMED FIXED — attendance.ts updated (Jun 2026)\n• Block hours now derived dynamically from actual class start and end times, minus breakMinutes (lines 94-100)\n• Old hardcoded value (3.25 gross hours for PM) is gone — replaced with correct net calculation\n• Comment at line 94 documents the original bug (Issue #35)\n• All 4 PM classes (13:45-17:00, 15 min break) now correctly yield 3.0 net hours\n• Private 121 class (14:00-16:00, no break) now correctly yields 2.0 hours",
+        "DONE: attendance.ts L94-100 derives blockHours from actual class times + breakMinutes. Matches classes.ts financial calc exactly. See recipe: issue-35-pm-attendance-duration.md",
+        "hrly Jun24: code confirmed FIXED (attendance.ts L94-100 dynamic calc). Old 3.25 hardcode gone. Comment at L94 documents bug. K set to fixed.",
+        "fixed"
+      ]
+    ]
+  },
+  {
+    "range": "J44",
+    "values": [
+      [
+        "hrly#7 Jun24 (Jun28=4d STILL BLOCKED): 4 stale BAs on bed 84 all active=true. ba11157 (booking 100) ended May 10 = 45 days stale. ba9917 (booking 1274) ended May 16 = 39 days stale. ba11159 (booking 100) ended May 30 = 25 days stale. ba11180 (booking 81) ended Jun 20 = 4 days stale (updated Jun 22 post-expiry — anomaly unresolved). ba11311 Pietro Jun28-Sep13 weeks=11 fee=3850 is correct. NEIL: UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180) — MUST run before Sunday arrival."
+      ]
+    ]
+  },
+  {
+    "range": "J26",
+    "values": [
+      [
+        "hrly#7 Jun24 (D59 CRITICAL — 7th consecutive check same result): s917 visaStatus=null (updAt=May21=34d stale). bc1613 AY Morning Apr27-Oct16 active fee=3370. bk1467 CONF 2405/2405 (paid in full). SCAs=[]. 59 calendar days in school zero class assignments. NEIL: assign class via SIS UI immediately."
+      ]
+    ]
+  },
+  {
+    "range": "J23",
+    "values": [
+      [
+        "hrly#7 Jun24 (D10 in school, 0 SCAs URGENT): bc24934 STILL active=true dup (updAt=Jun11=13d stale). bc24933 active=true (Jun11=13d stale). bk18158 CONF confirmed=true 740/740. No class assignments on either booking course. NEIL: deactivate bc24934 immediately + assign s1015 to class 7 A1-AM."
+      ]
+    ]
+  }
+]

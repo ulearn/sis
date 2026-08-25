@@ -1,0 +1,87 @@
+// Append to prisma/schema.prisma in SIS.
+// Also add the corresponding back-relation lines into the existing models:
+//
+//   model Student {
+//     ...
+//     refundRequests RefundRequest[]
+//   }
+//
+//   model Booking {
+//     ...
+//     refundRequests RefundRequest[]
+//   }
+//
+//   model SisUser {
+//     ...
+//     refundsApproved RefundRequest[]  // already maps via approvedById relation
+//   }
+
+model RefundRequest {
+  id              Int      @id @default(autoincrement())
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Identity links (best-effort match on intake; may be null if no match yet).
+  studentId       Int?     @map("student_id")
+  student         Student? @relation(fields: [studentId], references: [id])
+  bookingId       Int?     @map("booking_id")
+  booking         Booking? @relation(fields: [bookingId], references: [id])
+
+  // Drupal submission reference (for traceback / dedupe).
+  drupalSubmissionId   Int?    @map("drupal_submission_id")
+  drupalSubmissionUuid String? @unique @map("drupal_submission_uuid")
+
+  // Form payload — captured verbatim from Drupal.
+  studentName     String   @map("student_name")
+  studentEmail    String   @map("student_email")
+  nationality     String
+  territory       String   // EU | Non-EU (VBD) | Non-EU (No Visa) | Unsupported Territory
+  invoiceNumber   String   @map("invoice_number")
+  agentName       String?  @map("agent_name")
+
+  refundReason       String   @map("refund_reason")
+  refundReasonOther  String?  @map("refund_reason_other")
+  amountRequested    Decimal? @map("amount_requested") @db.Decimal(10,2)
+
+  paymentProcessor       String  @map("payment_processor")
+  paymentProcessorOther  String? @map("payment_processor_other")
+  paymentMethod          String  @map("payment_method")
+
+  // Bank fields (legacy D7 set; always captured).
+  bankType           String?  @map("bank_type")
+  bankCountry        String?  @map("bank_country")
+  payeeName          String?  @map("payee_name")
+  payeeAddress       String?  @map("payee_address")
+  payeeAddress2      String?  @map("payee_address_2")
+  payeeCountry       String?  @map("payee_country")
+  bicSwift           String?  @map("bic_swift")
+  nsc                String?
+  accountNumber      String?  @map("account_number")
+  bankName           String?  @map("bank_name")
+  bankStreetAddress  String?  @map("bank_street_address")
+  bankCity           String?  @map("bank_city")
+  correspondentBank  String?  @map("correspondent_bank")
+  correspondentSwift String?  @map("correspondent_swift")
+
+  otherInformation   String?  @map("other_information") @db.Text
+
+  // Visa refusal letter — stored as a StudentDocument(category="visa") on intake;
+  // we keep a pointer here for the review page.
+  visaRefusalDocId   Int?     @map("visa_refusal_doc_id")
+
+  // Approval lifecycle.
+  status            String    @default("pending_review")   // pending_review | approved | sent_to_tm | rejected
+  feeDeductionEur   Decimal   @default(300.00) @map("fee_deduction_eur") @db.Decimal(10,2)
+  feeBreakdown      String    @default("€250 visa processing + €50 non-refundable registration fee") @map("fee_breakdown")
+  approvedById      Int?      @map("approved_by_id")
+  approvedBy        SisUser?  @relation(fields: [approvedById], references: [id])
+  approvedAt        DateTime? @map("approved_at")
+  sentToTmAt        DateTime? @map("sent_to_tm_at")
+  rejectedAt        DateTime? @map("rejected_at")
+  rejectReason      String?   @map("reject_reason") @db.Text
+
+  @@index([status])
+  @@index([studentId])
+  @@index([createdAt])
+  @@map("refund_requests")
+}

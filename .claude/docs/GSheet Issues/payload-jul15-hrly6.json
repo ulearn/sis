@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking course 24991 (Edith Nunes, student 1015, General English AM, 13 July to 7 August 2026): zero class assignments — Day 3 today (Wednesday 15 July) — URGENT (26th check)\n• Booking 18214: Confirmed, confirmed = true\n• Booking courses 24933 and 24934 (General English AM, ended 10 July 2026): both still active = true — 5 days stale\n• Payment 18004 (EUR 608, booking 18214, current course): Xero payment ID = null — not yet reconciled in Xero\n• Payment 17895 (EUR 740, booking 18158, previous course ended July 10): Xero payment ID = still null\n• All UNCHANGED from previous check",
+        "Assign student 1015 to class for booking course 24991; deactivate booking courses 24933 and 24934; reconcile payments 18004 and 17895 in Xero. See recipe: issue-22-edith-nunes-payment-dups.md and issue-22-addendum-15jul-2.md",
+        "26th check Wed 15 Jul UTC. BC24991 Jul13-Aug07 STILL 0 SCAs Day3. BC24933+24934 ended Jul10 STILL active=true (5d stale). PMT18004 EUR608 BK18214 xeroId=null (current). PMT17895 EUR740 BK18158 xeroId=null (old Fidelo). UNCHANGED. Fix NOT RUN.",
+        "Day3 URGENT; 0 SCAs"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 8 booking courses ending Friday 17 July 2026 still have zero class assignments — 83rd check, Wednesday 15 July UTC\n• 3 confirmed students (zero class assignments): BC1719 María Magdalena Hermosilla Ogaz, BC24946 Lunel Dubost, BC24994 Petru Ous\n• 5 pending students (zero class assignments): BC26 (Kritchana), BC95 (Florian), BC24985 (Silvia Maza), BC24986 (Gladis Maza), BC24992 (Luz Maria)\n• All 8 UNCHANGED from previous check — 2 calendar days to Friday deadline",
+        "Assign class for booking courses 1719, 24946, 24994 (confirmed) via SIS Admin → Classes → To Be Assigned. See recipe: issue-45-renewal-no-class.md and issue-45-addendum-15jul.md",
+        "83rd check Wed 15 Jul UTC (6th today). UNCHANGED (fresh DB). 3 CONF: BC1719 Maria, BC24946 Lunel, BC24994 Petru — all 0 SCAs. 5 PENDING: BC26/95/24985/24986/24992. 2d to Fri 17 Jul. Fix NOT RUN.",
+        "CRITICAL; 2d to Fri"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student class assignment 255 (Saikhantes Shagdarsuren, student 1001, booking course 24925): week end = 3 July 2026 — still the only class assignment (49th check, Wednesday 15 July UTC)\n• Missing week ending 10 July 2026 — expired 12 days ago\n• Missing week ending 17 July 2026 — this Friday, 2 days to deadline\n• Booking course 24925 (Academic Year Afternoon, 9 March to 2 October 2026): active = true",
+        "Add student class assignments for week ending 10 July and 17 July for booking course 24925, class 11 (B1 PM). See recipe: issue-15-saikhantes-class.md",
+        "49th check Wed 15 Jul UTC (2nd today). SCA255 (B1 PM) weekEnd=Jul3 STILL only record. Missing: weekEnd Jul10 (12d expired) + weekEnd Jul17 (Fri, 2d). BC24925 AY Aft Mar9-Oct2 active=true. Fix NOT RUN.",
+        "CRITICAL; 2 weeks missing; Fri"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking course 24686 (Alberto Squillace, Morning General, 20 July to 18 September 2026): fee = still null — 5 days to course start Monday 20 July — URGENT (52nd check, Wednesday 15 July UTC)\n• Booking course 1797 (Morning General, 6 April to 26 June 2026): active = still true — 19 days past end date\n• Booking 1611: Confirmed, confirmed = true, EUR 1280.12 fully paid, amount open = 0",
+        "Set fee on booking course 24686 (check HubSpot deal for correct amount); deactivate booking course 1797. See recipe: issue-24-alberto-fidelo-course-split.md",
+        "52nd check Wed 15 Jul UTC (2nd today). BC24686 MG Jul20-Sep18 fee=STILL null — 5 DAYS TO START MON 20 JUL. BC1797 ended Jun26 active=STILL true (19d stale, fee=1836). BK1611 CONF EUR1280.12 fully paid. Fix NOT RUN.",
+        "fee null; 5d URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Booking course 24609 (Xuezhen Huang, student 14443, Morning General, 13 July to 31 July 2026): zero class assignments — Days 1, 2, 3 missed (Mon 13, Tue 14, Wed 15 Jul) — URGENT (11th check, Wednesday 15 July UTC)\n• Booking 17831: Confirmed, confirmed = true, EUR 1396.90 fully paid, amount open = 0\n• Accommodation 11358: bed 180, 12 July to 2 August 2026, active = true — student is in host family\n• All UNCHANGED from previous check",
+        "Assign student 14443 to class for booking course 24609 via SIS Admin → Classes → To Be Assigned. See recipe: issue-39-xuezhen-host-class.md",
+        "11th check Wed 15 Jul UTC (2nd today). BC24609 Morning General Jul13-Jul31 STILL 0 SCAs. Days 1+2+3 missed (Mon 13, Tue 14, Wed 15 Jul). BK17831 CONF EUR1396.90 fully paid. BA11358 bed180 Jul12-Aug02 active=true. Fix NOT RUN.",
+        "Day3; 0 SCAs URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• August Bank Holiday 2026 (Monday 3 August) still missing from school closures — 19 days away (15th check, Wednesday 15 July UTC)\n• October Bank Holiday 2026 (Monday 27 October) still missing from school closures — 104 days away\n• Only closure in school_closures for July to December 2026 is Christmas (id 7, 21 December 2026 to 3 January 2027)\n• Any active booking course shunted through August will calculate incorrect end dates if bank holiday is absent\n• All UNCHANGED from prior check",
+        "Add August Bank Holiday (Mon 3 Aug 2026) and October Bank Holiday (Mon 27 Oct 2026) to school_closures table. See recipe: issue-38-course-date-ux.md",
+        "15th check Wed 15 Jul UTC (2nd today). Aug BH Mon 3 Aug STILL missing from school_closures (19d away). Oct BH Mon 27 Oct also missing. Only closure Jul-Dec 2026: Christmas id7 (Dec21-Jan3). Fix NOT RUN.",
+        "Aug BH missing; 19d"
+      ]
+    ]
+  }
+]

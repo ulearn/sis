@@ -1,0 +1,51 @@
+[
+  {
+    "range": "J2",
+    "values": [
+      [
+        "9 Jul UTC 04:04 (31st check). CONFIRMED UNCHANGED (fresh DB). Payments 16988+16989 booking_id=STILL null, xero_payment_id=null, EUR 339.90 each (73 days since 28 Apr). Bookings 17856+17857 CONFIRMED, confirmed=false, amountPaid=339.9. Booking courses 24630+24631 General English AM Plus Jun29-Jul10 fee=STILL null, active=true. 4-STEP SQL NOT RUN. NEIL: FINAL DAY — courses end TOMORROW Fri 10 Jul. Run SQL before school opens today Thu 9 Jul."
+      ]
+    ]
+  },
+  {
+    "range": "J16",
+    "values": [
+      [
+        "9 Jul UTC 04:04 (hourly check). Day 4 of 5 confirmed (Thu 9 Jul). SCA 255 week_end=2026-07-03 STILL not extended — 4 school days missed (Mon-Thu Jul 6-9). Booking course 24925 Academic Year Afternoon Mar9-Oct2 still active. NEIL: run before school opens today: UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255. Tomorrow Fri Jul10 is Day 5 — last chance this school week."
+      ]
+    ]
+  },
+  {
+    "range": "J23",
+    "values": [
+      [
+        "36th check 9 Jul UTC 04:04. CONFIRMED UNCHANGED (fresh DB). Booking 18158 CONFIRMED EUR 740/740 confirmed=true. Booking course 24933 General English AM Jun15-Jul10 fee=380 active=true. Booking course 24934 duplicate General English AM Jun15-Jul10 fee=360 active=true. Payment 17895 EUR 740 xero_payment_id=null type=null. Zero class assignments for student 1015 on either course (25 days). BOTH courses END TOMORROW Fri Jul10. NEIL: assign student 1015 to class TODAY and deactivate booking course 24934. Absolute last chance."
+      ]
+    ]
+  },
+  {
+    "range": "J38",
+    "values": [
+      [
+        "5th check 9 Jul UTC 04:04. Hash changed again (B/F/G staff edit in sheet). Database CONFIRMED UNCHANGED (fresh query). Accommodation 11311 bed 84 Jun28-Sep13 active=true (Pietro valid stay). Stale bed 84 records STILL active: allocation 9917 (booking 1274 May10-16 54d stale), allocation 11157 (booking 100 May2-10 60d stale), allocation 11159 (booking 100 May17-30 40d stale), allocation 11180 (booking 81 Jun6-20 19d stale). Low-priority cleanup not run."
+      ]
+    ]
+  },
+  {
+    "range": "J39:K39",
+    "values": [
+      [
+        "RESOLVED 9 Jul UTC 04:04. Accommodation 11352 bed 83 Jul4-11 active=true. Student Veronica Martin (student 278) mid-stay, checkout Sat 11 Jul. Original allocation complaint resolved — accommodation in SIS with bed 83 assigned, student arrived 4 Jul. See issue-37-veronica-capel-accomm-allocation.md.",
+        "resolved"
+      ]
+    ]
+  },
+  {
+    "range": "J47",
+    "values": [
+      [
+        "33rd check 9 Jul UTC 04:04. CONFIRMED UNCHANGED (fresh DB). Student 278 Veronica Martin (booking course 24931 General English AM Jul6-Jul10): ZERO class assignments ever — course ENDS TOMORROW Fri Jul10 — MOST URGENT. Student 14564 Ettore Iovinella (booking course 24968 General English AM Plus Jul6-Jul13): last assignment SCA 281 for expired course bc24941 ended Jul3 — no assignment for current course (4 days missed). Student 72 Pietro Colombo (booking course 81 Morning General Plus Jul6-Jul24): ZERO class assignments ever (4 days missed). Student 858 Tuguldurtugs (last SCA 55 for course bc1521 ended May1, 69 days stale). NEIL: assign student 278 Veronica BEFORE SCHOOL OPENS TODAY — course ends tomorrow. Then assign students 14564, 72, 858."
+      ]
+    ]
+  }
+]

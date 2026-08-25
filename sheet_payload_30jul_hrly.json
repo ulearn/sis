@@ -1,0 +1,46 @@
+[
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• 113th check Thu 30 Jul 2026 UTC — hash change: column B updated with student IDs\n• Booking accommodation 11162 (Massimiliano Cameran, student 91, booking 97, bed 179, Host Family): ended 23 May 2026 — 68 days stale, active = true, fee = EUR 1,140\n• Booking accommodation 11314 (Massimiliano Cameran, student 91, booking 18002, bed 179, Host Family): ended 6 Jun 2026 — 54 days stale, active = true, fee = EUR 480\n• Booking accommodation 11319 (Ernesto Pesoa Gil, student 14532, booking 18034, bed = null): ended 31 May 2026 — 60 days stale, active = true, fee = EUR 400\n• Rakan Alghamdi (student 14444): no stale booking accommodations — confirmed clean this check\n• Bernardo Hughes Pimentel (student 14524): no stale booking accommodations — confirmed clean this check",
+        "Set active = false on booking accommodations 11162, 11314, 11319. See recipe: issue-12-addendum-30jul.md",
+        "113th hrly Thu 30 Jul UTC. Hash changed (B field IDs added). 3 BAs stale (68d/54d/60d). Rakan 14444 + Bernardo 14524: no stale BAs. Fix NOT RUN.",
+        "3 stale BAs; 68d max"
+      ]
+    ]
+  },
+  {
+    "range": "H24:K24",
+    "values": [
+      [
+        "• Thu 30 Jul 2026 UTC — hash change: column B updated with deal/student IDs\n• Booking course 828 (Academic Year Morning, booking 787, Enshi Lu student 397): start 2 Mar 2026, end 27 Feb 2026 — backwards dates (end is 3 days before start; DST migration bug)\n• Booking course 826 (Academic Year Morning, ended 28 Nov 2025): 244 days stale, active = true, fee = null\n• Booking course 827 (Academic Year Morning, ended 30 Jan 2026): 181 days stale, active = true, fee = null\n• Booking course 829 (Academic Year Morning, ended 5 Jun 2026): 55 days stale, active = true, fee = null\n• Booking 787: Confirmed, confirmed = true, fully paid EUR 2,147.50 — no financial issues\n• All fees = null — low-priority data hygiene; student has left",
+        "Fix booking course 828 end date; deactivate booking courses 826, 827, 828, 829. See recipe: issue-23-addendum-30jul.md",
+        "Thu 30 Jul UTC. Hash changed. BC 828 backwards (start=Mar02, end=Feb27). BCs 826(244d)/827(181d)/829(55d) stale. Low-priority. Fix NOT RUN.",
+        "backwards dates; low-pri"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• August Bank Holiday 2026-08-03: still absent from school_closures — confirmed Thu 30 Jul 2026 UTC\n• 20 active booking courses start on 2026-08-03 (unchanged from prior checks)\n• 19 to shunt to Aug 4: IDs 88, 97, 1755, 1766, 24627, 24908, 24956, 24958, 24959, 24964, 24970, 24984, 24999, 25002, 25010, 25016, 25028, 25029, 25030\n• Booking course 25003 (booking 18225, General English AM): duplicate of booking course 25002 — deactivate, do not shunt\n• Booking course 25006 (booking 18228, General English AM Plus, Jul 27–Aug 3): end date falls on Bank Holiday — extend end date to 2026-08-04, fee = EUR 235\n• DEADLINE TODAY Thu 30 Jul — August Bank Holiday Monday 3 Aug is 4 days away",
+        "Insert Aug 3 closure; shunt 19 BC start dates to Aug 4; deactivate BC 25003; extend BC 25006 end to Aug 4. See recipe: issue-38-addendum-30jul-c.md",
+        "Thu 30 Jul UTC. STILL UNSHUNTED. 20 BCs on Aug 3 confirmed. BC 25006 ends Aug 3. URGENT — BH Mon 3 Aug = 4 days. EOD deadline today. Fix NOT RUN.",
+        "URGENT; BH unshunted"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 164th check Thu 30 Jul 2026 UTC — host family check-in Sunday 2 Aug (3 days)\n• Booking 18180 (Giampaolo Russo, student 14571): Confirmed, confirmed = true, fully paid EUR 2,584.96\n• Booking accommodation 11357: bed 178, 2 Aug to 6 Sep 2026, host family, active = true, fee = EUR 1,250 (correct)\n• Capel Street accommodation (6 Sep to 14 Sep 2026): still absent — only 1 accommodation record on booking 18180\n• Booking course 24956 (General English AM, 3 Aug to 11 Sep 2026): in Issue 38 shunt list — start will move to 4 Aug once Bank Holiday fix runs",
+        "Add Capel Street accommodation Sep 6 to Sep 14 (run Issue 38 first). See recipe: issue-41-addendum-30jul-a.md",
+        "164th hrly Thu 30 Jul UTC. Capel still missing. Check-in Sun Aug 2 (3 days). BC 24956 needs Issue 38 shunt first. Fix NOT RUN.",
+        "Capel missing; check-in Sun Aug 2"
+      ]
+    ]
+  }
+]

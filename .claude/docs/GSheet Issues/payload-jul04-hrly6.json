@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• Booking 1605 is Pending, confirmed = false — amount paid = EUR 0 of EUR 1509 total\n• Booking course 1791 (Academic Year Renewal Morning) started 13 Apr 2026 — student unassigned for 82 days (course ends 23 Oct 2026)\n• Student 1047 has zero class assignments ever\n• HubSpot deal 502951083215 in Business to Business pipeline — needs to advance to Won stage (stage ID 104175589)\n• Booking last updated 23 Jun 2026 — 11 days stale, no action taken (15th check, 4 Jul 2026 UTC)",
+        "(NOT RUN) Advance HubSpot deal 502951083215 to Won in B2B pipeline (stage 104175589) — SIS webhook will then set booking 1605 to Confirmed and allow class assignment. See recipe: issue-20-ariunsarnai-payment-due.md",
+        "4 Jul UTC (15th check, fresh DB): bk1605 STILL PENDING conf=false EUR0/1509 (updAt=Jun23=11d stale). bc1791 AY-Morn-Renewal Apr13-Oct23 active=true fee=2150. s1047 zero SCAs ever. D82 since bc1791 start (Apr13). No payments on booking. Neil: advance HS deal 502951083215 to WON (B2B pipeline stage 104175589).",
+        "D82; PENDING; 0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Kayque Lopes Coelho (student 852) and Sophia Gallo Borim (student 853): Academic Year Renewal Afternoon started 29 Jun — 5 days in, zero class assignments (class assignments 26 and 23 expired 24 Apr, 70 days ago)\n• Tuguldurtugs Enkhtugs (student 858): Academic Year Renewal Morning starts Monday 6 Jul — class assignment 55 expired 1 May (63 days ago); booking 1601 EUR 1356.50 paid of EUR 1606.50 (EUR 250 outstanding)\n• Migration students starting 6 Jul with zero SIS class assignment history: Aitana Lopez (student 7), Pietro Colombo (student 72), Veronica Martin (student 278), Sarah Venturini Talizin (student 1055), Zeyad Alharbi (student 32)\n• New students starting 6 Jul with zero class assignments: Mario Roggi (student 14528), Sulaiman Alkulaib (student 7309), Hugo Lopez Tamayo (student 14572), Kiyoshi Fujino (student 14445), Yuxi Ke (student 14577)\n• Ettore Iovinella (student 14564): class assignment 281 expired 3 Jul — booking course 24968 starts 6 Jul (no new assignment yet)\n• Gustavo Da Silva (student 14570): 2 active booking courses both starting 6 Jul (booking course 24955 AM Plus EUR 996.84 + booking course 24967 AM EUR 137.60, both on booking 18179) — deactivate 24967 then assign to AM Plus\n• Root cause: renewals excluded from arrivals list — is_renewal flag not set by webhook for RNW-* booking courses",
+        "(1) Assign Kayque (852) and Sophia (853) to AY Afternoon class TODAY — 5 days overdue. (2) Assign Tuguldurtugs (858) to AY Morning before Monday. (3) Assign all other Jul 6 starters via SIS Classes > To Be Assigned. (4) Deactivate duplicate booking course 24967 for Gustavo (14570). (5) Chase EUR 250 on booking 1601. See recipe: issue-45-renewal-arrivals.md",
+        "4 Jul SAT UTC (18th check, fresh DB): UNCHANGED. SCA: Kayque s852 SCA26 Apr24=70d; Sophia s853 SCA23 Apr24=70d; Tuguldurtugs s858 SCA55 May1=63d; Ettore s14564 SCA281 Jul3=1d expired. Gustavo s14570 0 SCAs; 2 active BCs (24955 AM-Plus EUR996.84 + 24967 AM EUR137.60, both bk18179 Jul6-Aug7). bk1601 EUR1356.5/1606.5 (EUR250 outstanding). NEIL: ASSIGN ALL 14 STUDENTS — JUL6=MON=2 DAYS. LAST SATURDAY BEFORE MONDAY CLASSES. 18 checks with no action.",
+        "0SCA; 14 students; Jul6=Mon"
+      ]
+    ]
+  }
+]

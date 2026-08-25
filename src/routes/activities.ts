@@ -70,6 +70,28 @@ export function activitiesRoutes(prisma: PrismaClient) {
     } catch (e: any) { res.status(500).json({ error: String(e?.message || e) }); }
   });
 
+  // Star ratings + comments students have given for this activity. avg/count
+  // alongside the rows so the modal can show a header summary.
+  router.get('/:id/feedback', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id, 10);
+      const items = await prisma.socialActivityFeedback.findMany({
+        where: { activityId: id, status: 'active', stars: { not: null } },
+        orderBy: { createdAt: 'desc' },
+        include: { student: { select: { id: true, firstName: true, lastName: true } } },
+      });
+      const avg = items.length ? items.reduce((a, f) => a + (f.stars || 0), 0) / items.length : null;
+      res.json({
+        count: items.length,
+        avg: avg != null ? Math.round(avg * 10) / 10 : null,
+        items: items.map(f => ({
+          id: f.id, stars: f.stars, comment: f.comment, status: f.status, created_at: f.createdAt,
+          student_id: f.student.id, first_name: f.student.firstName, last_name: f.student.lastName,
+        })),
+      });
+    } catch (e: any) { res.status(500).json({ error: String(e?.message || e) }); }
+  });
+
   router.post('/', async (req, res) => {
     try {
       const by = (req as any).session?.user || null;
@@ -198,6 +220,16 @@ export function activitiesRoutes(prisma: PrismaClient) {
     try {
       const attended = !!(req.body && req.body.attended);
       res.json(await scripts.markAttended(parseInt(req.params.id, 10), attended));
+    } catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }
+  });
+
+  // Admin: mark a walk-in present who never RSVPed in the app. Creates (or
+  // flips) the attendee row straight to attended=true. Body: { studentId }.
+  router.post('/:id/attendees', async (req, res) => {
+    try {
+      const studentId = parseInt(String(req.body?.studentId), 10);
+      if (!studentId) return res.status(400).json({ error: 'studentId required' });
+      res.json(await scripts.markPresent(parseInt(req.params.id, 10), studentId));
     } catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }
   });
 

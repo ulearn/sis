@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H44:K44",
+    "values": [
+      [
+        "• Four stale bed 84 records still active = true — blocking Pietro check-in (45th check, fresh DB Jun 26 UTC)\n  — Accommodation 9917 (booking 1274): ended May 16 — 41 days stale\n  — Accommodation 11157 (booking 100): ended May 10 — 47 days stale\n  — Accommodation 11159 (booking 100): ended May 30 — 27 days stale\n  — Accommodation 11180 (booking 81): ended Jun 20 — 6 days stale (last modified Jun 22)\n• Accommodation 11311 (Pietro Caccianiga, booking 17980): start Jun 28, active = true, bed 84 — correct record exists\n• Booking 17980 fully paid EUR 5,331 / 5,331",
+        "(NOT RUN) UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180). See recipe: issue-36b-pietro-accomm-dates.md",
+        "hrly Jun26 FRI UTC (45th check, fresh DB): ba9917+11157+11159+11180 ALL STILL active=true — UNCHANGED. ba11311 Pietro Jun28-Sep13 bedId=84 CORRECT. bk17980 CONF 5331/5331. NEIL: Pietro ARRIVES SUN JUN28=2 DAYS. TODAY FRI JUN26=LAST WORKING DAY. One SQL line unblocks his room.",
+        "Jun28=Sun; EMERGENCY"
+      ]
+    ]
+  },
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Two payments are unlinked — booking ID = null and Xero payment ID = null\n• Payment 16988 (HubSpot payment 1204827374829) maps to Booking 17856 (Margherita Galbusera) — EUR 339.90, created 28 Apr\n• Payment 16989 (HubSpot payment 1204846469317) maps to Booking 17857 (Francesca Fassina) — EUR 339.90, created 28 Apr\n• Both bookings are Confirmed (status), confirmed = false, amount paid = 339.90 — payment audit trail broken\n• Booking courses 24631 (bk17856) + 24630 (bk17857) (General English AM Plus, start Mon 29 Jun, end 10 Jul) — fee = null (still not set)",
+        "(1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; then set bc fees. See recipe: issue-1-orphan-payments.md",
+        "hrly Jun26 FRI UTC (60th check, fresh DB): pmt16988+16989 STILL bookingId=null xeroId=null — 59d since Apr28. bc24631(bk17856)+bc24630(bk17857) start=Mon Jun29=3 DAYS fee=STILL NULL. NEIL: TODAY=LAST WORKING DAY BEFORE CLASS STARTS MON JUN29. SQL: (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) set bc24631+bc24630 fees.",
+        "Jun29=Mon; EMERGENCY"
+      ]
+    ]
+  },
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "• Extra 96 (INSURANCE) has fee = null — type = INSURANCE, details = PEL and Health; active = true\n• Created May 25 — 32 days stale, no fee set (8th check, fresh DB Jun 26 UTC)\n• Booking 17981 confirmed = false (minor anomaly) — paid EUR 1407.50 / 1407.50 (last updated Jun 23)\n• Student 14522 (Lizbeth) insurance_from = null, insurance_until = null on student record (confirmed Jun 26)\n• Student in class since Jun 01 — Day 25 uninsured; no health insurance arranged",
+        "Set fee for extra 96 via SIS bk17981 Extras INSURANCE; or UPDATE booking_extras SET fee=<amount> WHERE id=96 (NOT RUN). See recipe: issue-13-lizbeth-health-insurance.md",
+        "hrly Jun26 UTC (8th check, fresh DB): extra96 INSURANCE extraType=INSURANCE fee=null active=true UNCHANGED. s14522 (Lizbeth) insuranceFrom=null insuranceUntil=null updAt=Jun09=17d — NOT insured. bk17981 CONF conf=false 1407.5/1407.5 updAt=Jun23. Day 25 uninsured. Neil: (1) arrange PEL+Health via WORLD2GO; (2) set extra96 fee in SIS bk17981 Extras; (3) set s14522 insurance_from/insurance_until.",
+        "ins; D25 uninsured"
+      ]
+    ]
+  },
+  {
+    "range": "H6:K6",
+    "values": [
+      [
+        "• Rakan Alghamdi LOA resolved — doc 204 issued Jun 08 via booking 17915 (see Issue 14)\n• Khongorzul Uranaa booking 17871 remains in ESCROW — confirmed = true (database anomaly)\n• Amount paid EUR 300 of EUR 2313.62 total — EUR 2013.62 outstanding, 49 days with no change (9th check, fresh DB Jun 26 UTC)\n• Booking course 24644 (Academic Year Morning Aug 04 2025 – Jan 23 2026) ended 5 months ago\n• Payment 17375 (EUR 300) has no Xero payment ID and no HubSpot payment ID\n• Last booking update: 08 May 2026 (49 days stale) — no action taken",
+        "Rakan LOA done (Issue 14). Decide fate of bk17871 Khongorzul: write off, pursue, or reclassify EUR 2013.62 stale ESCROW. See recipe: issue-4-rakan-loa-barcode.md",
+        "hrly Jun26 UTC (9th check, fresh DB): bk17871 ESCROW conf=true amtPaid=300/2313.62 (EUR2013.62 outstanding) updAt=May08=49d stale UNCHANGED. pmt17375 EUR300 xeroId=null hsId=null. Neil: write off / pursue / reclassify EUR2013.62.",
+        "Khongorzul EUR2013; 49d"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Booking 18044 (duplicate Milena Vinci entry) no longer exists in the database — deleted (confirmed Jun 26)\n• Giulia Avallone (student 88) retains only booking 94 — Confirmed, EUR 1151.50 fully paid\n• Class assignment 270 (class 12, Jun 15 – Jun 26) ended today — Giulia Morning General Plus course completed naturally\n• Milena Vinci no longer appears as a student in the database (confirmed Jun 26)\n• Outstanding: confirm HubSpot payment 1239529228498 was voided in HubSpot UI",
+        "Database part fixed (booking 18044 deleted). Confirm HubSpot payment 1239529228498 was voided in HubSpot UI. See recipe: issue-30-giulia-milena-parent-student.md",
+        "hrly Jun26 UTC (8th check, fresh DB): bk18044 NOT FOUND (deleted confirmed). s88 Giulia bk94 CONF 1151.5/1151.5. sca270 cls12 weekEnd=Jun26=TODAY — COURSE ENDED. bc104 Morning General Plus ended Jun26 = natural end. Milena NOT in DB. Neil: confirm HS pmt 1239529228498 voided in HubSpot UI — outstanding since Jun22.",
+        "course ended; HS void?"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Bug in public/admin.html sendBulkEmail() at line 1494 — reads the live bulkSelectedStudents set, not the frozen snapshot\n• Variable _bulkEmailRecipientIds declared at line 1349 but never assigned in openBulkEmailModal() and never read in sendBulkEmail()\n• showStudentsInSchoolReport() clears bulkSelectedStudents on every render (line 2219) — applying any filter after selecting wipes all selections\n• Modal header shows correct count at open time (local ids var, line 1367) but sendBulkEmail re-reads the now-empty live set\n• Fix: two lines in public/admin.html — no server restart or build needed (3rd code check, confirmed Jun 26 UTC)",
+        "Add _bulkEmailRecipientIds=ids after line 1367 in openBulkEmailModal; change line 1494 to: const ids=_bulkEmailRecipientIds.length?[..._bulkEmailRecipientIds]:[...bulkSelectedStudents]. No build. See recipe: issue-33-khulan-reports-email-send.md",
+        "hrly Jun26 UTC (3rd code check): BUG CONFIRMED STILL PRESENT. L1349 _bulkEmailRecipientIds=[] declared but NEVER assigned in openBulkEmailModal() (L1367 captures to local ids only). L1494 sendBulkEmail() reads live bulkSelectedStudents. L2219 clears on re-render. Fix: (1) after L1367 add _bulkEmailRecipientIds=ids; (2) L1494: const ids=_bulkEmailRecipientIds.length?[..._bulkEmailRecipientIds]:[...bulkSelectedStudents].",
+        "code fix pending"
+      ]
+    ]
+  }
+]

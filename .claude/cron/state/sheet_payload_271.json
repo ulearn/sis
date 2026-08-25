@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H4:K4",
+    "values": [
+      [
+        "• 230th check Fri 14 Aug 2026 UTC — no change since 229th check (Thu 13 Aug)\n• 9 closures in DB: Good Fridays 2026-2030, Christmas 2026-2029\n• August Bank Holiday 2026-08-03 passed without DB entry — no impact\n• August Bank Holidays 2027, 2028, 2029, 2030 absent from school_closures",
+        "Add Aug BH 2027-2030 to school_closures (low priority). See recipe: issue-3-addendum-14aug.md",
+        "230th Fri 14 Aug UTC. 9 closures unchanged. Aug BH 2027+ still absent.",
+        "fixed"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 165th check Fri 14 Aug 2026 UTC — BC 25043 ended TODAY, still active\n• Booking Course 25043 (General English PM): ended 2026-08-14, active = true, 0 class assignments — deactivate today\n• Certificate 566: ISSUED (version 1, 08:41 UTC 14 Aug) — cert concern resolved\n• BC 25043 is safe to deactivate: 0 student class assignments",
+        "Deactivate BC 25043 NOW (0 class assignments, ended today). See recipe: issue-38-addendum-14aug-d.md",
+        "165th Fri 14 Aug UTC. BC 25043 ended today, still active=true. 0 class assignments — safe. Cert 566 ISSUED confirmed.",
+        "BC25043: ends today"
+      ]
+    ]
+  }
+]

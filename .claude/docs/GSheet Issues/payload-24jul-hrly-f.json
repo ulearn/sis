@@ -1,0 +1,79 @@
+[
+  {
+    "range": "H9:K9",
+    "values": [
+      [
+        "• 8th check Fri 24 Jul 2026 UTC — unchanged\n• Certificate issue (Diego, Aurora, Pedro): RESOLVED Jun 2026\n• 8 booking courses still active = true past end date:\n  BC 1482, 1485 (bks 1386, 1387), BC 1602 (bk 1460) — ended 19 Dec 2025 — 217 days stale\n  BC 1483, 1486 (bks 1386, 1387) — ended 13 Feb 2026 — 161 days stale\n  BC 1484, 1487 (bks 1386, 1387), BC 1603 (bk 1460) — ended 5 Jun 2026 — 49 days stale\n• Fix NOT RUN",
+        "Set active = false on booking courses 1482–1487, 1602, 1603. See recipe: issue-8-addendum-24jul.md",
+        "8th check Fri 24 Jul UTC. UNCHANGED. 8 BCs still stale (217d/161d/49d). Cert issue resolved. Fix NOT RUN.",
+        "8 stale BCs; 217d max"
+      ]
+    ]
+  },
+  {
+    "range": "H11:K11",
+    "values": [
+      [
+        "• 34th check Fri 24 Jul 2026 UTC — unchanged\n• Massimiliano Cameran (student 91, booking 97): EUR 1741/1741 fully paid\n• Booking course 107 (Morning General, 27 Apr–22 May 2026): active = true — 63 days stale\n• Documents on booking 97: doc63 accounts REVOKED, doc64 accounts ISSUED — no completion certificate\n• Document 179 (certificate, booking 18002 renewal): ISSUED — not for original booking 97\n• No completion certificate exists for original booking 97 — 49 days since flagged (5 Jun 2026)\n• Fix NOT RUN",
+        "Generate completion certificate for booking 97; set BC 107 active = false. See recipe: issue-10-addendum-24jul.md",
+        "34th check Fri 24 Jul UTC. UNCHANGED. BC107 63d stale. No cert on bk97; renewal bk18002 has doc179 (OK). Fix NOT RUN.",
+        "no cert bk97; BC107 63d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• 12th check Fri 24 Jul 2026 UTC (27th hourly) — unchanged\n• Booking accommodation 11162 (Massimiliano Cameran, booking 97, bed 179): end date 23 May 2026 — 62 days stale, active = true\n• Booking accommodation 11314 (Massimiliano Cameran, booking 18002, bed 179): end date 6 Jun 2026 — 48 days stale, active = true\n• Booking accommodation 11319 (Ernesto Pesoa Gil, booking 18034, bedId null, EUR 400): end date 31 May 2026 — 54 days stale, active = true; zero-day stay\n• Fix NOT RUN",
+        "Set active = false on BAs 11162, 11314, 11319. See recipe: issue-12-addendum-24jul.md",
+        "12th check Fri 24 Jul UTC. UNCHANGED. All 3 BAs still stale (62d/48d/54d). BA 11319 is a zero-day BA (bedId null, EUR400). Fix NOT RUN.",
+        "3 stale BAs; 62d max"
+      ]
+    ]
+  },
+  {
+    "range": "H28:K28",
+    "values": [
+      [
+        "• 31st check Fri 24 Jul 2026 UTC — unchanged\n• Booking 17909 (Sofiia Korkishchenko, student 768): CANCELLED but confirmed = true (anomaly, last updated 17 Jun 2026)\n• Zero payments on booking 17909 (payments 17477 + 17478 deleted 17 Jun 2026)\n• Amount paid = EUR 0, amount total = EUR 727.50\n• HubSpot Commerce payment 1230788330738 (EUR 727.50): not voided — void deadline 25 Oct 2026 (93 days away)\n• Booking course 24693 (Renewal Academic Year PM, 25 May–13 Nov 2026): active = true on cancelled booking\n• Document 94 (Letter of Acceptance, v2): ISSUED — should be revoked on cancelled booking\n• Fix NOT RUN",
+        "Revoke doc 94; set BC 24693 active = false; void HubSpot Commerce payment 1230788330738 before 25 Oct 2026. See recipe: issue-27-addendum-24jul.md",
+        "31st check Fri 24 Jul UTC. UNCHANGED. Void deadline 93d (25 Oct 2026). Fix NOT RUN.",
+        "void by Oct25; 93d"
+      ]
+    ]
+  },
+  {
+    "range": "H34:K34",
+    "values": [
+      [
+        "• 9th check Fri 24 Jul 2026 UTC — unchanged\n• Student 356 (Shih-Wei Huang): gender = null — 51 days since last update (3 Jun 2026)\n• Document 238 (exit letter, booking 560): ISSUED since 18 Jun 2026 — 36 days with wrong Ms. / she / her pronouns\n• Code defect in src/scripts/documents.ts ~line 338: null gender defaults to female salutation and pronouns\n• 14,000+ other null-gender students affected by same code defect\n• Fix NOT RUN",
+        "Set student 356 gender = male; revoke and regenerate doc 238; fix null-gender default in documents.ts ~L338. See recipe: issue-33-addendum-24jul.md",
+        "9th check Fri 24 Jul UTC. UNCHANGED. Doc238 ISSUED 36d with wrong pronouns. Student gender null 51d. Fix NOT RUN.",
+        "51d; doc238 wrong pronouns"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• 6th check Fri 24 Jul 2026 UTC — unchanged\n• Booking accommodation 11352 (Verónica Martín, bed 83, booking 18156, 4 Jul–11 Jul 2026): active = true — 13 days post-checkout\n• Booking accommodation 11285 (Jesús Manuel Ramírez Díaz, bed 83, booking 17825, 21 Jun–5 Jul 2026): active = true — 19 days post-checkout; fee = null\n• Root cause: active flag not auto-cleared on checkout — cosmetic data hygiene\n• Fix NOT RUN",
+        "Set active = false on BAs 11352 and 11285. See recipe: issue-37-addendum-24jul.md",
+        "6th check Fri 24 Jul UTC. UNCHANGED. BA 11352: 13d stale. BA 11285: 19d stale (fee=null). Fix NOT RUN.",
+        "BA stale 13d+19d; cosmetic"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• 8th check Fri 24 Jul 2026 UTC (30th hourly) — unchanged\n• Booking accommodation 11285 (Jesús Manuel Ramírez Díaz, bed 83, booking 17825): dates 21 Jun–5 Jul — 19 days post-checkout — active = true; fee = null\n• Booking accommodation 11352 (Verónica Martín, bed 83, booking 18156): dates 4 Jul–11 Jul — 13 days post-checkout — active = true\n• Same BAs tracked under Issue 37 (row 39)\n• Root cause: active flag not auto-cleared on checkout\n• Fix NOT RUN",
+        "Set active = false on BAs 11285 and 11352. Same fix as Issue 37. See recipe: issue-37-addendum-24jul.md",
+        "8th check Fri 24 Jul UTC. UNCHANGED. Same 2 BAs as Issue 37. 19d+13d stale. Fix NOT RUN.",
+        "cosmetic; 19d+13d stale"
+      ]
+    ]
+  }
+]

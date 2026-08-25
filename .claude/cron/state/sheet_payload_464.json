@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "464th run Sat 22 Aug 2026 UTC\n• Holiday 2500 ended 21 Aug — back since 21 Aug 2026\n• Last SCA: SCA 255, class 11, weekEnd 3 Jul 2026 — gap 50 days, no new assignment\n• Booking Course 24925 (Academic Year Afternoon): active, ends 2 Oct 2026\n• Booking Course 1982 (Academic Year Morning): ended 19 Dec 2025 — stale 246 days, still active (newly noted)\n• Mon 24 Aug = 2 days — assign to Afternoon class urgently\n• Fix NOT RUN",
+        "Assign student 1001 to Afternoon class from 25 Aug; deactivate stale BC 1982. Recipe: issue-15-addendum-22aug-e.md",
+        "464th Sat 22 Aug UTC. Gap 50 days. Mon 24 = 2 days. BC 1982 246d stale (new). Fix NOT RUN.",
+        "URGENT: Mon24 2days"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "464th run Sat 22 Aug 2026 UTC — no change since 463rd\n• Booking Accommodation 11311 (bed 84): ended 22 Aug, fee EUR 3,850, active = true — stale as of today\n• Booking Accommodation 11393 (bed 88): started 22 Aug to 13 Sep 2026, fee = null, active = true — fee unset\n• Fix NOT RUN",
+        "Deactivate Booking Accommodation 11311; set fee on Booking Accommodation 11393. Recipe: issue-36b-addendum-22aug-e.md",
+        "464th Sat 22 Aug. BA 11311 stale (ended today). BA 11393 fee null (started today). Fix NOT RUN.",
+        "URGENT: today"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "464th run Sat 22 Aug 2026 UTC — no change since 463rd\n• Booking Accommodation 11357 (bed 178): ended 15 Aug, fee EUR 1,250, active = true — 7 days stale\n• Booking Accommodation 11396 (bed 44): ended 22 Aug, fee = null, active = true — stale as of today\n• Booking Accommodation 11397 (bed 89): started 22 Aug to 6 Sep 2026, fee = null, active = true — fee unset\n• Fix NOT RUN",
+        "Deactivate Booking Accommodations 11357 + 11396; set fee on Booking Accommodation 11397. Recipe: issue-41-addendum-22aug-g.md",
+        "464th Sat 22 Aug. BA 11357 7d stale. BA 11396 stale (ended today). BA 11397 fee null. Fix NOT RUN.",
+        "URGENT: today"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "464th run Sat 22 Aug 2026 UTC — no change since 463rd\n• Stale active Booking Courses (end before 22 Aug 2026): 24,515 — unchanged\n• Oldest stale entries: Booking Courses 24047, 24090, 24131 with end date 1899-12-31 (migration artefacts)\n• Fix NOT RUN",
+        "Run bulk deactivation of 24,515 stale Booking Courses. Recipe: issue-45-addendum-21aug-c.md",
+        "464th Sat 22 Aug UTC. 24,515 stale BCs confirmed unchanged. Migration epoch artefacts in oldest IDs. Fix NOT RUN.",
+        "24,515 stale; fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H52:K52",
+    "values": [
+      [
+        "464th run Sat 22 Aug 2026 UTC — count unchanged at 151\n• Stale active Booking Accommodations (2026 start, endDate on or before 22 Aug): 151\n• 8 Booking Accommodations ended today (22 Aug) and are now stale: IDs 11160, 11161, 11177, 11311, 11340, 11387, 11395, 11396\n• Booking Accommodation 11340 (bed 88): fee = 1 (suspicious; likely data error)\n• Booking Accommodation 11387 (bed 89): fee = null\n• Fix NOT RUN",
+        "Deactivate all 151 stale 2026 Booking Accommodations. Recipe: issue-50-addendum-22aug-c.md",
+        "464th Sat 22 Aug UTC. 151 stale (unchanged). 8 ended today (IDs 11160/11161/11177/11311/11340/11387/11395/11396). Fix NOT RUN.",
+        "151 stale BAs"
+      ]
+    ]
+  },
+  {
+    "range": "H54:K54",
+    "values": [
+      [
+        "464th run Sat 22 Aug 2026 UTC — no change\n• Booking Accommodation 11267 (bed 23): 29 Aug to 4 Oct 2026, fee EUR 3,840, active = true — OK\n• Booking Accommodation 11399 (bed 54): 4 Oct to 19 Dec 2026, fee = null, active = true — fee unset\n• Fanny Scelles (student 14451) arrives 29 Aug 2026 — 7 days\n• Fix NOT RUN",
+        "Set fee on Booking Accommodation 11399 (Oct 4 to Dec 19) before Oct 4. Recipe: issue-52-addendum-22aug-b.md",
+        "464th Sat 22 Aug. Fanny arrives Aug 29 (7d). BA 11399 fee null (starts Oct 4). Fix NOT RUN.",
+        "BA11399 fee null; 7d"
+      ]
+    ]
+  }
+]

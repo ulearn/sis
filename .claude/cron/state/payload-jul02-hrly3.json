@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 and 16989: booking ID = null, Xero payment ID = null — still unlinked (162nd check, 2 Jul UTC)\n• Payment 16988 (HubSpot 1204827374829): EUR 339.90, paid 28 Apr — should link to Booking 17856 (Margherita Galbusera)\n• Payment 16989 (HubSpot 1204846469317): EUR 339.90, paid 28 Apr — should link to Booking 17857 (Francesca Fassina)\n• Bookings 17856 and 17857: status = Confirmed, confirmed = false, amount paid = EUR 339.90 each — course started 29 Jun, ends 10 Jul (8 days remaining)\n• Booking courses 24631 (bk 17856) and 24630 (bk 17857): General English AM Plus, fee = null — still unset\n• 4-step SQL fix has NOT been run across 162 hourly checks",
+        "(NOT RUN) (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) UPDATE booking_courses SET fee=339.9 WHERE id IN (24630,24631); (4) UPDATE bookings SET confirmed=true WHERE id IN (17856,17857). See recipe: issue-1-orphan-payments.md",
+        "2 Jul UTC (162nd check, fresh DB): pmts 16988+16989 bookingId=STILL null xeroId=null EUR339.9 each. bk17856+17857 CONF confirmed=false. bc24631+24630 GE-AM-Plus Jun29-Jul10 fee=null. Students in class Day 4/10 (ends Jul10=8d). 162 CHECKS SQL UNRUN. NEIL: RUN NOW.",
+        "8d to end; UNRUN"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Class assignment 255 (Saikhantes Shagdarsuren, class 11, B1 PM): week end = 3 Jul 2026 — EXPIRES TOMORROW FRIDAY (62nd check, 2 Jul UTC)\n• Booking course 24925 (Academic Year Afternoon, booking 18151): runs to 11 Sep 2026 — full term still active, confirmed = true\n• SQL fix (extend class assignment 255 week end to 2026-09-11) has NOT been run — student loses class from Monday 6 Jul if not fixed today\n• Old booking course 1982 (bk 1724, Academic Year Morning, ended Dec 2025): still active = true — cosmetic stale flag, low priority",
+        "(NOT RUN) UPDATE student_class_assignments SET week_end='2026-09-11' WHERE id=255; See recipe: issue-15-saikhantes-course-dates.md",
+        "2 Jul UTC (62nd check): sca255 cls11 B1-PM week_end=Jul03=EXPIRES TOMORROW. bc24925 AY-Aft Mar09-Sep11 active=true conf=true. SQL unrun. NEIL: run TODAY or she loses 10 weeks of class from Mon 6 Jul.",
+        "SCA expires Fri"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 (Edith Nunes, student 1015): Confirmed, confirmed = true, fully paid EUR 740\n• Booking courses 24933 (fee EUR 380) and 24934 (fee EUR 360): DUPLICATE — same name General English AM, same dates 15 Jun to 10 Jul, both active = true\n• Zero class assignments for booking 18158 — last class assignment was week end 15 May 2026 (booking course 24668, class 7) — 47 days without active class assignment\n• Student has been in class informally since 15 Jun (attendance records exist); course ends 10 Jul — 8 days remain (18th check, 2 Jul UTC)",
+        "Deactivate bc24934 (duplicate) via SIS; then assign Edith (student 1015) to class 7 A1 AM for bc24933 bk18158 before Jul 10. See recipe: issue-22-edith-nunes-payment-dups.md",
+        "2 Jul UTC (18th check, fresh DB): bk18158 CONF 740/740 conf=true. bc24933(fee=380)+bc24934(DUP fee=360) BOTH active Jun15-Jul10. sca48(cls7 exp Apr17)+sca146(cls7 exp May15) — 0 active SCAs. Day 18 in school. Course ends Jul10=8d. Neil: (1) deactivate bc24934 SIS; (2) assign s1015 cls7 A1-AM bc24933.",
+        "0SCA; Jul10=8d"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Duplicate entry for Issue 15 (row 16) — same student Saikhantes Shagdarsuren (student 1001)\n• Class assignment 255 (class 11, B1 PM): week end = 3 Jul 2026 — EXPIRES TOMORROW FRIDAY (2 Jul UTC)\n• See row 16 (Issue 15) for full diagnosis and SQL fix",
+        "Same as Issue 15 — run SQL on row 16. See recipe: issue-15-saikhantes-course-dates.md",
+        "Dup of row 16 (Issue 15). sca255 week_end=Jul03 expires tomorrow Fri. See row 16 for detail and SQL fix.",
+        "dup; see row 16"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• Accommodation 11352 (Verónica Martín, bed 83, booking 18156): 4 Jul to 11 Jul — starts TOMORROW SATURDAY (50th check, 2 Jul UTC)\n• Accommodation 11285 (Jesús Manuel Ramírez Díaz, bed 83, booking 17825): 21 Jun to 5 Jul — Jesús does not vacate until Sunday 5 Jul\n• OVERNIGHT CONFLICT: Verónica checks in bed 83 on Saturday 4 Jul; Jesús does not leave until Sunday 5 Jul — bed double-booked Saturday night\n• Free alternative beds 174, 175, 176 (Premium, City Centre Apartment): all confirmed free 4 Jul to 11 Jul (fresh DB, 2 Jul UTC)\n• Booking 18156 fully paid EUR 573.20 — accommodation correct except for the bed assignment conflict",
+        "(NOT RUN) Via SIS: Student 278 → Booking 18156 → Accommodation → edit ba11352 → change bed to 174 (or 175/176). See recipe: issue-37-veronica-capel-accomm-allocation.md",
+        "2 Jul UTC (50th check): ba11352 Veronica bed83 Jul04-Jul11 (updAt Jun29). ba11285 Jesus bed83 Jun21-Jul05 (updAt Jun16). OVERNIGHT CONFLICT Sat Jul4. Beds 174/175/176 free (confirmed). Veronica arrives TOMORROW. NEIL: move to bed 174/175/176 TODAY.",
+        "BED83; Sat Jul4; URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• Accommodation 11285 (Jesús Manuel Ramírez Díaz, bed 83, booking 17825): stored as 21 Jun to 5 Jul — original request was 20 Jun to 4 Jul (1 day off on both ends, updated 16 Jun)\n• Bed 83 double-booked with Verónica Martín (Issue 37, row 39): Verónica arrives Saturday 4 Jul while Jesús does not vacate until Sunday 5 Jul\n• Preferred fix: reassign Verónica accommodation 11352 to bed 174, 175, or 176 — see Issue 37 (row 39) for exact steps (27th check, 2 Jul UTC)\n• Booking 17825 fully paid EUR 2008",
+        "(NOT RUN) Preferred: move ba11352 (Verónica) to bed 174/175/176 per Issue 37. Optional date fix: UPDATE booking_accommodations SET start_date='2026-06-20', end_date='2026-07-04' WHERE id=11285; See recipe: issue-43-jesus-accomm-dates.md",
+        "2 Jul UTC (27th check): ba11285 Jesus bed83 Jun21-Jul05 (should be Jun20-Jul04). ba11352 Veronica bed83 Jul04-Jul11. Overlap Sat Jul4. Veronica arrives tomorrow. See row 39 (Issue 37) for primary fix.",
+        "URGENT; see row 39"
+      ]
+    ]
+  }
+]

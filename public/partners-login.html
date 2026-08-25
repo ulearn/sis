@@ -138,7 +138,13 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     });
     const data = await res.json();
     if (data.success) {
-      window.location.href = '/sis/partners';
+      // Honor a return deep-link (?next=…) — same-portal paths only (no open redirect).
+      let dest = '/sis/partners';
+      try {
+        const nxt = new URLSearchParams(location.search).get('next');
+        if (nxt && nxt.startsWith('/sis/partners')) dest = nxt;
+      } catch (e) {}
+      window.location.href = dest;
     } else {
       errEl.textContent = data.error || 'Invalid credentials';
       errEl.style.display = 'block';

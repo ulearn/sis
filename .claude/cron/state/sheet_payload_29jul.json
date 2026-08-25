@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• August Bank Holiday 2026-08-03: still absent from school_closures -- 162nd check Wed 29 Jul UTC\n• 20 active booking courses start on 2026-08-03 -- UNCHANGED\n• Booking course 25006 (Marina Larripa, booking 18228): ends 2026-08-03 -- needs end_date extended to 2026-08-04\n• Booking course 25003 (Aleix Cervera, booking 18225): duplicate of BC 25002 (same booking, same dates, fees differ 259.2 vs 688) -- deactivate, do not shunt\n• DEADLINE: Fri 31 Jul 2026 (2 days) -- act by Thu 30 Jul EOD (TOMORROW)",
+        "Insert Aug BH closure + shunt 19 booking courses to Aug 4 + extend BC 25006 end + deactivate BC 25003. See recipe: issue-38-addendum-29jul-h.md",
+        "162nd hrly Wed 29 Jul UTC. Still 20 BCs starting Aug 3. No closure. BC 25006 ends Aug 3 (Marina). BC 25003 dup still active. DEADLINE Fri 31. Fix NOT RUN.",
+        "Aug BH; DEADLINE Fri 31 Jul"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• Booking 18180 (Giampaolo Russo, student 14571): CONFIRMED, confirmed = true -- 158th check Wed 29 Jul UTC\n• Booking accommodation 11357: bed 178, Aug 2-Sep 6, host family, fee EUR 1250, active = true (correct)\n• Capel Street accommodation (Sep 6-Sep 14 2026): still absent -- only 1 accommodation record on booking 18180\n• Booking course 24956 (General English AM): starts 2026-08-03 -- also needs Aug BH shunt (see issue 38)\n• Host family check-in: Sun 2 Aug 2026 (4 days) -- not blocked by Capel absence",
+        "Add Capel Street BA via SIS admin (Sep 6-14) + run Issue 38 fix for BC 24956. See recipe: issue-41-addendum-29jul-g.md",
+        "158th hrly Wed 29 Jul UTC. Capel still absent. BA 11357 bed 178 Aug 2-Sep 6 OK. BC 24956 in issue 38 shunt list. Check-in Sun Aug 2. Fix NOT RUN.",
+        "Capel missing; check-in Sun Aug 2"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Student 1015 (Edith Nunes): visaStatus = null -- blocks class-to-be-assigned -- 151st check Wed 29 Jul UTC\n• Booking course 24991 (General English AM): Jul 13-Aug 7 2026, active = true, zero class assignments\n• Course ends 2026-08-07 -- Aug 3 is bank holiday -- approx 7 teaching days remain\n• HubSpot contact ID 790679262424 -- set visa status then assign to class immediately\n• Stale booking courses 24933 and 24934 still active (deactivate after fixing)",
+        "Set visa status on student 1015 (check HubSpot 790679262424); assign booking course 24991 to class. See recipe: issue-22-addendum-29jul-e.md",
+        "151st check Wed 29 Jul UTC. Root cause confirmed: visaStatus = null. BC 24991 zero assignments ends Aug 7. HubSpot 790679262424. Fix NOT RUN.",
+        "CRITICAL; 9d left; visa null"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Student 1052 (Alberto Squillace): visaStatus = null -- 148th check Wed 29 Jul UTC\n• Booking course 24686 (Morning General): Jul 20-Sep 18 2026, active = true, fee = null, zero class assignments\n• 9 teaching days lost since course started Jul 20; 51 days remaining\n• Payment 17124: EUR 1280.12, paid Mar 25 via Bank Transfer, xeroPaymentId = null\n• HubSpot contact ID 740892067018",
+        "Set visa status on student 1052 (check HubSpot 740892067018); set BC 24686 fee; assign to class. See recipe: issue-24-addendum-29jul-e.md",
+        "148th check Wed 29 Jul UTC. Root cause confirmed: visaStatus = null. BC 24686 fee null, zero assignments, 9d lost. HubSpot 740892067018. Fix NOT RUN.",
+        "URGENT; 8d lost; visa null; 51d remain"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• Booking 1605 (Ariunsarnai Batbayar, student 1047): status = PENDING, confirmed = false -- 64th check Wed 29 Jul UTC\n• Amount open = EUR 1509; zero payments in the payments table -- UNCHANGED\n• Booking last updated 2026-06-23 (36 days ago); data source = FIDELO\n• HubSpot deal ID 502951083215\n• Booking course 1791 (Academic Year Renewal Morning, Apr 13-Oct 23 2026): active = true",
+        "Check HubSpot deal 502951083215 and Hub/Xero for any payment; if found, add to SIS and confirm booking. See recipe: issue-20-addendum-29jul-c.md",
+        "64th hrly Wed 29 Jul UTC. UNCHANGED. Day 115+, EUR 0/1509, zero payments. Last booking update 23 Jun (36d ago). Fix NOT RUN.",
+        "Day 115; EUR 0 / 1509"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• Student 917 (Uyanga Tungalag): visaStatus = null -- 127th check Wed 29 Jul UTC\n• hubspotContactId = null on student record -- HubSpot link missing\n• Last student record update: 2026-07-28 09:38 UTC (bulk touch; visaStatus still null)\n• Booking course 1613 (Academic Year Morning, Apr 27-Oct 30 2026): active = true, zero class assignments\n• 93+ calendar days into 187-day Academic Year course with no class assignment",
+        "Find HubSpot contact for student 917; link contactId; set visa status; assign to Morning class on BC 1613. See recipe: issue-25-addendum-29jul-b.md",
+        "127th hrly Wed 29 Jul UTC. visaStatus = null (93d+ into AY). Booking course 1613 zero assignments. hubspotContactId = null. Fix NOT RUN.",
+        "visa null; 0 SCAs; 94d"
+      ]
+    ]
+  }
+]

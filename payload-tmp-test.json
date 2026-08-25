@@ -1,0 +1,31 @@
+[
+  {
+    "range": "J16:K16",
+    "values": [
+      [
+        "4 Jul SAT UTC (99th check, fresh DB): SCA255 weekEnd=Jul3=YESTERDAY classId=11 confirmed. ZERO future SCAs for student 1001. BC24925 AY-Aft Mar09-Oct02 active=true fee=EUR1102.20. BK18151 CONF EUR1339.20. SQL NOT RUN 99 checks. Student Saikhantes unassigned since yesterday. NEIL: UPDATE student_class_assignments SET week_end=2026-10-02 WHERE id=255 BEFORE MONDAY (Jul6=2 DAYS).",
+        "SCA expired; Mon=2d"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• Accommodation 11285 (Jesus Manuel Ramirez Diaz, bed 83): stored dates 21 Jun to 5 Jul — requested 20 Jun to 4 Jul — 1-day discrepancy (47th check, 4 Jul 2026 UTC)\n• Jesus checks out TOMORROW 5 Jul — date correction is now purely cosmetic\n• Accommodation 11352 (Verónica Martín, bed 83): 4 Jul to 11 Jul — Verónica arrived today and is in SIS on bed 83\n• Issue 37 dependency resolved — both accommodations confirmed in SIS on bed 83\n• Cosmetic fix (low priority, not yet run): UPDATE booking_accommodations SET start_date=2026-06-20, end_date=2026-07-04 WHERE id=11285",
+        "(NOT RUN, now cosmetic) UPDATE booking_accommodations SET start_date=2026-06-20, end_date=2026-07-04 WHERE id=11285. See recipe: issue-43-jesus-accomm-dates.md",
+        "47th check 4 Jul UTC. acc11285 bed83 Jun21-Jul05 active=true (requested Jun20-Jul04). Jesus out TOMORROW Jul5 — correction now cosmetic. acc11352 Veronica bed83 Jul04-Jul11 active=true. Issue 37 resolved. SQL NOT RUN.",
+        "Jesus out Jul5; cosmetic"
+      ]
+    ]
+  },
+  {
+    "range": "J47:K47",
+    "values": [
+      [
+        "4 Jul SAT UTC (19th check, fresh DB): UNCHANGED. Kayque s852 SCA26 Apr24=70d (AY-Aft Jun29=5d in, 0SCA). Sophia s853 SCA23 Apr24=70d (AY-Aft Jun29=5d in, 0SCA). Tuguldurtugs s858 SCA55 May1=63d (AY-Morn Jul6-Dec25, bk1601 EUR1356.5/1606.5 EUR250 outstanding). Ettore s14564 SCA281 Jul3=YESTERDAY (GE-AM-Plus bc24968 Jul6-Jul13). Gustavo s14570 0 SCAs; BC24967 AM EUR137.6 + BC24955 AM-Plus EUR996.84 both Jul6-Aug7 (deactivate BC24967 first). 10 new/migration starters Mon. Total: 15 students. 19 checks no action. NEIL: 2 DAYS TO MONDAY ASSIGN ALL 15 NOW.",
+        "15 students; Jul6=2d"
+      ]
+    ]
+  }
+]

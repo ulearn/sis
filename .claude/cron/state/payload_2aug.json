@@ -1,0 +1,35 @@
+[
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• 47th check Sun 2 Aug 2026 UTC — unchanged\n• Booking course 23 (Intensive General 30, ended 22 May 2026, booking 22): active = true — 72 days stale\n• Booking course 24826 (2 weeks Intensive General 30, ended 19 Jun 2026, booking 18034): active = true — 44 days stale\n• Booking 18034 (student 14532): PARTIAL, confirmed = false, amount total = EUR 1,095, amount open = EUR 250\n• Payment 17683 (EUR 845): Bank, 23 Apr 2026, booking 18034, xero payment ID = null — 101 days without Xero link",
+        "Deactivate BCs 23+24826; chase EUR 250 on booking 18034 via HubSpot; link payment 17683 in Xero. See recipe: issue-26-addendum-2aug.md",
+        "47th check Sun 2 Aug UTC (6th today). UNCHANGED. BCs 23+24826 stale 72d/44d. Booking 18034 EUR 250 open PARTIAL confirmed=false. Payment 17683 xeroId null (101d). Fix NOT RUN.",
+        "2 BCs stale; EUR250 open; 72d"
+      ]
+    ]
+  },
+  {
+    "range": "H37:K37",
+    "values": [
+      [
+        "• Sun 2 Aug 2026 UTC (code check 25) — attendance.ts last changed 9008d10 (May 8 2026)\n• May 8 change: compressUploads() middleware on upload routes only — homework and holiday logic untouched\n• Bug A — homework block: absent from renderSheetHtml() in src/routes/attendance.ts — awaiting spec from Neil+Paul\n• Bug B — holiday filter: getWeekAttendance() in src/scripts/attendance.ts has no BookingHoliday filter — holiday students show with live checkboxes\n• 86 days since last attendance logic change",
+        "Fix BookingHoliday filter in getWeekAttendance() (no spec needed); add homework block after spec confirmed. See recipe: issue-36-addendum-2aug.md",
+        "Sun 2 Aug UTC (code check 25). Attendance.ts last logic change May 8 (86d). Bug A awaiting spec; Bug B (holiday filter) ready to fix now.",
+        "code open; awaiting spec"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 36th check Sun 2 Aug 2026 UTC — unchanged\n• Booking 17856 (Galbusera): status CONFIRMED, confirmed = false, amount paid = EUR 339.90, 0 payment records in SIS\n• Booking course 24631 (General English AM Plus, ended 10 Jul 2026, booking 17856): still active — 23 days stale\n• Booking 17857 (Fassina): status CONFIRMED, confirmed = false, amount paid = EUR 339.90, 0 payment records in SIS\n• Booking course 24630 (General English AM Plus, ended 10 Jul 2026, booking 17857): still active — 23 days stale\n• Orphan payments 16988 + 16989 (EUR 339.90 each): booking ID = null (97 days orphaned — see Issue 1)",
+        "Deactivate BCs 24630+24631; link payments 16988+16989 to bookings 17856+17857. See recipe: issue-48-addendum-2aug-j.md",
+        "36th check Sun 2 Aug UTC (11th today). BCs 24630+24631 23d stale (ended Jul 10). 0 payments linked. Orphan payments 97d. Fix NOT RUN.",
+        "4 items open; BCs 23d stale"
+      ]
+    ]
+  }
+]

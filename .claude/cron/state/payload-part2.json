@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 (Edite Nunes, student 1015): Confirmed, confirmed = true, fully paid EUR 740 (56th check, 4 Jul 2026 UTC)\n• Booking course 24933 (General English AM, 15 Jun to 10 Jul 2026, EUR 380): active — the valid course\n• Booking course 24934 (General English AM, 15 Jun to 10 Jul 2026, EUR 360): still active — duplicate, to be deactivated\n• Student 1015 last class assignment: SCA 146, class 7, expired 15 May 2026 — unassigned 50 days\n• Course ends 10 Jul 2026 — 6 days remaining\n• Fix: deactivate booking course 24934, then assign student 1015 to class 7 before 10 Jul",
+        "(NOT RUN) (1) UPDATE booking_courses SET active = false WHERE id = 24934; (2) Assign student 1015 to class 7 via SIS admin before Jul 10. See recipe: issue-22-edith-nunes-payment-dups.md",
+        "4 Jul SAT UTC (56th check, fresh DB): BC24933 GE-AM Jun15-Jul10 EUR380 active=true (valid). BC24934 GE-AM Jun15-Jul10 EUR360 STILL active (dup). SCA146 class7 weekEnd=May15=50d stale. bk18158 CONF EUR740/740. Course ends Jul10=6d. NOT RUN: (1) deactivate BC24934; (2) assign student 1015 to class 7.",
+        "dup active; Jul10=6d"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Booking 17831 (Xuezhen Huang, student 14443): Partial, confirmed = false — EUR 965 paid of EUR 1396.90 total (EUR 431.90 outstanding) (22nd check, 4 Jul 2026 UTC)\n• Payment 17180 (EUR 431.90, TransferMate Escrow, 27 Apr 2026): Xero payment ID = null, HubSpot payment ID = null — not counted in amount paid\n• Payment 17963 (EUR 965.00, Bank, 1 Jul 2026, HubSpot 1273784562922): Xero payment ID = null — counted in amount paid but not reconciled in Xero\n• Both payments together = EUR 1396.90 = booking total — fully covered pending Xero reconciliation\n• Accommodation 11358 (bed 180, Host Family): 12 Jul to 2 Aug 2026 — starts in 8 days\n• Fix: reconcile both payments in Xero, then confirm booking 17831 via SIS before Jul 12",
+        "(1) Reconcile payment 17180 (EUR 431.90 TransferMate Escrow Apr 27) in Xero; (2) Reconcile payment 17963 (EUR 965 Jul 1) in Xero; (3) Confirm booking 17831 via SIS. Urgent: accommodation starts Jul 12. See recipe: issue-39-xuezhen-huang-accomm-missing.md",
+        "4 Jul SAT UTC (22nd check, fresh DB): bk17831 STILL PARTIAL confirmed=false amtPaid=965/1396.90 (EUR431.90 open). pmt17180 (EUR431.90, Apr27, TransferMate Escrow): xeroId=null, hsId=null. pmt17963 (EUR965, Jul1, Bank, HS 1273784562922): xeroId=null. Both=EUR1396.90=total. ba11358 bed180 Jul12-Aug2=8d. URGENT before Jul12.",
+        "PARTIAL; Jul12=8d"
+      ]
+    ]
+  }
+]

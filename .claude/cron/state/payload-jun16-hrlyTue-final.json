@@ -1,0 +1,35 @@
+[
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• Ernesto Pesoa Gil (student 14532) currentLevel = null — both DB and HubSpot contact 3344151 show null\n• Booking course 24826 is a 2-week Intensive General 30, Jun 08 – Jun 19 — ends Friday\n• 9 school days elapsed (Jun 08–Jun 16) with zero class assignments — student attended with no SIS record\n• Only 3 school days remain: Wed Jun 17, Thu Jun 18, Fri Jun 19\n• Booking 18034 is PARTIAL, amount paid 845 of 1095 (EUR 250 outstanding, confirmed = false)\n• Note: column B on sheet says Ivan Rodriguez — actual student is Ernesto Pesoa Gil (student 14532)",
+        "(NOT RUN) 1) Get Ernesto level from teacher before Wed 09:00; 2) INSERT 2 student class assignments (AM+PM) for booking course 24826, week start = 2026-06-17, week end = 2026-06-19. Level pairs: A2=cls8/9, B1=cls5+12/cls11, B2-C1=cls4/cls6, C1=cls13/cls14. See recipe: issue-26-intensive-class-assign-once.md",
+        "Jun16 hrly(Tue): 0 SCAs CONFIRMED fresh query. s14532 currentLevel=null placementTestLevel=null. bc24826 INTENSIVE ends Fri Jun19 = 3 school days remain (Wed17/Thu18/Fri19). bk18034 PARTIAL 845/1095 amtOpen=250 confirmed=false (stale Jun07). NEIL: URGENT - get Ernesto level BEFORE Wed 09:00 then INSERT 2 SCAs. SQL NOT RUN.",
+        "crit;3d;Fri19"
+      ]
+    ]
+  },
+  {
+    "range": "H32:K32",
+    "values": [
+      [
+        "• Week math in attendance route (src/routes/attendance.ts:213) uses local-time getDay() and setHours() on UTC-midnight dates — shows Sunday Jun 14 instead of Monday Jun 15\n• Code fix NOT applied — routes/attendance.ts:214 still has setHours(0,0,0,0); prior bot run incorrectly said fix was applied\n• Fix: remove the setHours(0,0,0,0) line (new Date(YYYY-MM-DD) is already UTC midnight; setHours converts it to BST midnight)\n• Null week_end class assignment count = 0 (confirmed Jun 16, 5th consecutive check) — stale-student bug is RESOLVED",
+        "Remove setHours(0,0,0,0) from routes/attendance.ts:214 and scripts/attendance.ts:34, then npm run build and touch tmp/restart.txt. See recipe: issue-31-attendance-sheet-week-bug.md",
+        "Jun16 hrly(Tue): null_end=0 CONFIRMED (5th check, total SCAs=236). Code fix NOT applied — routes/attendance.ts:214 still getDay()/setHours() local. Fix: delete line 214 setHours call from both attendance files, rebuild. NEIL: apply code fix or mark wont-fix.",
+        "null_end=0;code fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• Stray cell — only content is '278' in column F (Area), all other fields are empty\n• No student name, no issue description, no context — cannot diagnose",
+        "Delete row 39 if accidental entry, or complete the missing fields (issue number, student, description).",
+        "Jun16 hrly: phantom row. F='278' only — looks like accidental typing. NEIL: delete row 39 or fill in issue#, student, description.",
+        ""
+      ]
+    ]
+  }
+]

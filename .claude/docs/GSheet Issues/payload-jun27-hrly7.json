@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 + 16989 still unlinked — bookingId = null, xeroPaymentId = null — 60 days since creation on 28 Apr\n• Payment 16988 (HubSpot 1204827374829) → Booking 17856 Margherita Galbusera — EUR 339.90\n• Payment 16989 (HubSpot 1204846469317) → Booking 17857 Francesca Fassina — EUR 339.90\n• Both bookings: status = Confirmed, confirmed = false — students blocked from class assignment lists\n• Booking courses 24630 + 24631: General English AM Plus, Jun 29 to Jul 10 — fee = null\n• Classes start MON JUN 29 — 2 DAYS AWAY — MAXIMUM EMERGENCY — 4-step SQL not yet run",
+        "(NOT RUN) (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) UPDATE booking_courses SET fee=339.9 WHERE id IN (24630,24631); (4) UPDATE bookings SET confirmed=true WHERE id IN (17856,17857). See recipe: issue-1-orphan-payments.md",
+        "hrly Jun27 SAT UTC (81st check, fresh DB): pmt16988 bookingId=STILL null xeroId=null EUR339.90 (Apr28=60d). pmt16989 bookingId=STILL null xeroId=null EUR339.90 (Apr28=60d). bk17856+17857 CONFIRMED conf=STILL false amtPaid=339.9/339.9. bc24630+24631 GE-AM-Plus Jun29-Jul10 fee=STILL null. CLASSES START MON JUN29 — 2 DAYS. 4-STEP SQL NOT RUN. NEIL: run BEFORE 09:00 Mon Jun29.",
+        "Jun29 2d EMERG"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Booking 18151 (Academic Year Afternoon, Mar 09 to Sep 11) is Confirmed, fully paid EUR 1339.20\n• Class assignment 255 (class 11, B1 PM) has week start = 12 Jan 2026 (wrong — should be 09 Mar) and week end = 03 Jul 2026 (wrong — should be 11 Sep)\n• Week end expires in 6 days (Jul 03) — student disappears from scheduling for 10 weeks (Jul 03 to Sep 11)\n• Booking course 24925 (fee = EUR 1102.20) and booking 18151 confirmed = true are correct\n• Fix is one SQL UPDATE on student_class_assignments id = 255",
+        "One SQL line (NOT RUN): UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255. See recipe: issue-29-saikhantes-jan12-start-date.md",
+        "hrly Jun27 SAT UTC (fresh DB): sca255 STILL weekStart=2026-01-12(WRONG) weekEnd=2026-07-03(WRONG) classId=11 bookingCourseId=24925. bc24925 AY-AFT Mar09-Sep11 active=true. bk18151 CONF 1339.2/1339.2. weekEnd Jul03 = 6 DAYS — student vanishes from class 11 list after Thu Jul03. SQL NOT RUN. NEIL: must run before Thu Jul03.",
+        "sca255; Jul03=6d"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• Student 917 (Uyanga Tungalag) confirmed in school since 27 Apr — 62 days with zero class assignments (fresh DB Jun 27)\n• Booking 1467 is Confirmed (confirmed = true), paid EUR 2405 / 2405 — Fidelo student migrated\n• Booking course 1613 (Academic Year Morning, Apr 27 to Oct 16) is active — no class assigned\n• Visa status = null — prevents appearance in class-to-be-assigned list\n• Student has been attending without a formal class assignment for over 2 months",
+        "Assign class for bc1613 via SIS UI (no SQL needed). Set visaStatus on student 917. See recipe: issue-25-uyanga-visa-escrow.md",
+        "hrly Jun27 SAT UTC (12th check, fresh DB): s917 visaStatus=STILL NULL (updAt=May21=37d stale). bk1467 CONF conf=true 2405/2405. bc1613 AY-Morn Apr27-Oct16 active=true. SCAs=STILL 0 (Day 62 in school — 0 class assignments entire stay). CRITICAL: assign class for bc1613 via SIS UI; set visaStatus=Approved on s917.",
+        "D62; 0SCA; CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Class assignment 255 (class 11, B1 PM) weekStart = 12 Jan 2026 (wrong — course started 9 Mar) and weekEnd = 3 Jul 2026 (wrong — course ends 11 Sep)\n• After Jul 03 Saikhantes will vanish from class list — 10 weeks uncovered through 11 Sep\n• Booking course 24925 (Academic Year Afternoon, 9 Mar to 11 Sep) is correct course for student 1001 (booking 18151)\n• Student 1001 (Saikhantes Shagdarsuren) status = ACTIVE, B1 level, visa valid Mar 09 to Nov 09",
+        "(NOT RUN) UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255. See recipe: issue-29-saikhantes-jan12-start-date.md",
+        "hrly Jun27 SAT UTC (52nd check, fresh DB): sca255 STILL weekStart=2026-01-12(WRONG) weekEnd=2026-07-03(WRONG) classId=11 bcId=24925. bc24925 AY-Afternoon Mar09-Sep11 active. bk18151 CONF 1339.2/1339.2. JUL03=6 DAYS — after Jul03 Saikhantes invisible from B1-PM class list for 10 weeks through Sep11. SQL NOT RUN. Neil: run UPDATE before Thu Jul03.",
+        "sca255; Jul03=6d; URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Booking 18044 (duplicate Milena Vinci entry) no longer exists in the database — deleted (confirmed Jun 27)\n• Giulia Avallone (student 88) retains only booking 94 — Confirmed, EUR 1151.50 fully paid\n• Booking course 104 (Morning General Plus) ended Jun 26 — Giulia course completed naturally (confirmed Jun 27)\n• Milena Vinci no longer appears as a student in the database (confirmed Jun 27)\n• Payment 17102 (EUR 1151.50, booking 94) has no Xero ID and no HubSpot payment ID — needs Xero reconciliation\n• Outstanding: confirm HubSpot payment 1239529228498 was voided in HubSpot UI",
+        "Database part fixed (booking 18044 deleted). Confirm HubSpot payment 1239529228498 was voided in HubSpot UI. Reconcile payment 17102 in Xero. See recipe: issue-30-giulia-milena-parent-student.md",
+        "hrly Jun27 SAT UTC (11th check, fresh DB): bk94 CONF 1151.5/1151.5 (updAt=May21=37d stale). pmt17102 EUR1151.5 xeroId=STILL NULL hsId=null (created May05=53d) — not reconciled in Xero. bc104 MorningGenPlus ended Jun26 (natural end) STILL active=true stale. bk18044 NOT IN DB. Neil: (1) confirm HS pmt 1239529228498 voided in HS UI; (2) reconcile pmt17102 in Xero.",
+        "course ended; HS void?"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• Accommodation 11352 EXISTS in SIS for booking 18156 (City Centre Apartment Premium, Jul 4-11, EUR 360, active = true)\n• Bed ID = null — no specific bed assigned; this is why it does not appear in the allocation view\n• Booking 18156 is PENDING, EUR 0 of EUR 645 paid — 10 days stale (last updated Jun 17)\n• Available Premium beds 174, 175, 176 confirmed free Jul 4-11 (zero conflicts)",
+        "SIS: Student 278 (Veronica Martin) booking 18156 → Accommodation → assign Premium bed 174, 175, or 176. Confirm booking once EUR 645 paid. See recipe: issue-37-veronica-capel-accomm-allocation.md",
+        "hrly Jun27 SAT UTC (13th check, fresh DB): accom11352 bedId=STILL null (updAt=Jun17=10d stale). bk18156 STILL PENDING EUR 0/645 confirmed=false (updAt=Jun17=10d). JUL4=7 DAYS — no bed assigned, no payment received. Beds 174/175/176 free Jul4-11. Neil: payment + bed assignment needed urgently.",
+        "await bed+pmt; Jul4=7d"
+      ]
+    ]
+  }
+]

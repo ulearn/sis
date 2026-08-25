@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "5th check, Sunday 19 July 2026 UTC\n• Booking accommodation 11162 (Massimiliano Cameran, booking 97, bed 179, 21 Apr–23 May 2026): active = true — 57 days since end\n• Booking accommodation 11314 (Massimiliano Cameran, booking 18002, bed 179, 23 May–6 Jun 2026): active = true — 43 days since end\n• Booking accommodation 11319 (booking 18034, no bed assigned, 31 May–31 May 2026): active = true — 49 days since end; zero-day record; booking status PARTIAL\n• Booking accommodation 11287 (Rakan Alghamdi, bed 190, 4 Jul–19 Dec 2026): active = true — correct ongoing stay, do not touch",
+        "Set active = false on booking accommodations 11162, 11314, 11319. Do not touch 11287 (Rakan active stay). See recipe: issue-12-accomm-dates-mismatch.md",
+        "5th check Sun 19 Jul UTC. CONFIRMED UNCHANGED. BA11162 (57d stale), BA11314 (43d stale), BA11319 (zero-day PARTIAL, 49d stale). BA11287 Rakan ongoing. Fix NOT RUN.",
+        "3 stale BAs; 89d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "87th check Sun 19 Jul 2026 UTC (28th today)\n• Booking course 24991 (Edith Nunes, General English AM, 13 Jul to 7 Aug 2026): STILL 0 class assignments\n• Week 1 (Mon 13 Jul to Fri 17 Jul 2026): ended — 5 school days permanently missed\n• Week 2 starts TOMORROW Mon 20 Jul — assign before 09:00; 3 weeks remain (20 Jul to 7 Aug)\n• Booking courses 24933 and 24934 (both ended 10 Jul 2026): still active = true (stale)",
+        "Assign BC 24991 to class before 09:00 Mon 20 Jul.",
+        "28th check today, 87th overall. BC24991 STILL 0 SCAs (fresh DB). Week 2 TOMORROW Mon 20 Jul. BCs 24933+24934 stale. Fix NOT RUN.",
+        "CRITICAL; assign Mon 20 Jul"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "96th check Sun 19 Jul 2026 UTC (29th today)\n• Booking course 24686 (Alberto Squillace, Morning General, 20 Jul to 18 Sep 2026): fee = STILL null — booking 1611 CONFIRMED EUR 1280.12/1280.12 — starts TOMORROW Mon 20 Jul\n• Booking course 24616 (Mia Wehrli, General English AM Plus, 20 Jul to 31 Jul 2026): fee = STILL null — booking 17842 CONFIRMED EUR 1149.90/1149.90 — starts TOMORROW Mon 20 Jul\n• Booking course 1797 (Alberto Squillace, Morning General, ended 26 Jun 2026): active = true — 23 days stale",
+        "Set fee on BC24686 (Alberto, booking 1611) and BC24616 (Mia, booking 17842). See recipe: issue-24-addendum-19jul.md",
+        "29th check today, 96th overall. BC24686 Alberto fee=STILL null — STARTS TOMORROW. BC24616 Mia fee=STILL null — STARTS TOMORROW. Both confirmed fully paid. Fix NOT RUN.",
+        "fee null; STARTS TOMORROW"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "77th check Sun 19 Jul 2026 UTC (28th today)\n• August Bank Holiday Mon 3 Aug 2026: STILL absent from school closures — 15 days away\n• October Bank Holiday Mon 26 Oct 2026: STILL absent — 99 days away\n• 9 closures present: Good Fridays 2026–2030, Christmas 2026–2029 — zero closures in Jul–Sep 2026\n• Fix NOT Run",
+        "Add school closure records for Aug Bank Holiday (Mon 3 Aug 2026) and Oct Bank Holiday (Mon 26 Oct 2026). See recipe: issue-38-addendum-19jul.md",
+        "28th check today, 77th overall. Aug BH Mon 3 Aug = 15d away. Oct BH Mon 26 Oct = 99d away. 9 closures confirmed in DB. Fix NOT RUN.",
+        "Aug BH missing; 15d URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "81st check Sun 19 Jul 2026 UTC (28th today)\n• Booking course 24609 (Xuezhen Huang, Morning General, 13 Jul to 31 Jul 2026): STILL 0 class assignments\n• Week 1 (Mon 13 Jul to Fri 17 Jul 2026): ended — 5 school days permanently missed\n• Week 2 starts TOMORROW Mon 20 Jul — assign before 09:00; 2 weeks remain (20 to 31 Jul)\n• Visa status = null — assign via Admin > Bookings if visa status blocks appearance\n• Booking 17831: Confirmed, EUR 1396.90 fully paid",
+        "Assign BC 24609 to class before 09:00 Mon 20 Jul. If visa blocks, use Admin > Bookings.",
+        "28th check today, 81st overall. BC24609 STILL 0 SCAs (fresh DB). Week 2 TOMORROW Mon 20 Jul. Visa=null. Fix NOT RUN.",
+        "CRITICAL; assign Mon 20 Jul"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "163rd check Sun 19 Jul 2026 UTC (29th today)\n• 7 confirmed booking courses start Mon 20 Jul 2026 — ALL still 0 class assignments — DEADLINE 09:00 Mon 20 Jul\n• BC1630 Saranzaya Khishigbayar — Academic Year Afternoon — fee EUR 2620 — EUR 1770 paid\n• BC24942 Lorena Fernanda Pizarro Araya — Academic Year Morning — fee EUR 2362.50\n• BC24966 Filippo Corazzini — General English AM Plus — fee EUR 549.90\n• BC24989 Marcos Ábrego Tofé — General English AM — EUR 152 (1 week, ends 24 Jul)\n• BC25000 Giorgio Sau — General English AM Plus — fee EUR 940\n• BC24616 Mia Wehrli — General English AM Plus — fee null (see issue 24) — EUR 1149.90 paid\n• BC24686 Alberto Squillace — Morning General — fee null (see issue 24) — EUR 1280.12 paid\n• Jul 13 actives: 9 STILL 0 SCAs, week 1 permanently missed, week 2 TOMORROW — BC1619 Munkhtsetseg, BC1788 Pedro, BC1814 Wanqiong, BC24820 Italo, BC24988 Minjinsor, BC24990 Samuele, BC24998 Allison, BC24609 Xuezhen (issue 39), BC24991 Edith (issue 22)\n• Permanently closed (ended 17 Jul), active=true stale: BC24946 Lunel, BC24994 Petru, BC24992 Luz Maria — irrecoverable",
+        "Assign 7 Mon 20 Jul starters + 9 Jul 13 actives to classes before 09:00 Mon 20 Jul. See recipe: issue-45-addendum-19jul.md",
+        "29th check today, 163rd overall. ALL 16 unassigned BCs confirmed 0 SCAs (fresh DB). 3 BCs ended Jul 17 irrecoverable, still active=true. Fix NOT RUN.",
+        "CRITICAL; assign before 09:00 Mon 20 Jul"
+      ]
+    ]
+  }
+]

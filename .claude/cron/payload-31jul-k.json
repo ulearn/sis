@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 119th check Fri 31 Jul 2026 UTC -- 4 orphan payments unchanged\n• Payment 16988: EUR 339.90, Bank, booking ID = null (94 days, HubSpot payment ID 1204827374829)\n• Payment 16989: EUR 339.90, Bank, booking ID = null (94 days, HubSpot payment ID 1204846469317)\n• Payment 17187: EUR 6,151, TransferMate Escrow, booking ID = null (87 days, Fidelo ID 37587, ref D2026226)\n• Payment 4781: EUR 380, Flywire 2019, booking ID = null (legacy ~7yr, Fidelo ID 32056)",
+        "Link payments 16988+16989 to bookings via HubSpot; investigate 17187 via deal D2026226. See recipe: issue-1-addendum-31jul-c.md",
+        "119th hrly Fri 31 Jul UTC. 4 orphan payments unchanged (94d/94d/87d/legacy). Fix NOT RUN.",
+        "4 orphan pmts; 94d+"
+      ]
+    ]
+  },
+  {
+    "range": "H12:K12",
+    "values": [
+      [
+        "• 10th check Fri 31 Jul 2026 UTC -- unchanged from 9th check\n• Student 1063 (Valeriya Salauyova): hubspot contact ID = null, visa status = null, birthday = 2010-05-25 (minor, age 16)\n• Booking 17912: CONFIRMED, confirmed = true, fully paid EUR 1,938\n• Booking course 24696 (General English AM Plus, Jun 8 to Jul 3 2026): active = true -- 28 days stale\n• Last class assignment: id 164, class 12, week ending Jul 3 2026 -- course complete\n• Milena Vinci / Egor Solovyov: no student record found in SIS -- parent concern is moot",
+        "Deactivate booking course 24696; backfill hubspot contact ID for student 1063. See recipe: issue-11-addendum-31jul.md",
+        "10th check Fri 31 Jul UTC. UNCHANGED. Booking course 24696 28 days stale (ended Jul 3). HubSpot link null. Fix NOT RUN.",
+        "BC24696 stale 28d; HubSpot null"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 23rd check Fri 31 Jul 2026 UTC (5th check today) -- STILL NOT FIXED\n• August Bank Holiday (Mon Aug 3 2026) absent from school_closures -- confirmed live query\n• 21 active booking courses start Aug 3; 14 confirmed (confirmed = true) need shunting to Aug 4\n• IDs to shunt: 88, 1755, 1766, 24908, 24956, 24958, 24959, 24964, 24984, 25002, 25010, 25016, 25028, 25035\n• Booking course 25003 (Aleix Cervera Gonzalez): duplicate of booking course 25002, 0 class assignments -- delete\n• Booking course 24627 (Angelica Guerin, confirmed = false): check before shunting\n• Booking course 25006 (Marina Larripa): ends Aug 3, last teaching day was Fri Jul 31 -- cosmetic\n• FIX WINDOW CLOSES TONIGHT -- school reopens Mon Aug 4",
+        "Insert Aug BH closure; shunt 14 booking courses to Aug 4; delete BC 25003. See recipe: issue-38-addendum-31jul-k.md",
+        "23rd hrly Fri 31 Jul UTC. 5TH CHECK TODAY -- STILL NOT FIXED. Aug BH absent. 21 booking courses start Aug 3: 14 to shunt, 1 delete, 1 check. FIX MUST RUN TONIGHT before Mon.",
+        "URGENT; fix TONIGHT"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 18th check Fri 31 Jul 2026 UTC -- check-in TOMORROW (Sun Aug 2 2026)\n• Booking accommodation 11357 (bed 178, 5 Claremont Close Glasnevin, Host Family Individual): active, confirmed, Aug 2 to Sep 6 -- READY\n• Booking 18180: CONFIRMED, confirmed = true, fully paid EUR 2,584.96\n• Capel Street accommodation (Sep 6-14): still NO booking accommodation record -- awaiting Diego confirmation of bed and fee\n• Booking course 24956 (General English AM, Aug 3-Sep 11): in Issue 38 shunt list (start date moves to Aug 4 once that fix runs)",
+        "Host family ready (no action). Add Capel booking accommodation once Diego confirms bed + fee. See recipe: issue-41-addendum-31jul-h.md",
+        "18th check Fri 31 Jul UTC. CHECK-IN TOMORROW Sun Aug 2. Host family booking accommodation 11357 confirmed + active. Capel absent -- still awaiting Diego. Fix NOT RUN.",
+        "Capel missing; Diego needed"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 11th check Fri 31 Jul 2026 UTC -- unchanged from 10th check\n• System-wide: 24,449 active booking courses ended before today Jul 31 -- unchanged\n• Named recipe subset: 27 booking courses to deactivate -- fix NOT RUN\n• Bulk 24,449 system cleanup needs Neil decision on migration approach",
+        "Deactivate 27 named booking courses per recipe; bulk 24,449 cleanup needs Neil decision. See recipe: issue-45-addendum-31jul-c.md",
+        "11th check Fri 31 Jul UTC. 24,449 stale booking courses -- unchanged. Recipe covers 27 subset. Bulk fix needs Neil decision.",
+        "27 in recipe; 24,449 total"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 12th check Fri 31 Jul 2026 UTC -- unchanged from 11th check\n• Galbusera (student 14461): booking 17856, CONFIRMED status, confirmed = false, EUR 339.90 paid -- booking course 24631 (ended Jul 10): active = true, 21 days stale\n• Fassina (student 14462): booking 17857, CONFIRMED status, confirmed = false, EUR 339.90 paid -- booking course 24630 (ended Jul 10): active = true, 21 days stale\n• Saikhantes (student 1001): holiday Jul 20 to Aug 21 -- returns Mon Aug 24, no class assignment placed yet\n• Jul 6-17 class assignment gap before holiday start -- verify with Paul if backfill needed",
+        "1) Set confirmed=true on bookings 17857+17856; 2) Deactivate booking courses 24630+24631; 3) Add class assignment for Saikhantes from Aug 24. See recipe: issue-48-addendum-31jul-g.md",
+        "12th check Fri 31 Jul UTC. UNCHANGED. Fassina + Galbusera confirmed=false, booking courses stale 21 days. Saikhantes return Aug 24 -- class assignment still needed. Fix NOT RUN.",
+        "4 items open; return Aug 24"
+      ]
+    ]
+  }
+]

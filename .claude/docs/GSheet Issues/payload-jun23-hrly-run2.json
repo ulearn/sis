@@ -1,0 +1,35 @@
+[
+  {
+    "range": "H29:K29",
+    "values": [
+      [
+        "• Booking 17850 is PENDING, confirmed = false — amount paid shows null despite payment 17519 (EUR 321.35) being linked\n• Payment 17519: EUR 321.35, HubSpot ID 1231805396201, Xero ID = null — unreconciled\n• Booking course 24624 (Morning General, May 18 – Jun 05) ended 18 days ago — historical data-integrity issue\n• Fix is low priority: course already complete, no live student impact",
+        "(NOT RUN) UPDATE bookings SET status='CONFIRMED', confirmed=true, amount_paid=321.35 WHERE id=17850. See recipe: issue-28-paola-pending-won-deal.md",
+        "Jun23 hrly: UNCHANGED (fresh DB). bk17850 PENDING conf=false amtPaid=null (updAt=Jun04=19d). pmt17519 EUR321.35 hsId=1231805396201 xeroId=null linked to bk17850. bc24624 ended Jun05 (18d ago) active=true stale. Historical data-hygiene — course over, no live impact.",
+        "historical; low-pri"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• Stray cell — only content is 278 in column F (Area), all other fields are empty\n• No student name, no issue description, no context — cannot diagnose",
+        "Delete row 39 if accidental entry, or complete the missing fields (issue number, student name, description).",
+        "Jun23 hrly: Phantom row UNCHANGED (F=278 only, all other fields empty — 42+ days since ~May11). Suspected accidental entry. NEIL: delete row 39 or fill in issue number, student name, and description.",
+        "del or fill"
+      ]
+    ]
+  },
+  {
+    "range": "H46:K46",
+    "values": [
+      [
+        "• UX feature request, not a data bug\n• Admin course start-date input (admin.html line 5609) accepts any calendar date — no Monday restriction\n• calcCourseEnd() at line 12562 calculates end from weeks but does not snap/warn on non-Monday start\n• Student portal already enforces Monday-snapping (student.html snapCourseStart lines 778-793) — admin lacks this\n• Holiday modal (lines 5901-5932) has only holStart + holEnd date inputs — no weeks field; staff must calculate end date manually\n• SchoolClosure table (9 rows) holds only Christmas and Good Friday — Irish BH Mondays (May/Jun/Aug/Oct) absent, Tuesday-after-BH-Monday snap cannot be auto-applied",
+        "Add snapAdminCourseStart() + BH_MONDAYS set to admin JS; wire to course startDate onchange; add holWeeks input + calcHolEnd() to holiday modal. See recipe: issue-38-course-date-ux.md",
+        "Parts: (A) Monday-snap JS helper + onchange wire on admin course startDate; (B) weeks input in holiday modal auto-computing holEnd; (C) BH list C1=hardcode 3yr of BH Mondays. No DB/backend changes for A+B+C1.",
+        "awaiting dev"
+      ]
+    ]
+  }
+]

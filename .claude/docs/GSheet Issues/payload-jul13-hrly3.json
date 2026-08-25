@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student class assignment 255 (class 11, B1 PM): week end = 3 July 2026 — expired 10 days ago\n• Student 1001 (Saikhantes Shagdarsuren) has been in school unassigned for 6 school days (7 to 13 July)\n• Booking course 24925 (Academic Year Afternoon, 9 March to 2 October 2026): active — extend class assignment to 2 October\n• Booking course 1982 (Academic Year Morning, ended 19 December 2025): still active = true — 206 days stale\n• Staff note added 13 Jul: compare renewal pattern with Adriana Zamora and Sofiia Korkishscenko (18th check, 13 Jul UTC)",
+        "Extend class assignment 255 week end to 2026-10-02; deactivate booking course 1982. See recipe: issue-15-saikhantes-course-dates.md",
+        "18th check 13 Jul MON UTC. G edited by staff: compare AY renewal pattern with Adriana Zamora + Sofiia Korkishscenko. DB unchanged. Class assignment 255 weekEnd=2026-07-03 still expired 10d. Booking course 1982 ended Dec2025 still active=true (206d stale). 6 school days missed Jul7-13. Fix NOT RUN.",
+        "CRITICAL; 10d expired; TODAY"
+      ]
+    ]
+  },
+  {
+    "range": "H37:K37",
+    "values": [
+      [
+        "• Homework section: renderSheetHtml() in src/routes/attendance.ts — no homework block present; awaiting Paul / Neil layout specification (10th code check, 13 Jul UTC)\n• Holiday display bug: getWeekAttendance in src/scripts/attendance.ts (line 31) — no bookingHoliday fetch; students on holiday appear as absent rather than on leave\n• Code unchanged since commit 9008d10\n• Issue description edited on sheet (hash changed); content appears unchanged",
+        "Homework: get Paul / Neil layout spec then add block to renderSheetHtml. Holiday: add bookingHoliday fetch to getWeekAttendance (src/scripts/attendance.ts line 31). See recipe: issue-36-attendance-homework-section.md",
+        "10th code check 13 Jul MON UTC. G hash changed (sheet edit, likely whitespace). No homework block in renderSheetHtml (attendance.ts). getWeekAttendance (attendance.ts:31) still no bookingHoliday fetch. Code unchanged since commit 9008d10.",
+        "code unchanged; open"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Gap 2 — Holiday weeks field: FIXED — calcHolEnd() and calcHolWeeks() confirmed at admin.html lines 13832–13843 (13 Jul UTC)\n• Gap 1 — Admin course start Monday snap: STILL OPEN — calcCourseEnd() at admin.html line 13801 has no Monday enforcement\n• Gap 3 — Irish bank holiday Mondays: STILL OPEN — school_closures table has 9 records (Christmas 2026–2029 and Good Friday 2026–2030); no public bank holiday Mondays recorded\n• Issue description annotated by staff on sheet confirming Gap 2 fixed and Gaps 1+3 still open",
+        "Implement Monday snap for admin course start dates and add Irish bank holiday Mondays to school closures. See recipe: issue-38-course-date-ux.md",
+        "G annotated by staff 13 Jul: confirms Gap2 holWeeks FIXED, Gaps 1+3 open. calcCourseEnd() admin.html:13801 no Monday snap. school_closures: 9 records (Christmas + Good Friday only). See recipe: issue-38-course-date-ux.md",
+        "open; Gaps 1+3"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Accommodation 11358 (Xuezhen Huang, student 14443, bed 180): check-in 12 July 2026 — Day 2 of stay — host family claim status = null\n• Host family: Kathleen Delahunty, +353 87 639 8049, ctdelahunty@gmail.com — host has not claimed via portal\n• Booking 17831: Confirmed, amount total EUR 1396.90, amount paid EUR 1396.90 — fully paid\n• Payment discrepancy: 4 payments on booking 17831 total EUR 1828.80 vs booking total EUR 1396.90 — payment 17180 (EUR 431.90) is a Fidelo TransferMate Escrow import and may be double-counted\n• 45th check 13 Jul UTC — claim status still null; host not notified",
+        "Call Kathleen Delahunty (+353 87 639 8049) immediately; submit host family claim for accommodation 11358; reconcile payment discrepancy. See recipe: issue-39-xuezhen-huang-accomm-missing.md",
+        "45th check 13 Jul MON UTC. Day 2. Accommodation 11358 claimStatus=STILL null. Booking 17831 CONF EUR1396.9 fully paid. Pmts: 431.9(Fidelo TMate)+131.9+300+965=1828.8 vs total=1396.9 (EUR432 discrepancy; payment 17180 is Fidelo import). Host: Kathleen Delahunty ctdelahunty@gmail.com +353 87 639 8049. Fix NOT RUN.",
+        "URGENT; Day2; HF unnotified"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• Payment 17954 (EUR 2584.96, booking 18180): Xero payment ID = null and type = null — payment not reconciled in Xero (30th check, 13 Jul UTC)\n• Booking 18180 (Giampaolo Russo, student 14571): Confirmed, fully paid EUR 2584.96, service starts 3 August 2026 — 21 days away\n• Accommodation 11357 (Host Family, bed 178, 2 August to 6 September 2026): claim status = confirmed via host portal 1 July 2026\n• Apartment at Capel Street: pre-booked directly — no record in SIS booking_accommodations table",
+        "Reconcile payment 17954 (EUR 2584.96) against booking 18180 in Xero. See recipe: issue-41-giampaolo-dual-accomm.md",
+        "30th check 13 Jul MON UTC. Unchanged. Payment 17954 EUR2584.96 xeroPaymentId=STILL null type=STILL null. Booking 18180 CONF EUR2584.96/2584.96. Service start Aug3 (21d). Accommodation 11357 HF Aug2-Sep6 claimStatus=confirmed. Xero reconciliation still pending.",
+        "Xero pmt null; Aug3 21d"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Pietro Colombo (student 72, booking course 81, Morning General Plus 6–24 July 2026): zero class assignments ever — 7 school days missed 7–13 July — 9 school days remaining in course\n• Sophia Emilly Gallo Borim (student 853, booking course 1820, Academic Year Renewal Afternoon 29 June – 18 December 2026): last assignment expired 24 April 2026 on old course — zero assignments on current course\n• Kayque Tauann Lopes Coelho (student 852, booking course 1821, Academic Year Renewal Afternoon 29 June – 18 December 2026): last assignment expired 24 April 2026 on old course — zero assignments on current course\n• Tuguldurtugs Enkhtugs (student 858, booking course 1786, Academic Year Renewal Morning 6 July – 25 December 2026): last assignment expired 1 May 2026 on old course — zero assignments on current course\n• 44th check 13 Jul UTC — all four unchanged; no class assignments added; fix NOT RUN",
+        "Create class assignments for students 72, 853, 852, and 858 starting week of 13 July. See recipe: issue-45-addendum-13jul.md",
+        "44th check 13 Jul MON UTC. Unchanged. All 4 students still 0 class assignments on current courses. Pietro (booking course 81) ends Jul24 — 9 school days left, URGENT. Sophia (bc1820) + Kayque (bc1821) AY Renewal Afternoon. Tuguldurtugs (bc1786) AY Renewal Morning. Fix NOT RUN.",
+        "CRITICAL; 4 students; TODAY"
+      ]
+    ]
+  }
+]

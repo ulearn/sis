@@ -1,0 +1,50 @@
+[
+ {
+  "range": "J2",
+  "values": [
+   [
+    "hrly Jun26 FRI UTC (54th check): pmt16988 EUR339.90 bookingId=null xeroId=null + pmt16989 EUR339.90 bookingId=null xeroId=null STILL UNLINKED — 59d since Apr28. bc24630+bc24631 STILL fee=null startDate=Jun29=MONDAY. bk17856 CONF conf=false amtPaid=339.9/339.9. bk17857 CONF conf=false amtPaid=339.9/339.9. NEIL: TODAY FRI JUN26 IS LAST WORKING DAY — run Step2 SQL + set bc fees BEFORE WEEKEND: (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) set bc24630+bc24631 fees."
+   ]
+  ]
+ },
+ {
+  "range": "J44",
+  "values": [
+   [
+    "hrly Jun26 FRI UTC (39th check): ba9917(bk1274 endMay16)+ba11157(bk100 endMay10)+ba11159(bk100 endMay30)+ba11180(bk81 endJun20) ALL STILL active=true (UNCHANGED). ba11311 Pietro bk17980 startJun28=TOMORROW fee=3850 active=true. bk17980 CONF 5331/5331. NEIL: RUN BEFORE SUNDAY: UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180);"
+   ]
+  ]
+ },
+ {
+  "range": "J16",
+  "values": [
+   [
+    "hrly Jun26 FRI UTC (28th check, fresh DB): sca255 classId=11 weekStart=2026-01-12(wrong) weekEnd=2026-07-03(wrong) STILL UNCHANGED. bc24925 AY-Aft Mar09-Sep11 active bk18151. weekEnd=Jul03 now 7 DAYS away — class records will be cut short. NOT RUN: UPDATE student_class_assignments SET week_start=2026-03-09, week_end=2026-09-11 WHERE id=255; see recipe: issue-15-saikhantes-course-dates.md"
+   ]
+  ]
+ },
+ {
+  "range": "J30",
+  "values": [
+   [
+    "hrly Jun26 UTC (33rd check): sca255 classId=11 weekStart=Jan12(wrong) weekEnd=Jul03(wrong) studentId=1001 STILL UNCHANGED. bc24925 AY-Aft Mar09-Sep11 active. weekEnd=Jul03 now 7 DAYS away. NEIL: UPDATE student_class_assignments SET week_start=2026-03-09, week_end=2026-09-11 WHERE id=255 BEFORE Jul03. See issue-15 + issue-29 recipes."
+   ]
+  ]
+ },
+ {
+  "range": "J23",
+  "values": [
+   [
+    "hrly Jun26 FRI UTC (34th check): bc24933 active=true fee=380 Jun15-Jul10. bc24934 DUP STILL active=true fee=360. Edite (s1015) STILL 0 active class assignments (last sca ended May15 via bc24668). 14d to Jul10 end. NOT RUN: (1) UPDATE booking_courses SET active=false WHERE id=24934; (2) assign s1015 cls7 A1-AM via SIS bk18158."
+   ]
+  ]
+ },
+ {
+  "range": "J26",
+  "values": [
+   [
+    "hrly Jun26 FRI UTC (45th check): s917 visaStatus=null updAt=May21=36d stale. CONFIRMED 0 class assignments (63d in school since Apr27). bk1467 CONF 2405/2405 updAt=Jun11. bc1613 AY-Morning Apr27-Oct16 active fee=3370. NOT RUN: (1) SIS student 917 assign bc1613 to class; (2) set visaStatus. See issue-25-uyanga-visa-escrow.md."
+   ]
+  ]
+ }
+]

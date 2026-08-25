@@ -1,0 +1,53 @@
+[
+  {
+    "range": "J2",
+    "values": [
+      [
+        "209th check 4 Jul SAT UTC — UNCHANGED. Payments 16988+16989 bookingId=STILL null. Bookings 17856+17857 CONFIRMED confirmed=false paid=339.9/339.9. Courses 24630+24631 General English AM Plus end Jul10=6d. Students in class day 6/10. 4-step SQL NOT RUN."
+      ]
+    ]
+  },
+  {
+    "range": "J16",
+    "values": [
+      [
+        "103rd check 4 Jul SAT UTC — UNCHANGED. SCA255 STILL EXPIRED (weekEnd=Jul3). Booking course 24925 Academic Year Afternoon Mar9-Oct2 active=true EUR1102.20. ZERO current class assignments for student 1001. NEIL: UPDATE student_class_assignments SET week_end=2026-10-02 WHERE id=255 — BEFORE MON JUL6 09:00."
+      ]
+    ]
+  },
+  {
+    "range": "J23",
+    "values": [
+      [
+        "64th check 4 Jul SAT UTC — UNCHANGED. Booking course 24933 General English AM Jun15-Jul10 EUR380 active=true. Booking course 24934 General English AM Jun15-Jul10 EUR360 active=true (dup, deactivate). ZERO current class assignments for student 1015. Course ends Jul10=6d. Steps NOT RUN."
+      ]
+    ]
+  },
+  {
+    "range": "J30",
+    "values": [
+      [
+        "4 Jul SAT UTC — Class assignment 255 STILL EXPIRED (weekEnd=Jul3). Student 1001 (Saikhantes) fully unassigned since 3 Jul. Mon Jul6=2d. See row 16 for fix SQL."
+      ]
+    ]
+  },
+  {
+    "range": "J41",
+    "values": [
+      [
+        "30th check 4 Jul SAT UTC — UNCHANGED. Booking 17831 PARTIAL confirmed=false paid=965/1396.9. Payment 17180 EUR431.9 type=null xeroId=null (Apr27). Payment 17963 EUR965 type=null xeroId=null hsId=1273784562922 (Jul01). Accommodation 11358 bed180 Jul12-Aug2 active=true. Both payments unreconciled. Accommodation starts Jul12=8d."
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Kayque Lopes Coelho (student 852, booking course 1821): Academic Year Renewal Afternoon 29 Jun to 18 Dec — 6 days in, zero class assignments — OVERDUE\n• Sophia Gallo Borim (student 853, booking course 1820): Academic Year Renewal Afternoon 29 Jun to 18 Dec — 6 days in, zero class assignments — OVERDUE\n• Tuguldurtugs Enkhtugs (student 858, booking course 1786): Academic Year Renewal Morning 6 Jul to 25 Dec — STARTS MONDAY 6 Jul in 2 days, zero class assignments — CRITICAL\n• Telmuun Enkhsaikhan (student 293, booking course 1810): Academic Year Renewal Morning 29 Jun to 18 Dec — 6 days in, zero class assignments; booking 1624 PARTIAL, confirmed = false (payment pending)\n• Ettore Iovinella (student 14564): booking course 24941 (General English AM Plus, ended 3 Jul) still active = true; booking course 24968 (General English AM Plus, 6 Jul to 13 Jul) starts Monday, zero class assignments\n• Gustavo Da Silva (student 14570): duplicate booking courses 24967 (General English AM, EUR 137.60) and 24955 (General English AM Plus, EUR 996.84) both active for 6 Jul to 7 Aug — deactivate 24967; both bookings PENDING (not confirmed)\n• Veronica Martin (student 278, booking course 24931): General English AM 6 Jul to 10 Jul — course ends Friday, zero class assignments (confirmed)\n• Student 14445 (booking course 24907): General English AM 6 Jul to 10 Jul — course ends Friday, zero class assignments (confirmed)\n• 8 other confirmed starters for 6 Jul with zero class assignments: students 7/72/1055/14528/14572/14577 (confirmed); students 7309/32 pending\n• Root cause: renewal students excluded from class-assignment arrivals report; is_renewal flag not propagated to RNW courses (31st check, 4 Jul 2026 UTC)",
+        "URGENT: assign 14 confirmed students to classes before Mon 6 Jul 09:00; deactivate booking course 24967 (Gustavo duplicate); advance HubSpot deals for students 293/7309/32 to confirm. See recipe: issue-45-renewal-arrivals.md",
+        "31st check 4 Jul SAT UTC — CONFIRMED UNCHANGED. ALL 17 active booking courses still have ZERO current class assignments. Most critical: Tuguldurtugs starts Monday; Veronica s278 + student 14445 courses end Fri Jul10 (4 school days only); Ettore s14564 bc24968 Jul6-13 (1 week). Renewal students 6d in 0SCA. Gustavo s14570: dup booking courses BOTH still active. Students 293/7309/32 PENDING (not confirmed). NEIL: ASSIGN ALL CONFIRMED STUDENTS NOW + deactivate bc24967.",
+        ""
+      ]
+    ]
+  }
+]

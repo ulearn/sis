@@ -1,0 +1,58 @@
+[
+  {
+    "range": "J2",
+    "values": [
+      [
+        "hrly Jun26 FRI UTC (52nd check): pmt16988 EUR339.90 bookingId=null xeroId=null + pmt16989 EUR339.90 bookingId=null xeroId=null STILL UNLINKED — 59d since Apr28. bc24630+bc24631 STILL fee=null, start Mon Jun29=3 DAYS. bk17856 CONF conf=false amtPaid=339.9/339.9. bk17857 CONF conf=false amtPaid=339.9/339.9. NEIL: TODAY FRI JUN26 IS THE LAST WORKING DAY. NOT RUN: (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) set bc24630+bc24631 fees."
+      ]
+    ]
+  },
+  {
+    "range": "J16",
+    "values": [
+      [
+        "hrly Jun26 FRI UTC (27th check, fresh DB): sca255 classId=11 weekStart=2026-01-12(wrong) weekEnd=2026-07-03(wrong) STILL UNCHANGED. bc24925 AY-Aft Mar09-Sep11 active=true. weekEnd=Jul03 = 7 DAYS. After Jul03 Saikhantes invisible to B1-PM for 10 weeks through Sep11. SQL NOT RUN: UPDATE student_class_assignments SET week_start=2026-03-09, week_end=2026-09-11 WHERE id=255. Neil: run before Thu Jul03."
+      ]
+    ]
+  },
+  {
+    "range": "J25",
+    "values": [
+      [
+        "hrly Jun26 FRI UTC (23rd check, fresh DB): bc1797 (Morning General Apr06-Jun26) END DATE = TODAY — still active=true stale (updAt=May03=54d). bc24686 Morning General Jul20-Sep18 fee=STILL NULL (updAt=May14=43d). pmt17124 EUR1280.12 bk1611 xeroId=null hsId=null. bk1611 CONF 1280.12/1280.12 (updAt=Jun11). NEIL: (1) deactivate bc1797 via SIS (ended today Jun26); (2) set bc24686 fee before Jul20=24d; (3) reconcile pmt17124 in Xero."
+      ]
+    ]
+  },
+  {
+    "range": "K26",
+    "values": [
+      [
+        "D62; 0SCA; CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "J26",
+    "values": [
+      [
+        "hrly Jun26 FRI UTC (43rd check): s917 visaStatus=null updAt=May21=36d stale. CONFIRMED 0 class assignments (62d in school since Apr27). bk1467 CONF confirmed=true paid=2405/2405. bc1613 AY-Morn Apr27-Oct16 active=true fee=3370. UNCHANGED 62d. Neil: assign class + set visaStatus."
+      ]
+    ]
+  },
+  {
+    "range": "J30",
+    "values": [
+      [
+        "hrly Jun26 UTC (31st check): sca255 classId=11 weekStart=Jan12(wrong) weekEnd=Jul03(wrong) studentId=1001 STILL UNCHANGED. bc24925 AY-Aft Mar09-Sep11 active=true. weekEnd=Jul03 — 7 DAYS AWAY — student invisible Jul03-Sep11 (10 weeks uncovered). SQL NOT RUN: UPDATE student_class_assignments SET week_start=2026-03-09, week_end=2026-09-11 WHERE id=255."
+      ]
+    ]
+  },
+  {
+    "range": "J44",
+    "values": [
+      [
+        "hrly Jun26 FRI UTC (37th check): CONFIRMED LIVE — ba9917(bk1274 endMay16 updAt=May19)+ba11157(bk100 endMay10 updAt=May19)+ba11159(bk100 endMay30 updAt=Jun02)+ba11180(bk81 endJun20 updAt=Jun22) ALL STILL active=true bed84 BLOCKED. ba11311 Pietro Jun28-Sep13 active=true bk17980 PAID 5331/5331. NEIL ABSOLUTE EMERGENCY: Pietro ARRIVES TOMORROW (SUN JUN28) — TODAY FRI JUN26 IS THE LAST DAY. NOT RUN: UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180)."
+      ]
+    ]
+  }
+]

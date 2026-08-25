@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 220th check Wed 12 Aug 2026 UTC — no change since 219th check\n• Payment 4781: EUR 380, comment ULS771773625 / 21022 — orphaned (booking_id = null)\n• Payment 16988: EUR 339.90, 2026-04-28 — orphaned (booking_id = null); likely for Booking 17856\n• Payment 16989: EUR 339.90, 2026-04-28 — orphaned (booking_id = null); likely for Booking 17857\n• Payment 17187: EUR 6,151, comment ULEARNP2026124 — orphaned (booking_id = null)\n• Booking 17856 (Margherita Galbusera): CONFIRMED, confirmed = false, amountPaid = 339.90, amountOpen = null\n• Booking 17857 (Francesca Fassina): CONFIRMED, confirmed = false, amountPaid = 339.90, amountOpen = null\n• Booking Courses 24630 + 24631 (General English AM Plus): ended 2026-07-10, active = true (33 days stale)",
+        "Link Payments 16988/16989 to Bookings 17856/17857; set confirmed=true; deactivate Booking Courses 24630+24631. See recipe: issue-1-addendum-12aug.md",
+        "220th hrly Wed 12 Aug UTC. No change. Payments 16988/16989 still booking_id=null. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  }
+]

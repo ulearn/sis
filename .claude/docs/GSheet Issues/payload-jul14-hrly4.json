@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H9:K9",
+    "values": [
+      [
+        "• Booking course 24959 (Diego Alves da Silva Molina, student 840, AY Morning, 3 August 2026): ILEP code = 0318/0010 -- NOW SET (fixed since last check)\n• Booking course 97 (Gustavo Ferreira, student 83, AY Morning, 3 August 2026): ILEP code = STILL null -- 20 days to course start\n• Booking course 24970 (Tsengelbayar Mendsaikhan, student 948, AY Afternoon, 3 August 2026): ILEP code = STILL null -- AY Afternoon code unknown, 20 days to start\n• Pedro De Pauli Pastre (student 911): no 2026-27 AY booking course found in SIS -- renewal may not have been created\n• Completion certificates still blocked for booking courses 97 and 24970 without valid ILEP codes",
+        "Set ILEP 0318/0010 on booking course 97 (AY Morning); get AY Afternoon code from ILEP office and set on BC24970; check Pedro renewal. See recipe: issue-8-ilep-certs.md",
+        "26th check Tue 14 Jul UTC. BC24959 Diego ILEP=0318/0010 NOW SET. BC97 Gustavo ILEP=STILL null. BC24970 Tsengelbayar ILEP=STILL null. AY Aft code unknown. Pedro 911: no 2026-27 BC. 20d to Aug3. Diego fixed; 2 still open.",
+        "ILEP null 2 BCs; 20d to start"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 8 booking courses ending Friday 17 July 2026 still have zero class assignments -- confirmed 14 Jul UTC (64th check)\n• Booking course 26 (Academic Year Morning, Kritchana Ratcha-Anan, student 21): zero class assignments, ending Friday\n• Booking course 95 (Morning General Plus, Florian Baury, student 81): zero class assignments -- 12+ school days missed, ending Friday\n• Booking course 1719 (Academic Year Afternoon, Maria Magdalena Hermosilla Ogaz, student 992): zero class assignments -- 6-month course ending Friday\n• Booking course 24946 (General English AM, Lunel Dubost, student 14566): zero class assignments -- Day 2 of course, ending Friday\n• Booking course 24985 (General English PM, Silvia Maza Valladolid, student 14583): zero class assignments, ending Friday\n• Booking course 24986 (General English PM, Gladis Maza Valladolid, student 14584): zero class assignments, ending Friday\n• Booking course 24992 (General English AM, Luz Sobrino Blanco, student 14589): zero class assignments, ending Friday\n• Booking course 24994 (General English AM, Petru Ous, student 14591): zero class assignments, ending Friday\n• 18 booking courses ended 10 July 2026 still active = true (4 days stale)",
+        "Assign 8 zero-class students via SIS Admin > Classes > To Be Assigned before Friday 17 July; deactivate 18 stale Jul10 booking courses. See recipe: issue-45-addendum-14jul.md",
+        "64th check Tue 14 Jul UTC. ALL 8 BCs ending Fri Jul17 CONFIRMED 0 SCAs (BC26 BC95 BC1719 BC24946 BC24985 BC24986 BC24992 BC24994). 18 stale BCs ended Jul10 active=true. 3 DAYS TO DEADLINE. Fix NOT RUN.",
+        "CRITICAL; 3d to Fri; 8 SCAs needed"
+      ]
+    ]
+  }
+]

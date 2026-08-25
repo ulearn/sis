@@ -19,20 +19,37 @@ model Student {
   // Identity
   firstName         String  @map("first_name")
   lastName          String? @map("last_name")
+  nickname          String?  // preferred / known-as name, shown on the Overview
   email             String
+  // Secondary/alternate addresses, mirrored from HubSpot contact `hs_additional_emails`
+  // (HubSpot keeps a primary + a semicolon-separated list of additional emails on one
+  // contact). Stored as the raw HubSpot string so a returning student who re-books under
+  // a different address still maps to the same record. SIS `email` stays the single primary.
+  additionalEmails  String? @map("additional_emails")
   gender            Int?    // 1=male, 2=female (Fidelo convention)
   birthday          DateTime? @db.Date
-  nationality       String?  @db.Char(2)  // ISO 3166-1 alpha-2
+  nationality       String?  @db.VarChar(100)  // full country name, e.g. "Spain" — ISO-code plan was abandoned
   language          String?  // mother tongue
   contactLanguage   String?  @map("contact_language") // correspondence language
 
-  // Address
+  // Address — the ORIGINAL single fieldset, now labelled "Native Address" (home
+  // country). Historically it held a mix (often the Irish accommodation address);
+  // the split below lets staff record both. No auto-migration yet (Neil 2026-08-19).
   address           String?
   addressAddon      String?  @map("address_addon")
   zip               String?
   city              String?
   state             String?
-  countryIso        String?  @map("country_iso") @db.Char(2)
+  countryIso        String?  @map("country_iso") @db.VarChar(100)  // canonical full country name (ISO-code plan abandoned; matches nationality + HubSpot/territory-map)
+
+  // Irish Address — where the student stays while in Ireland (accommodation).
+  // Mirrors the native fieldset; country is Ireland by definition but kept for parity.
+  irishAddress      String?  @map("irish_address")
+  irishAddressAddon String?  @map("irish_address_addon")
+  irishZip          String?  @map("irish_zip")
+  irishCity         String?  @map("irish_city")
+  irishState        String?  @map("irish_state")
+  irishCountryIso   String?  @map("irish_country_iso") @db.VarChar(100)
 
   // Contact
   phone             String?
@@ -57,6 +74,10 @@ model Student {
 
   // Visa / Passport
   passportNumber    String?  @map("passport_number")
+  // DEPRECATED 2026-05-08 — visaRequired was cosmetic; nothing read it for
+  // logic. Visa relevance is derived from `visaStatus` (any non-null value
+  // means visa is in play). Field + DB column kept temporarily so legacy
+  // imports can still write without erroring; drop in a tidy-up pass.
   visaRequired      Boolean  @default(false) @map("visa_required")
   visaStatus        String?  @map("visa_status")
   visaId            String?  @map("visa_id")
@@ -79,11 +100,56 @@ model Student {
   // Full 40-question placement — either a direct 40-Q sit or Quiz + Delta combined
   placementTestDate DateTime? @map("placement_test_date") @db.Date
   placementTestScore Int?    @map("placement_test_score")
+  // CEFR level at the moment the placement was sat — frozen historical
+  // anchor. Set by tests.recordResult alongside the score; never updated
+  // when currentLevel changes later. Powers the "70% · A1" badge in the
+  // student profile so the original entry level is always visible even
+  // after the student progresses.
+  placementTestLevel String? @map("placement_test_level")
 
   // Exam / certification track (LMS)
   exam              String?   @map("exam")            // KEY, PET, FIRST, ADVANCED, IELTS
   examDate          DateTime? @map("exam_date") @db.Date
+  // Insurance (was "Learner Protection Policy" — same DB column, surfaced
+  // under the Insurance UI section now). One product in-house: 8-month
+  // policy via Arachas/Chubb. Column holds the policy number; from/until
+  // dates are stored separately so docs can cite the coverage window.
   learnerProtectionPolicy String? @map("learner_protection_policy")
+  insuranceFrom     DateTime? @map("insurance_from") @db.Date
+  insuranceUntil    DateTime? @map("insurance_until") @db.Date
+  // Medical / health policy (Arachas MediCover, Chubb) — separate product from
+  // Learner Protection above. Parsed from the uploaded policy PDF.
+  medicalPolicy     String?   @map("medical_policy")
+  medicalFrom       DateTime? @map("medical_from") @db.Date
+  medicalUntil      DateTime? @map("medical_until") @db.Date
+
+  // Flight details — captured after visa approval (T&C: student notifies us
+  // of arrival flight inside the 4-week notice window). Surfaced in admin
+  // and the student portal; required for airport transfer scheduling.
+  // Inbound = the arrival flight (always set first); outbound = the return
+  // flight, optional and only filled if the student plans an airport dropoff.
+  flightNumber          String?   @map("flight_number")            // inbound, e.g. "EI 162"
+  flightDate            DateTime? @map("flight_date") @db.Date
+  flightTime            String?   @map("flight_time")              // HH:MM 24h, free-text to avoid TZ headache
+  outboundFlightNumber  String?   @map("outbound_flight_number")   // optional, return leg
+  outboundFlightDate    DateTime? @map("outbound_flight_date") @db.Date
+  outboundFlightTime    String?   @map("outbound_flight_time")
+
+  // Visa-approval workflow — see scripts/students.ts:applyVisaApprovalShunt.
+  // shuntAppliedAt: stamped when staff flipped Pending/InAppeal → Approved
+  //                 AND at least one booking had its arrival shunted by ≥1 day.
+  // noticeSentAt:   stamped when staff explicitly clicks "Send 4-week notice"
+  //                 in admin. Drives idempotency — CTA is hidden once set.
+  // CTA visibility: shuntAppliedAt > noticeSentAt (or noticeSentAt IS NULL).
+  visaApprovalShuntAppliedAt DateTime? @map("visa_approval_shunt_applied_at")
+  visaApprovalNoticeSentAt   DateTime? @map("visa_approval_notice_sent_at")
+  // Captured during applyVisaApprovalShunt — original = pre-shunt arrival
+  // (the provisional date the student was given), new = post-shunt anchor
+  // (the new earliest legal arrival). Drives the email tokens
+  // booking.original_start_date and booking.start_date so the message reads
+  // coherently. Refreshed each time the shunt fires.
+  visaShuntOriginalArrival   DateTime? @map("visa_shunt_original_arrival") @db.Date
+  visaShuntNewArrival        DateTime? @map("visa_shunt_new_arrival") @db.Date
 
   // Classification
   studentType       StudentType @default(ADULT) @map("student_type")
@@ -95,6 +161,9 @@ model Student {
   socialSecurityNum String?  @map("social_security_num")
   note              String?
   profilePicture    String?  @map("profile_picture")
+  // Beta-access flag for the launch phase — gates the student-app Learning tab
+  // (LMS front-end). false → "Beta launch, coming soon…"; true → live LMS.
+  beta              Boolean  @default(false)
   source            String?  // "How did you hear about us?"
 
   // External IDs (for migration & sync)
@@ -102,17 +171,40 @@ model Student {
   fideloCustomerNum String?  @unique @map("fidelo_customer_num")
   hubspotContactId  String?  @unique @map("hubspot_contact_id")
   hubspotDealId     String?  @map("hubspot_deal_id")
+  // Seat Clearance PLACEHOLDER student (dummy until the seat is redeemed to a real
+  // student). Mirror of HubSpot Contact.clearance. Suppresses onboarding/Welcome emails.
+  clearance         Boolean  @default(false) @map("clearance")
 
   // Challenges / Ambassador
   // Students self-report handle + review URL; staff verify via the admin UI.
   // ambassadorCode is auto-set when googleReviewVerified flips to true.
   instagramHandle          String?   @map("instagram_handle")
   instagramFollowVerified  Boolean   @default(false) @map("instagram_follow_verified")
+
+  // Stamped the first time the student is shown the welcome/onboarding video
+  // (once per student). Null = not yet seen → the app surfaces it on next login,
+  // right after the Student Agreement gate passes.
+  welcomeVideoSeenAt       DateTime? @map("welcome_video_seen_at")
   googleReviewUrl          String?   @map("google_review_url")
   googleReviewVerified     Boolean   @default(false) @map("google_review_verified")
   trustpilotReviewUrl      String?   @map("trustpilot_review_url")
   ambassadorCode           String?   @unique @map("ambassador_code")
   ambassadorApprovedAt     DateTime? @map("ambassador_approved_at")
+
+  // Student Agreement gate — set once the student signs the Student Agreement
+  // & Code of Conduct. Null → the signing gate surfaces on portal login.
+  // Lifetime marker on the STUDENT (not the booking): signed once, applies to
+  // every subsequent booking. Grandfathered students (had an account before
+  // the feature launched) are backfilled so they aren't re-gated.
+  contractSignedAt         DateTime? @map("contract_signed_at")
+
+  // Accommodation card-on-file guarantee — MIRROR of HubSpot contact.
+  // accommodation_card_guarantee (single source of truth). Flipped to true when
+  // hubapp's cardGuarantee.js records a storable card/SEPA payment (any of the
+  // €250 deposit / course invoice / €1 CardOnFile link) and pings SIS. Only
+  // MEANINGFUL for students with an accommodation booking (breakage guarantee).
+  cardOnFile               Boolean   @default(false) @map("card_on_file")
+  cardOnFileAt             DateTime? @map("card_on_file_at")
 
   // Relations
   bookings            Booking[]
@@ -121,8 +213,68 @@ model Student {
   testTokens          TestAccessToken[]
   challengeContent    StudentChallengeContent[]
   activityRsvps       ActivityAttendee[]
+  levelChanges        StudentLevelChange[]
+  refundRequests      RefundRequest[]
+  accommodationFeedback   AccommodationFeedback[]
+  socialActivityFeedback  SocialActivityFeedback[]
+  courseFeedback          CourseFeedback[]
+  signatures          StudentSignature[]
 
   @@map("students")
+}
+
+// Student Agreement signature record — mirrors AgencySignature. One row per
+// signing event (typically one per student for life). The generated signed PDF
+// is written to disk (pdfPath); the signature image is kept for audit.
+model StudentSignature {
+  id              Int       @id @default(autoincrement())
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  studentId       Int       @map("student_id")
+  student         Student   @relation(fields: [studentId], references: [id])
+
+  // The SisUser (student-portal login) that performed the signing, if resolved.
+  signedByUserId  Int?      @map("signed_by_user_id")
+
+  signerName      String    @map("signer_name")
+  signerEmail     String?   @map("signer_email")
+
+  mode            String    @map("mode")                       // 'typed' | 'drawn'
+  signatureFont   String?   @map("signature_font")             // when mode='typed'
+  signatureSvg    String?   @map("signature_svg") @db.Text     // when mode='drawn'
+  signaturePngB64 String?   @map("signature_png_b64") @db.Text // rasterised for PDF embed
+
+  contractVersion String    @map("contract_version")
+  ipAddress       String?   @map("ip_address")
+  userAgent       String?   @map("user_agent") @db.Text
+  pdfPath         String?   @map("pdf_path")
+
+  @@index([studentId])
+  @@map("student_signatures")
+}
+
+// Append-only log of currentLevel transitions. Read alongside Student to
+// answer "what was this student's level on date X" — class rosters render
+// the level effective at the week start, not whatever currentLevel happens
+// to be today, so moving a student up/down doesn't rewrite past weeks.
+//
+// fromLevel = the level the student was on before this change (snapshot of
+// currentLevel at write time; nullable because the first row may have been
+// null→X). toLevel mirrors the new currentLevel. effectiveFrom = the date
+// the new level kicks in (typically the Monday of the week the staff was
+// viewing when they made the change).
+model StudentLevelChange {
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now()) @map("created_at")
+  studentId     Int      @map("student_id")
+  student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  fromLevel     String?  @map("from_level") @db.VarChar(8)
+  toLevel       String?  @map("to_level") @db.VarChar(8)
+  effectiveFrom DateTime @map("effective_from") @db.Date
+  changedBy     String?  @map("changed_by")
+
+  @@index([studentId, effectiveFrom])
+  @@map("student_level_changes")
 }
 
 // Out-of-class activities ULearn runs (~3 per week — pub crawls, cliff
@@ -157,6 +309,7 @@ model Activity {
   createdBy      String?  @map("created_by")
 
   attendees      ActivityAttendee[]
+  feedback       SocialActivityFeedback[]
 
   @@index([date])
   @@map("activities")
@@ -199,6 +352,26 @@ model StudentChallengeContent {
   verified    Boolean  @default(false)
   verifiedBy  String?  @map("verified_by")
   verifiedAt  DateTime? @map("verified_at")
+
+  // ── KickStart prize: post Impact tracking ──────────────────────────────
+  // 14-day measurement window is anchored on postedAt (the real Instagram/FB
+  // post date, captured at link time) — NOT the upload/link moment. The student
+  // may upload their result screenshot ANY time (no gate); eligibility for the
+  // €500 leaderboard is decided by the DATE IN THE SCREENSHOT (shotDate): a post
+  // counts only if shotDate ≤ postedAt + 14 (else stored but off the leaderboard —
+  // no "let the views mature" advantage). Falls back to createdAt if postedAt null.
+  postedAt       DateTime? @map("posted_at")
+  shotDate       DateTime? @map("shot_date")   // date read from the uploaded screenshot (AI)
+  eligible       Boolean?  @map("eligible")    // shotDate within postedAt+14 → leaderboard-eligible
+  screenshotPath String?  @map("screenshot_path")
+  views          Int?
+  likes          Int?
+  comments       Int?
+  reposts        Int?     // ↻ repost
+  shares         Int?     // ➤ send / paper-plane
+  saves          Int?     // 🔖 bookmark
+  impact         Float?
+  metricsAt      DateTime? @map("metrics_at")
 
   @@index([studentId])
   @@map("student_challenge_content")
@@ -282,6 +455,15 @@ model Booking {
   serviceStart  DateTime?     @map("service_start") @db.Date
   serviceEnd    DateTime?     @map("service_end") @db.Date
 
+  // Legacy attendance backfill (pre-04/05/2026 Fidelo migration). The cumulative
+  // "Total time frame" % at the migration cutover, imported from the weekly
+  // Fidelo attendance sheets. Folded into the overall attendance calc, weighted
+  // with the SIS-tracked days since 04/05 (see attendance-pct.ts). asOf = the
+  // source sheet's week; source = that sheet's filename (provenance).
+  legacyAttendancePct    Decimal?  @map("legacy_attendance_pct") @db.Decimal(5,2)
+  legacyAttendanceAsOf   DateTime? @map("legacy_attendance_as_of") @db.Date
+  legacyAttendanceSource String?   @map("legacy_attendance_source")
+
   // Financial
   currency       String   @default("EUR") @db.Char(3)
   amountTotal    Decimal? @map("amount_total") @db.Decimal(10,2)
@@ -307,6 +489,30 @@ model Booking {
   hubspotInvoiceId String? @unique @map("hubspot_invoice_id")
   dataSource       DataSource @default(MANUAL) @map("data_source")
 
+  // Public HubSpot share links (hs-sites-eu1.com/...) for the customer-facing
+  // quote and invoice pages. Captured server-side at the /invoice-created
+  // webhook (hs_quote_link off the deal's quote, hs_invoice_link off the
+  // invoice) and stored so the admin UI can render a plain hyperlink WITHOUT
+  // calling HubSpot at render time. These show live paid/partial/unpaid status
+  // and are the link Success forwards to the student as a receipt.
+  hubspotQuoteUrl   String? @map("hubspot_quote_url")
+  hubspotInvoiceUrl String? @map("hubspot_invoice_url")
+
+  // Mirrors HubSpot Deal.challenge (select field). Currently only
+  // "KickStart" is in use; "CashBack" is defined but unused. Null = the
+  // student did not take a challenge on this booking. Used by the admin
+  // student profile to decide whether to render the Challenges tab — if
+  // ANY of the student's bookings carries a non-null value, the tab is
+  // shown (a student who's ever done a challenge keeps the visible
+  // history forever). Synced on the /invoice-created webhook.
+  hubspotChallenge String? @map("hubspot_challenge")
+
+  // Group membership (closed-group / junior-group bookings). Null for normal
+  // individual bookings. Members of one group share arrival/course/accom but
+  // each keeps its own booking for class assignment, attendance + LoA.
+  groupId Int? @map("group_id")
+  group   StudentGroup? @relation(fields: [groupId], references: [id])
+
   // Relations
   courses            BookingCourse[]
   accommodations     BookingAccommodation[]
@@ -317,8 +523,62 @@ model Booking {
   documents          Document[]
   documentRecords    DocumentRecord[]
   statusHistory      BookingStatusHistory[]
+  refundRequests     RefundRequest[]
+  paymentInstalments PaymentInstalment[]
+  courseFeedback     CourseFeedback[]
 
   @@map("bookings")
+}
+
+// Closed-group / junior-group booking (a school or agent sending N students on
+// one deal). The group is the operable unit for the Groups UI; each member is a
+// real Booking (group_id) so class assignment / attendance / LoA all work per
+// student, but financials live ONLY at the group level (one HubSpot invoice to
+// the sending entity — member bookings carry €0 so nothing blocks). Attributes
+// mirror the HubSpot deal (synced on create/refresh) so the overview is fast.
+model StudentGroup {
+  id            Int       @id @default(autoincrement())
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  hubspotDealId String?   @map("hubspot_deal_id")
+  name          String
+  company       String?                                  // sending school / company / agent
+  agencyId      Int?      @map("agency_id")
+  contactName   String?   @map("contact_name")
+  contactEmail  String?   @map("contact_email")
+  pax           Int?
+  leaders       String?                                  // group-leader names / notes
+  groupType     String?   @map("group_type")             // Junior Group (Closed) | (Mixed) | Adult Group
+  courseName    String?   @map("course_name")
+  courseStart   DateTime? @map("course_start") @db.Date
+  courseEnd     DateTime? @map("course_end")   @db.Date
+  accomType     String?   @map("accom_type")
+  accomStart    DateTime? @map("accom_start")  @db.Date
+  accomEnd      DateTime? @map("accom_end")    @db.Date
+  notes         String?
+  bookings      Booking[]
+
+  @@map("student_groups")
+}
+
+// Staff-only freeform note attached to a specific part of a booking ("weird
+// stuff that might arise"). Polymorphic: one row per noted entity, identified
+// by entityType + entityId (NOT a column on every model). `bookingId` scopes
+// the note so the booking detail loads them all in one query. One note per
+// entity (upsert); empty body deletes the row.
+model EntityNote {
+  id         Int      @id @default(autoincrement())
+  bookingId  Int      @map("booking_id")
+  entityType String   @map("entity_type")  // 'course' | 'accommodation' | 'extra' | 'holiday' | 'financial'
+  entityId   Int      @map("entity_id")     // the specific row's id ('financial' uses the bookingId)
+  body       String
+  createdBy  String?  @map("created_by")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@unique([entityType, entityId])
+  @@index([bookingId])
+  @@map("entity_notes")
 }
 
 enum BookingStatus {
@@ -333,6 +593,64 @@ enum DataSource {
   FIDELO
   MANUAL
   HUBSPOT
+  TM_API   // TransferMate webhook (hub → SIS) — shadow escrow payments only
+  CREDIT   // "ULearn Credit" display payment row auto-stamped by the credit reconcile
+}
+
+// Per-booking payment instalment ledger. Built for LifePass (25 × €297
+// monthly drawdown against the master -Sub invoice) but designed
+// product-agnostic so other staged-payment schemes can use it later.
+//
+// Conceptually closer to a loan amortisation row than a HubSpot/Xero
+// Subscription invoice — see .claude/docs/subs/subs.md. Each row is a
+// "collection request", NOT an accounting invoice. The legal receivable
+// stays the single -Sub master invoice in Xero; instalments here track
+// the schedule + which ones have been paid + the join key (xeroInvoiceNumber)
+// the bookkeeper uses to allocate the inbound payment.
+//
+// Future Stripe Payment Link flow stamps client_reference_id with
+// xeroInvoiceNumber so the bookkeeper (or eventually the auto-allocator
+// webhook) can match incoming payments back to the right master invoice.
+model PaymentInstalment {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  bookingId Int     @map("booking_id")
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  // The Xero MASTER invoice this drawdown chips away at. We carry the
+  // invoice NUMBER (e.g. "INV-1087-Sub") rather than the Xero UUID
+  // because that's what the bookkeeper sees in the UI AND what Stripe's
+  // client_reference_id surfaces in the dashboard / bank feed.
+  xeroInvoiceNumber String? @map("xero_invoice_number")
+
+  sequence  Int      // 1..LPS_QTY (25 for LifePass)
+  dueDate   DateTime @map("due_date") @db.Date
+  amount    Decimal  @db.Decimal(10, 2)
+  currency  String   @default("EUR") @db.Char(3)
+
+  // Payment tracking — populated by the manual allocation path today,
+  // by the Stripe-webhook auto-allocator later.
+  paidAt          DateTime? @map("paid_at")
+  paymentProvider String?   @map("payment_provider") // 'stripe' | 'revolut' | 'sepa_dd' | 'manual' | null
+  paymentRef      String?   @map("payment_ref")      // Stripe charge id / Xero payment id / bank ref
+
+  // Has this drawdown's payment been allocated against the Xero master invoice?
+  // 'pending'   = no payment yet (or paid but not yet allocated)
+  // 'allocated' = matched against master invoice in Xero
+  // 'failed'    = payment received but allocation failed (needs human)
+  allocationStatus String @default("pending") @map("allocation_status")
+
+  // Soft cancellation — student dropped, refund, schedule renegotiated
+  cancelledAt  DateTime? @map("cancelled_at")
+  cancelReason String?   @map("cancel_reason")
+
+  @@unique([bookingId, sequence])
+  @@index([dueDate])
+  @@index([xeroInvoiceNumber])
+  @@index([allocationStatus])
+  @@map("payment_instalments")
 }
 
 model BookingStatusHistory {
@@ -370,6 +688,7 @@ model Agency {
   // External IDs
   fideloAgencyId   Int?      @unique @map("fidelo_agency_id")
   hubspotCompanyId String?   @unique @map("hubspot_company_id")
+  xeroContactId    String?   @map("xero_contact_id")   // resolved once (keyed on operable portal email), cached for credit-note pushes
 
   // Primary HubSpot entity (Company if available, else Agent Employee Contact for sole traders)
   primaryEntityId   String? @map("primary_entity_id")
@@ -380,14 +699,171 @@ model Agency {
   // emailable contact associated alongside the company.
   primaryContactId  String? @map("primary_contact_id")
 
+  // Partner agreement signing — set when any portal user from this agency
+  // completes the internal sign flow. Null = unsigned = portal gate active.
+  contractSignedAt   DateTime? @map("contract_signed_at")
+  contractSignedById Int?      @map("contract_signed_by_id") // sis_users.id of the human who signed
+  contractSignedBy   SisUser?  @relation("AgencyContractSignedBy", fields: [contractSignedById], references: [id])
+
+  // Accelerator programme opt-in (Docs/Accelerator-SIS-Handoff.md). Null = not
+  // yet signed → non-blocking prompt in the partner portal. Signing stamps the
+  // date + pushes three props to the HubSpot Company/Contact; hubapp then owns
+  // the tiered commission. Idempotent — never overwritten.
+  accelAgreeDate   DateTime? @map("accel_agree_date") @db.Date
+  accelAgreeById   Int?      @map("accel_agree_by_id") // sis_users.id who activated
+
   // Relations
   bookings         Booking[]
   groups           Group[]
   portalUsers      SisUser[]
   quoteActions     PartnerQuoteAction[]
   documents        PartnerDocument[]
+  signatures       AgencySignature[]
+  credits          AgencyCredit[]
+  challengeOptIn   ChallengeOptIn?
+
+  // Seat Clearance Sale eligibility — flagged (Model-B "package") partners see the
+  // live clearance tab as their first portal tab. See project_occupancy_seat_clearance.
+  clearanceEligible Boolean @default(false) @map("clearance_eligible")
 
   @@map("agencies")
+}
+
+// ── Seat Clearance Sale ───────────────────────────────────────────────────────
+// A curated, countdown marketplace of a SMALL number of genuinely-empty seats at a
+// crazy-low price, shown to clearance-eligible partners (Agency.clearanceEligible).
+// Seat count is CURATED for scarcity, not the raw empties. See the project memory.
+model ClearanceSale {
+  id           Int       @id @default(autoincrement())
+  createdAt    DateTime  @default(now()) @map("created_at")
+  name         String
+  startsAt     DateTime  @map("starts_at")     // countdown goes live
+  endsAt       DateTime  @map("ends_at")       // countdown closes
+  assignBy     DateTime? @map("assign_by") @db.Date  // seats assignable to a student until
+  active       Boolean   @default(true)        // master switch
+  offers       ClearanceOffer[]
+  reservations ClearanceReservation[]
+  @@map("clearance_sales")
+}
+
+model ClearanceOffer {
+  id             Int      @id @default(autoincrement())
+  saleId         Int      @map("sale_id")
+  sale           ClearanceSale @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  title          String                        // "Academic Year — Afternoon (Study & Work)"
+  subtitle       String?                       // "25 Weeks · 15 Lessons/Week · Dublin, Ireland"
+  category       String   @default("AY")       // AY | GE (informational)
+  session        String   @default("ANY")      // AM | PM | ANY — maps to occupancy pocket
+  retailPrice    Decimal  @map("retail_price") @db.Decimal(10, 2)     // struck-through
+  clearancePrice Decimal  @map("clearance_price") @db.Decimal(10, 2)
+  priceUnit      String   @default("total") @map("price_unit")        // total | week
+  depositPerSeat Decimal  @map("deposit_per_seat") @db.Decimal(10, 2) // 250 / 50
+  seatsTotal     Int      @default(0) @map("seats_total")             // curated scarcity count
+  sortOrder      Int      @default(0) @map("sort_order")
+  reservations   ClearanceReservation[]
+  @@map("clearance_offers")
+  @@index([saleId])
+}
+
+model ClearanceReservation {
+  id                Int       @id @default(autoincrement())
+  createdAt         DateTime  @default(now()) @map("created_at")
+  saleId            Int       @map("sale_id")
+  offerId           Int       @map("offer_id")
+  sale              ClearanceSale  @relation(fields: [saleId], references: [id])
+  offer             ClearanceOffer @relation(fields: [offerId], references: [id])
+  agencyId          Int?      @map("agency_id")
+  sisUserId         Int?      @map("sis_user_id")          // partner user who reserved
+  seatLabel         String?   @map("seat_label")           // "Seat 01" (cosmetic)
+  depositAmount     Decimal   @map("deposit_amount") @db.Decimal(10, 2)
+  status            String    @default("PENDING")          // PENDING | RESERVED | ASSIGNED | CANCELLED
+  stripeSessionId   String?   @map("stripe_session_id")    // Stripe embedded-checkout session (the paid-deposit signal)
+  hubspotInvoiceId  String?   @map("hubspot_invoice_id")   // real HubSpot invoice from fulfilment (INV-####)
+  hubspotDealId     String?   @map("hubspot_deal_id")      // clearance deal stood up on fulfilment
+  placeholderContactId String? @map("placeholder_contact_id") // ClearSeat placeholder Student-B2B contact
+  fulfilledAt       DateTime? @map("fulfilled_at")         // deal/invoice/payment built (idempotency guard)
+  paidAt            DateTime? @map("paid_at")
+  assignedStudentId Int?      @map("assigned_student_id")
+  assignedAt        DateTime? @map("assigned_at")
+  @@map("clearance_reservations")
+  @@index([saleId])
+  @@index([offerId])
+}
+
+// Partner-agreement signature audit. One row per signing event (including
+// legacy Zoho imports and grandfathered pre-launch portal users). The
+// denormalised `Agency.contractSignedAt` exists for fast gate checks; this
+// table is the source of truth for the audit trail.
+model AgencySignature {
+  id              Int       @id @default(autoincrement())
+  agencyId        Int       @map("agency_id")
+  agency          Agency    @relation(fields: [agencyId], references: [id])
+
+  // Who signed. Null for legacy-zoho imports and grandfathered rows
+  // (we have the email/name from Zoho but not always a matching SisUser).
+  signedByUserId  Int?      @map("signed_by_user_id")
+  signedByUser    SisUser?  @relation("AgencySignatureSignedBy", fields: [signedByUserId], references: [id])
+
+  signerName      String    @map("signer_name")               // typed-in or HubSpot-pulled full name
+  signerTitle     String?   @map("signer_title")              // job title at signing time
+  signerEmail     String?   @map("signer_email")              // captured for legacy imports
+
+  mode            String    @map("mode")                       // 'typed' | 'drawn' | 'legacy-zoho' | 'grandfathered'
+  signatureFont   String?   @map("signature_font")             // when mode='typed'
+  signatureSvg    String?   @map("signature_svg") @db.Text     // when mode='drawn' — raw canvas path
+  signaturePngB64 String?   @map("signature_png_b64") @db.Text // when mode='drawn' — rasterised for PDF embed
+
+  contractVersion String    @map("contract_version")           // e.g. '2026-05-v1', 'legacy-zoho-import', 'grandfathered-2026-05'
+  ipAddress       String?   @map("ip_address")
+  userAgent       String?   @map("user_agent") @db.Text
+  pdfPath         String?   @map("pdf_path")                   // path to signed PDF on disk (null for grandfathered)
+  signedAt        DateTime  @default(now()) @map("signed_at")
+
+  @@index([agencyId])
+  @@index([signedAt])
+  @@map("agency_signatures")
+}
+
+// Partner credit ledger — a holding area for credit owed to an agency that has
+// no home in HubSpot/Xero yet (overpayments, goodwill, services-in-lieu). SIS is
+// the system of record; staff record credits, the partner sees the balance in
+// their Finance tab. Applying a credit to a future enrolment is a later phase
+// (appliedToDealId/appliedAt stay null until then).
+model AgencyCredit {
+  id              Int       @id @default(autoincrement())
+  agencyId        Int       @map("agency_id")
+  agency          Agency    @relation(fields: [agencyId], references: [id])
+  // Signed ledger: CREDIT rows are positive (granted), DEBIT rows are negative
+  // (used). Balance = sum(amount) over non-VOID rows.
+  amount          Decimal   @db.Decimal(10, 2)
+  entryType       String    @default("CREDIT") @map("entry_type")  // CREDIT | DEBIT
+  reason          String?   @db.Text
+  issueDate       DateTime  @default(now()) @map("issue_date") @db.Date
+  status          String    @default("OPEN")            // OPEN (active) | VOID
+  createdBy       String?   @map("created_by")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  // Source — where a CREDIT originated (e.g. the invoice that was overpaid).
+  // Blank for goodwill / services-in-lieu credits.
+  sourceRef       String?   @map("source_ref")           // origin invoice no. or note
+  // Apply — where a DEBIT went (the booking/invoice the credit was used on).
+  appliedToBookingId Int?   @map("applied_to_booking_id")
+  appliedInvoice  String?   @map("applied_invoice")       // invoice no. it offset
+  appliedToDealId String?   @map("applied_to_deal_id")
+  appliedAt       DateTime? @map("applied_at")
+  paymentId       Int?      @map("payment_id")            // the Payment row that spawned this DEBIT (ULearn Credit method)
+  // Push to the other environments (a CREDIT grant → Xero credit note + HubSpot task)
+  xeroCreditNoteId     String?   @map("xero_credit_note_id")     // Xero CreditNote GUID
+  xeroCreditNoteNumber String?   @map("xero_credit_note_number") // e.g. "CN-0406"
+  hubspotTaskId        String?   @map("hubspot_task_id")         // the "Create Credit Memo" reminder task
+  pushedAt             DateTime? @map("pushed_at")
+  // Auto-deduction: DEBITs posted by the invoice-paid webhook when it detects a
+  // HubSpot credit memo applied to a booking's invoice (derived, since the memo
+  // object is API-walled). Reconciled per booking → idempotent.
+  autoFromInvoiceCredit Boolean  @default(false) @map("auto_from_invoice_credit")
+  hubspotCreditMemoId   String?  @map("hubspot_credit_memo_id")
+
+  @@index([agencyId])
+  @@map("agency_credits")
 }
 
 // ============================================================
@@ -406,8 +882,8 @@ model BookingCourse {
   name              String             // e.g. "Academic Year Afternoon"
   category          CourseCategory
   level             String?            // e.g. "A1", "A2", "B1", "B2"
-  startDate         DateTime           @map("start_date") @db.Date
-  endDate           DateTime           @map("end_date") @db.Date
+  startDate         DateTime?          @map("start_date") @db.Date
+  endDate           DateTime?          @map("end_date") @db.Date
   weeks             Int
   hoursPerWeek      Decimal?           @map("hours_per_week") @db.Decimal(4,1)
   active            Boolean            @default(true)
@@ -421,6 +897,12 @@ model BookingCourse {
 
   // ILEP programme reference (visa letters cite this)
   ilepCode          String?            @map("ilep_code")
+
+  // Set true when this enrolment was sold via the Academic Year renewal SKU
+  // (RNW-AM / RNW-PM in HubSpot). The course itself is identical to a
+  // first-year AY — same level, class, teachers — but renewing students get
+  // a discounted line item. Surfaced as a "Renewal" badge in the SIS UI.
+  isRenewal         Boolean            @default(false) @map("is_renewal")
 
   // External IDs
   fideloCourseId    Int?               @unique @map("fidelo_course_id")
@@ -485,12 +967,63 @@ model Teacher {
   isSalaried Boolean  @default(false) @map("is_salaried") // DOS etc — cover hours don't generate payroll
   active     Boolean @default(true)
 
+  // Zoho People sync (payroll + contract), pulled via the "+ Zoho Teacher"
+  // button. zohoEmployeeId is the cross-ref (e.g. "ULE002"/"CND214"),
+  // zohoRecordId is the API record id for getDataByID. The rest mirror the
+  // Zoho merge fields that populate the employment contract. Salary → hourlyRate.
+  zohoEmployeeId   String?   @unique @map("zoho_employee_id")
+  zohoRecordId     String?   @map("zoho_record_id")
+  pps              String?
+  dateOfBirth      DateTime? @map("date_of_birth") @db.Date
+  address          String?
+  startDate        DateTime? @map("start_date") @db.Date   // Zoho "Date of joining" = contract commencement
+  title            String?                                 // Zoho Designation, e.g. "Teacher"
+  reportingTo      String?   @map("reporting_to")          // Zoho Reporting_To = contract "Manager"
+  contractType     String?   @map("contract_type")         // Zoho Employee_type = contract "Status"
+  standardHours    String?   @map("standard_hours")        // Zoho standard_hours = "Normal Working Hours"
+  contractSignedAt DateTime? @map("contract_signed_at")    // gate/status flag — set when the teacher signs
+
   assignments     TeacherAssignment[]
   classTeachers   ClassTeacher[]
   coversOriginal  TeacherCover[] @relation("CoverOriginalTeacher")
   coversCover     TeacherCover[] @relation("CoverTeacher")
+  signatures      TeacherSignature[]
+  contractTokens  TeacherContractToken[]
 
   @@map("teachers")
+}
+
+model TeacherSignature {
+  id              Int      @id @default(autoincrement())
+  teacherId       Int      @map("teacher_id")
+  teacher         Teacher  @relation(fields: [teacherId], references: [id])
+  signerName      String   @map("signer_name")
+  signerEmail     String?  @map("signer_email")
+  mode            String   // 'typed' | 'drawn'
+  signatureFont   String?  @map("signature_font")
+  signatureSvg    String?  @map("signature_svg")
+  signaturePngB64 String?  @map("signature_png_b64")
+  contractVersion String?  @map("contract_version")
+  ipAddress       String?  @map("ip_address")
+  userAgent       String?  @map("user_agent")
+  pdfPath         String?  @map("pdf_path")
+  signedAt        DateTime @default(now()) @map("signed_at")
+
+  @@index([teacherId])
+  @@map("teacher_signatures")
+}
+
+model TeacherContractToken {
+  id        Int       @id @default(autoincrement())
+  token     String    @unique
+  teacherId Int       @map("teacher_id")
+  teacher   Teacher   @relation(fields: [teacherId], references: [id])
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@index([teacherId])
+  @@map("teacher_contract_tokens")
 }
 
 model Class {
@@ -698,14 +1231,33 @@ model AbsenceCertFile {
 // ACCOMMODATION
 // ============================================================
 
+// Staff-cleaner contact — invoiced separately, not a Teacher. Used to
+// enumerate weekly turnover counts and push them to her Xero Bill.
+model Cleaner {
+  id               Int      @id @default(autoincrement())
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+  name             String
+  xeroContactId    String?  @unique @map("xero_contact_id")
+  perTurnoverFee   Decimal  @default(50.00) @map("per_turnover_fee") @db.Decimal(8,2)
+  active           Boolean  @default(true)
+
+  @@map("cleaners")
+}
+
 model AccommodationProvider {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  name          String
+  name          String                // household name (often the mother's / a family label, e.g. "Angelena & Niall McMahon")
   type          String?    // "Host Family", "Residence", etc.
-  contactPerson String?    @map("contact_person")
+  // The contact person, split out (first word = first name, the rest = surname —
+  // no middle-name guessing, so "McMahon" / "O'Reilly" stay intact as the
+  // surname). Replaced the old single `contactPerson` field 2026-06-25; all
+  // consumers (documents tokens, host-payments, search) now read first/last.
+  contactFirstName String? @map("contact_first_name")
+  contactLastName  String? @map("contact_last_name")
   email         String?
   phone         String?
   phone2        String?
@@ -718,9 +1270,51 @@ model AccommodationProvider {
   allergies     String?    // provider's allergy info
   weeklyRate    Decimal?   @map("weekly_rate") @db.Decimal(8,2) // per-provider rate (not category)
   note          String?
-  active        Boolean    @default(true)  // manual override — true forces effective active regardless of dates
-  activeFrom    DateTime?  @map("active_from") @db.Date
-  activeTo      DateTime?  @map("active_to")   @db.Date
+  active        Boolean    @default(true)  // operational on/off — deactivate a host fully (portal 404s, no portal issuance, drops off matching + the nudge list). No date window: we don't track host holidays.
+
+  // Host-portal matching switch: when false, this host still has full portal
+  // access (their current residents + Xero bills) but the "students looking for
+  // a host" upcoming pool is HIDDEN and the claim endpoint is blocked. Lets ops
+  // stop an unwanted host from claiming/"stealing" new students without
+  // deactivating them outright. Toggled from the admin host-detail card.
+  portalMatchingEnabled Boolean @default(true) @map("portal_matching_enabled")
+
+  // Host segment for targeted outreach (manual for now; the thresholds below are
+  // the intended auto-derivation from hosting history — a later batch-filter job).
+  //   SuperHost ≥6 student-weeks / last 12 wks · BusyBee ≥3 · Regular ≥1 ·
+  //   Interested (wants to host, keeps missing students — manual only) ·
+  //   Sleeper (hosted, but not in 12 months) · Dormant (no activity 36 months+).
+  hostCategory String? @map("host_category")
+  // true = a human set hostCategory (via the "Auto" dropdown → a specific value);
+  // the auto-assigner (scripts/host-category.ts) skips these so a manual override
+  // survives. Pick "Auto" in the dropdown to clear it and hand back to the engine.
+  hostCategoryManual Boolean @default(false) @map("host_category_manual")
+  // When the host self-selected First Dibs (or Kelly set it) — drives the single-use
+  // window + cap. Cleared when the next cascade emails them, or when a student is placed.
+  firstDibsAt        DateTime? @map("first_dibs_at")
+  // Consecutive First Dibs expressions without ever converting to a placement.
+  // Incremented on each grant, reset to 0 on placement. Slack-flags Kelly at 3.
+  firstDibsStrikes   Int      @default(0) @map("first_dibs_strikes")
+
+  // Manual Garda-vetting override for the Hosts-list GV pipeline. null = Auto
+  // (phase derived from vettingSubmissions: None/Form/Upload). A value ('none'
+  // |'form'|'upload'|'complete') overrides that — chiefly to mark hosts whose
+  // vetting PREDATES this system as 'complete'. See routes/host-vetting.ts.
+  vettingStatus String? @map("vetting_status")
+
+  // Host acceptance preferences (Kelly, 2026-07-31) — who a family will take.
+  // Set from the Hosts list via toggle badges; drive the Age/Gender filters so
+  // placement screens the pool (e.g. junior-only families excluded for a 37M).
+  // Default FALSE = "not set" (grey badge) — we have no legacy boy/girl/age data,
+  // so Kelly colors these in over time as she confirms with each family. A colored
+  // badge = confirmed accepts; grey = unknown/declines. THREE age bands (Kelly,
+  // 2026-07-31 — a 20-something ≠ a 40yo): juniors = under 18 · adults = 18–29 ·
+  // mature = 30+. Bands finer than these go in `note`.
+  acceptsJuniors Boolean @default(false) @map("accepts_juniors")
+  acceptsAdults  Boolean @default(false) @map("accepts_adults")
+  acceptsMature  Boolean @default(false) @map("accepts_mature")
+  acceptsMale    Boolean @default(false) @map("accepts_male")
+  acceptsFemale  Boolean @default(false) @map("accepts_female")
 
   // Banking
   iban          String?
@@ -730,9 +1324,108 @@ model AccommodationProvider {
   xeroContactId    String?  @unique @map("xero_contact_id")
   fideloProviderId Int?    @unique @map("fidelo_provider_id")
 
+  // Cleaning workflow — when on, this provider's checkouts surface in the
+  // Cleaning queue. Apartment-only operationally; Host Family providers
+  // clean their own homes.
+  cleaningEnabled    Boolean  @default(false) @map("cleaning_enabled")
+  // Optional shared Google Sheet — Sheet ID + tab gid from the share URL.
+  // Sheet must be shared with the SIS service account as Editor.
+  cleaningSheetId    String?  @map("cleaning_sheet_id")
+  cleaningSheetGid   Int?     @map("cleaning_sheet_gid")
+
   properties    AccommodationProperty[]
+  portalToken   HostPortalToken?
+  claimedPlacements BookingAccommodation[] @relation("ClaimedBy")
+  vettingSubmissions HostVettingSubmission[]
 
   @@map("accommodation_providers")
+}
+
+/// Public "become a host" application intake (the iframe form on ulearnschool.com).
+/// Kept SEPARATE from AccommodationProvider so unvetted / spam applicants never
+/// pollute the live providers list, matching pool, or Xero — mirrors the lesson
+/// from the partner-registration bot flood. Staff review a `pending` row and, on
+/// approval, an AccommodationProvider is created (providerId back-links it).
+/// Rooms / children / studentTypes are stored as JSON: an application is a snapshot
+/// to review, not normalised operational data. Children carry Garda-vetting
+/// relevance (name/dob/gender) so they're captured up front. Neil 2026-07-12.
+model HostApplication {
+  id                Int       @id @default(autoincrement())
+  createdAt         DateTime  @default(now()) @map("created_at")
+  status            String    @default("pending") // pending | approved | rejected
+  salutation        String?
+  firstName         String    @map("first_name")
+  lastName          String    @map("last_name")
+  dob               DateTime? @db.Date
+  email             String
+  mobile            String
+  secondaryContact  String?   @map("secondary_contact")
+  streetAddress     String    @map("street_address")
+  neighbourhood     String?
+  city              String?
+  eircode           String?
+  rooms             Json?     // [{ type: "Individual" | "Twin" | "Triple" }, ...]
+  studentTypes      Json?     @map("student_types") // { junior, adult, boy, girl : bool }
+  familyDescription String?   @map("family_description")
+  children          Json?     // [{ name, dob, gender }, ...]
+  pets              String?
+  additionalInfo    String?   @map("additional_info")
+  accountName       String?   @map("account_name")
+  iban              String?
+  bic               String?
+  reviewedAt        DateTime? @map("reviewed_at")
+  reviewedBy        String?   @map("reviewed_by")
+  providerId        Int?      @map("provider_id") // set once approved → AccommodationProvider
+
+  @@map("host_applications")
+}
+
+// Evergreen magic-link token per host. One token per provider, never expires —
+// the host can bookmark their link and use it indefinitely. lastUsedAt is
+// bumped on every successful resolve so we can see who's been active.
+// Token rotation = delete + re-mint (admin action; rare).
+//
+// Used by the host portal at /host-portal/<token>/* — middleware in
+// routes/host-portal.ts resolves the token to a provider and attaches it
+// to the request. No password / session / cookie involved.
+model HostPortalToken {
+  id          BigInt   @id @default(autoincrement())
+  createdAt   DateTime @default(now()) @map("created_at")
+  lastUsedAt  DateTime? @map("last_used_at")
+
+  token       String   @unique  // crypto-random 32-byte hex
+  providerId  Int      @unique @map("provider_id")
+  provider    AccommodationProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@map("host_portal_tokens")
+}
+
+// Garda vetting submissions from the host portal. One row per household
+// member being vetted (a host home can have several). Age decides the form:
+// 18+ → NVB1 (vetting invitation), 16–17 → NVB3 (parent/guardian consent).
+// `data` is the digital entry (all typed field values); the host then prints
+// the filled form, wet-signs it, and uploads a photo/scan back into
+// signedFilePath. Both the digital entry and the signed file stay attached
+// to the host (provider) record. See routes/host-vetting.ts.
+model HostVettingSubmission {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  providerId  Int      @map("provider_id")
+  provider    AccommodationProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  formType    String   @default("NVB1") @map("form_type")  // 'NVB1' (18+) | 'NVB3' (16–17)
+  personName  String?  @map("person_name")                 // denormalised for list display
+  data        Json                                         // digital entry — all field values
+  status      String   @default("submitted")               // 'submitted' | 'signed'
+
+  signedFilePath   String?   @map("signed_file_path")
+  signedFileName   String?   @map("signed_file_name")
+  signedUploadedAt DateTime? @map("signed_uploaded_at")
+
+  @@index([providerId])
+  @@map("host_vetting_submissions")
 }
 
 model AccommodationProperty {
@@ -756,6 +1449,13 @@ model AccommodationRoom {
   roomType   String?   @map("room_type")  // "Single", "Double", "Twin", "Triple"
   enSuite    Boolean   @default(false) @map("en_suite")
   capacity   Int       @default(1)
+
+  // Availability window for short-term lets (summer apartments etc.). Both null
+  // = permanent room (Capel), always available. When set, matching greys the
+  // room out and blocks placement outside [availableFrom, availableTo]. A single
+  // room container is reused across sequential leases (rename, don't re-create).
+  availableFrom DateTime? @map("available_from") @db.Date
+  availableTo   DateTime? @map("available_to")   @db.Date
 
   beds       AccommodationBed[]
 
@@ -816,7 +1516,148 @@ model BookingAccommodation {
   holdPlacedAt      DateTime? @map("hold_placed_at")
   holdPlacedBy      String?   @map("hold_placed_by")
 
+  // Cleaning workflow override. NULL = use endDate@12:00 Europe/Dublin as
+  // the implied checkout time. Accomm staff can override (e.g. early/late
+  // checkout) and the Cleaning queue + sheet pick this up.
+  cleanCheckoutAt   DateTime? @map("clean_checkout_at")
+  // Set when the room has been cleaned after this checkout. Kelly clicks
+  // Done in the in-app queue, or (later) the cleaner ticks the sheet and
+  // we sync back. Acts as the "drop from active queue" signal.
+  cleanedAt         DateTime? @map("cleaned_at")
+  cleanedBy         String?   @map("cleaned_by")
+  // Cancellation — used when the cleaning JOB row needs to be scrubbed
+  // from the queue (e.g. clean was skipped over a weekend, someone else
+  // will do it). The room may still need cleaning; this only removes
+  // it from Kelly's job list. Rows with cleanCancelledAt set are filtered
+  // out of the cleaning queue view.
+  cleanCancelledAt  DateTime? @map("clean_cancelled_at")
+  cleanCancelledBy  String?   @map("clean_cancelled_by")
+
+  feedback          AccommodationFeedback[]
+
+  // Host-portal claim / Expression of Interest. A host clicking "Claim" on the
+  // portal does NOT place the student — it registers provisional interest:
+  // claimedByProviderId is set (first-come-first-served, race-safe), which
+  // pulls the student from every other host's pool, and Kelly then Confirms
+  // (assigns a bed) or Releases (clears the claim → back in pool). claimStatus:
+  // 'pending' (awaiting Kelly) | 'confirmed' | 'released'. NULL = never claimed.
+  claimedByProviderId Int?      @map("claimed_by_provider_id")
+  claimedByProvider   AccommodationProvider? @relation("ClaimedBy", fields: [claimedByProviderId], references: [id])
+  claimedAt           DateTime? @map("claimed_at")
+  claimStatus         String?   @map("claim_status")
+  claimedVia          String?   @map("claimed_via")
+
   @@map("booking_accommodations")
+}
+
+// Per-week star rating + optional comment from the student about their accomm
+// stay. Mirrors public.student_lesson_feedback in lms_lms — same 1..10 scale,
+// same status field, same upsert-by-natural-key pattern. Weekly granularity
+// (not per-night) because that matches how stays are billed and how the
+// renewal cron will surface the prompt.
+model AccommodationFeedback {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  studentId               Int      @map("student_id")
+  student                 Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  bookingAccommodationId  Int      @map("booking_accommodation_id")
+  bookingAccommodation    BookingAccommodation @relation(fields: [bookingAccommodationId], references: [id], onDelete: Cascade)
+
+  // Each stay gets up to two prompts:
+  //   • 'first_week' — fired the first Thursday on or after check-in
+  //   • 'final'      — fired the day after departure (final wrap-up)
+  // weekStart is the Monday-of-prompt-week (informational; the unique key is
+  // (student, stay, kind) so short stays can still produce both prompts even
+  // if both anchor dates fall in the same calendar week).
+  kind        String   @default("first_week")  // 'first_week' | 'final'
+  weekStart   DateTime @map("week_start") @db.Date
+  // Either rated (stars set) OR dismissed (dismissedAt set) — both mark the
+  // prompt as resolved so it stops showing in the app's pinned prompts.
+  stars       Int?
+  comment     String?
+  status      String   @default("active")  // active | archived
+  dismissedAt DateTime? @map("dismissed_at")
+
+  submittedBySisUserId Int?    @map("submitted_by_sis_user_id")
+  submittedBy          SisUser? @relation("AccommodationFeedbackSubmittedBy", fields: [submittedBySisUserId], references: [id])
+
+  @@unique([studentId, bookingAccommodationId, kind])
+  @@index([bookingAccommodationId])
+  @@index([weekStart])
+  @@map("accommodation_feedback")
+}
+
+// Per-activity star rating + optional comment. One feedback per (student,
+// activity) — re-posting upserts. Surfaces the IG-CTA in the app when stars
+// >= 8 (handled client-side; threshold is policy, not data).
+model SocialActivityFeedback {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  studentId  Int      @map("student_id")
+  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  activityId Int      @map("activity_id")
+  activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  stars       Int?
+  comment     String?
+  status      String   @default("active")
+  dismissedAt DateTime? @map("dismissed_at")
+
+  submittedBySisUserId Int?    @map("submitted_by_sis_user_id")
+  submittedBy          SisUser? @relation("SocialActivityFeedbackSubmittedBy", fields: [submittedBySisUserId], references: [id])
+
+  @@unique([studentId, activityId])
+  @@index([activityId])
+  @@map("social_activity_feedback")
+}
+
+// End-of-course feedback — the third feedback stream alongside accommodation
+// and social activities, and the last core service that had none. Deliberately
+// SHORT (Neil 2026-07-20): the legacy 2018 paper form ran to six pages and was
+// abandoned; this is 11 scores + one comment, four screens, ~2 minutes.
+// Every score is 1–5 (1 = Poor … 5 = Excellent). All nullable: a partially
+// answered form still saves rather than being lost.
+model CourseFeedback {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  studentId Int     @map("student_id")
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  bookingId Int     @map("booking_id")
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  // Screen 1 — Your course
+  teacher   Int?
+  lessons   Int?    // structure, content & delivery
+  materials Int?
+  homework  Int?
+  // Screen 2 — Facilities
+  location   Int?   // location of the building
+  classrooms Int?
+  technology Int?   // technology used in class
+  toilets    Int?
+  recRoom    Int?   @map("rec_room")
+  // Screen 3 — Success team
+  successTeam Int?  @map("success_team")
+  // Screen 4 — Overall + free text
+  overall Int?
+  comment String?
+
+  // Mirrors the accommodation/social prompt lifecycle: either answered
+  // (submittedAt set) or dismissed, both of which resolve the in-app prompt.
+  status      String    @default("active")   // active | archived
+  submittedAt DateTime? @map("submitted_at")
+  dismissedAt DateTime? @map("dismissed_at")
+  submittedBySisUserId Int? @map("submitted_by_sis_user_id")
+
+  @@unique([studentId, bookingId])
+  @@index([bookingId])
+  @@map("course_feedback")
 }
 
 // ============================================================
@@ -833,9 +1674,38 @@ model BookingExtra {
 
   extraType  String   @map("extra_type")    // 'AIRPORT_PICKUP' | 'AIRPORT_DROPOFF' | 'EXAM_FEE'
   scheduledAt DateTime? @map("scheduled_at") // airport: arrival/departure datetime
-  details    String?                         // exam: 'IELTS' | 'FCE' | 'CAE' (future: other extras context)
+  details    String?                         // exam: 'IELTS' | 'FCE' | 'CAE' · airport: flight number
   fee        Decimal? @db.Decimal(10,2)      // per-item fee (from line item if available)
   active     Boolean  @default(true)
+
+  // Airport-transfer workflow fields. lynkDetails is the raw paste of the
+  // Lynk Taxis confirmation (driver, pickup point, etc.); presence of this
+  // value means the taxi is booked. emailSentAt records when the student
+  // notification email went out. publishedAt is a separate explicit
+  // "Send to app" action — when set, the transfer surfaces as ✓ Confirmed
+  // in the student-portal Transport card. Two-stage: email first (formal
+  // notification), then publish (in-app confirmation).
+  lynkDetails  String?   @map("lynk_details") @db.Text
+  emailSentAt  DateTime? @map("email_sent_at")
+  emailSentBy  String?   @map("email_sent_by")
+  publishedAt  DateTime? @map("published_at")
+  publishedBy  String?   @map("published_by")
+
+  // Structured confirmation workflow (replaces the raw lynkDetails paste).
+  // taxiBookedAt = Antonella ticked "Taxi booked with Lynk"; that's now the
+  // "Booked" gate. The student email is auto-built from the known flight data
+  // (no paste). terminalOverride corrects the airline→terminal auto-derivation
+  // for edge cases (null = use the derived value).
+  taxiBookedAt    DateTime? @map("taxi_booked_at")
+  taxiBookedBy    String?   @map("taxi_booked_by")
+  terminalOverride String?  @map("terminal_override")   // 'T1' | 'T2' | null(=auto)
+
+  // "Arrival details needed" chase (cron-transfer-reminders). A transfer with
+  // no scheduledAt gets a recurring nudge to the student until they supply
+  // flight details (which auto-seeds scheduledAt → drops them from the chase)
+  // or the service start passes. Tracks the last send so cadence throttles.
+  arrivalReminderSentAt DateTime? @map("arrival_reminder_sent_at")
+  arrivalReminderCount  Int       @default(0) @map("arrival_reminder_count")
 
   @@index([bookingId])
   @@index([extraType])
@@ -968,10 +1838,32 @@ model DocumentTemplate {
   templateType   String   @default("document") @map("template_type") // "document" or "email"
   category       String   @default("academic")  // folder path matching docs architecture
   documentType   String   @map("document_type")  // "letter_of_acceptance", "enrollment_letter", etc.
+  // Email-only: the default subject line. Auto-fills the Subject field
+  // when the template is picked in the Communications module. Editable
+  // by staff before sending. Null for document (non-email) templates.
+  subject        String?
+  // Email-only: the default recipient. May be a literal address or a token
+  // (e.g. "{{agency.email}}", "{{student.email}}") resolved per-student when the
+  // template is picked in Communications. Prefills the To field; editable before send.
+  defaultTo      String?  @map("default_to")
   htmlTemplate   String   @map("html_template")  // HTML with {{tokens}} and data-editable regions
   tokenSchema    String?  @map("token_schema")    // JSON: available tokens + editable blocks definition
+  // Static PDF templates: when set, the document generation flow skips the
+  // HTML→PDF render step and serves the file at this path directly. Used
+  // for legal docs that are the same for every student (SLA, terms-of-stay,
+  // policy attachments) and don't need merge fields. The path is absolute
+  // (e.g. "/home/sis/web/sis.ulearnschool.com/public_html/sis/public/library/sla-capel-street.pdf").
+  // htmlTemplate can be empty when staticPdfPath is set.
+  staticPdfPath  String?  @map("static_pdf_path")
   version        Int      @default(1)
   active         Boolean  @default(true)
+  // When true, this template can't be generated or issued until the linked
+  // booking's balance is settled (≤ €1) AND the student isn't in ESCROW /
+  // visa-pending. Originally hardcoded to the ^lo?a- slug regex; now a
+  // per-template flag so confirmation-style docs (ISD-Confirm, Confirmation
+  // (General), Visa-Approval-Notice) share the same gate. Admin bypasses.
+  // See assertLoaPaymentGate in scripts/documents.ts.
+  requiresFullPayment Boolean @default(false) @map("requires_full_payment")
 
   records        DocumentRecord[]
 
@@ -1011,6 +1903,23 @@ model DocumentRecord {
 
   // Verification
   verificationToken String? @unique @map("verification_token")
+
+  // Living-document auto-sync (LoA / visa letters only). When autoSync is true,
+  // the issued letter re-renders IN PLACE (same record, same verification token)
+  // whenever the booking's course dates change — so the booking course date is
+  // the single source of truth and the portal copy + QR follow it automatically.
+  // The moment a human edits the letter (updateDraft) or makes a new version,
+  // autoSync flips to false: that deliberate deviation is now version-controlled
+  // and auto-sync leaves it alone. lastAutoSyncAt + autoSyncLog give an audit
+  // trail of the silent updates. See syncLoaToBooking in scripts/documents.ts.
+  autoSync       Boolean   @default(true) @map("auto_sync")
+  lastAutoSyncAt DateTime? @map("last_auto_sync_at")
+  autoSyncLog    Json?     @map("auto_sync_log")
+
+  // External attached PDF (e.g. an Arachas insurance policy). When set, the
+  // record is an UPLOADED artifact, not a generated/rendered doc — getDocumentPdf
+  // serves this file. Relative to uploads/ (e.g. "student-docs/123.pdf"). No QR.
+  attachedFilePath String? @map("attached_file_path")
 
   // Photo snapshot
   photoAssetUsed String?  @map("photo_asset_used")  // reference to student photo at issue time
@@ -1112,8 +2021,12 @@ model HostPaymentLineItem {
   amendmentNote String?  @map("amendment_note")  // reason for adjustment
   amendedBy     String?  @map("amended_by")       // who made the adjustment
 
-  // Xero Bill link
-  xeroBillId    String?  @map("xero_bill_id")     // Xero invoice ID once submitted
+  // Xero Bill link + paid-status sync (refreshed on every calculatePaymentRun)
+  xeroBillId      String?   @map("xero_bill_id")     // Xero invoice ID once submitted
+  xeroStatus      String?   @map("xero_status")      // 'submitted' | 'paid' | 'voided'
+  xeroPaidAt      DateTime? @map("xero_paid_at") @db.Timestamp(3)
+  xeroAmountPaid  Decimal?  @map("xero_amount_paid") @db.Decimal(10,2)
+  xeroSyncedAt    DateTime? @map("xero_synced_at") @db.Timestamp(3)
 
   @@map("host_payment_line_items")
 }
@@ -1290,6 +2203,33 @@ model EmailLog {
   @@map("email_log")
 }
 
+// ============================================================
+// STUDENT MESSAGES — in-app inbox (student portal)
+// ============================================================
+//
+// The explicit set of messages staff chose to surface inside the student
+// app (the "Student app" channel toggle in the comms composer). This is a
+// DELIBERATELY separate stream from EmailLog: EmailLog is the firehose of
+// all outbound mail (visa notices, document dispatch, quiz results, …),
+// most of which should never show as a personal "message" to the student.
+// A row exists here only because a staff member ticked "send to app". When
+// the same send also emailed, emailLogId links the two. readAt stays null
+// until the student opens it — that null count drives the bell badge.
+// Mirrors EmailLog's convention: plain studentId column, no FK relation.
+model StudentMessage {
+  id         Int       @id @default(autoincrement())
+  createdAt  DateTime  @default(now()) @map("created_at")
+  studentId  Int       @map("student_id")
+  subject    String
+  bodyHtml   String    @map("body_html")
+  sentBy     String?   @map("sent_by")        // from-address / SIS user that sent it
+  emailLogId Int?      @map("email_log_id")    // linked EmailLog row when also emailed
+  readAt     DateTime? @map("read_at")
+
+  @@index([studentId, readAt])
+  @@map("student_messages")
+}
+
 // SCHOOL CONFIG
 // ============================================================
 
@@ -1312,9 +2252,16 @@ model SisUser {
   passwordHash      String    @map("password_hash")
   displayName       String?   @map("display_name")
   role              String    @default("staff") // admin, dos, sales, accomm, staff
+  readOnly          Boolean   @default(false) @map("read_only") // hard per-user read-only, overrides role
   active            Boolean   @default(true)
   resetToken        String?   @map("reset_token")
   resetTokenExpires DateTime? @map("reset_token_expires")
+  // Email-verification flow for self-registered student accounts.
+  // verificationToken is set + emailed at /sis/auth/register; cleared
+  // when the student clicks the verify link. While token is set AND
+  // active=false, the account exists but can't log in.
+  verificationToken        String?   @unique @map("verification_token")
+  verificationTokenExpires DateTime? @map("verification_token_expires")
   createdAt         DateTime  @default(now()) @map("created_at")
 
   // Partner portal fields
@@ -1325,7 +2272,53 @@ model SisUser {
   portalPermissions String?   @map("portal_permissions") // JSON: { canSeeFinance, canSeeClasses, ... }
   lastLoginAt       DateTime? @map("last_login_at")
 
+  refundsApproved   RefundRequest[]
+  accommFeedbackSubmitted   AccommodationFeedback[]   @relation("AccommodationFeedbackSubmittedBy")
+  socialFeedbackSubmitted   SocialActivityFeedback[]  @relation("SocialActivityFeedbackSubmittedBy")
+  agenciesContractSigned    Agency[]                  @relation("AgencyContractSignedBy")
+  signaturesAuthored        AgencySignature[]         @relation("AgencySignatureSignedBy")
+
   @@map("sis_users")
+}
+
+// Mobile-app push tokens — one row per device per user. We use FCM
+// (Firebase Cloud Messaging) for delivery. A user can have multiple
+// active devices; we de-dup on (token) since FCM tokens are globally
+// unique. On sign-out the device's token is deleted.
+model DeviceToken {
+  id          Int       @id @default(autoincrement())
+  token       String    @unique  // FCM registration token
+  platform    String    // 'android' | 'ios'
+  studentId   Int?      @map("student_id")  // populated when the device is a student's
+  sisUserId   Int?      @map("sis_user_id") // populated when the device is a staff/teacher's
+  appVersion  String?   @map("app_version")
+  deviceModel String?   @map("device_model")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  lastSeenAt  DateTime  @default(now()) @updatedAt @map("last_seen_at")
+
+  @@index([studentId])
+  @@index([sisUserId])
+  @@map("device_tokens")
+}
+
+// Account-deletion requests — queued for staff to process within 30 days
+// (Google Play / GDPR compliance). The row stays after processing as an
+// audit trail. `completedAt` is set when staff have purged the personal
+// data; the academic record itself is retained per Irish education law.
+model AccountDeletionRequest {
+  id            Int       @id @default(autoincrement())
+  studentId     Int?      @map("student_id")
+  email         String    // captured at request time so we can act on it after the SisUser row is gone
+  username      String?   // ditto
+  requestedAt   DateTime  @default(now()) @map("requested_at")
+  source        String    @default("app") // 'app' | 'email' | 'staff'
+  notes         String?
+  completedAt   DateTime? @map("completed_at")
+  completedById Int?      @map("completed_by_id") // staff SisUser.id
+
+  @@index([studentId])
+  @@index([completedAt])
+  @@map("account_deletion_requests")
 }
 
 // Zoho Sign contract documents — mirrored from Zoho Sign, matched to agencies
@@ -1360,10 +2353,26 @@ model PartnerQuoteAction {
   agency    Agency   @relation(fields: [agencyId], references: [id])
   action    String   // 'ACCEPTED' | 'QUERIED'
   comments  String?  @db.Text
+  // HubSpot Task raised for staff when this action was recorded. Lets the portal
+  // reflect when staff complete that task (QUERIED → "Resolved") — two-way.
+  hubspotTaskId String? @map("hubspot_task_id")
   createdAt DateTime @default(now()) @map("created_at")
 
   @@index([agencyId])
   @@map("partner_quote_actions")
+}
+
+// Per-agency "apply this month's Challenge to all my enrolments" opt-in.
+// One row per agency; `month` is the YYYY-MM the opt-in applies to. Active when
+// month === the current challenge month (so it auto-expires each month → the
+// partner re-flips it = your monthly cadence). Toggled from the portal switch.
+model ChallengeOptIn {
+  agencyId  Int      @id @map("agency_id")
+  agency    Agency   @relation(fields: [agencyId], references: [id])
+  month     String   @map("month") // 'YYYY-MM'
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("challenge_opt_in")
 }
 
 // One-time tokenised URLs for placement / delta / quiz tests.
@@ -1387,9 +2396,101 @@ model TestAccessToken {
   cefrLevel  String?   @map("cefr_level")
   rawResult  Json?     @map("raw_result")
 
+  // Placement-only writing task — captured at the end of the placement test
+  // (after the 40 multichoice/short-answer questions). DOS reviews qualitatively
+  // alongside the auto-graded CEFR. Not used for QUIZ or DELTA variants.
+  writingPrompt    String? @map("writing_prompt")
+  writingResponse  String? @map("writing_response")
+
+  // AI Tutor assessment of the writing task (grammar/spelling/syntax corrections
+  // + estimated CEFR). Generated by the LMS (/lms-api/ai-tutor), cached here so
+  // the DOS review doesn't re-hit OpenAI on every open. See scripts/tests.ts.
+  writingAssessment Json? @map("writing_assessment")
+
+  // In-progress autosave (PLACEMENT only) — the client throttle-POSTs its state
+  // (question index, answers-so-far, the writing text) as the student types, so a
+  // stuck/abandoned attempt survives a browser close, a new token, or a different
+  // device. Cleared on final submit. Never trusted for grading — resume-only.
+  draft          Json?     @map("draft")
+  draftUpdatedAt DateTime? @map("draft_updated_at")
+
   createdBy  String?   @map("created_by")       // sis_users.username of staff who issued
 
   @@index([studentId])
   @@index([token])
   @@map("test_access_tokens")
+}
+
+// Public refund request submitted via the Drupal /refund-request form. SIS
+// becomes the system of record once the webhook lands. Approval is a manual
+// SIS action by accounts/admin which then emails refunds@transfermate.com.
+// See .claude/docs/refunds/refund-request-spec.md for full context.
+model RefundRequest {
+  id              Int      @id @default(autoincrement())
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Identity links (best-effort match on intake; may be null if no match yet).
+  studentId       Int?     @map("student_id")
+  student         Student? @relation(fields: [studentId], references: [id])
+  bookingId       Int?     @map("booking_id")
+  booking         Booking? @relation(fields: [bookingId], references: [id])
+
+  // Drupal submission reference (for traceback / dedupe).
+  drupalSubmissionId   Int?    @map("drupal_submission_id")
+  drupalSubmissionUuid String? @unique @map("drupal_submission_uuid")
+
+  // Form payload — captured verbatim from Drupal.
+  studentName     String   @map("student_name")
+  studentEmail    String   @map("student_email")
+  nationality     String
+  territory       String   // EU | Non-EU (VBD) | Non-EU (No Visa) | Unsupported Territory
+  invoiceNumber   String   @map("invoice_number")
+  agentName       String?  @map("agent_name")
+
+  refundReason       String   @map("refund_reason")
+  refundReasonOther  String?  @map("refund_reason_other")
+  amountRequested    Decimal? @map("amount_requested") @db.Decimal(10,2)
+
+  paymentProcessor       String  @map("payment_processor")
+  paymentProcessorOther  String? @map("payment_processor_other")
+  paymentMethod          String  @map("payment_method")
+
+  // Bank fields (legacy D7 set; always captured).
+  bankType           String?  @map("bank_type")
+  bankCountry        String?  @map("bank_country")
+  payeeName          String?  @map("payee_name")
+  payeeAddress       String?  @map("payee_address")
+  payeeAddress2      String?  @map("payee_address_2")
+  payeeCountry       String?  @map("payee_country")
+  bicSwift           String?  @map("bic_swift")
+  nsc                String?
+  accountNumber      String?  @map("account_number")
+  bankName           String?  @map("bank_name")
+  bankStreetAddress  String?  @map("bank_street_address")
+  bankCity           String?  @map("bank_city")
+  correspondentBank  String?  @map("correspondent_bank")
+  correspondentSwift String?  @map("correspondent_swift")
+
+  otherInformation   String?  @map("other_information") @db.Text
+
+  // Visa refusal letter — stored as a StudentDocument(category="visa") on intake;
+  // we keep a pointer here for the review page.
+  visaRefusalDocId   Int?     @map("visa_refusal_doc_id")
+
+  // Approval lifecycle.
+  status            String    @default("pending_review")   // pending_review | approved | sent_to_tm | rejected
+  feeDeductionEur   Decimal   @default(300.00) @map("fee_deduction_eur") @db.Decimal(10,2)
+  feeBreakdown      String    @default("€250 visa processing + €50 non-refundable registration fee") @map("fee_breakdown")
+  approvedById      Int?      @map("approved_by_id")
+  approvedBy        SisUser?  @relation(fields: [approvedById], references: [id])
+  approvedAt        DateTime? @map("approved_at")
+  sentToTmAt        DateTime? @map("sent_to_tm_at")
+  rejectedAt        DateTime? @map("rejected_at")
+  rejectReason      String?   @map("reject_reason") @db.Text
+
+  @@index([status])
+  @@index([studentId])
+  @@index([createdAt])
+  @@map("refund_requests")
 }

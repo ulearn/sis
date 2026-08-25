@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 + 16989 still unlinked — booking_id = null, xero_payment_id = null — 62 days since 28 Apr\n• Payment 16988 (HubSpot 1204827374829) → Booking 17856 Margherita Galbusera — EUR 339.90\n• Payment 16989 (HubSpot 1204846469317) → Booking 17857 Francesca Fassina — EUR 339.90\n• Both bookings: status = Confirmed, confirmed = false — students blocked from class assignment lists\n• Booking courses 24630 + 24631: General English AM Plus, 29 Jun to 10 Jul — fee = null\n• Classes STARTED today Mon 29 Jun — 4-step SQL NOT RUN (103rd hourly check, Jun 29 UTC)",
+        "(NOT RUN) (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) UPDATE booking_courses SET fee=339.9 WHERE id IN (24630,24631); (4) UPDATE bookings SET confirmed=true WHERE id IN (17856,17857). See recipe: issue-1-orphan-payments.md",
+        "hrly Jun29 UTC (103rd check, fresh DB): pmt16988 bookingId=STILL null xeroId=null EUR339.90. pmt16989 STILL null EUR339.90. bk17856 CONF confirmed=STILL false 339.9/339.9. bk17857 CONF confirmed=STILL false 339.9/339.9. bc24630+bc24631 GE-AM-Plus startDate=Jun29 fee=STILL null. CLASSES STARTED TODAY Mon Jun29 09:00 IST. STUDENTS MAY HAVE MISSED FIRST CLASS. SQL STILL NOT RUN — 103 CHECKS. NEIL: RUN SQL NOW.",
+        "DAY 1 MISSED; SQL UNRUN"
+      ]
+    ]
+  },
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "• Document 171 is a DRAFT certificate (template 82) — last updated Jun 05, now 24 days stale\n• Booking 1498 is CONFIRMED (status), but confirmed = false and amount paid = null\n• Booking course 1660 (ULearn Renewal Morning) ended Jun 05 — certificate never issued after course ended\n• Action needed: click Issue on the draft document via SIS UI",
+        "(NOT RUN) SIS student 947 booking 1498 Documents Issue button. See recipe: issue-8-suvderdene-cert-dates.md",
+        "hrly Jun29 UTC (13th check, fresh DB): doc171 STILL DRAFT (tmpl82, Jun05=24d stale). bk1498 CONF conf=false amtPaid=null. UNCHANGED 13 checks. Neil: SIS student 947 -> bk1498 -> Documents -> Issue button.",
+        "cert DRAFT; 24d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking course 1797 (Morning General, 6 Apr to 26 Jun) ended 3 days ago — still active = true (last updated 3 May, 57 days stale)\n• Student 1052 (Alberto Squillace) on bereavement leave — booking course 24686 starts Jul 20 (21 days)\n• Booking course 24686 (Morning General, Jul 20 to Sep 18) — fee = null (last updated 14 May, 46 days stale)\n• Payment 17124 (EUR 1280.12) linked to booking 1611, Xero ID = null, HubSpot ID = null\n• Booking 1611 fully paid (EUR 1280.12), amount open = 0",
+        "Set booking course 1797 active = false (ended 26 Jun). Set booking course 24686 fee before 20 Jul. Reconcile payment 17124 in Xero. See recipe: issue-24-alberto-fidelo-course-split.md",
+        "hrly Jun29 UTC (fresh DB): bc1797 Apr06-Jun26 ENDED active=STILL true (updAt=May03=57d). bc24686 Jul20-Sep18 fee=STILL null (updAt=May14=46d). pmt17124 xeroId=null hsId=null linked to bk1611. bk1611 CONF amtOpen=0 fully paid. UNCHANGED. Jul20=21d. Neil: (1) set bc1797 active=false; (2) set bc24686 fee before Jul20=21d; (3) Xero reconcile pmt17124.",
+        "bc24686 Jul20=21d"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• Student 917 (Uyanga Tungalag) visa status = null — blocks appearance in class to be assigned list\n• Booking 1467 is Confirmed, confirmed = true, fully paid EUR 2405 (amount open = 0)\n• Booking course 1613 (Academic Year Morning, 27 Apr to 16 Oct) — active, student in course\n• Zero class assignments — student cannot be placed in class until visa_status set\n• Fix: single SQL UPDATE, no financial impact (30th check, Jun 29 UTC)",
+        "(NOT RUN) UPDATE students SET visa_status='Approved' WHERE id=917; then assign Uyanga to class via SIS admin. See recipe: issue-25-uyanga-visa-escrow.md",
+        "hrly Jun29 UTC (30th check, fresh DB): s917 visaStatus=STILL null (updAt=May21=39d stale). bk1467 CONF confirmed=true 2405/2405 fully paid. bc1613 AY-Morn Apr27-Oct16 active. STILL 0 SCAs — Day 64 in school no class. 30 checks unresolved. Neil: UPDATE students SET visa_status=Approved WHERE id=917; then assign to class.",
+        "D64; 0SCA; CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Class assignment 255 (class 11, B1 PM) has week_start = 12 Jan 2026 (wrong — booking course 24925 starts 9 Mar 2026)\n• Week end = 3 Jul 2026 — assignment expires in 4 days (URGENT: student loses class access Thu Jul 03)\n• Correct week_start = 9 Mar 2026, correct week_end = 11 Sep 2026 (booking course 24925 end date)\n• One-line SQL fix not yet applied (10th check, Jun 29 UTC)",
+        "(NOT RUN) UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255. See Issue 29 recipe: issue-29-saikhantes-jan12-start-date.md",
+        "hrly Jun29 UTC (re-check #10, fresh DB): sca255 weekStart=STILL 2026-01-12 weekEnd=STILL 2026-07-03 (4 DAYS to expire Thu Jul03). bc24925 AY-AFT Mar09-Sep11 active=true UNCHANGED. SQL STILL NOT RUN. Neil: run UPDATE immediately — student falls off class roster THURSDAY Jul03.",
+        "sca255; Jul03=4d; CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• Booking 18156 CONFIRMED Jun 29 — EUR 573.20 / 573.20 paid (payment 17953, HubSpot 1268846919923)\n• Accommodation 11352: City Centre Apartment, Jul 04-11 (5 days away) — bed_id = null (NOT YET ASSIGNED)\n• Payment 17953 xeroPaymentId = null — Xero reconciliation pending\n• Note: EUR 573.20 paid vs EUR 645 original total — verify whether balance EUR 71.80 is outstanding\n• K was set FIXED when payment was awaited — payment now received, bed assignment still needed",
+        "(NOT RUN) Assign Premium bed (174, 175, or 176) to accommodation 11352 before Jul 04. Reconcile pmt17953 in Xero. See recipe: issue-37-veronica-capel-accomm-allocation.md",
+        "hrly Jun29 UTC (fresh DB, CHANGED): bk18156 NOW CONF (updAt=Jun29T11:57 TODAY) EUR573.2/573.2. pmt17953 EUR573.2 hsId=1268846919923 xeroId=null. accomm11352 bedId=STILL null (Jul04-Jul11 City Centre Apt EUR360). 5 DAYS to check-in. K was FIXED — re-opened (payment arrived but bed unassigned). NEIL: assign Premium bed 174/175/176 to accomm11352 + Xero reconcile pmt17953.",
+        "bed null; Jul04=5d"
+      ]
+    ]
+  }
+]

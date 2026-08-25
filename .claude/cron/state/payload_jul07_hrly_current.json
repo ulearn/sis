@@ -1,0 +1,57 @@
+[
+  {
+    "range": "H5:K5",
+    "values": [
+      [
+        "• Student 14552 (Mohammed Ibrahimi Alsaidalani) created in SIS on 5 June 2026\n• HubSpot contact ID 787872982221 linked\n• Issue resolved — student profile now exists in SIS\n• Note: first name stored as \"Mohammed Ibrahimi\" — verify spelling against HubSpot deal (\"Ibrahim\" vs \"Ibrahimi\")",
+        "",
+        "RESOLVED — Student 14552 in SIS since Jun 5 2026. Spelling note: DB has \"Ibrahimi\", deal says \"Ibrahim\". See recipe: issue-3-mohammed-missing-profile.md",
+        "RESOLVED"
+      ]
+    ]
+  },
+  {
+    "range": "H29:K29",
+    "values": [
+      [
+        "• Booking 17850 (Paola Moreira, student 14456) is PENDING, confirmed = false — amount paid = null despite payment linked (14th check, 7 Jul 2026 UTC)\n• Payment 17519: EUR 321.35, HubSpot ID 1231805396201, Xero ID = null, type = null, pay date 7 May 2026 — type = null may be why amount paid is not counted\n• Booking course 24624 (Morning General, 18 May to 5 Jun 2026) ended 32 days ago — still active = true (stale)\n• Historical case — student left; low priority data-integrity cleanup only",
+        "",
+        "(NOT RUN, low-pri) UPDATE bookings SET status='CONFIRMED', confirmed=true, amount_paid=321.35 WHERE id=17850; also UPDATE payments SET type='one_time_or_initial' WHERE id=17519 if type=null is blocking. See recipe: issue-28-paola-pending-won-deal.md",
+        "14th check 7 Jul UTC. UNCHANGED. bk17850 STILL PENDING confirmed=false amtPaid=null amtTotal=321.35. pmt17519 EUR321.35 type=null xeroId=null bkId=17850 (linked). bc24624 Morning May18-Jun5 active=STILL true (32d stale). Low-pri data-hygiene. Fix NOT RUN."
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• Booking 17980 (Pietro Caccianiga) Confirmed, confirmed = true, fully paid EUR 5331 of EUR 5331\n• Accommodation 11311: bed 84, 28 Jun to 13 Sep, active = true — ASSIGNED and LIVE\n• Pietro arrived 28 Jun — accommodation in place — main issue RESOLVED\n• Four historical stale bed 84 records still active = true past end dates (low priority cleanup):\n  — Accommodation 9917 (booking 1274): ended May 16 — 52 days stale\n  — Accommodation 11157 (booking 100): ended May 10 — 58 days stale\n  — Accommodation 11159 (booking 100): ended May 30 — 38 days stale\n  — Accommodation 11180 (booking 81): ended Jun 20 — 17 days stale",
+        "",
+        "(NOT RUN low-pri) UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180). See recipe: issue-36b-pietro-accomm-dates.md",
+        "7 Jul UTC: ba11311 bed84 Jun28-Sep13 active=true. bk17980 CONF confirmed=true EUR5331/5331 fully paid. Main issue RESOLVED. 4 stale bed84 recs STILL active=true (ba9917 +52d, ba11157 +58d, ba11159 +38d, ba11180 +17d). Low-pri cleanup SQL NOT RUN."
+      ]
+    ]
+  },
+  {
+    "range": "H42:K42",
+    "values": [
+      [
+        "swapped delete & save - SAVE is now top right (green)  & delete at bottom",
+        "",
+        "",
+        "fixed"
+      ]
+    ]
+  },
+  {
+    "range": "H44:K44",
+    "values": [
+      [
+        "This is catered for - click the Agent Portal",
+        "",
+        "",
+        "no fix needed"
+      ]
+    ]
+  }
+]

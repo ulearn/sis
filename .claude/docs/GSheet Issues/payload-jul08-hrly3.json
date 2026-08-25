@@ -1,0 +1,57 @@
+[
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Duplicate entry for Issue 15 (row 16) — same student Saikhantes Shagdarsuren (student 1001)\n• Class assignment 255 (class 11, B1 Afternoon): week_end = 3 July 2026 — expired 5 days ago (8 Jul 2026 UTC)\n• 3 school days now missed: Monday 6 July, Tuesday 7 July, Wednesday 8 July (today)\n• Booking course 24925 (Academic Year Afternoon, 9 March to 2 October 2026): active — 57+ more school days at risk\n• See row 16 (Issue 15) for full diagnosis and fix recipe",
+        "",
+        "10th check 8 Jul UTC. SCA255 weekEnd=2026-07-03 STILL EXPIRED (5 days). 3 school days missed (Mon Jul6+Tue Jul7+Wed Jul8 today). BC24925 AY-Afternoon active to Oct2. Dupe of Issue15 row16. NEIL: run UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255",
+        "see row 16"
+      ]
+    ]
+  },
+  {
+    "range": "H32:K32",
+    "values": [
+      [
+        "• Code fix CONFIRMED APPLIED (8 Jul 2026 UTC re-check)\n• src/routes/attendance.ts week-start now uses setUTCDate() + getUTCDay() + setUTCHours() — BST Sunday shift resolved\n• Code comment at fix location references Issue 31 explicitly\n• Holiday-in-attendance sub-issue (Jun 23) tracked separately in Issue 36 (row 37)",
+        "",
+        "8 Jul UTC code re-confirm: routes/attendance.ts UTC week-start fix CONFIRMED PRESENT. BST week-start bug resolved. Sub-issue (holidays in attendance) → Issue 36 row 37.",
+        "fixed"
+      ]
+    ]
+  },
+  {
+    "range": "H33:K33",
+    "values": [
+      [
+        "• Stray row — only content is 278 in column F (Area field), all other columns are empty\n• No student name, no issue description, no context — cannot diagnose\n• Student 278 is Verónica Martín — her accommodation issue is resolved in Issue 37 (row 39)\n• Phantom row has been present for 88+ days (estimated since 11 May 2026)",
+        "",
+        "8 Jul UTC: Phantom row 88+ days old (est. since May 11 2026). Student 278 = Verónica Martín, accomm resolved Issue37/row39. NEIL: delete this row (currently row 33 in sheet).",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H36:K36",
+    "values": [
+      [
+        "• Code fix CONFIRMED APPLIED — src/scripts/attendance.ts lines 94-100 (8 Jul 2026 UTC re-check)\n• Block hours now derived dynamically from class start/end times minus break minutes\n• Code comment at line 94 documents the old 3.25-hour hardcode (Issue 35) explicitly\n• All four PM classes (13:45-17:00, 15 min break) correctly yield 3.0 net hours\n• Private 121 class (14:00-16:00, no break) correctly yields 2.0 hours\n• Old hardcoded 3.25 constant is absent — no reversion risk",
+        "",
+        "8 Jul UTC re-confirm: scripts/attendance.ts L94-100 blockHours=dynamic calc CONFIRMED. Issue35 comment at L94. Old 3.25 hardcode absent. PM duration fix solid.",
+        "fixed"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Gap 2 — Holiday weeks field: FIXED — holWeeks input + calcHolEnd() / calcHolWeeks() now present in admin.html (lines 6774, 13825, 13831)\n• Gap 1 — Admin course start Monday snap: STILL OPEN — calcCourseEnd() does not snap start to Monday; no BH_MONDAYS array present\n• Gap 3 — Irish bank holiday Mondays: STILL OPEN — SchoolClosure table contains only Christmas and Good Friday; no Irish public bank holiday Mondays added",
+        "Add snapAdminCourseStart() + BH_MONDAYS array to admin.html; wire to course startDate onchange. Add Irish BH Mondays to SchoolClosure table. See recipe: issue-38-course-date-ux.md",
+        "8 Jul UTC code check: holWeeks DONE (admin.html L6774+calcHolEnd L13825+13831). Monday snap for course starts STILL missing. Irish BH Mondays not in SchoolClosure. Two gaps remain open.",
+        ""
+      ]
+    ]
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H24:K24",
+    "values": [
+      [
+        "• 20th check Mon 24 Aug 2026 UTC — no change since 19th (Sun 23 Aug)\n• Booking Course 826 (Academic Year Morning): ended 28 Nov 2025 — 269 days stale, active = true, 0 class assignments\n• Booking Course 827 (Academic Year Morning): ended 30 Jan 2026 — 206 days stale, active = true, 0 class assignments\n• Booking Course 828 (Academic Year Morning): start 2 Mar 2026, end 27 Feb 2026 — BACKWARDS dates, active = true, 0 class assignments\n• Booking Course 829 (Academic Year Morning): ended 5 Jun 2026 — 80 days stale, active = true, 1 class assignment (historical)\n• Fix NOT RUN",
+        "Fix Booking Course 828 backwards end date; deactivate Booking Courses 826, 827, 829. See recipe: issue-23-addendum-24aug.md",
+        "20th Mon 24 Aug UTC. No change. BC 826 now 269d stale. BC 829 now 80d stale (1 SCA). Fix NOT RUN.",
+        "backwards dates; low-pri"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• 76th check Mon 24 Aug 2026 UTC — no change since 75th (Sun 23 Aug)\n• Booking Course 23 (Intensive General 30, booking 22): active = true, ended 22 May 2026 — 94 days stale, 2 class assignments still linked\n• Booking Course 24826: active = true, ended 19 Jun 2026 — 66 days stale, 0 class assignments\n• Booking 18034: PARTIAL, confirmed = false, amount paid = EUR 845, amount open = EUR 250\n• Payment 17683: EUR 845, payment date 23 Apr 2026, Xero payment ID = null — 123 days unreconciled\n• Fix NOT RUN",
+        "Verify SCAs on BC 23 then deactivate; deactivate BC 24826 (0 SCAs); reconcile Payment 17683 in Xero; resolve EUR 250 open balance. See recipe: issue-26-addendum-24aug.md",
+        "76th Mon 24 Aug UTC. BC 23: 94d stale (2 SCAs). BC 24826: 66d stale. Payment 17683: 123d Xero null. EUR 250 open. Fix NOT RUN.",
+        "stale BCs; pmt unreconciled"
+      ]
+    ]
+  },
+  {
+    "range": "H33:K33",
+    "values": [
+      [
+        "• 19th check Mon 24 Aug 2026 UTC — no change since 18th (Thu 20 Aug)\n• Only content is value 278 in column F (Veronica Martin student ID — misplaced)\n• Veronica Martin accommodation resolved via Issue 37 (row 39); this row is a phantom entry\n• Safe to delete from sheet",
+        "Delete this row (phantom entry — no actual issue). See recipe: issue-32-addendum-24aug.md",
+        "19th Mon 24 Aug UTC. Phantom row unchanged since Thu 20 Aug. Neil to delete manually from sheet.",
+        "phantom row; delete"
+      ]
+    ]
+  },
+  {
+    "range": "H34:K34",
+    "values": [
+      [
+        "• 37th check Mon 24 Aug 2026 UTC — no change since 36th (Sun 23 Aug)\n• Student 356 (Shih-Wei Huang): gender = null (unchanged; last field update 19 Aug 2026)\n• Document 238 (booking 560, Exit Letter, template 4): ISSUED v1, created 17 Jun 2026 — 68 days with incorrect she/her pronouns (generated when gender = null)\n• Fix NOT RUN",
+        "Set correct gender on student 356; revoke doc 238; regenerate exit letter. See recipe: issue-33-addendum-24aug.md",
+        "37th Mon 24 Aug UTC. Gender null unchanged. Doc 238 ISSUED 68d wrong pronouns. Fix NOT RUN.",
+        "68d; doc238 wrong pronouns; gender null"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• 507th check Mon 24 Aug 2026 UTC — no change since 506th (earlier today)\n• Current occupant Alessandro Signorotti (Booking Accommodation 11173): ends 30 Aug 2026, fee EUR 1,080\n• Next occupant Rosa Maria Mollica (Booking Accommodation 25): starts 30 Aug 2026 — 6 DAYS AWAY, fee EUR 2,100\n• 5 stale Booking Accommodations on bed 83 still active — must deactivate before Rosa arrives:\n• Booking Accommodation 11239 (Ivan Rodriguez Solares): ended 24 May 2026 — 92 days stale, fee EUR 1,050\n• Booking Accommodation 11168 (Diego Da Silva Saldanha): ended 20 Jun 2026 — 65 days stale, fee EUR 700\n• Booking Accommodation 11285 (Jesus Manuel Ramirez Diaz): ended 5 Jul 2026 — 50 days stale, fee null\n• Booking Accommodation 11352 (Veronica Martin): ended 11 Jul 2026 — 44 days stale, fee EUR 360\n• Booking Accommodation 11179 (Africa Mera Bachir): ended 9 Aug 2026 — 15 days stale, fee EUR 1,360\n• Fix NOT RUN",
+        "Deactivate Booking Accommodations 11239, 11168, 11285, 11352, 11179 on bed 83 before Aug 30. See recipe: issue-37-addendum-24aug-b.md",
+        "507th Mon 24 Aug UTC. 5 stale BAs unchanged. Rosa Mollica (BA 25) starts Aug 30 = 6d. Signorotti (BA 11173) current until Aug 30. Fix NOT RUN.",
+        "5 stale BAs; DEADLINE Aug30 = 6d"
+      ]
+    ]
+  },
+  {
+    "range": "H54:K54",
+    "values": [
+      [
+        "• 507th check Mon 24 Aug 2026 UTC — no change since 506th (earlier today)\n• Booking Accommodation 11267 (bed 23, 29 Aug to 4 Oct 2026): fee EUR 3,840, active — OK\n• Booking Accommodation 11399 (bed 54, 4 Oct to 19 Dec 2026): fee null — NOT YET SET, 41 days to move-in\n• Booking 17843 (Fanny Scelles): CONFIRMED, fully paid EUR 5,595.16\n• Fanny ARRIVES 29 Aug 2026 — 5 DAYS AWAY",
+        "Set fee on Booking Accommodation 11399 (Oct 4 to Dec 19, 11 weeks). Confirm rate with KC. See recipe: issue-52-addendum-24aug-e.md",
+        "507th Mon 24 Aug UTC. BA11267 fee EUR 3,840 OK. BA11399 fee null. Arrival Aug 29 (5d). No change since 506th.",
+        "ARRIVES AUG 29 (5d); BA11399 fee null"
+      ]
+    ]
+  }
+]

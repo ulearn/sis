@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• 133rd check Sun 9 Aug 2026 UTC — URGENT: classes restart TOMORROW Mon 10 Aug, Rakan still unassigned\n• Booking Course 24697 (Academic Year Morning, ended 2026-07-31): active = true (stale)\n• Class Assignment 288 on Booking Course 24697: class 12, weekEnd = 2026-12-18 — extends 140 days past course end (mislinked)\n• Booking Course 25035 (General English Academic Year AM Plus, 2026-08-03 to 2026-12-18): 0 class assignments\n• Fix: relink Class Assignment 288 to Booking Course 25035 with weekStart = 2026-08-10; deactivate Booking Course 24697",
+        "Relink Class Assignment 288 to Booking Course 25035, weekStart=2026-08-10; deactivate Booking Course 24697. See recipe: issue-12-addendum-9aug-b.md",
+        "133rd hrly Sun 9 Aug UTC. Unchanged. CRITICAL: fix before Mon 09:00.",
+        "CRITICAL: fix before 09:00"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 85th check Sun 9 Aug 2026 UTC — service_end now 3 days expired\n• Booking 18151 (Saikhantes Shagdarsuren): Confirmed, confirmed = true, EUR 1,339.20 paid, EUR 0 open\n• service_end = 2026-08-07 — expired 2 days ago; fix still NOT RUN\n• Booking Course 24925 (Academic Year Afternoon, 2026-03-09 to 2026-10-02): active = true\n• Payment 17872: EUR 1,339.20, Bank Transfer, 2025-12-19, xero_payment_id = null — unreconciled",
+        "UPDATE bookings SET service_end=2026-10-02 WHERE id=18151. See recipe: issue-15-addendum-9aug-d.md",
+        "85th hrly Sun 9 Aug UTC. service_end 3d expired. Unchanged. Fix NOT RUN.",
+        "service_end 3d expired"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 88th check Sun 9 Aug 2026 UTC — CLASSES START TOMORROW Mon 10 Aug\n• 13 Booking Courses confirmed + paid, 0 class assignments → READY:\n  BC 108 Lucia Borroni (Intensive General 30, Aug 10-21, booking 98)\n  BC 109 Maicol Moretti (Morning General, Aug 10-21, booking 99)\n  BC 1313 Ana Luiza De Sousa (Academic Year Afternoon, Aug 10-28, booking 1286)\n  BC 1818 Natanael Reis Lourenco de Sales (Academic Year Morning, Aug 10-Dec 18, booking 1631)\n  BC 24915 Toshimi Hanakawa (Academic Year Morning, Aug 10-Jan 29, booking 18140)\n  BC 24970 Tsengelbayar Mendsaikhan (Academic Year Afternoon, Aug 10-Jan 29, booking 18194)\n  BC 25004 Vincenzo Contu (General English AM Plus, Aug 10-14, booking 18226)\n  BC 25005 Claudia Mereu (General English AM, Aug 10-14, booking 18227)\n  BC 25024 Josimar Roberto (General English PM, Aug 10-21, booking 18246)\n  BC 25027 Jacqueline Olga Burgos (Academic Year Morning, Aug 10-Feb 12, booking 18248)\n  BC 25031 Brisia Garcia Roman (Academic Year Morning, Aug 10-Feb 12, booking 18252)\n  BC 25036 Jorge Perez Aldana (General English AM, Aug 10-Sep 4, booking 18256)\n  BC 25039 Cristian Ravai (General English PM Plus, Aug 10-28, booking 18259)\n• 4 Booking Courses on hold (unconfirmed/escrow/partial):\n  BC 96 Alessandro Signorotti — confirmed = false, EUR 250 owed (paid 1845/2095)\n  BC 833 Settiyanee Duangjai — Escrow, must release first\n  BC 25007 Nominjin Amartsogt — Partial, EUR 370 owed (paid 980/1350)\n  BC 25042 Edith Nunes — Pending, EUR 456 owed (paid 0/456)",
+        "Assign classes to 13 ready Booking Courses via SIS Admin before Mon 09:00. See recipe: issue-38-addendum-9aug-g.md",
+        "88th hrly Sun 9 Aug UTC. 13 ready; 4 hold. CRITICAL: Mon 10 Aug term start. Unchanged.",
+        "CRITICAL: Mon 10 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 34th check Sun 9 Aug 2026 UTC — 28 days to check-in (2026-09-06)\n• Booking Accommodation 11392 (Giampaolo Russo, City Centre Apartment, Premium): bed_id = null\n• Check-in 2026-09-06, check-out 2026-09-14, fee = EUR 415\n• Booking 18180: Confirmed, confirmed = true, EUR 2,584.96 paid, EUR 0 open\n• Booking Accommodation 11357 (Host Family, bed 178, Aug 2-Sep 6): correctly assigned — transition Sep 6\n• Available Premium City Centre Apartment beds for Sep 6-14: beds 161, 168, 177, 194 (bed 83 busy Aug 30-Oct 11)",
+        "Assign bed from 161/168/177/194 to Booking Accommodation 11392. See recipe: issue-41-addendum-9aug-d.md",
+        "34th hrly Sun 9 Aug UTC. Bed null. 28d to Sep 6. Unchanged. Fix NOT RUN.",
+        "bed null; 28d to Sep 6"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 51st check Sun 9 Aug 2026 UTC — no courses deactivated since last check\n• Total active Booking Courses: 24,762 — stale (ended before 2026-08-09): 24,479 (99%)\n• Current (ending on or after today): 283\n• 5 most recently ended stale: Booking Course 88 (Morning General, ended 2026-08-07, booking 82), Booking Course 1672 (Academic Year Renewal Morning, ended 2026-08-07, booking 1504), Booking Course 1673 (ended 2026-08-07, booking 1505), Booking Course 1675 (ended 2026-08-07, booking 1507), Booking Course 1740 (ended 2026-08-07, booking 1561)\n• Stale active courses prevent renewal students from appearing on arrivals list",
+        "Mass-deactivate all active Booking Courses where endDate < today. See recipe: issue-45-renewal-arrivals.md",
+        "51st hrly Sun 9 Aug UTC. 24,479 stale (99%). Unchanged. Fix NOT RUN.",
+        "24,479 stale; fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 83rd check Sun 9 Aug 2026 UTC — unchanged from 82nd check\n• Telmuun Enkhsaikhan (student 293): 6 stale Booking Courses active (BCs 482, 483, 1609, 1610, 1611, 1612, max 513 days stale)\n• Booking Course 1810 (Academic Year Renewal Morning, 2026-06-29 to 2027-01-01): active = true — current course, do NOT deactivate\n• Ana Jessica Rosa de Paula Santos (student 766): Booking 1308 Cancelled, EUR 1,530 fully paid — payments 17186 (EUR 1,280) + 17050 (EUR 250), both xero_payment_id = null",
+        "Deactivate BCs 482, 483, 1609-1612 (Telmuun); decide refund/reallocate EUR 1,530 for Ana Jessica. See recipe: issue-48-addendum-9aug-c.md",
+        "83rd hrly Sun 9 Aug UTC. Unchanged. BC 1810 active through Jan 2027 - keep. Fix NOT RUN.",
+        "6 stale BCs; EUR 1,530"
+      ]
+    ]
+  }
+]

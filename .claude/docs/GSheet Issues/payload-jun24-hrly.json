@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Two payments are unlinked — booking ID = null and Xero payment ID = null\n• Payment 16988 maps to Booking 17856 (Margherita Galbusera) — EUR 339.90, created 28 Apr (57 days orphaned)\n• Payment 16989 maps to Booking 17857 (Francesca Fassina) — EUR 339.90, created 28 Apr (57 days orphaned)\n• Both bookings are Confirmed (status), confirmed = false, amount paid = 339.90 — payment audit trail broken\n• Booking courses 24630 + 24631 (General English AM Plus) start Mon 29 Jun — 5 days away; fee = null (still not set)",
+        "UPDATE payments SET booking_id=17856 WHERE id=16988; UPDATE payments SET booking_id=17857 WHERE id=16989; then set bc fees. See recipe: issue-1-orphan-payments.md",
+        "Jun24 hrly: CONFIRMED UNCHANGED (fresh DB). Payment 16988 + 16989 still booking ID = null, Xero payment ID = null (57d orphaned since Apr28). Booking 17856 (Margherita Galbusera) + Booking 17857 (Francesca Fassina) both Confirmed status, confirmed = false, amount paid = EUR 339.90. Booking courses 24630 + 24631 fee = null, start Mon Jun29 = 5d. NEIL CRITICAL: link payments (16988→bk17856, 16989→bk17857) + set bc24630+bc24631 fees BEFORE Mon Jun29.",
+        "Mon Jun29=5d; CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 is Confirmed (confirmed = true), paid EUR 740 / 740 — updated 15 Jun\n• Two duplicate active booking courses on booking 18158: course 24933 (General English AM, fee = EUR 380) and course 24934 (General English AM, fee = EUR 360) — both 15 Jun – 10 Jul\n• Student Edith Nunes (student 1015) has zero class assignments since 15 May — 39 days without assignment\n• Student is in school since 15 Jun (Day 9); last class assignment (sca146, class 7 A1 AM) expired 15 May on previous course\n• Booking course 24934 is a duplicate — lower fee (EUR 360 vs EUR 380 on course 24933) — needs deletion\n• Fix: deactivate course 24934, then assign student 1015 to class 7 (A1 AM) via SIS booking 18158",
+        "(NOT RUN) Deactivate bc24934 (dup), assign s1015 to cls7 A1-AM via SIS bk18158/bc24933. See recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun24 hrly (Day 10): CONFIRMED UNCHANGED (fresh DB). Booking courses 24933 (EUR380) + 24934 (EUR360) both still active (duplicate confirmed). Class assignments found: sca48 (class7, bc1751, expired Apr17) + sca146 (class7, bc24668, expired May15) — both on previous courses. Zero class assignments on bc24933 or bc24934 (current Jun15-Jul10). Booking 18158 Confirmed 740/740 (Jun15=9d stale). Day 10 in school with no class. Booking course ends Jul10=16d remaining. NEIL URGENT: (1) SIS bk18158 deactivate bc24934; (2) assign student 1015 to class 7 (A1 AM) on bc24933.",
+        "D10; 0SCA; URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking 1611 is Confirmed, fully paid EUR 1280.12\n• Booking course 1797 (Morning General, Apr 06 – Jun 26) ends THIS FRIDAY — 2 days away (final week underway)\n• Booking course 24686 (Morning General, Jul 20 – Sep 18) exists but has no fee set — must be filled before billing\n• Class assignment 229 (class 12 B1 AM-2) expired 27 Apr — 59 days without a class assignment\n• Zero attendance records ever for student 1052 — absent since at least late April (bereavement leave)\n• No holiday block recorded — bereavement leave from week of 27 Apr was never formalised in SIS\n• Payment 17124 (EUR 1280.12) has no Xero payment ID",
+        "Assign class assignment on booking course 1797 for Jun 22–26 to class 12 via SIS TODAY (NOT RUN). Set booking course 24686 fee before Jul 20. See recipe: issue-24-alberto-fidelo-course-split.md",
+        "Jun24 hrly (Wed - FINAL WEEK): CONFIRMED UNCHANGED (fresh DB). Booking 1611 Confirmed 1280.12/1280.12 (Jun11=13d stale). Booking course 1797 Morning General Apr06-Jun26 ends Fri Jun26=2d. Class assignment 229 class12 weekEnd=Apr26 EXPIRED 59d. Attendance count ALL TIME: 0 (confirmed). Booking holidays: 0 (confirmed — no holidays recorded). Booking course 24686 Jul20-Sep18 fee=null, zero class assignments. Payment 17124 EUR1280.12 xeroId=null. NEIL URGENT: if Alberto is in school today/Thu assign class assignment bc1797 class12 weekStart=Jun22 weekEnd=Jun26 via SIS TODAY. Accept zero attendance record if already absent all week.",
+        "Jun26=2d; SCA NOW"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• Student 917 (Uyanga Tungalag) has been Confirmed in school since 27 Apr — 59 calendar days with zero class assignments (live check Jun24: still 0 SCAs on bc1613)\n• Booking 1467 is Confirmed, paid EUR 2405 / 2405 — data source = Fidelo, no HubSpot Deal ID linked\n• Booking course 1613 (Academic Year Morning, 27 Apr to 16 Oct) is active with no class assignment\n• Student visa status = null and HubSpot contact ID = null — no HubSpot link established (record last updated 21 May)",
+        "Assign class for bc1613 via SIS UI (no SQL needed). Set visaStatus on student 917. See recipe: issue-25-uyanga-visa-escrow.md",
+        "Jun24 hrly (Day 59): CONFIRMED UNCHANGED (fresh DB). Student 917 Uyanga Tungalag visaStatus=null, hubspotContactId=null (May21=34d stale). Booking 1467 Confirmed, amountPaid=2405/2405 (Jun11=13d stale). Booking course 1613 Academic Year Morning Apr27-Oct16, active, fee=3370. Zero class assignments on bc1613 — Day 59 since Apr27. NEIL CRITICAL: SIS UI bk1467 bc1613 Assign Class (weekStart=Jun23 weekEnd=Oct16). Then student 917 set visaStatus=Approved.",
+        "D59; 0SCA; CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Class assignment 255 (class 11, B1 PM) has week start = 12 Jan and week end = 3 Jul — both dates are wrong (live check Jun24: still unchanged)\n• Booking course 24925 (Academic Year Afternoon, 9 Mar to 11 Sep) is the correct course for student Saikhantes Shagdarsuren (student 1001)\n• Class assignment week end expires in 9 days (3 Jul) — leaves 10 weeks uncovered through 11 Sep",
+        "(NOT RUN) UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255. See recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun24 hrly: Class assignment 255 class11 weekStart=Jan12 weekEnd=Jul03 STILL UNCHANGED (fresh DB). Booking course 24925 Academic Year Afternoon Mar09-Sep11, active. Jul03=9d then 10 weeks uncovered to Sep11. SQL NOT RUN: UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255.",
+        "sca255; Jul03=9d"
+      ]
+    ]
+  },
+  {
+    "range": "H44:K44",
+    "values": [
+      [
+        "• Accommodation 11311 (bed 84, Pietro Caccianiga): updated Jun 23 14:51 UTC — weeks = 11, fee = EUR 3,850 (Scenario A confirmed by Neil)\n• Start date Jun 28 — 4 days away; 11 weeks puts checkout Sep 13\n• Four stale bed 84 records still active = true, blocking new allocation:\n  — Accommodation 11157 (booking 100): ended May 10 — 45 days stale\n  — Accommodation 9917 (booking 1274): ended May 16 — 39 days stale\n  — Accommodation 11159 (booking 100): ended May 30 — 25 days stale\n  — Accommodation 11180 (booking 81): ended Jun 20 — 4 days stale; updated Jun 22 13:31 UTC but NOT deactivated (anomaly — check what changed)\n• Pietro arrives Jun 28 — all four stale records must be deactivated before then",
+        "(NOT RUN) UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180). Investigate ba11180 Jun22 modification first. See recipe: issue-36b-pietro-accomm-dates.md",
+        "Jun24 hrly: All 4 stale beds STILL active=true (UNCHANGED). Accommodation 11157 (booking 100): ended May10=45d stale. Accommodation 9917 (booking 1274): ended May16=39d stale. Accommodation 11159 (booking 100): ended May30=25d stale. Accommodation 11180 (booking 81): ended Jun20=4d stale (updated Jun22 13:31 UTC — something changed but NOT deactivated — investigate before running). Accommodation 11311 Pietro bed84 Jun28-Sep13 weeks=11 fee=3850 CORRECT. Pietro arrives Sun Jun28=4d. NEIL CRITICAL: UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180) — MUST RUN before Sun Jun28.",
+        "Jun28=4d; deactivate beds"
+      ]
+    ]
+  }
+]

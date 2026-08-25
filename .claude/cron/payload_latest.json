@@ -1,0 +1,46 @@
+[
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• 82nd hourly check Fri 24 Jul 2026 UTC (160th total)\n• Booking course BC 24609 (Morning General, B2, booking 17831, student 14443): STILL zero class assignments\n• Accommodation BA 11358 (Host Family, bed 180, Jul 12 – Aug 2): already assigned and active — original issue resolved\n• Payment fully settled: EUR 1,396.90 paid, open = 0\n• CORRECTION (prior 81 runs wrong): course ends Fri 31 Jul 2026 (NOT Thursday) — Jul 31 = Friday per node Date UTC\n• CORRECTION: Jul 25 = Saturday (NOT Friday); the \"Fri 25 Jul TOMORROW\" in prior H cells was wrong\n• Correct remaining school days: Mon 27, Tue 28, Wed 29, Thu 30, Fri 31 Jul = 5 days from Monday (6 incl. today)\n• NOT blocked by Issue 38 — BC 24609 ends 31 Jul before Aug 3 Bank Holiday",
+        "Assign BC 24609 to Morning General B2 class from Mon 27 Jul (or today). See recipe: issue-39-addendum-24jul-i.md",
+        "82nd hrly 160th check Fri 24 Jul UTC. Day-of-week CORRECTED this run (Jul 31 = Fri, Jul 25 = Sat). 5 school days remain (Mon 27 – Fri 31). NOT blocked by Issue 38. Fix NOT RUN.",
+        "CRITICAL; FINAL WEEK; 5 days Mon-Fri 27-31 Jul"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 87th hourly check Fri 24 Jul 2026 UTC (160th total)\n• August Bank Holiday Mon 3 Aug 2026: STILL absent from school_closures — 10 calendar days away — CRITICAL\n• October Bank Holiday Mon 26 Oct 2026: also absent from school_closures\n• Active booking courses spanning Aug 3: 203\n• Booking courses starting 2026-08-03: 17 (students would arrive on a closed school)\n• Issue 22 (Edite Nunes, BC 24991 ends Fri 7 Aug) depends on this fix first",
+        "Insert school_closures: Aug BH 3 Aug 2026 (isPaidHoliday=true); Oct BH 26 Oct 2026. 203 courses affected; 17 start Aug 3. See recipe: issue-38-addendum-24jul-h.md",
+        "87th hrly 160th check Fri 24 Jul UTC. UNCHANGED. Aug BH 10 days away. 203 courses span Aug 3. 17 start Aug 3. Issue 22 depends on this. Fix NOT RUN.",
+        "Aug BH; 10d CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• 79th hourly check Fri 24 Jul 2026 UTC (160th total)\n• Booking course BC 24991 (General English AM, booking 18214, student 1015): STILL zero class assignments\n• Course ends Fri 7 Aug 2026 — 10 effective school days remaining (Aug 3 Bank Holiday not yet in school_closures)\n• CORRECTION (prior runs wrong): Mon 27 Jul (NOT 28), Tue 28, Wed 29, Thu 30, Fri 31 Jul; Mon 3 Aug BH (closed); Tue 4, Wed 5, Thu 6, Fri 7 Aug\n• 10 school days already missed — student has attended zero assigned classes\n• Prerequisite: fix Issue 38 (add Aug BH closure) before assigning",
+        "Fix Issue 38 first (Aug BH closure), then assign BC 24991 to General English AM class from Mon 27 Jul. See recipe: issue-22-addendum-24jul-g.md",
+        "79th hrly 160th check Fri 24 Jul UTC. Day-of-week CORRECTED (Mon=27 not 28). 10d missed, 9-10 days remain (ends Fri 7 Aug, Aug 3 BH closed). Depends on Issue 38. Fix NOT RUN.",
+        "CRITICAL; 10d missed; assign NOW"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 82nd hourly check Fri 24 Jul 2026 UTC (160th total)\n• Booking 18180 (Giampaolo Russo, student 14571): Confirmed, fully paid EUR 2,584.96\n• Accommodation BA 11357 (Host Family, Half Board, bed 178, 2 Aug – 6 Sep 2026): active = true, claimStatus = confirmed, claimed via host-portal 1 Jul 2026 — provider confirmed\n• Capel Street apartment (6 Sep – 14 Sep 2026): NOT YET ADDED to booking 18180\n• Payment 17954 (EUR 2,584.96, Bank, 26 Jun 2026): xeroPaymentId still null — 28 days unreconciled\n• Host Family check-in: Sun 2 Aug 2026 = 9 calendar days away",
+        "Add Capel Street accomm to booking 18180 (6 Sep – 14 Sep); reconcile payment 17954 in Xero. See recipe: issue-41-addendum-24jul-h.md",
+        "82nd hrly 160th check Fri 24 Jul UTC. UNCHANGED. Host family confirmed by provider. Capel Street still missing. Xero null 28d. Check-in Aug 2 = 9 days. Fix NOT RUN.",
+        "Xero null; Capel missing; 9d check-in"
+      ]
+    ]
+  }
+]

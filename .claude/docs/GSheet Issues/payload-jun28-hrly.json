@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 + 16989 still unlinked — bookingId = null, xeroPaymentId = null — 61 days since creation on 28 Apr\n• Payment 16988 (HubSpot 1204827374829) → Booking 17856 Margherita Galbusera — EUR 339.90\n• Payment 16989 (HubSpot 1204846469317) → Booking 17857 Francesca Fassina — EUR 339.90\n• Both bookings: status = Confirmed, confirmed = false — students blocked from class assignment lists\n• Booking courses 24630 + 24631: General English AM Plus, Jun 29 to Jul 10 — fee = null\n• Classes start TOMORROW MON JUN 29 — TODAY IS SUN JUN 28 — MAXIMUM EMERGENCY — 4-step SQL NOT YET RUN (87th check)",
+        "(NOT RUN) (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) UPDATE booking_courses SET fee=339.9 WHERE id IN (24630,24631); (4) UPDATE bookings SET confirmed=true WHERE id IN (17856,17857). See recipe: issue-1-orphan-payments.md",
+        "hrly Jun28 SUN UTC (87th check, fresh DB): pmt16988 bookingId=STILL null xeroId=null EUR339.90 (Apr28=61d). pmt16989 bookingId=STILL null xeroId=null EUR339.90 (Apr28=61d). bk17856+17857 CONF conf=STILL false amtPaid=339.9/339.9. bc24630+24631 GE-AM-Plus Jun29-Jul10 fee=STILL null. CLASSES TOMORROW MON JUN29. 4-STEP SQL NOT RUN. NEIL: run BEFORE 09:00 Mon Jun29.",
+        "Jun29 TOMORROW"
+      ]
+    ]
+  },
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "• Document 171 is a DRAFT certificate (template 82) — last updated Jun 05, now 23 days stale\n• Booking 1498 is CONFIRMED (status), but confirmed = false and amount paid = null\n• Booking course 1660 (ULearn Renewal Morning) ended Jun 05 — certificate was never issued after course ended\n• Simple action needed: issue the document via SIS UI",
+        "(NOT RUN) SIS student 947 booking 1498 Documents Issue button. See recipe: issue-8-suvderdene-cert-dates.md",
+        "hrly Jun28 SUN UTC (10th check, fresh DB): doc171 STILL DRAFT (tmpl82, Jun05=23d stale). bk1498 CONF conf=false amtPaid=null. bc1660 ended Jun05=23d ago active=true stale. UNCHANGED. Neil: SIS student 947 -> bk1498 -> Documents -> Issue button.",
+        "cert DRAFT; 23d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H11:K11",
+    "values": [
+      [
+        "• Booking 97 is CONFIRMED, paid EUR 1741 / 1741\n• Documents 63 and 64 are INVOICES (template 78), not certificates\n• Booking 97 has 0 certificate documents\n• Booking course 107 (Morning General Apr 27 to May 22) ended 37 days ago — certificate still not generated",
+        "(NOT RUN) Generate cert for bk97 (Apr27-May22) via SIS student 91 bk97 Documents Generate Certificate. See recipe: issue-9-massimiliano-cert-split.md",
+        "hrly Jun28 SUN UTC (10th check, fresh DB): bk97 CONF 1741/1741. 0 cert docs (tmpl82). doc63 REVOKED + doc64 ISSUED both tmpl78 (invoices only). bc107 ended May22=37d ago (active=true stale). UNCHANGED. Neil: SIS student 91 bk97 Documents Generate Certificate.",
+        "cert bk97 37d"
+      ]
+    ]
+  },
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "• Extra 96 (INSURANCE) has fee = null — type = INSURANCE, details = PEL and Health; active = true\n• Created May 25 — 34 days stale, no fee set (10th check, fresh DB Jun 28 UTC)\n• Booking 17981 confirmed = false (minor anomaly) — paid EUR 1407.50 / 1407.50 (last updated Jun 23)\n• Student 14522 (Lizbeth) insurance_from = null, insurance_until = null on student record (confirmed Jun 28)\n• Student in class since Jun 01 — Day 27 uninsured; no health insurance arranged",
+        "(NOT RUN) Set fee for extra 96 via SIS bk17981 Extras INSURANCE; or UPDATE booking_extras SET fee=<amount> WHERE id=96 (NOT RUN). See recipe: issue-13-lizbeth-health-insurance.md",
+        "hrly Jun28 SUN UTC (10th check, fresh DB): extra96 INSURANCE fee=STILL NULL active=true (created May25=34d stale). s14522 insuranceFrom=null insuranceUntil=null — NOT insured. bk17981 CONF conf=false 1407.5/1407.5. Day 27 uninsured. UNCHANGED. Neil: (1) arrange PEL+Health; (2) set extra96 fee in SIS bk17981 Extras; (3) set s14522 insurance_from/insurance_until.",
+        "ins; D27 uninsured"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• Student 917 (Uyanga Tungalag) confirmed in school since 27 Apr — 63 days with zero class assignments (fresh DB Jun 28)\n• Booking 1467 is Confirmed (confirmed = true), paid EUR 2405 / 2405 — Fidelo student migrated\n• Booking course 1613 (Academic Year Morning, Apr 27 to Oct 16) is active — no class assigned\n• Visa status = null — prevents appearance in class-to-be-assigned list\n• Student has been attending without a formal class assignment for over 2 months",
+        "Assign class for bc1613 via SIS UI (no SQL needed). Set visaStatus on student 917. See recipe: issue-25-uyanga-visa-escrow.md",
+        "hrly Jun28 SUN UTC (16th check, fresh DB): s917 visaStatus=STILL NULL. bk1467 CONF conf=true 2405/2405. bc1613 AY-Morn Apr27-Oct16 active. SCAs=STILL 0 (Apr27 start = Day 63 in school). UNCHANGED. Neil: (1) set visaStatus on student 917; (2) assign class for bc1613 via SIS UI.",
+        "D63; 0SCA; CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Class assignment 255 (class 11, B1 PM) weekStart = 12 Jan 2026 (wrong — course started 9 Mar) and weekEnd = 3 Jul 2026 (wrong — course ends 11 Sep)\n• After Jul 03 Saikhantes will vanish from class list — 10 weeks uncovered through 11 Sep\n• Booking course 24925 (Academic Year Afternoon, 9 Mar to 11 Sep) is correct course for student 1001 (booking 18151)\n• Student 1001 (Saikhantes Shagdarsuren) status = ACTIVE, B1 level, visa valid Mar 09 to Nov 09",
+        "(NOT RUN) UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255. See recipe: issue-29-saikhantes-jan12-start-date.md",
+        "hrly Jun28 SUN UTC (2nd check today, fresh DB): sca255 STILL weekStart=2026-01-12(WRONG) weekEnd=2026-07-03(WRONG) classId=11 studentId=1001. bc24925 AY Afternoon Mar09-Sep11 active. bk18151 CONF 1339.2/1339.2. weekEnd Jul03=5 DAYS. SQL NOT RUN. NEIL: run UPDATE BEFORE Jul03.",
+        "sca255; Jul03=5d; URGENT"
+      ]
+    ]
+  }
+]

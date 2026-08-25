@@ -1,0 +1,148 @@
+student_id,first_name,last_name,fidelo_contact_id,fidelo_customer_num,start,end,status,course
+10,Yoesnay,Ramos Quevedo,51276,30404,2026-01-04,2026-06-26,PENDING,Academic Year Morning
+12,Munkhbold,Battogtokh,51437,30520,2026-03-29,2026-09-18,CONFIRMED,Academic Year Afternoon
+14,Felix Edgardo,Lopez Rivera,51590,30614,2026-01-02,2026-07-04,CONFIRMED,Academic Year Morning
+15,Lalita,Champakhong,51640,30650,2026-01-31,2026-07-24,PENDING,Academic Year Morning
+19,Amine,Ibrani,51673,30674,2026-02-22,2026-08-14,CONFIRMED,Academic Year Afternoon
+20,Dumitru Gabriel,Tirziu,51691,30686,2026-01-03,2026-06-26,PENDING,Academic Year Morning Plus
+21,Kritchana,RATCHA-ANAN,51698,30693,2026-01-24,2026-07-17,PENDING,Academic Year Morning
+27,Angel,Carrillo,51753,30743,2026-04-04,2026-07-11,,Morning General
+31,Ralph,Belizaire Calderón,51794,30783,2026-02-01,2026-07-24,CONFIRMED,Academic Year Afternoon
+33,ENKHTUYA,ENKHBOLD,51803,30792,2026-02-28,2026-11-13,CONFIRMED,Academic Year Morning
+34,Giga,Jojua,51810,30798,2026-04-18,2026-10-09,,Academic Year Morning Plus
+36,Namuunaa,Dorjsuren,51814,30802,2026-03-28,2026-11-13,CONFIRMED,Academic Year Morning
+44,BUDDAGINA,NEMEKHBAYAR,51845,30833,2026-05-02,2026-10-23,PENDING,Academic Year Morning
+84,Federico,Baldi,51914,30896,2026-05-02,2026-06-27,CONFIRMED,Morning General
+85,Rafaela,Pereira Severino,51915,30897,2026-03-28,2026-09-18,PENDING,Academic Year Morning
+87,Abdulaziz,AlRuwayti,51927,30909,2026-03-14,2026-07-04,CONFIRMED,Afternoon General
+95,Neil,Test26,49673,29254,2026-04-27,2026-06-12,CONFIRMED,General English AM
+97,Neil,Mc Mahon,51990,30967,2026-03-01,2026-06-30,CONFIRMED,General English AM
+367,Autchara,Gansit,50012,29467,2025-11-22,2026-10-23,CONFIRMED,Academic Year Afternoon
+400,Settiyanee,Duangjai,50490,29820,2025-06-15,2026-11-27,ESCROW,Academic Year Morning
+585,Yoanka,Valdés Sánchez,51033,30267,2025-12-27,2026-09-12,PENDING,Morning IELTS
+588,ANAR-ERDENE,BATBAYAR,51065,30285,2025-08-23,2026-08-14,CONFIRMED,Academic Year Morning
+681,Dorjpalam,Munkhtur,51462,30532,2025-10-25,2026-08-21,CONFIRMED,Academic Year Morning
+740,Nomin,Nergui,49286,29045,2025-03-10,2026-08-14,CONFIRMED,Academic Year Morning
+741,Xudong,Chen,49448,29140,2025-02-10,2026-06-19,CONFIRMED,Academic Year Afternoon Plus
+744,Ana Luiza,De Sousa,49861,29369,2025-03-17,2026-08-28,CONFIRMED,Academic Year Afternoon
+745,Xue,Zhang,49902,29403,2025-03-24,2026-09-11,CONFIRMED,Academic Year Morning
+750,Guilherme,Brito Ferreira,50124,29534,2026-03-02,2026-08-21,CONFIRMED,Academic Year Morning
+757,Temuulen,Undrakh,50468,29808,2026-03-30,2026-09-18,ESCROW,Academic Year Renewal Morning
+758,Dashmaa,Munkhbayar,50470,29809,2026-03-30,2026-09-18,ESCROW,Academic Year Renewal Morning
+759,Nominjin,Amartsogt,50488,29818,2025-12-08,2026-06-12,CONFIRMED,Academic Year Morning
+760,BAt-Orgil,Baljinnyam,50492,29822,2026-02-23,2026-08-14,CONFIRMED,Academic Year Morning
+763,Lais,Umbelino Ferreira,50506,29831,2026-02-09,2026-07-31,CONFIRMED,Academic Year Afternoon
+765,Isabela,Lair Pereira da Silva,50552,29873,2026-03-23,2026-09-11,CONFIRMED,Academic Year Morning
+803,Amanda,Soares Pereira,50996,30244,2025-06-16,2026-11-27,CONFIRMED,Academic Year Afternoon
+804,Melissa,Brogliato de Andrade,50998,30245,2026-04-20,2026-10-09,CONFIRMED,Academic Year Afternoon
+805,Caíque,Cavalcanti de Oliveira Silva,50999,30246,2026-04-20,2026-10-09,CONFIRMED,Academic Year Afternoon
+808,Bayartsetseg,Ulambayar,51035,30268,2026-01-12,2026-07-03,CONFIRMED,Academic Year Morning
+814,Mariana Regina,Ferreira,51075,30291,2025-06-23,2026-11-27,CONFIRMED,Academic Year Morning
+815,Wenpu,Chen,51079,30293,2026-03-02,2026-08-21,CONFIRMED,Academic Year Morning
+824,Henrique,Rodrigues dos Santos,51192,30359,2025-09-15,2026-07-31,CONFIRMED,Academic Year Afternoon
+825,Tselmeg,Erdenebaatar,51204,30365,2026-01-19,2026-07-10,CONFIRMED,Academic Year Morning
+828,Gantuguldur,Gansukh,51219,30374,2026-01-05,2026-06-26,CONFIRMED,Academic Year Morning
+830,RAFAEL,FERREIRA DE LIMA,51241,30386,2026-04-27,2026-10-16,CONFIRMED,Academic Year Morning
+835,Luana,Fernandes Lins,51309,30427,2026-04-27,2026-10-16,CONFIRMED,Academic Year Afternoon
+843,Yasmin Luanna,Campos Silva,51347,30451,2026-04-13,2026-10-09,CONFIRMED,Academic Year Afternoon
+848,Pablo Anibal,Quiroz Alaniz,49086,28946,2026-04-27,2026-10-16,CONFIRMED,Academic Year Renewal Afternoon
+850,Fangjia,Liang,51442,30522,2026-01-05,2026-07-31,ESCROW,Academic Year Renewal Morning
+851,Stefani,Viereck Aguirre,51443,30523,2026-01-26,2026-07-17,CONFIRMED,Academic Year Afternoon
+856,Julia Hiana,Zulian,51482,30541,2026-02-23,2026-08-14,CONFIRMED,Academic Year Afternoon
+861,Yan,Wang,51502,30551,2025-12-15,2026-06-26,CONFIRMED,Academic Year Morning
+863,Gunsanaa,Badral,51519,30558,2026-01-12,2026-07-03,PENDING,Academic Year Morning
+868,Bilguudei,Bayarmagnai,51530,30565,2026-03-30,2026-09-18,CONFIRMED,Academic Year Morning
+869,Willians,dos Santos Coelho,51532,30566,2025-12-08,2026-06-12,CONFIRMED,Academic Year Afternoon
+873,Xiao,Lin,51581,30608,2025-12-15,2026-06-19,CONFIRMED,Academic Year Morning
+878,Davaanyam,Davaa,51607,30624,2026-01-05,2026-06-26,PENDING,Academic Year Morning
+879,Khasbold,Otgonbayar,51608,30625,2026-01-05,2026-06-26,PENDING,Academic Year Morning
+882,Brisa Aimee,Garcia Rangel,51614,30629,2026-03-23,2026-09-11,CONFIRMED,Academic Year Morning
+883,Yesuimaral,otgonbaatar,51615,30630,2025-12-15,2026-06-19,CONFIRMED,Academic Year Afternoon
+884,Anand,narantuya,51616,30631,2025-12-15,2026-06-19,CONFIRMED,Academic Year Morning
+885,Ardakh,Jainarbyek,51617,30632,2026-03-16,2026-11-16,CONFIRMED,Academic Year Afternoon
+886,Ganchimeg,Ganbaatar,51620,30634,2026-02-23,2026-08-14,PENDING,Academic Year Afternoon
+888,Ulziijargal,Sengeravdan,51623,30637,2026-03-02,2026-08-21,PENDING,Academic Year Afternoon
+891,Yanjinlkham,Tumurbaatar,51629,30643,2026-01-05,2026-06-26,PENDING,Academic Year Morning
+893,Xu,Lei,51634,30646,2026-01-05,2026-06-26,CONFIRMED,Academic Year Morning
+894,ZOLZAYA,BATJARGAL,51637,30648,2026-01-05,2026-06-26,PENDING,Academic Year Morning
+896,Dorjbat,Bayarbaysgalan,51645,30653,2025-12-15,2026-06-19,CONFIRMED,Academic Year Afternoon
+897,Sukhbat,Lkhagvajargal,51646,30654,2026-03-23,2026-09-11,PENDING,Academic Year Afternoon
+898,Amin-Erdene,Odonpurev,51647,30655,2025-12-15,2026-06-19,PARTIAL,Academic Year Morning
+900,Augusto,Almeida Poliani,51653,30660,2026-04-27,2026-10-16,CONFIRMED,Academic Year Afternoon
+901,Turbold,Altankhuyag,51655,30661,2026-02-23,2026-08-14,CONFIRMED,Academic Year Morning
+903,Kenneth Bradley,Santos Nascimento,51659,30664,2026-02-23,2026-08-14,CONFIRMED,Academic Year Afternoon
+908,Bayasgalan,Tsedendorj,51666,30670,2026-03-02,2026-08-21,PENDING,Academic Year Morning
+909,FRANCIELLE,CORBANEZI,51667,30671,2026-03-30,2026-09-18,PENDING,Academic Year Afternoon
+910,ANA LILIAN,FREIRE DE OLIVEIRA,51675,30675,2026-04-13,2026-10-02,CONFIRMED,Academic Year Morning
+912,Maurivan,Kuhl,51679,30677,2026-01-05,2026-06-26,CONFIRMED,Morning General
+913,Itgel,Munkhzaya,51681,30678,2026-03-16,2026-09-04,CONFIRMED,Academic Year Morning
+916,Abner Rafael,Medeiros Cunha,51685,30681,2026-03-23,2026-09-11,PENDING,Academic Year Afternoon
+917,Uyanga,Tungalag,51692,30687,2026-04-27,2026-10-16,CONFIRMED,Academic Year Morning
+918,Andrea Michelle,Diaz Moreno,51693,30688,2025-12-08,2026-07-10,CONFIRMED,Academic Year Morning
+919,Azzaya,Enebish,51695,30690,2026-01-12,2026-07-03,CONFIRMED,Academic Year Morning
+920,Abdullah,Jan,51696,30691,2025-10-20,2026-10-16,PENDING,Afternoon General
+924,Rodrigo,Antero Paiva Dias,51711,30703,2026-03-23,2026-09-11,CONFIRMED,Academic Year Morning
+928,Ariunjargal,Myagmarjav,51721,30711,2026-03-16,2026-09-04,PENDING,Academic Year Morning
+929,Geovana,Ribeiro Frigi,51725,30715,2025-12-15,2026-06-19,CONFIRMED,Academic Year Afternoon
+932,Cristobal Camilo,Castro Gatica,51729,30719,2026-04-13,2026-10-02,CONFIRMED,Academic Year Morning
+933,AILLEN FRANCISCA,BASTIAS TOLEDO,51730,30720,2026-04-13,2026-10-02,CONFIRMED,Academic Year Morning
+935,Kevem Patrick,de Almeida,51735,30725,2026-04-13,2026-10-02,CONFIRMED,Academic Year Afternoon
+936,Daniel,Tristão Sardinha,51736,30726,2026-03-02,2026-08-21,CONFIRMED,Academic Year Morning
+938,Isabela,Percon Peixoto,51742,30732,2025-12-08,2026-06-12,CONFIRMED,Academic Year Afternoon
+939,Yusuke,Kuramura,51744,30734,2025-12-15,2026-06-19,CONFIRMED,Academic Year Morning
+943,Enkhmaa,Bayasgalan,49586,29210,2025-12-15,2026-07-10,CONFIRMED,Academic Year Renewal Afternoon
+944,Regzeddagva,Boldbaatar,49588,29211,2025-12-15,2026-07-10,CONFIRMED,Academic Year Renewal Afternoon
+945,Badamkhand,Otgonbayar,49466,29150,2025-12-01,2027-01-01,CONFIRMED,Academic Year Renewal Morning
+946,Sodnom,Bat-Erdene,49728,29283,2025-11-24,2026-06-19,CONFIRMED,Academic Year Renewal Morning
+948,Tsengelbayar,Mendsaikhan,49312,29058,2025-12-01,2026-06-26,CONFIRMED,Academic Year Renewal Morning
+949,Ulises,Lautaro,51761,30751,2025-12-08,2026-06-19,CONFIRMED,Academic Year Afternoon
+951,Raquel,Álvarez Fernández,51763,30753,2026-01-12,2026-07-17,CONFIRMED,Academic Year Morning
+953,Undralbat,Ganbaatar,49756,29297,2026-01-26,2026-08-07,CONFIRMED,Academic Year Renewal Morning
+954,Tungalag,Davaasuren,49340,29073,2026-02-16,2026-08-07,CONFIRMED,Academic Year Renewal Morning
+955,Dulguun,Battur,49980,29448,2026-01-05,2026-06-26,PENDING,Academic Year Morning
+956,Zorigt,Bayarsaikhan,50106,29523,2026-02-09,2026-07-31,CONFIRMED,Academic Year Renewal Afternoon
+957,Jiaojiao,Yu,51771,30760,2026-04-20,2026-10-09,CONFIRMED,Academic Year Morning
+958,Manduul,Tsengelbayar,51772,30761,2026-03-23,2026-09-11,CONFIRMED,Academic Year Morning
+959,Yeongjae,Jang,51774,30763,2026-04-06,2026-07-10,CONFIRMED,14 weeks Academic Year Morning 06/04/2026 - 10/07/2026
+960,Javkhlan,Gantsooj,51775,30764,2025-12-08,2026-06-12,CONFIRMED,Academic Year Renewal Morning
+961,Daniel,Mondaca,51776,30765,2026-03-02,2026-08-21,PENDING,Academic Year Morning Plus
+962,Undram,Otgonbayar,50972,30228,2026-02-16,2026-08-14,PARTIAL,Academic Year Renewal Morning
+964,Nathalia,Austane Budri Abdon,51778,30767,2026-02-23,2026-08-14,PARTIAL,Academic Year Morning
+965,Alvaro Luiz,Oliveira Moreira,51779,30768,2026-03-16,2026-09-04,CONFIRMED,Academic Year Morning
+967,Julio Cesar,Chavez Rubio,50913,30196,2025-12-15,2026-06-26,CONFIRMED,Academic Year Renewal Afternoon
+968,Ignacio,Giovanelli Barrio,51783,30772,2026-01-12,2026-08-28,CONFIRMED,Academic Year Morning
+970,Bangliang,Wu,49777,29309,2026-01-19,2026-07-10,PENDING,Academic Year Renewal Morning
+973,Manuela,Carvalho de Jesus,51787,30776,2026-03-09,2026-08-28,CONFIRMED,Academic Year Afternoon
+974,Paula,Pessoa Bezerra,51788,30777,2026-03-09,2026-08-28,CONFIRMED,Academic Year Afternoon
+978,Gabriel,Mastelaro,51791,30780,2026-03-16,2026-09-11,CONFIRMED,Academic Year Morning
+981,Ariuntsetseg,Gansukh,51796,30785,2026-01-19,2026-08-07,CONFIRMED,Academic Year Renewal Morning
+982,Alicia,Monteiro De Souza,51797,30786,2026-03-09,2026-09-04,CONFIRMED,Academic Year Renewal Morning
+991,Uuganbayar,Khureltogoo,51809,30797,2026-01-26,2026-07-17,CONFIRMED,Academic Year Renewal Afternoon
+992,María Magdalena,Hermosilla Ogaz,51811,30799,2026-01-26,2026-07-17,CONFIRMED,Academic Year Afternoon
+993,Thiago,Meirelles de Macedo,51812,30800,2026-03-09,2026-09-11,CONFIRMED,Academic Year Afternoon
+994,Cesar Augusto,Da Silva Martins,51816,30804,2026-02-09,2026-07-31,CONFIRMED,Academic Year Renewal Afternoon
+995,Emerson,Leao De Oliveira Tavares,51817,30805,2026-01-05,2026-06-26,CONFIRMED,Academic Year Morning
+996,Avril,Ortiz Vera,51819,30807,2026-02-23,2026-08-21,CONFIRMED,Academic Year Morning
+998,Loreni,Manfrim Rodrigues,51824,30812,2026-03-16,2026-09-04,CONFIRMED,Academic Year Morning
+1001,Saikhantes,Shagdarsuren,50120,29531,2026-01-12,2026-07-03,CONFIRMED,Academic Year Afternoon
+1004,Sodbileg,Purevtsend,51833,30821,2026-03-23,2026-09-11,CONFIRMED,Afternoon General
+1005,Rafael,Ferreira Gomes,51834,30822,2026-02-09,2026-09-04,PARTIAL,Academic Year Morning
+1006,Erika,Watanabe,51836,30824,2026-01-26,2026-07-17,CONFIRMED,Academic Year Renewal Morning
+1008,Marilda,Rodrigues de Oliveira,51840,30828,2026-02-23,2026-08-14,PARTIAL,Academic Year Morning
+1009,Suvd-Erdene,Baldorj,50107,29524,2026-02-16,2026-08-07,CONFIRMED,ULearn Renewal MORN
+1010,Gretel Merlina,Nuñez,51844,30832,2026-03-09,2028-03-10,PARTIAL,Academic Year Morning
+1011,Beatriz,Venâncio Freitas,51846,30834,2026-02-09,2026-08-07,PARTIAL,Academic Year Afternoon
+1028,Maria Eduarda,Alves Paiva,51909,30892,2026-03-02,2026-08-21,CONFIRMED,25 weeks Academic Year Morning 02/03/2026 - 21/08/2026
+1033,Kseniia,Sapohova,51919,30901,2026-04-20,2026-07-10,PENDING,Afternoon General
+1042,Otgonzaya,Regzen,51933,30914,2026-04-13,2026-10-02,CONFIRMED,Academic Year Renewal Morning
+1043,Bolortuya,Ulziisaikhan,51934,30915,2026-04-13,2026-10-02,CONFIRMED,Academic Year Renewal Morning
+1044,Fernanda,Soares Ferreira,51936,30917,2026-04-27,2026-07-03,CONFIRMED,Morning General
+1046,Matheus,Loppnow Guimarães,51939,30920,2026-04-27,2026-10-16,CONFIRMED,25 weeks Academic Year Afternoon 27/04/2026 - 16/10/2026 - St Patrick's Day Promo
+1047,Ariunsarnai,Batbayar,51940,30921,2026-04-13,2026-10-02,PENDING,Academic Year Renewal Morning
+1052,Alberto,Squillace,51949,30929,2026-04-06,2026-09-18,CONFIRMED,Morning General
+1061,Laura,Oliveira Pedro Paulo,51961,30941,2026-03-30,2026-10-16,CONFIRMED,Academic Year Afternoon
+1072,Nataliia,Kolodnitska,51981,30958,2026-04-13,2026-10-02,,Academic Year Afternoon
+1083,Wellington,Abreu D Luca,51793,30782,2026-03-16,2026-09-11,CONFIRMED,Academic Year Morning
+14441,Martina,Tartaro,51998,30975,2026-05-03,2026-07-26,CONFIRMED,Morning General Plus
+14537,Tatiane,Soares Ferreira,,,2026-04-27,2026-07-03,CONFIRMED,10 weeks Morning General 27/04/2026 - 03/07/2026
+14542,Marwan,Unknown,,,2026-03-16,2026-07-03,CONFIRMED,16 weeks Morning General 16/03/2026 - 03/07/2026

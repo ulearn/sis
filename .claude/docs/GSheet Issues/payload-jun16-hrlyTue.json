@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• Student is Ernesto Pesoa Gil (s14532) — column B shows Ivan Rodriguez (incorrect)\n• Booking 18034 is PARTIAL, confirmed = false, paid 845 / 1095 (EUR 250 outstanding) — stale since Jun 07\n• Course 24826 is a 2-week Intensive, running Jun 08 – Jun 19 (Friday)\n• Week 1 (Jun 08–12) entirely missed (zero class records)\n• Week 2 Day 1 (Jun 15) and Day 2 (Jun 16) also missed\n• Student has 0 class assignments — current level is null in both SIS and HubSpot (contact 3344151)\n• Only 3 school days remain: Wed Jun 17, Thu Jun 18, Fri Jun 19",
+        "(NOT RUN) 1) Get Ernesto level from teacher before Wed 09:00; 2) INSERT 2 student class assignments (AM+PM) for booking course 24826, week start = 2026-06-17, week end = 2026-06-19. See recipe: issue-26-intensive-class-assign-once.md",
+        "Jun16 hrly(Tue): UNCHANGED (fresh DB). s14532 level=null 0SCAs ENTIRE COURSE. bc24826 INTENSIVE ends Jun19 Fri=3 school days (Wed17/Thu18/Fri19). bk18034 PARTIAL 845/1095 conf=false (stale Jun07 9d). WK1+WK2-D1+WK2-D2 all missed=7 school days zero class record. NEIL: get Ernesto level from teacher BEFORE Wed 09:00 then INSERT 2 SCAs. see recipe.",
+        "crit;3d;Fri19"
+      ]
+    ]
+  },
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "• Booking 1308 is CANCELLED, confirmed = false — stale since Jun 07\n• Amount paid = 1530 / 1530 (fully paid — genuine enrolment)\n• Course 1350 (Academic Year Afternoon, May 25 – Nov 13) is ACTIVE\n• Student 766 (Ana Jessica Rosa, A2) has 0 class assignments all time\n• Student is at least Day 25 in school with a cancelled booking and no class record",
+        "(NOT RUN) UPDATE bookings SET status=CONFIRMED, confirmed=true WHERE id=1308; then assign A2-AFT class. See recipe: issue-17-ana-jessica-accidental-cancel.md",
+        "Jun16 hrly(Tue): UNCHANGED. bk1308 CANCELLED conf=false amtPaid=1530/1530 (updAt=Jun07). bc1350 AY-AFT May25-Nov13 ACTIVE. s766 A2 visaStatus=null 0 SCAs all time. Day 25 in school. NEIL: restore bk1308 to CONFIRMED, then assign AY-AFT class. SQL NOT RUN.",
+        "D25;0SCA;urgent"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Course 24925 start date fixed to Mar 09 (was Jan 12) — Neil applied Jun 16\n• Course 24925 end date extended to Sep 11 (was Jul 03) — AY corrected\n• ILEP code set to 0318/0003 on course 24925\n• Attendance count for student 1001 = 5 (student IS attending B1 PM)\n• Class assignment 255 weekStart = Jan 12 (STILL WRONG — should be Mar 09)\n• Class assignment 255 weekEnd = Jul 03 (STILL WRONG — should be Sep 11)",
+        "(NOT RUN) UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255. See recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun16 hrly: bc24925 startDate=Mar09+endDate=Sep11+ilepCode=0318/0003 ALL FIXED by Neil. sca255 weekStart=Jan12+weekEnd=Jul03 STILL WRONG. att=5 (student attending). SQL for sca255 NOT RUN. NEIL: UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255;",
+        "sca fix needed"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Booking 94 is CONFIRMED, paid 1151.5 / 1151.5 — correct booking for Giulia Avallone (s88)\n• Class assignment 270 created Jun 15 — Giulia is now in class (class 12, B1-AM2, Jun 15–26)\n• Booking 18044 is CONFIRMED, paid 1106.5 / 1106.5 — DUPLICATE booking, not yet cancelled\n• Payment 17607 (EUR 1151.5, xeroId = null) is a double-import of the same Mar 13 payment as payment 17102 — DELETE not a refund\n• Milena Vinci (s14557) is no longer in the database — deleted",
+        "Cancel booking 18044 + DELETE payment 17607 (double-import, not a refund — both xeroId = null). See recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun16 hrly(Tue): PROGRESS — sca270 assigned (cls12 B1-AM2 Jun15-Jun26). Giulia s88 NOW IN CLASS. bk94 CONF 1151.5/1151.5 OK. bk18044 DUP CONF 1106.5/1106.5 NOT cancelled (pmt17607 EUR1151.5 xeroId=null=dbl-import Mar13 DELETE not refund). Milena s14557 NOT in DB. 7 school days remain (Jun17-26). NEIL: cancel bk18044 + DELETE pmt17607. NOT RUN.",
+        "in class; dup bk"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 is CONFIRMED, paid 740 / 740 (since Jun 15) — active booking for Edite Nunes (s1015, A1)\n• Booking courses 24933 and 24934 are DUPLICATES: both named General English AM, Jun 15 – Jul 10 on booking 18158\n• Student 1015 has 0 current class assignments (last assignment expired May 15)\n• Bookings 18131 (EUR 1185) and 18133 (EUR 648) are ghost shell bookings — still CONFIRMED, not cancelled\n• Payments 17852 (EUR 1185, hubspot 1245328690407) and 17730 (EUR 648, hubspot 1242902318299) are ghost payments, xeroId = null",
+        "(NOT RUN) 1) CANCEL bookings 18131+18133; 2) void payments 17852+17730 via HubSpot; 3) DELETE booking course 24934 (keep 24933); 4) assign cls7 (A1-AM) to booking course 24933 ws=2026-06-16 we=2026-07-10. See recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun16 hrly D2(Tue): bk18158 CONF 740/740 (paid Jun15 10:10UTC). 0 SCAs bc24933(GE-AM Jun15-Jul10). bc24934 DUP(fee=360) still live. bk18131 CONF 1185+bk18133 CONF 648 NOT cancelled. pmt17852(EUR1185 HS=1245328690407)+pmt17730(EUR648 HS=1242902318299) xeroId=null. Day 2 no class. NEIL: assign cls7(A1-AM) bc24933 ws=Jun16 we=Jul10 IMMEDIATELY, then cancel bk18131+bk18133+delete bc24934.",
+        "D2;0SCA;A1-cls7"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• Booking 1605 is PENDING, paid 0 / 1509 — day 67 in school\n• HubSpot deal 502951083215 (B2B Sales) is at ENROLMENT stage, not WON\n• Booking course 1791 (Academic Year Renewal Morning, Apr 13 – Oct 02) is ACTIVE\n• Student 1047 (Ariunsarnai Batbayar, B2) has 0 class assignments all time",
+        "Move HubSpot deal 502951083215 to WON stage to trigger webhook and confirm booking. See recipe: issue-20-ariunsarnai-payment-due.md",
+        "Jun16 hrly(Tue): UNCHANGED. bk1605 PENDING 0/1509 (updAt=Jun11). bc1791 AY-Ren-Morn Apr13-Oct02 ACTIVE. s1047 B2 0 SCAs all time. HS deal 502951083215 NOT WON. Day 67 in school without class. NEIL: move HS deal 502951083215 to WON stage.",
+        "D67;pending;0SCA"
+      ]
+    ]
+  }
+]

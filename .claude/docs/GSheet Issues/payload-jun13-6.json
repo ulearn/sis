@@ -1,0 +1,56 @@
+[
+  {
+    "range": "J32:K32",
+    "values": [
+      [
+        "Jun13 SAT hrly(3rd): TZ=UTC NOT in .env CONFIRMED. 43 null-weekEnd SCAs(9 stale:39,40,65,66,74,75,81,87,100; 34 active). Mon Jun15 07:00 att sheet WILL show Sun Jun14 header + 9 ghost students. BOTH FIXES NOT RUN. <15h deadline.",
+        "URGENT <Mon 07:00"
+      ]
+    ]
+  },
+  {
+    "range": "J31:K31",
+    "values": [
+      [
+        "Jun13 SAT hrly(3rd): ALL UNCHANGED. s88 JUNIOR 0SCAs. bk94 CONF 1151.5/1151.5. bk18044 DUP CONF 1106.5/1106.5(pmt17607 EUR1151.5 xeroId=null=safe-delete). bk18152 Milena s14557 PEND 0/1151.5. Jun15 TOMORROW. 4 STEPS NOT RUN. NEIL: act TONIGHT.",
+        "CRITICAL tonight"
+      ]
+    ]
+  },
+  {
+    "range": "J27:K27",
+    "values": [
+      [
+        "Jun13 SAT hrly(3rd): 0 SCAs CONFIRMED(DB). WK2 Jun15-19 FINAL WEEK STARTS MONDAY. Mon AM before 09:00: get Ernesto level->INSERT 2 SCA rows(AM+PM). bc24826 INTENSIVE ends Jun19.",
+        "Mon AM LAST CHANCE"
+      ]
+    ]
+  },
+  {
+    "range": "J2:K2",
+    "values": [
+      [
+        "Jun13 SAT hrly(3rd): pmt16988(EUR339.9 hs=1204827374829)+pmt16989(EUR339.9 hs=1204846469317) bookingId=null CONFIRMED 48d. FIX NOT RUN.",
+        "link needed"
+      ]
+    ]
+  },
+  {
+    "range": "J6:K6",
+    "values": [
+      [
+        "Jun13 SAT hrly(3rd): ba11287 bedId=null CONFIRMED(Jun27-Dec12 claimStatus=pending). Arrival Jun27=14d. LOA blocked until bed assigned. NEIL: assign bed in accomm module ASAP.",
+        "bed assign 14d"
+      ]
+    ]
+  },
+  {
+    "range": "J30:K30",
+    "values": [
+      [
+        "Jun13 SAT hrly(3rd): attCount=0 CONFIRMED(156d enrolled). sca255 cls11 weekEnd=Jul03(19d left). visaStatus=null. bk18151 CONF 1339.2. NEIL: Mon AM cls11 teacher->absent? IRP escalation NOW(19d deadline).",
+        "0att URGENT 19d"
+      ]
+    ]
+  }
+]

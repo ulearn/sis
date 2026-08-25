@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H17:K17",
+    "values": [
+      [
+        "• 32nd check Thu 20 Aug 2026 UTC — no change since 31st check (Wed 19 Aug)\n• CORRECTION noted: BA 11216 = booking 46; BA 11158 = booking 100 (IDs corrected 19 Aug)\n• Booking Accommodation 11216 (booking 46, bed 66): ended 9 May 2026 — 103 days stale\n• Booking Accommodation 11158 (booking 100, bed 66): ended 17 May 2026 — 95 days stale\n• Booking Accommodation 11282 (booking 17897, bed 66): ended 5 Jun 2026 — 76 days stale\n• Booking Accommodation 11361 (booking 18190, bed 66): ended 9 Aug 2026 — 11 days stale\n• Bed 66 free since 9 Aug 2026",
+        "CORRECTED recipe: see issue-16-addendum-19aug.md (table name bug fixed). Main recipe: issue-16-stale-bas.md (wrong table name -- use addendum SQL instead).",
+        "32nd Thu 20 Aug UTC. No change. BA 11216 now 103d stale (max). Fix NOT RUN.",
+        "4 BAs stale; 103d max"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• 37th check Thu 20 Aug 2026 UTC — no change since 36th check (Wed 19 Aug)\n• Student 983 (Flavia Nascimento Mariano): visa_status = null (unchanged)\n• Booking 1534: CONFIRMED, confirmed = true\n• Payment 17035: EUR 250, Bank Transfer, xeroPaymentId = null (unreconciled)\n• Payment 17527: EUR 1,058, Bank, xeroPaymentId = null (unreconciled)\n• Total unreconciled: EUR 1,308",
+        "Confirm visa status then set visaStatus; reconcile payments 17035 + 17527 in Xero. See recipe: issue-18-addendum-19aug.md",
+        "37th hrly Thu 20 Aug UTC. Student 983 visa null. EUR 1,308 unreconciled (pmts 17035+17527). Fix NOT RUN.",
+        "visa null; pmts unreconciled"
+      ]
+    ]
+  },
+  {
+    "range": "H22:K22",
+    "values": [
+      [
+        "• 28th check Thu 20 Aug 2026 UTC — no change since 27th check (Wed 19 Aug)\n• Booking Course 1604 (Maurivan Kuhl, Morning General): ended 3 Jul 2026 — 48 days stale, active = true\n• Class assignments: SCA 46 and SCA 156 (2 existing — verify both are historical weeks before deactivating)\n• Low priority — student has left, anomaly is historical",
+        "Verify SCAs 46 + 156 are past weeks, then deactivate BC 1604. See recipe: issue-21-addendum-19aug.md",
+        "28th hrly Thu 20 Aug UTC. BC 1604 now 48d stale. 2 SCAs (46+156) — verify before deactivating. Low priority. Fix NOT RUN.",
+        "BC1604 stale 48d; safe"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• 167th check Thu 20 Aug 2026 UTC — no change since 166th check (Wed 19 Aug)\n• Student 917 (Uyanga Tungalag): visaStatus = null — day 115\n• Booking Course 1613 (Academic Year Morning): 27 Apr to 30 Oct 2026, active = true\n• 0 class assignments confirmed by database",
+        "Set visaStatus = approved on student 917; assign to class. See recipe: issue-25-addendum-18aug.md",
+        "167th Thu 20 Aug UTC. Day 115. Visa null. BC 1613 Apr 27 to Oct 30 active. 0 SCAs. Fix NOT RUN.",
+        "visa null; 0 SCAs; day 115; pmt resolved"
+      ]
+    ]
+  },
+  {
+    "range": "H29:K29",
+    "values": [
+      [
+        "• 58th check Thu 20 Aug 2026 UTC — no change since 57th check (Wed 19 Aug)\n• Booking 17850 (Paola Sthefane Missias Moreira): status = CONFIRMED, confirmed = false — anomaly persists\n• Amount paid = null, amount open = EUR 321.35, amount total = EUR 321.35\n• Payment 17519: EUR 321.35, Bank, 7 May 2026 — xeroPaymentId = null (unreconciled)\n• Booking last updated: 8 Jul 2026 (43 days ago)",
+        "Set confirmed=true on booking 17850; link payment 17519; reconcile in Xero. See recipe: issue-28-addendum-16aug.md",
+        "58th Thu 20 Aug UTC. No change. Payment 17519 EUR 321.35 Bank xero null. confirmed false. Fix NOT RUN.",
+        "bk conf=false; pmt Xero null"
+      ]
+    ]
+  },
+  {
+    "range": "H34:K34",
+    "values": [
+      [
+        "• 33rd check Thu 20 Aug 2026 UTC — no change since 32nd check (Wed 19 Aug)\n• Student 356 (Shih-Wei Huang): gender = null (not set)\n• Document 238 (booking 560, template 4): ISSUED, version 1, created 17 Jun 2026 — 64 days old with incorrect (female) pronouns",
+        "Update student gender in SIS, then revoke doc 238 and regenerate. See recipe: issue-33-addendum-19aug.md",
+        "33rd Thu 20 Aug UTC. Doc 238 ISSUED 64 days old with wrong pronouns. Gender null. Fix NOT RUN.",
+        "64d; doc238 wrong pronouns"
+      ]
+    ]
+  }
+]

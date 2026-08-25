@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H22:K22",
+    "values": [
+      [
+        "• 17th check Sun 9 Aug 2026 UTC — unchanged\n• Booking Course 1604 (Morning General, booking 1461, student 912 Maurivan Kuhl): active = true — 37 days stale (ended 2026-07-03)\n• Booking 1461: CONFIRMED, confirmed = true, EUR 1,509.60 paid, fully settled",
+        "Deactivate Booking Course 1604. See recipe: issue-21-addendum-9aug.md",
+        "17th hrly Sun 9 Aug UTC. UNCHANGED. BC 1604 ended Jul 3, 37d stale. Fix NOT RUN.",
+        "BC1604 stale 37d"
+      ]
+    ]
+  },
+  {
+    "range": "H28:K28",
+    "values": [
+      [
+        "• 44th check Sun 9 Aug 2026 UTC — unchanged (53 days since booking last updated Jun 17)\n• Booking 17909 (Sofiia Korkishchenko, student 768): status = CANCELLED, confirmed = true — anomaly\n• Amount paid = EUR 0, amount open = EUR 727.50, no payment records\n• Booking Course 24693 (Renewal — Academic Year PM, 25 May to 13 Nov 2026): active = true on cancelled booking\n• Student correctly enrolled on Booking 17849 / BC 24623 (Jun 8 to Nov 27 2026) — no student impact\n• Same BK17909 anomaly also tracked under Issue 7 (row 8)",
+        "Set booking 17909 confirmed = false; deactivate BC 24693. See recipe: issue-27-addendum-9aug.md",
+        "44th hrly Sun 9 Aug UTC. Unchanged 53d. BK17909 CANCELLED + confirmed. Fix NOT RUN.",
+        "bk17909 anomaly; 53d"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• 122nd check Sun 9 Aug 2026 UTC — unchanged\n• Booking Course 104 (Morning General Plus, 15 Jun to 26 Jun 2026): active = true — 44 days stale\n• Booking 94 (Giulia Avallone, student 88): Confirmed, confirmed = true, EUR 1,151.50 paid\n• Payment 17102: EUR 1,151.50, Bank Transfer, created 5 May 2026 — xeroPaymentId = null — 96 days unreconciled\n• Payment 945: EUR 4,231.00, Bank Transfer, created 9 Apr 2026 — xeroPaymentId = null — 122 days unreconciled (booking 79, Milena Verdi)",
+        "Deactivate BC 104; reconcile payments 17102 + 945 in Xero. See recipe: issue-30-addendum-9aug.md",
+        "122nd hrly Sun 9 Aug UTC. BC 104 44d stale. Pmt 17102 96d + pmt 945 122d Xero null. Fix NOT RUN.",
+        "BC104 stale 44d; Xero 96d+122d"
+      ]
+    ]
+  },
+  {
+    "range": "H33:K33",
+    "values": [
+      [
+        "• 7th check Sun 9 Aug 2026 UTC — phantom row still present (approx 121 days since Apr 2026)\n• Only content is the value 278 in column F (Veronica Martin student ID)\n• Veronica Martin accommodation issue resolved in Issue 37 (row 39)\n• No DB record involved — sheet admin issue only",
+        "Delete row 33 in Google Sheets. See recipe: issue-32-addendum-9aug.md",
+        "7th hrly Sun 9 Aug UTC (~121d). Awaiting Neil to delete manually.",
+        "phantom row; delete"
+      ]
+    ]
+  },
+  {
+    "range": "H34:K34",
+    "values": [
+      [
+        "• 22nd check Sun 9 Aug 2026 UTC — unchanged\n• Student 356 (Shih-Wei Huang): gender = null, HubSpot contact ID 791708390643\n• Last student update: 28 Jul 2026 — gender field still null, 12 days with no action\n• Document 238 (booking 560, Exit Letter): status = ISSUED — 53 days since issued (17 Jun 2026) with incorrect she/her pronouns",
+        "Set gender on student 356 via HubSpot; revoke doc 238 and regenerate. See recipe: issue-33-addendum-9aug.md",
+        "22nd hrly Sun 9 Aug UTC. Unchanged. Gender null 12d since Jul 28. Doc 238 ISSUED 53d wrong pronouns. Fix NOT RUN.",
+        "53d; doc238 wrong pronouns"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• 19th check Sun 9 Aug 2026 UTC — BA 11179 newly stale (ended today)\n• Booking Accommodation 11239 (booking 22): ended 24 May 2026 — 77 days stale, active = true\n• Booking Accommodation 11168 (booking 92): ended 20 Jun 2026 — 50 days stale, active = true\n• Booking Accommodation 11285 (booking 17825): ended 5 Jul 2026 — 35 days stale, active = true, fee = null\n• Booking Accommodation 11352 (booking 18156): ended 11 Jul 2026 — 29 days stale, active = true\n• Booking Accommodation 11179 (booking 82): ended 9 Aug 2026 TODAY — newly stale, active = true\n• Booking Accommodation 11173 (booking 88): 9 Aug to 30 Aug 2026 — CURRENT, do NOT deactivate\n• Booking Accommodation 25 (booking 17844): 30 Aug to 11 Oct 2026 — FUTURE, do NOT deactivate",
+        "Deactivate BAs 11239 + 11168 + 11285 + 11352 + 11179; set fee on BA 11285. See recipe: issue-37-addendum-9aug.md",
+        "19th hrly Sun 9 Aug UTC. BA 11179 ended today (5th stale). BA 11173 current Aug 9-30. BA 11285 fee null. Fix NOT RUN.",
+        "BA stale 35d+77d; 5 BAs cosmetic"
+      ]
+    ]
+  }
+]

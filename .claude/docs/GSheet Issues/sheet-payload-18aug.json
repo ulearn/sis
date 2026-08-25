@@ -1,0 +1,46 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 272nd check Tue 18 Aug 2026 UTC — no change since 271st check\n• Payment 4781: EUR 380, Flywire 2019 — booking_id = null (legacy orphan, low priority)\n• Payment 16988: EUR 339.90, Bank, 28 Apr 2026 — booking_id = null (likely Booking 17856, Margherita Galbusera)\n• Payment 16989: EUR 339.90, Bank, 28 Apr 2026 — booking_id = null (likely Booking 17857, Francesca Fassina)\n• Payment 17187: EUR 6,151, TransferMate, ref D2026226 — booking_id = null; leave as-is (2025 service)\n• Booking 17856 (Margherita Galbusera): CONFIRMED, confirmed = false, paid = EUR 339.90, total = EUR 339.90\n• Booking 17857 (Francesca Fassina): CONFIRMED, confirmed = false, paid = EUR 339.90, total = EUR 339.90\n• Booking Courses 24630 + 24631 (General English AM Plus): ended 10 Jul 2026, active = true — 39 days stale",
+        "Link Payments 16988/16989 to Bookings 17856/17857; set confirmed = true on both; deactivate Booking Courses 24630+24631. See recipe: issue-1-addendum-18aug.md",
+        "272nd Tue 18 Aug UTC. No change. Booking Courses 24630+24631 now 39d stale. Fix NOT RUN. Payment 4781 legacy orphan — low priority.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• 61st check Tue 18 Aug 2026 UTC — no change since 60th check\n• Total students: 14,473 (unchanged)\n• 552 students: no + prefix (unchanged)\n• 419 students: + but spaces or dashes (unchanged)\n• Total non-E.164: ~971 (unchanged)\n• Day 45 — fix not applied",
+        "Strip spaces; normalise to E.164. See recipe: issue-6-addendum-18aug.md",
+        "61st hrly Tue 18 Aug UTC. Day 45. 971 non-E.164. Fix NOT RUN.",
+        "~971 phones; 45d"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 155th check Tue 18 Aug 2026 UTC — no change since 154th check\n• Booking 18151: CONFIRMED, confirmed = true, paid = EUR 1,339.20, open = EUR 0\n• service_end = 2026-08-07 — 11 days expired (must extend to 2026-10-02)\n• Holiday 2500: Jul 20 to Aug 21 (5 weeks) — student returns Mon 24 Aug 2026 (6 days)\n• Class Assignment 255: last week_end = 2026-07-03, class 11 — NO return assignment after holiday\n• Booking Course 24925: active, ends 2026-10-02 — 45 days with no class placement after return\n• URGENT: student returns in 6 days with no class assigned",
+        "Extend service_end to 2026-10-02; create return class assignment (Class 11) for BC 24925 from Aug 24. See recipe: issue-15-addendum-18aug.md",
+        "155th Tue 18 Aug UTC. No change. Returns Mon Aug 24 (6d). No return SCA. service_end expired 11d. URGENT. Fix NOT RUN.",
+        "URGENT: return Aug24"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• 34th check Tue 18 Aug 2026 UTC — no change since 33rd check\n• Student 983 (Flavia Nascimento Mariano): visa_status = null — day 80 (DB last updated 2026-07-28)\n• Booking 1534: CONFIRMED, confirmed = true, paid = EUR 1,308, open = EUR 0 (fully paid)\n• Payment 17035: EUR 250, Bank Transfer, ref D2026087, 17 Feb 2026 — xeroPaymentId = null (unreconciled)\n• Payment 17527: EUR 1,058, Bank, 19 May 2026 — xeroPaymentId = null (unreconciled)\n• Booking Course 1710 (Academic Year Afternoon): 2026-06-01 to 2026-11-27, active = true (no issue)",
+        "Set visa_status = APPROVED on student 983; reconcile Payments 17035+17527 Xero IDs. See recipe: issue-18-addendum-18aug.md",
+        "34th Tue 18 Aug UTC. Day 80. visa_status null unchanged. Both payments Xero-unreconciled. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  }
+]

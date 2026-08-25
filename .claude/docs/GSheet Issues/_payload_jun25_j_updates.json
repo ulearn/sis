@@ -1,0 +1,50 @@
+[
+  {
+    "range": "J25",
+    "values": [
+      [
+        "hrly Jun25 UTC (14th check, fresh DB): bc1797 ends TOMORROW Jun26 active=true (bereavement leave, att=0 all time). bc24686 Jul20-Sep18 fee=STILL NULL (25d to Jul20). pmt17124 EUR1280.12 bk1611 xeroPaymentId=null AND hubspotPaymentId=null — payment unrecorded in both systems. bk1611 CONF 1280.12/1280.12. NEIL: (1) set bc24686 fee BEFORE Jul20; (2) reconcile pmt17124 in Xero and HubSpot."
+      ]
+    ]
+  },
+  {
+    "range": "J30",
+    "values": [
+      [
+        "hrly Jun25 UTC (12th check, fresh DB): sca255 classId=11 weekStart=Jan12 weekEnd=Jul03 STILL WRONG (createdAt=Jun09). bc24925 AY-Aft Mar09-Sep11 correct. bk18151 CONF 1339.2/1339.2 (Jun16). Jul03=8d — incorrect weekEnd falls NEXT WEEK FRIDAY. Student will drop off class list Jul03. NEIL URGENT: UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255."
+      ]
+    ]
+  },
+  {
+    "range": "J44",
+    "values": [
+      [
+        "hrly Jun25 UTC (16th check, fresh DB): ba9917+ba11157+ba11159+ba11180 STILL active=true bed84 (UNCHANGED 16 checks). ba11311 Pietro Jun28-Sep13 active=true bedId=84 fee=3850. EMERGENCY: Jun28=3d — 4 stale records blocking Pietro. NEIL: UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180). Recipe: issue-36b-pietro-accomm-dates.md."
+      ]
+    ]
+  },
+  {
+    "range": "J26",
+    "values": [
+      [
+        "hrly Jun25 UTC (24th check, fresh DB): bc1613 AY-AM Apr27-Oct16 active sca=0 — Day 59, 0 class assignments (UNCHANGED 24 checks). s917 visaStatus=null hubspotContactId=null (updAt=May21=35d). bk1467 CONF 2405/2405. NEIL CRITICAL: 59 days in school with NO class assigned. Action: (1) set visaStatus on student 917; (2) assign AM class via SIS for bc1613."
+      ]
+    ]
+  },
+  {
+    "range": "J40",
+    "values": [
+      [
+        "hrly Jun25 UTC (12th check, fresh DB): s356 gender=null (updAt=Jun03=22d). doc238 STILL ISSUED templateId=4 bk560 (Jun18=7d, wrong Ms./she/her pronouns on active exit letter). NEIL URGENT: (1) SIS student 356 Personal Details set Gender=Male; (2) revoke doc238; (3) regenerate exit letter bk560."
+      ]
+    ]
+  },
+  {
+    "range": "J45",
+    "values": [
+      [
+        "hrly Jun25 UTC (6th check, fresh DB): ba11352 bedId=null (Jun17=8d). bk18156 PENDING 0/645 (Jun17=8d). Jul4=9d. Beds 174/175/176 CONFIRMED FREE for Jul4-11 (0 conflicts). Neil: SIS Student 278 (Veronica Martin) Booking 18156 Accommodation — assign Premium bed 174, 175, or 176; confirm once EUR 645 paid."
+      ]
+    ]
+  }
+]

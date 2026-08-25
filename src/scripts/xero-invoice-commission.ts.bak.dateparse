@@ -1,0 +1,261 @@
+import { getAuthedXero } from './xero';
+import https from 'https';
+
+const HS_TOKEN = process.env.ACCESS_TOKEN!;
+
+function hsGet(path: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    https.get({
+      hostname: 'api.hubapi.com', path,
+      headers: { 'Authorization': `Bearer ${HS_TOKEN}` },
+    }, (res) => {
+      let data = '';
+      res.on('data', (c: string) => data += c);
+      res.on('end', () => { try { resolve(JSON.parse(data)); } catch (e) { reject(e); } });
+    }).on('error', reject);
+  });
+}
+
+function hsPost(path: string, body: any): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const bodyStr = JSON.stringify(body);
+    const req = https.request({
+      hostname: 'api.hubapi.com', path, method: 'POST',
+      headers: { 'Authorization': `Bearer ${HS_TOKEN}`, 'Content-Type': 'application/json' },
+    }, (res) => {
+      let data = '';
+      res.on('data', (c: string) => data += c);
+      res.on('end', () => { try { resolve(JSON.parse(data)); } catch (e) { resolve(data); } });
+    });
+    req.on('error', reject);
+    req.write(bodyStr);
+    req.end();
+  });
+}
+
+type Result =
+  | { status: 'skipped'; reason: string }
+  | { status: 'no-contact'; email: string }
+  | { status: 'created'; invoiceNumber: string; xeroInvoiceID: string; total: number }
+  | { status: 'duplicate-fell-through-to-update'; invoiceNumber: string; commissionAdded: boolean }
+  | { status: 'error'; message: string; details?: any };
+
+/**
+ * Create a Xero invoice mirroring a HubSpot invoice, with the partner commission
+ * as a negative-amount line item. Bypasses HubSpot's DataSync entirely for B2B
+ * cases (DataSync's behaviour is unreliable: sometimes it syncs at gross, sometimes
+ * it fails outright, always strips the quote-level Global Discount).
+ *
+ * The Xero invoice we create uses the SAME invoice number as the HubSpot invoice
+ * (e.g. INV-1040 in both). If DataSync ever does manage to also sync the same
+ * invoice, the two entities co-exist as parallel records with the same number —
+ * accepted tradeoff per design conversation.
+ *
+ * Idempotency:
+ *   - If a Xero invoice with this number already exists (DataSync raced us, or
+ *     this is a re-fire), we don't try to create again. Instead we add the
+ *     commission line to the existing invoice if it's not already there.
+ *
+ * Inputs come from the webhook handler scope (no extra HubSpot fetches needed
+ * for line items / contact — already in scope when this is called).
+ */
+export async function createXeroInvoiceFromHubSpot(input: {
+  hubspotInvoiceId: string;
+  hubspotDealId: string;
+}): Promise<Result> {
+  if (!input.hubspotInvoiceId) {
+    return { status: 'skipped', reason: 'no hubspot invoice id' };
+  }
+  if (!input.hubspotDealId) {
+    return { status: 'skipped', reason: 'no hubspot deal id' };
+  }
+
+  // Resolve agency company name + primary contact email from the deal so we
+  // can find the matching Xero Contact. For B2B (company present), search Xero
+  // by company name (mirrors how DataSync syncs the agency company as a Xero
+  // contact). For B2C (no company), fall back to the deal's contact email.
+  let agencyName: string | null = null;
+  let contactEmail: string | null = null;
+  try {
+    const compAssoc = await hsGet(`/crm/v4/objects/deals/${input.hubspotDealId}/associations/companies`);
+    const companyIds = (compAssoc.results || []).map((r: any) => String(r.toObjectId)).filter(Boolean);
+    if (companyIds.length > 0) {
+      const c = await hsGet(`/crm/v3/objects/companies/${companyIds[0]}?properties=name`);
+      agencyName = c?.properties?.name || null;
+    }
+  } catch (e: any) {
+    console.warn(`[Xero Invoice] failed to resolve agency: ${e.message}`);
+  }
+  try {
+    const contactAssoc = await hsGet(`/crm/v4/objects/deals/${input.hubspotDealId}/associations/contacts`);
+    const contactIds = (contactAssoc.results || []).map((r: any) => String(r.toObjectId)).filter(Boolean);
+    if (contactIds.length > 0) {
+      // Use first contact's email — for B2B we don't actually need this since
+      // we'll match by agency name, but useful as B2C fallback.
+      const c = await hsGet(`/crm/v3/objects/contacts/${contactIds[0]}?properties=email`);
+      contactEmail = c?.properties?.email || null;
+    }
+  } catch (e: any) {
+    console.warn(`[Xero Invoice] failed to resolve contact email: ${e.message}`);
+  }
+
+  if (!agencyName && !contactEmail) {
+    return { status: 'skipped', reason: 'neither agency name nor contact email resolved from deal' };
+  }
+
+  // 1. Fetch HubSpot invoice with associations + commission discount total.
+  const invoiceProps = [
+    'hs_number',
+    'hs_order_level_discounts_total',
+    'hs_amount_billed',
+    'hs_currency_code',
+    'hs_invoice_date',
+    'hs_due_date',
+    'createdate',
+  ].join(',');
+  const hsInvoice = await hsGet(
+    `/crm/v3/objects/invoices/${input.hubspotInvoiceId}?properties=${invoiceProps}&associations=line_items`
+  );
+
+  const ip = hsInvoice?.properties || {};
+  const invoiceNumber = ip.hs_number;
+  const commissionEUR = parseFloat(ip.hs_order_level_discounts_total || '0');
+  if (!invoiceNumber) {
+    return { status: 'skipped', reason: 'invoice has no hs_number' };
+  }
+  if (commissionEUR <= 0) {
+    return { status: 'skipped', reason: `commissionEUR=${commissionEUR}` };
+  }
+
+  // 2. Fetch line items from HubSpot
+  const liAssocKey = hsInvoice.associations?.['line items'] || hsInvoice.associations?.line_items;
+  const lineItemIds = (liAssocKey?.results || []).map((r: any) => r.id);
+  let lineItems: any[] = [];
+  if (lineItemIds.length > 0) {
+    const liData = await hsPost('/crm/v3/objects/line_items/batch/read', {
+      inputs: lineItemIds.map((id: string) => ({ id })),
+      properties: ['name', 'quantity', 'price', 'hs_discount_percentage', 'amount'],
+    });
+    lineItems = liData.results || [];
+  }
+
+  // 3. Get Xero client + look up Contact. For B2B (agency present) we match by
+  //    company name — DataSync syncs the agency Company as a Xero Contact named
+  //    after the company (confirmed for LanguageCourse S.L. → INV-1038/1039).
+  //    For B2C / sole-trader we fall back to the deal's primary contact email.
+  const { xero, tenantId } = await getAuthedXero();
+
+  let xeroContact: any = null;
+  if (agencyName) {
+    const r = await xero.accountingApi.getContacts(
+      tenantId, undefined,
+      `Name=="${agencyName.replace(/"/g, '\\"')}"`,
+    );
+    xeroContact = r.body.contacts?.[0];
+  }
+  if (!xeroContact?.contactID && contactEmail) {
+    const r = await xero.accountingApi.getContacts(
+      tenantId, undefined,
+      `EmailAddress=="${contactEmail.replace(/"/g, '\\"')}"`,
+    );
+    xeroContact = r.body.contacts?.[0];
+  }
+  if (!xeroContact?.contactID) {
+    return { status: 'no-contact', email: contactEmail || agencyName || '(none)' };
+  }
+
+  // 4. Idempotency check — does Xero already have an invoice with this number?
+  const existingSearch = await xero.accountingApi.getInvoices(
+    tenantId, undefined, undefined, undefined, undefined, [invoiceNumber],
+  );
+  const existing = (existingSearch.body.invoices || []).find((i: any) => i.invoiceNumber === invoiceNumber);
+  if (existing) {
+    // Add commission line if missing
+    const hasCommissionLine = (existing.lineItems || []).some((li: any) =>
+      /commission/i.test(li.description || ''),
+    );
+    if (hasCommissionLine) {
+      return { status: 'duplicate-fell-through-to-update', invoiceNumber, commissionAdded: false };
+    }
+    const preserved = (existing.lineItems || []).map((li: any) => ({
+      lineItemID: li.lineItemID,
+      description: li.description,
+      quantity: li.quantity,
+      unitAmount: li.unitAmount,
+      accountCode: li.accountCode,
+      taxType: li.taxType,
+    }));
+    const commLine = {
+      description: agencyName ? `Partner Commission — ${agencyName}` : 'Partner Commission',
+      quantity: 1,
+      unitAmount: -Math.abs(commissionEUR),
+      accountCode: '100',
+      taxType: 'NONE',
+    };
+    await xero.accountingApi.updateInvoice(tenantId, existing.invoiceID!, {
+      invoices: [{
+        invoiceID: existing.invoiceID,
+        lineItems: [...preserved, commLine] as any,
+      }],
+    });
+    return { status: 'duplicate-fell-through-to-update', invoiceNumber, commissionAdded: true };
+  }
+
+  // 5. Build Xero invoice payload from HubSpot line items + commission line.
+  //    accountCode='100' across the board — matches what DataSync used in the
+  //    earlier observed syncs (INV-1038, INV-1039). Refine per-product mapping
+  //    later if needed.
+  const xeroLines: any[] = lineItems.map((li: any) => {
+    const p = li.properties || {};
+    const lineItem: any = {
+      description: p.name || '',
+      quantity: parseFloat(p.quantity || '1'),
+      unitAmount: parseFloat(p.price || '0'),
+      accountCode: '100',
+      taxType: 'NONE',
+    };
+    const disc = parseFloat(p.hs_discount_percentage || '0');
+    if (disc > 0) lineItem.discountRate = disc;
+    return lineItem;
+  });
+  xeroLines.push({
+    description: agencyName ? `Partner Commission — ${agencyName}` : 'Partner Commission',
+    quantity: 1,
+    unitAmount: -Math.abs(commissionEUR),
+    accountCode: '100',
+    taxType: 'NONE',
+  });
+
+  const today = new Date().toISOString().split('T')[0];
+  const invoiceDate = ip.hs_invoice_date ? new Date(parseInt(ip.hs_invoice_date) || ip.hs_invoice_date).toISOString().split('T')[0] : today;
+  const dueDate     = ip.hs_due_date     ? new Date(parseInt(ip.hs_due_date)     || ip.hs_due_date).toISOString().split('T')[0]     : today;
+
+  try {
+    const created = await xero.accountingApi.createInvoices(tenantId, {
+      invoices: [{
+        type: 'ACCREC' as any,
+        contact: { contactID: xeroContact.contactID } as any,
+        date: invoiceDate as any,
+        dueDate: dueDate as any,
+        invoiceNumber,
+        reference: invoiceNumber,
+        currencyCode: (ip.hs_currency_code || 'EUR') as any,
+        status: 'AUTHORISED' as any,
+        lineItems: xeroLines,
+      }],
+    });
+    const ci = created.body.invoices?.[0];
+    return {
+      status: 'created',
+      invoiceNumber,
+      xeroInvoiceID: ci?.invoiceID || '',
+      total: ci?.total || 0,
+    };
+  } catch (e: any) {
+    return {
+      status: 'error',
+      message: e?.message || 'unknown error',
+      details: e?.response?.body || null,
+    };
+  }
+}

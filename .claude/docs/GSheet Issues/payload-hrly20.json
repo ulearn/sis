@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Two payments are unlinked — they are real, not spurious:\n• Payment 16988 → Booking 17856 (Margherita)\n• Payment 16989 → Booking 17857 (Francesca)",
+        "UPDATE payments SET booking_id=17856 WHERE id=16988; UPDATE payments SET booking_id=17857 WHERE id=16989. see recipe: issue-1-orphan-payments.md",
+        "Jun15 hrly re-check: pmt16988+16989 booking_id=null CONFIRMED unchanged. bk17856 CONFIRMED confirmed=false amtPaid=339.9/339.9 (stale, no linked pmts). bk17857 same. SQL NOT RUN. 14d to Jun29.",
+        "14d to Jun29"
+      ]
+    ]
+  },
+  {
+    "range": "H6:K6",
+    "values": [
+      [
+        "• Bed assignment 11287 has bedId = null (updated Jun 05)\n• Assignment is active Jun 27 – Dec 12\n• Document 204 (LOA v1) was ISSUED on Jun 08",
+        "Assign bed to ba11287 in SIS Accom module before Jun27 arrival. see recipe: issue-4-rakan-loa-barcode.md",
+        "Jun15 hrly re-check: ba11287 bed_id=null UNCHANGED (updAt=Jun05). doc204 ISSUED Jun08. Arrival Jun27=12d. NEIL: assign bed in SIS Accom module ASAP.",
+        "bed 12d"
+      ]
+    ]
+  },
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "• Booking 1498 is CONFIRMED (new schema)\n• 0 payments in the database\n• Document 171 is a DRAFT certificate (course 1660 ended Jun 05, 10 days ago)",
+        "(NOT RUN) Issue doc171 via SIS->s947->bk1498->Documents->Issue. No payment gate expected. see recipe: issue-8-suvderdene-cert-dates.md",
+        "Jun15 hrly re-check: doc171 DRAFT(tmpl82) UNCHANGED(updAt=Jun05). bk1498 CONFIRMED confirmed=false 0pmts. bc1660 ULearn Renewal MORN ended Jun05=10d ago. NEIL: issue cert via SIS->s947->bk1498->Docs->Issue.",
+        "cert DRAFT 10d"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 CONFIRMED + PAID (740/740 at 10:10 UTC Jun 15)\n• Booking courses 24933 + 24934 DUPLICATE General English AM Jun 15 – Jul 10 (both on bk18158)\n• Bookings 18131 (1185) + 18133 (648) NOT YET CANCELLED\n• 0 class assignments for student 1015 on new course (bc24933)",
+        "(NOT RUN) 1) CANCEL bk18131+18133; 2) void pmt17852+pmt17730 via HubSpot; 3) DELETE bc24934; 4) assign SCA cls7 bc24933. see recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun15 hrly re-check: bk18158 CONFIRMED+PAID 740/740 (10:10 UTC, hours ago). bc24933 LIVE Jun15-Jul10. bc24934 DUPLICATE still live. bk18131 CONFIRMED 1185 + bk18133 CONFIRMED 648 NOT cancelled. 0 SCAs s1015 STILL — course active all day. NEIL: URGENT assign SCA cls7 bc24933 + cancel bk18131/18133 NOW.",
+        "PAID;0SCA;NOW"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking 1611 is CONFIRMED, 1280.12\n• Course 1797 (morning) Apr 06 – Jun 26 (11 days left)\n• Class assignment 229 (class 12) expired Apr 26 (50 days ago)\n• Attendance = 0 for student 1052",
+        "Assign SCA cls12 bc1797 ws=Jun15 we=Jun26 if Alberto returned (NOT RUN). see recipe: issue-24-alberto-fidelo-course-split.md",
+        "Jun15 hrly re-check: bc1797(Morning General) ends Jun26(11d). sca229 cls12 expired Apr26(50d ago). 0 attendance records s1052 STILL. bk1611 CONFIRMED paid=1280.12/1280.12. NEIL: confirm Alberto returned? If yes: INSERT SCA cls12 bc1797 ws=Jun15 we=Jun26.",
+        "0att 11d"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• Student 14532 (Ernesto Pesoa Gil) has 0 class assignments for the ENTIRE course\n• Booking course 24826 (INTENSIVE) Jun 08 – Jun 19 — Week 2 Day 1 today, 4 school days left\n• Booking 18034 PARTIALLY paid 845 / 1095, confirmed = false",
+        "(NOT RUN) Get Ernesto level from teacher; INSERT 2 SCAs AM+PM bc24826 ws=Jun15 we=Jun19. see recipe: issue-26-intensive-class-assign-once.md",
+        "Jun15 hrly re-check: bc24826 INTENSIVE Jun08-19 WK2 D1 TODAY — 4 school days remain (Tue-Fri Jun16-19). s14532 Ernesto 0 SCAs ENTIRE COURSE (WK1 Jun08-12 entirely missed). bk18034 PARTIAL 845/1095 confirmed=false. currentLevel=null DB+HubSpot. NEIL: URGENT — get Ernesto level from teacher NOW + INSERT 2 SCAs AM+PM ws=Jun15 we=Jun19. Level pairs: A2=cls8/9, B1=cls5+12/11, B2-C1=cls4/6, C1=cls13/14.",
+        "WK2 D1;4d"
+      ]
+    ]
+  }
+]

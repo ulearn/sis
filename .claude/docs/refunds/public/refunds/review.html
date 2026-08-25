@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+<title>Review Refund Request — ULearn SIS</title>
+<link rel="icon" type="image/png" href="/sis/public/favicon.ico?v=2">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #f4f3f0; --card: #fff; --border: #e5e4e0;
+  --text: #1a1d23; --muted: #6b6e76; --subtle: #9b9ea6;
+  --accent: #2563eb; --accent-hover: #1d4ed8;
+  --danger: #dc2626; --success: #059669; --warning: #d97706;
+  --radius: 6px;
+}
+body { font-family: 'DM Sans', -apple-system, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; padding: 24px; }
+.shell { max-width: 1400px; margin: 0 auto; }
+.back { color: var(--muted); text-decoration: none; font-size: 13px; }
+.back:hover { color: var(--accent); }
+
+.header { display: flex; align-items: center; justify-content: space-between; margin: 8px 0 20px; gap: 16px; flex-wrap: wrap; }
+.header h1 { font-size: 22px; font-weight: 600; }
+.header .meta { color: var(--muted); font-size: 13px; }
+
+.status { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+.status.pending_review { background: #fef3c7; color: #92400e; }
+.status.approved { background: #dbeafe; color: #1e40af; }
+.status.sent_to_tm { background: #d1fae5; color: #065f46; }
+.status.rejected { background: #fee2e2; color: #991b1b; }
+
+.actions { display: flex; gap: 8px; }
+button { padding: 8px 16px; border: 1px solid var(--border); background: #fff; border-radius: 4px; cursor: pointer; font: inherit; font-size: 13px; }
+button:hover { background: #f9f9f7; }
+button.primary { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+button.primary:hover { background: var(--accent-hover); }
+button.danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.grid { display: grid; grid-template-columns: 1fr 360px; gap: 20px; }
+@media (max-width: 1024px) { .grid { grid-template-columns: 1fr; } }
+
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 16px; }
+.card h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); font-weight: 600; margin-bottom: 14px; }
+.kv { display: grid; grid-template-columns: 180px 1fr; gap: 8px 16px; font-size: 13px; }
+.kv .k { color: var(--muted); }
+.kv .v { font-weight: 500; }
+.kv .v.mono { font-family: monospace; }
+.kv .v.empty { color: var(--subtle); font-style: italic; font-weight: 400; }
+
+.editable { display: flex; gap: 8px; align-items: center; }
+.editable input { padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; font: inherit; font-size: 13px; width: 100px; }
+.editable input.wide { width: 100%; }
+
+.payment-row { display: flex; gap: 12px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 4px; margin-bottom: 8px; }
+.payment-row.highlight { border-color: var(--success); background: #f0fdf4; }
+
+.doc-preview { width: 100%; height: 360px; border: 1px solid var(--border); border-radius: 4px; }
+
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; align-items: center; justify-content: center; z-index: 100; }
+.modal-backdrop.active { display: flex; }
+.modal { background: #fff; border-radius: 8px; padding: 24px; max-width: 600px; width: 90%; }
+.modal h3 { margin-bottom: 12px; }
+.modal textarea { width: 100%; min-height: 100px; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font: inherit; font-size: 13px; margin-bottom: 12px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+.notice { background: #fef3c7; border: 1px solid #fcd34d; padding: 10px 14px; border-radius: 4px; margin-bottom: 12px; font-size: 13px; color: #92400e; }
+.notice.success { background: #d1fae5; border-color: #6ee7b7; color: #065f46; }
+</style>
+</head>
+<body>
+<div class="shell">
+  <a href="/sis/refunds" class="back">← All refund requests</a>
+
+  <div class="header">
+    <div>
+      <h1 id="title">Loading…</h1>
+      <div class="meta" id="meta"></div>
+    </div>
+    <div class="actions" id="actions"></div>
+  </div>
+
+  <div id="notice-area"></div>
+
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h2>Submission</h2>
+        <div class="kv" id="kv-submission"></div>
+      </div>
+
+      <div class="card" id="bank-card">
+        <h2>Refund Bank Details</h2>
+        <div class="kv" id="kv-bank"></div>
+      </div>
+
+      <div class="card" id="approval-card">
+        <h2>Approval</h2>
+        <div class="kv">
+          <div class="k">Fee deduction (€)</div>
+          <div class="v editable">
+            <input type="number" id="fee-amount" step="0.01" value="300.00">
+            <input type="text" id="fee-breakdown" class="wide" value="">
+            <button id="save-fee">Save</button>
+          </div>
+          <div class="k">Approved by</div>
+          <div class="v" id="approved-by">—</div>
+          <div class="k">Approved at</div>
+          <div class="v" id="approved-at">—</div>
+          <div class="k">Sent to TM at</div>
+          <div class="v" id="sent-at">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h2>Student (SIS)</h2>
+        <div id="student-block"></div>
+      </div>
+
+      <div class="card" id="payments-card">
+        <h2>Booking Payments</h2>
+        <div id="payments-block"></div>
+      </div>
+
+      <div class="card" id="doc-card" style="display:none">
+        <h2>Visa Refusal Letter</h2>
+        <iframe class="doc-preview" id="doc-preview"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="reject-modal">
+  <div class="modal">
+    <h3>Reject refund request</h3>
+    <p style="margin-bottom: 12px; color: var(--muted);">The student will receive an email with the reason below.</p>
+    <textarea id="reject-reason" placeholder="Explain why this request is being rejected…"></textarea>
+    <div class="modal-actions">
+      <button id="reject-cancel">Cancel</button>
+      <button id="reject-confirm" class="danger">Reject &amp; notify student</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const id = location.pathname.split('/').pop();
+const API = '/sis/api/refunds/' + id;
+let data;
+
+function escapeHtml(s) {
+  return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function notice(msg, kind = 'info') {
+  document.getElementById('notice-area').innerHTML =
+    `<div class="notice ${kind === 'success' ? 'success' : ''}">${escapeHtml(msg)}</div>`;
+}
+function fmtDate(s) {
+  if (!s) return '—';
+  return new Date(s).toLocaleString('en-IE', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+async function load() {
+  const r = await fetch(API, { credentials: 'same-origin' });
+  if (r.status === 401) { location.href = '/sis/login'; return; }
+  if (r.status === 404) { document.body.innerHTML = '<div class="shell"><p>Not found.</p></div>'; return; }
+  data = await r.json();
+  render();
+}
+
+function render() {
+  document.getElementById('title').textContent = `Refund #${data.id} — ${data.studentName}`;
+  document.getElementById('meta').innerHTML =
+    `Received ${fmtDate(data.createdAt)} · <span class="status ${data.status}">${data.status.replace(/_/g, ' ')}</span>`;
+
+  // Action buttons
+  const actions = document.getElementById('actions');
+  if (data.status === 'pending_review' || data.status === 'approved') {
+    actions.innerHTML = `
+      <button class="primary" id="btn-approve">Approve &amp; Send to TM</button>
+      <button class="danger" id="btn-reject">Reject</button>
+    `;
+    document.getElementById('btn-approve').addEventListener('click', approve);
+    document.getElementById('btn-reject').addEventListener('click', () => {
+      document.getElementById('reject-modal').classList.add('active');
+    });
+  } else {
+    actions.innerHTML = '';
+  }
+
+  // Submission card
+  const reasonLabel = ({
+    visa_refusal: 'Visa refusal',
+    operational_service: 'Operational — service',
+    operational_satisfaction: 'Operational — satisfaction',
+    operational_cancellation: 'Operational — cancellation',
+    other: 'Other',
+  })[data.refundReason] || data.refundReason;
+  document.getElementById('kv-submission').innerHTML = `
+    <div class="k">Student name</div><div class="v">${escapeHtml(data.studentName)}</div>
+    <div class="k">Email</div><div class="v">${escapeHtml(data.studentEmail)}</div>
+    <div class="k">Nationality</div><div class="v">${escapeHtml(data.nationality)}</div>
+    <div class="k">Territory</div><div class="v">${escapeHtml(data.territory)}</div>
+    <div class="k">Invoice #</div><div class="v mono">${escapeHtml(data.invoiceNumber)}</div>
+    <div class="k">Agent</div><div class="v ${data.agentName ? '' : 'empty'}">${data.agentName ? escapeHtml(data.agentName) : '(none)'}</div>
+    <div class="k">Reason</div><div class="v">${reasonLabel}${data.refundReasonOther ? ' — ' + escapeHtml(data.refundReasonOther) : ''}</div>
+    <div class="k">Amount requested</div><div class="v">${data.amountRequested ? '€' + data.amountRequested : '<span class="empty">(not stated)</span>'}</div>
+    <div class="k">Payment processor</div><div class="v">${escapeHtml(data.paymentProcessor)}${data.paymentProcessorOther ? ' / ' + escapeHtml(data.paymentProcessorOther) : ''}</div>
+    <div class="k">Payment method</div><div class="v">${escapeHtml(data.paymentMethod)}</div>
+    <div class="k">Other info</div><div class="v ${data.otherInformation ? '' : 'empty'}">${data.otherInformation ? escapeHtml(data.otherInformation) : '(none)'}</div>
+  `;
+
+  // Bank card
+  document.getElementById('kv-bank').innerHTML = `
+    <div class="k">Bank account type</div><div class="v">${escapeHtml(data.bankType || '—')}</div>
+    <div class="k">Bank country</div><div class="v">${escapeHtml(data.bankCountry || '—')}</div>
+    <div class="k">Payee name</div><div class="v">${escapeHtml(data.payeeName || '—')}</div>
+    <div class="k">Payee address</div><div class="v">${escapeHtml([data.payeeAddress, data.payeeAddress2].filter(Boolean).join(', ') || '—')}</div>
+    <div class="k">Payee country</div><div class="v">${escapeHtml(data.payeeCountry || '—')}</div>
+    <div class="k">BIC / SWIFT</div><div class="v mono">${escapeHtml(data.bicSwift || '—')}</div>
+    <div class="k">NSC / Sort code</div><div class="v mono">${escapeHtml(data.nsc || '—')}</div>
+    <div class="k">Account number / IBAN</div><div class="v mono">${escapeHtml(data.accountNumber || '—')}</div>
+    <div class="k">Bank name</div><div class="v">${escapeHtml(data.bankName || '—')}</div>
+    <div class="k">Bank address</div><div class="v">${escapeHtml([data.bankStreetAddress, data.bankCity].filter(Boolean).join(', ') || '—')}</div>
+    <div class="k">Correspondent bank</div><div class="v">${escapeHtml(data.correspondentBank || '—')}</div>
+    <div class="k">Correspondent SWIFT</div><div class="v mono">${escapeHtml(data.correspondentSwift || '—')}</div>
+  `;
+
+  // Approval card
+  document.getElementById('fee-amount').value = data.feeDeductionEur ?? '300.00';
+  document.getElementById('fee-breakdown').value = data.feeBreakdown ?? '';
+  document.getElementById('approved-by').textContent = data.approvedBy
+    ? (data.approvedBy.displayName || data.approvedBy.username)
+    : '—';
+  document.getElementById('approved-at').textContent = fmtDate(data.approvedAt);
+  document.getElementById('sent-at').textContent = fmtDate(data.sentToTmAt);
+
+  // Student card
+  if (data.student) {
+    document.getElementById('student-block').innerHTML = `
+      <div class="kv">
+        <div class="k">SIS ID</div><div class="v mono">#${data.student.id}</div>
+        <div class="k">Name</div><div class="v">${escapeHtml((data.student.firstName + ' ' + (data.student.lastName || '')).trim())}</div>
+        <div class="k">Email</div><div class="v">${escapeHtml(data.student.email)}</div>
+        <div class="k">Visa status</div><div class="v">${escapeHtml(data.student.visaStatus || '—')}</div>
+      </div>
+      <p style="margin-top:10px"><a href="/sis/students/${data.student.id}">Open student record →</a></p>
+    `;
+  } else {
+    document.getElementById('student-block').innerHTML =
+      '<p class="empty" style="color: var(--warning)">No SIS student matched on email. Manual reconciliation required before approving.</p>';
+  }
+
+  // Payments
+  const pblock = document.getElementById('payments-block');
+  if (data.payments && data.payments.length) {
+    pblock.innerHTML = data.payments.map(p => `
+      <div class="payment-row ${p.method === 'TransferMate' ? 'highlight' : ''}">
+        <div style="flex:1">
+          <div><strong>€${p.amount}</strong> — ${escapeHtml(p.method || 'unknown')}</div>
+          <div class="terr" style="font-size:12px;color:var(--muted)">
+            ${fmtDate(p.paymentDate)} · ${escapeHtml(p.type || '')}
+          </div>
+          ${p.transactionId ? `<div class="mono" style="font-size:11px;color:var(--muted)">Tx: ${escapeHtml(p.transactionId)}</div>` : ''}
+        </div>
+      </div>
+    `).join('');
+  } else {
+    pblock.innerHTML = '<p style="color: var(--muted)">No payments on file.</p>';
+  }
+
+  // Refusal letter
+  if (data.visaRefusalDocId) {
+    document.getElementById('doc-card').style.display = 'block';
+    document.getElementById('doc-preview').src = API + '/refusal-letter';
+  }
+}
+
+document.getElementById('save-fee').addEventListener('click', async () => {
+  const r = await fetch(API, {
+    method: 'PATCH',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      feeDeductionEur: document.getElementById('fee-amount').value,
+      feeBreakdown: document.getElementById('fee-breakdown').value,
+    }),
+  });
+  if (r.ok) {
+    notice('Saved.', 'success');
+    load();
+  } else {
+    notice('Save failed.');
+  }
+});
+
+async function approve() {
+  if (!confirm('Approve this refund and email TransferMate now?')) return;
+  const r = await fetch(API + '/approve', {
+    method: 'POST',
+    credentials: 'same-origin',
+  });
+  if (r.ok) {
+    notice('Approved — email sent to TransferMate. Remember to move the HubSpot deal to “Lost”.', 'success');
+    load();
+  } else {
+    const err = await r.json().catch(() => ({}));
+    notice('Approve failed: ' + (err.error || r.statusText));
+  }
+}
+
+document.getElementById('reject-cancel').addEventListener('click', () => {
+  document.getElementById('reject-modal').classList.remove('active');
+});
+document.getElementById('reject-confirm').addEventListener('click', async () => {
+  const reason = document.getElementById('reject-reason').value.trim();
+  if (!reason) { alert('Please enter a reason.'); return; }
+  const r = await fetch(API + '/reject', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reason }),
+  });
+  if (r.ok) {
+    document.getElementById('reject-modal').classList.remove('active');
+    notice('Rejected. Student notified.', 'success');
+    load();
+  } else {
+    notice('Reject failed.');
+  }
+});
+
+load();
+</script>
+</body>
+</html>

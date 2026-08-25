@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• 63rd check Thu 20 Aug 2026 UTC — no change since 62nd check (Wed 19 Aug)\n• Total students: 14,475 (unchanged)\n• 553 students: no + prefix (unchanged)\n• 419 students: + but spaces or dashes (unchanged)\n• Total non-E.164: ~972 (unchanged)\n• Day 47 — fix not applied",
+        "Strip spaces; normalise to E.164. See recipe: issue-6-addendum-19aug.md",
+        "63rd hrly Thu 20 Aug UTC. Day 47. 972 non-E.164. Fix NOT RUN.",
+        "~972 phones; 47d"
+      ]
+    ]
+  },
+  {
+    "range": "H8:K8",
+    "values": [
+      [
+        "• 49th check Thu 20 Aug 2026 UTC — no change since 48th check (Wed 19 Aug)\n• Booking 17909 (Sofiia Korkishchenko, student 768): status = CANCELLED, confirmed = true (anomaly)\n• Amount paid = EUR 0, amount open = EUR 727.50, no payment records\n• Last updated 2026-06-17 — 64 days since last change\n• Booking Course 24693 (Renewal - Academic Year PM, ends 13 Nov 2026): active = true on cancelled booking, 0 class assignments",
+        "Set Booking 17909 confirmed = false; deactivate Booking Course 24693. See recipe: issue-7-addendum-19aug.md",
+        "49th hrly Thu 20 Aug UTC. Unchanged 64d. Fix NOT RUN.",
+        "bk17909 CANCELLED+confirmed; 64d"
+      ]
+    ]
+  },
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• 188th check Thu 20 Aug 2026 UTC — no change since 187th check (Wed 19 Aug)\n• Student Class Assignment 288: student 14444 (Rakan Alghamdi), bookingCourseId = 24697 (WRONG), week_end = 2026-12-18\n• Booking Course 24697 (Academic Year Morning): ended 2026-07-31 — 20 days stale, active = true (old course)\n• Booking Course 25035 (General English Academic Year AM Plus): 2026-08-03 to 2026-12-18, active = true — current course, 0 class assignments, 17 days elapsed\n• SCA 288 week_end (2026-12-18) exactly matches BC 25035 end date — confirms SCA belongs on BC 25035 not BC 24697\n• Fix NOT RUN",
+        "Move SCA 288 bookingCourseId from 24697 to 25035; deactivate BC 24697. See recipe: issue-12-addendum-19aug.md",
+        "188th Thu 20 Aug UTC. SCA 288 week_end Dec 18 matches BC 25035 end date. BC 24697 20d stale. BC 25035 17d with 0 SCAs. Fix NOT RUN.",
+        "SCA on wrong BC; BC24697 20d"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "59th check Thu 20 Aug 2026 UTC no change since 58th (Wed 19 Aug)\nBooking 1605 (Ariunsarnai Batbayar, student 1047): PENDING, confirmed = false, EUR 0 paid, EUR 1,509 open\nBooking Course 1791 (Academic Year Renewal Morning, Apr 13 to Oct 23 2026): active, 0 class assignments\nDay 129 since course start (13 Apr 2026); 64 days until course end (Oct 23)\nNo payments linked in SIS",
+        "Confirm payment via HubSpot/Xero; if paid set confirmed=true and assign class. See recipe: issue-20-addendum-16aug-b.md",
+        "59th Thu 20 Aug UTC. Day 129, EUR 1,509 open, 0 payments. BC1791 0 SCAs, 64d to end (Oct 23). Fix NOT RUN.",
+        "EUR 1,509; day 129; 64d left"
+      ]
+    ]
+  },
+  {
+    "range": "H28:K28",
+    "values": [
+      [
+        "• 55th check Thu 20 Aug 2026 UTC — no change since 53rd check (Tue 18 Aug)\n• Booking 17909 (Sofiia Korkishchenko, student 768): status = CANCELLED, confirmed = true (anomaly)\n• Amount paid = EUR 0, amount open = EUR 727.50, no payment records\n• Last updated 2026-06-17 — 64 days since last change\n• Booking Course 24693 (Renewal - Academic Year PM, ends 13 Nov 2026): active = true on cancelled booking\n• Duplicate tracking of Issue 7 (row 8) — same fix required",
+        "Set Booking 17909 confirmed = false; deactivate Booking Course 24693. See recipe: issue-27-addendum-16aug.md",
+        "55th Thu 20 Aug UTC. Unchanged 64 days. Same fix as Issue 7 (row 8). Fix NOT RUN.",
+        "bk17909 CANCELLED+confirmed; 64d"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• 133rd check Thu 20 Aug 2026 UTC — no change since 131st check (Tue 18 Aug)\n• Booking Course 104 (Morning General Plus): active, ended 2026-06-26 — 55 days stale\n• Payment 17102 (booking 94): EUR 1,151.50, xeroPaymentId = null — 160 days without Xero reconciliation (paid 2026-03-13)\n• Payment 945 (booking 79): EUR 4,231, xeroPaymentId = null — 202 days without Xero reconciliation (paid 2026-01-30) — milestone",
+        "Deactivate BC 104; reconcile payments 17102 + 945 in Xero. See recipe: issue-30-addendum-17aug.md",
+        "133rd Thu 20 Aug UTC. No change. BC 104 55d stale. Payment 17102 Xero 160d (bk94). Payment 945 now 202d unreconciled (bk79). Fix NOT RUN.",
+        "BC104 stale 55d; Xero 160d+202d"
+      ]
+    ]
+  }
+]

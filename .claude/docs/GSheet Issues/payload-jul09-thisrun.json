@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 + 16989 (EUR 339.90 each): booking ID = STILL null, Xero payment ID = STILL null — 76 days since 28 April 2026\n• New finding this run: bookings 17856 + 17857 now show amount paid = EUR 339.90 each (updated 8 July 2026 at 10:21 UTC) but ZERO payment records are linked to either booking in the database — anomaly confirmed by fresh query\n• Booking courses 24630 + 24631 (General English AM Plus, 29 June to 10 July 2026): fee = STILL null, active = true\n• COURSES END TOMORROW Friday 10 July — fix SQL has NOT been run in 76 days — ABSOLUTE FINAL CALL",
+        "Run 4-step link SQL TODAY (9 Jul) — courses end Fri 10 Jul; recipe: issue-1-orphan-payments.md",
+        "9 Jul UTC (this run). NEW ANOMALY: bks 17856+17857 show amtPaid=339.90 each (updAt=Jul8 10:21) but 0 payments linked in DB. Pmts 16988+16989 bookingId=STILL null xeroPaymentId=null. BCs 24630+24631 endDate=Jul10 fee=STILL null. NEIL: RUN SQL TODAY.",
+        "FINAL: Jul10"
+      ]
+    ]
+  },
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• Email address in phone field — Dolgormaa Bayaraa (student 1897): saraa.tpb@gmail.com — unchanged since 28 April 2026 (72 days)\n• Email address in phone field — Aki Miura (student 8567): aki-hinaaki1116@ezudo.he.jp — unchanged since 10 April 2026 (90 days)\n• Annotation in phone field — Jieun Lee (student 1194): 00821097366523 (home contry) — unchanged since 7 May 2026 (63 days)\n• Annotation in phone field — Lisa Li (student 5345): 0864645297 (Husband) — unchanged since 10 April 2026 (90 days)\n• Unicode trailing characters in phone field — Alessandra Saito de Araujo (student 10343): +353 (83) 885 9162 with trailing Unicode right-to-left marks — unchanged since 28 April 2026 (72 days)\n• All 5 records confirmed unchanged in fresh database query 9 July 2026\n• Students 1194, 5345, 10343: can be corrected by stripping annotation text or Unicode now\n• Students 1897 and 8567: require a real phone number from HubSpot or staff before correcting",
+        "Strip annotations on students 1194 + 5345; strip Unicode on 10343; get real numbers for 1897 + 8567 from HubSpot; recipe: issue-5-mobile-numbers.md",
+        "9 Jul UTC (this run). UNCHANGED (fresh DB). Hash changed = staff B/F/G edit in sheet only. s1897 email-in-phone (72d). s8567 email-in-phone (90d). s1194 annotation (63d). s5345 annotation (90d). s10343 Unicode trailing (72d). Data unchanged.",
+        "5 phones wrong"
+      ]
+    ]
+  },
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• Accommodation 11162 (Massimiliano Cameran, booking 97, bed 179): 21 April to 23 May 2026 — active = STILL true (47 days stale since ended May 23)\n• Accommodation 11319 (student 14532, booking 18034): start date = 31 May = end date (one-day same-date record), bed = null, active = true — stale placeholder with no bed ever assigned\n• Accommodation 11287 (Rakan Alghamdi, booking 17915, bed 190): 4 July to 19 December 2026, active = true — current and correct\n• Bernardo Linos (student 11025, booking 49): accommodation 11213, bed 112, 25 July to 4 September 2026 — FUTURE booking, no end-date anomaly found\n• Booking 18034 (student 14532): PARTIAL, EUR 845 paid of EUR 1095 total, confirmed = false\n• Hash change = staff edited student list or area in sheet; database data confirmed unchanged",
+        "Set accommodation 11162 active = false (stale May23 end); investigate accommodation 11319 (no bed, same-day dates); recipe: issue-12-accomm-dates-mismatch.md",
+        "9 Jul UTC (this run). UNCHANGED DB. BA11162 bed179 Apr21-May23 active=STILL true (47d stale). BA11319 bk18034 s14532 bed=null May31-May31 active=true stale. BA11287 Rakan bed190 Jul4-Dec19 OK. Bernardo BA11213 bed112 Jul25-Sep4 future correct. Hash = sheet edit only.",
+        "BA11162 stale; BA11319 no-bed"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student class assignment 255 (student 1001 Saikhantes Shagdarsuren, class 11 B1 Afternoon): week end = 3 July 2026 — EXPIRED 6 days ago\n• Active booking course: booking course 24925 (Academic Year Afternoon, booking 18151, 9 March to 2 October 2026, fee = EUR 1102.20) — course runs 3 more months to October\n• Student has been absent from class roll since July 3 — zero other class assignment records for student 1001\n• Booking 18151: Confirmed, EUR 1339.20 / 1339.20 fully paid, updated 8 July 2026\n• Note: booking course 24921 referenced in prior checks does NOT exist in database — correct reference is booking course 24925\n• Friday 10 July = last school day this week — SQL fix still has not been run",
+        "Run SQL: UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255 — TODAY; recipe: issue-15-saikhantes-course-dates.md",
+        "9 Jul UTC (this run). UNCHANGED (fresh DB). SCA255 weekEnd=2026-07-03 EXPIRED 6 days. Only SCA for s1001. BC24925 AY-AFT Mar9-Oct2 active fee=1102.2. BK18151 CONF EUR1339.2/1339.2 updAt=Jul8. BC24921 wrong ID. D4 Fri Jul10 = last school day this week.",
+        "D4 Jul10 FINAL"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Edith Nunes (student 1015): booking 18158 Confirmed, EUR 740 / 740 fully paid, updated 8 July 2026\n• Booking course 24933 (General English AM, 15 June to 10 July 2026, fee = EUR 380) — ends TOMORROW\n• Booking course 24934 (General English AM, 15 June to 10 July 2026, fee = EUR 360) — same dates as booking course 24933 — DUPLICATE, ends TOMORROW\n• Zero class assignment records for current booking period (15 June to 10 July 2026) — student never assigned to a class this term\n• Last class assignment was week ending 15 May 2026 (previous booking) — 55-day gap with no class\n• Post-July 10: deactivate both booking courses, investigate duplicate entries, check cert eligibility",
+        "Course ends tomorrow — class moot. After Jul 10: set both booking courses active = false + check cert; recipe: issue-22-edith-nunes-payment-dups.md",
+        "9 Jul UTC (this run). UNCHANGED. BK18158 CONF EUR740/740 updAt=Jul8. BC24933 GE-AM Jun15-Jul10 fee=380 + BC24934 DUP same dates fee=360. 0 SCAs this term. Both BCs end TOMORROW. Post-Jul10: UPDATE booking_courses SET active=false WHERE id IN (24933,24934).",
+        "FINAL: Jul10"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Veronica Martin (student 278, booking course 24931 General English AM, 6 July to 10 July 2026): ZERO class assignments ever — 1-week course ends TOMORROW — FINAL\n• Pietro Colombo (student 72, booking course 81 Morning General Plus, 6 July to 24 July 2026): ZERO class assignments ever — 4 school days missed Monday to Thursday — course runs 10 more school days\n• Ettore Iovinella (student 14564, booking course 24968 General English AM Plus, 6 July to 13 July 2026): class assignment 281 expired 3 July — no active assignment for current booking — course ends next Friday 13 July\n• None of the three appear in arrivals list — by design (arrivals = first-time students only; renewals view not yet built)\n• Fresh database check 9 July 2026: all three still unassigned",
+        "Assign all 3 to classes via admin TODAY — Veronica LAST CHANCE (ends tomorrow); Ettore until Jul 13; Pietro until Jul 24; recipe: issue-45-renewal-arrivals.md",
+        "9 Jul UTC (this run). UNCHANGED (fresh DB). s278 Veronica BC24931 GE-AM Jul6-Jul10 ZERO SCAs ENDS TOMORROW FINAL. s72 Pietro BC81 MG-Plus Jul6-Jul24 ZERO SCAs 4d missed 10d remain. s14564 Ettore BC24968 GE-AM-Plus Jul6-Jul13 SCA281 expired Jul3.",
+        "FINAL: s278 Jul10"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "range": "J2",
+    "values": [
+      [
+        "hrly 1 Jul UTC (148th+ check, fresh DB): pmts 16988+16989 bookingId=STILL null xeroId=null EUR339.9 each. bk17856+17857 CONF conf=STILL false amtPaid=339.9. bc24630+24631 GE-AM-Plus Jun29-Jul10 fee=STILL null. Day 3/10; Jul10=9d. 4-STEP SQL NOT RUN. NEIL: RUN NOW."
+      ]
+    ]
+  },
+  {
+    "range": "H16",
+    "values": [
+      [
+        "• Class assignment 255 (class 11, B1 PM): week start = 12 Jan 2026 — migration artefact (wrong)\n• Week end = 3 Jul 2026 (FRIDAY) — EXPIRES IN 2 DAYS (Mon 6 Jul = no class)\n• Booking course 24925 (Academic Year Afternoon, 9 Mar – 11 Sep 2026) active — 10 weeks of class lost after expiry\n• SQL not run after 53+ checks — TODAY WED 1 JUL IS THE LAST BUSINESS DAY"
+      ]
+    ]
+  },
+  {
+    "range": "J16",
+    "values": [
+      [
+        "hrly 1 Jul UTC (53rd+ check, fresh DB): sca255 cls11 B1-PM weekStart=Jan12(WRONG) weekEnd=STILL Jul03 (FRIDAY=2 DAYS). bc24925 AY-Afternoon Mar09-Sep11 active. bk18151 CONF EUR1339.2 amtOpen=0. 0 class coverage after Fri through Sep11 (10 weeks). SQL NOT RUN: UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255. NEIL: RUN TODAY (Wed 1 Jul) OR TOMORROW AM (Thu 2 Jul) BEFORE FRI EXPIRY."
+      ]
+    ]
+  },
+  {
+    "range": "K16",
+    "values": [
+      [
+        "EXPIRES FRI; TODAY=LAST DAY"
+      ]
+    ]
+  },
+  {
+    "range": "J23",
+    "values": [
+      [
+        "hrly 1 Jul UTC (12th+ check, fresh DB): bk18158 CONF conf=true amtPaid=740/740. bc24933(GE-AM fee=380)+bc24934(DUP fee=360) BOTH active Jun15-Jul10. 0 active SCAs — sca48(cls7 Apr17 EXPIRED)+sca146(cls7 May15 EXPIRED). Day 17 in school with no class. Courses end Jul10=9d. Steps NOT RUN: (1) UPDATE booking_courses SET active=false WHERE id=24934; (2) assign student 1015 to class 7 (A1 AM) via SIS for bc24933 BEFORE Jul10."
+      ]
+    ]
+  },
+  {
+    "range": "H30",
+    "values": [
+      [
+        "• Duplicate entry for Issue 15 (row 16) — same student Saikhantes Shagdarsuren (student 1001)\n• Class assignment 255 (class 11, B1 PM): week end = 3 Jul 2026 (FRIDAY) — EXPIRES IN 2 DAYS\n• After Friday, student invisible to class B1 PM scheduling for 10 weeks through Sep 11 2026\n• SQL not run — TODAY WED 1 JUL IS THE LAST BUSINESS DAY"
+      ]
+    ]
+  },
+  {
+    "range": "J30",
+    "values": [
+      [
+        "hrly 1 Jul UTC (49th+ check, fresh DB): sca255 cls11 B1-PM weekStart=Jan12(WRONG) weekEnd=STILL Jul03 (FRIDAY=2 DAYS). Same as Issue 15 row 16. bc24925 AY-Afternoon Mar09-Sep11 active. SQL NOT RUN: UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255. NEIL: RUN TODAY OR TOMORROW AM BEFORE FRI."
+      ]
+    ]
+  },
+  {
+    "range": "K30",
+    "values": [
+      [
+        "EXPIRES FRI; TODAY=LAST DAY"
+      ]
+    ]
+  },
+  {
+    "range": "J39",
+    "values": [
+      [
+        "hrly 1 Jul UTC (40th+ check, fresh DB): accomm11352 Veronica Martin bed83 Jul04-Jul11 STILL NOT REASSIGNED (updAt=Jun29=2d stale). accomm11285 Jesus Manuel bed83 Jun21-Jul05 active (updAt=Jun16=15d stale). BED 83 DOUBLE-BOOKED Jul04-Jul05 (2-night overlap) confirmed. Beds 174 (A1/Room1), 175 (A1/Room2), 176 (A2/Room1) RE-VERIFIED FREE for Jul04-Jul11 (fresh DB 1 Jul, 0 active conflicts). bk18156 CONF EUR573.2/573.2 amtOpen=0. TODAY WED 1 JUL IS LAST BUSINESS DAY BEFORE SAT 4 JUL CHECK-IN. Fix (NOT RUN): UPDATE booking_accommodations SET bed_id=174 WHERE id=11352."
+      ]
+    ]
+  },
+  {
+    "range": "J45",
+    "values": [
+      [
+        "hrly 1 Jul UTC (17th+ check, fresh DB): accomm11285 Jesus bed83 Jun21-Jul05 STILL UNCHANGED (updAt=Jun16=15d stale). BED 83 CONFLICT with accomm11352 Veronica bed83 Jul04-Jul11 — 2-day overlap Jul04-05 confirmed. Veronica CHECK-IN SAT 4 JUL = 3 DAYS. TODAY WED 1 JUL = LAST BUSINESS DAY. Beds 174/175/176 CONFIRMED FREE Jul04-Jul11 (fresh DB 1 Jul). Option A (verify first): SIS Student 14439 Booking 17825 — change accomm11285 dates to Jun20-Jul04 (check HS deal 498775243984). Option B: reassign Veronica accomm11352 to bed 174/175/176 (Issue 37, row 39)."
+      ]
+    ]
+  }
+]

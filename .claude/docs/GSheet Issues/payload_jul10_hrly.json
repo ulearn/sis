@@ -1,0 +1,68 @@
+[
+ {
+  "range": "H2:K2",
+  "values": [
+   [
+    "• Booking courses 24630 + 24631 (General English AM Plus, 29 June to 10 July 2026): ENDED TODAY 10 July — fee = STILL null, active = STILL true\n• Payments 16988 + 16989 (EUR 339.90 each): booking ID = STILL null, Xero payment ID = STILL null — 73 days since 28 April 2026\n• Bookings 17856 + 17857: status = Confirmed, confirmed flag = false, amount paid = EUR 339.90 — zero payment records linked in database\n• Bookings were touched on 8 July 2026 (metadata update) but content unchanged — payments remain permanently orphaned\n• Courses have now ended — 4-step SQL is the final opportunity to link payments before records are fully historical",
+    "Link payments to bookings via 4-step SQL — courses ENDED TODAY; recipe: issue-1-orphan-payments.md",
+    "10 Jul UTC (this run). Courses BC24630+BC24631 ENDED TODAY Jul10. Pmts 16988+16989 STILL bookingId=null xeroPaymentId=null EUR339.90 each (73d since Apr28). BKs 17856+17857 STILL CONFIRMED/confirmed=false amtPaid=339.9, touched Jul8 (metadata). NEIL: Run 4-step SQL: (1)UPDATE payments SET booking_id=17856 WHERE id=16988; (2)UPDATE payments SET booking_id=17857 WHERE id=16989; (3)UPDATE booking_courses SET fee=339.9 WHERE id IN(24630,24631); (4)UPDATE bookings SET confirmed=true WHERE id IN(17856,17857).",
+    "ENDED Jul10 — 73d orphaned"
+   ]
+  ]
+ },
+ {
+  "range": "H11:K11",
+  "values": [
+   [
+    "• Massimiliano Cameran (student 91, booking 97): Confirmed, EUR 1741 / 1741 fully paid — confirmed flag = false (minor anomaly)\n• Two document records on booking 97: both type = accounts (invoices), issued May 2026 — no completion certificate generated\n• Booking last updated 5 June 2026 (35 days ago)\n• Fix: generate completion certificate via SIS admin — student 91 > booking 97 > Documents > Generate Certificate",
+    "Generate completion certificate via SIS admin (student 91 > booking 97 > Documents); see recipe: issue-9-massimiliano-cert-split.md",
+    "23rd check 10 Jul UTC. UNCHANGED. bk97 CONF confirmed=false EUR1741/1741 (updAt=Jun05=35d). Docs: doc63+doc64 both type=accounts (invoices) issued May19. No completion cert. NEIL: SIS student 91 > booking 97 > Documents > Generate Certificate.",
+    "23rd check Jul10. No cert. bk97 CONF/confirmed=false"
+   ]
+  ]
+ },
+ {
+  "range": "H14:K14",
+  "values": [
+   [
+    "• Extra 96 (booking 17981, Lizbeth del Carmen Sierra Martinez, student 14522): type Insurance, fee = STILL null — health insurance fee never set, 46 days since course start\n• Booking 17981: Confirmed, confirmed = false, fully paid EUR 1407.50 — Academic Year Afternoon 1 June 2026 to 29 January 2027\n• Student in class without health insurance fee set — standard World2Go rate is EUR 150 (reference: extra 218 on booking 18149)\n• Arrange PEL + health insurance retro June 2026; raise supplemental invoice via HubSpot deal 503569276136",
+    "Set extra 96 fee = 150; raise supplemental invoice via HubSpot deal 503569276136; see recipe: issue-13-lizbeth-health-insurance.md",
+    "20th check 10 Jul UTC. UNCHANGED. Extra96 INSURANCE fee=STILL null booking_id=17981 (active). bk17981 CONF confirmed=false EUR1407.5/1407.5. 46d since Jun1 course start. Standard rate EUR150. NEIL: set extra96.fee=150 + raise supplemental invoice HS deal 503569276136.",
+    "20th check Jul10; extra96 fee=null; no invoice"
+   ]
+  ]
+ },
+ {
+  "range": "H27:K27",
+  "values": [
+   [
+    "• Booking course 24826 (Ernesto Pesoa Gil, Intensive General 30, 8 to 19 June 2026): STILL active = true — 21 days past end date\n• Booking course 23 (Ivan Rodriguez Solares, Intensive General 30, 4 to 22 May 2026): STILL active = true — 49 days past end date\n• Booking 18034 (Ernesto Pesoa Gil): Partial, confirmed = false — EUR 845 paid of EUR 1095 total; EUR 250 outstanding; last updated 7 June 2026\n• Payment 17683 (EUR 845, HubSpot payment ID 1241215836360): Xero payment ID = STILL null, type = null — not yet reconciled",
+    "Deactivate booking courses 24826 + 23; reconcile payment 17683 in Xero; chase EUR 250 from Ernesto; see recipe: issue-26-intensive-class-assign-once.md",
+    "27th check 10 Jul UTC. UNCHANGED. bc24826 Ernesto (ended Jun19=21d) active=STILL true. bc23 Ivan (ended May22=49d) active=STILL true. bk18034 PARTIAL 845/1095 EUR250 outstanding (updAt=Jun7=33d). pmt17683 EUR845 xeroId=STILL null type=null. Low-pri data hygiene.",
+    "27th check; bc24826+bc23 stale; pmt17683 unreconciled"
+   ]
+  ]
+ },
+ {
+  "range": "H29:K29",
+  "values": [
+   [
+    "• Booking 17850 (Paola Moreira, student 14456): status changed from Pending to Confirmed on 8 July 2026 at 19:29 UTC — positive progress\n• Confirmed flag = STILL false, amount paid = STILL null (payment type = null may be blocking the amount paid calculation)\n• Payment 17519 (EUR 321.35, HubSpot payment ID 1231805396201): Xero payment ID = STILL null, type = STILL null — not reconciled\n• Booking course 24624 (Morning General, 18 May to 5 June 2026): STILL active = true — 35 days past end date\n• Historical case — student left; minor cleanup items remain",
+    "UPDATE payments SET type='one_time_or_initial' WHERE id=17519; UPDATE bookings SET confirmed=true, amount_paid=321.35 WHERE id=17850; deactivate booking course 24624; see recipe: issue-28-paola-pending-won-deal.md",
+    "15th check 10 Jul UTC. NEW: bk17850 status changed PENDING->CONFIRMED on 8 Jul 2026 19:29 UTC. STILL: confirmed=false, amtPaid=null, amtTotal=321.35. pmt17519 EUR321.35 xeroId=STILL null type=STILL null. bc24624 Morning May18-Jun5 STILL active=true (35d stale). Historical low-pri. Status progression is positive.",
+    "bk17850 now CONFIRMED; low-pri cleanup remains"
+   ]
+  ]
+ },
+ {
+  "range": "H47:K47",
+  "values": [
+   [
+    "• Veronica Martin (student 278, booking course 24931 General English AM, 6 to 10 July 2026): ENDED TODAY — zero class assignments — entire week missed\n• Ettore Iovinella (student 14564, booking course 24968 General English AM Plus, 6 to 10 July 2026): ENDED TODAY — zero class assignments — entire week missed\n• Booking course 24968 (Ettore, booking 18191) was updated on 9 July 2026 at 16:01 UTC — someone opened it but made no assignment\n• Pietro Caccianiga (student 72, booking course 81 Morning General Plus, 6 to 24 July 2026): still zero class assignments — 14 school days remain\n• Neil: retroactive class assignment records possible for Ettore + Veronica — confirm with class teachers; assign Pietro immediately",
+    "Assign Pietro (booking course 81) immediately via SIS admin; retroactive assignments for Ettore (bc24968) + Veronica (bc24931) if appropriate; recipes: issue-45-renewal-arrivals.md + issue-45-addendum-9jul.md",
+    "10 Jul UTC (this run). COURSES ENDED TODAY. bc24968 Ettore (bk18191) ZERO SCAs — entire week Jul6-10 missed. bc24931 Veronica (bk18156) ZERO SCAs — entire week missed. bc24968 updated Jul9 16:01 UTC (someone opened it) but no SCA assigned. bc81 Pietro ZERO SCAs — 14 days remain (ends Jul24). NEIL: retroactive SCAs for Ettore+Veronica if they attended; assign Pietro NOW via SIS admin.",
+    "Jul10: weeks missed; Pietro unassigned"
+   ]
+  ]
+ }
+]

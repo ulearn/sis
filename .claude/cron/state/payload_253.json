@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 227th check Thu 13 Aug 2026 ~22:00 UTC — no change since 226th check\n• Payment 4781: EUR 380, Flywire, 2019-08-20 — booking_id = null\n• Payments 16988 / 16989: EUR 339.90 each, Bank, 2026-04-28 — booking_id = null\n• Payment 17187: EUR 6,151, TransferMate Escrow, 2026-05-01 — booking_id = null\n• Bookings 17856 / 17857: CONFIRMED, confirmed = false, amountPaid = EUR 339.90\n• Booking Courses 24630 / 24631: ended 2026-07-10, active = true (34 days stale)",
+        "Link Payments 16988/16989 to Bookings 17856/17857; set confirmed = true; deactivate Booking Courses 24630 + 24631. See recipe: issue-1-addendum-13aug-f.md",
+        "227th hrly Thu 13 Aug ~22:00 UTC. No change. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H29:K29",
+    "values": [
+      [
+        "• 50th check Thu 13 Aug 2026 ~22:00 UTC — no change since 49th check\n• Booking 17850 (Paola Sthefane Missias Moreira): status = CONFIRMED (enum), confirmed = false (boolean) — anomaly\n• Amount paid = null, amount open = EUR 321.35, amount total = EUR 321.35\n• Payment 17519: EUR 321.35, Bank Transfer, paymentDate = 2026-05-07 — xeroPaymentId = null (98 days unreconciled)\n• Booking Course 24624 (Morning General, 18 May to 5 Jun 2026): active = true — 69 days stale, 0 class assignments",
+        "Set bk17850 confirmed=true, amount_paid=321.35; reconcile pmt17519 in Xero (paymentDate = 2026-05-07); deactivate BC 24624. See recipe: issue-28-addendum-12aug.md",
+        "50th check Thu 13 Aug ~22:00 UTC. No change. BK17850 confirmed=false anomaly. PMT 17519 xeroPaymentId null (98d). BC 24624 stale 69d. Fix NOT RUN.",
+        "bk conf=false; pmt 98d Xero null"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 183rd check Thu 13 Aug 2026 ~22:00 UTC — no change since 182nd check\n• Booking Accommodation 11393: bed 88, Aug 22 to Sep 13 2026, fee = null, active = true — 9 days to check-in\n• Payment 17733: EUR 5,331, Xero not reconciled (73 days)",
+        "Set fee on Booking Accommodation 11393 (confirm with Diego); reconcile Payment 17733 in Xero. See recipe: issue-36b-addendum-13aug-c.md",
+        "183rd Thu 13 Aug ~22:00 UTC. No change. Fee null BA 11393 (9d to check-in Aug 22). Xero null Payment 17733 (73d). Fix NOT RUN.",
+        "fee null; check-in Aug 22"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 158th check Thu 13 Aug 2026 ~22:00 UTC — CRITICAL: course expires in ~9 hours\n• Booking Course 25043 (General English PM, Eduardo Roche Diaz): active = true, end date = 2026-08-14, 0 class assignments\n• Eduardo level = B2 — assign to B2&C1 PM class (id 6, 13:45–17:00)\n• Booking 18265: CONFIRMED, confirmed = true, amountPaid = EUR 126\n• Mon 10 – Thu 13 Aug: 4 school days permanently lost\n• ~9 hours remain before school opens Friday (08:00 IST = 07:00 UTC)",
+        "Assign BC 25043 to class 6 (B2&C1 PM) NOW — last chance before Fri 14 Aug. See recipe: issue-38-addendum-13aug-n.md",
+        "158th hrly Thu 13 Aug ~22:00 UTC. CRITICAL: 0 SCAs, ~9h to Fri open. Eduardo B2 → class 6 (B2&C1 PM). Act now.",
+        "CRITICAL: ends Fri 14 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 67th check Thu 13 Aug 2026 ~22:00 UTC — no change since 66th check\n• Booking Accommodation 11392 (apartment, Sep 6 to Sep 14 2026): bed_id = null, fee = EUR 415, active = true\n• Booking Accommodation 11357 (host family, Aug 2 to Sep 6 2026): correctly placed\n• Available beds: 168 (A1) and 194 (Arasain-1) — confirmed in earlier checks",
+        "Assign bed 168 (A1) or 194 (Arasain-1) to Booking Accommodation 11392 before Sep 6. See recipe: issue-41-addendum-13aug-g.md",
+        "67th Thu 13 Aug ~22:00 UTC. No change. Bed null BA 11392. Beds 168 + 194 still available. Sep 6 check-in (24d). Fix NOT RUN.",
+        "bed null; Sep 6 check-in"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 116th check Thu 13 Aug 2026 ~22:00 UTC — no change since 115th check\n• Booking Course 1810 (Academic Year Renewal Morning, Telmuun Enkhsaikhan): 29 Jun 2026 to 1 Jan 2027, active = true, 0 class assignments (45 days)\n• Payment 17956: EUR 100, booking_id = 1624, xeroPaymentId = null (135 days unreconciled)\n• Booking 1624: PARTIAL, confirmed = false, amountPaid = EUR 1,406 (EUR 250 outstanding)",
+        "Assign BC 1810 to AM class; reconcile Payment 17956 in Xero; confirm Booking 1624 once EUR 250 settled. See recipe: issue-48-addendum-13aug-i.md",
+        "116th Thu 13 Aug ~22:00 UTC. No change. BC 1810 0 class assignments (45d). Booking 1624 PARTIAL EUR 250 open. Payment 17956 xeroPaymentId null (135d). Fix NOT RUN.",
+        "payment gap; BC1810 45d"
+      ]
+    ]
+  }
+]

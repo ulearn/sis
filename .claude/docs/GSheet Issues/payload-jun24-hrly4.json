@@ -1,0 +1,56 @@
+[
+  {
+    "range": "J2:K2",
+    "values": [
+      [
+        "hrly Jun24 (Jun29=5d — EMERGENCY): Pmts 16988+16989 bookingId=null xeroId=null. bks 17856+17857 status=CONFIRMED confirmed=false amtPaid=339.9 (updAt=Jun04=20d). bc24630+24631 start Mon Jun29 fee=null. NEIL EMERGENCY: courses start in 5 days — run recipe Step 2 SQL NOW.",
+        "Jun29=5d; EMERGENCY"
+      ]
+    ]
+  },
+  {
+    "range": "J6:K6",
+    "values": [
+      [
+        "hrly Jun24: bk17871 ESCROW UNCHANGED (fresh DB). Student 14473 Khongorzul Uranaa. amtPaid=300/2313.62 (EUR2013.62 outstanding). bc24644 AY Morning ended Jan23-2026 active=false fee=3350. pmt17375 EUR300 xeroId=null hsId=null. updAt=May08=47d stale. Await Neil: write off / pursue / reclassify.",
+        "Khongorzul EUR2013; 47d"
+      ]
+    ]
+  },
+  {
+    "range": "J7:K7",
+    "values": [
+      [
+        "hrly Jun24: all 5 UNCHANGED. s1897 Dolgormaa phone=saraa.tpb@gmail.com (Apr28=57d). s8567 Aki phone=aki-hinaaki1116@ezudo.he.jp (Apr10=75d). s1194 Jieun phone=00821097366523 (home contry) (May07=48d). s5345 Lisa phone=0864645297 (Husband) (Apr10=75d). s10343 Alessandra unicode trailing chars (Apr28=57d). Max stale 75d. 3 self-fixable (1194/5345/10343); 2 need real# from HubSpot (1897/8567). Await Neil.",
+        "info needed"
+      ]
+    ]
+  },
+  {
+    "range": "J16:K16",
+    "values": [
+      [
+        "hrly Jun24 (Jul03=9d — URGENT): sca255 classId=11 weekStart=Jan12 weekEnd=Jul03 STILL WRONG (should be Mar09-Sep11, fresh DB). bc24925 AY-Aft Mar09-Sep11 active (Neil corrected Jun16). bk18151 CONF 1339.2/1339.2. After Jul03: Saikhantes invisible to B1-PM for ~10 weeks through Sep11. Fix NOT RUN: UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255;",
+        "sca255; Jul03=9d; URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "J24:K24",
+    "values": [
+      [
+        "hrly Jun24: bc828 STILL BACKWARDS (start=Mar02 end=Feb27, updAt=May11=44d stale). All booking courses on bk787 show active=true (stale). bk787 CONF fully paid. No urgency — data hygiene only. Fix NOT RUN: UPDATE booking_courses SET end_date='2026-03-20' WHERE id=828.",
+        "ended;date bug"
+      ]
+    ]
+  },
+  {
+    "range": "J25:K25",
+    "values": [
+      [
+        "hrly Jun24 (bc1797 ends FRIDAY Jun26=2d — URGENT): UNCHANGED (fresh DB). bk1611 CONF amtPaid=1280.12 (updAt=Jun11=13d). bc1797 Morning General Apr06-Jun26 ACTIVE — ends THIS FRIDAY. sca229 cls12 weekEnd=Apr26 EXPIRED 59 days. att=0 ALL TIME confirmed. bc24686 Morning General Jul20-Sep18 fee=null (no SCAs). pmt17124 EUR1280.12 xeroId=null. NEIL: if Alberto in school today/tomorrow assign SCA cls12 bc1797 ws=Jun24 we=Jun26 via SIS NOW. After Fri Jun26 bc1797 expires permanently. Then set bc24686 fee before Jul20.",
+        "bc1797 ends Fri Jun26; fee=null"
+      ]
+    ]
+  }
+]

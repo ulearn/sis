@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 466th run Sat 22 Aug 2026 UTC — no change since 464th\n• Booking Accommodation 11311 (bed 84): started 28 Jun, ended 22 Aug 2026 (today), fee EUR 3,850, active = true — stale as of today\n• Booking Accommodation 11393 (bed 88): started 22 Aug to 13 Sep 2026, fee = null, active = true — current accommodation, fee missing\n• Fix NOT RUN",
+        "Deactivate BA 11311; set fee on BA 11393. See recipe: issue-36b-addendum-22aug.md",
+        "466th Sat 22 Aug UTC. BA 11311 still active (ended today). BA 11393 fee still null. Fix NOT RUN.",
+        "URGENT: today"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 466th run Sat 22 Aug 2026 UTC — no change since 465th\n• Booking Accommodation 11357 (bed 178): started 2 Aug, ended 15 Aug 2026, fee EUR 1,250, active = true — 7 days stale\n• Booking Accommodation 11396 (bed 44): started 15 Aug, ended 22 Aug 2026 (today), fee = null, active = true — stale as of today\n• Booking Accommodation 11397 (bed 89): started 22 Aug, ends 6 Sep 2026, fee = null, active = true — current accommodation, fee missing\n• Fix NOT RUN",
+        "Deactivate BA 11357 + 11396; set fee on BA 11397. See recipe: issue-41-addendum-22aug.md",
+        "466th Sat 22 Aug UTC. BAs 11357 (7d) and 11396 (ended today) still active. BA 11397 fee null. Fix NOT RUN.",
+        "URGENT: deactivate 2 BAs"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "466th run Sat 22 Aug 2026 UTC\n• Holiday 2500 ended 21 Aug — back since 21 Aug 2026\n• Last SCA: SCA 255, class 11 (B1 PM), weekStart 12 Jan 2026, weekEnd 3 Jul 2026 — 50-day gap, no new assignment\n• Booking Course 24925 (Academic Year Afternoon): active, ends 2 Oct 2026\n• Booking Course 1982 (Academic Year Morning): ended 19 Dec 2025 — 246 days stale, still active\n• Mon 24 Aug = 2 days — assign to Afternoon class urgently\n• Fix NOT RUN",
+        "Assign Saikhantes to Afternoon class for week of 24 Aug; deactivate BC 1982. See recipe: issue-15-addendum-22aug.md",
+        "466th Sat 22 Aug UTC. No change. Still unassigned. Mon 24 Aug = 2 days. BC 1982 stale 246d. Fix NOT RUN.",
+        "URGENT: Mon24 2days"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "466th run Sat 22 Aug 2026 UTC — duplicate of Issue 15 (row 16)\n• Holiday 2500 ended 21 Aug — Saikhantes back since 21 Aug\n• Class assignment still not done — Monday 24 Aug = 2 DAYS\n• See issue-15-addendum-22aug.md\n• Fix NOT RUN",
+        "See issue-15-addendum-22aug.md for full recipe",
+        "466th Sat 22 Aug UTC. Still unassigned. Mon 24 Aug = 2 days. Dup of issue 15. Fix NOT RUN.",
+        "URGENT: Mon24 2days"
+      ]
+    ]
+  },
+  {
+    "range": "H54:K54",
+    "values": [
+      [
+        "• 466th run Sat 22 Aug 2026 UTC — no change since 464th\n• Booking Accommodation 11267 (bed 23): 29 Aug to 4 Oct 2026, fee EUR 3,840, active = true — OK\n• Booking Accommodation 11399 (bed 54): 4 Oct to 19 Dec 2026, fee = null, active = true — fee unset\n• Fanny Scelles (student 14451) arrives 29 Aug 2026 — 7 days\n• Fix NOT RUN",
+        "Set fee on BA 11399; see multi-host template spec. See recipe: issue-52-addendum-22aug.md",
+        "466th Sat 22 Aug UTC. BA 11399 fee still null. Student arrives 29 Aug (7 days). Fix NOT RUN.",
+        "BA11399 fee null; 7d"
+      ]
+    ]
+  },
+  {
+    "range": "H55:K55",
+    "values": [
+      [
+        "• 466th run Sat 22 Aug 2026 UTC — no change since 460th\n• Student 14451 (Fanny Scelles): arrives 29 Aug 2026 — 7 DAYS\n• Booking Accommodation 11267 (bed 23): 29 Aug to 4 Oct, fee EUR 3,840, active = true — OK\n• Booking Accommodation 11399 (bed 54): 4 Oct to 19 Dec, fee = null, active = true — fee still unset\n• Multi-host template: code change pending Neil spec\n• Fix NOT RUN",
+        "Set fee on BA 11399; await multi-host template spec. See recipe: issue-53-addendum-22aug.md",
+        "466th Sat 22 Aug UTC. Same as issue 52. Student arrives 29 Aug. Fee null. Fix NOT RUN.",
+        "BA11399 fee null; 7d"
+      ]
+    ]
+  }
+]

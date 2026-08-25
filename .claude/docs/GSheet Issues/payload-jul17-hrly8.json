@@ -1,0 +1,53 @@
+[
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• Booking accommodation 11311 (Pietro Caccianiga, bed 84, June 28–September 13 2026): active = true — valid in-stay, day 19\n• Hash changed again (B/F/G staff edit — 2nd consecutive run) — database unchanged\n• 6 stale booking accommodation records (not yet deactivated):\n• BA 11156 (Hugo Tavernier, booking 100, bed unset, ended 2 May 2026): 76 days stale — newly surfaced\n• BA 11157 (Hugo Tavernier, booking 100, bed 84, ended 10 May 2026): 68 days stale\n• BA 11158 (Hugo Tavernier, booking 100, bed 66, ended 17 May 2026): 61 days stale — newly surfaced\n• BA 9917 (Kanna Hasegawa, booking 1274, bed 84, ended 16 May 2026): 62 days stale\n• BA 11159 (Hugo Tavernier, booking 100, bed 84, ended 30 May 2026): 48 days stale\n• BA 11180 (Daniela Perozo Gil, booking 81, bed 84, ended 20 June 2026): 27 days stale\n• BA 11265 (Kanna Hasegawa, booking 1274, bed 157, ends 19 July 2026): checkout tomorrow — normal",
+        "Deactivate 6 stale booking accommodation records (BA 9917, 11156, 11157, 11158, 11159, 11180). See recipe: issue-36b-pietro-accomm-dates.md",
+        "14th check Fri 17 Jul UTC. Hash changed again (2nd consecutive staff edit). DB: Pietro BA11311 bed84 Jun28-Sep13 active=true (day19). 6 stale BAs: 11156 (Hugo bedNull May2 76d NEW), 11157 (Hugo bed84 May10 68d), 11158 (Hugo bed66 May17 61d NEW), 9917 (Kanna bed84 May16 62d), 11159 (Hugo bed84 May30 48d), 11180 (Daniela bed84 Jun20 27d). BA11265 (Kanna bed157 ends Jul19 tomorrow) normal checkout. Fix NOT RUN: UPDATE booking_accommodations SET active=false WHERE id IN (9917,11156,11157,11158,11159,11180).",
+        "low-pri; 6 stale BAs"
+      ]
+    ]
+  },
+  {
+    "range": "J41",
+    "values": [
+      [
+        "53rd check Fri 17 Jul UTC. BC24609 (Xuezhen Huang s14443 Morning General Jul13-Jul31): sca_count=STILL 0 (fresh DB). Week1 (Jul13-17) PERMANENTLY MISSED. Week2 (Jul20-24) starts Mon 20 Jul. BA11358 bed180 host Mary Carver Jul12-Aug2 EUR900 correct. Business hours over. Fix NOT RUN: assign student 14443 to Morning General class first thing Monday 20 July."
+      ]
+    ]
+  },
+  {
+    "range": "J47",
+    "values": [
+      [
+        "133rd check Fri 17 Jul UTC. All 7 Mon20Jul starters STILL 0 SCAs (fresh DB): BC1630 Saranzaya | BC24616 Mia fee=null | BC24686 Alberto fee=null | BC24942 Lorena EUR2362.50 | BC24966 Filippo EUR549.90 | BC24989 Marcos EUR152 (1wk only) | BC25000 Giorgio EUR940. BC24967 Gustavo (Jul6-Aug7) STILL 0 SCAs, 21d remain — assign urgently. Holds: BC24932 Stephany (PENDING 105-wk), BC25001 Neil (admin/test). Business hours over. Fix NOT RUN: assign all 7 + Gustavo first thing Mon 20 Jul."
+      ]
+    ]
+  },
+  {
+    "range": "J40",
+    "values": [
+      [
+        "50th check Fri 17 Jul UTC. CONFIRMED UNCHANGED fresh DB. 9 school closures: Good Fridays 2026-30 (ids 1,11,12,13,14) + Christmas 2026-29 (ids 7,8,9,10). Aug BH Mon 3 Aug 2026: STILL absent — 17d away. Oct BH Mon 26 Oct 2026: STILL absent — 101d away. Fix NOT RUN: INSERT two school_closure records."
+      ]
+    ]
+  },
+  {
+    "range": "J43",
+    "values": [
+      [
+        "53rd check Fri 17 Jul UTC. PMT17954 EUR2584.96 Bank Jun26 HS1268783973563: xeroPaymentId=STILL null — 21d unreconciled. BA11357 bed178 HF Aug2-Sep6 claimStatus=confirmed (16d to Aug2 check-in). Capel Sep6-14: STILL missing from bk18180 (confirmed fresh DB). Fix NOT RUN: (1) add Capel Sep6-14 to bk18180; (2) reconcile pmt17954 in Xero."
+      ]
+    ]
+  },
+  {
+    "range": "J34",
+    "values": [
+      [
+        "3rd check Fri 17 Jul UTC. Student 356 Shih-Wei Huang: gender=STILL null (updatedAt=Jun03, 44d). Document 238 (exit letter bk560 template4): STILL ISSUED since Jun18 — 29d with wrong Ms./she-her pronouns. Null-gender code fix in documents.ts also pending. Fix NOT RUN."
+      ]
+    ]
+  }
+]

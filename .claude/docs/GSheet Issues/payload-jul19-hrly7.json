@@ -1,0 +1,46 @@
+[
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• Booking Accommodation 11162 (Massimiliano Cameran, booking 97, bed 179): end date 23 May 2026 — still active = true (57 days stale)\n• Booking Accommodation 11314 (Massimiliano Cameran, booking 18002, bed 179): end date 6 Jun 2026 — still active = true (43 days stale)\n• Booking Accommodation 11319 (booking 18034, no bed): zero-day record (31 May = start = end) — still active = true (49 days stale)\n• Booking Accommodation 11287 (Rakan Alghamdi, booking 17915): 4 Jul–19 Dec 2026 — active = true (correct ongoing stay, do not touch)\n• 7th check Sun 19 Jul 2026 UTC — confirmed unchanged from fresh DB",
+        "Set active = false on booking accommodations 11162, 11314, 11319. Do not touch 11287 (Rakan active stay). See recipe: issue-12-accomm-dates-mismatch.md",
+        "7th check Sun 19 Jul UTC (fresh DB). CONFIRMED UNCHANGED. BA11162 (57d), BA11314 (43d), BA11319 zero-day (49d) all stale active=true. BA11287 Rakan ongoing. Fix NOT RUN.",
+        "3 stale BAs; 57d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student 1001 (Saikhantes Shagdarsuren): class assignment 255 (class 11) expired — week end was 3 Jul 2026 (16 days ago)\n• Weeks 6–10 Jul 2026 and 13–17 Jul 2026: both permanently missed — irrecoverable\n• Student holiday (booking holiday 2500): 20 Jul–21 Aug 2026 — starts tomorrow Mon 20 Jul\n• Booking course 24925 (Academic Year Afternoon, 9 Mar–2 Oct 2026): active — assign class 11 before Mon 24 Aug 2026\n• Booking course 1982 (Academic Year Morning, ended 19 Dec 2025): still active = true — 212 days stale\n• 83rd check Sun 19 Jul 2026 UTC",
+        "Assign student 1001 to class 11 (BC24925) before 09:00 Mon 24 Aug 2026. Deactivate booking course 1982. See recipe: issue-15-addendum-19jul.md",
+        "83rd check Sun 19 Jul UTC. Student holiday starts TOMORROW (Jul20-Aug21). SCA255 expired Jul03 (16d ago). 2 missed weeks (Jul6-10, Jul13-17) irrecoverable. NEXT: assign BC24925 to class 11 before 09:00 Mon 24 Aug. BC1982 STILL active=true (212d stale). Fix NOT RUN.",
+        "2 wks missed; assign Mon 24 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• Student 983 (Flávia Nascimento Mariano): visa status = null — Prisma enum mismatch prevents UI save\n• HubSpot contact ID 783659478249 — linked 14 Jul 2026\n• Booking 1534: Confirmed, confirmed flag = true, EUR 1308 fully paid (updated 8 Jul 2026)\n• Student attending normally — visa null is cosmetic only\n• 5th check Sun 19 Jul 2026 UTC — confirmed unchanged",
+        "UPDATE Student SET visa_status = Approved WHERE id = 983 (confirm approval in HubSpot first). See recipe: issue-18-flavia-visa-save-error.md",
+        "5th check Sun 19 Jul UTC (fresh DB). Visa status STILL null. hubspotContactId=783659478249 (linked Jul14). BK1534 CONF confirmed=true EUR1308/1308. Attending normally. Cosmetic. Fix NOT RUN.",
+        "visa null; cosmetic"
+      ]
+    ]
+  },
+  {
+    "range": "H24:K24",
+    "values": [
+      [
+        "• Booking course 828 (Academic Year Morning, booking 787): end date 27 Feb 2026 — 3 days before start date 2 Mar 2026 (backwards dates)\n• Legacy DST off-by-one bug (Issue 2) — one of 56 flagged rows — correct end date approx 20 Mar 2026\n• All 4 booking courses for student 397 (Enshi Lu) are stale active = true:\n  Booking course 826 (17 Nov–28 Nov 2025): 233 days stale\n  Booking course 827 (5 Jan–30 Jan 2026): 170 days stale\n  Booking course 828 (backwards dates): stale\n  Booking course 829 (30 Mar–5 Jun 2026): 44 days stale\n• Student 397 left approximately March 2026 — cosmetic data-hygiene only\n• 14th check Sun 19 Jul 2026 UTC — confirmed unchanged",
+        "Set BC828 end date = 2026-03-20 and deactivate; also deactivate BC826, BC827, BC829. See recipe: issue-23-enshi-lu-backwards-course.md",
+        "14th check Sun 19 Jul UTC. BC828 AY Morning bk787: startDate=Mar02 endDate=Feb27 2026 (backwards). ALL 4 BCs (826, 827, 828, 829) still active=true. BC826=233d, BC827=170d, BC829=44d stale. Student left ~Mar 2026. Cosmetic. Fix NOT RUN.",
+        "backwards dates; low-pri"
+      ]
+    ]
+  }
+]

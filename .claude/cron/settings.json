@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "defaultMode": "default",
+    "allow": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Write(/home/sis/web/sis.ulearnschool.com/public_html/sis/.claude/cron/**)",
+      "Edit(/home/sis/web/sis.ulearnschool.com/public_html/sis/.claude/cron/**)",
+      "Write(/home/sis/web/sis.ulearnschool.com/public_html/sis/.claude/docs/GSheet Issues/**)",
+      "Edit(/home/sis/web/sis.ulearnschool.com/public_html/sis/.claude/docs/GSheet Issues/**)",
+      "Bash(node:*)",
+      "Bash(ssh hub@localhost:*)",
+      "Bash(cat:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(sha1sum:*)",
+      "Bash(date:*)",
+      "Bash(echo:*)"
+    ],
+    "deny": [
+      "Read(/home/sis/web/sis.ulearnschool.com/public_html/sis/.env)",
+      "Edit(/home/sis/web/sis.ulearnschool.com/public_html/sis/src/**)",
+      "Edit(/home/sis/web/sis.ulearnschool.com/public_html/sis/dist/**)",
+      "Edit(/home/sis/web/sis.ulearnschool.com/public_html/sis/index.js)",
+      "Write(/home/sis/web/sis.ulearnschool.com/public_html/sis/tmp/restart.txt)"
+    ]
+  }
+}

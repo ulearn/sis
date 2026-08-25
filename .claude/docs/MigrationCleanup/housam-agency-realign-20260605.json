@@ -1,0 +1,43 @@
+{
+ "agency616": {
+  "id": 616,
+  "createdAt": "2026-06-02T17:47:12.352Z",
+  "updatedAt": "2026-06-02T17:48:09.249Z",
+  "name": "Education Plus",
+  "nickname": null,
+  "number": null,
+  "email": null,
+  "phone": null,
+  "category": null,
+  "commissionRate": null,
+  "contactPerson": "Housam Alsibai",
+  "note": "Returning partner; 2019 paper agreement pre-dates Zoho/internal signing. Sole-trader agency keyed to HubSpot contact.",
+  "fideloAgencyId": null,
+  "hubspotCompanyId": null,
+  "primaryEntityId": "785432402165",
+  "primaryEntityType": "contact",
+  "primaryContactId": "785432402165",
+  "contractSignedAt": "2019-08-05T12:00:00.000Z",
+  "contractSignedById": null
+ },
+ "sisUser40": {
+  "id": 40,
+  "username": "EduPlus",
+  "email": "housam.sibai@hotmail.com",
+  "passwordHash": "$2b$10$4fEW8vbVegigXsLhOq4bpu0J0pwm3PbBPxSKrlMSt82kgmfMm9OS2",
+  "displayName": "Housam Alsibai",
+  "role": "partner",
+  "readOnly": false,
+  "active": true,
+  "resetToken": null,
+  "resetTokenExpires": null,
+  "verificationToken": null,
+  "verificationTokenExpires": null,
+  "createdAt": "2026-06-05T08:24:50.090Z",
+  "userType": "partner",
+  "agencyId": 619,
+  "hubspotContactId": "785432402165",
+  "portalPermissions": null,
+  "lastLoginAt": "2026-06-05T08:25:01.756Z"
+ }
+}

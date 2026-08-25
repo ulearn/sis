@@ -1,0 +1,35 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Two payments are unlinked — bookingId = null and xeroPaymentId = null\n• Payment 16988 maps to Booking 17856 (Margherita Galbusera) — EUR 339.90, created 28 Apr (55 days orphaned)\n• Payment 16989 maps to Booking 17857 (Francesca Fassina) — EUR 339.90, created 28 Apr (55 days orphaned)\n• Both bookings are Confirmed (status), confirmed = false, amountPaid = 339.90 — payment audit trail broken\n• Booking courses 24630 + 24631 (General English AM Plus) start 29 Jun — 8 days from today",
+        "UPDATE payments SET booking_id=17856 WHERE id=16988; UPDATE payments SET booking_id=17857 WHERE id=16989. See recipe: issue-1-orphan-payments.md",
+        "Jun22 hrly: pmts 16988+16989 STILL bookingId=null xeroId=null (hsIds 1204827374829+1204846469317). bk17856+17857 CONF conf=false amtPaid=339.9/339.9 (updAt=Jun04=18d stale). bc24630+24631 start Jun29=8d. SQL NOT RUN. Neil: run Step 2 UPDATE before Jun29 arrivals.",
+        "8d to Jun29; urgent"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 is Confirmed, paid EUR 740 / 740 (since 15 Jun)\n• Two duplicate booking courses exist: bc24933 (General English AM, fee = EUR 380) and bc24934 (General English AM, fee = EUR 360) — both Jun 15 to Jul 10\n• Zero class assignments for student Edith Nunes (student 1015, level A1) — attending since 15 Jun with no formal class record\n• Duplicate booking course bc24934 not yet deleted (unchanged since 11 Jun)\n• Week 2 started today Mon 22 Jun — student still missing from class rolls\n• Student history confirms class 7 (A1, Morning, active): assigned class 7 for booking courses 1751 and 24668 under booking 1567 (Mar–May 2026)",
+        "Delete bc24934; insert class assignment for bc24933: class 7 (A1-AM), weekStart = Jun 15, weekEnd = Jul 10. See recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun22 Week2 Day1 (this run): bc24934 DUP still active (updAt=Jun11). bc24933 still 0 SCAs (fresh DB). bk18158 CONF 740/740 (updAt=Jun15). CONFIRMED via DB: s1015 was in class7 (A1-MORN) for bc1751(bk1567 Mar-Apr) + bc24668(bk1567 Apr-May) — class7 is correct target. SQL NOT RUN: (1)DELETE FROM booking_courses WHERE id=24934; (2)INSERT INTO student_class_assignments(booking_course_id,class_id,week_start,week_end,student_id) VALUES(24933,7,'2026-06-15','2026-07-10',1015). NEIL: CRITICAL — student in school now with no class record.",
+        "Jun22; 0SCA; CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• Student 917 (Uyanga Tungalag) has been Confirmed in school since 27 Apr — 55 calendar days with zero class assignments\n• Booking 1467 is Confirmed, paid EUR 2405 / 2405 — data source = Fidelo, no HubSpot Deal ID linked\n• Booking course 1613 (Academic Year Morning, 27 Apr to 16 Oct) is active with no class assignment\n• Student visa status = null and HubSpot contact ID = null — no HubSpot link established (record last updated 21 May)",
+        "Assign Uyanga to an AM class via SIS (bk1467 / bc1613, ws = this week, we = Oct 16). Separately: set visa status via SQL. See recipe: issue-25-uyanga-visa-escrow.md",
+        "Jun22 hrly: s917 visaStatus=null hubspotContactId=null (updAt=May21=32d stale). bk1467 CONF 2405/2405 dataSource=FIDELO hubspotDealId=null (updAt=Jun11). bc1613 AY Morning Apr27-Oct16. 0 SCAs confirmed (fresh DB). 55 calendar days unassigned. NEIL: assign class via SIS bk1467/bc1613 ws=Jun22 we=Oct16; also UPDATE students SET visa_status=Approved WHERE id=917 (NOT RUN).",
+        "D55; 0SCA; CRITICAL"
+      ]
+    ]
+  }
+]

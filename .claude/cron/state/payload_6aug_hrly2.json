@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "• 57th check Thu 6 Aug 2026 UTC — unchanged\n• Document 171 (booking 1498): status = DRAFT, versionNo = 1 — 62 days old, created 2026-06-05, never issued\n• Booking 1498 (Suvderdene Bayartsog): status = CONFIRMED, confirmed = false, amounts = null\n• Booking course 1660 (ULearn Renewal MORN, Dec 15 2025 to Jun 5 2026): active = true — 62 days stale",
+        "Issue or delete document 171 via SIS admin; confirm booking 1498 if payment verified. See recipe: issue-9-addendum-5aug.md",
+        "57th hrly Thu 6 Aug UTC. Doc 171 DRAFT 62d. Bk1498 confirmed=false, amounts null. BC 1660 62d stale. Fix NOT RUN.",
+        "62d; unissued"
+      ]
+    ]
+  },
+  {
+    "range": "H11:K11",
+    "values": [
+      [
+        "• 43rd check Thu 6 Aug 2026 UTC — unchanged\n• Booking 97 (Morning General, 27 Apr to 22 May 2026): EUR 1,741 / 1,741 paid, confirmed = false\n• No completion cert — only REVOKED invoice (doc 63) + ISSUED invoice (doc 64)\n• Booking course 107 (Morning General, ended 22 May 2026): 76 days stale, active = true\n• Booking course 24793 (General English AM, ended 5 Jun 2026): 62 days stale, active = true",
+        "Generate cert for booking 97; deactivate BCs 107 + 24793. See recipe: issue-10-addendum-5aug.md",
+        "43rd hrly Thu 6 Aug UTC. UNCHANGED. Bk97 no cert. BCs 107+24793 stale 76d/62d. Fix NOT RUN.",
+        "no cert; stale BCs; 76d"
+      ]
+    ]
+  },
+  {
+    "range": "H12:K12",
+    "values": [
+      [
+        "• 13th check Thu 6 Aug 2026 UTC — unchanged\n• Student 1063 (Valeriya Salauyova): hubspot contact ID = null, visa status = null, DOB 25 May 2010 (minor, age 16)\n• Booking 17912: CONFIRMED, confirmed = true, fully paid EUR 1,938\n• Booking course 24696 (General English AM Plus, Jun 8 to Jul 3 2026): active = true — 34 days stale\n• Last class assignment: id 164, class 12, week ending Jul 3 2026 — course complete",
+        "Deactivate booking course 24696; backfill HubSpot contact ID for student 1063. See recipe: issue-11-addendum-5aug.md",
+        "13th hrly Thu 6 Aug UTC. UNCHANGED. BC 24696 34d stale. HubSpot null. Fix NOT RUN.",
+        "BC24696 stale 34d; HubSpot null"
+      ]
+    ]
+  },
+  {
+    "range": "H17:K17",
+    "values": [
+      [
+        "• 14th check Thu 6 Aug 2026 UTC — no change\n• Booking accommodation 11282 (Melie Villard, bed 66, booking 17897): ended 2026-06-05 — 62 days stale, active = true, fee = EUR 720\n• Bed 66 occupied by Filippo Corazzini until Aug 9 2026 (3 days) — BA 11282 is cosmetic only\n• Additional stale BAs on bed 66: 11158 (Hugo Tavernier, ended May 17) and 11216 (Erii Takigawa, ended May 9) — also active, same deactivation batch",
+        "Deactivate BAs 11282, 11158, 11216 on bed 66. See recipe: issue-16-addendum-4aug.md",
+        "14th hrly Thu 6 Aug UTC. BA 11282 62d stale. Bed 66 occupied by Filippo (BA11361) until Aug 9 (3d). Cosmetic. Fix NOT RUN.",
+        "62d stale; cosmetic"
+      ]
+    ]
+  },
+  {
+    "range": "H24:K24",
+    "values": [
+      [
+        "• 6th check Thu 6 Aug 2026 UTC — unchanged from 5th check (Wed 5 Aug)\n• Booking course 828 (Academic Year Morning, booking 787, student 397 Enshi Lu): start 2 Mar 2026, end 27 Feb 2026 — backwards dates (DST migration bug)\n• Booking courses 826 (ended 28 Nov 2025), 827 (ended 30 Jan 2026), 829 (ended 5 Jun 2026): all still active — 251 / 188 / 62 days stale",
+        "Fix BC 828 end date; deactivate booking courses 826, 827, 828, 829. See recipe: issue-23-addendum-5aug.md",
+        "6th hrly Thu 6 Aug UTC. Unchanged. BC 828 backwards; BCs 826/827/829 stale (251d/188d/62d). Low-priority. Fix NOT RUN.",
+        "backwards dates; low-pri"
+      ]
+    ]
+  },
+  {
+    "range": "H28:K28",
+    "values": [
+      [
+        "• 41st check Thu 6 Aug 2026 UTC — unchanged (50 days since booking last updated Jun 17)\n• Booking 17909 (Sofiia Korkishchenko, student 768): status = CANCELLED, confirmed = true — anomaly\n• Amount paid = EUR 0, amount open = EUR 727.50\n• Booking course 24693 (Renewal Academic Year PM, May 25 to Nov 13 2026): active = true, 0 class assignments\n• No payments linked to booking 17909",
+        "Set booking 17909 confirmed = false; deactivate booking course 24693 (booking is CANCELLED). See recipe: issue-27-sofiia-sca-cancelled-booking.md",
+        "41st hrly Thu 6 Aug UTC. UNCHANGED (50 days since Jun 17). Booking 17909 CANCELLED + confirmed=true. BC 24693 active on cancelled booking. Fix NOT RUN.",
+        "bk17909 anomaly; 50d"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 68th check Sat 8 Aug 2026 UTC — portal blocked 1 day (service_end = 2026-08-07)\n• Booking 18151 (Saikhantes Shagdarsuren): CONFIRMED, confirmed = true, EUR 1,339.20 fully paid\n• service_end was NOT extended when holiday 2500 was created (20 Jul to 21 Aug 2026)\n• Student returns Mon 24 Aug 2026; BC 24925 runs to 2 Oct 2026\n• Booking 1724 (second booking): BC 1982 (Academic Year Morning, ended 19 Dec 2025) active — 231 days stale\n• Fix NOT RUN",
+        "Set booking 18151 service_end = 2026-10-02; deactivate BC 1982 (bk1724). See recipe: issue-15-addendum-8aug-c.md",
+        "68th hrly Sat 8 Aug. portal blocked (service_end 7 Aug, not extended for holiday). Returns 24 Aug. BC 1982 (bk1724) 231d stale.",
+        "portal blocked; returns 24 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• 127th check Sat 8 Aug 2026 UTC — 3 original stale booking accommodations unchanged + new stale booking course for Rakan\n• Booking Accommodation 11162 (booking 97, bed 179): ended 23 May 2026, still active — 76 days stale\n• Booking Accommodation 11314 (booking 18002, bed 179): ended 6 Jun 2026, still active — 62 days stale\n• Booking Accommodation 11319 (booking 18034, bed null, zero-length): ended 31 May 2026, still active — 68 days stale\n• Rakan Alghamdi (student 14444, booking 17915): Booking Course 24697 (Academic Year Morning, ended 31 Jul 2026) active — 8 days stale\n• Rakan Booking Accommodation 11287 (bed 190, ends Dec 2026): current, not stale\n• Bernardo Hughes Pimentel (student 14524): no anomaly — booking accommodation and course both current",
+        "Deactivate Booking Accommodations 11162 + 11314 + 11319; deactivate Booking Course 24697 (Rakan). See recipe: issue-12-addendum-8aug.md",
+        "127th hrly Sat 8 Aug. 3 stale BAs (76d max). NEW: Rakan BC 24697 stale 8d. Fix NOT RUN.",
+        "3 stale BAs; Rakan BC 8d"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 72nd check Sat 8 Aug 2026 UTC — NEW FINDINGS: Telmuun 6 stale Booking Courses (512d max), Ana Jessica booking CANCELLED, Ariunsarnai booking PENDING\n• Telmuun Enkhsaikhan (student 293): Booking Courses 482 (ended Mar 2025, 512d), 483 (ended Jul 2025, 393d), 1609 (Dec 2025, 231d), 1610 (Jan 2026, 211d), 1611 (Mar 2026, 155d), 1612 (May 2026, 99d) all active\n• Telmuun Booking Accommodation 10779 (ended Jan 2025): active — 570 days stale\n• Ana Jessica Rosa (student 766, booking 1308): status = CANCELLED, confirmed = false, EUR 1,530 PAID — anomaly; Booking Course 1350 still active\n• Ariunsarnai Batbayar (student 1047, booking 1605): status = PENDING, EUR 0/1,509 — not visible in class assignment\n• Francesca Fassina (student 14462): DB surname = Fassina (email francescafassina98@gmail.com); HubSpot 769644314873 — spelling unverified\n• Booking Courses 24630 + 24631 (ended 10 Jul 2026): active — 29 days stale",
+        "Deactivate Telmuun BCs 482+483+1609+1610+1611+1612; deactivate BA 10779; investigate Ana Jessica cancelled booking; confirm/follow-up Ariunsarnai. See recipe: issue-48-addendum-8aug.md",
+        "72nd hrly Sat 8 Aug. NEW: Telmuun 6 stale BCs (512d) + BA (570d). Ana CANCELLED+paid. Ariunsarnai PENDING. Fassina unverified.",
+        "Telmuun 512d BCs; Ana CANCELLED"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 37th check Sat 8 Aug 2026 UTC — count verified 24,479 (+13 since 7 Aug, all newly ended 2026-08-07)\n• New stale Booking Courses (ended 8 Aug): 24955, 24990, 1742, 24983, 24967, 25038, 1740, 1672, 1673, 24966, 88, 1675, 24991\n• Count growing daily as courses complete — no bulk deactivation yet\n• Awaiting Neil decision on bulk deactivation strategy",
+        "Run: UPDATE booking_courses SET active=false WHERE active=true AND end_date < NOW(); See existing recipe.",
+        "37th hrly Sat 8 Aug. 24,479 stale verified (+13 from 7 Aug). Growing daily. No fix run.",
+        "24,479 stale (+13); awaiting decision"
+      ]
+    ]
+  },
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• 38th check Sat 8 Aug 2026 UTC — day 25\n• 966 students with non-E.164 mobile numbers (552 without + prefix, 414 with + but containing spaces)\n• Total students with mobile on record: 1,369. Non-E.164: 966 (71%)\n• Unchanged since 37th check",
+        "Strip spaces; normalise to E.164. See recipe: issue-6-addendum-6aug-b.md",
+        "38th hrly Sat 8 Aug UTC. Day 25. 966 non-E.164 unchanged. Fix NOT RUN.",
+        "~966 phones; 25d"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• 11th check Sat 8 Aug 2026 UTC — unchanged\n• Student 983 (Flávia Nascimento Mariano): visaRequired = false, visaId = null\n• visaFrom = 2026-06-01, visaUntil = 2027-02-01 — dates present but no visa document linked (inconsistency)\n• Booking 1534: CONFIRMED, confirmed = true, EUR 1,308 fully paid\n• Booking Course 1710 (Academic Year Afternoon, 1 Jun to 20 Nov 2026): active, current\n• UI throws PrismaClientKnownRequestError when saving visa status change",
+        "Investigate Prisma error on visa status save; clarify whether visa is required; fix visaFrom/Until inconsistency. See recipe: issue-18-addendum-8aug.md",
+        "11th hrly Sat 8 Aug. visaRequired=false + visaFrom/Until set without visaId. UI error on save unresolved.",
+        "visa inconsistent; UI error; 11d"
+      ]
+    ]
+  }
+]

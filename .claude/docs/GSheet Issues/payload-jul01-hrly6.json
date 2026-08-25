@@ -1,0 +1,35 @@
+[
+  {
+    "range": "H6:K6",
+    "values": [
+      [
+        "• Rakan Alghamdi LOA resolved — document 204 issued 8 Jun via booking 17915 (see Issue 14)\n• Khongorzul Uranaa booking 17871 remains in ESCROW — confirmed = true (database anomaly)\n• Amount paid EUR 300 of EUR 2313.62 total — EUR 2013.62 outstanding\n• Payment 17375 (EUR 300, Apr 17) linked — type = Escrow, no Xero ID, no HubSpot payment ID\n• Booking course 24644 (Academic Year Morning): ended 23 Jan 2026, active = false — course finished 5+ months ago, ESCROW never resolved\n• Booking last updated 8 May 2026 — 54 days stale, no action taken (18th check, 1 Jul UTC)",
+        "Decide fate of Khongorzul booking 17871: write off, pursue or cancel EUR 2013.62 (course ended Jan 23 2026, 5m stale). See recipe: issue-4-rakan-loa-barcode.md",
+        "hrly 1 Jul UTC (18th check, fresh DB): bk17871 ESCROW conf=true EUR300/2313.62 (EUR2013.62 outstanding) UNCHANGED (updAt=May08=54d stale). pmt17375 EUR300 type=Escrow xeroId=null hsId=null payDate=Apr17. bc24644 AY-Morn ended Jan23 2026 active=false (correct). Course ended 5+ months ago, ESCROW unresolved 54d. Neil: decide write-off/pursue/cancel EUR2013.62.",
+        "EUR2013; 54d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking course 1797 (Morning General, 6 Apr to 26 Jun 2026) ended 5 days ago — still active = true (stale flag; last updated 3 May, 59 days stale)\n• Booking course 24686 (Morning General, 20 Jul to 18 Sep 2026) starts in 19 days — fee = null (last updated 14 May, 48 days stale)\n• Booking 1611: Confirmed, confirmed = true, fully paid EUR 1280.12\n• Payment 17124 (EUR 1280.12): Xero payment ID = null — not yet reconciled in Xero\n• Action before 20 Jul: set fee on course 24686, set course 1797 active = false, reconcile payment 17124 in Xero (18th check, 1 Jul UTC)",
+        "(NOT RUN) UPDATE booking_courses SET active=false WHERE id=1797; set bc24686 fee; reconcile pmt17124 Xero. See recipe: issue-24-alberto-fidelo-course-split.md",
+        "hrly 1 Jul UTC (18th check, fresh DB): bc1797 ended Jun26=5d ago active=STILL true (updAt=May03=59d stale). bc24686 Jul20-Sep18 fee=STILL null (updAt=May14=48d stale). bk1611 CONF 1280.12/1280.12. pmt17124 EUR1280.12 xeroId=null hsId=null. bc1797 must be deactivated; bc24686 fee must be set before Jul20=19d. Neil: (1) deactivate bc1797; (2) set bc24686 fee; (3) reconcile pmt17124 Xero.",
+        "bc1797 ended+active; Jul20=19d"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• Student 917 (Uyanga Tungalag): payment 17258 (EUR 3066, type = Escrow, paidBy = agency) is the likely primary blocker — unassignedStudents() requires at least one non-Escrow payment\n• Visa status = null is secondary — null visaStatus PASSES the to-be-assigned visa filter (does not block on its own)\n• Booking 1467: Confirmed, confirmed = true — amount paid shows EUR 2405 (Fidelo-era value) but only Escrow payment exists at EUR 3066 (amount mismatch; Hub/TransferMate check needed)\n• Booking course 1613: Academic Year Morning, 27 Apr to 16 Oct 2026 — Day 66 of course, zero class assignments in database\n• 63rd check, 1 Jul UTC — TransferMate escrow release status unknown since May 2026",
+        "(1) Check Hub fins / TransferMate: has pm17258 (EUR 3066 Escrow) been released? (2) If released: UPDATE payments SET type=one_time_or_initial WHERE id=17258 (NOT RUN). (3) UPDATE students SET visa_status=Approved WHERE id=917 (NOT RUN). (4) Assign Uyanga to AY Morning class via SIS. See recipe: issue-25-uyanga-visa-escrow.md",
+        "hrly 1 Jul UTC (63rd check, fresh DB): s917 Uyanga visaStatus=STILL null (updAt=May21=41d stale). CORRECTION: null visa PASSES to-be-assigned filter — NOT primary blocker. pmt17258 EUR3066 type=STILL Escrow xeroId=null payDate=Apr17-2025. bk1467 CONF amtPaid=2405 (Fidelo mismatch vs pmt=3066). bc1613 AY-Morning Apr27-Oct16 Day66. SCAs=STILL 0. 63 CHECKS NO ACTION. Neil: (1) Hub fins check pm17258 release; (2) if released convert type; (3) visa SQL; (4) assign class.",
+        "Escrow; 0SCA; Day66"
+      ]
+    ]
+  }
+]

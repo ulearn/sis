@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H6:K6",
+    "values": [
+      [
+        "• Original issue resolved — Rakan Alghamdi (student 14444) LOA doc 204 ISSUED Jun 08 via booking 17915; Issue 14 (same booking, K=fixed) covered the QR/barcode bug\n• Previous diagnosis error — all prior checks used booking 17871 (student 14473 = Khongorzul Uranaa), which is NOT Rakan's booking\n• Booking 17871 (Khongorzul Uranaa): ESCROW, confirmed = true; course \"Academic Year Morning\" ran Aug 04 2025 – Jan 23 2026 (ended 5 months ago)\n• Amount paid = EUR 300 of EUR 2313.62 total — EUR 2013.62 outstanding; xeroPaymentId = null; no Xero reconciliation\n• Stale ESCROW with significant outstanding balance on a completed course — Neil decision needed",
+        "Rakan LOA done (Issue 14). Decide fate of bk17871 Khongorzul: write off, pursue, or reclassify EUR 2013 stale ESCROW. See recipe: issue-4-rakan-loa-barcode.md",
+        "Jun19 hrly: MAJOR CORRECTION. Rakan=s14444 bk17915 doc204 ISSUED Jun08 — resolved via Issue14 (K=fixed). bk17871=Khongorzul Uranaa s14473 (NOT Rakan). bc24644 ended Jan23-26 (5m stale). EUR300/2313.62. EUR2013 outstanding. xeroId=null. All previous H/J/K for this row tracked wrong booking.",
+        "Rakan done; Khongorzul EUR2013"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Booking 18151 (Afternoon Academic Year) is CONFIRMED, paid EUR 1339.20 / 1339.20 — updated Jun 16 by Neil\n• Course 24925 correctly set to Mar 09 to Sep 11 (confirmed Jun 16)\n• Class assignment 255 (class 11, B1 PM) still has week start = Jan 12 and week end = Jul 03 — not yet corrected",
+        "(NOT RUN) UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255. See recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun19 hrly3: sca255 weekStart=Jan12 weekEnd=Jul03 STILL WRONG (fresh DB). bc24925 Mar09-Sep11 correct (Jun16). Fix NOT RUN. Student attending B1-PM normally; SCA window incorrect but not blocking.",
+        "sca fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• Student 983 (Flavía Nascimento Mariano) visaStatus = null — never saved, Prisma save error still unresolved\n• Booking 1534 is CONFIRMED, paid EUR 1308 / 1308, confirmed = true\n• Class assignment active: class 11 (B1 PM) from Jun 15 to Nov 20 — student is in class\n• Prior assignment: class 9 (A2 PM) Jun 01 – Jun 14 — completed normally\n• Visa null no longer blocking class assignment — issue resolved via alternate path",
+        "Set visaStatus = Approved via SIS personal details (low priority, cosmetic). See recipe: issue-18-flavia-visa-save-error.md",
+        "Jun19 hrly3: s983 visaStatus=null (updAt=Jun15). sca265 B1-PM Jun15-Nov20 ACTIVE. Attending normally. Cosmetic fix only — set visaStatus=Approved via SIS when convenient.",
+        "in class; visa cosmetic"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking 1611 is CONFIRMED, paid EUR 1280.12 / 1280.12\n• Course 1797 (Morning General) ends Friday Jun 26 — 5 school days next week (Jun 22-26)\n• Last class assignment sca229 (class 12, B1-AM2) expired April 26 — 54 days with no active class record\n• No attendance records in SIS at all — student on extended bereavement holiday since late April\n• Course 24686 (Morning General Jul 20 – Sep 18) is future; gap Jun 27 – Jul 19",
+        "Confirm if Alberto returning before Jun 26. If yes: assign SCA cls12 bc1797 ws=Jun22 we=Jun26 via SIS (NOT RUN). See recipe: issue-24-alberto-fidelo-course-split.md",
+        "Jun19 (Fri) hrly3: CONFIRMED UNCHANGED (fresh DB, bk1611 updAt=Jun11). sca229 cls12 EXPIRED Apr26 (54d). bc1797 ends Fri Jun26 — 5 school days (Jun22-26). att=0 ALL TIME. NEIL FINAL: Alberto returning Mon Jun22? If yes → assign SCA bc1797 cls12 ws=Jun22 we=Jun26 via SIS NOW.",
+        "5d;FINAL;Jun26"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Booking 94 (Giulia s88) CONFIRMED, 1151.50 / 1151.50 — correct booking; class assignment sca270 (class 12, B1-AM2) active Jun 15 – Jun 26\n• Booking 18044 STILL CONFIRMED (duplicate) — not cancelled, 1106.50 / 1106.50, stale since Jun 07 (12 days)\n• Payment 17607 (EUR 1151.50, HubSpot payment ID 1239529228498) on booking 18044 — xeroPaymentId = null, not voided\n• Deadline: cancel duplicate booking and void payment before course ends Friday Jun 26",
+        "(NOT RUN) 1) Cancel booking 18044 via SIS UI; 2) void payment 17607 via HubSpot UI (payment ID 1239529228498). See recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun19 (Fri) hrly3: CONFIRMED STILL OPEN (fresh DB). bk94 CONF 1151.5/1151.5 OK. sca270 cls12 Jun15-Jun26 ACTIVE. bk18044 STILL CONFIRMED (updAt=Jun07=12d stale) NOT cancelled. pmt17607 EUR1151.5 hsId=1239529228498 xeroId=null NOT voided. NEIL: (1) cancel bk18044 via SIS; (2) void pmt17607 via HubSpot (ID 1239529228498). Deadline Fri Jun26.",
+        "bk18044 dup;void;Jun26"
+      ]
+    ]
+  },
+  {
+    "range": "H32:K32",
+    "values": [
+      [
+        "• Week calculation in src/routes/attendance.ts lines 213-214 uses local-time getDay() and setHours() on UTC-midnight dates — shows Sunday instead of Monday as week start on BST server\n• src/scripts/attendance.ts lines 36-37 already use UTC methods (correct, fixed earlier)\n• Bug affects attendance sheet print week-start day for all users",
+        "Change src/routes/attendance.ts L213-214: getDate() to getUTCDate(), getDay() to getUTCDay(), setHours() to setUTCHours(). See recipe: issue-31-attendance-sheet-week-bug.md",
+        "Jun19 hrly3: routes/attendance.ts L213 getDay()/getDate() + L214 setHours() STILL local-time (fresh code). scripts/attendance.ts L36-37 UTC correct. 2-line fix NOT applied. Reproduces every BST week boundary.",
+        "route fix pending"
+      ]
+    ]
+  }
+]

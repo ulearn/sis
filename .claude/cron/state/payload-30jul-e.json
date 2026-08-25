@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Aug Bank Holiday 2026-08-03 still absent from school_closures — confirmed Thu 30 Jul UTC\n• 20 active BCs start 2026-08-03 — all need shunting to 2026-08-04\n• Affected: Giampaolo Russo, Aurora Madril Oliveira Molina, Diego Alves da Silva Molina,\n  Luana Salzano, Aleix Cervera Gonzalez (2 BCs — possible duplicate), and 14 others\n• No closure record = no shunt protection",
+        "1) INSERT school_closure for 2026-08-03; 2) UPDATE 20 BCs start_date to 2026-08-04. See recipe: issue-38-addendum-30jul-f.md",
+        "Thu 30 Jul UTC 2nd check. Aug BH 2026-08-03 absent from school_closures. 20 BCs unshunted. DEADLINE TOMORROW Fri 31 Jul. Fix NOT RUN.",
+        "URGENT; BH unshunted"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• Booking 18180 (Giampaolo Russo, student 14571): confirmed, paid EUR 2,584.96, open = 0\n• BA 11357: Host Family bed 178, 2026-08-02 to 2026-09-06, fee EUR 1,250 — confirmed by host portal\n• Capel Street apartment: ABSENT — no booking accommodation record in SIS\n• BC 24956: General English AM, start 2026-08-03 (bank holiday — also needs shunting per issue 38)\n• Check-in Sunday 2 Aug 2026 — 3 days away",
+        "Confirm Capel dates + bed with Diego, then INSERT booking_accommodation. See recipe: issue-41-addendum-30jul-b.md",
+        "Thu 30 Jul UTC 2nd check. HF BA confirmed (Patty McSweeney, bed 178). Capel BA absent — confirmed. Check-in Sun 2 Aug = 3 days. Fix NOT RUN.",
+        "Capel missing; check-in Sun 2 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 115th check Thu 30 Jul 2026 UTC — 4 orphan payments unchanged\n• Payment 16988: EUR 339.90, Bank, booking ID = null (94 days)\n• Payment 16989: EUR 339.90, Bank, booking ID = null (94 days)\n• Payment 17187: EUR 6,151, TransferMate Escrow (Fidelo D2026226), booking ID = null (87 days)\n• Payment 4781: EUR 380, Flywire 2019, booking ID = null (legacy)",
+        "Link payments 16988+16989 to bookings; investigate 17187 via HubSpot deal D2026226. See recipe: issue-1-addendum-30jul-a.md",
+        "115th hrly Thu 30 Jul UTC 2nd check. 4 orphan pmts unchanged (94d/94d/87d/legacy). Fix NOT RUN.",
+        "4 orphan pmts; 94d+"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• Booking 1605 (Ariunsarnai Batbayar, student 1047): PENDING, confirmed = false\n• Amount paid = EUR 0 of EUR 1,509 — zero payments ever received\n• Booking course 1791: Academic Year Renewal Morning, 2026-04-13 to 2026-10-23, 108 calendar days active\n• confirmed = false blocks class assignment (payment gate)",
+        "Chase EUR 1,509 via HubSpot; if no payment coming, cancel booking 1605. See recipe: issue-20-addendum-30jul-b.md",
+        "Thu 30 Jul UTC 2nd check. Day 108 (from Apr 13). EUR 0 paid; EUR 1,509 open. No payments found. Fix NOT RUN.",
+        "Day 117; EUR 0 / 1509"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• 129th check Thu 30 Jul 2026 UTC (2nd check this day) — unchanged\n• Student 917 (Uyanga Tungalag): visaStatus = null, hubspotContactId = null\n• Last student update: 2026-07-28 09:38 UTC (bulk touch — no change)\n• Booking 1467: CONFIRMED, confirmed = true, amountOpen = EUR 0, amountPaid = EUR 2,405\n• Payment 17258: EUR 3,066, TransferMate Escrow, 2025-10-20, xeroPaymentId = null\n• Payment EUR 3,066 exceeds booking amountPaid EUR 2,405 — discrepancy unresolved\n• Booking course 1613 (Academic Year Morning, 2026-04-27 to 2026-10-30): active, zero class assignments\n• 94 calendar days into 187-day Academic Year course with no class assignment",
+        "Search HubSpot for Uyanga Tungalag; link contactId; set visa status; assign to Morning class on BC 1613; investigate EUR 3,066 vs 2,405 discrepancy. See recipe: issue-25-addendum-30jul.md",
+        "129th hrly Thu 30 Jul UTC (2nd check). UNCHANGED. 94d into AY, zero SCAs. visaStatus null, hubspotContactId null. Payment 17258 xeroPaymentId null. Fix NOT RUN.",
+        "visa null; 0 SCAs; 94d"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 2nd check Thu 30 Jul 2026 UTC — NEW: Jul-17 batch now confirmed stale\n• 11 booking courses ended 2026-07-24 still active (unchanged): Lalita Champakhong, Ralph Calderón,\n  Pietro Colombo, José Geraldo Cursino, Nicole Rueda Mendoza, Martina Tartaro (2 BCs),\n  Jade Ribeiro, Mario Roggi, Marcos Ábrego Tofé, Eduardo Roche Diaz\n• NEW — 15 booking courses ended 2026-07-17 also active: Manuel Karanauskas, Hugo Lopez Tamayo,\n  Ariuntsetseg Gansukh, Erika Watanabe, Maria Eduarda Alves Paiva, Yeongjae Jang, Kanna Hasegawa,\n  Raquel Álvarez Fernández, Florian Baury, Aitana López, Geyza Covre, María Hermosilla Ogaz,\n  Uuganbayar Khureltogoo, Kritchana RATCHA-ANAN, Lunel Dubost\n• Legacy booking course BC505 (Tuguldur Otgonbaatar, ended Aug 2025) also still active\n• Total stale booking courses (all-time, active past end): 24,449 — systemic cleanup needed",
+        "Deactivate 11 Jul-24 BCs + 15 Jul-17 BCs + BC505. Schedule nightly BC deactivation. See recipe: issue-45-addendum-30jul-d.md",
+        "Thu 30 Jul UTC 2nd check. NOW 26 recent stale BCs (11 Jul-24 + 15 Jul-17) + BC505 + legacy 24k+. Fix NOT RUN.",
+        "26 stale BCs; fix pending"
+      ]
+    ]
+  }
+]

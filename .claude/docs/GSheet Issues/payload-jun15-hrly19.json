@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Two payments are unlinked — they are real, not spurious:\n• Payment 16988 → Booking 17856 (Margherita)\n• Payment 16989 → Booking 17857 (Francesca)",
+        "UPDATE payments SET booking_id=17856 WHERE id=16988; UPDATE payments SET booking_id=17857 WHERE id=16989. see recipe: issue-1-orphan-payments.md",
+        "Jun15 hrly19: pmt16988+pmt16989 booking_id=null CONFIRMED. bk17856+bk17857 CONF amtPaid=339.9/339.9(stale, no linked pmts). SQL NOT RUN. 14d to Jun29.",
+        "14d to Jun29"
+      ]
+    ]
+  },
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "• Booking 1498 is CONFIRMED (new schema)\n• 0 payments in the database\n• Document 171 is a DRAFT certificate (course 1660 ended Jun 05, 10 days ago)",
+        "(NOT RUN) Issue doc171 via SIS->s947->bk1498->Documents->Issue. No payment gate expected. see recipe: issue-8-suvderdene-cert-dates.md",
+        "Jun15 hrly19: doc171 DRAFT(tmpl82) UNCHANGED(updAt=Jun05). bk1498 CONF confirmed=false. 0 pmts. Course ended Jun05=10d ago. NEIL: issue cert via SIS->s947->bk1498->Documents->Issue.",
+        "cert DRAFT 10d"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 CONFIRMED + PAID (740/740 at 10:10 UTC Jun 15)\n• Booking courses 24933 + 24934 DUPLICATE General English AM Jun 15 – Jul 10 (both on bk18158)\n• Bookings 18131 (1185) + 18133 (648) NOT YET CANCELLED\n• 0 class assignments for student 1015 on new course (bc24933)",
+        "(NOT RUN) 1) CANCEL bk18131+18133; 2) void pmt17852+pmt17730 via HubSpot; 3) DELETE bc24934; 4) assign SCA cls7 bc24933. see recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun15 hrly19: bk18158 CONF+PAID 740/740. bc24934 DUP still live. bk18131 CONF 1185 + bk18133 CONF 648 NOT cancelled. 0 SCAs s1015 DAY1 (prev cls=7). NEIL: assign SCA cls7 bc24933 + cancel bk18131/18133 TODAY.",
+        "PAID;0SCA;NOW"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking 1611 is CONFIRMED, 1280.12\n• Course 1797 (morning) Apr 06 – Jun 26 (11 days left)\n• Class assignment 229 (class 12) expired Apr 26 (50 days ago)\n• Attendance = 0 for student 1052",
+        "Assign SCA cls12 bc1797 ws=Jun15 we=Jun26 if Alberto returned (NOT RUN). see recipe: issue-24-alberto-fidelo-course-split.md",
+        "Jun15 hrly19: bc1797 ends Jun26(11d). sca229(cls12) expired Apr26(50d ago). 0att s1052. bc24686 future Jul20-Sep18. NEIL: confirm Alberto returned? If yes: assign SCA cls12 bc1797 ws=Jun15 we=Jun26.",
+        "0att 11d"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• Student 14532 (Ernesto) has 0 class assignments for the ENTIRE course\n• Booking course 24826 (INTENSIVE) Jun 08 – Jun 19 (4 days left — Week 2 Day 1 today)\n• Booking 18034 PARTIALLY paid 845 / 1095, confirmed = false",
+        "(NOT RUN) Get Ernesto level from teacher; INSERT 2 SCAs AM+PM bc24826 ws=Jun15 we=Jun19. see recipe: issue-26-intensive-class-assign-once.md",
+        "Jun15 hrly19: bk18034 PARTIAL 845/1095 conf=false. bc24826 INTENSIVE Jun8-Jun19(4d left). 0 SCAs s14532 ALL COURSE. WK2 D1 TODAY. NEIL: get Ernesto level + INSERT 2 SCAs AM+PM ws=Jun15 we=Jun19 NOW.",
+        "WK2 4d left"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Student 1001 has attendance = 0 for ALL TIME\n• Class assignment 255 (B1 PM class 11), booking course 24925, booking 18151, Jan 12 – Jul 03 (18 days left)\n• visa_status = null, nationality = Mongolia\n• IRP risk if attendance unverified",
+        "(1) Ask cls11/B1PM teacher if Saikhantes attends; (2) YES: backfill attendance; (3) NO: IRP escalation. see recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun15 hrly19: att=0 ALL TIME s1001. sca255 cls11/B1PM Jan12-Jul03(18d). visa_status=null Mongolia. bk18151 CONF 1339.2. NEIL: ask B1PM teacher re Saikhantes TODAY — IRP risk.",
+        "IRP 18d"
+      ]
+    ]
+  }
+]

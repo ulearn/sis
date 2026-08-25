@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Sat 8 Aug 2026 UTC — service_end expired yesterday (Fri 7 Aug), now 1 day past expiry\n• Booking 18151 (student 1001, Saikhantes Shagdarsuren): CONFIRMED, confirmed = true, fully paid EUR 1,339.20, amount open = 0\n• service_end = 2026-08-07 — portal access blocked since midnight Fri 7 Aug\n• Booking Course 24925 (Academic Year Afternoon, 9 Mar to 2 Oct 2026): active = true, 1 class assignment\n• Student on approved holiday; returns Mon 24 Aug 2026 (16 days from today)\n• Last class assignment 255: class 11 (B1 PM), week ending 3 Jul 2026\n• Fix NOT RUN — service_end must be extended to 2026-10-02",
+        "Extend service_end to 2026-10-02; assign return class week 24 Aug. See recipe: issue-15-addendum-8aug.md",
+        "64th hrly Sat 8 Aug 2026 UTC. 1 day past expiry. Student returns 24 Aug. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Sat 8 Aug 2026 UTC (65th check) — all 17 Booking Courses still 0 class assignments\n• 2 days until Mon 10 Aug class start — no change since Fri 7 Aug check\n• Booking Courses 25004 (Vincenzo Contu) and 25005 (Claudia Mereu): end Fri 14 Aug — this is now their ONLY week; must assign today\n• 13 Booking Courses ready to assign: BC108, BC109, BC1313, BC1818, BC24915, BC24970, BC25004, BC25005, BC25024, BC25027, BC25031, BC25036, BC25039\n• 4 blockers (confirmed = false): BC96 Alessandro Signorotti EUR 250 open; BC833 Settiyanee Duangjai ESCROW; BC25007 Nominjin Amartsogt EUR 370 open; BC25042 Edith Nunes EUR 456 PENDING",
+        "Assign 13 ready BCs before Mon 10 Aug; resolve 4 payment blockers. See recipe: issue-38-addendum-8aug.md",
+        "65th hrly Sat 8 Aug 2026 UTC. All 17 BCs still 0 SCAs. Mon start 2 days away. BC25004+25005 last-week courses. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  }
+]

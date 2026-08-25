@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H9:K9",
+    "values": [
+      [
+        "• 27th check Thu 13 Aug 2026 UTC — unchanged from 26th check\n• Booking Course 1482 (Academic Year Afternoon): ended 2025-12-19 — 237 days stale, active = true, 0 class assignments\n• Booking Course 1483 (Academic Year Afternoon): ended 2026-02-13 — 181 days stale, active = true, 0 class assignments\n• Booking Course 1485 (Academic Year Afternoon): ended 2025-12-19 — 237 days stale, active = true, 0 class assignments\n• Booking Course 1486 (Academic Year Afternoon): ended 2026-02-13 — 181 days stale, active = true, 0 class assignments\n• Booking Course 1487 (Academic Year Afternoon): ended 2026-06-05 — 69 days stale, active = true, 2 class assignments (verify before deactivating)\n• Booking Course 1488 (Afternoon General): ended 2025-09-19 — 328 days stale, active = true, 0 class assignments",
+        "Deactivate BCs 1482/1483/1485/1486/1488 (0 class assignments, safe); verify BC 1487 (2 class assignments) first. See recipe: issue-8-addendum-12aug.md",
+        "27th hrly Thu 13 Aug UTC. Unchanged. 6 stale Booking Courses (328d max). Fix NOT RUN.",
+        "6 stale BCs; 328d max"
+      ]
+    ]
+  },
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "• 64th check Thu 13 Aug 2026 UTC — unchanged from 63rd check\n• Document 171 (booking 1498, template 82): DRAFT v1, created 5 Jun 2026 — 69 days unissued\n• Booking 1498 (Suvderdene Bayartsog): CONFIRMED (status), confirmed = false, amounts null (no payments)\n• Service end 5 Jun 2026 — course ended 69 days ago\n• Booking Course 1660 (ULearn Renewal MORN, 15 Dec 2025 to 5 Jun 2026): active = true — 69 days stale, 0 class assignments",
+        "Issue or delete document 171; set booking 1498 confirmed = true; deactivate Booking Course 1660. See recipe: issue-9-addendum-12aug.md",
+        "64th hrly Thu 13 Aug UTC. Unchanged. Document 171 DRAFT 69d. Course ended Jun 5. BC 1660 stale 69d. Fix NOT RUN.",
+        "doc DRAFT 69d; BC stale"
+      ]
+    ]
+  },
+  {
+    "range": "H11:K11",
+    "values": [
+      [
+        "• 50th check Thu 13 Aug 2026 UTC — unchanged from 49th check\n• Booking 97 (Massimiliano Cameran, student 91): CONFIRMED, confirmed = false, EUR 1,741 paid, EUR 0 open\n• No completion certificate on booking 97: DR 63 (invoice, REVOKED) + DR 64 (invoice, ISSUED) only\n• DR 179 (Certificate of Completion, ISSUED 5 Jun 2026): on booking 18002, NOT booking 97\n• Booking Course 107 (Morning General, ended 22 May 2026): active = true — 83 days stale, booking 97, 1 class assignment\n• Booking Course 24793 (General English AM, ended 5 Jun 2026): active = true — 69 days stale, booking 18002, 1 class assignment",
+        "Set bk97 confirmed=true; deactivate BCs 107+24793; generate cert for bk97. See recipe: issue-10-addendum-12aug.md",
+        "50th check Thu 13 Aug UTC. BC 107 now 83d stale; BC 24793 now 69d stale. No cert on bk97. Fix NOT RUN.",
+        "no cert; BC107 stale 83d"
+      ]
+    ]
+  },
+  {
+    "range": "H12:K12",
+    "values": [
+      [
+        "• 21st check Thu 13 Aug 2026 UTC — unchanged from 20th check\n• Student 1063 (Valeriya Salauyova): hubspot_contact_id = null; last updated 28 Jul 2026 (16 days ago)\n• Booking Course 24696 (General English AM Plus, booking 17912): ended 2026-07-03 — 41 days stale, active = true, 1 class assignment\n• Booking 17912: CONFIRMED, confirmed = true, EUR 1,938 paid — fully paid",
+        "Deactivate BC 24696 (verify class assignment is historical first); link HubSpot contact to student 1063. See recipe: issue-11-addendum-12aug.md",
+        "21st check Thu 13 Aug UTC. BC 24696 now 41d stale. HubSpot null 16d. Fix NOT RUN.",
+        "BC24696 41d stale; HS null"
+      ]
+    ]
+  },
+  {
+    "range": "H22:K22",
+    "values": [
+      [
+        "• 21st check Thu 13 Aug 2026 UTC — unchanged from 20th check\n• Booking Course 1604 (Morning General, booking 1461, student 912 Maurivan Kuhl): ended 3 Jul 2026 — 41 days stale, active = true\n• Class Assignment 46: week start 2026-03-30, week end 2026-04-05, class 7 (historical, within course period)\n• Class Assignment 156: week start 2026-04-06, week end 2026-07-02, class 8 (historical, within course period)\n• Both class assignments are historical (before course end Jul 3) — deactivating Booking Course 1604 is safe",
+        "Deactivate Booking Course 1604 (2 historical class assignments, both before course end Jul 3 — safe). See recipe: issue-21-addendum-12aug.md",
+        "21st hrly Thu 13 Aug UTC. BC 1604 now 41d stale. Class assignments historical. Deactivation safe. Fix NOT RUN.",
+        "BC1604 stale 41d; 2 hist CAs"
+      ]
+    ]
+  },
+  {
+    "range": "H29:K29",
+    "values": [
+      [
+        "• 49th check Thu 13 Aug 2026 UTC — payment date corrected\n• Booking 17850 (Paola Sthefane Missias Moreira): status = CONFIRMED (enum), confirmed = false (boolean) — anomaly\n• Amount paid = null, amount open = EUR 321.35, amount total = EUR 321.35\n• Payment 17519: EUR 321.35, Bank Transfer, paymentDate = 2026-05-07 — xeroPaymentId = null (98 days unreconciled)\n• CORRECTION: previous entries stated paymentDate 2026-05-23; actual DB value is 2026-05-07 (98 days to today)\n• Despite payment linked, amountPaid = null on booking (payment not summed)\n• Booking Course 24624 (Morning General, 18 May to 5 Jun 2026): active = true — 69 days stale, 0 class assignments",
+        "Set bk17850 confirmed=true, amount_paid=321.35; reconcile pmt17519 in Xero (paymentDate = 2026-05-07, not May 23); deactivate BC 24624. See recipe: issue-28-addendum-12aug.md",
+        "49th check Thu 13 Aug UTC. CORRECTED: PMT 17519 paymentDate = 2026-05-07 (not May 23), now 98d unreconciled. BK17850 confirmed=false anomaly. BC 24624 stale 69d. Fix NOT RUN.",
+        "bk conf=false; pmt 98d Xero null"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H12:K12",
+    "values": [
+      [
+        "• Duplicate merge completed: booking 17912 Confirmed EUR1938/1938 confirmed=true (last touched Jul08)\n• Remaining anomaly: student 1063 HubSpot contact ID = STILL null — link not restored post-merge (42 days since 9 June 2026)\n• Tue 21 Jul 2026 UTC — UNCHANGED",
+        "Set student 1063 hubspotContactId via SIS admin or direct DB; see recipe: issue-10-valeriya-egor-guardian-booking.md",
+        "Tue 21 Jul UTC (fresh DB). UNCHANGED from Sat 18. Student 1063 hubspotContactId=STILL null (42d since Jun09). BK17912 CONF EUR1938/1938 confirmed=true (updAt=Jul08). Low priority cosmetic. Fix NOT RUN.",
+        "hubspot link null; low-pri"
+      ]
+    ]
+  },
+  {
+    "range": "H28:K28",
+    "values": [
+      [
+        "• Booking 17909 is CANCELLED but confirmed = true — database anomaly (last updated 17 June 2026, 34 days ago)\n• Payments 17477 and 17478 were deleted from the database on 17 June — amount paid = EUR 0\n• HubSpot Commerce payment 1230788330738 (EUR 727.50): not voided — void deadline 25 October 2026 (96 days from today)\n• HubSpot Commerce payment 1230645766331 (EUR 728.00): not voided — void deadline 11 November 2026 (113 days from today)\n• Student may have been double-charged EUR 1455.50 — Xero verification required before issuing refund\n• Booking course 24693 (Renewal Academic Year PM, 25 May to 13 November 2026): still active = true — anomaly on a cancelled booking\n• 28th check Tue 21 Jul 2026 UTC — UNCHANGED",
+        "Xero check Sofiia Korkishchenko April to May 2026; void HubSpot Commerce payments before 25 October 2026; see recipe: issue-27-sofiia-sca-cancelled-booking.md",
+        "28th check Tue 21 Jul UTC (fresh DB). CONFIRMED UNCHANGED. Booking 17909 CANCELLED confirmed=STILL true, amtOpen EUR727.50, amtPaid EUR0 (updAt=Jun17, 34d). BC24693 Renewal AY PM ends Nov13 2026 active=STILL true. HubSpot void: payment 1230788330738 by Oct25 (96d), payment 1230645766331 by Nov11 (113d). Fix NOT RUN.",
+        "void by Oct25; 96d"
+      ]
+    ]
+  },
+  {
+    "range": "H29:K29",
+    "values": [
+      [
+        "• Booking 17850 (Paola Moreira, student 14456): status CONFIRMED on 8 July 2026 — confirmed flag = still false (13 days unchanged)\n• Amount paid = null — payment type = null blocking the calculation, amount total = EUR 321.35\n• Payment 17519 (EUR 321.35, HubSpot payment 1231805396201): Xero payment ID = null, type = null — not reconciled\n• Booking course 24624 (Morning General, 18 May to 5 June 2026): still active = true — 46 days past end date\n• Historical case — student has left; all items are low-priority cleanup\n• 23rd check Tue 21 Jul 2026 UTC — UNCHANGED",
+        "Set payment 17519 type; reconcile in Xero; set confirmed=true on booking 17850; deactivate booking course 24624. See recipe: issue-28-paola-pending-won-deal.md",
+        "23rd check Tue 21 Jul UTC. UNCHANGED. BK17850 CONFIRMED confirmed=STILL false amtPaid=STILL null (updAt=Jul08, 13d). PMT17519 EUR321.35 type=STILL null xeroPaymentId=STILL null. BC24624 Morning ended Jun05 active=STILL true (46d stale). Historical — student left. Fix NOT RUN.",
+        "bk confirmed=false; low-pri"
+      ]
+    ]
+  },
+  {
+    "range": "H34:K34",
+    "values": [
+      [
+        "• Student 356 (Shih-Wei Huang): gender field = null — not set (last updated 3 June 2026, 48 days ago)\n• Document 238 (exit letter, template 4): status = ISSUED at 18 June 2026 — 33 days with wrong Ms. and she/her pronouns\n• Code bug in documents.ts: null gender defaults to female — all null-gender students get wrong pronouns on any document\n• Fix requires: (1) set gender = Male for student 356, (2) revoke document 238, (3) regenerate exit letter, (4) guard null gender in documents.ts\n• 6th check Tue 21 Jul 2026 UTC — UNCHANGED",
+        "Set student 356 gender = Male; revoke document 238; regenerate exit letter; fix null-gender guard in documents.ts. See recipe: issue-32-shih-wei-gender-default.md",
+        "6th check Tue 21 Jul UTC (fresh DB). UNCHANGED. Student 356 Shih-Wei Huang: gender=STILL null (updatedAt=Jun03, 48d). Document 238 STILL ISSUED since Jun18 (33d wrong Ms./she-her). Fix NOT RUN.",
+        "48d; doc238 wrong pronouns"
+      ]
+    ]
+  },
+  {
+    "range": "H37:K37",
+    "values": [
+      [
+        "• Homework section: renderSheetHtml() in src/routes/attendance.ts — no homework block; awaiting Paul / Neil layout spec\n• Holiday display bug: getWeekAttendance() in src/scripts/attendance.ts line 31 — no bookingHoliday fetch; students on holiday appear as absent in attendance sheets\n• Code confirmed unchanged since commit 9008d10 — no attendance output or holiday handling changes",
+        "Get Paul / Neil layout spec then add homework block to renderSheetHtml() (attendance.ts); add bookingHoliday fetch to getWeekAttendance() (attendance.ts:31); see recipe: issue-36-attendance-homework-section.md",
+        "Tue 21 Jul UTC (code check 15). Commit 9008d10 STILL HEAD (no commits to attendance files since Jul 17). renderSheetHtml() routes/attendance.ts: NO homework block. getWeekAttendance() scripts/attendance.ts L31: NO bookingHoliday fetch. Both bugs open. Awaiting Paul/Neil layout spec. Fix NOT RUN.",
+        "code open; awaiting spec"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• 3rd check Tue 21 Jul 2026 UTC\n• Booking accommodation 11352 (Veronica Martin, bed 83, booking 18156, 4 July to 11 July 2026): active = STILL true — 10 days post-checkout\n• Booking accommodation 11285 (Jesus Manuel Ramirez Diaz, bed 83, booking 17825, 21 June to 5 July 2026): active = STILL true — 16 days post-checkout\n• Both records on bed 83 — cosmetic data hygiene, no current guest impact",
+        "Set active = false on accommodations 11285 and 11352 (both bed 83, both post-checkout). See recipe: issue-37-veronica-capel-accomm-allocation.md",
+        "3rd check Tue 21 Jul UTC. BA11352 (Veronica Martin, bed 83, Jul4-Jul11): active=STILL true (10d post-checkout). BA11285 (Jesus Manuel, bed 83, Jun21-Jul5): active=STILL true (16d post-checkout — see Issue 43). Shared fix: UPDATE booking_accommodations SET active=false WHERE id IN (11285, 11352). Fix NOT RUN.",
+        "BA stale 10d+16d; cosmetic"
+      ]
+    ]
+  }
+]

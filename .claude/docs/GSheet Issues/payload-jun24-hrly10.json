@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Two payments are unlinked — booking ID = null and Xero payment ID = null\n• Payment 16988 (HubSpot payment 1204827374829) maps to Booking 17856 (Margherita Galbusera) — EUR 339.90, created 28 Apr\n• Payment 16989 (HubSpot payment 1204846469317) maps to Booking 17857 (Francesca Fassina) — EUR 339.90, created 28 Apr\n• Both bookings are Confirmed (status), confirmed = false, amount paid = 339.90 — payment audit trail broken\n• Booking courses 24631 (booking 17856) + 24630 (booking 17857) — General English AM Plus start Mon 29 Jun, fee = null (not set)",
+        "UPDATE payments SET booking_id=17856 WHERE id=16988; UPDATE payments SET booking_id=17857 WHERE id=16989; then set bc fees. See recipe: issue-1-orphan-payments.md",
+        "hrly Jun24 UTC (20th check): CONFIRMED UNCHANGED. pmts 16988/16989 bookingId=null xeroId=null. bks 17856/17857 CONF conf=false amtPaid=339.9/339.9. bc24630/24631 start Mon Jun29=5d fee=null. NEIL: run recipe issue-1-orphan-payments.md URGENTLY — courses start in 5 days.",
+        "Jun29=5d; EMERGENCY"
+      ]
+    ]
+  },
+  {
+    "range": "H44:K44",
+    "values": [
+      [
+        "• Accommodation 11311 (bed 84, Pietro Caccianiga): start Jun 28, 11 weeks, fee = EUR 3,850 — correct\n• Four stale bed 84 records still active = true (fresh DB Jun24 UTC):\n  — Accommodation 9917 (booking 1274): ended May 16 — 39 days stale\n  — Accommodation 11157 (booking 100): ended May 10 — 45 days stale\n  — Accommodation 11159 (booking 100): ended May 30 — 25 days stale\n  — Accommodation 11180 (booking 81): ended Jun 20 — 4 days stale (last modified Jun 22)\n• All 4 stale records block bed 84 — Pietro cannot check in Jun 28 unless deactivated first",
+        "(NOT RUN) UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180). See recipe: issue-36b-pietro-accomm-dates.md",
+        "hrly Jun24 UTC (4th check): CONFIRMED UNCHANGED. ba9917 ended May16 active=true. ba11157 ended May10 active=true. ba11159 ended May30 active=true. ba11180 ended Jun20 active=true. All 4 STILL blocking bed84. ba11311 Pietro Jun28-Sep13 fee=3850. NEIL: SET active=false WHERE id IN (9917,11157,11159,11180) BEFORE Jun28 — Pietro checks in THIS SUNDAY.",
+        "Jun28=4d; EMERGENCY"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Booking 18151 (Afternoon Academic Year) is CONFIRMED, paid EUR 1339.20 / 1339.20 — updated Jun 16 by Neil\n• Course 24925 correctly set to Mar 09 to Sep 11 (confirmed Jun 16)\n• Class assignment 255 (class 11, B1 PM) still has week start = Jan 12 and week end = Jul 03 — not yet corrected\n• Course ends Sep 11; week end Jul 03 is also likely wrong (should be Sep 11)",
+        "(NOT RUN) UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255. See recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun20 hrly: sca255 UNCHANGED weekStart=Jan12 weekEnd=Jul03 classId=11 (fresh DB). bc24925 Mar09-Sep11 correct (Neil fixed Jun16). bk18151 CONF 1339.2. Jul03 weekEnd = 13 days away — after Jul03 Saikhantes will not appear in class lists. See row 30 (issue 29+15) for primary tracking. Fix NOT RUN.",
+        "sca fix; Jul03 13d"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking course 24934 (General English AM, Jun 15–Jul 10, fee = 360) is a duplicate of booking course 24933 (fee = 380) on booking 18158\n• Booking 18158 is CONFIRMED, paid 740 / 740 — correct booking\n• Student 1015 (Edith Nunes) has 0 active class assignments — last class assignment (sca146, class 7) expired May 15\n• Attendance records = 10 (Jun 15–19) — student attended all 5 days of Week 1 with no formal class assignment\n• Two steps still not run: delete booking course 24934 (duplicate); insert class assignment for bc24933 class 7",
+        "(NOT RUN) 1) DELETE bc24934 (dup course); 2) INSERT SCA bc24933 cls7 ws=2026-06-22 we=2026-07-10 s1015. See recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun20 hrly2: att=10 (attended all 5 days Jun15-19 without formal class assignment). bc24934 DUP still exists. sca48 cls7 Apr17 exp + sca146 cls7 May15 exp — 0 active for bc24933. Mon Jun22 = Day6. Course ends Jul10 (15 school days). Steps NOT RUN: (1) DELETE bc24934; (2) INSERT SCA bc24933 cls7 ws=Jun22 we=Jul10 s1015.",
+        "att10;0SCA;Day7"
+      ]
+    ]
+  }
+]

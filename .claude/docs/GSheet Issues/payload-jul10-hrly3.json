@@ -1,0 +1,57 @@
+[
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Pietro Colombo (student 72, booking course 81, Morning General Plus, booking 78, 6 to 24 July): zero class assignments — week 1 ended today Friday 10 July; week 2 starts Monday 13 July (3 calendar days); 10 school days remain to 24 July\n• Ettore Iovinella (student 14564, booking course 24968, General English AM Plus, booking 18191, 6 to 10 July): zero class assignments — course ENDED TODAY 10 July — retroactive assignment window closes end of day today\n• Veronica Martin (student 278, booking course 24931, General English AM, booking 18156, 6 to 10 July): zero class assignments — course ENDED TODAY 10 July — retroactive window closes end of day today\n• All three bookings confirmed and fully paid: booking 78 Pietro EUR 1880, booking 18191 Ettore EUR 190.63, booking 18156 Veronica EUR 573.20\n• Fresh database check 10 July 2026 UTC (3rd pass today) — all three still zero class assignments",
+        "Assign Pietro (booking course 81) BEFORE Monday 13 July; retroactive class assignments for Ettore and Veronica TODAY ONLY if they attended 6 to 10 July; see recipe: issue-45-renewal-arrivals.md + issue-45-addendum-10jul.md",
+        "10 Jul FRI UTC hrly (3rd pass, FRESH DB). ALL STILL ZERO SCAs: bc81 Pietro (Jul6-Jul24, bk78) 0 SCAs active=true Mon13=3 days 10 school days remaining. bc24968 Ettore (Jul6-Jul10, bk18191) 0 SCAs course ENDED TODAY retroactive window closes EOD tonight. bc24931 Veronica s278 (Jul6-Jul10, bk18156) 0 SCAs course ENDED TODAY window closes EOD tonight. All bookings CONFIRMED fully paid. NEIL: (1) Assign Pietro bc81 BEFORE Mon13 CRITICAL. (2) Ettore+Veronica retroactive SCAs TONIGHT EOD ONLY.",
+        "Pietro Mon13 CRITICAL; Ettore/Veronica EOD today"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Accommodation 11358 (bed 180, Host Family, 12 July to 2 August 2026, EUR 900): claim status = null — host family claim NOT submitted, check-in SUNDAY 12 JULY (2 days away)\n• Booking 17831 (Xuezhen Huang, student 14443): Confirmed, fully paid EUR 1396.90 (confirmed 7 July)\n• Four payments all xeroPaymentId = null — unreconciled: payment 17180 (EUR 431.90, TransferMate Escrow, 27 April), payment 17963 (EUR 965.00, Bank, 1 July, HubSpot 1273784562922), payment 17987 (EUR 131.90, Bank, 25 June, HubSpot 1277724782804), payment 17988 (EUR 300.00, Bank, 12 June, HubSpot 1277795367133)\n• Payments 17987 + 17988 sum to EUR 431.90 = payment 17180 amount — likely Fidelo installment pair; verify before reconciling all 4 separately in Xero",
+        "Submit host family claim for accommodation 11358 TODAY and notify host family; reconcile payments 17963 + 17180 in Xero; see recipe: issue-39-xuezhen-huang-accomm-missing.md",
+        "10 Jul FRI UTC hrly (3rd pass, FRESH DB). BA11358 bed180 Host Family Jul12-Aug2 active=true claimStatus=STILL null fee=EUR900. BK17831 CONFIRMED EUR1396.90/1396.90 (confirmed Jul7). 4 pmts ALL xeroPaymentId=STILL null type=null: pmt17180(EUR431.90 TM-Escrow Apr27 no-HS-Fidelo), pmt17963(EUR965 Bank Jul1 HS1273784562922), pmt17987(EUR131.90 Bank Jun25 HS1277724782804), pmt17988(EUR300 Bank Jun12 HS1277795367133). pmt17987+17988=EUR431.90=pmt17180 (Fidelo pair). CHECK-IN SUNDAY 12 JUL (2 DAYS). Host NOT notified. NEIL: Submit HF claim + notify host TODAY.",
+        "URGENT; check-in SUNDAY 12 JUL"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Class assignment 255 (student 1001 Saikhantes Shagdarsuren, class 11 B1 Afternoon, booking course 24925): week end = 3 July 2026 — EXPIRED 7 days ago\n• 5 consecutive school days missed: Monday 6 July through Friday 10 July 2026 today — student invisible to attendance since 4 July\n• Booking course 24925 (Academic Year Afternoon, booking 18151): active, 9 March to 2 October 2026, fee EUR 1102.20 — no active class assignment\n• Fix required (NOT YET RUN): UPDATE student_class_assignments SET week_end = '2026-10-02' WHERE id = 255\n• Holiday 2500 on booking 18151: student holiday 20 July to 21 August 2026 (5 weeks pushed) — course end 2 October already accounts for this",
+        "UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255 BEFORE Monday 13 July; see recipe: issue-15-saikhantes-course-dates.md",
+        "10 Jul FRI UTC hrly (3rd pass, FRESH DB). SCA255 weekEnd=2026-07-03 STILL EXPIRED. 5 consecutive school days missed Mon 6 Jul through Fri 10 Jul (today). Monday 13 July = 3 calendar days. BC24925 AY-Afternoon Mar9-Oct2 active=true fee=EUR1102.20. Holiday 2500 Jul20-Aug21 on bk18151 (5w pushed, reflected in Oct2 end). BK18151 CONFIRMED EUR1339.20/1339.20. NEIL: RUN SQL: UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255",
+        "Mon13 DEADLINE; 5d missed"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Duplicate entry for issue 15 (see row 16) — same student Saikhantes Shagdarsuren (student 1001)\n• Class assignment 255 expired 3 July 2026 — only assignment on booking course 24925, 7 days past expiry\n• 5 school days missed: Monday 6 July through Friday 10 July 2026 — second full week begins Monday 13 July\n• Fix (NOT YET RUN): UPDATE student_class_assignments SET week_end = '2026-10-02' WHERE id = 255",
+        "See row 16 (issue 15) for full detail and fix SQL; must run before Monday 13 July; see recipe: issue-29-saikhantes-jan12-start-date.md",
+        "10 Jul FRI UTC hrly (3rd pass, FRESH DB). SCA255 weekEnd=Jul3 STILL EXPIRED — 5 school days missed (Jul6-10 today). Mon13=3 calendar days. BC24925 AY-Aft active to Oct2. See issue 15 row 16. NEIL: UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255 BEFORE MON13.",
+        "5 days missed; Mon13 CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• Booking accommodation 9917 (bed 84, ended 16 May 2026): still active = true — stale record\n• Booking accommodation 11157 (bed 84, ended 10 May 2026): still active = true — stale record\n• Booking accommodation 11159 (bed 84, ended 30 May 2026): still active = true — stale record\n• Booking accommodation 11180 (bed 84, ended 20 June 2026): still active = true — stale record\n• Booking accommodation 11311 (bed 84, 28 June to 13 September 2026, Pietro Caccianiga, booking 17980): active = true — current valid in-stay (day 12), no date overlap with stale records\n• Hash change was a false positive caused by dual issue-36 row numbering in seen.json",
+        "Deactivate 4 stale bed 84 records: UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180); see recipe: issue-36b-pietro-accomm-dates.md (low priority)",
+        "10 Jul FRI UTC hrly (3rd pass, FRESH DB). Hash flag = false-positive (dual issue-36 row numbering). DB UNCHANGED. Stale BAs STILL active: BA9917(ended May16), BA11157(ended May10), BA11159(ended May30), BA11180(ended Jun20). BA11311 Pietro bed84 Jun28-Sep13 active=true in-stay day12. No date overlap. Low-priority cleanup.",
+        "low-pri; stale bed84"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,46 @@
+[
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 260th check Fri 21 Aug 2026 (late morning UTC) — no change since 259th (morning)\n• Booking Accommodation 11311 (bed 84, booking 17980): ends Sat 22 Aug, fee EUR 3,850, active — checkout tomorrow\n• Booking Accommodation 11393 (bed 88, booking 17980): starts Sat 22 Aug to 13 Sep, fee = null, active — CRITICAL: fee still not set, now < 16 hours to checkin\n• Booking 17980: CONFIRMED, fully paid EUR 5,331, open EUR 0\n• Fee for Booking Accommodation 11393 = EUR 5,331 minus EUR 3,850 = EUR 1,481\n• Fix NOT RUN",
+        "Set fee EUR 1,481 on Booking Accommodation 11393; deactivate Booking Accommodation 11311 after checkout Sat 22. See recipe: issue-36b-addendum-21aug-c.md",
+        "260th Fri 21 Aug late morning UTC. URGENT: Sat 22 < 16h. BA 11393 fee null. Fix NOT RUN.",
+        "URGENT: Sat22 checkin"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 157th check Fri 21 Aug 2026 (late morning UTC) — no change since 156th (morning)\n• Booking Accommodation 11396 (bed 44, booking 18180): ends Sat 22 Aug, fee = null, active — checkout tomorrow\n• Booking Accommodation 11397 (bed 89, booking 18180): starts Sat 22 Aug to 6 Sep, fee = null, active — CRITICAL: checkin Sat 22, fee still not set, now < 16 hours\n• Booking Accommodation 11357 (bed 178, booking 18180): ended 15 Aug, fee EUR 1,250, active — 6 days stale\n• Booking Accommodation 11394 (bed 89, booking 17826): ended 9 Aug, fee = null, active — 12 days stale\n• Booking 18180: CONFIRMED, fully paid EUR 2,584.96\n• Fee split: Booking Accommodation 11396 = EUR 306.65 (1 week); Booking Accommodation 11397 = EUR 613.31 (2 weeks)\n• Fix NOT RUN",
+        "Set fees on Booking Accommodations 11396 (EUR 306.65) and 11397 (EUR 613.31); deactivate 11357 and 11394. See recipe: issue-41-addendum-21aug-c.md",
+        "157th Fri 21 Aug late morning UTC. URGENT: Sat 22 < 16h. BAs 11396+11397 fee null. Fix NOT RUN.",
+        "URGENT: Sat22 checkin"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 121st check Fri 21 Aug 2026 (late morning UTC) — count up from 24,497 to 24,515 since morning\n• Stale active Booking Courses (end date before 21 Aug 2026): 24,515 — up 18 since morning check\n• Renewal students with stale active Booking Courses do not appear correctly on arrivals list\n• Fix NOT RUN",
+        "Run bulk deactivation of 24,515 stale Booking Courses. Recipe: issue-45-addendum-21aug-b.md",
+        "121st Fri 21 Aug late morning UTC. 24,515 stale BCs (up 18 from 24,497 this morning). Fix NOT RUN.",
+        "24,515 stale; fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• 64th check Fri 21 Aug 2026 (late morning UTC) — minor count change since 63rd (Thu 20 Aug)\n• Total students: 14,475 (unchanged)\n• 553 students: no + prefix (unchanged)\n• 421 students: + but spaces or dashes (up from 419)\n• Total non-E.164: ~974 (up from ~972)\n• Day 48 — fix not applied",
+        "Strip spaces; normalise to E.164. See recipe: issue-6-addendum-19aug.md",
+        "64th Fri 21 Aug late morning UTC. Day 48. 974 non-E.164 (421 with spaces/dashes, up from 419). Fix NOT RUN.",
+        "~974 phones; 48d"
+      ]
+    ]
+  }
+]

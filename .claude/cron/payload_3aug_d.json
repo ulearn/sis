@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• 41st check Mon 3 Aug 2026 UTC (3rd today) — student returns tomorrow (Tue 4 Aug)\n• Booking course 24686 (Morning General, Jul 20 to Sep 18 2026): active, 0 class assignments — 14 days without assignment\n• Booking course 1797 (Morning General, Apr 6 to Jun 26 2026): active — 38 days stale\n• No holidays on booking 1611 — student simply has no class assignment since course start\n• Prior class assignment was class 12 (SCA id 229, booking course 1797) — use same class unless level changed\n• Fix recipe: issue-24-addendum-3aug-b.md",
+        "Create SCA class 12 week 2026-08-03 on BC 24686; deactivate BC 1797. URGENT — returns Tue 4 Aug. See recipe issue-24-addendum-3aug-b.md",
+        "41st hrly Mon 3 Aug UTC (3rd today). Returns TOMORROW Tue 4 Aug. BC24686: 0 SCAs confirmed fresh. BC1797: 38d stale. URGENT. Fix NOT RUN.",
+        "SCA needed; returns TODAY"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 67th check Mon 3 Aug 2026 UTC (3rd today) — bank holiday today, course starts tomorrow\n• Booking 18180: Confirmed, EUR 2,584.96 fully paid, EUR 0 open\n• Booking course 24956 (General English AM, Aug 3 to Sep 11 2026): active, 0 class assignments — course start date is bank holiday; first teaching day Tue 4 Aug\n• Booking accommodation 11357 (bed 178, Aug 2 to Sep 6 2026): active — host family (Patty McSweeney, property 66)\n• Capel Street apartment (Sep 6 to Sep 14 2026): no booking accommodation record in database\n• 0 invoices on booking 18180; Xero payment ID null — 42 days\n• Fix recipes: issue-41-addendum-3aug-b.md",
+        "Run BH shunt (BC 24956 moves to Aug 4); create SCA; add Capel BA Sep6-Sep14; reconcile Xero. See recipe issue-41-addendum-3aug-b.md",
+        "67th hrly Mon 3 Aug UTC (3rd today). BH today. BC24956 0 SCAs. First class Tue 4 Aug. Capel BA absent. 0 invoices, xeroPaymentId null 42d. Fix NOT RUN.",
+        "SCA+Capel urgent; 1st class Tue"
+      ]
+    ]
+  }
+]

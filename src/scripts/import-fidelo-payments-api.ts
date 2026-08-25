@@ -204,13 +204,24 @@ async function main() {
     if (!APPLY) { stats.created++; continue; }
 
     try {
+      // If the linked booking is in ESCROW (visa-pending workflow), the
+      // TransferMate payment hasn't actually settled to BoI yet — mark it
+      // as Escrow so the UI surfaces it muted with "In Escrow" badge and
+      // the booking-level rollups don't treat it as real cash.
+      const method = e['kpm.name'] || null;
+      const isTransferMate = typeof method === 'string' && /transfermate/i.test(method);
+      const linkedBookingStatus = bookingId
+        ? (await prisma.booking.findUnique({ where: { id: bookingId }, select: { status: true } }))?.status
+        : null;
+      const escrowTag = isTransferMate && linkedBookingStatus === 'ESCROW' ? 'Escrow' : null;
+
       await prisma.payment.create({
         data: {
           bookingId,
           amount: Number(e.amount || 0),
-          method: e['kpm.name'] || null,
+          method,
           paymentDate: new Date(e['ip.date']),
-          type: null, // type_id is a numeric ID; lookup table not imported — keep null for now
+          type: escrowTag,
           paidBy: e.sender || null,
           transactionId: e.document_number || null,
           comment: e['ip.comment'] || null,

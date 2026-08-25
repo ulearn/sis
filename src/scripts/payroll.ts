@@ -97,6 +97,23 @@ export function payrollScripts(prisma: PrismaClient) {
       },
     });
 
+    // Manual "pause teacher" marks (Neil/Paul 2026-08-14): a teacher explicitly
+    // marked absent WITH NO COVER for an occurrence — the one exception to
+    // "always a teacher in the room", for when the DOS is already covering one
+    // class and can only babysit a SECOND absent group. Payroll DROPS the paused
+    // teacher for that occurrence so they aren't paid for hours they didn't teach.
+    // Only source='manual' affects pay; Zoho leave rows (source='zoho') stay
+    // display-only (pay unchanged) — an explicit, auditable mark, not silent.
+    const pauses = await prisma.occurrenceAbsence.findMany({
+      where: { source: 'manual', occurrence: { date: { gte: fromDate, lte: toDate } } },
+      select: { occurrenceId: true, teacherId: true },
+    });
+    const pausedByOcc = new Map<number, Set<number>>();
+    for (const p of pauses) {
+      if (!pausedByOcc.has(p.occurrenceId)) pausedByOcc.set(p.occurrenceId, new Set());
+      pausedByOcc.get(p.occurrenceId)!.add(p.teacherId);
+    }
+
     // Closures aren't read here — scheduling refuses to materialise occurrences
     // inside an unpaid closure (and removeOccurrencesInClosure deletes any that
     // slipped through when a closure was added later). Paid bank holidays keep
@@ -180,6 +197,12 @@ export function payrollScripts(prisma: PrismaClient) {
           });
         }
       }
+
+      // Drop any teacher explicitly PAUSED (manual absence) for this occurrence —
+      // they didn't teach, so no pay. If this empties the list (no cover stepped
+      // in), the occurrence simply pays nobody — the deliberate exception.
+      const pausedHere = pausedByOcc.get(occ.id);
+      if (pausedHere && pausedHere.size) teachers = teachers.filter(t => !pausedHere.has(t.id));
 
       for (const teacher of teachers) {
         if ((teacher as any).isSalaried) continue; // salaried staff don't generate payroll hours

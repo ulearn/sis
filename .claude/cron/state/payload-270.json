@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 189th check Fri 14 Aug 2026 UTC — no change\n• Booking Accommodation 11393: bed 88, 22 Aug to 13 Sep 2026, fee = null, active = true — check-in in 8 days\n• Payment 17733: EUR 5,331, Bank, created 3 Jun 2026, Xero not reconciled (74 days)\n• Booking 17980 (Pietro Caccianiga): CONFIRMED, confirmed = true, fully paid EUR 5,331",
+        "Confirm fee with Diego; set fee on Booking Accommodation 11393; reconcile Payment 17733 in Xero. See recipe: issue-36b-addendum-14aug.md",
+        "189th Fri 14 Aug UTC. No change. Fee null on Booking Accommodation 11393 (check-in Aug 22 = 8 days). Xero null Payment 17733 (74d). Fix NOT RUN.",
+        "fee null; check-in 8 days"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• 30th check Fri 14 Aug 2026 UTC — no change\n• Next occupant Rosa Maria Mollica (Booking Accommodation 25) arrives Aug 30 — 16 days\n• 5 stale Booking Accommodations on bed 83 (all active, past end date):\n  BA 11239 (Ivan Rodriguez Solares): ended 24 May 2026, 82 days stale, fee EUR 1,050\n  BA 11168 (Diego Da Silva Saldanha): ended 20 Jun 2026, 55 days stale, fee EUR 700\n  BA 11285 (Jesus Ramirez Diaz): ended 5 Jul 2026, 40 days stale, fee null\n  BA 11352 (Veronica Martin): ended 11 Jul 2026, 34 days stale, fee EUR 360\n  BA 11179 (Africa Mera Bachir): ended 9 Aug 2026, 5 days stale, fee EUR 1,360\n• Current occupant: Booking Accommodation 11173 (Alessandro Signorotti, Aug 9 to Aug 30 2026)\n• Next occupant: Booking Accommodation 25 (Rosa Maria Mollica, booking 17844, Aug 30 to Oct 10 2026, EUR 2,100) — 16 days",
+        "Deactivate Booking Accommodations 11239/11168/11285/11352/11179 before Aug 30; fix fee null on BA 11285. See recipe: issue-37-addendum-14aug.md",
+        "30th Fri 14 Aug UTC. Rosa Maria Mollica (BA 25) check-in Aug 30 (16 days). 5 stale Booking Accommodations undeactivated. Fix NOT RUN.",
+        "5 stale BAs; Aug 30 check-in (16d)"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 73rd check Fri 14 Aug 2026 UTC — no change\n• Booking Accommodation 11392 (apartment, Sep 6 to Sep 14 2026): bed_id = null, fee = EUR 415, active = true\n• Booking Accommodation 11357 (host family, Aug 2 to Sep 6 2026): bed_id = 178, placed correctly\n• Beds 168 and 194: no conflicts in Sep 6 to Sep 14 window — still available\n• Sep 6 check-in = 23 days away",
+        "Assign bed to Booking Accommodation 11392 before Sep 6 (beds 168 or 194 available). See recipe: issue-41-addendum-14aug.md",
+        "73rd Fri 14 Aug UTC. No change. Bed null Booking Accommodation 11392. Beds 168 + 194 still available. Sep 6 check-in (23 days). Fix NOT RUN.",
+        "bed null; Sep 6 check-in (23d)"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• 30th check Fri 14 Aug 2026 UTC — no change\n• Same 5 stale Booking Accommodations on bed 83 as Issue 37 (all active)\n• BA 11239: ended 24 May 2026, 82 days stale\n• BA 11168: ended 20 Jun 2026, 55 days stale\n• BA 11285: ended 5 Jul 2026, 40 days stale, fee null\n• BA 11352: ended 11 Jul 2026, 34 days stale\n• BA 11179: ended 9 Aug 2026, 5 days stale\n• Booking 17825 (Jesus Manuel Ramirez Diaz): Confirmed, fully paid EUR 2,008\n• Next occupant Booking Accommodation 25 (Rosa Maria Mollica) arrives Aug 30 — 16 days",
+        "Deactivate Booking Accommodations 11239/11168/11285/11352/11179 on bed 83 before Aug 30. See recipe: issue-43-addendum-14aug.md",
+        "30th Fri 14 Aug UTC. Rosa Maria Mollica (BA 25) check-in Aug 30 (16 days). 5 stale Booking Accommodations still active. Fix NOT RUN.",
+        "5 stale BAs; Aug 30 check-in (16d)"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 91st check Fri 14 Aug 2026 UTC — stale count unchanged (24,479)\n• Active Booking Courses ended before 14 Aug 2026 (stale): 24,479\n• Live Booking Courses (end date on or after 14 Aug 2026): 285 (unchanged)\n• No change since 90th check",
+        "Mass deactivation script required (3 staged SQL updates). See recipe: issue-45-addendum-14aug.md",
+        "91st hrly Fri 14 Aug UTC. 24,479 stale Booking Courses, 285 live. Unchanged.",
+        "24,479 stale; fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 121st check Fri 14 Aug 2026 UTC — no change since 120th check\n• Booking Course 1810 (Academic Year Renewal Morning, Telmuun Enkhsaikhan): 29 Jun to 1 Jan 2027, active = true, 0 class assignments (46 days)\n• Payment 17956: EUR 100, Bank, booking 1624, xeroPaymentId = null, created 29 Jun 2026 (46 days unreconciled)\n• Booking 1624 (Telmuun Enkhsaikhan): PARTIAL, confirmed = false, EUR 1,406 paid, EUR 250 open; last updated 5 Aug 2026",
+        "Assign Booking Course 1810 to AM class; reconcile Payment 17956 in Xero; settle EUR 250 open balance. See recipe: issue-48-addendum-14aug-b.md",
+        "121st hrly Fri 14 Aug UTC. Booking Course 1810: 0 class assignments (46d). Payment 17956 Xero null (46d). EUR 250 open. Fix NOT RUN.",
+        "payment gap; BC1810 46d"
+      ]
+    ]
+  }
+]

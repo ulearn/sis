@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "144th check Sat 18 Jul 2026 UTC (11th today)\n• 7 Monday 20 Jul starters all STILL have 0 class assignments — confirmed fresh query:\n• Booking course 1630 Saranzaya Khishigbayar (student 931): Academic Year Afternoon\n• Booking course 24616 Mia Wehrli (student 14450): General English AM Plus, fee null\n• Booking course 24686 Alberto Squillace (student 1052): Morning General, fee null\n• Booking course 24942 Lorena Pizarro Araya (student 14565): Academic Year Morning\n• Booking course 24966 Filippo Corazzini (student 14578): General English AM Plus\n• Booking course 24989 Marcos Abrego Tofe (student 14587): General English AM\n• Booking course 25000 Giorgio Sau (student 14595): General English AM Plus\n• Gustavo Da Silva (student 14570, booking course 24967, General English AM, 6 Jul to 7 Aug 2026): STILL 0 class assignments — 12 days missed, 20 days remain\n• 7 Jul 13 starters with active courses: all STILL 0 class assignments — booking courses 24998, 24988, 1788, 1814, 24990, 24820, 1619\n• Booking course 24946 Lunel Dubost (student 14566): ended 17 Jul, active = still true (1 day stale), 0 class assignments — full course permanently missed\n• Booking course 24994 Petru Ous (student 14591): ended 17 Jul, active = still true (1 day stale), 0 class assignments — full course permanently missed\n• Munkhtsetseg Tserennadmid (booking course 1619, booking 1472): status PARTIAL, confirmed = true, EUR 200 paid of EUR 1943.50 total — verify before assigning",
+        "Assign 7 Monday starters (booking courses 1630, 24616, 24686, 24942, 24966, 24989, 25000) + Gustavo (24967) + 7 active Jul 13 starters (24998, 24988, 1788, 1814, 24990, 24820, 1619) before Mon 20 Jul 09:00. See recipe: issue-45-addendum-18jul.md",
+        "144th check Sat 18 Jul UTC (11th today). UNCHANGED. 7 Mon starters + Gustavo (BC24967) + 7 Jul-13 actives all STILL 0 class assignments — confirmed fresh DB. BC24946 Dubost + BC24994 Ous ended Jul17 (1d stale). Munkhtsetseg bk1472 PARTIAL EUR200/EUR1943.50. Fix NOT RUN.",
+        "CRITICAL; assign Mon 20 Jul"
+      ]
+    ]
+  }
+]

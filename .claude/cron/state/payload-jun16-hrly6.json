@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Two payments are unlinked — they are real, not spurious:\n• Payment 16988 → Booking 17856 (Margherita Galbusera)\n• Payment 16989 → Booking 17857 (Francesca Fassina)\n• Both: EUR 339.9, bookingId = null, xeroPaymentId = null",
+        "UPDATE payments SET booking_id=17856 WHERE id=16988; UPDATE payments SET booking_id=17857 WHERE id=16989. see recipe: issue-1-orphan-payments.md",
+        "Jun16 hrly6: UNCHANGED. pmt16988+16989 bookingId=null xeroId=null EUR339.9 each. bk17856+17857. Arrivals Jun29=13d. SQL NOT RUN.",
+        "13d to Jun29"
+      ]
+    ]
+  },
+  {
+    "range": "H6:K6",
+    "values": [
+      [
+        "• Bed assignment 11287 has bedId = null (updated Jun 05)\n• Assignment is active Jun 27 – Dec 12\n• Document 204 (LOA v1) was ISSUED on Jun 08",
+        "Assign bed to ba11287 in SIS Accom module before Jun27 arrival. see recipe: issue-4-rakan-loa-barcode.md",
+        "Jun16 hrly6: UNCHANGED. ba11287 bedId=null (updAt=Jun05). Arrival Jun27=11d. NEIL: assign bed in SIS Accom module.",
+        "bed 11d"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 is CONFIRMED, paid 740 / 740 (Jun 15) — the active booking\n• Booking courses bc24933 and bc24934 are DUPLICATES: both General English AM, Jun 15 – Jul 10 on bk18158\n• Old bookings bk18131 (paid 1185) and bk18133 (paid 648) still CONFIRMED — not cancelled\n• Student 1015 (Edith, A1) has 0 current class assignments — previous SCAs expired May 15\n• Day 2 of new course with no class assignment",
+        "(NOT RUN) 1) CANCEL bk18131+bk18133; 2) void HubSpot/Xero payments; 3) DELETE bc24934; 4) assign cls7 (A1-AM) to bc24933. see recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun16 hrly6: STILL 0 SCAs. D2 bc24933 Jun15-Jul10. bk18131 CONF 1185+bk18133 CONF 648 not cancelled. bc24934 DUP also on bk18158. NEIL: cancel bk18131+bk18133; DELETE bc24934; assign cls7 bc24933 ws=Jun16.",
+        "D2;0SCA;dup bks"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking 1611 is CONFIRMED, 1280.12 / 1280.12\n• Course 1797 (morning) Apr 06 – Jun 26 (10 days left)\n• Class assignment 229 (class 12) expired Apr 26 (51 days ago)\n• Attendance = 0 for student 1052 all time\n• Course 24686 (morning Jul 20 – Sep 18) also has 0 class assignments",
+        "Assign SCA cls12 bc1797 ws=Jun16 we=Jun26 if Alberto returned (NOT RUN). see recipe: issue-24-alberto-fidelo-course-split.md",
+        "Jun16 hrly6: UNCHANGED. sca229 expired Apr26 (51d). bc1797 ends Jun26=10d. 0 SCA since Apr27 gap. att=0 all time. NEIL: assign SCA cls12 bc1797 ws=Jun16 we=Jun26 if Alberto returned.",
+        "0att;0SCA 10d left"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• Student is Ernesto Pesoa Gil (s14532) — col B entry Ivan Rodriguez is incorrect\n• Booking 18034 is PARTIAL, confirmed = false, paid 845 / 1095 (EUR 250 outstanding) — stale since Jun 07\n• Course bc24826: 2-week Intensive, Jun 08 – Jun 19 — ends this Friday Jun 19\n• 0 class assignments all time — 8 school days missed (Jun 08–16); 3 remaining (Wed 17 / Thu 18 / Fri 19)\n• Student currentLevel = null — must obtain from teacher before assigning",
+        "(NOT RUN) 1) Get Ernesto level from class teacher before Wed 09:00; 2) INSERT 2 SCAs AM+PM bc24826 ws=2026-06-17 we=2026-06-19 studentId=14532. Level pairs: A2=cls8/9, B1=cls5+12/11, B2-C1=cls4/6, C1=cls13/14. see recipe: issue-26-intensive-class-assign-once.md",
+        "Jun16 hrly6: STILL 0 SCAs confirmed (live check). Tue Jun16 = 3 school days remain (Wed17/Thu18/Fri19). Ernesto s14532 currentLevel=null. bk18034 PARTIAL 845/1095 conf=false. NEIL *** URGENT ***: ask AM/PM teacher for Ernesto level NOW; INSERT 2 SCAs AM+PM bc24826 ws=2026-06-17 we=2026-06-19.",
+        "CRIT;ends Fri;3d"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Booking 94 is CONFIRMED, paid 1151.5 / 1151.5 — correct booking\n• Booking 18044 is CONFIRMED, paid 1106.5 / 1106.5 — DUPLICATE, not cancelled\n• Course bc104 Morning General Plus, Jun 15 – Jun 26 (on bk94) — 9 school days left\n• Course bc24836 same dates (on bk18044) — duplicate\n• Student s88 (Giulia, currentLevel = null) has 0 class assignments — Day 2 in school with no class",
+        "Cancel bk18044 + DELETE pmt17607 (xeroId=null); get level from previous teacher; assign s88 AM class ws=Jun16 we=Jun26 via SIS bk94/bc104. see recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun16 hrly6: STILL 0 SCAs. D2. bc104 Morning General Plus Jun15-Jun26 (9 school days left). bk94 CONF 1151.5 (real). bk18044 DUP CONF 1106.5 not cancelled. s88 currentLevel=null. NEIL: get Giulia level; assign AM class bc104 ws=Jun16 we=Jun26; cancel bk18044.",
+        "D2;0SCA;9d left"
+      ]
+    ]
+  }
+]

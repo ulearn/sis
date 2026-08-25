@@ -1,0 +1,60 @@
+[
+ {
+  "range": "J2:K2",
+  "values": [
+   [
+    "11 Jul SAT UTC 12th pass (fresh DB). PMT16988 EUR339.90 bookingId=STILL null xeroId=null. PMT16989 EUR339.90 bookingId=STILL null xeroId=null. BK17856 CONF confirmed=false updAt=Jul8. BK17857 CONF confirmed=false updAt=Jul8. BC24630+24631 ended Jul10 STILL active=true (2d stale). NEIL: link pmts + set confirmed=true + deactivate BCs.",
+    "unlinked; overdue"
+   ]
+  ]
+ },
+ {
+  "range": "J14:K14",
+  "values": [
+   [
+    "11 Jul SAT UTC 22nd check (fresh DB). Extra96 extraType=INSURANCE fee=STILL null. BK17981 CONF confirmed=false EUR1407.50/1407.50. BC24773 AY Aft Jun1-Jan29-2027 active=true. 47d since extra created (25 May), 40d since course started (1 Jun). NEIL: set extra96.fee=150 + raise supplemental invoice HS deal 503569276136.",
+    "22nd check Jul11; fee=null"
+   ]
+  ]
+ },
+ {
+  "range": "J16:K16",
+  "values": [
+   [
+    "11 Jul SAT UTC (18th pass, fresh DB). SCA255 weekEnd=2026-07-03 STILL EXPIRED (8d). BC1982 AY-Morning ended Dec2025 STILL active=true (204d stale). BC24925 AY Aft Mar9-Oct2 active=true EUR1339.20/1339.20. Mon13=2d. NEIL: extend SCA255 weekEnd to Oct02 + deactivate BC1982 via SIS admin.",
+    "Mon13 deadline; 2d"
+   ]
+  ]
+ },
+ {
+  "range": "J25:K25",
+  "values": [
+   [
+    "11 Jul SAT UTC (hrly, fresh DB). BC24686 Morning General Jul20-Sep18 fee=STILL null — STARTS JUL20 = 9 DAYS. BC1797 Morning General Apr6-Jun26 STILL active=true (15d stale). BK1611 CONF EUR1280.12/1280.12. PMT17124 EUR1280.12 xeroPaymentId=null (108d). NEIL: set fee on BC24686 BEFORE Jul20.",
+    "Jul20; fee null; 9 days"
+   ]
+  ]
+ },
+ {
+  "range": "H41:K41",
+  "values": [
+   [
+    "• Accommodation 11358 (Xuezhen Huang, student 14443): bed 180, Host Family — check-in TOMORROW Sunday 12 July 2026 — claimedAt = null — host has NOT been notified (14th pass, 11 Jul UTC)\n• Host: Mary Carver, mary.carver28@gmail.com, +353 87 927 1130 — must be notified TODAY before Sunday check-in\n• Booking 17831: confirmed = true, EUR 1396.90 / 1396.90 fully paid\n• 4 payments all xeroPaymentId = null: payment 17180 (EUR 431.90, Fidelo Escrow, 27 Apr), payment 17963 (EUR 965.00, Bank, 1 Jul, HubSpot 1273784562922), payment 17987 (EUR 131.90, Bank, 25 Jun, HubSpot 1277724782804), payment 17988 (EUR 300.00, Bank, 12 Jun, HubSpot 1277795367133)\n• Payments 17987 + 17988 = EUR 431.90 = payment 17180 — likely Fidelo installment pair, verify before reconciling all 4 separately",
+    "Submit host family claim for accommodation 11358 via SIS today; notify Mary Carver (mary.carver28@gmail.com, +353 87 927 1130); reconcile payments 17963 + 17180 in Xero. See recipe: issue-39-xuezhen-huang-accomm-missing.md",
+    "11 Jul SAT UTC (14th pass). BA11358 claimedAt=STILL null claimStatus=null bed180 startDate=2026-07-12. HOST MARY CARVER NOT NOTIFIED (mary.carver28@gmail.com / +353 87 927 1130). BK17831 CONF EUR1396.90/1396.90. 4 pmts ALL xeroPaymentId=null. CHECK-IN TOMORROW SUN 12 JUL — HOST CLAIM + NOTIFICATION NEEDED IMMEDIATELY.",
+    "CRITICAL; checkin tomorrow"
+   ]
+  ]
+ },
+ {
+  "range": "H47:K47",
+  "values": [
+   [
+    "• Pietro Colombo (student 72, booking course 81, Morning General Plus, 6 to 24 July 2026): zero class assignments — 5 days in school with no class — week 2 starts Monday 13 July 2026 — 2 days remaining (14th pass, 11 Jul UTC)\n• Kayque Tauann Lopes Coelho (student 852): booking course 1821 (Academic Year Renewal Afternoon, 29 Jun to 18 Dec 2026) — last class assignment was on old course 1507 (expired 24 Apr) — no assignment for new booking course 1821\n• Tuguldurtugs Enkhtugs (student 858): booking course 1786 (Academic Year Renewal Morning, 6 Jul to 25 Dec 2026) — last class assignment was on old course 1521 (expired 1 May) — no assignment for new booking course 1786\n• Booking course 24968 (General English AM Plus, booking 18191): ended 10 July 2026 — still active = true (2 days stale)\n• Booking 78 (Pietro): confirmed = true, EUR 1880 / 1880 fully paid",
+    "Assign Pietro (student 72) to class before Mon 13 Jul; assign Kayque (student 852) to class for booking course 1821; assign Tuguldurtugs (student 858) to class for booking course 1786; deactivate booking course 24968. See recipe: issue-45-renewal-arrivals.md",
+    "11 Jul SAT UTC (14th pass). Pietro(s72) BC81 ZERO SCAs (5d since Jul6 start, zero class history ever). Kayque(s852) ZERO SCAs for new BC1821 (12d since Jun29 start). Tuguldurtugs(s858) ZERO SCAs for new BC1786 (5d since Jul6 start). BC24968 ended Jul10 STILL active=true (2d stale). Mon13=2d. NEIL: assign all 3 to classes via SIS BEFORE Mon13.",
+    "CRITICAL; Mon13 2d; 3 unassigned"
+   ]
+  ]
+ }
+]

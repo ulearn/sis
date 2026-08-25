@@ -1,0 +1,448 @@
+{
+  "payments": [
+    {
+      "id": 855,
+      "bookingId": 1396,
+      "amount": "2350",
+      "method": "TransferMate",
+      "type": "Prior to arrival",
+      "booking": {
+        "id": 1396,
+        "studentId": 850,
+        "status": "CONFIRMED",
+        "student": {
+          "firstName": "Fangjia",
+          "lastName": "Liang"
+        }
+      }
+    },
+    {
+      "id": 17233,
+      "bookingId": 17876,
+      "amount": "2313.62",
+      "method": "TransferMate Escrow",
+      "type": "Escrow",
+      "booking": {
+        "id": 17876,
+        "studentId": 14478,
+        "status": "CANCELLED",
+        "student": {
+          "firstName": "Bilguunbayar",
+          "lastName": "Jargalsaikhan"
+        }
+      }
+    },
+    {
+      "id": 17379,
+      "bookingId": 17876,
+      "amount": "2313.62",
+      "method": "TransferMate",
+      "type": "Standard",
+      "booking": {
+        "id": 17876,
+        "studentId": 14478,
+        "status": "CANCELLED",
+        "student": {
+          "firstName": "Bilguunbayar",
+          "lastName": "Jargalsaikhan"
+        }
+      }
+    },
+    {
+      "id": 17365,
+      "bookingId": 1659,
+      "amount": "2920",
+      "method": "TransferMate",
+      "type": null,
+      "booking": {
+        "id": 1659,
+        "studentId": 954,
+        "status": "CONFIRMED",
+        "student": {
+          "firstName": "Tungalag",
+          "lastName": "Davaasuren"
+        }
+      }
+    },
+    {
+      "id": 635,
+      "bookingId": 1659,
+      "amount": "2290",
+      "method": "TransferMate",
+      "type": "Prior to arrival",
+      "booking": {
+        "id": 1659,
+        "studentId": 954,
+        "status": "CONFIRMED",
+        "student": {
+          "firstName": "Tungalag",
+          "lastName": "Davaasuren"
+        }
+      }
+    },
+    {
+      "id": 898,
+      "bookingId": 1769,
+      "amount": "747.5",
+      "method": "TransferMate Escrow",
+      "type": "Escrow",
+      "booking": {
+        "id": 1769,
+        "studentId": 1190,
+        "status": "ESCROW",
+        "student": {
+          "firstName": "ENKHJIN",
+          "lastName": "ENKHTUVSHIN"
+        }
+      }
+    },
+    {
+      "id": 852,
+      "bookingId": 1770,
+      "amount": "608",
+      "method": "TransferMate Escrow",
+      "type": "Escrow",
+      "booking": {
+        "id": 1770,
+        "studentId": 1191,
+        "status": "ESCROW",
+        "student": {
+          "firstName": "TEMUUJIN",
+          "lastName": "SANCHINSUREN"
+        }
+      }
+    },
+    {
+      "id": 693,
+      "bookingId": 1755,
+      "amount": "960",
+      "method": "TransferMate Escrow",
+      "type": "Escrow",
+      "booking": {
+        "id": 1755,
+        "studentId": 1178,
+        "status": "ESCROW",
+        "student": {
+          "firstName": "Moaath",
+          "lastName": "Bahaydan"
+        }
+      }
+    },
+    {
+      "id": 562,
+      "bookingId": 1708,
+      "amount": "2290",
+      "method": "TransferMate Escrow",
+      "type": "Escrow",
+      "booking": {
+        "id": 1708,
+        "studentId": 1137,
+        "status": "ESCROW",
+        "student": {
+          "firstName": "Mulian",
+          "lastName": "He"
+        }
+      }
+    },
+    {
+      "id": 842,
+      "bookingId": 1317,
+      "amount": "2950",
+      "method": "TransferMate Escrow",
+      "type": "Escrow",
+      "booking": {
+        "id": 1317,
+        "studentId": 775,
+        "status": "ESCROW",
+        "student": {
+          "firstName": "Tuguldur",
+          "lastName": "Lkhagvasuren"
+        }
+      }
+    },
+    {
+      "id": 620,
+      "bookingId": 559,
+      "amount": "4665",
+      "method": "TransferMate Escrow",
+      "type": "Escrow",
+      "booking": {
+        "id": 559,
+        "studentId": 355,
+        "status": "ESCROW",
+        "student": {
+          "firstName": "Bolorgerel",
+          "lastName": "Bat-erdene"
+        }
+      }
+    },
+    {
+      "id": 841,
+      "bookingId": 1316,
+      "amount": "2950",
+      "method": "TransferMate Escrow",
+      "type": "Escrow",
+      "booking": {
+        "id": 1316,
+        "studentId": 774,
+        "status": "ESCROW",
+        "student": {
+          "firstName": "Otgontsengel",
+          "lastName": "Luvsantseren"
+        }
+      }
+    },
+    {
+      "id": 622,
+      "bookingId": 1295,
+      "amount": "2920",
+      "method": "TransferMate Escrow",
+      "type": "Escrow",
+      "booking": {
+        "id": 1295,
+        "studentId": 753,
+        "status": "ESCROW",
+        "student": {
+          "firstName": "Oyun-Erdene",
+          "lastName": "Enkhbat"
+        }
+      }
+    },
+    {
+      "id": 655,
+      "bookingId": 1299,
+      "amount": "2940",
+      "method": "TransferMate Escrow",
+      "type": "Escrow",
+      "booking": {
+        "id": 1299,
+        "studentId": 757,
+        "status": "ESCROW",
+        "student": {
+          "firstName": "Temuulen",
+          "lastName": "Undrakh"
+        }
+      }
+    },
+    {
+      "id": 621,
+      "bookingId": 1732,
+      "amount": "2920",
+      "method": "TransferMate Escrow",
+      "type": "Escrow",
+      "booking": {
+        "id": 1732,
+        "studentId": 1156,
+        "status": "ESCROW",
+        "student": {
+          "firstName": "Ganbat",
+          "lastName": "Altanshagai"
+        }
+      }
+    },
+    {
+      "id": 619,
+      "bookingId": 1738,
+      "amount": "2290",
+      "method": "TransferMate Escrow",
+      "type": "Escrow",
+      "booking": {
+        "id": 1738,
+        "studentId": 1162,
+        "status": "ESCROW",
+        "student": {
+          "firstName": "Dariimaa",
+          "lastName": "Bayandalai"
+        }
+      }
+    },
+    {
+      "id": 17374,
+      "bookingId": 1300,
+      "amount": "2940",
+      "method": "TransferMate Escrow",
+      "type": null,
+      "booking": {
+        "id": 1300,
+        "studentId": 758,
+        "status": "ESCROW",
+        "student": {
+          "firstName": "Dashmaa",
+          "lastName": "Munkhbayar"
+        }
+      }
+    },
+    {
+      "id": 824,
+      "bookingId": 790,
+      "amount": "1000",
+      "method": "TransferMate Escrow",
+      "type": "Escrow",
+      "booking": {
+        "id": 790,
+        "studentId": 400,
+        "status": "ESCROW",
+        "student": {
+          "firstName": "Settiyanee",
+          "lastName": "Duangjai"
+        }
+      }
+    },
+    {
+      "id": 730,
+      "bookingId": 790,
+      "amount": "2782.5",
+      "method": "TransferMate Escrow",
+      "type": "Escrow",
+      "booking": {
+        "id": 790,
+        "studentId": 400,
+        "status": "ESCROW",
+        "student": {
+          "firstName": "Settiyanee",
+          "lastName": "Duangjai"
+        }
+      }
+    },
+    {
+      "id": 729,
+      "bookingId": 790,
+      "amount": "1065",
+      "method": "TransferMate Escrow",
+      "type": "Escrow",
+      "booking": {
+        "id": 790,
+        "studentId": 400,
+        "status": "ESCROW",
+        "student": {
+          "firstName": "Settiyanee",
+          "lastName": "Duangjai"
+        }
+      }
+    },
+    {
+      "id": 624,
+      "bookingId": 791,
+      "amount": "3627.5",
+      "method": "TransferMate Escrow",
+      "type": "Escrow",
+      "booking": {
+        "id": 791,
+        "studentId": 401,
+        "status": "ESCROW",
+        "student": {
+          "firstName": "Ketmanee",
+          "lastName": "Suwannayam"
+        }
+      }
+    },
+    {
+      "id": 17349,
+      "bookingId": 1420,
+      "amount": "2625",
+      "method": "TransferMate Escrow",
+      "type": "Escrow",
+      "booking": {
+        "id": 1420,
+        "studentId": 872,
+        "status": "ESCROW",
+        "student": {
+          "firstName": "Wanying",
+          "lastName": "SONG"
+        }
+      }
+    }
+  ],
+  "bookings": [
+    {
+      "id": 1396,
+      "studentId": 850,
+      "status": "CONFIRMED"
+    },
+    {
+      "id": 17876,
+      "studentId": 14478,
+      "status": "CANCELLED"
+    },
+    {
+      "id": 1708,
+      "studentId": 1137,
+      "status": "ESCROW"
+    },
+    {
+      "id": 1659,
+      "studentId": 954,
+      "status": "CONFIRMED"
+    },
+    {
+      "id": 1755,
+      "studentId": 1178,
+      "status": "ESCROW"
+    },
+    {
+      "id": 1769,
+      "studentId": 1190,
+      "status": "ESCROW"
+    },
+    {
+      "id": 1770,
+      "studentId": 1191,
+      "status": "ESCROW"
+    },
+    {
+      "id": 559,
+      "studentId": 355,
+      "status": "ESCROW"
+    },
+    {
+      "id": 1316,
+      "studentId": 774,
+      "status": "ESCROW"
+    },
+    {
+      "id": 1317,
+      "studentId": 775,
+      "status": "ESCROW"
+    },
+    {
+      "id": 1295,
+      "studentId": 753,
+      "status": "ESCROW"
+    },
+    {
+      "id": 1299,
+      "studentId": 757,
+      "status": "ESCROW"
+    },
+    {
+      "id": 1732,
+      "studentId": 1156,
+      "status": "ESCROW"
+    },
+    {
+      "id": 1738,
+      "studentId": 1162,
+      "status": "ESCROW"
+    },
+    {
+      "id": 1300,
+      "studentId": 758,
+      "status": "ESCROW"
+    },
+    {
+      "id": 790,
+      "studentId": 400,
+      "status": "ESCROW"
+    },
+    {
+      "id": 791,
+      "studentId": 401,
+      "status": "ESCROW"
+    },
+    {
+      "id": 1420,
+      "studentId": 872,
+      "status": "ESCROW"
+    }
+  ]
+}

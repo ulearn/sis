@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H20:K20",
+    "values": [
+      [
+        "• 20th check Fri 21 Aug 2026 UTC — no change since 19th check (Thu 20 Aug)\n• Booking Courses 89 (Morning IELTS) and 90 (Private Lessons): ended 22 May 2026 — 91 days stale, active = true\n• Booking 83 (Mai Lan Chu): CONFIRMED, confirmed = true, amount paid = EUR 2,629.80, amount open = EUR 0\n• Payment 27: EUR 2,135.00, Bank Transfer, paymentDate 19 Mar 2024, xeroPaymentId = null\n• Payment 17002: EUR 2,629.80, TransferMate, paymentDate 8 Apr 2026, xeroPaymentId = null\n• Payment 17019: EUR 250.00, Stripe, paymentDate 12 Feb 2026, xeroPaymentId = null\n• Total recorded payments EUR 5,014.80 vs amount paid EUR 2,629.80 — EUR 2,385 gap (payments 27 + 17019 sum exactly)\n• Fix NOT RUN",
+        "Deactivate Booking Courses 89+90; reconcile 3 Xero-null payments; investigate EUR 2,385 gap. See recipe: issue-19-addendum-21aug.md",
+        "20th Fri 21 Aug UTC. Booking Courses 89+90 now 91d stale. 3 Xero-null payments. EUR 2,385 gap unchanged. Fix NOT RUN.",
+        "BC89+90 stale 91d; EUR2385 gap"
+      ]
+    ]
+  },
+  {
+    "range": "H22:K22",
+    "values": [
+      [
+        "• 29th check Fri 21 Aug 2026 UTC — no change since 28th check (Thu 20 Aug)\n• Booking Course 1604 (Maurivan Kuhl, Morning General): ended 3 Jul 2026 — 49 days stale, active = true\n• Class assignments: SCA 46 (week 30 Mar 2026) and SCA 156 (week 6 Apr 2026) — both historical (before BC end date 3 Jul 2026), safe to deactivate\n• Low priority — student has left, anomaly is historical",
+        "Verify SCAs 46+156 are past weeks, then deactivate BC 1604. See recipe: issue-21-addendum-19aug.md",
+        "29th Fri 21 Aug UTC. BC 1604 now 49d stale. SCAs 46 (30 Mar) + 156 (6 Apr) confirmed historical. Low priority. Fix NOT RUN.",
+        "BC1604 stale 49d; safe"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• 87th check Fri 21 Aug 2026 UTC — no change since 86th check (Thu 20 Aug)\n• Booking 1611 (Alberto Squillace): CONFIRMED, confirmed = true, fully paid EUR 1,280.12\n• Booking Course 1797 (Morning General): ended 26 Jun 2026 — 56 days stale, active = true, 1 SCA (229, week 6 Apr 2026 — historical)\n• Booking Course 24686 (Morning General): 20 Jul to 18 Sep 2026, active = true, 0 class assignments — 28 days remaining\n• No holidays in database — Fidelo holiday records not migrated\n• Fix NOT RUN",
+        "Deactivate BC 1797; add holidays wk 27 Apr 2026; assign class for BC 24686. See recipe: issue-24-alberto-squillace.md",
+        "87th Fri 21 Aug UTC. No change. BC 24686 ends 18 Sep (28d left). Fix NOT RUN.",
+        "BC24686 28d; 0 SCAs; ends Sep 18"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• 71st check Fri 21 Aug 2026 UTC — no change since 70th check (Thu 20 Aug)\n• Booking Course 23 (Intensive General 30): ended 22 May 2026 — 91 days stale, active = true (Booking 22, student 18)\n• Booking Course 24826 (2 weeks Intensive General 30): ended 19 Jun 2026 — 63 days stale, active = true (Booking 18034, student 14532)\n• Booking 18034: PARTIAL, confirmed = false, amount paid EUR 845, amount open EUR 250, total EUR 1,095\n• Payment 17683: EUR 845, Bank, paymentDate 23 Apr 2026, xeroPaymentId = null — EUR 250 still outstanding\n• Fix NOT RUN",
+        "Deactivate Booking Courses 23 + 24826; collect or write-off EUR 250 on booking 18034; set confirmed = true. See recipe: issue-26-addendum-20aug.md",
+        "71st Fri 21 Aug UTC. BC 23 now 91d stale. BC 24826 now 63d stale. EUR 250 still open on booking 18034. Fix NOT RUN.",
+        "BC23 91d; BC24826 63d; EUR250"
+      ]
+    ]
+  },
+  {
+    "range": "H29:K29",
+    "values": [
+      [
+        "• 59th check Fri 21 Aug 2026 UTC — no change since 58th check (Thu 20 Aug)\n• Booking 17850 (Paola Sthefane Missias Moreira): status = CONFIRMED, confirmed = false — anomaly persists\n• Amount paid = null, amount open = EUR 321.35, amount total = EUR 321.35\n• Payment 17519: EUR 321.35, Bank, paymentDate 7 May 2026 — xeroPaymentId = null (unreconciled, 106 days old)\n• Booking last updated 8 Jul 2026 (44 days ago)\n• Fix NOT RUN",
+        "Set confirmed=true on Booking 17850; set amountPaid=321.35; reconcile Payment 17519 in Xero. See recipe: issue-28-addendum-16aug.md",
+        "59th Fri 21 Aug UTC. No change. Payment 17519 EUR 321.35 Bank, xeroPaymentId=null (106d). confirmed=false persists. Fix NOT RUN.",
+        "bk conf=false; pmt Xero null 106d"
+      ]
+    ]
+  },
+  {
+    "range": "H34:K34",
+    "values": [
+      [
+        "• 34th check Fri 21 Aug 2026 UTC — student record updated 19 Aug (2 days ago), gender still null\n• Student 356 (Shih-Wei Huang): gender = null (not set), updatedAt = 19 Aug 2026\n• Document 238 (Booking 560, template 4): ISSUED v1, created 17 Jun 2026 — 65 days old with incorrect female pronouns\n• Someone edited student 356 on 19 Aug but did not set gender — Neil: check what changed\n• Fix NOT RUN",
+        "Set student 356 gender=MALE; revoke document 238 and regenerate. See recipe: issue-33-addendum-21aug.md",
+        "34th Fri 21 Aug UTC. Student 356 updatedAt changed to 19 Aug (gender still null). Doc 238 ISSUED 65d with wrong pronouns. Fix NOT RUN.",
+        "65d; doc238 wrong pronouns; student touched 19Aug"
+      ]
+    ]
+  }
+]

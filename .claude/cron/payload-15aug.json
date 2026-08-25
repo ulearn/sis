@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 79th check Sat 15 Aug 2026 UTC — URGENT: fee still null on check-in day\n• Booking Accommodation 11396: bed 44, Aug 15-Aug 22, fee = NULL — student arrived TODAY\n• Booking Accommodation 11397: bed 89, Aug 22-Sep 6, fee = NULL (check-in 7 days)\n• Booking Accommodation 11357: bed 178, ended today (Aug 15), still active = true — deactivate\n• Booking Accommodation 11392: City Centre apt, Sep 6-Sep 14, fee = EUR 415, bed not yet assigned\n• Booking 18180: CONFIRMED, confirmed = true, fully paid EUR 2,584.96 (EUR 0 open)",
+        "Set fee on BA 11396 NOW (EUR 625 est.); deactivate BA 11357; set fee BA 11397 before Aug 22; assign bed BA 11392 before Sep 6. See recipe: issue-41-addendum-15aug.md",
+        "79th hrly Sat 15 Aug UTC. URGENT: fee null on BA 11396 (check-in today) + BA 11397 (check-in Aug 22). BA 11357 ended today, still active. Fix NOT RUN.",
+        "URGENT: fees null check-in TODAY"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 191st check Sat 15 Aug 2026 UTC — no change since 190th check\n• Booking Accommodation 11393: bed 88, Aug 22-Sep 13, fee = NULL, active = true — check-in in 7 days\n• Payment 17733: EUR 5,331, Bank, 2026-06-02, xeroPaymentId = null (73 days unreconciled)\n• Booking 17980: CONFIRMED, confirmed = true, EUR 5,331 paid (EUR 0 open)",
+        "Confirm fee with Diego; set fee on BA 11393; reconcile Payment 17733 in Xero. See recipe: issue-36-addendum-15aug.md",
+        "191st Sat 15 Aug UTC. No change. Fee null BA 11393 (check-in Aug 22 = 7 days). Xero null Payment 17733 (73 days).",
+        "fee null; check-in 7 days"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• 32nd check Sat 15 Aug 2026 UTC — no change since 31st check\n• Next occupant Rosa Maria Mollica (BA 25) arrives Aug 30 — 15 days\n• 5 stale Booking Accommodations on bed 83 (all active, past endDate):\n  BA 11239 (Ivan Rodriguez Solares): ended 24 May 2026, 83 days stale\n  BA 11168 (Diego Da Silva Saldanha): ended 20 Jun 2026, 56 days stale\n  BA 11285 (Jesus Ramirez Diaz): ended 5 Jul 2026, 41 days stale, fee = null\n  BA 11352 (Veronica Martin): ended 11 Jul 2026, 35 days stale\n  BA 11179 (Africa Mera Bachir): ended 9 Aug 2026, 6 days stale\n• Current occupant: BA 11173 Alessandro Signorotti (Aug 9 - Aug 30, active ok)",
+        "Deactivate BAs 11239/11168/11285/11352/11179; confirm fee for 11285. See recipe: issue-37-43-addendum-15aug.md",
+        "32nd Sat 15 Aug UTC. Rosa Mollica (BA 25) check-in Aug 30 (15 days). 5 stale BAs unchanged. Fix NOT RUN.",
+        "5 stale BAs; Aug 30 check-in (15d)"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• 32nd check Sat 15 Aug 2026 UTC — no change since 31st check\n• Same 5 stale Booking Accommodations on bed 83 as Issue 37:\n  BA 11239: ended 24 May 2026, 83 days stale\n  BA 11168: ended 20 Jun 2026, 56 days stale\n  BA 11285 (this student): ended 5 Jul 2026, 41 days stale, fee = null\n  BA 11352: ended 11 Jul 2026, 35 days stale\n  BA 11179: ended 9 Aug 2026, 6 days stale\n• Rosa Maria Mollica (BA 25) check-in Aug 30 — 15 days",
+        "Deactivate BAs 11239/11168/11285/11352/11179 before Aug 30. See recipe: issue-37-43-addendum-15aug.md",
+        "32nd Sat 15 Aug UTC. Rosa Mollica check-in Aug 30 (15 days). 5 stale BAs unchanged. Fix NOT RUN.",
+        "5 stale BAs; Aug 30 check-in (15d)"
+      ]
+    ]
+  },
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 259th check Sat 15 Aug 2026 UTC — no change since 258th check\n• Payment 4781: EUR 380, Flywire, 2019-08-20 — booking_id = null (legacy orphan, Fidelo ref 21022)\n• Payment 16988: EUR 339.90, Bank, 2026-04-28 — booking_id = null (likely Booking 17856, Margherita Galbusera)\n• Payment 16989: EUR 339.90, Bank, 2026-04-28 — booking_id = null (likely Booking 17857, Francesca Fassina)\n• Payment 17187: EUR 6,151, TransferMate Escrow, ref ULEARNP2026124 — booking_id = null, no matching booking found\n• Booking 17856 (Margherita Galbusera): CONFIRMED, confirmed = false, amount paid = EUR 339.90\n• Booking 17857 (Francesca Fassina): CONFIRMED, confirmed = false, amount paid = EUR 339.90\n• Booking Courses 24630 + 24631: ended 2026-07-10, active = true (36 days stale)",
+        "Link Payments 16988/16989 to Bookings 17856/17857; set confirmed = true; deactivate Booking Courses 24630 + 24631. See recipe: issue-1-addendum-15aug.md",
+        "259th Sat 15 Aug UTC. No change. Fix NOT RUN. Payment 17187 (EUR 6,151 ref ULEARNP2026124) still needs manual TM/Hub lookup. Payment 4781 (Flywire 2019) is a legacy orphan.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 126th check Sat 15 Aug 2026 UTC — no change since 125th check\n• Booking 1624 (Telmuun Enkhsaikhan, student 293): status = PARTIAL, confirmed = false, amount paid = EUR 1,406, amount open = EUR 250\n• Booking Course 1810 (Academic Year Renewal Morning): started 29 Jun 2026, ends 1 Jan 2027, active = true, 0 class assignments — 48 days without assignment (confirmed via DB)\n• Only 1 payment record in database: Payment 17956 = EUR 100, Bank, 31 Mar 2026, xeroPaymentId = null\n• Discrepancy: booking amountPaid = EUR 1,406 but database payment records sum to EUR 100 — EUR 1,306 not individually recorded (likely Fidelo migration lump sum)\n• EUR 250 open balance still outstanding",
+        "Assign Booking Course 1810 to AM class; collect EUR 250 open balance; reconcile Payment 17956 in Xero; set booking confirmed = true once settled. See recipe: issue-48-addendum-15aug.md",
+        "126th Sat 15 Aug UTC. No change. BC 1810 still 0 class assignments (48 days). EUR 250 open. Fix NOT RUN.",
+        "payment gap; BC1810 48d; bk PARTIAL"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H8:K8",
+    "values": [
+      [
+        "• Original arrivals issue resolved — Sofiia enrolled booking 17849, course 24623 (Academic Year Renewal Afternoon, ILEP 0318/0005), started 8 June 2026, confirmed, EUR 1455.5 fully paid, ends 27 November 2026\n• Booking 17909 (CANCELLED): confirmed = true — anomaly on a cancelled booking\n• Booking 17909: amount open = EUR 727.5, amount paid = EUR 0 — phantom open balance on cancelled booking with no payments\n• Booking 17909 course 24693 (Renewal - Academic Year PM, May 25 to Nov 13 2026): active = still true, ILEP code = null — stale on cancelled booking\n• Document record 94 (Letter of Acceptance, ISSUED v2, 25 May 2026): live on cancelled booking 17909 — should be revoked\n• Booking 1310 (ESCROW, EUR 3550 escrow payment): 5 old Academic Year Morning courses (IDs 1352–1356, Sep 2025 – Apr 2026) all active = still true — up to 82 days stale\n• Payment 17468 (EUR 1455.5, booking 17849): type = null — unclassified payment",
+        "Set confirmed = false on booking 17909; close EUR 727.5 phantom balance; revoke LOA 94; deactivate BC24693 + BCs 1352–1356. See recipe: issue-7-sofiia-booking-anomalies.md",
+        "1st correct diagnosis Wed 15 Jul UTC (prior H contaminated with ILEP data for Gustavo/Tsengelbayar). BK17909 CANCELLED confirmed=true amtOpen=EUR727.5. LOA dr94 ISSUED on cancelled BK. BC24693 active=true ilepNull. BK1310 ESCROW: 5 BCs 1352-1356 active=true (ended Apr2026, up to 82d stale). Pmt17468 type=null. BK17849 active+confirmed OK. Fix NOT RUN.",
+        "bk17909 anomaly; 5 stale BCs"
+      ]
+    ]
+  },
+  {
+    "range": "H9:K9",
+    "values": [
+      [
+        "• ILEP certificate issue RESOLVED — Diego (document 181, ISSUED 5 Jun 2026), Pedro (document 184, ISSUED 5 Jun 2026), Aurora (document 183, ISSUED 5 Jun 2026) all have valid certificates (1st correct diagnosis Wed 15 Jul UTC — prior H had Suvderdene data)\n• Diego (student 840, booking 18183): booking course 24959 (Academic Year Morning, 3 Aug 2026–5 Feb 2027), ILEP code = 0318/0010 — set (resolved)\n• Aurora (student 841, booking 18182): booking course 24958 (Academic Year Morning, 3 Aug 2026–5 Feb 2027), ILEP code = 0318/0010 — set (resolved)\n• Pedro (student 911): no 2026–27 Academic Year booking course found in SIS — may not have renewed\n• 8 stale booking courses still active = true: Diego BCs 1482 (ended Dec 2025), 1483 (ended Feb 2026), 1484 (ended Jun 2026); Aurora BCs 1485 (ended Dec 2025), 1486 (ended Feb 2026), 1487 (ended Jun 2026); Pedro BCs 1602 (ended Dec 2025), 1603 (ended Jun 2026)",
+        "Core issue resolved. Deactivate 8 stale booking courses (BCs 1482-1487, 1602, 1603). Check if Pedro renewed 2026-27. See recipe: issue-8-ilep-certs.md",
+        "1st correct diagnosis Wed 15 Jul UTC (prior H had Suvderdene Bayartsog cert data — contaminated). Original ILEP cert issue RESOLVED Jun 5 2026. Diego BC24959 ILEP=0318/0010 (set). Aurora BC24958 ILEP=0318/0010 (set). Pedro no 2026-27 BC. 8 stale BCs active=true across 3 students. Fix NOT RUN.",
+        "cert resolved; 8 stale BCs"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student class assignment 255 (Saikhantes Shagdarsuren, student 1001, booking course 24925): week end = 3 July 2026 — still the only class assignment (44th check, Wed 15 Jul UTC)\n• Missing weeks: week ending 10 July 2026 (expired 12 days ago) and week ending 17 July 2026 (this Friday — 2 days)\n• Booking course 24925: Academic Year Afternoon (B1 PM, class 11), active = true, ends 2 October 2026\n• 10 school days unassigned: Monday 7 July through Wednesday 15 July (today)",
+        "Assign Saikhantes (student 1001) to PM class for weeks ending 10 Jul and 17 Jul via SIS Admin > Classes > To Be Assigned. See recipe: issue-15-saikhantes-class.md",
+        "44th check Wed 15 Jul UTC (2nd check today). SCA255 (B1 PM class 11) weekEnd=Jul3 STILL only record. Missing: weekEnd Jul10 (expired 12d) + weekEnd Jul17 (this Fri, 2 days). BC24925 AY Afternoon active ends Oct 2026. 10 school days unassigned Mon 7 to Wed 15 Jul. Fix NOT RUN.",
+        "CRITICAL; 2 weeks missing; Fri"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking course 24686 (Alberto Squillace, Morning General, 20 July to 18 September 2026): fee = still null — 5 days to course start Monday 20 July — URGENT (46th check, Wed 15 Jul UTC)\n• Booking course 1797 (Morning General, 6 April to 26 June 2026): still active = true — 19 days stale\n• Payment 17124 (EUR 1280.12): type = null — 112 days unreconciled, no Xero or HubSpot payment IDs\n• Booking 1611 (CONFIRMED, EUR 1280.12 fully paid): course will have no fee record when it starts Monday",
+        "Set fee on booking course 24686 BEFORE Monday 20 July; deactivate booking course 1797; reconcile payment 17124 in Xero. See recipe: issue-24-alberto-fidelo-course-split.md",
+        "46th check Wed 15 Jul UTC. BC24686 Morning General Jul20-Sep18 fee=STILL null — 5 DAYS TO START MON 20 JUL. BC1797 Apr6-Jun26 active=STILL true (19d stale). Pmt17124 EUR1280.12 type=null (112d unreconciled). BK1611 CONFIRMED EUR1280.12/1280.12. Fix NOT RUN.",
+        "fee null; 5d MONDAY URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• August Bank Holiday 2026 (Monday 3 August) still missing from school closures — 19 days away (13th check, Wed 15 Jul UTC)\n• October Bank Holiday 2026 (Monday 27 October) still missing from school closures — 104 days away\n• School closures table has 9 records: Good Friday 2026 (now past, Apr 3), Good Friday 2027–2030, Christmas 2026–2029 only — zero Irish public bank holiday Mondays\n• Note: school closures table has no type column — uses is_paid_holiday boolean field instead\n• 13 booking courses start Monday 3 August 2026 — Christmas shunt will not apply without the bank holiday record; Academic Year students at risk: Gustavo Ferreira (booking course 97, Pending), Tsengelbayar Mendsaikhan (booking course 24970, Partial)",
+        "Add August Bank Holiday (Mon 3 Aug 2026) and October Bank Holiday (Mon 27 Oct 2026) to school_closures table (use is_paid_holiday=true, no type column). See recipe: issue-38-course-date-ux.md",
+        "13th check Wed 15 Jul UTC. Aug BH Mon 3 Aug STILL missing from school_closures. Oct BH Mon 27 Oct also missing. 9 closures: GF 2026 (now past) + GF 2027-2030 + Christmas 2026-2029 only. No type column — table has is_paid_holiday boolean. 13 booking courses start Aug 3 — shunt blocked. AY risk: BC97 Gustavo (PENDING) + BC24970 Tsengelbayar (PARTIAL). 19 days to Aug 3. Fix NOT RUN.",
+        "Aug BH missing; 19d URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 8 booking courses ending Friday 17 July 2026 still have zero class assignments — 77th check, Wed 15 Jul UTC\n• All 8 UNCHANGED — 2 calendar days to Friday deadline\n• Confirmed enrolled with zero assignments (priority): Booking course 1719 (Maria Magdalena Hermosilla Ogaz), booking course 24946 (Lunel Dubost), booking course 24994 (Petru Ous)\n• Pending with zero assignments: Booking courses 26 (Kritchana Ratcha-Anan), 95 (Florian Baury), 24985 (Silvia Cecilia Maza), 24986 (Gladis Patricia Maza), 24992 (Luz Maria Sobrino)\n• 4 booking courses ending next Friday 24 July also have zero class assignments: Booking course 81 (Pietro Colombo, Confirmed), booking course 24828 (Martina Tartaro Easter Promo, Confirmed), booking course 24989 (Marcos Abrego Tofe, Confirmed), booking course 20 (Lalita Champakhong, Pending)",
+        "Assign all 8 students ending Fri 17 Jul via SIS Admin > Classes > To Be Assigned; also action 4 zero-SCA booking courses ending Fri 24 Jul. See recipe: issue-45-renewal-no-class.md",
+        "77th check Wed 15 Jul UTC (2nd check today). UNCHANGED: 8 booking courses ending Fri 17 Jul zero SCAs (2 days to deadline). Priority CONFIRMED: BC1719 Maria Magdalena, BC24946 Lunel Dubost, BC24994 Petru Ous. UNCHANGED: 4 booking courses ending Fri 24 Jul zero SCAs — BC81 Pietro Colombo, BC24828 Martina Tartaro (Easter Promo), BC24989 Marcos Abrego Tofe (all CONFIRMED), BC20 Lalita Champakhong (PENDING). Fix NOT RUN.",
+        "CRITICAL; 2d to Fri; +4 Jul24"
+      ]
+    ]
+  }
+]

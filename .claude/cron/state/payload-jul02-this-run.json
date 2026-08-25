@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 and 16989: booking ID = null, Xero payment ID = null — still unlinked (169th check, 2 Jul 2026 UTC)\n• Payment 16988 (HubSpot 1204827374829): EUR 339.90, paid 28 Apr — should link to booking 17856 (Margherita Galbusera)\n• Payment 16989 (HubSpot 1204846469317): EUR 339.90, paid 28 Apr — should link to booking 17857 (Francesca Fassina)\n• Bookings 17856 and 17857: status = Confirmed, confirmed = false, fully paid EUR 339.90 each — course ends 10 Jul (8 days remain)\n• Booking courses 24631 (booking 17856) and 24630 (booking 17857): General English AM Plus, 29 Jun to 10 Jul, fee = null — still unset\n• 4-step SQL fix has NOT been run across 169 hourly checks — 8 days until course end — NEIL: RUN NOW",
+        "(NOT RUN) (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) UPDATE booking_courses SET fee=339.9 WHERE id IN (24630,24631); (4) UPDATE bookings SET confirmed=true WHERE id IN (17856,17857). See recipe: issue-1-orphan-payments.md",
+        "2 Jul UTC (169th check, fresh DB): pmts 16988+16989 bookingId=STILL null xeroId=null EUR339.9 each. bk17856+17857 CONF confirmed=false 339.9/339.9. bc24631+24630 GE-AM-Plus Jun29-Jul10 fee=null. Course ends Jul10=8d. 169 CHECKS SQL UNRUN. NEIL: RUN NOW.",
+        "8d to end; UNRUN"
+      ]
+    ]
+  },
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "• Document 171 is a DRAFT certificate (template 82) — created 5 Jun 2026, 27 days old, never issued (19th check, 2 Jul 2026 UTC)\n• Booking 1498: status = Confirmed, confirmed = false, amount paid = null\n• Course 1660 (ULearn Renewal Morning): ended 5 Jun 2026 — certificate still in DRAFT after 27 days\n• Certificate content is complete: student Suvderdene Bayartsog, dates 15 Dec 2025 to 5 Jun 2026, ILEP code 0318/0010\n• Action needed: open SIS student 947 > booking 1498 > Documents > click Issue button",
+        "(NOT RUN) SIS student 947 > booking 1498 > Documents > Issue button (draft cert 171). See recipe: issue-8-suvderdene-cert-dates.md",
+        "2 Jul UTC (19th check, fresh DB): doc171 STILL DRAFT (tmpl82, Jun05=27d stale). bk1498 CONF confirmed=false amtPaid=null. bc1660 ended Jun05. Content complete. Neil: SIS s947 bk1498 Documents Issue.",
+        "cert DRAFT; 27d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• Accommodation 11352 (Verónica Martín, booking 18156): bed 83, 4 Jul to 11 Jul — still active (59th check, 2 Jul 2026 UTC)\n• Accommodation 11285 (Jesús Ramírez Díaz, booking 17825): bed 83, 21 Jun to 5 Jul — Jesús does not vacate until Sunday 5 Jul\n• Bed 83 is double-booked: Verónica checks in Saturday 4 Jul while Jesús still in bed 83 until Sunday 5 Jul\n• Alternative Capel beds confirmed free 4 Jul to 11 Jul: bed 174, bed 175, bed 176 (zero DB conflicts, fresh 2 Jul UTC)\n• Fix NOT run across 59 hourly checks — Verónica arrives in 2 days — NEIL: MOVE ACCOMMODATION 11352 TO BED 174, 175, OR 176 TODAY",
+        "(NOT RUN) SIS: Student 278 > Booking 18156 > Accommodation > edit 11352 > change bed 83 → 174 (or 175/176). See recipe: issue-37-veronica-capel-accomm-allocation.md",
+        "2 Jul UTC (59th check, fresh DB): ba11352 Veronica bed83 Jul04-Jul11 STILL conflict. ba11285 Jesus bed83 Jun21-Jul05. Beds 174/175/176 free Jul4-11 (confirmed). NEIL: change bed NOW — arrives Sat 4 Jul (2 DAYS). 59 checks no action.",
+        "BED83; Jul4=2d; CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• NEW 1 Jul 2026: Payment 17963 (EUR 965.00, Bank, HubSpot 1273784562922) arrived — Xero payment ID = null\n• Booking 17831 now PARTIAL: EUR 965 paid of EUR 1396.90 total — outstanding balance EUR 431.90\n• Outstanding balance = payment 17180 (EUR 431.90, TransferMate Escrow, 27 Apr): Xero payment ID = null, HubSpot ID = null — still unreconciled\n• Course 24609 (Morning General, 13 Jul to 31 Jul, fee EUR 570): starts in 11 days (3rd check, 2 Jul 2026 UTC)\n• Accommodation 11358 (Host Family, bed 180, 12 Jul to 2 Aug): already assigned — original complaint resolved\n• Booking 17831: confirmed = false — needs to be set true once both payments reconciled in Xero",
+        "(NOT RUN) (1) Reconcile pmt17180 (EUR 431.90 Escrow) in Xero; (2) Reconcile pmt17963 (EUR 965 Bank) in Xero; (3) UPDATE bookings SET confirmed=true WHERE id=17831. See recipe: issue-39-xuezhen-huang-accomm-missing.md",
+        "2 Jul UTC (3rd check): NEW pmt17963 EUR965 Bank Jul01 xeroId=null hsId=1273784562922. bk17831 PARTIAL 965/1396.90 bal=431.90. bc24609 MornGen Jul13-Jul31 fee=570 (11d). ba11358 bed180 Jul12-Aug2 OK. pmt17180 EUR431.90 Escrow xeroId=STILL null. confirmed=false.",
+        "PARTIAL; Xero TBD; 11d"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• Accommodation 11357 (Giampaolo Russo, booking 18180): Host Family, bed not assigned, 2 Aug to 6 Sep 2026, fee EUR 1250 (21st check, 2 Jul 2026 UTC)\n• Provider 24 (Edel McDonald, mcdonald.edel@gmail.com, +353 87 990 5430) claimed accommodation 11357 via host portal on 1 Jul 2026 at 18:06 UTC — claim status = pending, now 41+ hours without action\n• No Capel Street accommodation record for 6 Sep to 14 Sep — second booking still missing from database\n• Booking 18180: Confirmed, fully paid EUR 2584.96 — no payment issues\n• Course 24956: General English AM, 3 Aug to 11 Sep 2026, fee EUR 804.96\n• Capel beds confirmed free 6 Sep to 14 Sep: bed 174, bed 175, bed 176 (zero DB conflicts, fresh 2 Jul UTC)\n• Arrives 2 Aug — 31 days remaining",
+        "(NOT RUN) (1) Approve provider 24 claim in SIS Matching; (2) assign a bed to accommodation 11357; (3) add Capel accommodation 6-14 Sep to booking 18180 using bed 174/175/176. See recipe: issue-41-giampaolo-dual-accomm.md",
+        "2 Jul UTC (21st check): ba11357 HF Aug02-Sep06 bedNull. Provider 24 (Edel McDonald) claimed Jul01 18:06 UTC = 41h unactioned. 0 Capel records bk18180. Capel 174/175/176 free Sep6-14. bk18180 CONF fully paid 2584.96. Aug2=31d.",
+        "HF pend 41h; Capel 0; 31d"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• Accommodation 11285 (Jesús Manuel Ramírez Díaz, bed 83, booking 17825): stored dates 21 Jun to 5 Jul — requested 20 Jun to 4 Jul (1-day discrepancy, 35th check, 2 Jul 2026 UTC)\n• Bed 83 is double-booked Saturday 4 Jul with Verónica Martín (accommodation 11352, booking 18156) — see Issue 37 (row 39)\n• Primary fix: move Verónica accommodation 11352 to bed 174, 175, or 176 (see Issue 37 — CRITICAL, arrives Sat 4 Jul)\n• Secondary fix: adjust Jesús start from 21 Jun to 20 Jun and end from 5 Jul to 4 Jul — 1-day correction, low priority\n• Booking 17825 fully paid EUR 2008",
+        "(NOT RUN) Primary: move Veronica ba11352 to bed 174/175/176 (Issue 37). Secondary: SIS adjust ba11285 dates Jun21→Jun20, Jul05→Jul04. See recipe: issue-43-jesus-accomm-dates.md",
+        "2 Jul UTC (35th check): ba11285 Jesus bed83 Jun21-Jul05 (req Jun20-Jul04). Conflict Jul4 Sat with Veronica. Primary=see row 39. Secondary: dates 1d off (low pri). Veronica arrives Sat 4 Jul (2 DAYS).",
+        "CRITICAL; see row 39"
+      ]
+    ]
+  }
+]

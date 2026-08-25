@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 + 16989 (EUR 339.90 each, HubSpot 1204827374829 / 1204846469317): booking ID = STILL null, Xero payment ID = STILL null — orphaned 71 days (28 April 2026)\n• Bookings 17856 (Margherita Galbusera) and 17857 (Francesca Fassina): Confirmed, confirmed = STILL false — amount_paid = 339.90 but NO payment record linked in database\n• Booking courses 24630 and 24631 (General English AM Plus, 29 Jun to 10 Jul 2026): fee = STILL null, active = true\n• Course ends FRIDAY 10 July 2026 — 2 SCHOOL DAYS REMAINING (Thu 9 Jul + Fri 10 Jul)\n• Root cause: webhook missed setting booking ID at payment creation 28 April 2026\n• 4-step SQL not run after 71 days",
+        "Run link SQL TODAY — course ends Fri 10 Jul (2 days left); recipe issue-1-orphan-payments.md",
+        "28th check 8 Jul UTC (hrly10). pmts16988+16989 bookingId=STILL null xeroId=STILL null EUR339.90. bks17856+17857 confirmed=STILL false amount_paid=339.90 (no pmts linked in DB). bcs24630+24631 fee=STILL null active=true ENDS FRI JUL10. SQL NOT RUN 71 DAYS.",
+        "CRITICAL; 2 days left"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Class assignment 255 (student 1001 Saikhantes Shagdarsuren, class 11 B1 Afternoon): week end = 3 July 2026 — expired 5 days ago\n• Booking course 24925 (Academic Year Afternoon, 9 March to 2 October 2026): active, fee EUR 1102.20 — 12+ weeks remaining\n• School days missed: Monday 6 Jul, Tuesday 7 Jul, Wednesday 8 Jul (today) — Thursday 9 Jul will be Day 4 missed\n• Fix: one-line SQL to extend assignment week end to 2 October 2026 (NOT YET RUN)",
+        "UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255 — SQL NOT YET RUN; see recipe issue-15-saikhantes-course-dates.md",
+        "23rd check 8 Jul UTC (hrly10). sca255 weekEnd=Jul3 EXPIRED 5d. bc24925 AY-Aft Mar9-Oct2 active fee=1102.20. 3 school days missed (Mon6+Tue7+Wed8). Thu9=Day4. Only 1 SCA ever. SQL NOT RUN.",
+        "Day3 missed; see row 30"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 (Edith Nunes, student 1015): Confirmed, confirmed = true, EUR 740 / 740 fully paid\n• Booking course 24933 (General English AM, 15 Jun to 10 Jul 2026): active, fee EUR 380 — ENDS FRIDAY 10 JUL (2 DAYS)\n• Duplicate booking course 24934 (General English AM, fee EUR 360): STILL active — deactivation pending for 23 school days\n• Student 1015 zero class assignments since Jun 15 — last assignment 146 expired 15 May (54 days ago)\n• Payment 17895 (EUR 740, HubSpot 1254474444002): type = null, Xero payment ID = STILL null\n• No documents generated for booking 18158",
+        "Deactivate booking course 24934, assign student 1015 to class TODAY — course ends Fri 10 Jul (2 days); recipe issue-22-edith-nunes-payment-dups.md",
+        "27th check 8 Jul UTC (hrly10). bc24934 DUP STILL active. s1015 0 SCAs (last sca146 exp May15=54d). bk18158 CONF 740/740. pmt17895 xeroId=STILL null type=null. COURSE ENDS FRI JUL10 (2 DAYS). 23 school days unassigned.",
+        "CRITICAL; Fri Jul10"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• Booking 17980 (Pietro Caccianiga, student 14521): Confirmed, confirmed = true, EUR 5331 / 5331 fully paid\n• Accommodation 11311: bed 84, 28 Jun to 13 Sep 2026, active = true, claim status = null — live stay in progress\n• Pietro arrived 28 Jun — accommodation in place — original issue RESOLVED\n• Four historical stale bed 84 records still active past their end dates (low priority cleanup):\n  — Accommodation 9917 (booking 1274): ended 16 May — 53 days stale\n  — Accommodation 11157 (booking 100): ended 10 May — 59 days stale\n  — Accommodation 11159 (booking 100): ended 30 May — 39 days stale\n  — Accommodation 11180 (booking 81): ended 20 Jun — 18 days stale",
+        "(NOT RUN low-priority) UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180); recipe issue-36b-pietro-accomm-dates.md",
+        "8 Jul UTC (hrly10). B/F/G hash changed (sheet was edited). ba11311 bed84 Jun28-Sep13 active=true claimStatus=null (in-stay). 4 stale bed84 recs STILL active: ba9917+53d, ba11157+59d, ba11159+39d, ba11180+18d. Cleanup SQL NOT RUN.",
+        "low-pri; stale bed84"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Booking 17831 (Xuezhen Huang, student 14443): Confirmed, EUR 1396.90 / 1396.90 fully paid (confirmed since 7 Jul 2026)\n• Accommodation 11358: bed 180 (Host Family), 12 Jul to 2 Aug 2026, active = true, claim status = STILL null — CHECK-IN SUNDAY 12 JULY (4 DAYS)\n• 4 payments on booking 17831 — ALL have Xero payment ID = null (none reconciled in Xero):\n  — Payment 17180: EUR 431.90, type null, no HubSpot ID — Fidelo migration, 27 Apr 2026\n  — Payment 17988: EUR 300.00, type null, HubSpot 1277795367133 — 12 Jun 2026\n  — Payment 17987: EUR 131.90, type null, HubSpot 1277724782804 — 25 Jun 2026\n  — Payment 17963: EUR 965.00, type null, HubSpot 1273784562922 — 1 Jul 2026\n• Payments 17987 + 17988 together = EUR 431.90 = payment 17180 amount — likely HubSpot replacements for the original Fidelo Escrow; verify before reconciling separately\n• Host family claim for accommodation 11358 not yet submitted",
+        "Reconcile pmts 17963 + 17987/17988 (verify vs 17180 Fidelo) in Xero + submit host family claim before Sun 12 Jul; recipe issue-39-xuezhen-huang-accomm-missing.md",
+        "13th check 8 Jul UTC (hrly10). 4 pmts all xeroId=STILL null type=null. ba11358 claimStatus=STILL null bed180 Jul12-Aug2. CHECK-IN SUN JUL12=4 DAYS. pmts17987(131.9)+17988(300)=431.9=pmt17180 Fidelo — verify same txn. Neil: reconcile + submit claim.",
+        "Xero; Sun Jul12; 4 days"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Veronica Martin (student 278, booking course 24931, General English AM, 6 to 10 Jul): zero class assignments — COURSE ENDS FRIDAY 10 JUL (2 DAYS REMAINING)\n• Ettore Iovinella (student 14564, booking course 24968, General English AM Plus, 6 to 13 Jul): last assignment 281 (class 4) expired 3 Jul — 5 school days in class without valid record; course ends Mon 13 Jul\n• Pietro Colombo (student 72, booking course 81, Morning General Plus, 6 to 24 Jul): zero class assignments ever — 3 school days unassigned; course ends 24 Jul\n• Tuguldurtugs Enkhtugs (student 858, booking course 1786, Academic Year Renewal Morning, 6 Jul to 25 Dec): last assignment 55 (class 8) expired 1 May 2026 — 68 days without valid assignment",
+        "Assign Veronica (student 278) to class TODAY — course ends Fri 10 Jul; then assign others; recipe issue-45-renewal-arrivals.md",
+        "24th check 8 Jul UTC (hrly10). s278/bc24931 0 SCAs ENDS FRI JUL10 (2 DAYS). s14564/bc24968 SCA281 exp Jul3 (5d) ends Mon Jul13. s72/bc81 0 SCAs ever ends Jul24. s858/bc1786 last SCA55 exp May1 (68d) ends Dec25. NEIL: Veronica URGENT today.",
+        "CRITICAL; Veronica Fri Jul10"
+      ]
+    ]
+  }
+]

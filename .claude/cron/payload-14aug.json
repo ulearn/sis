@@ -1,0 +1,79 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 159th check Fri 14 Aug 2026 UTC — COURSE ENDED TODAY with 0 class assignments\n• Booking Course 25043 (General English PM, Eduardo Roche Diaz): end 2026-08-14, active = true, 0 class assignments\n• Eduardo level B2 — appropriate class: id 6 (B2&C1 PM, 13:45-17:00)\n• Booking 18265: CONFIRMED, confirmed = true, amount paid = EUR 126\n• 5 school days permanently lost (Mon 10 to Fri 14 Aug) — course has now ended",
+        "Create SCA retroactively (class 6, BC 25043, Aug 10-14); deactivate BC 25043. See recipe: issue-38-addendum-14aug.md",
+        "159th hrly Fri 14 Aug UTC. COURSE ENDED with 0 SCAs. 5 school days lost permanently. No cert possible without SCA. Act NOW.",
+        "ENDED: Fri 14 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 112th check Fri 14 Aug 2026 UTC — unchanged since 111th check\n• Booking 18151 (Saikhantes Shagdarsuren, student 1001): service_end = 2026-08-07 — expired 7 days ago\n• Booking last updated 2026-07-08 (37 days without admin action)\n• Student Class Assignment 255: class 11 (B1 PM), week_end = 2026-07-03 — expired 42 days\n• Booking Course 24925 (Academic Year Afternoon, ends 2026-10-02): active = true, 1 class assignment\n• Confirmed = true, EUR 1,339.20 fully paid",
+        "Extend SCA 255 week_end to 2026-10-02; update BK 18151 service_end to 2026-10-02. See recipe: issue-15-addendum-14aug.md",
+        "112th Fri 14 Aug UTC. service_end expired 7d (Aug 7). SCA 255 expired 42d (Jul 3). Unchanged. Fix NOT RUN.",
+        "SCA expired 42d; svc_end 7d exp"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• 84th check Fri 14 Aug 2026 UTC — same student as Issue 15 (row 16), unchanged\n• Booking 18151 (Saikhantes Shagdarsuren, student 1001): CONFIRMED, confirmed = true, EUR 1,339.20 paid\n• service_end = 2026-08-07 — expired 7 days ago (student still in class)\n• Student Class Assignment 255: weekEnd = 2026-07-03 — expired 42 days ago\n• Booking last updated 2026-07-08 (37 days since any admin action)",
+        "Update BK 18151 service_end to 2026-10-02; extend SCA 255 week_end to 2026-10-02. See recipe: issue-29-addendum-14aug.md",
+        "84th check Fri 14 Aug UTC. service_end expired 7d (Aug 7). SCA 255 expired 42d (Jul 3). Fix NOT RUN.",
+        "svc_end 7d exp; SCA 42d exp"
+      ]
+    ]
+  },
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• 171st check Fri 14 Aug 2026 UTC — no change since 170th check\n• Student Class Assignment 288: class 12, booking_course_id = 24697 (ended 2026-07-31), week_end = 2026-12-18\n• Booking Course 25035 (General English AY AM Plus, 3 Aug to 18 Dec 2026): active = true, 0 class assignments\n• Booking Course 24697 (Academic Year Morning, ended 31 Jul 2026): active = true (stale), 1 class assignment (SCA 288)\n• Approximately 10 school days of attendance unrecorded on BC 25035 since 3 Aug 2026\n• SCA week_end Dec 18 matches BC 25035 end date — only booking_course_id is wrong",
+        "Re-link SCA 288 booking_course_id to BC 25035; deactivate BC 24697. See recipe: issue-12-addendum-14aug.md",
+        "171st Fri 14 Aug UTC. SCA 288 still on BC 24697 (ended Jul 31). BC 25035 still 0 SCAs. ~10 school days lost since Aug 3. Fix NOT RUN.",
+        "SCA on wrong BC; ~10d lost"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• 78th check Fri 14 Aug 2026 UTC — no change since 77th check\n• Booking Course 24686 (Morning General, Alberto Squillace): 20 Jul to 18 Sep 2026, active = true, 0 class assignments\n• Approximately 20 school days lost since course start (Jul 20)\n• Course ends 18 Sep 2026 — 35 days remaining, still actionable\n• Fix NOT RUN",
+        "Assign BC 24686 to AM General class. See recipe: issue-24-addendum-14aug.md",
+        "78th Fri 14 Aug UTC. No change. BC 24686 still 0 SCAs — ~20 school days lost. Course ends Sep 18 (35d). Fix NOT RUN.",
+        "BC24686 25d; 0 SCAs; ends Sep 18"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 184th check Fri 14 Aug 2026 UTC — no change since 183rd check\n• Booking Accommodation 11393: bed 88, 22 Aug to 13 Sep 2026, fee = null, active = true — check-in in 8 days\n• Payment 17733: EUR 5,331, Xero not reconciled — 74 days (payment date 2026-06-02)",
+        "Confirm fee with Diego; set fee on BA 11393; reconcile PMT 17733 in Xero. See recipe: issue-36b-addendum-14aug.md",
+        "184th Fri 14 Aug UTC. No change. Fee null BA 11393 (check-in Aug 22 = 8 days). Xero null PMT 17733 (74d). Fix NOT RUN.",
+        "fee null; check-in 8 days"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 68th check Fri 14 Aug 2026 UTC — no change since 67th check\n• Booking Accommodation 11392 (apartment, Sep 6 to Sep 14 2026): bed_id = null, fee = EUR 415, active = true\n• Booking Accommodation 11357 (host family, Aug 2 to Sep 6 2026): correctly placed\n• Available beds: 168 (A1) and 194 (Arasain-1) — confirmed in earlier checks\n• Sep 6 check-in = 23 days away",
+        "Verify beds 168/194 available; assign bed to BA 11392 before Sep 6. See recipe: issue-41-addendum-14aug.md",
+        "68th Fri 14 Aug UTC. No change. Bed null BA 11392. Beds 168 + 194 still available. Sep 6 check-in (23d). Fix NOT RUN.",
+        "bed null; Sep 6 check-in (23d)"
+      ]
+    ]
+  }
+]

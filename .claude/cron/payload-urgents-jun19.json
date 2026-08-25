@@ -1,0 +1,29 @@
+[
+  {
+    "range": "J18:K18",
+    "values": [
+      [
+        "Jun19 hrly: bk1308 UNCHANGED (still CANCELLED since Jun07). Student 766 has 0 class assignments. Course bc1350 Academic Year Afternoon May25-Nov13 (ongoing). AmtPaid=amtTotal=1530 (fully paid). Day ~20 in school with cancelled booking. NEIL: rebook or reinstate bk1308 urgently.",
+        "D20;urgent;0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "J21:K21",
+    "values": [
+      [
+        "Jun19 hrly: bk1605 UNCHANGED (PENDING since Apr13, updAt=Jun11). Student 1047 has 0 class assignments. AmtPaid=0/1509. Course bc1791 AY Renewal Morning Apr13-Oct02 (ongoing). Approx day 67 calendar / 50 school days with no SCA and zero payment. NEIL: urgent -- contact student/agent re payment and assign class.",
+        "D67;urgent;0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "J27:K27",
+    "values": [
+      [
+        "Jun19 hrly: bc24826 course ENDED TODAY (Jun19). Booking 18034 PARTIAL confirmed=false paid=845/1095 EUR250 outstanding. Student 14532 (Ernesto Pesoa Gil) has 0 class assignments. XeroPaymentId status unknown. NEIL: chase EUR250 and decide booking status.",
+        "ended TODAY;EUR250 due"
+      ]
+    ]
+  }
+]

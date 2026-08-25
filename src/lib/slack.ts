@@ -77,3 +77,139 @@ export function kellyMention(): string {
   const id = process.env.SLACK_KELLY_USER_ID;
   return id ? `<@${id}>` : '@Kelly';
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// READ side — pull channel history / threads so an operator (or Claude) can
+// review discussions without copy-pasting out of Slack. Read-only by design:
+// nothing here writes back. Needs the bot to have `channels:history` /
+// `groups:history` (+ `channels:read`/`groups:read`) scopes and to be a MEMBER
+// of the channel it's reading (Slack returns `not_in_channel` otherwise).
+// ─────────────────────────────────────────────────────────────────────────────
+
+const SLACK_BASE = 'https://slack.com/api/';
+
+async function slackGet(method: string, params: Record<string, string | number | undefined> = {}): Promise<any> {
+  // Reads prefer the USER token (xoxp) — it sees everything the authorising user
+  // sees (their channels, DMs, group DMs), which a bot token can't. Falls back to
+  // the bot token for workspaces where only that is provisioned. Writes
+  // (postSlackMessage) deliberately stay on the bot token so posts come from the
+  // bot, not the user.
+  const token = process.env.SLACK_USER_TOKEN || process.env.SLACK_BOT_TOKEN;
+  if (!token) { console.error('[slack] no SLACK_USER_TOKEN / SLACK_BOT_TOKEN set'); return { ok: false, error: 'no_token' }; }
+  const qs = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) if (v !== undefined && v !== '') qs.set(k, String(v));
+  try {
+    const r = await fetch(`${SLACK_BASE}${method}?${qs.toString()}`, { headers: { Authorization: `Bearer ${token}` } });
+    return await r.json().catch(() => ({ ok: false, error: 'parse' }));
+  } catch (e) {
+    console.error(`[slack] ${method} threw:`, (e as Error).message);
+    return { ok: false, error: 'exception' };
+  }
+}
+
+export interface SlackChannel { id: string; name: string; is_private?: boolean; is_member?: boolean; num_members?: number; }
+
+/** All non-archived channels the bot can see (public + private it's in). */
+export async function listSlackChannels(): Promise<SlackChannel[]> {
+  let out: SlackChannel[] = [], cursor: string | undefined;
+  do {
+    const r = await slackGet('conversations.list', { types: 'public_channel,private_channel', limit: 200, exclude_archived: 'true', cursor });
+    if (!r.ok) { console.error('[slack] conversations.list:', r.error); break; }
+    out = out.concat(r.channels || []);
+    cursor = r.response_metadata?.next_cursor || undefined;
+  } while (cursor);
+  return out;
+}
+
+let _userCache: Record<string, string> | null = null;
+/** Map of Slack user id → display name (cached per process). */
+export async function slackUserMap(): Promise<Record<string, string>> {
+  if (_userCache) return _userCache;
+  const map: Record<string, string> = {};
+  let cursor: string | undefined;
+  do {
+    const r = await slackGet('users.list', { limit: 200, cursor });
+    if (!r.ok) { console.error('[slack] users.list:', r.error); break; }
+    for (const u of (r.members || [])) map[u.id] = u.profile?.real_name || u.real_name || u.name || u.id;
+    cursor = r.response_metadata?.next_cursor || undefined;
+  } while (cursor);
+  _userCache = map;
+  return map;
+}
+
+/** Resolve a #name (or bare name) to a channel id. Passes through real ids. */
+export async function resolveSlackChannel(nameOrId: string): Promise<string | null> {
+  if (/^[CGD][A-Z0-9]{6,}$/.test(nameOrId)) return nameOrId;
+  const clean = nameOrId.replace(/^#/, '').toLowerCase();
+  const hit = (await listSlackChannels()).find(c => (c.name || '').toLowerCase() === clean);
+  return hit?.id || null;
+}
+
+export interface SlackMsg { ts: string; user?: string; userName?: string; text: string; thread_ts?: string; reply_count?: number; }
+
+async function decorate(messages: any[]): Promise<SlackMsg[]> {
+  const users = await slackUserMap();
+  return (messages || []).map(m => ({
+    ts: m.ts,
+    user: m.user || m.bot_id,
+    userName: users[m.user] || m.username || m.bot_id || 'unknown',
+    text: m.text || '',
+    thread_ts: m.thread_ts,
+    reply_count: m.reply_count,
+  }));
+}
+
+/** Recent messages from a channel (name or id), newest-first, up to `limit`. */
+export async function readSlackHistory(nameOrId: string, opts: { limit?: number; oldest?: string; latest?: string } = {}): Promise<SlackMsg[]> {
+  const id = await resolveSlackChannel(nameOrId);
+  if (!id) { console.error('[slack] channel not found:', nameOrId); return []; }
+  const target = opts.limit || 100;
+  let out: any[] = [], cursor: string | undefined;
+  do {
+    const r = await slackGet('conversations.history', { channel: id, limit: Math.min(200, target), oldest: opts.oldest, latest: opts.latest, cursor });
+    if (!r.ok) { console.error(`[slack] conversations.history (${nameOrId}):`, r.error); break; }
+    out = out.concat(r.messages || []);
+    cursor = r.response_metadata?.next_cursor || undefined;
+  } while (cursor && out.length < target);
+  return decorate(out.slice(0, target));
+}
+
+/**
+ * Post AS the authorising user (xoxp) via chat.postMessage — a NATIVE message
+ * with NO app attribution footer (unlike the Slack MCP connector, which stamps
+ * "Sent using @Claude"). Requires `chat:write` on the USER token. Pass thread_ts
+ * to reply in-thread. This is the clean send path Neil wants.
+ */
+export async function postAsUser(channel: string, text: string, thread_ts?: string): Promise<any> {
+  const token = process.env.SLACK_USER_TOKEN;
+  if (!token) { console.error('[slack] no SLACK_USER_TOKEN'); return { ok: false, error: 'no_user_token' }; }
+  const payload: any = { channel, text };
+  if (thread_ts) payload.thread_ts = thread_ts;
+  const r = await fetch('https://slack.com/api/chat.postMessage', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json; charset=utf-8' },
+    body: JSON.stringify(payload),
+  });
+  return r.json().catch(() => ({ ok: false, error: 'parse' }));
+}
+
+/** Delete a message the user token authored (e.g. to remove a footer'd MCP post). Needs `chat:write`. */
+export async function deleteAsUser(channel: string, ts: string): Promise<any> {
+  const token = process.env.SLACK_USER_TOKEN;
+  if (!token) return { ok: false, error: 'no_user_token' };
+  const r = await fetch('https://slack.com/api/chat.delete', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ channel, ts }),
+  });
+  return r.json().catch(() => ({ ok: false, error: 'parse' }));
+}
+
+/** All replies in a thread, given the channel and the root message `ts`. */
+export async function readSlackThread(nameOrId: string, ts: string): Promise<SlackMsg[]> {
+  const id = await resolveSlackChannel(nameOrId);
+  if (!id) { console.error('[slack] channel not found:', nameOrId); return []; }
+  const r = await slackGet('conversations.replies', { channel: id, ts, limit: 200 });
+  if (!r.ok) { console.error(`[slack] conversations.replies (${nameOrId}):`, r.error); return []; }
+  return decorate(r.messages || []);
+}

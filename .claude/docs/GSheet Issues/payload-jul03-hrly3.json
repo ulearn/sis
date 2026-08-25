@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 and 16989: booking ID = null, Xero payment ID = null — still unlinked (179th check, 3 Jul 2026 UTC)\n• Payment 16988 (HubSpot 1204827374829): EUR 339.90, type = one-time or initial — should link to booking 17856 (student 14461)\n• Payment 16989 (HubSpot 1204846469317): EUR 339.90, type = one-time or initial — should link to booking 17857 (student 14462)\n• Bookings 17856 and 17857: Confirmed, confirmed = false, fully paid EUR 339.90 each — course ends 10 Jul (7 days remain)\n• Booking courses 24630 and 24631 (General English AM Plus, 29 Jun to 10 Jul): fee = null on both — still unset\n• 4-step SQL fix has NOT been run across 179 hourly checks — 7 days until course end",
+        "(NOT RUN) (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) UPDATE booking_courses SET fee=339.9 WHERE id IN (24630,24631); (4) UPDATE bookings SET confirmed=true WHERE id IN (17856,17857). See recipe: issue-1-orphan-payments.md",
+        "3 Jul UTC (179th check, fresh DB): pmts 16988+16989 bookingId=STILL null xeroId=null EUR339.9 each. bk17856+17857 CONF confirmed=false 339.9/339.9. bc24631+24630 GE-AM-Plus Jun29-Jul10 fee=null. Course ends Jul10=7d. 179 CHECKS UNRUN. NEIL: RUN NOW.",
+        "7d to end; UNRUN"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Class assignment 255 (Saikhantes, student 1001, B1 Afternoon, class 11): week end = 3 Jul 2026 — EXPIRED TODAY Friday (79th check, 3 Jul 2026 UTC)\n• Booking course 24925 (Academic Year Afternoon, Mar 9 to Oct 2 2026): still active = true\n• Week end should be updated to 2 Oct 2026 to match booking course end date\n• Student loses class access from Monday 6 Jul if SQL not run before end of day today",
+        "(NOT RUN — URGENT) UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255. Run TODAY before EOD. See recipe: issue-15-saikhantes-course-dates.md",
+        "3 Jul UTC (79th check): sca255 weekEnd=Jul03 EXPIRED TODAY FRI. bc24925 AY-Aft Mar09-Oct02 active=true. 0 other active SCAs s1001. Student loses access Mon Jul07 if unfixed. 79 CHECKS UNRUN. NEIL: RUN NOW.",
+        "SCA EXPIRED; RUN NOW"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 (Edith Nunes, student 1015): Confirmed, confirmed = true, fully paid EUR 740 (34th check, 3 Jul 2026 UTC)\n• Duplicate booking courses: course 24933 (General English AM, EUR 380) and 24934 (General English AM, EUR 360) — both still active = true, both end 10 Jul\n• Last class assignment (#146) expired 15 May — student has been unassigned for 49 days\n• Booking course 24934 should be set to active = false, then student assigned to class\n• Course ends 10 Jul = 7 days — urgent",
+        "(NOT RUN) (1) UPDATE booking_courses SET active=false WHERE id=24934; (2) Assign student 1015 to class via SIS Classes. See recipe: issue-22-edith-nunes-payment-dups.md",
+        "3 Jul UTC (34th check): bk18158 CONF 740/740. bc24933(380)+bc24934(DUP 360) BOTH active Jun15-Jul10. Last SCA #146 expired May15=49d. 0 active SCAs. Course ends Jul10=7d. FIX URGENT.",
+        "0SCA; Jul10=7d; Day34"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Duplicate entry for Issue 15 (row 16) — same student Saikhantes Shagdarsuren (student 1001)\n• Class assignment 255 (class 11, B1 Afternoon): week end = 3 Jul 2026 — EXPIRED TODAY Friday (79th check, 3 Jul 2026 UTC)\n• Booking course 24925 (Academic Year Afternoon): runs to 2 Oct 2026, still active = true\n• Same fix as Issue 15 — see row 16",
+        "Same as Issue 15 — run SQL on row 16. See recipe: issue-15-saikhantes-course-dates.md",
+        "3 Jul UTC: dup of row 16 (Issue 15). sca255 B1-PM weekEnd=Jul03 EXPIRED TODAY FRI 3 JUL. SQL not run. Neil: fix via row 16 BEFORE EOD.",
+        "SCA EXPIRED; RUN NOW"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• Accommodation 11352 (Verónica Martín, bed 83): 4 Jul to 11 Jul — still double-booked (71st check, 3 Jul 2026 UTC)\n• Bed 83 conflict: Jesús Manuel Ramírez Díaz (accommodation 11285) occupies until 5 Jul\n• 2-night overlap: 4–5 Jul — Verónica ARRIVES TOMORROW Saturday 4 Jul\n• Beds 174, 175, 176 confirmed free 4–11 Jul (zero conflicts, fresh DB query)\n• 71 hourly checks — no action taken",
+        "(NOT RUN — URGENT, FIX NOW) SIS: Student 278 > Booking 18156 > Accommodation > edit 11352 > change bed from 83 to 174 (or 175/176). See recipe: issue-37-veronica-capel-accomm-allocation.md",
+        "3 Jul UTC (71st check): ba11352 Veronica STILL bed83 Jul04-Jul11. ba11285 Jesus bed83 Jun21-Jul05. 2-night conflict Jul4-5. Beds 174/175/176 free Jul4-11. ARRIVES TOMORROW SAT 4 JUL. 71 CHECKS UNRUN. NEIL: FIX NOW.",
+        "BED CONFLICT; ARRIVES TOMORROW"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• Accommodation 11357 (Giampaolo Russo, Host Family, 2 Aug to 6 Sep): claim status = Pending, bed ID = null — no bed assigned (28th check, 3 Jul 2026 UTC)\n• Provider 24 (Edel McDonald) claimed via host portal 1 Jul 18:06 UTC — reverted to pending 2 Jul 17:32 UTC\n• No Capel Street accommodation record exists for student 14571\n• Student arrives 2 Aug = 30 days away",
+        "(NOT RUN) (1) Investigate claim reversion in host portal; (2) re-assign Host Family via SIS Matching (avoid beds 59/83/112/179/190); (3) add Capel accommodation Sep 6–14 to booking 18180. See recipe: issue-41-giampaolo-dual-accomm.md",
+        "3 Jul UTC (28th check): ba11357 HF Aug02-Sep06 bedId=null claimStatus=STILL pending (provider=24 Edel McDonald, claimedAt=Jul01 18:06, reverted Jul02 17:32). 0 Capel accomms for s14571. Aug02=30d. HF avail beds: 33/38/47/54/66/89/178/182/186/188/189.",
+        "HF claim reverted"
+      ]
+    ]
+  }
+]

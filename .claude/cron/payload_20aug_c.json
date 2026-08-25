@@ -1,0 +1,46 @@
+[
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "144th check Thu 20 Aug 2026 (afternoon)\n• CORRECTION: Booking 18180 (Giampaolo, student 14571) paid EUR 2,584.96 not EUR 5,331 (prior H/recipe had Pietro Caccianiga amount by mistake)\n• SQL table name wrong in all prior recipes: use booking_accommodations not BookingAccommodation\n• Booking Accommodation 11394 (Fabrizio Mauro, bed 89, ended 9 Aug, fee null): still ACTIVE 11 days stale — deactivate TODAY\n• Booking Accommodation 11357 (bed 178, ended 15 Aug, fee EUR 1,250): still ACTIVE 5 days stale — deactivate TODAY\n• Booking Accommodation 11396 (bed 44, 15-22 Aug, fee null): checkout Sat 22 — set fee + deactivate\n• Booking Accommodation 11397 (bed 89, 22 Aug-6 Sep, fee null): starts Sat 22 — set fee TODAY\n• Bed 89 sequence clean: Vincenzo Gagliano leaves Sat 22 then Giampaolo moves in — no overlap",
+        "Correct amount EUR 2584.96; fix SQL table; see issue-41-addendum-20aug-c.md",
+        "144th Thu 20 Aug PM. CORRECTED: Giampaolo paid EUR 2,584.96 (not EUR 5,331). SQL fix: booking_accommodations. Sat 22 = 2 days. Recipe corrected: issue-41-addendum-20aug-c.md",
+        "URGENT: Sat22 2d"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "247th check Thu 20 Aug 2026 (afternoon)\n• SQL table name wrong in all prior recipes: use booking_accommodations not BookingAccommodation\n• Booking Accommodation 11393 (bed 88): starts Sat 22 Aug, ends 13 Sep, fee = null, active — set fee TODAY (2 days to move-in)\n• Booking Accommodation 11311 (bed 84): ends Sat 22 Aug, fee = EUR 3,850, active — deactivate after checkout\n• Booking 17980 (Pietro, student 14521): CONFIRMED, fully paid EUR 5,331\n• Calculated fee for Accommodation 11393: EUR 5,331 - EUR 3,850 = EUR 1,481 (3 weeks) — confirm before setting\n• Bed 88 handover clean: Theodore Bolt (Booking Accommodation 11340) ends 22 Aug, Pietro starts 22 Aug",
+        "Fix SQL table; see issue-36b-addendum-20aug-d.md",
+        "247th Thu 20 Aug PM. SQL fix: booking_accommodations. BA 11393 fee null starts Sat 22 (2d). Recipe corrected: issue-36b-addendum-20aug-d.md. URGENT: set fee TODAY.",
+        "URGENT: Sat22 2d"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "182nd check Thu 20 Aug 2026 (afternoon)\n• SQL correction: prior recipe used INSERT INTO StudentClassAssignment with camelCase columns — WRONG\n• Correct: INSERT INTO student_class_assignments (booking_course_id, student_id, class_id, week_start, week_end) VALUES (24925, 1001, 11, 2026-08-24, 2026-08-28);\n• Booking Course 24925 (Academic Year Afternoon, 9 Mar - 2 Oct 2026, active): last class assignment week ending 3 Jul 2026, class 11 — 48 days (unchanged)\n• Student returns Tue 25 Aug 2026 (5 days) — class assignment needed for week Mon 24 Aug\n• Booking Course 1982 (Academic Year Morning 2025, ended 19 Dec 2025, active): 244 days stale",
+        "Fix SQL table/cols; see issue-15-addendum-20aug-c.md",
+        "182nd Thu 20 Aug PM. SQL fix: student_class_assignments snake_case. Returns Tue 25 Aug (5d). No SCA 48d. Recipe corrected: issue-15-addendum-20aug-c.md. URGENT.",
+        "URGENT: no SCA; 5d"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "144th check Thu 20 Aug 2026 (afternoon)\n• Duplicate of Issue 15 (row 16) — same student: Saikhantes Shagdarsuren (student 1001)\n• SQL correction: use student_class_assignments with snake_case columns (see issue-15-addendum-20aug-c.md)\n• Returns Tue 25 Aug 2026 (5 days) — still no class assignment since 3 Jul 2026 (48 days)",
+        "Dup of Issue 15; SQL fix; see issue-15-addendum-20aug-c.md",
+        "144th Thu 20 Aug PM. Dup of Issue 15. SQL fix applied to recipe. Returns 25 Aug (5d). URGENT.",
+        "URGENT: no SCA; 5d"
+      ]
+    ]
+  }
+]

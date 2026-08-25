@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 28th check Sat 1 Aug 2026 UTC (1st today) — Aug BH STILL NOT FIXED\n• Aug Bank Holiday 2026-08-03 absent from school_closures (9 entries, none for Aug BH)\n• 21 active BCs still start Aug 3 — 15 confirmed=true, 6 confirmed=false\n• BC25003 is duplicate of BC25002 (booking 18225, student 14596, 0 SCAs) — safe to deactivate\n• BC25006 ends Aug 3 (started Jul 27, Marina) — not a shunt candidate, end date is fine\n• WINDOW: tonight Sat 1 Aug / early Sun 2 Aug — last chance before Monday",
+        "Insert Aug BH closure; deactivate BC25003; shunt 14 confirmed BCs to Aug 4. See recipe: issue-38-addendum-1aug.md",
+        "28th hrly Sat 1 Aug UTC (1st today). 21 BCs start Aug 3. BC25003 duplicate (0 SCAs, safe to delete). Window closes tonight.",
+        "URGENT; last window"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 23rd check Sat 1 Aug 2026 UTC — CHECK-IN THIS WEEKEND\n• Booking 18180 (s14571 Giampaolo Russo): confirmed=true, paid=EUR 2584.96, open=0\n• BA11357 (bed 178 Claremont Close host family): start=2026-08-02 (Sun), end=Sep 6, active=true, fee=EUR 1250\n• BC24956 (General English AM, Aug 3–Sep 11): active=true — will shunt to Aug 4 with Issue 38\n• Capel Street BA (Sep 6–14): still absent from DB — no bed ID or fee confirmed yet\n• Student may arrive Sat 1 Aug; BA shows Aug 2 — Neil must confirm with Diego tonight",
+        "Confirm arrival date with Diego tonight; update BA start if Aug 1; add Capel BA. See recipe: issue-41-addendum-1aug.md",
+        "23rd hrly Sat 1 Aug UTC. Arrival imminent. BA start Aug 2 in DB; student may arrive today. Capel BA absent. Fix NOT RUN.",
+        "CHECK-IN THIS WEEKEND"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• 8th check Sat 1 Aug 2026 UTC — urgency increasing\n• Student 1052 (Alberto Squillace): visa_status=null, booking 1611 confirmed=true, paid=EUR 1280.12\n• BC24686 (Morning General, Jul 20–Sep 18 2026): active=true, fee=null, 0 class assignments\n• BC1797 (Morning General, Apr 6–Jun 26 2026): still active — stale 36 days (ended Jun 26), fee=EUR 1836\n• SCA229 on BC1797 class 12 (week Apr 6–26 only): last SCA, expired 36 days ago\n• Approx 12 teaching days lost Jul 20–Aug 1; 34 teaching days remain Aug 4–Sep 18\n• INFO NEEDED: which class Alberto attends + confirmed fee for BC24686",
+        "Create SCA on BC24686; set fee; deactivate BC1797. See recipe: issue-24-addendum-1aug.md",
+        "8th hrly Sat 1 Aug UTC. 12d lost. 0 SCAs on BC24686 (fee=null). BC1797 stale 36d. Need class ID + fee from Paul. Fix NOT RUN.",
+        "12d lost; SCA urgent; 34d left"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 5th check Sat 1 Aug 2026 UTC — unchanged\n• Student 1001 (Saikhantes Shagdarsuren): visa_status=null\n• Holiday HOL2500: Jul 20–Aug 21 2026 — returns Mon 24 Aug 2026 (23 days away)\n• Last SCA: SCA255 (class 11, BC24925, weekEnd Jul 3) — expired 29 days ago\n• BC24925 (Academic Year Afternoon, Mar 9–Oct 2 2026): active — current course\n• BC1982 (Academic Year Morning, Jun 30–Dec 19 2025): still active — stale 224 days\n• Gap Jul 6–17: 2 weeks with no SCA before holiday — check with Paul",
+        "Create SCA class 11 from Aug 24 to Oct 2 on BC24925; deactivate BC1982. See recipe: issue-15-addendum-1aug.md",
+        "5th hrly Sat 1 Aug UTC. Returns Aug 24 (23d). SCA needed then. BC1982 stale 224d. Jul 6-17 gap unresolved. Fix NOT RUN.",
+        "SCA needed; returns 24 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 18th check Sat 1 Aug 2026 UTC — unchanged\n• Booking 17856 (Margherita Galbusera s14461): status=CONFIRMED, confirmed=false (anomaly), paid=EUR 339.90, open=null\n• Booking 17857 (Francesca Fassina s14462): status=CONFIRMED, confirmed=false (anomaly), paid=EUR 339.90, open=null\n• BC24631 (bk17856, General English AM Plus, Jun 29–Jul 10): active=true, 0 SCAs — 22 days stale\n• BC24630 (bk17857, General English AM Plus, Jun 29–Jul 10): active=true, 0 SCAs — 22 days stale\n• Root cause: confirmed=false blocks SIS class-search despite CONFIRMED status + full payment",
+        "Set confirmed=true on bk17856+bk17857; deactivate BCs 24630+24631. See recipe: issue-48-addendum-1aug.md",
+        "18th hrly Sat 1 Aug UTC. Galbusera+Fassina: confirmed=false anomaly, BCs 22d stale, 0 SCAs. Courses complete. Fix NOT RUN.",
+        "4 items open; return Aug 24"
+      ]
+    ]
+  },
+  {
+    "range": "H4:K4",
+    "values": [
+      [
+        "• Christmas shunt: implemented and operational\n• 9 closures in DB: Good Fridays 2026-2030, Christmas 2026-2029\n• Aug Bank Holiday 2026-08-03 still absent from DB (checked Sat 1 Aug UTC) — tracked in Issue 38 (STILL URGENT)",
+        "",
+        "Sat 1 Aug UTC. Christmas shunt resolved (K=fixed). Aug BH still not in DB — Issue 38 window is tonight.",
+        "fixed"
+      ]
+    ]
+  }
+]

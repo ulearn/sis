@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Aug Bank Holiday 2026-08-03 still absent from school_closures — 67th check, Bank Holiday IS TOMORROW (Mon 3 Aug)\n• 21 active booking courses still have startDate = 2026-08-03, all with 0 class assignments\n• Duplicate booking courses on booking 18225 (Aleix Cervera Gonzalez): BC 25002 AND BC 25003 both active, both Aug 3-Sep 18 — deactivate BC 25003 before the shunt\n• 9 closures in database: Good Fridays 2026-2030, Christmas 2026-2029. Nothing for Aug 2026.",
+        "Step 1: deactivate BC 25003; Step 2: insert Aug BH into school_closures; Step 3: shunt 20 BCs Aug 3->Aug 4; Step 4: create SCAs. See recipe: issue-38-addendum-2aug-n.md",
+        "67th check Sun 2 Aug UTC (17th today). Bank Holiday TOMORROW Mon 3 Aug. 21 BCs unchanged. Duplicate BC 25003 on bk 18225. Fix NOT RUN.",
+        "URGENT; BH tomorrow"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• Student 14571 (Giampaolo Russo) arrived today Sun 2 Aug 2026 — first class Tue 4 Aug (after BH shunt from Issue 38)\n• Booking course 24956 (General English AM, Aug 3-Sep 11): active, fee EUR 804.96, 0 class assignments — SCA for week Aug 4 urgently needed\n• Accommodation 11357: Host Family, Individual, Half Board, Aug 2-Sep 6, bed 178, provider 24, claim confirmed, fee EUR 1250\n• Capel Street apartment (Sep 6-14, 1 week + 1 night): still NOT in database — only 1 accommodation record exists for student 14571\n• Booking 18180: xeroId = null, amountPaid = EUR 2584.96, confirmed = true — Xero invoice missing 37+ days",
+        "Step 1: BH shunt (Issue 38); Step 2: create SCA week Aug 4 on BC 24956; Step 3: add Capel St BA; Step 4: chase Xero invoice. See recipe: issue-41-addendum-2aug-n.md",
+        "61st check Sun 2 Aug UTC (16th today). Student arrived today. 0 SCAs. BC 24956 in BH shunt list (start -> Aug 4). Capel BA absent. Xero null 37d. Fix NOT RUN.",
+        "SCA+Capel urgent; arrived"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Student returns Tue 4 Aug 2026 (tomorrow, after Aug Bank Holiday) — 35th check\n• Booking course 24686 (Morning General, Jul 20-Sep 18 2026): active, fee = null, 0 class assignments\n• Booking course 1797 (Morning General, Apr 6-Jun 26 2026): still active 37 days after end date — fee EUR 1836, 1 class assignment (migration artifact)\n• SCA for week Aug 4 urgently needed on booking course 24686",
+        "Deactivate BC 1797; set fee on BC 24686; create SCA week Aug 4. See recipe: issue-24-addendum-2aug-l.md",
+        "35th check Sun 2 Aug UTC (15th today). Returns Tue Aug 4 (tomorrow). BC 24686 0 SCAs fee=null. BC 1797 stale 37d. Fix NOT RUN.",
+        "SCA needed; Aug 4 start; fee null"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Booking course 24925 (Academic Year Afternoon, Mar 9-Oct 2 2026): active; 1 class assignment (id 255, weekStart Jan 12 2026, weekEnd Jul 3 2026, class 11) — migration artifact, no SCA since Jul 3\n• Holiday 2500 on booking 18151: Jul 20-Aug 21 2026, 5 weeks. Student returns Mon 24 Aug 2026 — 22 days from now\n• Booking course 1982 (Academic Year Morning, Jun 30-Dec 19 2025): still active 226 days after end, 0 class assignments\n• Note: previous entries wrongly referenced Holiday 18151 — 18151 is the booking ID; actual holiday is id 2500",
+        "Deactivate BC 1982; create SCA week Aug 24 on BC 24925. See recipe: issue-15-addendum-2aug-h.md",
+        "19th check Sun 2 Aug UTC (11th today). Returns Mon Aug 24 (22d). SCA 255 ends Jul 3. Holiday id 2500 (not 18151 as previously stated). BC 1982 stale 226d. Fix NOT RUN.",
+        "SCA needed; returns 24 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• Booking 1605 (Ariunsarnai Batbayar, student 1047): status PENDING, confirmed = false, amount paid = EUR 0 — day 113 since course start\n• Booking course 1791 (Academic Year Renewal Morning, Apr 13-Oct 23 2026): active, 0 class assignments\n• Amount open: EUR 1509 — no payment ever received, 0 payments in database",
+        "Chase EUR 1509 payment or cancel booking 1605; if confirmed create SCA on BC 1791. See recipe: issue-20-addendum-2aug-c.md",
+        "14th check Sun 2 Aug UTC (4th today). Day 113. EUR 0/1509. 0 SCAs. BC 1791 active since Apr 13 (no SCA). Fix NOT RUN.",
+        "Day 113; EUR 0 / 1,509"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• Booking 17856 (Galbusera): status CONFIRMED, confirmed = false, amount paid = EUR 339.90, 0 payment records in SIS\n• Booking course 24631 (General English AM Plus, Jun 29-Jul 10 2026): still active — 23 days stale\n• Booking 17857 (Fassina): status CONFIRMED, confirmed = false, amount paid = EUR 339.90, 0 payment records in SIS\n• Booking course 24630 (General English AM Plus, Jun 29-Jul 10 2026): still active — 23 days stale\n• Orphan payments 16988 + 16989 (EUR 339.90 each, type = one_time_or_initial): bookingId = null (96 days orphaned — see Issue 1)",
+        "Deactivate BCs 24630+24631; link payments 16988+16989 to bookings 17856+17857. See recipe: issue-48-addendum-2aug-i.md",
+        "35th check Sun 2 Aug UTC (10th today). BCs 24630+24631 23d stale (ended Jul 10). 0 pmts linked. Orphan pmts 96d. Fix NOT RUN.",
+        "4 items open; BCs 23d stale"
+      ]
+    ]
+  }
+]

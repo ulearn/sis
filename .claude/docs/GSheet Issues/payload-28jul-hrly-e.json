@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H20:K20",
+    "values": [
+      [
+        "• Tue 28 Jul 2026 UTC — UNCHANGED\n• Booking course 89 (Morning IELTS, ended 22 May 2026): active = still true — 67 days stale\n• Booking course 90 (Private Lessons, ended 22 May 2026): active = still true — 67 days stale\n• Booking 83: CONFIRMED, EUR 2629.80 / 2629.80 fully paid, amount open = 0",
+        "Deactivate BC 89 + 90. See recipe: issue-19-addendum-28jul.md",
+        "Tue 28 Jul UTC. BC89 IELTS ended May22 active=STILL true (67d). BC90 Private Lessons ended May22 active=STILL true (67d). Fix NOT RUN.",
+        "BC89+90 stale 67d"
+      ]
+    ]
+  },
+  {
+    "range": "H22:K22",
+    "values": [
+      [
+        "• 7th check Tue 28 Jul 2026 UTC — UNCHANGED\n• Booking course 1604 (Morning General, booking 1461): active = true, ended 3 Jul 2026 — 25 days stale\n• No class assignment anomaly — cosmetic staleness only",
+        "Deactivate BC 1604. See recipe: issue-21-addendum-28jul.md",
+        "7th check Tue 28 Jul UTC. UNCHANGED. BC1604 Morning General ended Jul 3 active=STILL true (25d). Fix NOT RUN.",
+        "bc stale 25d; cosmetic"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• 42nd check Tue 28 Jul 2026 UTC — UNCHANGED\n• Booking course 23 (Intensive General 30, ended 22 May 2026): active = true — 67 days stale, booking 22 (EUR 1948 / 1948 fully paid)\n• Booking course 24826 (2 weeks Intensive General 30, ended 19 Jun 2026): active = true — 39 days stale\n• Booking 18034: PARTIAL, EUR 250 open, EUR 845 paid, confirmed = false",
+        "Deactivate BC 23 + 24826; chase EUR 250 on booking 18034. See recipe: issue-26-addendum-28jul.md",
+        "42nd check Tue 28 Jul UTC. BC23 67d stale, BC24826 39d stale. EUR250 open bk18034 PARTIAL confirmed=false. Fix NOT RUN.",
+        "2 BCs stale; EUR250 open; 67d"
+      ]
+    ]
+  },
+  {
+    "range": "H28:K28",
+    "values": [
+      [
+        "• 34th check Tue 28 Jul 2026 UTC — UNCHANGED\n• Booking 17909 (Sofiia Korkishchenko, student 768): CANCELLED but confirmed = true (anomaly)\n• Last updated 17 Jun 2026 — 41 days stale\n• Amount open = EUR 727.50, amount paid = EUR 0 — no payments on this booking\n• Void deadline: 25 Oct 2026 (89 days remaining)",
+        "Set confirmed = false on booking 17909; deactivate BC 24693. See recipe: issue-27-addendum-28jul.md",
+        "34th check Tue 28 Jul UTC. UNCHANGED. BK17909 CANCELLED confirmed=STILL true (41d). EUR727.50/0. Void by Oct 25. Fix NOT RUN.",
+        "void by Oct25; 89d"
+      ]
+    ]
+  },
+  {
+    "range": "H29:K29",
+    "values": [
+      [
+        "• 28th check Tue 28 Jul 2026 UTC — UNCHANGED\n• Booking 17850 (Paola Moreira, student 14456): status CONFIRMED — confirmed = false (anomaly)\n• Amount open = EUR 321.35, amount paid = null (unset)\n• Last updated 8 Jul 2026 — 20 days stale\n• Low priority: student appears in class but cannot be assigned",
+        "Verify payment externally then set confirmed = true on booking 17850. See recipe: issue-28-addendum-28jul.md",
+        "28th check Tue 28 Jul UTC. UNCHANGED. BK17850 CONFIRMED confirmed=STILL false. EUR321.35 open, amtPaid=null. 20d stale. Fix NOT RUN.",
+        "bk confirmed=false; low-pri; 20d"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Tue 28 Jul 2026 UTC — UNCHANGED\n• Duplicate of Issue 15 (row 16): same student, Saikhantes Shagdarsuren (student 1001)\n• Student record bulk-touched today at 09:38 UTC — holiday status unchanged\n• Student on holiday 20 Jul – 21 Aug 2026; new class assignment needed on return (24 Aug)",
+        "See Issue 15 for actions. Recipe: issue-29-addendum-28jul.md",
+        "Tue 28 Jul UTC. Dup of issue 15. Student 1001 bulk touched 09:38 UTC today — holiday status unchanged. Returns 24 Aug, new SCA needed.",
+        "window closed; see row 16"
+      ]
+    ]
+  }
+]

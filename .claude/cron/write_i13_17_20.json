@@ -1,0 +1,35 @@
+[
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• Booking 1605 (Ariunsarnai Batbayar, student 1047): status = PENDING — 96 calendar days without payment since course started 13 April 2026 (33rd check, Saturday 18 July 2026 UTC)\n• Amount paid = EUR 0 — zero payments on file; course fee = EUR 1509 — no class assignments on booking course 1791 ever\n• Booking last updated 23 June 2026 — no activity in 25 days\n• HubSpot deal 502951083215 still not advanced to Won",
+        "Enrolment decision needed — advance HubSpot deal 502951083215 to Won or cancel booking 1605. See recipe: issue-20-ariunsarnai-payment-due.md",
+        "Sat 18 Jul UTC (33rd check, fresh DB). BK1605 STILL PENDING Day 96 (course started Apr13). EUR0 paid; zero payments in DB; updatedAt=Jun23 (25d stale). BC1791 AY Renewal Morning Apr13-Oct23 active=true, 0 SCAs. Fix NOT RUN.",
+        "Day96; PENDING"
+      ]
+    ]
+  },
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "• Extra 96 (booking 17981, Lizbeth del Carmen Sierra Martinez, student 14522): Insurance extra, details = PEL;Health, fee = null — not priced (54 days since created 25 May 2026)\n• Booking 17981: Confirmed, confirmed flag = false, EUR 1407.50 / 1407.50 fully paid\n• Insurance arrangement still pending",
+        "Arrange insurance; set fee on extra 96 via SIS bk17981 Extras; supplementary invoice on HS deal 503569276136. See recipe: issue-13-lizbeth-health-insurance.md",
+        "Sat 18 Jul UTC (30th check). bookingExtra96 INSURANCE PEL;Health: fee=STILL null (54d since May25). Student Lizbeth del Carmen STILL uninsured since course started Jun01. bk17981 CONFIRMED EUR1407.50/1407.50. Fix NOT RUN.",
+        "insurance fee null; 54d"
+      ]
+    ]
+  },
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "• Booking 1308 (Ana Jessica Rosa de Paula Santos): CANCELLED — accidental click 7 June 2026, confirmed flag = false; 41 days since cancellation\n• Amount paid = EUR 1530, amount total = EUR 1530 — balanced, no refund issued\n• Payment 17186 (EUR 1280, paymentDate 1 May 2026): Xero payment ID = null — unreconciled 78 days\n• Payment 17050 (EUR 250): Xero payment ID = null — unreconciled 151+ days\n• Booking course 1350: active = still true (stale)",
+        "Reconcile payments 17186 (EUR 1280) and 17050 (EUR 250) in Xero; deactivate booking course 1350. See recipe: issue-17-ana-jessica-accidental-cancel.md",
+        "Sat 18 Jul UTC. CONFIRMED UNCHANGED (fresh DB). bk1308 CANCELLED EUR1530/1530 confirmed=false (updAt=Jun07, 41d since accidental cancel). PMT17186 EUR1280 xeroId=STILL null (payDate May01, 78d unrecon). PMT17050 EUR250 xeroId=STILL null (151d+). BC1350 active=STILL true. Fix NOT RUN.",
+        "pmts 151d; BC stale; 41d"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student class assignment 255 (Saikhantes Shagdarsuren, student 1001, booking course 24925): still the only ever assignment — class ID 11, week end 3 July 2026\n• Two full weeks now missed without assignment: week 6–10 July (5 school days, past) AND week 13–17 July (4 days in — last day tomorrow)\n• Booking course 24925 (Academic Year Afternoon): active, ends 2 October 2026 — 11 weeks remain\n• Booking course 1982 (Academic Year Morning, ended 19 December 2025): still active = true — 7 months stale\n• 76th check, Thursday 16 July UTC (9th check today)",
+        "Assign student 1001 (Saikhantes Shagdarsuren) to class 11 for week ending 17 July (LAST DAY TOMORROW). See recipe: issue-15-addendum-16jul.md",
+        "76th check Thu 16 Jul UTC (9th check today). BC24925 1 SCA (id=255 weekEnd=Jul03 classId=11). Zero assigns week Jul06-10 (5d past) + Jul13-17 (4d in, TOMORROW = last day). BC1982 ended Dec2025 still active=true (7mo stale). Holiday 2500 Jul20-Aug21 upcoming (4d away). Fix NOT RUN.",
+        "CRITICAL; LAST DAY TODAY"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• Booking 1605 (Ariunsarnai Batbayar, student 1047): status = PENDING — 94 calendar days without payment since course started 13 April 2026 (30th check, Thursday 16 July UTC)\n• Amount paid = EUR 0 — zero payments on file; course fee = EUR 1509 — no class assignments on booking course 1791 ever\n• Booking course 1791 (Academic Year Renewal Morning, 13 April to 23 October 2026): active = true, zero class assignments, zero payments\n• HubSpot deal 502951083215 — advance to Won or cancel booking 1605",
+        "Enrolment decision needed — advance HubSpot deal 502951083215 to Won or cancel booking 1605. See recipe: issue-20-ariunsarnai-payment-due.md",
+        "30th check Thu 16 Jul UTC (9th check today). BK1605 STILL PENDING — Day 94 since Apr13. EUR 0 paid of EUR 1509. Zero payments, zero SCAs. BC1791 AY-Renewal active ends Oct23. Neil: contact student/agency or cancel. Fix NOT RUN.",
+        "Day94; ENROLMENT"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking course 24991 (Edith Nunes, student 1015, General English AM, 13 July to 7 August 2026): zero class assignments — Day 4, Thursday 16 July UTC — 51st check (9th check today)\n• Booking 18214: Confirmed, EUR 608 fully paid\n• Payment 18004: EUR 608, type = null — payment type unclassified\n• Booking courses 24933 and 24934 (General English AM, ended 10 July 2026): active = still true — 6 days stale\n• TOMORROW (Friday 17 July) is the last day of this week — entire first week missed if no assignment today",
+        "Assign booking course 24991 (Edith Nunes) in To Be Assigned. Deactivate booking courses 24933 and 24934 (stale, ended Jul 10). See recipe: issue-22-addendum-16jul.md",
+        "51st check Thu 16 Jul UTC (9th check today). bc24991 GE AM Jul13-Aug07 still 0 SCAs (Day4, Mon-Thu missed). BCs 24933+24934 active=true (6d stale, ended Jul10). BK18214 CONF EUR608/608. Pmt18004 type=null. TOMORROW = last day of week. Fix NOT RUN.",
+        "Day4 URGENT; week end tmrw"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• August Bank Holiday 2026 (Monday 3 August): still missing from school closures — 17 days away — 33rd check, Thursday 16 July UTC (8th check today)\n• October Bank Holiday 2026 (Monday 26 October): still missing from school closures — 102 days away\n• Current school closures: 9 records — Good Friday 2026/2027/2028/2029/2030 and Christmas 2026–2027/2027–2028/2028–2029/2029–2030\n• Risk: booking course end dates landing on 3 August or 26 October will not be shunted to the next school day",
+        "Add August Bank Holiday (Monday 3 August 2026) and October Bank Holiday (Monday 26 October 2026) to school_closures table. See recipe: issue-38-course-date-ux.md",
+        "33rd check Thu 16 Jul UTC (8th check today). Aug BH Aug3 STILL missing (17d away). Oct BH Oct26 STILL missing (102d away). No Jul-Sep closures in DB confirmed by fresh query. Fix NOT RUN.",
+        "Aug BH missing; 17d"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Accommodation complaint resolved — booking accommodation 11358 (bed 180, host Mary Carver, Xuezhen Huang, booking 17831, 12 July to 2 August 2026): active = true, fee = EUR 900 — correctly in SIS\n• Booking course 24609 (Xuezhen Huang, student 14443, Morning General, 13 to 31 July 2026): zero class assignments — Day 4, Thursday 16 July UTC — 36th check (9th check today)\n• Booking 17831: Confirmed, confirmed = true, EUR 1396.90 fully paid, amount open = EUR 0\n• Four payments on booking 17831 (IDs 17180, 17987, 17988, 17963): all type = null — payment types unclassified\n• TOMORROW (Friday 17 July) is the last day of this week — entire first week missed if no class assignment today\n• Note: prior H column referenced accommodation 11352 (Veronica Martín, issue 37) in error — corrected this run",
+        "Assign student 14443 (Xuezhen Huang) to a class on booking course 24609 (Morning General). See recipe: issue-39-addendum-16jul.md",
+        "36th check Thu 16 Jul UTC (9th check today). bc24609 Morning General Jul13-Jul31 still 0 SCAs (Day4, Mon-Thu missed). BA11358 bed180 Jul12-Aug02 active=true (correct). BK17831 CONF EUR1396.90 fully paid. Pmts 17180/17987/17988/17963 all type=null. H corrected (removed erroneous 11352 Veronica ref). TOMORROW = last day of week. Fix NOT RUN.",
+        "Day4 URGENT; week end tmrw"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 3 confirmed booking courses end TOMORROW (Friday 17 July) with zero class assignments — 111th check, Thursday 16 July UTC (9th check today)\n• Booking course 1719 (Maria Magdalena Hermosilla Ogaz, student 992): Academic Year Afternoon, 26 January to 17 July 2026 — zero class assignments for entire course — amount open = EUR 144 (of EUR 1500 total)\n• Booking course 24946 (Lunel Dubost, student 14566): General English AM, 13 to 17 July 2026 — zero class assignments — fully paid\n• Booking course 24994 (Petru Ous, student 14591): General English AM, 13 to 17 July 2026 — zero class assignments — fully paid\n• Pending bookings ending tomorrow: booking 25 (Kritchana Ratcha-Anan, EUR 2638.75 fully unpaid) and bookings 18208/18209 (Maza Valladolid sisters, EUR 265 each fully unpaid)",
+        "Assign booking courses 1719/24946/24994 in To Be Assigned NOW (today is last day). Accounts check PENDING bookings 18208/18209/25. See recipe: issue-45-addendum-16jul.md",
+        "111th check Thu 16 Jul UTC (9th check today). CONFIRMED UNCHANGED. bc1719 (Maria Magdalena) amtOpen=EUR144. bc24946 (Lunel Dubost) fully paid. bc24994 (Petru Ous) fully paid. All end TOMORROW Jul17, all 0 SCAs. bks 18208/18209/25 still PENDING. TOMORROW = last day. Fix NOT RUN.",
+        "CRITICAL; LAST DAY TODAY"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 (HubSpot 1204827374829) and 16989 (HubSpot 1204846469317): EUR 339.90 each — booking ID = null, Xero payment ID = null — unlinked since 28 April 2026 (233rd check, 6 Jul 2026 UTC)\n• Booking 17856 (Margherita Galbusera, student 14461): Confirmed, confirmed field = false — booking course 24631 (General English AM Plus, 29 Jun to 10 Jul 2026, fee = null, zero class assignments)\n• Booking 17857 (Francesca Fassina, student 14462): Confirmed, confirmed field = false — booking course 24630 (General English AM Plus, 29 Jun to 10 Jul 2026, fee = null, zero class assignments)\n• Both booking courses active, Day 6 of 10 — ends Friday 10 July 2026 (4 school days remaining: 7, 8, 9, 10 Jul)\n• Students in school today with no attendance tracking; course fees still null\n• Root cause: webhook missed setting booking ID at payment creation on 28 April 2026",
+        "Link payments 16988 to booking 17856 and 16989 to booking 17857; set booking course fees to EUR 339.90; set confirmed = true on both bookings. See recipe: issue-1-orphan-payments.md",
+        "233rd check 6 Jul 04:03 UTC. UNCHANGED. Pmts 16988+16989 bookingId=STILL null xeroPaymentId=STILL null EUR339.90. Bks 17856+17857 CONFIRMED confirmed=STILL false amtPaid=339.9. BCs 24630+24631 GE-AM-Plus Jun29-Jul10 fee=STILL null active=true. COURSE ENDS FRIDAY JUL10 = 4 school days (7/8/9/10 Jul). 233 checks, SQL NOT RUN. NEIL: run 4-step SQL recipe TODAY before course ends.",
+        "URGENT; Fri Jul10"
+      ]
+    ]
+  },
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "• Document 171 is a DRAFT certificate (Certificate of Completion template) — created 5 June 2026, 32 days old, never issued (6 Jul 2026 UTC, 28th check)\n• Booking 1498: status = Confirmed, confirmed = false, amount paid = null\n• Booking course 1660 (ULearn Renewal Morning): ended 5 June 2026, still active = true\n• Certificate content confirmed complete — student name, dates, ILEP code correct\n• Fix: issue document 171 via SIS admin — student 947 > booking 1498 > Documents > Issue button",
+        "Issue the DRAFT certificate via SIS student 947 > booking 1498 > Documents > Issue button",
+        "28th check 6 Jul 04:03 UTC. UNCHANGED. Document 171 DRAFT 32 days (created Jun05, issuedAt=null). Booking 1498 CONFIRMED confirmed=false amountPaid=null. BC1660 ULearn Renewal Morning ended Jun05 STILL active=true (31d stale). NEIL: SIS student 947 > booking 1498 > Documents > Issue.",
+        "cert DRAFT; 32d"
+      ]
+    ]
+  },
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "• Extra 96 (booking 17981, Lizbeth del Carmen Sierra Martinez, student 14522): type INSURANCE, fee = null, active = true — insurance cost never set\n• Booking 17981: Confirmed, confirmed = false, fully paid EUR 1407.50 — Academic Year Afternoon Jun 1 2026 to Jan 29 2027\n• Student in class without health insurance fee set since course start — 42 calendar days as of 6 July 2026\n• Standard WORLD2GO insurance rate based on comparable booking 18149 (extra 218): EUR 150\n• Extra 95 (EXAM_FEE) is correctly priced at EUR 220 — only the insurance extra has no fee set",
+        "Arrange PEL + health insurance retro Jun01; set extra96.fee=150; supp invoice HS deal 503569276136. See recipe: issue-13-lizbeth-health-insurance.md",
+        "18th check 6 Jul 04:03 UTC. UNCHANGED. Extra 96 INSURANCE fee=STILL null (May25=42d stale). Details=PEL;Health, active=true, booking 17981 CONFIRMED fully paid EUR1407.50. NEIL: set insurance fee and raise supplemental invoice.",
+        "ins unpriced; D42"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Class assignment 255 (student 1001 Saikhantes Shagdarsuren, class 11 B1 Afternoon): week end = 3 July 2026 — EXPIRED; student missing class since Monday 6 July 2026 (121st check, 6 Jul 2026 UTC)\n• Booking course 24925 (Academic Year Afternoon, booking 18151): active, 9 March to 2 October 2026, fee EUR 1102.20\n• Booking 18151: Confirmed, confirmed = true, fully paid EUR 1339.20\n• Fix (NOT YET RUN, 121 checks): UPDATE student_class_assignments SET week_end = 2026-10-02 WHERE id = 255",
+        "Extend class assignment 255 week_end to 2026-10-02 (matches booking course 24925 end date). See recipe: issue-15-saikhantes-course-dates.md",
+        "121st check 6 Jul 04:03 UTC. UNCHANGED. SCA 255 weekEnd=2026-07-03 STILL EXPIRED. BC24925 AY-Afternoon Mar09-Oct02 active=true. Student 1001 has no valid SCA for week Jul6-10 — first school day (Monday Jul6) already missed. Fix is a single SQL UPDATE. NEIL: run the one-line UPDATE before end of day.",
+        "URGENT; SCA expired"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 (Edith Nunes, student 1015): Confirmed, confirmed = true, fully paid EUR 740 (amount open = 0) (86th check, 6 Jul 2026 UTC)\n• Two duplicate booking courses both still active with zero class assignments: booking course 24933 (General English AM, fee EUR 380) and booking course 24934 (General English AM, fee EUR 360) — same dates 15 June to 10 July 2026\n• Course ends Friday 10 July 2026 — 4 school days remaining; student in school with no attendance tracking\n• Payment 17895: EUR 740, type = null, Xero payment ID = null — not yet reconciled in Xero\n• Root cause: double webhook insert on HubSpot deal 505836060909 created two identical booking courses\n• Fix: deactivate booking course 24934 (lower fee EUR 360), then assign student 1015 to a class immediately",
+        "Deactivate booking course 24934 (EUR 360 lower fee); assign student 1015 to class. See recipe: issue-22-edith-nunes-payment-dups.md",
+        "86th check 6 Jul 04:03 UTC. UNCHANGED. Bk18158 CONFIRMED EUR740/740. BC24933 (GE-AM EUR380) + BC24934 (GE-AM EUR360) both active 0SCA ending Fri Jul10 = 4 school days. Student 1015 started Jun15 — Day 22 in school with 0 class assignment. Last SCA for s1015 was May15 on bc24668 (different course). NEIL: deactivate bc24934 then assign s1015 to class TODAY.",
+        "Day22; 0SCA; Fri10"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 16 booking courses started Monday 6 July 2026 — ALL have zero class assignments (55th check, 6 Jul 2026 UTC)\n• 11 confirmed students in school today with no attendance tracking:\n  Aitana Lopez student 7 (bc7, Morning General Jul 6-17, EUR 40 outstanding)\n  Pietro Colombo student 72 (bc81, Morning General Plus Jul 6-24, fully paid)\n  Tuguldurtugs Enkhtugs student 858 (bc1786, AY Renewal Morning Jul 6-Dec 25, EUR 250 outstanding)\n  Rakan Alghamdi student 14444 (bc24697, Academic Year Morning Jul 6-Dec 18, fully paid)\n  Mario Roggi student 14528 (bc24776, General English AM Jul 6-24, fully paid)\n  Kiyoshi Fujino student 14445 (bc24907, General English AM Jul 6-10, ENDS FRIDAY)\n  Veronica Martin student 278 (bc24931, General English AM Jul 6-10, ENDS FRIDAY)\n  Sarah Venturini Talizin student 1055 (bc24945, General English AM Jul 6-31, fully paid)\n  Hugo Lopez Tamayo student 14572 (bc24960, General English AM Jul 6-17, fully paid)\n  Yuxi Ke student 14577 (bc24965, General English PM Jul 6-Aug 21, fully paid)\n  Ettore Iovinella student 14564 (bc24968, General English AM Plus Jul 6-13, fully paid)\n• 5 pending bookings blocked — advance HubSpot deals to Won before assigning:\n  Zeyad Alharbi student 32 (bc38, Morning General Plus Jul 6-Sep 11, bk36 Pending EUR 0/4765)\n  Shih-Wei Huang student 356 (bc24913, AY Morning Jul 6-Dec 25, bk18138 Pending EUR 0/1832.50)\n  Sulaiman Abdullatif student 7309 (bc24930, Intensive English Jul 6-Aug 28, bk18155 Pending EUR 0/4259)\n  Gustavo Da Silva student 14570 (bc24955+dup bc24967, GE AM Plus Jul 6-Aug 7, bk18179 Pending EUR 0/1021.84)\n• Booking course 24941 (old course ended 3 Jul): still active = true — deactivate\n• Booking course 24967 (Gustavo duplicate of bc24955): still active = true — deactivate",
+        "Assign all 11 confirmed students to classes NOW (Day 1 passed — URGENT). Deactivate booking courses 24967 and 24941. Advance 4 pending HubSpot deals to Won, then assign. See recipe: issue-45-renewal-arrivals.md",
+        "55th check 6 Jul 04:03 UTC. UNCHANGED. All 16 BCs starting Jul6 = 0SCA confirmed (fresh DB). 11 CONFIRMED in school: bc7 Aitana, bc81 Pietro, bc1786 Tuguldurtugs, bc24697 Rakan, bc24776 Mario, bc24907 Kiyoshi (ends Fri), bc24931 Veronica (ends Fri), bc24945 Sarah, bc24960 Hugo, bc24965 Yuxi, bc24968 Ettore. 5 PENDING blocked. NEIL: assign all 11 CONFIRMED to classes TODAY.",
+        "Day1; 0SCA; URGENT"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• CRITICAL: 46 active courses with 0 class assignments (59th check, Tue 14 Jul UTC — down from 51 at morning check; 5 may have been assigned)\n• 6 courses end Friday 17 July — assign by end of business today:\n  1. Florian Baury (student 81, BC95, Morning General Plus 29 Jun–17 Jul): 12 school days missed — most urgent of Friday group\n  2. Silvia Maza Valladolid (student 14583, BC24985, General English PM 6–17 Jul): 8 school days missed\n  3. Gladis Maza Valladolid (student 14584, BC24986, General English PM 6–17 Jul): 8 school days missed\n  4. Lunel Dubost (student 14566, BC24946, General English AM 13–17 Jul): Day 2, 3 school days left\n  5. Petru Ous (student 14591, BC24994, General English AM 13–17 Jul): Day 2 — NEW, not in morning check\n  6. Luz Maria Sobrino Blanco (student 14589, BC24992, General English AM 13–17 Jul): Day 2 — NEW, not in morning check\n• Pietro Colombo (student 72, BC81, Morning General Plus 6–24 Jul): 9 school days missed, ends 24 July\n• Academic Year Renewal courses all still 0 class assignments: Sophia Borim BC1820 (12 days missed), Kayque Coelho BC1821 (12 days missed), Tuguldurtugs Enkhtugs BC1786 (7 days missed)\n• Root cause: new booking course ID at renewal — class assignment not transferred automatically (systemic bug)",
+        "Assign class for all 6 Friday courses NOW via SIS Admin > Classes > To Be Assigned, then Pietro, then Academic Year renewals. See recipe: issue-45-addendum-14jul.md",
+        "59th check Tue 14 Jul UTC (afternoon). 46 BCs with 0 SCAs (was 51 morning — 5 reduction since morning check). 6 end Fri Jul17 (NEW: Petru Ous BC24994 s14591, Luz Maria Sobrino Blanco BC24992 s14589 — both Jul13-17 Day2). Pietro BC81 Day9 ends Jul24. AY renewals: Sophia BC1820, Kayque BC1821, Tuguldurtugs BC1786 still 0 SCAs. Fix NOT RUN.",
+        "CRITICAL; 46 BCs; 6 end Fri"
+      ]
+    ]
+  }
+]

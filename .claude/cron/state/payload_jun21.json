@@ -1,0 +1,46 @@
+[
+  {
+    "range": "H17:K17",
+    "values": [
+      [
+        "• Bed assignment 11282 (bed 66) ran May 15 – Jun 05 but active = true (stale flag — ended 14 days ago)\n• Historical issue — Mélie term completed Jun 05\n• Overlap constraint from bed assignment 11158 (ended May 17) is also cleared",
+        "UPDATE booking_accommodations SET active=false WHERE id=11282 (low-priority cleanup). Re-issue doc148 only if student requests. See recipe: issue-16-melie-accomm-dates.md",
+        "Jun21 hrly: ba11282 active=true UNCHANGED (endDate=Jun05, updAt=Jun05, 16d stale, fresh DB). Historical stale flag — no operational impact. Low-priority cleanup only.",
+        "historical"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• Student 983 (Flavía Nascimento Mariano) visaStatus = null — never saved, Prisma save error still unresolved\n• Booking 1534 is CONFIRMED, paid EUR 1308 / 1308, confirmed = true\n• Class assignment active: class 11 (B1 PM) from Jun 15 to Nov 20 — student is in class\n• Prior assignment: class 9 (A2 PM) Jun 01 – Jun 14 — completed normally\n• Visa null no longer blocking class assignment — issue resolved via alternate path",
+        "Set visaStatus = Approved via SIS personal details (low priority, cosmetic). See recipe: issue-18-flavia-visa-save-error.md",
+        "Jun21 hrly: s983 visaStatus=null (updAt=Jun15, 6d stale, fresh DB). sca265 B1-PM Jun15-Nov20 ACTIVE. bk1534 CONFIRMED paid=1308/1308. In class normally. Cosmetic fix only — SIS → student 983 → Personal Details → set visaStatus=Approved.",
+        "in class; visa cosmetic"
+      ]
+    ]
+  },
+  {
+    "range": "H24:K24",
+    "values": [
+      [
+        "• Course 828 (Morning General, booking 787) has end_date Feb 27 — 3 days BEFORE its start_date Mar 02 (backwards)\n• Legacy DST off-by-one bug from issue 2 — one of 56 unfixed oddities from migration\n• Course 829 (Mar 30 – Jun 05) has ended — no active courses for student 397 (Enshi Lu)\n• Student holiday 52 ran Mar 23 – Mar 29 — correct end_date for course 828 = Mar 20\n• Low-priority data-hygiene only — student term finished",
+        "(NOT RUN) UPDATE booking_courses SET end_date=2026-03-20 WHERE id=828. Low priority. See recipe: issue-23-enshi-lu-backwards-course.md",
+        "Jun21 hrly: bc828 STILL BACKWARDS startDate=Mar02 endDate=Feb27 (updAt=May11=41d stale, fresh DB). bc829 ended Jun05. Historical DST bug — student long since left. Low priority. Fix NOT RUN.",
+        "ended;date bug"
+      ]
+    ]
+  },
+  {
+    "range": "H32:K32",
+    "values": [
+      [
+        "• Week calculation in src/routes/attendance.ts lines 213-214 uses local-time getDay() and setHours() on UTC-midnight dates — shows Sunday instead of Monday as week start on BST server\n• src/scripts/attendance.ts lines 36-37 already use UTC methods (correct, fixed earlier)\n• Bug affects attendance sheet print week-start day for all users in summer (BST active)",
+        "Change src/routes/attendance.ts L213-214: getDate() to getUTCDate(), getDay() to getUTCDay(), setHours() to setUTCHours(). See recipe: issue-31-attendance-sheet-week-bug.md",
+        "Jun21 hrly: routes/attendance.ts L213-214 UNCHANGED — getDay()/setHours() still local-time (BST week-start bug). 2-line UTC fix NOT applied. No DB change needed.",
+        "route fix pending"
+      ]
+    ]
+  }
+]

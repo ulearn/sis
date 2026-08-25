@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 3 confirmed students end TOMORROW Friday 17 July — zero class assignments — 102nd check, Thursday 16 July UTC\n• Booking course 1719 (Maria Magdalena Hermosilla Ogaz, student 992): Academic Year Afternoon, 26 Jan to 17 Jul 2026 — 0 class assignments — never assigned a class for entire AY course\n• Booking course 24946 (Lunel Dubost, student 14566): General English AM, 13 to 17 Jul 2026 — 0 class assignments\n• Booking course 24994 (Petru Ous, student 14591): General English AM, 13 to 17 Jul 2026 — 0 class assignments\n• New finding: 3 additional PENDING bookings end tomorrow with 0 class assignments — booking 25 (Kritchana RATCHA-ANAN, Academic Year Morning, PENDING), bookings 18208 + 18209 (Silvia and Gladis Maza Valladolid, General English PM, both PENDING, started 6 July)",
+        "Assign booking courses 1719/24946/24994 in To Be Assigned TODAY (last chance); accounts review PENDING bookings 25/18208/18209. See recipe: issue-45-addendum-16jul.md",
+        "102nd check Thu 16 Jul UTC. 3 confirmed students still unassigned: Maria Magdalena (BC1719 AY Aft), Lunel Dubost (BC24946 AM), Petru Ous (BC24994 AM). NEW: PENDING bookings 25 (Kritchana AY Morning) + 18208/18209 (Maza Valladolid sisters PM) also ending tomorrow with 0 SCAs. Fix NOT RUN.",
+        "CRITICAL; LAST DAY TODAY"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking course 24686 (Alberto Squillace, student 1052, Morning General, 20 July to 18 September 2026): fee = still null — 61st check, Thursday 16 July UTC\n• Booking 1611: Confirmed, confirmed = true — course starts Monday 20 July (4 days away)\n• Booking course 1797 (Morning General, ended 26 June 2026): active = still true — 20 days stale",
+        "Set fee on booking course 24686 before 20 July; deactivate booking course 1797. See recipe: issue-24-alberto-fidelo-course-split.md",
+        "61st check Thu 16 Jul UTC. Booking course 24686 fee=null confirmed. Booking 1611 CONFIRMED (confirmed=true). Booking course 1797 still active=true (ended Jun 26, 20d stale). 4 days to course start Mon Jul 20. Fix NOT RUN.",
+        "fee null; 4d to Mon"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking course 24991 (Edith Nunes, student 1015, General English AM, 13 July to 7 August 2026): zero class assignments — Day 4, Thursday 16 July UTC — 42nd check\n• Booking 18214: Confirmed, EUR 608 / EUR 608 — fully paid\n• Booking courses 24933 and 24934 (General English AM, ended 10 July 2026): active = still true — 6 days stale\n• Four school days missed without a class: Monday 13, Tuesday 14, Wednesday 15, Thursday 16 July",
+        "Assign student 1015 (Edith Nunes) to a class on booking course 24991; deactivate booking courses 24933 and 24934. See recipe: issue-22-addendum-16jul.md",
+        "42nd check Thu 16 Jul UTC. Still 0 class assignments (4 days missed Mon-Thu). Booking courses 24933/24934 still active=true (ended Jul 10, 6d stale). Fix NOT RUN.",
+        "Day4 URGENT; 0 SCAs"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• August Bank Holiday 2026 (Monday 3 August): still missing from school closures — 18 days away — 27th check, Thursday 16 July UTC\n• October Bank Holiday 2026 (Monday 26 October): still missing from school closures — 102 days away\n• Current school closures: 9 records — Good Friday 2026/2027/2028/2029/2030 (5 records) and Christmas break 2026/2027/2028/2029 (4 records) — zero bank holiday records in the database",
+        "Add August Bank Holiday (Mon 3 Aug 2026) and October Bank Holiday (Mon 26 Oct 2026) to school_closures with isPaidHoliday = true. See recipe: issue-38-course-date-ux.md",
+        "27th check Thu 16 Jul UTC. August Bank Holiday Aug 3 missing (18d away). October Bank Holiday Oct 26 missing (102d away). 9 closures: Good Friday x5 + Christmas x4. Zero bank holiday records in database. Fix NOT RUN.",
+        "Aug BH missing; 18d"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student class assignment 255 (Saikhantes Shagdarsuren, student 1001, booking course 24925): week start 12 January 2026, week end 3 July 2026 — still the only assignment — 67th check, Thursday 16 July UTC\n• Zero class assignments for week ending 17 July 2026 — TODAY IS THE LAST DAY to assign for the week beginning 13 July\n• Two weeks of class missed since last assignment: week ending 10 July (past, retroactive possible) and week ending 17 July (TOMORROW — LAST CHANCE)\n• Booking course 24925 (Academic Year Afternoon, booking 18151): active = true, runs to 2 October 2026 — 11 weeks remaining after this week",
+        "Assign student 1001 (Saikhantes Shagdarsuren) to class 11 for WB 17 July TODAY (last chance); then assign all remaining weeks to 2 October. See recipe: issue-15-saikhantes-class.md",
+        "67th check Thu 16 Jul UTC. Only assignment 255 (weekEnd Jul 3). Week ending Jul 10 missed (retroactive possible). Week ending Jul 17 LAST DAY TODAY. Course runs to Oct 2 (11 weeks ahead). Fix NOT RUN.",
+        "CRITICAL; TODAY=last day for WB Jul17"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Booking course 24609 (Xuezhen Huang, student 14443, Morning General, 13 to 31 July 2026): zero class assignments — Day 4, Thursday 16 July UTC — 28th check\n• Booking 17831: Confirmed, EUR 1396.90 / EUR 1396.90 — fully paid\n• Booking accommodation 11358 (bed 180, host Mary Carver, 12 July to 2 August 2026): active = true, fee = EUR 900 — bed correctly assigned and confirmed\n• Accommodation issue is RESOLVED — only class assignment still needed",
+        "Assign student 14443 (Xuezhen Huang) to a class on booking course 24609. See recipe: issue-39-addendum-16jul.md",
+        "28th check Thu 16 Jul UTC. Booking course 24609 still 0 class assignments (Day 4, Mon-Thu missed). Booking accommodation 11358 bed 180 active=true confirmed — accommodation resolved. Only class assignment needed. Fix NOT RUN.",
+        "Day4; 0 SCAs; BA ok"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Two payments are unlinked — booking ID = null, Xero payment ID = null (60 days since creation on 28 Apr)\n• Payment 16988 (HubSpot payment 1204827374829) maps to Booking 17856 (Margherita Galbusera) — EUR 339.90\n• Payment 16989 (HubSpot payment 1204846469317) maps to Booking 17857 (Francesca Fassina) — EUR 339.90\n• Both bookings: status = Confirmed, confirmed = false — students blocked from class assignment lists\n• Both bookings: amountPaid = amountTotal = EUR 339.90 but zero payment rows are linked (Fidelo-era denormalised value)\n• Booking courses 24631 (booking 17856) + 24630 (booking 17857): General English AM Plus, Jun 29 to Jul 10 — fee = null",
+        "(1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; then set booking course fees. See recipe: issue-1-orphan-payments.md",
+        "hrly Jun27 SAT UTC (64th check, fresh DB): pmt16988+16989 STILL bookingId=null, xeroId=null — 60d since Apr28. bk17856+17857 STILL confirmed=false. amountPaid=amountTotal=339.90 on both bookings but ZERO linked payment rows found. bc24630+bc24631 fee=null. CLASSES START MON JUN29 IN ~36h. NEIL: EMERGENCY WEEKEND — link pmts + set bc fees + confirmed=true on both bookings before 09:00 Mon Jun29.",
+        "Jun29 36h EMERG"
+      ]
+    ]
+  },
+  {
+    "range": "H6:K6",
+    "values": [
+      [
+        "• Rakan Alghamdi LOA resolved — doc 204 issued Jun 08 via booking 17915 (see Issue 14)\n• Khongorzul Uranaa booking 17871 remains in ESCROW — confirmed = true (database anomaly)\n• Amount paid EUR 300 of EUR 2313.62 total — EUR 2013.62 outstanding, 50 days with no change (10th check, fresh DB Jun 27 UTC)\n• Booking course 24644 (Academic Year Morning Aug 04 2025 to Jan 23 2026) ended 5 months ago\n• Payment 17375 (EUR 300) is linked to booking 17871 but has no Xero payment ID and no HubSpot payment ID\n• Last booking update: 08 May 2026 (50 days stale) — no action taken",
+        "Rakan LOA done (Issue 14). Decide fate of bk17871 Khongorzul: write off, pursue, or reclassify EUR 2013.62 stale ESCROW. See recipe: issue-4-rakan-loa-barcode.md",
+        "hrly Jun27 SAT UTC (10th check, fresh DB): bk17871 ESCROW conf=true amtPaid=300/2313.62 (EUR2013.62 outstanding) UNCHANGED. pmt17375 EUR300 bookingId=17871 (IS linked) xeroId=null hsId=null. 50+ days stale, no action taken. Neil: decide write off / pursue / reclassify EUR2013.62.",
+        "EUR2013; 50d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Booking 18151 (Academic Year Afternoon, Mar 09 to Sep 11) is Confirmed, fully paid EUR 1339.20\n• Class assignment 255 (class 11, B1 PM) has week start = 12 Jan 2026 (wrong — should be 09 Mar) and week end = 03 Jul 2026 (wrong — should be 11 Sep)\n• Week end 03 Jul expires in 6 days — after that Saikhantes is invisible to class scheduling for 10 weeks\n• Booking course 24925 (Academic Year Afternoon) runs correctly to 11 Sep — only the class assignment window is wrong\n• Saikhantes has NO other class assignments — class assignment 255 is the only record",
+        "One SQL line (NOT RUN): UPDATE student_class_assignments SET week_start=2026-03-09, week_end=2026-09-11 WHERE id=255. See recipe: issue-29-saikhantes-jan12-start-date.md",
+        "hrly Jun27 SAT UTC (27th check, fresh DB): sca255 weekStart=Jan12(WRONG) weekEnd=Jul03(WRONG) STILL UNCHANGED — 6 days to expiry. bc24925 AY-Aft Mar09-Sep11 active=true fee=1102.20. NEIL: URGENT — must run UPDATE before Fri Jul03 or Saikhantes invisible in class lists for 10 weeks (Jul03-Sep11).",
+        "sca255; Jul03=6d"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• Student 917 (Uyanga Tungalag) confirmed in school since 27 Apr — 61 days with zero class assignments (fresh DB Jun 27)\n• Booking 1467 is Confirmed (confirmed = true), paid EUR 2405 / 2405 — data source Fidelo, no HubSpot Deal ID\n• Booking course 1613 (Academic Year Morning, 27 Apr to 16 Oct) is active with no class assignment\n• Student visa status = null — most likely blocker for class assignment; HubSpot contact ID also null",
+        "Assign class for bc1613 via SIS UI (no SQL needed). Set visaStatus on student 917. See recipe: issue-25-uyanga-visa-escrow.md",
+        "hrly Jun27 SAT UTC (Day 61, fresh DB): visaStatus=STILL NULL. SCA=0. bk1467 CONF confirmed=true amtPaid=2405/2405 (fully paid). bc1613 AY-Morning Apr27-Oct16 active=true fee=3370. 61 DAYS IN SCHOOL, ZERO CLASSES. NEIL: set visaStatus on student 917 then assign class via SIS UI.",
+        "D61; 0SCA; CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Class assignment 255 (class 11, B1 PM) has week start = 12 Jan and week end = 3 Jul — both wrong (confirmed live Jun 27)\n• Booking course 24925 (Academic Year Afternoon, 9 Mar to 11 Sep) is the correct course for student Saikhantes (student 1001)\n• Class assignment week end expires in 6 days (3 Jul) — leaves 10 weeks uncovered through 11 Sep\n• Only one class assignment exists for student 1001 — no backup assignment",
+        "(NOT RUN) UPDATE student_class_assignments SET week_start=2026-03-09, week_end=2026-09-11 WHERE id=255. See recipe: issue-29-saikhantes-jan12-start-date.md",
+        "hrly Jun27 SAT UTC (39th check, fresh DB): sca255 STILL weekStart=Jan12(WRONG) weekEnd=Jul03(WRONG) UNCHANGED — 6 days to expiry. Same issue as row 16 (Issue 15). NEIL: URGENT — run UPDATE before Fri Jul03 or Saikhantes loses class assignment for 10 weeks.",
+        "sca255; Jul03=6d; URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H44:K44",
+    "values": [
+      [
+        "• Four stale bed 84 records STILL active = true — blocking Pietro check-in (48th check, fresh DB Jun 27 UTC)\n  — Accommodation 9917 (booking 1274): ended May 16 — 42 days stale\n  — Accommodation 11157 (booking 100): ended May 10 — 48 days stale\n  — Accommodation 11159 (booking 100): ended May 30 — 28 days stale\n  — Accommodation 11180 (booking 81): ended Jun 20 — 7 days stale (last touched Jun 22 without deactivation)\n• Pietro accommodation 11311 (booking 17980): Jun 28 to Sep 13, bed 84, active = true — record IS CORRECT\n• Booking 17980: Confirmed, confirmed = true, EUR 5331 fully paid",
+        "(NOT RUN) UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180). See recipe: issue-36b-pietro-accomm-dates.md",
+        "hrly Jun27 SAT UTC (48th check, fresh DB): accomm 11311 (bk17980) Jun28-Sep13 active=true — PIETRO RECORD IS SET UP CORRECTLY. 4 stale bed84 STILL active=true: 9917(ended May16) + 11157(ended May10) + 11159(ended May30) + 11180(ended Jun20). bk17980 confirmed=true EUR5331/5331. NEIL: run SQL in I column TODAY — Pietro checks in TOMORROW Jun28.",
+        "Jun28=TOMORROW"
+      ]
+    ]
+  }
+]

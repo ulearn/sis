@@ -1,0 +1,433 @@
+{
+  "prunedAt": "2026-06-05T01:51:41.425Z",
+  "deletedCount": 59,
+  "failedCount": 0,
+  "totalEur": 34135,
+  "deleted": [
+    {
+      "id": "1224361023729",
+      "num": "INV-1010",
+      "amount": 600,
+      "deadXero": "9a7ecaef-1529-4097-a02e-9b20b845500b",
+      "hsPaymentId": "2070780461"
+    },
+    {
+      "id": "1224365804758",
+      "num": "INV-1010",
+      "amount": 23,
+      "deadXero": "e5dc6ff4-eb21-48dc-8adb-970979bdf295",
+      "hsPaymentId": "6424425988"
+    },
+    {
+      "id": "1224604565740",
+      "num": "INV-1010",
+      "amount": 23,
+      "deadXero": "47c48331-3f2b-400e-b099-2a327cf2163b",
+      "hsPaymentId": "8356866163"
+    },
+    {
+      "id": "1224643510468",
+      "num": "INV-1010",
+      "amount": 23,
+      "deadXero": "ea3fbe01-d099-424e-b3aa-8831df6856be",
+      "hsPaymentId": "7940400190"
+    },
+    {
+      "id": "1224653640897",
+      "num": "INV-1010",
+      "amount": 23,
+      "deadXero": "48eb4175-6ec2-4ea0-a6a2-fc82f771fe9a",
+      "hsPaymentId": "5426668181"
+    },
+    {
+      "id": "1224657022143",
+      "num": "INV-1010",
+      "amount": 23,
+      "deadXero": "2b9e60e5-4e46-4693-9351-1a0b2862922b",
+      "hsPaymentId": "1374559795"
+    },
+    {
+      "id": "1224683383030",
+      "num": "INV-1010",
+      "amount": 23,
+      "deadXero": "00376339-eeb9-40a2-b6ed-f6dbd04577d7",
+      "hsPaymentId": "7102516353"
+    },
+    {
+      "id": "1224698227955",
+      "num": "INV-1010",
+      "amount": 23,
+      "deadXero": "3a0cbff0-8d58-4e1b-a60c-5b64fab7d089",
+      "hsPaymentId": "4307695181"
+    },
+    {
+      "id": "1224703540427",
+      "num": "INV-1010",
+      "amount": 23,
+      "deadXero": "cfb222dd-ce7f-4771-a2f4-02cd93133bf1",
+      "hsPaymentId": "3433595778"
+    },
+    {
+      "id": "1224707336425",
+      "num": "INV-1010",
+      "amount": 23,
+      "deadXero": "ce6e6df1-3789-429e-8cd7-afca2931dad4",
+      "hsPaymentId": "1720021128"
+    },
+    {
+      "id": "1224713714892",
+      "num": "INV-1010",
+      "amount": 23,
+      "deadXero": "e8431399-06e0-4349-a1e3-727848dfed8d",
+      "hsPaymentId": "5077905775"
+    },
+    {
+      "id": "1224714720470",
+      "num": "INV-1010",
+      "amount": 23,
+      "deadXero": "cc3bdd65-71e0-417e-b449-b8ebe89ba733",
+      "hsPaymentId": "4682122090"
+    },
+    {
+      "id": "1224728499403",
+      "num": "INV-1010",
+      "amount": 23,
+      "deadXero": "b38eb224-6e06-48be-916c-15f7508b0653",
+      "hsPaymentId": "6656755805"
+    },
+    {
+      "id": "1224741208259",
+      "num": "INV-1010",
+      "amount": 23,
+      "deadXero": "32b9cc4b-4937-4c39-a137-42033b929440",
+      "hsPaymentId": "3244351304"
+    },
+    {
+      "id": "1224780229855",
+      "num": "INV-1010",
+      "amount": 23,
+      "deadXero": "15b50310-8b2d-411d-941f-ab07f8874220",
+      "hsPaymentId": "2856822586"
+    },
+    {
+      "id": "1224781416669",
+      "num": "INV-1010",
+      "amount": 23,
+      "deadXero": "2babc668-96e4-44ce-be81-d7ec2b58f8f9",
+      "hsPaymentId": "7844026760"
+    },
+    {
+      "id": "1224781662437",
+      "num": "INV-1010",
+      "amount": 23,
+      "deadXero": "b242f7cd-dbb6-4c0e-9bb7-fc8f9a600383",
+      "hsPaymentId": "6631141204"
+    },
+    {
+      "id": "1224808692969",
+      "num": "INV-1010",
+      "amount": 23,
+      "deadXero": "30ba47b2-e8a4-4249-9a37-944c99de6e23",
+      "hsPaymentId": "2380769626"
+    },
+    {
+      "id": "1230635816139",
+      "num": "INV-1091",
+      "amount": 275,
+      "deadXero": "052bf5ed-2d21-4210-a5b4-818703398660",
+      "hsPaymentId": "0287677561"
+    },
+    {
+      "id": "1230770497725",
+      "num": "INV-1046",
+      "amount": 3815,
+      "deadXero": "8c6d6f08-0ce2-4f40-8e65-7b507c16fbe2",
+      "hsPaymentId": "1513394005"
+    },
+    {
+      "id": "1237273158842",
+      "num": "INV-1177",
+      "amount": 544.32,
+      "deadXero": "a63ca7ce-2f37-4e32-88f4-c63c8e9f3cfa",
+      "hsPaymentId": "1996220420"
+    },
+    {
+      "id": "1237274735856",
+      "num": "INV-1200",
+      "amount": 490,
+      "deadXero": "8e651515-71f3-4a1c-9154-006294bf3e37",
+      "hsPaymentId": "1984657575"
+    },
+    {
+      "id": "1237276280016",
+      "num": "INV-1202",
+      "amount": 438.6,
+      "deadXero": "8e651515-71f3-4a1c-9154-006294bf3e37",
+      "hsPaymentId": "5894417939"
+    },
+    {
+      "id": "1237277329646",
+      "num": "INV-1201",
+      "amount": 237.6,
+      "deadXero": "8e651515-71f3-4a1c-9154-006294bf3e37",
+      "hsPaymentId": "1054654502"
+    },
+    {
+      "id": "1237376491749",
+      "num": "INV-1203",
+      "amount": 291.2,
+      "deadXero": "8e651515-71f3-4a1c-9154-006294bf3e37",
+      "hsPaymentId": "7042558291"
+    },
+    {
+      "id": "1237388203256",
+      "num": "INV-1171",
+      "amount": 201.6,
+      "deadXero": "a63ca7ce-2f37-4e32-88f4-c63c8e9f3cfa",
+      "hsPaymentId": "6677176734"
+    },
+    {
+      "id": "1237982600399",
+      "num": "INV-1176",
+      "amount": 250,
+      "deadXero": "15b84453-b9db-4e2c-b4ac-dcfd107348a8",
+      "hsPaymentId": "4267004317"
+    },
+    {
+      "id": "1238165238008",
+      "num": "INV-1194",
+      "amount": 250,
+      "deadXero": "8a3601ff-37d2-4f75-9f7b-0d24fd701b9f",
+      "hsPaymentId": "6329678954"
+    },
+    {
+      "id": "1238171698387",
+      "num": "INV-1192",
+      "amount": 250,
+      "deadXero": "8a3601ff-37d2-4f75-9f7b-0d24fd701b9f",
+      "hsPaymentId": "7050890727"
+    },
+    {
+      "id": "1238175476927",
+      "num": "INV-1116",
+      "amount": 250,
+      "deadXero": "8a3601ff-37d2-4f75-9f7b-0d24fd701b9f",
+      "hsPaymentId": "5332357929"
+    },
+    {
+      "id": "1238229567675",
+      "num": "INV-1131",
+      "amount": 250,
+      "deadXero": "8a3601ff-37d2-4f75-9f7b-0d24fd701b9f",
+      "hsPaymentId": "2955999475"
+    },
+    {
+      "id": "1239495219416",
+      "num": "INV-1228",
+      "amount": 2008,
+      "deadXero": "4c8e436c-f4b5-4a98-ae75-5f456afe10e3",
+      "hsPaymentId": "5656288791"
+    },
+    {
+      "id": "1240960706784",
+      "num": "INV-1218",
+      "amount": 1428,
+      "deadXero": "ec506e0b-9092-47bf-bbc4-9240f69f6c2a",
+      "hsPaymentId": "5722418570"
+    },
+    {
+      "id": "1241316497610",
+      "num": "INV-1220",
+      "amount": 1282.4,
+      "deadXero": "ec9bd82a-9d2b-4605-a297-b0a850c082ec",
+      "hsPaymentId": "2662678404"
+    },
+    {
+      "id": "1241476496616",
+      "num": "INV-1213",
+      "amount": 403.2,
+      "deadXero": "b039d81d-9cab-43e1-b613-b779c000600a",
+      "hsPaymentId": "7990178597"
+    },
+    {
+      "id": "1242075301106",
+      "num": "INV-1318",
+      "amount": 302.4,
+      "deadXero": "d4b0caba-7d81-4463-86c4-21579e0a4b6f",
+      "hsPaymentId": "8263914189"
+    },
+    {
+      "id": "1242086096076",
+      "num": "INV-1317",
+      "amount": 100.8,
+      "deadXero": "d4b0caba-7d81-4463-86c4-21579e0a4b6f",
+      "hsPaymentId": "9611393381"
+    },
+    {
+      "id": "1242356949186",
+      "num": "INV-1320",
+      "amount": 587.59,
+      "deadXero": "345cd89c-87f4-4929-b9c1-b92fe72a8973",
+      "hsPaymentId": "1940946435"
+    },
+    {
+      "id": "1242640129245",
+      "num": "INV-1321",
+      "amount": 2510.5,
+      "deadXero": "2f4fd1fb-1224-461b-8026-766d0f2bdc2e",
+      "hsPaymentId": "3218014417"
+    },
+    {
+      "id": "1242659151049",
+      "num": "INV-1322",
+      "amount": 1185,
+      "deadXero": "c33cfb7b-b94d-4cdd-ae2b-2f0c24b114b3",
+      "hsPaymentId": "6798675218"
+    },
+    {
+      "id": "1242768297171",
+      "num": "INV-1323",
+      "amount": 1185,
+      "deadXero": "c33cfb7b-b94d-4cdd-ae2b-2f0c24b114b3",
+      "hsPaymentId": "6881678210"
+    },
+    {
+      "id": "1243641434332",
+      "num": "INV-1253",
+      "amount": 635.04,
+      "deadXero": "b039d81d-9cab-43e1-b613-b779c000600a",
+      "hsPaymentId": "6672382246"
+    },
+    {
+      "id": "1243642935515",
+      "num": "INV-1123",
+      "amount": 250,
+      "deadXero": "10ae3222-c533-4b0b-935a-927d77746590",
+      "hsPaymentId": "5205089252"
+    },
+    {
+      "id": "1243645393122",
+      "num": "INV-1109",
+      "amount": 250,
+      "deadXero": "10ae3222-c533-4b0b-935a-927d77746590",
+      "hsPaymentId": "8780279645"
+    },
+    {
+      "id": "1243648653549",
+      "num": "INV-1192",
+      "amount": 1471.55,
+      "deadXero": "9fc30c07-c3f0-471f-bab9-d7d3d1311e45",
+      "hsPaymentId": "5789709838"
+    },
+    {
+      "id": "1243649462472",
+      "num": "INV-1122",
+      "amount": 250,
+      "deadXero": "10ae3222-c533-4b0b-935a-927d77746590",
+      "hsPaymentId": "8741296738"
+    },
+    {
+      "id": "1243656884416",
+      "num": "INV-1252",
+      "amount": 635.04,
+      "deadXero": "b039d81d-9cab-43e1-b613-b779c000600a",
+      "hsPaymentId": "7587087144"
+    },
+    {
+      "id": "1243724072133",
+      "num": "INV-1214",
+      "amount": 403.2,
+      "deadXero": "b039d81d-9cab-43e1-b613-b779c000600a",
+      "hsPaymentId": "7074001988"
+    },
+    {
+      "id": "1243664935112",
+      "num": "INV-1208",
+      "amount": 302.4,
+      "deadXero": "b039d81d-9cab-43e1-b613-b779c000600a",
+      "hsPaymentId": "0177321874",
+      "err": 429
+    },
+    {
+      "id": "1243717859544",
+      "num": "INV-1154",
+      "amount": 1373,
+      "deadXero": "d99a1639-afb7-4d6b-8d7d-69432656f171",
+      "hsPaymentId": "2665675332",
+      "err": 429
+    },
+    {
+      "id": "1243717861619",
+      "num": "INV-1119",
+      "amount": 250,
+      "deadXero": "10ae3222-c533-4b0b-935a-927d77746590",
+      "hsPaymentId": "9591666517",
+      "err": 429
+    },
+    {
+      "id": "1243721021680",
+      "num": "INV-1131",
+      "amount": 1178,
+      "deadXero": "c17de2d8-cac4-4027-84fe-b7a98f0e1f36",
+      "hsPaymentId": "1960801080",
+      "err": 429
+    },
+    {
+      "id": "1243721044168",
+      "num": "INV-1254",
+      "amount": 1812.41,
+      "deadXero": "345cd89c-87f4-4929-b9c1-b92fe72a8973",
+      "hsPaymentId": "3394187920",
+      "err": 429
+    },
+    {
+      "id": "1243724976333",
+      "num": "INV-1121",
+      "amount": 250,
+      "deadXero": "10ae3222-c533-4b0b-935a-927d77746590",
+      "hsPaymentId": "4906060456",
+      "err": 429
+    },
+    {
+      "id": "1243727851758",
+      "num": "INV-1209",
+      "amount": 1428,
+      "deadXero": "ec506e0b-9092-47bf-bbc4-9240f69f6c2a",
+      "hsPaymentId": "9058226110",
+      "err": 429
+    },
+    {
+      "id": "1243729126596",
+      "num": "INV-1215",
+      "amount": 403.2,
+      "deadXero": "b039d81d-9cab-43e1-b613-b779c000600a",
+      "hsPaymentId": "0686828831",
+      "err": 429
+    },
+    {
+      "id": "1243729595627",
+      "num": "INV-1207",
+      "amount": 504,
+      "deadXero": "b039d81d-9cab-43e1-b613-b779c000600a",
+      "hsPaymentId": "8931082435",
+      "err": 429
+    },
+    {
+      "id": "1244844951759",
+      "num": "INV-1167",
+      "amount": 1606,
+      "deadXero": "d176d5da-b716-4736-a849-6cfd84677ccc",
+      "hsPaymentId": "2049360759",
+      "err": 429
+    },
+    {
+      "id": "1244939622644",
+      "num": "INV-1168",
+      "amount": 1606,
+      "deadXero": "d176d5da-b716-4736-a849-6cfd84677ccc",
+      "hsPaymentId": "2877283107",
+      "err": 429
+    }
+  ],
+  "failed": []
+}

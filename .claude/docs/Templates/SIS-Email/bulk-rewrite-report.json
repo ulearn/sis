@@ -1,0 +1,1108 @@
+{
+  "ranAt": "2026-05-16T13:47:37.695Z",
+  "summary": {
+    "templatesTouched": 60,
+    "totalReplacements": 413,
+    "totalLoopStrips": 61,
+    "distinctUnmappedRemaining": 68
+  },
+  "perTemplate": [
+    {
+      "slug": "LevelTest-Week1",
+      "replacements": 1,
+      "loopStrips": 0,
+      "remainingUnmapped": []
+    },
+    {
+      "slug": "Attendance-Absence",
+      "replacements": 1,
+      "loopStrips": 0,
+      "remainingUnmapped": []
+    },
+    {
+      "slug": "ExamBooked-Student",
+      "replacements": 7,
+      "loopStrips": 0,
+      "remainingUnmapped": [
+        "exam",
+        "exam_date"
+      ]
+    },
+    {
+      "slug": "ExamInfo-12Weeks",
+      "replacements": 1,
+      "loopStrips": 0,
+      "remainingUnmapped": []
+    },
+    {
+      "slug": "ExamInfo-6Weeks",
+      "replacements": 1,
+      "loopStrips": 0,
+      "remainingUnmapped": []
+    },
+    {
+      "slug": "Host-Availability",
+      "replacements": 8,
+      "loopStrips": 0,
+      "remainingUnmapped": [
+        "age"
+      ]
+    },
+    {
+      "slug": "Host-Cancel",
+      "replacements": 8,
+      "loopStrips": 2,
+      "remainingUnmapped": []
+    },
+    {
+      "slug": "PlacementTest",
+      "replacements": 1,
+      "loopStrips": 0,
+      "remainingUnmapped": [
+        "link_placementtest"
+      ]
+    },
+    {
+      "slug": "Apart-Provider-Booking-Detail",
+      "replacements": 15,
+      "loopStrips": 0,
+      "remainingUnmapped": [
+        "emergency_contact_phone",
+        "arrival_airline",
+        "booked_transfer"
+      ]
+    },
+    {
+      "slug": "Arrival-Agent-Apart",
+      "replacements": 15,
+      "loopStrips": 2,
+      "remainingUnmapped": [
+        "start_loop_accommodation_allocations",
+        "accommodation_allocation_start",
+        "accommodation_allocation_end",
+        "accommodation_description",
+        "accommodation_googlemaps",
+        "end_loop_accommodation_allocations"
+      ]
+    },
+    {
+      "slug": "Host-Group",
+      "replacements": 18,
+      "loopStrips": 0,
+      "remainingUnmapped": [
+        "age",
+        "student_criteria_allergies",
+        "start_loop_roommate",
+        "end_loop_roommate",
+        "accommodation_allocation_start",
+        "accommodation_allocation_end",
+        "accommodation_assigned_nights"
+      ]
+    },
+    {
+      "slug": "Host-UpdateCRM",
+      "replacements": 1,
+      "loopStrips": 0,
+      "remainingUnmapped": []
+    },
+    {
+      "slug": "Arrival-Student-Apart-FromHere",
+      "replacements": 18,
+      "loopStrips": 0,
+      "remainingUnmapped": [
+        "booked_transfer"
+      ]
+    },
+    {
+      "slug": "Arrival-Student-Apart-SHARING",
+      "replacements": 13,
+      "loopStrips": 2,
+      "remainingUnmapped": [
+        "start_loop_accommodation_allocations",
+        "start_loop_roommate",
+        "accommodation_googlemaps",
+        "end_loop_roommate",
+        "end_loop_accommodation_allocations",
+        "booked_transfer"
+      ]
+    },
+    {
+      "slug": "Arrival-Student-Apart",
+      "replacements": 13,
+      "loopStrips": 1,
+      "remainingUnmapped": [
+        "start_loop_accommodation_allocations",
+        "accommodation_allocation_start",
+        "accommodation_allocation_end",
+        "accommodation_googlemaps",
+        "booked_transfer"
+      ]
+    },
+    {
+      "slug": "Arrival-Student-Flight",
+      "replacements": 1,
+      "loopStrips": 0,
+      "remainingUnmapped": []
+    },
+    {
+      "slug": "Arrival-Student-SelfCheckIn",
+      "replacements": 1,
+      "loopStrips": 0,
+      "remainingUnmapped": []
+    },
+    {
+      "slug": "Depart-CheckOut-Capel",
+      "replacements": 2,
+      "loopStrips": 0,
+      "remainingUnmapped": []
+    },
+    {
+      "slug": "Depart-CheckOut-Providers",
+      "replacements": 3,
+      "loopStrips": 0,
+      "remainingUnmapped": []
+    },
+    {
+      "slug": "Arrival-Transfer-Agent",
+      "replacements": 21,
+      "loopStrips": 0,
+      "remainingUnmapped": [
+        "arrival_transfer_company_phone"
+      ]
+    },
+    {
+      "slug": "credit-note",
+      "replacements": 1,
+      "loopStrips": 0,
+      "remainingUnmapped": [
+        "manual_credit_note_amount",
+        "manual_credit_note_currency"
+      ]
+    },
+    {
+      "slug": "Pass-Reset-Student",
+      "replacements": 2,
+      "loopStrips": 0,
+      "remainingUnmapped": [
+        "user_name",
+        "user_login_code"
+      ]
+    },
+    {
+      "slug": "provider-confirm",
+      "replacements": 12,
+      "loopStrips": 0,
+      "remainingUnmapped": [
+        "arrival_transfer_driver",
+        "arrival_pick_up",
+        "accommodation_contact_firststname"
+      ]
+    },
+    {
+      "slug": "PayReceived-Student",
+      "replacements": 10,
+      "loopStrips": 4,
+      "remainingUnmapped": [
+        "start_loop_individual_transfer",
+        "booked_transfer",
+        "departure_date",
+        "end_loop_individual_transfer"
+      ]
+    },
+    {
+      "slug": "Access-Student",
+      "replacements": 2,
+      "loopStrips": 0,
+      "remainingUnmapped": [
+        "user_name",
+        "user_password"
+      ]
+    },
+    {
+      "slug": "Details-Provider",
+      "replacements": 11,
+      "loopStrips": 0,
+      "remainingUnmapped": [
+        "insurance_provider"
+      ]
+    },
+    {
+      "slug": "B2B-EnrollConfirm",
+      "replacements": 16,
+      "loopStrips": 4,
+      "remainingUnmapped": [
+        "mothertongue",
+        "address",
+        "zip",
+        "city",
+        "country"
+      ]
+    },
+    {
+      "slug": "B2B-Portal-Access",
+      "replacements": 1,
+      "loopStrips": 0,
+      "remainingUnmapped": [
+        "agency_activation_key"
+      ]
+    },
+    {
+      "slug": "Student-BookingAutoResponse",
+      "replacements": 20,
+      "loopStrips": 4,
+      "remainingUnmapped": [
+        "mothertongue",
+        "address",
+        "zip",
+        "city",
+        "country",
+        "billing_address",
+        "billing_zip",
+        "billing_city",
+        "billing_country",
+        "start_loop_insurances",
+        "insurance",
+        "date_insurance_start",
+        "date_insurance_end",
+        "end_loop_insurances"
+      ]
+    },
+    {
+      "slug": "Policy-Student",
+      "replacements": 2,
+      "loopStrips": 0,
+      "remainingUnmapped": [
+        "start_loop_insurances",
+        "insurance",
+        "insurance_provider",
+        "date_insurance_start",
+        "date_insurance_end",
+        "insurance_price",
+        "end_loop_insurances"
+      ]
+    },
+    {
+      "slug": "B2B-Updated-RequestPay",
+      "replacements": 12,
+      "loopStrips": 4,
+      "remainingUnmapped": [
+        "start_loop_individual_transfer",
+        "booked_transfer",
+        "departure_date",
+        "end_loop_individual_transfer"
+      ]
+    },
+    {
+      "slug": "B2C-Confirm-RequestPay",
+      "replacements": 27,
+      "loopStrips": 12,
+      "remainingUnmapped": [
+        "start_loop_individual_transfer",
+        "booked_transfer",
+        "departure_date",
+        "end_loop_individual_transfer",
+        "amount"
+      ]
+    },
+    {
+      "slug": "FeedbackFinal",
+      "replacements": 1,
+      "loopStrips": 0,
+      "remainingUnmapped": []
+    },
+    {
+      "slug": "FeedbackFinal2-ExitLetter",
+      "replacements": 1,
+      "loopStrips": 0,
+      "remainingUnmapped": []
+    },
+    {
+      "slug": "FeedbackQuick",
+      "replacements": 1,
+      "loopStrips": 0,
+      "remainingUnmapped": [
+        "link_feedback_11"
+      ]
+    },
+    {
+      "slug": "FeedbackThanks-Cert-Google",
+      "replacements": 1,
+      "loopStrips": 0,
+      "remainingUnmapped": []
+    },
+    {
+      "slug": "Confirm-Group",
+      "replacements": 12,
+      "loopStrips": 4,
+      "remainingUnmapped": [
+        "group_name",
+        "group_address",
+        "group_address_addon",
+        "group_zip",
+        "group_city",
+        "group_country",
+        "group_count_member",
+        "group_count_leader",
+        "group_count_exkl_leader",
+        "group_contact_firstname",
+        "group_contact_surname",
+        "start_loop_group_members",
+        "customernumber",
+        "end_loop_group_members"
+      ]
+    },
+    {
+      "slug": "FeedbackThanks-Cert",
+      "replacements": 1,
+      "loopStrips": 0,
+      "remainingUnmapped": []
+    },
+    {
+      "slug": "DocRequest",
+      "replacements": 1,
+      "loopStrips": 0,
+      "remainingUnmapped": []
+    },
+    {
+      "slug": "LEAP",
+      "replacements": 1,
+      "loopStrips": 0,
+      "remainingUnmapped": []
+    },
+    {
+      "slug": "Trial-FollowUp",
+      "replacements": 2,
+      "loopStrips": 0,
+      "remainingUnmapped": []
+    },
+    {
+      "slug": "FeedbackWeek1",
+      "replacements": 2,
+      "loopStrips": 0,
+      "remainingUnmapped": [
+        "link_feedback_8"
+      ]
+    },
+    {
+      "slug": "Day1-Orient-BankHols",
+      "replacements": 1,
+      "loopStrips": 0,
+      "remainingUnmapped": [
+        "user_name",
+        "user_password"
+      ]
+    },
+    {
+      "slug": "Day1-Orient",
+      "replacements": 1,
+      "loopStrips": 0,
+      "remainingUnmapped": [
+        "user_name",
+        "user_password"
+      ]
+    },
+    {
+      "slug": "Attendance-Absence-Week+",
+      "replacements": 1,
+      "loopStrips": 0,
+      "remainingUnmapped": []
+    },
+    {
+      "slug": "Attendance-Punctuality",
+      "replacements": 1,
+      "loopStrips": 0,
+      "remainingUnmapped": []
+    },
+    {
+      "slug": "PlacementTest-Remind",
+      "replacements": 1,
+      "loopStrips": 0,
+      "remainingUnmapped": [
+        "link_placementtest"
+      ]
+    },
+    {
+      "slug": "ISD-Online-IRP",
+      "replacements": 1,
+      "loopStrips": 0,
+      "remainingUnmapped": []
+    },
+    {
+      "slug": "LoA-Attach-Agent",
+      "replacements": 2,
+      "loopStrips": 0,
+      "remainingUnmapped": []
+    },
+    {
+      "slug": "LoA-Attach-Student",
+      "replacements": 1,
+      "loopStrips": 0,
+      "remainingUnmapped": []
+    },
+    {
+      "slug": "ISD-DocsRequired",
+      "replacements": 1,
+      "loopStrips": 0,
+      "remainingUnmapped": []
+    },
+    {
+      "slug": "Host-Booking",
+      "replacements": 20,
+      "loopStrips": 0,
+      "remainingUnmapped": [
+        "accommodation_allocation_start",
+        "accommodation_allocation_end",
+        "age",
+        "student_criteria_allergies"
+      ]
+    },
+    {
+      "slug": "Host-Group-Leaders",
+      "replacements": 18,
+      "loopStrips": 0,
+      "remainingUnmapped": [
+        "age",
+        "student_criteria_allergies",
+        "start_loop_roommate",
+        "end_loop_roommate",
+        "accommodation_allocation_start",
+        "accommodation_allocation_end",
+        "accommodation_assigned_nights"
+      ]
+    },
+    {
+      "slug": "Apart-Student-RoomChange",
+      "replacements": 9,
+      "loopStrips": 0,
+      "remainingUnmapped": [
+        "start_selected_entries",
+        "end_selected_entries"
+      ]
+    },
+    {
+      "slug": "Arrival-Student-Apart-2",
+      "replacements": 13,
+      "loopStrips": 2,
+      "remainingUnmapped": [
+        "accommodation_googlemaps",
+        "booked_transfer"
+      ]
+    },
+    {
+      "slug": "Student-Cancel",
+      "replacements": 7,
+      "loopStrips": 2,
+      "remainingUnmapped": []
+    },
+    {
+      "slug": "PayReceived-Agent",
+      "replacements": 13,
+      "loopStrips": 4,
+      "remainingUnmapped": [
+        "start_loop_individual_transfer",
+        "booked_transfer",
+        "departure_date",
+        "end_loop_individual_transfer",
+        "date_last_course_end"
+      ]
+    },
+    {
+      "slug": "B2B-Confirm-RequestPay",
+      "replacements": 22,
+      "loopStrips": 8,
+      "remainingUnmapped": [
+        "start_loop_individual_transfer",
+        "booked_transfer",
+        "departure_date",
+        "end_loop_individual_transfer"
+      ]
+    },
+    {
+      "slug": "B2C-Updated-RequestPay",
+      "replacements": 9,
+      "loopStrips": 4,
+      "remainingUnmapped": [
+        "start_loop_individual_transfer",
+        "booked_transfer",
+        "departure_date",
+        "end_loop_individual_transfer",
+        "amount"
+      ]
+    },
+    {
+      "slug": "Trial",
+      "replacements": 4,
+      "loopStrips": 2,
+      "remainingUnmapped": []
+    }
+  ],
+  "unmappedByFrequency": [
+    {
+      "token": "booked_transfer",
+      "occurrences": 15,
+      "templates": [
+        "Apart-Provider-Booking-Detail",
+        "Arrival-Student-Apart-FromHere",
+        "Arrival-Student-Apart-SHARING",
+        "Arrival-Student-Apart",
+        "PayReceived-Student",
+        "PayReceived-Student",
+        "B2B-Updated-RequestPay",
+        "B2C-Confirm-RequestPay",
+        "B2C-Confirm-RequestPay",
+        "B2C-Confirm-RequestPay",
+        "Arrival-Student-Apart-2",
+        "PayReceived-Agent",
+        "B2B-Confirm-RequestPay",
+        "B2B-Confirm-RequestPay",
+        "B2C-Updated-RequestPay"
+      ]
+    },
+    {
+      "token": "start_loop_individual_transfer",
+      "occurrences": 10,
+      "templates": [
+        "PayReceived-Student",
+        "PayReceived-Student",
+        "B2B-Updated-RequestPay",
+        "B2C-Confirm-RequestPay",
+        "B2C-Confirm-RequestPay",
+        "B2C-Confirm-RequestPay",
+        "PayReceived-Agent",
+        "B2B-Confirm-RequestPay",
+        "B2B-Confirm-RequestPay",
+        "B2C-Updated-RequestPay"
+      ]
+    },
+    {
+      "token": "departure_date",
+      "occurrences": 10,
+      "templates": [
+        "PayReceived-Student",
+        "PayReceived-Student",
+        "B2B-Updated-RequestPay",
+        "B2C-Confirm-RequestPay",
+        "B2C-Confirm-RequestPay",
+        "B2C-Confirm-RequestPay",
+        "PayReceived-Agent",
+        "B2B-Confirm-RequestPay",
+        "B2B-Confirm-RequestPay",
+        "B2C-Updated-RequestPay"
+      ]
+    },
+    {
+      "token": "end_loop_individual_transfer",
+      "occurrences": 10,
+      "templates": [
+        "PayReceived-Student",
+        "PayReceived-Student",
+        "B2B-Updated-RequestPay",
+        "B2C-Confirm-RequestPay",
+        "B2C-Confirm-RequestPay",
+        "B2C-Confirm-RequestPay",
+        "PayReceived-Agent",
+        "B2B-Confirm-RequestPay",
+        "B2B-Confirm-RequestPay",
+        "B2C-Updated-RequestPay"
+      ]
+    },
+    {
+      "token": "age",
+      "occurrences": 6,
+      "templates": [
+        "Host-Availability",
+        "Host-Group",
+        "Host-Group",
+        "Host-Booking",
+        "Host-Group-Leaders",
+        "Host-Group-Leaders"
+      ]
+    },
+    {
+      "token": "accommodation_allocation_start",
+      "occurrences": 5,
+      "templates": [
+        "Arrival-Agent-Apart",
+        "Host-Group",
+        "Arrival-Student-Apart",
+        "Host-Booking",
+        "Host-Group-Leaders"
+      ]
+    },
+    {
+      "token": "accommodation_allocation_end",
+      "occurrences": 5,
+      "templates": [
+        "Arrival-Agent-Apart",
+        "Host-Group",
+        "Arrival-Student-Apart",
+        "Host-Booking",
+        "Host-Group-Leaders"
+      ]
+    },
+    {
+      "token": "student_criteria_allergies",
+      "occurrences": 5,
+      "templates": [
+        "Host-Group",
+        "Host-Group",
+        "Host-Booking",
+        "Host-Group-Leaders",
+        "Host-Group-Leaders"
+      ]
+    },
+    {
+      "token": "accommodation_googlemaps",
+      "occurrences": 4,
+      "templates": [
+        "Arrival-Agent-Apart",
+        "Arrival-Student-Apart-SHARING",
+        "Arrival-Student-Apart",
+        "Arrival-Student-Apart-2"
+      ]
+    },
+    {
+      "token": "user_name",
+      "occurrences": 4,
+      "templates": [
+        "Pass-Reset-Student",
+        "Access-Student",
+        "Day1-Orient-BankHols",
+        "Day1-Orient"
+      ]
+    },
+    {
+      "token": "accommodation_reset_password_link",
+      "occurrences": 3,
+      "templates": [
+        "Host-Login",
+        "Host-Login",
+        "Host-Login"
+      ]
+    },
+    {
+      "token": "start_loop_accommodation_allocations",
+      "occurrences": 3,
+      "templates": [
+        "Arrival-Agent-Apart",
+        "Arrival-Student-Apart-SHARING",
+        "Arrival-Student-Apart"
+      ]
+    },
+    {
+      "token": "start_loop_roommate",
+      "occurrences": 3,
+      "templates": [
+        "Host-Group",
+        "Arrival-Student-Apart-SHARING",
+        "Host-Group-Leaders"
+      ]
+    },
+    {
+      "token": "end_loop_roommate",
+      "occurrences": 3,
+      "templates": [
+        "Host-Group",
+        "Arrival-Student-Apart-SHARING",
+        "Host-Group-Leaders"
+      ]
+    },
+    {
+      "token": "user_password",
+      "occurrences": 3,
+      "templates": [
+        "Access-Student",
+        "Day1-Orient-BankHols",
+        "Day1-Orient"
+      ]
+    },
+    {
+      "token": "amount",
+      "occurrences": 3,
+      "templates": [
+        "B2C-Confirm-RequestPay",
+        "B2C-Confirm-RequestPay",
+        "B2C-Updated-RequestPay"
+      ]
+    },
+    {
+      "token": "link_placementtest",
+      "occurrences": 2,
+      "templates": [
+        "PlacementTest",
+        "PlacementTest-Remind"
+      ]
+    },
+    {
+      "token": "end_loop_accommodation_allocations",
+      "occurrences": 2,
+      "templates": [
+        "Arrival-Agent-Apart",
+        "Arrival-Student-Apart-SHARING"
+      ]
+    },
+    {
+      "token": "accommodation_assigned_nights",
+      "occurrences": 2,
+      "templates": [
+        "Host-Group",
+        "Host-Group-Leaders"
+      ]
+    },
+    {
+      "token": "insurance_provider",
+      "occurrences": 2,
+      "templates": [
+        "Details-Provider",
+        "Policy-Student"
+      ]
+    },
+    {
+      "token": "mothertongue",
+      "occurrences": 2,
+      "templates": [
+        "B2B-EnrollConfirm",
+        "Student-BookingAutoResponse"
+      ]
+    },
+    {
+      "token": "address",
+      "occurrences": 2,
+      "templates": [
+        "B2B-EnrollConfirm",
+        "Student-BookingAutoResponse"
+      ]
+    },
+    {
+      "token": "zip",
+      "occurrences": 2,
+      "templates": [
+        "B2B-EnrollConfirm",
+        "Student-BookingAutoResponse"
+      ]
+    },
+    {
+      "token": "city",
+      "occurrences": 2,
+      "templates": [
+        "B2B-EnrollConfirm",
+        "Student-BookingAutoResponse"
+      ]
+    },
+    {
+      "token": "country",
+      "occurrences": 2,
+      "templates": [
+        "B2B-EnrollConfirm",
+        "Student-BookingAutoResponse"
+      ]
+    },
+    {
+      "token": "agency_activation_key",
+      "occurrences": 2,
+      "templates": [
+        "B2B-Portal-Access",
+        "B2B-Portal-Access"
+      ]
+    },
+    {
+      "token": "start_loop_insurances",
+      "occurrences": 2,
+      "templates": [
+        "Student-BookingAutoResponse",
+        "Policy-Student"
+      ]
+    },
+    {
+      "token": "insurance",
+      "occurrences": 2,
+      "templates": [
+        "Student-BookingAutoResponse",
+        "Policy-Student"
+      ]
+    },
+    {
+      "token": "date_insurance_start",
+      "occurrences": 2,
+      "templates": [
+        "Student-BookingAutoResponse",
+        "Policy-Student"
+      ]
+    },
+    {
+      "token": "date_insurance_end",
+      "occurrences": 2,
+      "templates": [
+        "Student-BookingAutoResponse",
+        "Policy-Student"
+      ]
+    },
+    {
+      "token": "end_loop_insurances",
+      "occurrences": 2,
+      "templates": [
+        "Student-BookingAutoResponse",
+        "Policy-Student"
+      ]
+    },
+    {
+      "token": "exam",
+      "occurrences": 1,
+      "templates": [
+        "ExamBooked-Student"
+      ]
+    },
+    {
+      "token": "exam_date",
+      "occurrences": 1,
+      "templates": [
+        "ExamBooked-Student"
+      ]
+    },
+    {
+      "token": "item_firstname",
+      "occurrences": 1,
+      "templates": [
+        "Host-GardaVet"
+      ]
+    },
+    {
+      "token": "emergency_contact_phone",
+      "occurrences": 1,
+      "templates": [
+        "Apart-Provider-Booking-Detail"
+      ]
+    },
+    {
+      "token": "arrival_airline",
+      "occurrences": 1,
+      "templates": [
+        "Apart-Provider-Booking-Detail"
+      ]
+    },
+    {
+      "token": "accommodation_description",
+      "occurrences": 1,
+      "templates": [
+        "Arrival-Agent-Apart"
+      ]
+    },
+    {
+      "token": "arrival_transfer_company_phone",
+      "occurrences": 1,
+      "templates": [
+        "Arrival-Transfer-Agent"
+      ]
+    },
+    {
+      "token": "manual_credit_note_amount",
+      "occurrences": 1,
+      "templates": [
+        "credit-note"
+      ]
+    },
+    {
+      "token": "manual_credit_note_currency",
+      "occurrences": 1,
+      "templates": [
+        "credit-note"
+      ]
+    },
+    {
+      "token": "user_login_code",
+      "occurrences": 1,
+      "templates": [
+        "Pass-Reset-Student"
+      ]
+    },
+    {
+      "token": "arrival_transfer_driver",
+      "occurrences": 1,
+      "templates": [
+        "provider-confirm"
+      ]
+    },
+    {
+      "token": "arrival_pick_up",
+      "occurrences": 1,
+      "templates": [
+        "provider-confirm"
+      ]
+    },
+    {
+      "token": "accommodation_contact_firststname",
+      "occurrences": 1,
+      "templates": [
+        "provider-confirm"
+      ]
+    },
+    {
+      "token": "billing_address",
+      "occurrences": 1,
+      "templates": [
+        "Student-BookingAutoResponse"
+      ]
+    },
+    {
+      "token": "billing_zip",
+      "occurrences": 1,
+      "templates": [
+        "Student-BookingAutoResponse"
+      ]
+    },
+    {
+      "token": "billing_city",
+      "occurrences": 1,
+      "templates": [
+        "Student-BookingAutoResponse"
+      ]
+    },
+    {
+      "token": "billing_country",
+      "occurrences": 1,
+      "templates": [
+        "Student-BookingAutoResponse"
+      ]
+    },
+    {
+      "token": "insurance_price",
+      "occurrences": 1,
+      "templates": [
+        "Policy-Student"
+      ]
+    },
+    {
+      "token": "link_feedback_11",
+      "occurrences": 1,
+      "templates": [
+        "FeedbackQuick"
+      ]
+    },
+    {
+      "token": "group_name",
+      "occurrences": 1,
+      "templates": [
+        "Confirm-Group"
+      ]
+    },
+    {
+      "token": "group_address",
+      "occurrences": 1,
+      "templates": [
+        "Confirm-Group"
+      ]
+    },
+    {
+      "token": "group_address_addon",
+      "occurrences": 1,
+      "templates": [
+        "Confirm-Group"
+      ]
+    },
+    {
+      "token": "group_zip",
+      "occurrences": 1,
+      "templates": [
+        "Confirm-Group"
+      ]
+    },
+    {
+      "token": "group_city",
+      "occurrences": 1,
+      "templates": [
+        "Confirm-Group"
+      ]
+    },
+    {
+      "token": "group_country",
+      "occurrences": 1,
+      "templates": [
+        "Confirm-Group"
+      ]
+    },
+    {
+      "token": "group_count_member",
+      "occurrences": 1,
+      "templates": [
+        "Confirm-Group"
+      ]
+    },
+    {
+      "token": "group_count_leader",
+      "occurrences": 1,
+      "templates": [
+        "Confirm-Group"
+      ]
+    },
+    {
+      "token": "group_count_exkl_leader",
+      "occurrences": 1,
+      "templates": [
+        "Confirm-Group"
+      ]
+    },
+    {
+      "token": "group_contact_firstname",
+      "occurrences": 1,
+      "templates": [
+        "Confirm-Group"
+      ]
+    },
+    {
+      "token": "group_contact_surname",
+      "occurrences": 1,
+      "templates": [
+        "Confirm-Group"
+      ]
+    },
+    {
+      "token": "start_loop_group_members",
+      "occurrences": 1,
+      "templates": [
+        "Confirm-Group"
+      ]
+    },
+    {
+      "token": "customernumber",
+      "occurrences": 1,
+      "templates": [
+        "Confirm-Group"
+      ]
+    },
+    {
+      "token": "end_loop_group_members",
+      "occurrences": 1,
+      "templates": [
+        "Confirm-Group"
+      ]
+    },
+    {
+      "token": "link_feedback_8",
+      "occurrences": 1,
+      "templates": [
+        "FeedbackWeek1"
+      ]
+    },
+    {
+      "token": "start_selected_entries",
+      "occurrences": 1,
+      "templates": [
+        "Apart-Student-RoomChange"
+      ]
+    },
+    {
+      "token": "end_selected_entries",
+      "occurrences": 1,
+      "templates": [
+        "Apart-Student-RoomChange"
+      ]
+    },
+    {
+      "token": "date_last_course_end",
+      "occurrences": 1,
+      "templates": [
+        "PayReceived-Agent"
+      ]
+    }
+  ]
+}

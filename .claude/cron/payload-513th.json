@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 513th check Tue 25 Aug 2026 UTC — no change since 512th (earlier today)\n• Student 1001 (Saikhantes Shagdarsuren): SCA 255 expired 53 days ago (week end 2026-07-03)\n• Booking Course 24925 (Academic Year Afternoon): Mar 9 to Oct 2 2026, active = true — 38 days remaining, 0 current class assignments\n• Booking Course 1982 (Academic Year Morning): ended Dec 19 2025, active = true — 248 days stale, 0 class assignments\n• Fix NOT RUN",
+        "Assign new SCA to BC 24925 (class 11 or current class); deactivate stale BC 1982. See recipe: issue-15-addendum-24aug.md",
+        "513th Tue 25 Aug UTC. SCA 255 expired 53d ago (Jul 3). BC 24925 ends Oct 2 = 38d. BC 1982 stale 248d. Fix NOT RUN.",
+        "CRITICAL: SCA needed NOW"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• 513th check Tue 25 Aug 2026 UTC — no change since 510th (earlier today)\n• Current occupant Alessandro Signorotti (Booking Accommodation 11173): ends 30 Aug 2026 — 5 DAYS AWAY\n• Next occupant Rosa Maria Mollica (Booking Accommodation 25): starts 30 Aug 2026 — 5 DAYS AWAY\n• 5 stale Booking Accommodations on bed 83 still active — must deactivate before Rosa arrives:\n• Booking Accommodation 11239 (Ivan Rodriguez Solares): ended 24 May 2026 — 93 days stale, fee EUR 1,050\n• Booking Accommodation 11168 (Diego Da Silva Saldanha): ended 20 Jun 2026 — 66 days stale, fee EUR 700\n• Booking Accommodation 11285 (Jesus Manuel Ramirez Diaz): ended 5 Jul 2026 — 51 days stale, fee null\n• Booking Accommodation 11352 (Veronica Martin): ended 11 Jul 2026 — 45 days stale, fee EUR 360\n• Booking Accommodation 11179 (Africa Mera Bachir): ended 9 Aug 2026 — 16 days stale, fee EUR 1,360\n• Fix NOT RUN — DEADLINE AUG 30",
+        "Deactivate Booking Accommodations 11239, 11168, 11285, 11352, 11179 on bed 83 BEFORE Aug 30. See recipe: issue-37-addendum-25aug.md",
+        "513th Tue 25 Aug UTC. 5 stale BAs unchanged. Rosa Mollica (BA 25) starts Aug 30 = 5d. Fix NOT RUN.",
+        "5 stale BAs; DEADLINE Aug30 = 5d"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 513th check Tue 25 Aug 2026 UTC — no change since 510th (earlier today)\n• Booking Accommodation 11357 (bed 178): ended 2026-08-15 — 10 days stale, active, fee EUR 1,250\n• Booking Accommodation 11396 (bed 44): ended 2026-08-22 — 3 days stale, active, fee null\n• Booking Accommodation 11397 (bed 89): CURRENT stay, ends 2026-09-06, active, fee null — SET FEE BEFORE SEP 6\n• Booking Accommodation 11392 (bed 168): future Sep 6-14, active, fee EUR 415 — fee set (was null yesterday)\n• Booking Accommodation 11387 (Vincenzo Gagliano, bed 89): ended 2026-08-22 — 3 days stale, fee null\n• Booking Accommodation 11394 (Fabrizio Mauro, bed 89): ended 2026-08-09 — 16 days stale, fee null\n• Deactivation of 11357, 11396, 11387, 11394 NOT RUN",
+        "Deactivate BAs 11357, 11396, 11387, 11394; set fee on 11397. BA11392 fee now set. See recipe: issue-41-addendum-25aug.md",
+        "513th Tue 25 Aug UTC. BA11392 fee fixed (415). BA11394 newly found (Fabrizio Mauro, bed 89, 16d stale). Deactivations NOT RUN.",
+        "4 stale BAs; BA11394 new; BA11392 fee fixed"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• 513th check Tue 25 Aug 2026 UTC — no change since 512th (earlier today)\n• Booking Accommodation 11285 (Jesús Manuel Ramírez Díaz, bed 83): ended Jul 5 2026 — 51 days stale, fee null\n• 5 stale Booking Accommodations total on bed 83 (see issue-37 recipe)\n• Current occupant: Alessandro Signorotti (Booking Accommodation 11173), checkout Aug 30 — 5 days\n• Rosa Maria Mollica arrives Aug 30 — 5 DAYS, URGENT\n• Fix NOT RUN",
+        "Deactivate Booking Accommodation 11285 (part of 5-item fix on bed 83). See recipe: issue-37-addendum-25aug.md",
+        "513th Tue 25 Aug UTC. BA 11285 51d stale, fee null. Rosa Mollica starts Aug 30 = 5d. Covered by issue-37 recipe. Fix NOT RUN.",
+        "5 stale BAs; Aug30 = 5d"
+      ]
+    ]
+  },
+  {
+    "range": "H54:K54",
+    "values": [
+      [
+        "• 513th check Tue 25 Aug 2026 UTC — no change since 510th (earlier today)\n• Booking Accommodation 11267 (bed 23, 29 Aug to 4 Oct 2026): fee EUR 3,840, active — ARRIVES IN 4 DAYS\n• Booking Accommodation 11399 (bed 54, 4 Oct to 19 Dec 2026): fee null — NOT YET SET, 40 days to move-in\n• Booking 17843 (Fanny Scelles): CONFIRMED, confirmed = true\n• Fix NOT RUN",
+        "Set fee on Booking Accommodation 11399 (Oct 4 to Dec 19, 11 weeks). Confirm rate with KC. See recipe: issue-52-addendum-25aug.md",
+        "513th Tue 25 Aug UTC. BA11267 fee EUR 3,840 OK. BA11399 fee null. Arrival Aug 29 (4d). No change since 507th.",
+        "ARRIVES AUG 29 (4d); BA11399 fee null"
+      ]
+    ]
+  },
+  {
+    "range": "H55:K55",
+    "values": [
+      [
+        "• 513th check Tue 25 Aug 2026 UTC — no change since 510th (earlier today)\n• Booking Accommodation 11267 (bed 23): starts 2026-08-29 — 4 DAYS AWAY, fee EUR 3,840 OK\n• Booking Accommodation 11399 (bed 54): starts 2026-10-04, fee null — 40 days to move-in\n• Multi-host email template feature: spec still open, no code changes\n• Fix NOT RUN",
+        "Set fee on Booking Accommodation 11399 (see issue 52); multi-host template spec open. Recipe: issue-53-addendum-25aug.md",
+        "513th Tue 25 Aug UTC. Fanny arrives Aug 29 (4d). BA11399 fee null (40d to Oct 4). Multi-host template spec open.",
+        "BA11399 fee null; spec open"
+      ]
+    ]
+  }
+]

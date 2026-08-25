@@ -5,10 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teacher Payroll Dashboard v2 (Year Filter)</title>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script type="text/babel" src="/sis/public/payroll-month.js?v=20260429e"></script>
+    <!-- Vendored + PINNED locally. Previously these came from unpkg with no
+         version pin, so @babel/standalone silently jumped 7→8.0 (breaking the
+         in-browser JSX transpile → blank page). Pin + self-host so it can't
+         break out from under us again, and doesn't depend on unpkg uptime. -->
+    <script src="/sis/public/vendor/payroll/react.production.min.js"></script>
+    <script src="/sis/public/vendor/payroll/react-dom.production.min.js"></script>
+    <script src="/sis/public/vendor/payroll/babel.min.js"></script>
+    <script type="text/babel" src="/sis/public/payroll-month.js?v=20260730ssp"></script>
     <style>
         * {
             margin: 0;

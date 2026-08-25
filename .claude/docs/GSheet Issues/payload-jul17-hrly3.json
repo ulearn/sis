@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H12:K12",
+    "values": [
+      [
+        "• Junior Valeriya (student 1063): dad Egor booked under his own HubSpot contact — original merge issue resolved\n• Duplicates merged: kept booking 17912 on Valeriya 1063, accommodation folded in, Fidelo duplicate (booking 1622) and Egor record (14502) deleted\n• Booking 17912: Confirmed, confirmed = true, EUR 1938 / 1938 — last touched 8 July 2026\n• Remaining anomaly: student 1063 HubSpot contact ID = STILL null — link not restored post-merge (38 days since 9 June 2026)",
+        "Set student 1063 hubspotContactId via SIS admin or direct DB; see recipe: issue-10-valeriya-egor-guardian-booking.md",
+        "Fri 17 Jul UTC (fresh DB). UNCHANGED. Student 1063 Valeriya hubspotContactId=STILL null (38d since Jun09). BK17912 CONFIRMED EUR1938/1938 confirmed=true (updAt=Jul08). Low priority cosmetic. NEIL: set hubspotContactId for student 1063 when convenient.",
+        "hubspot link null; low-pri"
+      ]
+    ]
+  },
+  {
+    "range": "H17:K17",
+    "values": [
+      [
+        "• Bed assignment 11282 (bed 66, booking 17897, Mélie Villard): ran 15 May to 5 June 2026 — active = still true (42 days stale since student left 5 June)\n• Historical issue — Mélie Villard term completed 5 June 2026, no guest impact\n• Overlap constraint from bed assignment 11158 (ended 17 May) is also cleared",
+        "Set active = false on BA 11282 (SIS: Booking 17897 > Accommodation > BA 11282). See recipe: issue-16-melie-accomm-dates.md",
+        "Fri 17 Jul UTC (fresh DB). CONFIRMED UNCHANGED. BA11282 bed66 May15-Jun05 active=STILL true (42d stale, updAt=Jun05). Fix NOT RUN.",
+        "42d stale; cosmetic"
+      ]
+    ]
+  },
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "• Booking 1308 (Ana Jessica Rosa de Paula Santos): CANCELLED — accidental click 7 June 2026, confirmed flag = false; 40 days since cancellation\n• Amount paid = EUR 1530, amount total = EUR 1530 — balanced, no refund issued\n• Payment 17186 (EUR 1280, paymentDate 1 May 2026): Xero payment ID = null — 77 days unreconciled\n• Payment 17050 (EUR 250, paymentDate 17 February 2026): Xero payment ID = null — 150 days unreconciled\n• Booking course 1350 (Academic Year Afternoon): active = true on cancelled booking — endDate 13 November 2026 (future date; course showing in-progress on dead booking)",
+        "Reconcile payments 17186 (EUR 1280) and 17050 (EUR 250) in Xero; deactivate booking course 1350. See recipe: issue-17-ana-jessica-accidental-cancel.md",
+        "Fri 17 Jul UTC (fresh DB). UNCHANGED. BK1308 CANCELLED EUR1530/1530 confirmed=false (updAt=Jun07=40d). PMT17186 EUR1280 xeroId=STILL null (paymentDate May01, 77d unreconciled). PMT17050 EUR250 xeroId=STILL null (paymentDate Feb17, 150d unreconciled). BC1350 AY Afternoon active=STILL true on cancelled booking — endDate Nov13 2026 (future, course in-progress on dead booking). Fix NOT RUN.",
+        "pmts 150d; BC stale"
+      ]
+    ]
+  },
+  {
+    "range": "H20:K20",
+    "values": [
+      [
+        "• Booking course 89 (Morning IELTS, ended 22 May 2026): active = still true — 56 days stale\n• Booking course 90 (Private Lessons, ended 22 May 2026): active = still true — 56 days stale\n• Student 77 (Mai Lan Chu): no current or future booking — both courses are historical\n• Private Lessons is one-on-one tuition — no class slot was ever required\n• Data hygiene only — UNCHANGED, verified 17 July 2026 UTC",
+        "Set active = false on booking courses 89 and 90 (both ended 22 May 2026, 56 days stale). See recipe: issue-19-mailan-class-assign.md",
+        "Fri 17 Jul UTC (fresh DB). CONFIRMED UNCHANGED. BC89 Morning IELTS ended May22 active=STILL true (56d stale, updAt=May20). BC90 Private Lessons ended May22 active=STILL true (56d stale, updAt=May20). Student 77 no current booking. Fix NOT RUN.",
+        "BC89+90 stale 56d"
+      ]
+    ]
+  },
+  {
+    "range": "H24:K24",
+    "values": [
+      [
+        "• Booking course 828 (Academic Year Morning, booking 787): end date 27 Feb 2026 — 3 days before start date 2 Mar 2026 (backwards dates; 17 Jul 2026 UTC, 12th check)\n• Legacy DST off-by-one bug from Issue 2 — one of 56 flagged rows — course actually ended approximately 20 Mar 2026\n• All courses for student 397 (Enshi Lu) complete — student left approximately March 2026\n• Cosmetic data-hygiene fix: correct end date to 2026-03-20, deactivate course",
+        "Set BC828 end date = 2026-03-20, active = false. See recipe: issue-23-enshi-lu-backwards-course.md",
+        "Fri 17 Jul UTC (12th check, fresh DB). CONFIRMED UNCHANGED. BC828 AY Morning bk787: startDate=Mar02 endDate=Feb27 2026 (backwards, 3d before start) active=STILL true (updAt=May11=67d stale). Student 397 Enshi Lu: all courses complete, left ~Mar 2026. Cosmetic fix only. Fix NOT RUN.",
+        "backwards dates; low-pri"
+      ]
+    ]
+  },
+  {
+    "range": "H37:K37",
+    "values": [
+      [
+        "• Homework section: renderSheetHtml() in src/routes/attendance.ts — no homework block; awaiting Paul / Neil layout spec\n• Holiday display bug: getWeekAttendance() in src/scripts/attendance.ts line 31 — no bookingHoliday fetch; students on holiday appear as absent in attendance sheets\n• Code confirmed unchanged since commit 9008d10 — no attendance output or holiday handling changes",
+        "Get Paul / Neil layout spec then add homework block to renderSheetHtml() (attendance.ts); add bookingHoliday fetch to getWeekAttendance() (attendance.ts:31); see recipe: issue-36-attendance-homework-section.md",
+        "Fri 17 Jul UTC (code check 13). Commit 9008d10 STILL HEAD (confirmed this run). renderSheetHtml() attendance.ts: no homework block. getWeekAttendance() attendance.ts:31: no bookingHoliday fetch. Both awaiting spec from Paul/Neil. Fix NOT RUN.",
+        "code open; awaiting spec"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Two payments are unlinked — booking_id = null and xeroPaymentId = null\n• Payment 16988 → Booking 17856 (Margherita Galbusera) — EUR 339.90\n• Payment 16989 → Booking 17857 (Francesca Fassina) — EUR 339.90\n• Both bookings are CONFIRMED, confirmed = false, amountPaid = 339.90 / amountTotal = 339.90\n• Linking payments reconciles Xero and HubSpot\n• Students arrive Jun 29 — 10 days",
+        "UPDATE payments SET booking_id=17856 WHERE id=16988; UPDATE payments SET booking_id=17857 WHERE id=16989. See recipe: issue-1-orphan-payments.md",
+        "Jun19 hrly6: pmt16988 bookingId=null xeroId=null EUR339.90 STILL UNLINKED. pmt16989 bookingId=null xeroId=null EUR339.90 STILL UNLINKED. bk17856/17857 CONFIRMED conf=false amtPaid=339.9. Jun29 = 10 cal days. SQL NOT YET RUN. URGENT — students arrive in 10 days, Xero unreconciled.",
+        "10d to Jun29"
+      ]
+    ]
+  },
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "• Booking 1308 is CANCELLED, confirmed = false — stale since Jun 07\n• Amount paid = 1530 / 1530 (fully paid genuine enrolment)\n• Booking course 1350 (Academic Year Afternoon, May 25 – Nov 13) is ACTIVE\n• Student 766 (Ana Jessica Rosa, A2) has 0 class assignments all time\n• HubSpot contact ID = 777791875262\n• Student in school since May 25 — Day 20 school days (Jun 19) with no confirmed booking and no class record",
+        "(NOT RUN) UPDATE bookings SET status=CONFIRMED, confirmed=true WHERE id=1308; then assign A2-AFT class to booking course 1350. See recipe: issue-17-ana-jessica-accidental-cancel.md",
+        "Jun19 hrly6: bk1308 STILL CANCELLED (updAt=Jun07, 12d stale). 0 SCAs all time. bc1350 AY Afternoon May25-Nov13 ongoing. amtPaid=amtTotal=1530 (fully paid). Day 20 school (started May25). NEIL: reinstate bk1308 urgently via SIS — student cannot be properly assigned without confirmed booking.",
+        "D20;urgent;0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• Booking 1605 is PENDING, paid 0 / 1509 — Day 68 calendar days in school\n• HubSpot deal 502951083215 (B2B Sales) is at ENROLMENT stage, not WON\n• Booking course 1791 (Academic Year Renewal Morning, Apr 13 – Oct 02) is ACTIVE\n• Student 1047 (Ariunsarnai Batbayar, B2) has 0 class assignments all time",
+        "Move HubSpot deal 502951083215 to WON stage to trigger webhook and confirm booking. See recipe: issue-20-ariunsarnai-payment-due.md",
+        "Jun19 hrly6: bk1605 STILL PENDING (updAt=Jun11, 8d). 0 SCAs. amtPaid=0/1509. bc1791 AY Renewal Morning Apr13-Oct02 ongoing. 68 cal days elapsed. NEIL: urgent — contact student/agent re payment; move deal 502951083215 to WON to unblock class assignment.",
+        "D68;urgent;0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking 1611 is CONFIRMED, paid EUR 1280.12 / 1280.12\n• Course 1797 (Morning General) ends NEXT FRIDAY Jun 26 — 5 school days remain (Mon 22 to Fri 26)\n• Last class assignment sca229 (class 12, B1-AM2) expired April 26 — 54 days with no active class record\n• Student id 1052 on bereavement leave; no attendance records at all\n• Course 24686 (Morning General Jul 20 to Sep 18) is future; gap Jun 27 to Jul 19",
+        "Confirm if Alberto returning before Jun 26. If yes: assign SCA cls12 bc1797 ws=Jun22 we=Jun26 via SIS (NOT RUN). See recipe: issue-24-alberto-fidelo-course-split.md",
+        "Jun19 FINAL: bc1797 ends FRI JUN26 (7d). bk1611 CONF fully paid 1280.12/1280.12. sca229 EXPIRED Apr26 (54d ago). 0 new SCAs. NEIL FINAL CALL: is Alberto returning Mon Jun22? YES → assign SCA bc1797 cls12 ws=Jun22 we=Jun26 via SIS immediately. NO → let bc1797 expire unfulfilled.",
+        "5d;FINAL;Jun26"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• Booking course 24826 (Intensive General 30, Jun 08 – Jun 19) — course ended Jun 19\n• Student Ernesto Pesoa Gil (id 14532; sheet shows Ivan Rodriguez) had currentLevel = null in SIS and HubSpot\n• Zero class assignments for the entire 2-week course — student never assigned to a class\n• Booking 18034 is PARTIAL, paid EUR 845 / 1095 (EUR 250 outstanding), confirmed = false\n• Fully historical — 10 school days elapsed, course complete with no class record",
+        "Course over Jun 19 — historical. Chase EUR 250 outstanding in bk18034 via HubSpot / Xero. See recipe: issue-26-intensive-class-assign-once.md",
+        "Jun19 FINAL: bc24826 ENDED Jun19 (confirmed). bk18034 PARTIAL conf=false paid=845/1095 EUR250 outstanding. pmt17683 xeroId=null (unreconciled). FULLY HISTORICAL — no class or attendance possible. NEIL: chase EUR250 from student/agent; reconcile Xero pmt17683.",
+        "ended Jun19;EUR250"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Booking 94 (Giulia s88) CONFIRMED, 1151.50 / 1151.50 — correct booking; class assignment sca270 (class 12, B1-AM2) active Jun 15 – Jun 26\n• Booking 18044 STILL CONFIRMED (duplicate) — not cancelled, 1106.50 / 1106.50, stale since Jun 07 (12 days)\n• Payment 17607 (EUR 1151.50, HubSpot payment ID 1239529228498) on booking 18044 — xeroPaymentId = null, not voided\n• Note: bk94 payment 17102 also EUR 1151.50 with xeroPaymentId = null — Xero reconciliation needed for both\n• Deadline: cancel duplicate booking and void payment before course ends Friday Jun 26",
+        "(NOT RUN) 1) Cancel booking 18044 via SIS UI; 2) void payment 17607 via HubSpot UI (payment ID 1239529228498). See recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun19 FINAL: bk18044 STILL CONFIRMED (updAt=Jun07, 12d stale). pmt17607 EUR1151.5 xeroId=null NOT VOIDED (hsId=1239529228498). bk94 CONF pmt17102 EUR1151.5 xeroId=null (also unreconciled). sca270 cls12 active Jun15-Jun26. DEADLINE FRI JUN26 = 7 DAYS. NEIL: (1) Cancel bk18044 in SIS; (2) void pmt17607 HubSpot ID 1239529228498.",
+        "bk18044 dup;void;Jun26"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H9:K9",
+    "values": [
+      [
+        "• Diego Alves da Silva Molina (student 840): booking course 24959 (Academic Year Morning, 3 August to 5 February 2027) — ILEP code = STILL null — 25 days to course start\n• Booking 18183: PARTIAL, amount total = EUR 1735, amount open = EUR 250 (balance outstanding)\n• Aurora Madril Oliveira Molina (student 841): booking course 24958 — ILEP code 0318/0010 — Resolved\n• Pedro De Pauli Pastre (student 911): last booking course 1603 ended 5 June 2026 — no new booking course in database\n• ILEP code editable via admin UI: student 840 > booking 18183 > booking course 24959\n• Course starts 3 August 2026 — 25 days remaining (14th check, 9 July 2026 UTC)",
+        "Set ILEP code on booking course 24959 via admin UI (student 840); recipe issue-7-ilep-codes.md",
+        "14th check 9 Jul UTC. UNCHANGED (fresh DB). BC24959 Diego s840 ilepCode=STILL null. BK18183 PARTIAL amtTotal=1735 amtOpen=250 confirmed=false. Aurora bc24958 DONE (0318/0010). Pedro bc1603 ended Jun5 no new BC. Course starts Aug3=25 days. NEIL: set ILEP code via admin UI student 840 > booking 18183 > bc24959.",
+        "ilep null; Aug3 25d"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student class assignment 255 (student 1001 Saikhantes Shagdarsuren, class 11 B1 Afternoon): week end = 3 July 2026 — expired 6 days ago, 5 school days missed (Monday 6 July to Friday 10 July, full week)\n• Active booking course 24925 (Academic Year Afternoon, booking 18151, 9 March to 2 October 2026, fee = EUR 1102.20)\n• Booking 18151: Confirmed, confirmed = true, EUR 1339.20 / 1339.20 fully paid\n• Holiday record 2500 on booking 18151: student type, 20 July to 21 August 2026 (5 weeks, 25 weekdays pushed) — without SCA extension student will miss 29+ days after holiday return\n• Fix SQL: extend class assignment 255 week end to 2026-10-02 — correct even with holiday\n• Cross-reference: Issue 36c — weekly attendance grid may show live checkboxes during July 20-August 21",
+        "Extend class assignment 255 week end to 2026-10-02 URGENTLY (5 school days missed); see recipe issue-15-saikhantes-course-dates.md",
+        "9 Jul UTC (fresh DB). CONFIRMED UNCHANGED. SCA255 weekEnd=2026-07-03 STILL EXPIRED (6 days ago). BC24925 AY-Afternoon Mar9-Oct2 active=true. Hol2500 Jul20-Aug21 5wks 25 weekdays on bk18151 confirmed. If not fixed this weekend: student misses SECOND consecutive full week Jul13-17. Fix SQL (NOT RUN) in recipe.",
+        "OVERDUE: week missed"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking course 24686 (Morning General, 20 July to 18 September 2026, Alberto Squillace, booking 1611): fee = STILL null — must set fee before 20 July (11 days)\n• Booking course 1797 (Morning General, 6 April to 26 June 2026): ended 13 days ago — STILL active = true\n• Payment 17124 (EUR 1280.12, 25 March 2026): type = null, Xero payment ID = null, HubSpot payment ID = null — 106 days unreconciled; booking ID = 1611 correctly linked\n• Booking 1611 (student 1052 Alberto Squillace): Confirmed, confirmed = true, EUR 1280.12 / EUR 1280.12 fully paid — booking course 1797 fee EUR 1836 is a Fidelo migration artefact",
+        "Set fee on booking course 24686 BEFORE 20 July; deactivate booking course 1797; reconcile payment 17124 in Xero; see recipe issue-24-alberto-fidelo-course-split.md",
+        "9 Jul UTC fresh DB. UNCHANGED. BC24686 Morning-Gen Jul20-Sep18 fee=STILL null (11 days). BC1797 Morning-Gen Apr6-Jun26 STILL active=true (ended 13d ago). PMT17124 EUR1280.12 type=null xeroId=null hsId=null (106d unreconciled). BK1611 CONF EUR1280.12/1280.12. NEIL: set bc24686 fee via SIS admin BEFORE Jul20 DEADLINE.",
+        "Jul20; fee null; 11 days"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Booking 17831 (Xuezhen Huang, student 14443): Confirmed, EUR 1396.90 fully paid (confirmed 7 July 2026)\n• Accommodation 11358 (bed 180, Host Family, 12 July to 2 August 2026, fee = EUR 900): active = true, claim status = STILL null — check-in in 3 days\n• 4 payments ALL Xero payment ID = null: Payment 17180 (EUR 431.90, TransferMate Escrow, 27 April 2026, no HubSpot ID, Fidelo); Payment 17963 (EUR 965.00, Bank, 1 July 2026, HubSpot 1273784562922); Payment 17987 (EUR 131.90, Bank, 25 June 2026, HubSpot 1277724782804); Payment 17988 (EUR 300.00, Bank, 12 June 2026, HubSpot 1277795367133)\n• Warning: payments 17987 + 17988 sum = EUR 431.90 = payment 17180 — likely Fidelo installment pair; verify before reconciling all 4 separately in Xero",
+        "Submit host family claim for accommodation 11358 BEFORE Saturday 12 July; reconcile payments 17963 + 17180 in Xero (verify 17987+17988 vs 17180 first); see recipe issue-39-xuezhen-huang-accomm-missing.md",
+        "9 Jul UTC (fresh DB). CONFIRMED UNCHANGED. BA11358 bed180 HF Jul12-Aug2 fee=EUR900 claimStatus=STILL null. BK17831 CONF EUR1396.90/1396.90 (confirmed Jul7). 4 pmts ALL xeroId=null type=null: pmt17180(EUR431.90 Fidelo escrow Apr27 no-HS), pmt17963(EUR965 Bank Jul1 HS1273784562922), pmt17987(EUR131.90 Bank Jun25 HS1277724782804), pmt17988(EUR300 Bank Jun12 HS1277795367133). pmts17987+17988=EUR431.90=pmt17180 (Fidelo pair — verify before reconciling all 4). CHECK-IN SAT JUL12 = 3 DAYS. NEIL: submit HF claim TODAY + reconcile Xero BEFORE SATURDAY.",
+        "HF claim urgent; 3d"
+      ]
+    ]
+  },
+  {
+    "range": "H46:K46",
+    "values": [
+      [
+        "• Student 1010 (Gretel Merlina Nunez): two confirmed bookings — 17917 (Academic Year Morning, booking course 24699) and 18159 (Life Pass Morning, booking course 24935, March 2026 to April 2028)\n• Holiday record 2504 (student type, 20 to 24 July 2026, weekdays pushed = 5): exists on booking 17917 — confirmed present\n• Booking 18159 (Life Pass Morning): no July 20-24 student holiday — only school closures December 2026 and December 2027 (fresh DB 9 July confirmed)\n• Both bookings confirmed and fully paid: booking 17917 EUR 997 / 997, booking 18159 EUR 1294 / 1294; both updated 8 July 2026\n• Decision needed: does Gretel attend the Life Pass course during 20-24 July? If yes, booking 18159 also needs a student holiday record for that week",
+        "Neil to decide: add July 20-24 student holiday to booking 18159 if Gretel attends that course that week; see recipe issue-44-gretel-holiday.md",
+        "10th check 9 Jul UTC (fresh DB). UNCHANGED. HOL2504 Jul20-24 type=student weekdaysPushed=5 on bk17917 = present. bk18159 (Life Pass bc24935 Mar26-Apr28 active): only Dec2026+Dec2027 school closures — NO Jul20-24 student holiday. Both bookings CONF EUR997+EUR1294 fully paid. 11 days to Mon Jul20. NEIL: confirm if bk18159 also needs Jul20-24 student holiday — add via SIS student 1010 > booking 18159 > Holidays if yes.",
+        "bk17917 done; bk18159 Neil to decide"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Pietro Colombo (student 72, booking course 81, Morning General Plus, 6 to 24 July 2026): zero class assignments — 14 school days remaining, full first week missed\n• Ettore Iovinella (student 14564, booking course 24968, General English AM Plus, 6 to 10 July 2026): zero class assignments — course ends 10 July, entire week missed\n• Veronica Martin (student 278, booking course 24931, General English AM, 6 to 10 July 2026): zero class assignments — course ends 10 July, entire week missed\n• Booking course 24968 (Ettore, booking 18191) updated 9 July 2026 at 16:01 UTC — someone opened it but made no class assignment\n• Retroactive class assignment records possible for Ettore and Veronica if they attended; confirm with class teachers before backdating",
+        "Assign Pietro (booking course 81) via SIS admin NOW — 14 days at risk; retroactive assignments for Ettore + Veronica if attended; see recipe issue-45-renewal-arrivals.md",
+        "9 Jul UTC fresh DB. BC81 Pietro s72 Morning-Gen-Plus Jul6-Jul24 ZERO SCAs (bk78 CONF EUR1880). BC24968 Ettore s14564 GE-AM-Plus Jul6-Jul10 ZERO SCAs — updated Jul9 16:01 UTC (opened, no SCA). BC24931 Veronica s278 GE-AM Jul6-Jul10 ZERO SCAs. Ettore+Veronica courses end Jul10. NEIL: retroactive SCAs for Ettore+Veronica if they attended; assign Pietro bc81 immediately via SIS student 72 > Classes.",
+        "Jul10: weeks missed; Pietro unassigned"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 and 16989: booking ID = null, Xero payment ID = null — still unlinked (166th check, 2 Jul 2026 UTC)\n• Payment 16988 (HubSpot 1204827374829): EUR 339.90, paid 28 Apr — should link to Booking 17856 (Margherita Galbusera)\n• Payment 16989 (HubSpot 1204846469317): EUR 339.90, paid 28 Apr — should link to Booking 17857 (Francesca Fassina)\n• Bookings 17856 and 17857: status = Confirmed, confirmed = false, fully paid EUR 339.90 each — course ends 10 Jul, 8 days remain\n• Booking courses 24631 (booking 17856) and 24630 (booking 17857): General English AM Plus, 29 Jun to 10 Jul, fee = null — still unset\n• 4-step SQL fix has NOT been run across 166 hourly checks — 8 days until course end",
+        "(NOT RUN) (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) UPDATE booking_courses SET fee=339.9 WHERE id IN (24630,24631); (4) UPDATE bookings SET confirmed=true WHERE id IN (17856,17857). See recipe: issue-1-orphan-payments.md",
+        "2 Jul 2026 UTC (166th check, fresh DB): pmts 16988+16989 bookingId=STILL null xeroId=null EUR339.9 each. bk17856+17857 CONF confirmed=false 339.9/339.9. bc24631+24630 GE-AM-Plus Jun29-Jul10 fee=null. Course ends Jul10=8d. 166 CHECKS SQL UNRUN. NEIL: RUN NOW.",
+        "8d to end; UNRUN"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 (Edith Nunes, student 1015): Confirmed, confirmed = true, fully paid EUR 740\n• Booking courses 24933 (fee EUR 380) and 24934 (fee EUR 360): duplicate — same name General English AM, same dates 15 Jun to 10 Jul, both active = true\n• Zero class assignments for student 1015 — last was week end 15 May 2026 (class 7, booking course 24668) — 48 days without active class assignment\n• Student has been in class informally (attendance records exist); course ends 10 Jul — 8 days remain (22nd check, 2 Jul 2026 UTC)",
+        "Deactivate booking course 24934 (duplicate) via SIS; then assign Edith (student 1015) to class 7 AM for booking course 24933, booking 18158, before Jul 10. See recipe: issue-22-edith-nunes-payment-dups.md",
+        "2 Jul 2026 UTC (22nd check): bk18158 CONF 740/740. bc24933+bc24934 DUP BOTH active Jun15-Jul10. 0 active SCAs (last exp May15=48d, bc24668). Course ends Jul10=8d. Neil: (1) deactivate bc24934; (2) assign student 1015 cls7 bc24933.",
+        "0SCA; Jul10=8d"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• Student 917 (Uyanga Tungalag): payment 17258 (EUR 3066, type = Escrow, paid by agency) is the likely primary blocker — unassignedStudents() requires at least one non-Escrow payment\n• Visa status = null is secondary — null visa status passes the to-be-assigned visa filter (does not block on its own)\n• Booking 1467: Confirmed, confirmed = true — amount paid shows EUR 2405 (Fidelo-era value) but only Escrow payment exists at EUR 3066 (amount mismatch; Hub/TransferMate check needed)\n• Booking course 1613: Academic Year Morning, 27 Apr to 16 Oct 2026 — Day 67 of course, zero class assignments in database\n• 64th check, 2 Jul UTC — TransferMate escrow release status unknown since May 2026",
+        "(1) Check Hub fins / TransferMate: has pm17258 (EUR 3066 Escrow) been released? (2) If released: UPDATE payments SET type=one_time_or_initial WHERE id=17258 (NOT RUN). (3) UPDATE students SET visa_status=Approved WHERE id=917 (NOT RUN). (4) Assign Uyanga to AY Morning class via SIS. See recipe: issue-25-uyanga-visa-escrow.md",
+        "2 Jul 2026 UTC (64th check, fresh DB): s917 Uyanga visaStatus=STILL null (updAt=May21=42d stale). pmt17258 EUR3066 type=STILL Escrow xeroId=null. bk1467 CONF amtPaid=2405 (Fidelo mismatch). bc1613 AY-Morning Apr27-Oct16 Day67. SCAs=STILL 0. 64 CHECKS NO ACTION. Neil: (1) Hub fins check pm17258 release; (2) if released convert type; (3) visa SQL; (4) assign class.",
+        "Escrow; 0SCA; Day67"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• Booking course 24826 (Intensive General 30, 8 Jun to 19 Jun) ended 19 Jun — still active = true (13 days stale)\n• Booking 18034 is PARTIAL, confirmed = false — EUR 845 paid of EUR 1095 (EUR 250 outstanding)\n• Payment 17683 (EUR 845) linked to booking 18034, HubSpot payment ID 1241215836360, Xero ID = null\n• EUR 250 outstanding from Ernesto Pesoa Gil (student 14532, booking 18034)\n• HubSpot payment already recorded — Xero reconciliation pending (19th check, 2 Jul 2026 UTC)",
+        "Chase EUR 250 from Ernesto Pesoa Gil (student 14532, booking 18034). Reconcile payment 17683 in Xero. See recipe: issue-26-intensive-class-assign-once.md",
+        "2 Jul 2026 UTC (19th check, fresh DB): bc24826 ended Jun19=13d stale active=STILL true. bk18034 STILL PARTIAL EUR845/1095 conf=false (EUR250 outstanding). pmt17683 EUR845 xeroId=STILL null hsId=1241215836360. UNCHANGED 19 checks. Neil: (1) deactivate bc24826; (2) chase EUR250 from Ernesto (s14532); (3) reconcile pmt17683 in Xero.",
+        "EUR250; bc24826 13d"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• Accommodation 11352 (Verónica Martín, bed 83, booking 18156): 4 Jul to 11 Jul — arrives FRIDAY 4 JUL (2 DAYS AWAY) (54th check, 2 Jul 2026 UTC)\n• Accommodation 11285 (Jesús Manuel Ramírez Díaz, bed 83, booking 17825): 21 Jun to 5 Jul — Jesús does not vacate until Saturday 5 Jul\n• Overnight conflict: Verónica checks in Friday 4 Jul; Jesús not out until Saturday 5 Jul — bed 83 double-booked Friday night\n• Alternative beds confirmed free 4 Jul to 11 Jul: bed 174, bed 175, bed 176 (zero conflicts, re-confirmed 2 Jul UTC)\n• Fix still NOT run — Verónica arrives in 2 days — 54 hourly checks with no action",
+        "(NOT RUN) SIS → Student 278 → Booking 18156 → Accommodation → edit accommodation 11352 → change bed from 83 to 174 (or 175 or 176). See recipe: issue-37-veronica-capel-accomm-allocation.md",
+        "2 Jul 2026 UTC (54th check): ba11352 Veronica bed83 Jul04-Jul11. ba11285 Jesus bed83 Jun21-Jul05. Overlap Fri Jul4. Beds 174/175/176 all free Jul4-11 (0 conflicts, re-confirmed). Veronica ARRIVES FRIDAY 4 JUL. NEIL: move accommodation 11352 to bed 174/175/176 TODAY or FRIDAY MORNING.",
+        "BED83; Jul4; 2d URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• Accommodation 11285 (Jesús Manuel Ramírez Díaz, bed 83, booking 17825): stored as 21 Jun to 5 Jul — original request was 20 Jun to 4 Jul (1 day off on both ends)\n• Bed 83 double-booked with Verónica Martín (Issue 37, row 39): Verónica checks in Friday 4 Jul; Jesús does not vacate until Saturday 5 Jul\n• Preferred fix: reassign Verónica (accommodation 11352) to bed 174, 175, or 176 — see Issue 37 (row 39) for exact steps (31st check, 2 Jul 2026 UTC)\n• Booking 17825 fully paid EUR 2008\n• Secondary option: update accommodation 11285 end date to 4 Jul if confirmed with student",
+        "(NOT RUN) Preferred: move accommodation 11352 (Verónica) to bed 174/175/176 per Issue 37. Optional end-date fix: UPDATE booking_accommodations SET end_date='2026-07-04' WHERE id=11285; See recipe: issue-43-jesus-accomm-dates.md",
+        "2 Jul 2026 UTC (31st check): ba11285 Jesus bed83 Jun21-Jul05. ba11352 Veronica bed83 Jul04-Jul11. Overlap Fri Jul4. Primary fix: row39 (move Veronica to 174/175/176). Jesus end date 1d off. Veronica ARRIVES FRIDAY 4 JUL.",
+        "URGENT; see row 39"
+      ]
+    ]
+  }
+]

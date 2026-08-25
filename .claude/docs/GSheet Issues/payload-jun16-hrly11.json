@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Course 24925 start date fixed to Mar 09 (was Jan 12) -- Neil applied Jun 16\n• Course 24925 end date extended to Sep 11 (was Jul 03) -- AY corrected\n• ILEP code set to 0318/0003 on course 24925\n• Attendance for s1001 now = 5 records (was 0) -- student IS attending B1 PM\n• Class assignment 255 weekStart STILL Jan 12 -- needs correcting to 2026-03-09\n• Class assignment 255 weekEnd STILL Jul 03 -- needs correcting to 2026-09-11",
+        "(NOT RUN) UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255. see recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun16 hrly: startDate FIXED to Mar09. endDate extended to Sep11. ILEP=0318/0003. att=5 (was 0). bk18151 updAt=Jun16 14:47. sca255 weekStart=Jan12 + weekEnd=Jul03 STILL WRONG. SQL NOT RUN.",
+        "sca fix needed"
+      ]
+    ]
+  },
+  {
+    "range": "H32:K32",
+    "values": [
+      [
+        "• Week math in attendance.ts used local (BST) time on UTC dates -- showed Sunday Jun 14 instead of Monday Jun 15\n• Null week_end class assignment count = 0 (confirmed again Jun 16) -- stale-SCA bug RESOLVED\n• BST Sunday-display fix: applied in code but unverified in headless run",
+        "Update code to UTC timezone -- that will fix it",
+        "Jun16 hrly: null_end=0 (CONFIRMED third consecutive check). Stale-SCA bug fully resolved. BST Sunday heading fix: unverified in headless run. NEIL: check if attendance sheet shows Mon Jun16 heading for WB Jun16; if correct mark fixed.",
+        "null_end=0;verify UTC"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,50 @@
+[
+  {
+    "range": "J2",
+    "values": [
+      [
+        "hrly Jun24 19UTC EMERGENCY (Jun29=5d, 13th check, fresh DB CONFIRMED UNCHANGED): pmts 16988/16989 booking_id=null xero_pmt_id=null. bks 17856/17857 CONF confirmed=false amtPaid=339.9. bcs 24630/24631 startJun29 fee=null active. 57d orphaned. NEIL: run recipe issue-1-orphan-payments.md Steps 1+2 NOW — classes start Monday Jun29."
+      ]
+    ]
+  },
+  {
+    "range": "J17",
+    "values": [
+      [
+        "hrly Jun24 19UTC: ba11282 (bed 66, bk17897) endDate=Jun05 active=true updAt=Jun05 — 19 days stale UNCHANGED. Historical cleanup only; no live student impact. NEIL: deactivate ba11282 when convenient (UPDATE booking_accommodations SET active=false WHERE id=11282)."
+      ]
+    ]
+  },
+  {
+    "range": "J25",
+    "values": [
+      [
+        "hrly Jun24 19UTC (bc1797 ends FRI Jun26=2d, ESCALATING — note: previous J said THU, correct day is FRI): bc1797 Morning General Apr06-Jun26 active fee=1836. Next course bc24686 Jul20-Sep18 fee=null (41d stale). 24-day gap Jun26-Jul20 with no active course. pmt17124 EUR1280.12 xeroId=null. Zero attendance bc1797 (bereavement leave). NEIL: (1) acknowledge/close bc1797 this week; (2) set bc24686 fee BEFORE Jul20; (3) reconcile pmt17124 in Xero."
+      ]
+    ]
+  },
+  {
+    "range": "J26",
+    "values": [
+      [
+        "hrly Jun24 19UTC (D60 CRITICAL, 12th consecutive check, fresh DB UNCHANGED): s917 visaStatus=null hubspotContactId=null (May21=34d stale). bc1613 AY-AM Apr27-Oct16 active fee=3370. bk1467 CONF 2405/2405 fully paid. SCA=[] CONFIRMED. 60 days zero class assignments. NEIL: assign class for bc1613 via SIS UI immediately; set visaStatus on s917."
+      ]
+    ]
+  },
+  {
+    "range": "J30",
+    "values": [
+      [
+        "hrly Jun24 19UTC URGENT (Jul03=9d, 14th check, fresh DB CONFIRMED UNCHANGED): sca255 weekStart=2026-01-12 weekEnd=2026-07-03 STILL WRONG. bc24925 AY-Aft Mar09-Sep11 active fee=1102.2. In 9d Saikhantes drops off B1-PM leaving 10-week gap through Sep11. NEIL: UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255."
+      ]
+    ]
+  },
+  {
+    "range": "J44",
+    "values": [
+      [
+        "hrly Jun24 19UTC EMERGENCY (Jun28=4d, fresh DB CONFIRMED UNCHANGED): ba9917 ended May16 39d active=true. ba11157 ended May10 45d active=true. ba11159 ended May30 25d active=true. ba11180 ended Jun20 4d active=true. All 4 CONFIRMED blocking bed 84. ba11311 Pietro Jun28-Sep13 11wks fee=3850 CORRECT. NEIL: UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180) BEFORE Jun28."
+      ]
+    ]
+  }
+]

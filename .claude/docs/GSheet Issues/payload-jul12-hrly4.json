@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payment 16988 (EUR 339.90): booking ID = null — not linked to booking 17856 (33rd check, 12 Jul UTC)\n• Payment 16989 (EUR 339.90): booking ID = null — not linked to booking 17857\n• Booking 17856 (Margherita Galbusera, student 14461): confirmed = false — EUR 339.90 fully paid, amount open = null\n• Booking 17857 (Francesca Fassina, student 14462): confirmed = false — EUR 339.90 fully paid, amount open = null\n• Booking courses 24630 and 24631 (General English AM Plus, ended 10 July 2026): both still active = true — 2 days stale",
+        "Link payment 16988 to booking 17856 and payment 16989 to booking 17857; set confirmed = true on both bookings; deactivate booking courses 24630 and 24631. See recipe: issue-1-orphan-payments.md",
+        "33rd check 12 Jul SUN UTC. UNCHANGED (fresh DB). Payments 16988+16989 bookingId=STILL null. Bookings 17856+17857 confirmed=STILL false. BCs 24630+24631 ended Jul10 STILL active=true (2d stale). Fix NOT RUN.",
+        "unlinked; 2d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student 1001 (Saikhantes Shagdasuren): class assignment 255 (class 11, B1 PM) week end = 3 July 2026 — expired 9 days ago (14th check, 12 Jul UTC)\n• No active class assignment from Monday 7 July — 6 school days missed; Monday 13 July = TOMORROW\n• Booking course 24925 (Academic Year Afternoon, 9 Mar to 2 Oct 2026): active = true — correct current course\n• Booking 18151: confirmed, EUR 1339.20 fully paid\n• Booking course 1982 (Academic Year Morning, 30 Jun to 19 Dec 2025): still active = true — course ended 205 days ago (Dec 2025), must be deactivated\n• NOTE: previous entry incorrectly stated bc1982 endDate = Dec 2026 — DB confirms endDate = 2025-12-19",
+        "Extend class assignment 255 week end to 2026-10-02 via SIS admin; deactivate booking course 1982. See recipe: issue-15-saikhantes-course-dates.md",
+        "14th check 12 Jul SUN UTC. UNCHANGED (fresh DB). SCA 255 weekEnd=2026-07-03 STILL expired 9d. BC 1982 ended Dec 2025 STILL active=true. BC 24925 active correct. BK 18151 CONFIRMED EUR1339.20. Fix NOT RUN. NEIL: extend SCA255 weekEnd to Oct2 AND deactivate BC1982 TONIGHT before Mon Jul13 09:00.",
+        "CRITICAL; SCA 9d expired"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking course 24933 (General English AM, 15 June to 10 July 2026): ended 2 days ago — still active = true (8th pass, 12 Jul UTC)\n• Booking course 24934 (General English AM, 15 June to 10 July 2026): ended 2 days ago — still active = true — duplicate course, same dates as 24933\n• Booking 18158 (Edite Nunes, student 1015): zero documents — no completion certificate generated\n• Zero class assignments for entire 15 June to 10 July term (last SCA was week end 15 May on a prior course)\n• Payment 17895 (EUR 740): Xero payment ID = null — unreconciled",
+        "Deactivate booking courses 24933 + 24934; generate completion certificate via SIS admin student 1015 > booking 18158 > Documents; reconcile payment 17895 in Xero. See recipe: issue-22-edith-nunes-payment-dups.md",
+        "8th pass 12 Jul SUN UTC (fresh DB). UNCHANGED. BC24933+BC24934 GE-AM Jun15-Jul10 BOTH STILL active=true (2d stale). Zero SCAs for Jun15-Jul10 term. Zero docs on bk18158. PMT17895 EUR740 xeroId=null. Fix NOT RUN.",
+        "cert+Xero needed; 2d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Duplicate of issue 15 (row 16): student 1001 Saikhantes Shagdasuren — class assignment 255 (class 11) week end = 3 July 2026 — expired 9 days ago (12th check, 12 Jul UTC)\n• 6 school days missed from 7 to 12 July — Monday 13 July = TOMORROW\n• See row 16 (issue 15) for full diagnosis and fix recipe",
+        "Extend class assignment 255 week end to 2026-10-02; deactivate booking course 1982. See recipe: issue-15-saikhantes-course-dates.md",
+        "12th check 12 Jul SUN UTC. Duplicate of row 16 (issue 15). UNCHANGED. SCA 255 weekEnd=Jul3 STILL expired 9d. Mon13=TOMORROW. NEIL: see row 16 for recipe — fix must run before Mon Jul13 09:00.",
+        "Mon13 TOMORROW; see row 16"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Accommodation 11358 (bed 180, Host Family — provider Mary Carver): student check-in = 12 July 2026 — student has arrived TODAY — host family STILL NOT notified — claim status = null (39th check, 12 Jul UTC)\n• Provider contact: Mary Carver, +353 87 927 1130, mary.carver28@gmail.com\n• Booking 17831 (Xuezhen Huang, student 14443): confirmed, EUR 1396.90 fully paid (updated 8 July 2026)\n• Four payments on booking 17831: all Xero payment IDs = null — none reconciled in Xero\n• Payment totals on record (EUR 431.90 + 965.00 + 131.90 + 300.00 = 1828.80) exceed booking total (EUR 1396.90) — some installments may be superseded",
+        "Contact Mary Carver NOW (+353 87 927 1130 / mary.carver28@gmail.com); submit host family claim for accommodation 11358 via SIS admin; reconcile payments in Xero. See recipe: issue-39-xuezhen-huang-accomm-missing.md",
+        "39th check 12 Jul SUN UTC. UNCHANGED (fresh DB). BA11358 bed180 HF startDate=TODAY Jul12 endDate=Aug2 claimedAt=STILL null. HOST STILL NOT NOTIFIED — STUDENT HAS ARRIVED TODAY. BK17831 CONFIRMED EUR1396.90/1396.90. 4 pmts ALL xeroPaymentId=null. NEIL: call Mary Carver +353 87 927 1130 NOW.",
+        "URGENT; TODAY; HF unnotified"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Pietro Colombo (student 72, booking course 81, Morning General Plus, 6 to 24 July 2026): zero class assignments — 6 school days missed 7 to 13 July — 8 school days remaining from Monday 13 July (39th check, 12 Jul UTC)\n• Kayque Tauann Lopes Coelho (student 852, booking course 1821, Academic Year Renewal Afternoon, 29 Jun to 18 Dec 2026): last class assignment on old booking course 1507 (week end 24 April, 79 days expired) — zero active assignments for current course — 10+ school days missed since 29 June\n• Tuguldurtugs Enkhtugs (student 858, booking course 1786, Academic Year Renewal Morning, 6 Jul to 25 Dec 2026): last class assignment on old booking course 1521 (week end 1 May, 72 days expired) — zero active assignments for current course — 6 school days missed since 6 July",
+        "Assign Pietro (student 72, booking course 81), Kayque (student 852, booking course 1821), and Tuguldurtugs (student 858, booking course 1786) to classes via SIS admin TODAY before Monday 13 July. See recipe: issue-45-renewal-arrivals.md",
+        "39th check 12 Jul SUN UTC. UNCHANGED (fresh DB). Pietro(s72/bc81 ends Jul24) STILL 0 SCAs, 6d missed Jul7-13. Kayque(s852/bc1821 Jun29-Dec18) STILL 0 active SCAs, last SCA id=26 weekEnd=Apr24 on old bc1507. Tuguldurtugs(s858/bc1786 Jul6-Dec25) STILL 0 active SCAs, last SCA id=55 weekEnd=May1 on old bc1521. bk78 CONF EUR1880/1880. bk1633 CONF EUR1405.50/1405.50. bk1601 CONF EUR1356.50/1606.50 EUR250 outstanding. Mon13=TOMORROW. NEIL: assign all 3 TONIGHT before Mon13 09:00.",
+        "CRITICAL; 0 SCAs; Mon13"
+      ]
+    ]
+  }
+]

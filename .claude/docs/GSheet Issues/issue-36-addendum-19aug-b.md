@@ -1,0 +1,1 @@
+Issue 36 addendum 19aug-b: code check 44, no changes. Bug A (homework block in renderSheetHtml) awaiting spec. Bug B (holiday filter) pending. Run 388th.

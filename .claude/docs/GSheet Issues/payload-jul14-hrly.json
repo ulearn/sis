@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payment 16988 (EUR 339.90, HubSpot 1204827374829): booking ID = null — still unlinked (43rd check, Tue 14 Jul UTC)\n• Payment 16989 (EUR 339.90, HubSpot 1204846469317): booking ID = null — still unlinked\n• Booking 17856 (Margherita Galbusera, student 14461): Confirmed, confirmed = false, fully paid EUR 339.90\n• Booking 17857 (Francesca Fassina, student 14462): Confirmed, confirmed = false, fully paid EUR 339.90\n• Booking courses 24630 and 24631 (General English AM Plus, ended 10 July 2026): active = still true — 4 days stale",
+        "Link payment 16988 to booking 17856, payment 16989 to booking 17857; set active = false on booking courses 24630 and 24631. See recipe: issue-1-orphan-payments.md",
+        "43rd check Tue 14 Jul UTC. UNCHANGED. Pmts 16988+16989 bookingId=null. BCs 24630+24631 ended Jul10 active=STILL true (4d). Fix NOT RUN.",
+        "unlinked; 4d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "• Extra 96 (booking 17981, Lizbeth del Carmen Sierra Martinez, student 14522): type = Insurance, details = PEL;Health, active = true — 50 days since created 25 May 2026 (27th check, Tue 14 Jul UTC)\n• Booking 17981: Confirmed, confirmed = false, fully paid EUR 1407.50 — insurance cost not included in invoice\n• Booking course 24773 (Academic Year Afternoon, 1 June 2026 to 29 January 2027): active = true — insurance cover needed through January 2027\n• Extra 95 (same booking): type = Exam Fee EUR 220 — correctly set\n• No supplementary insurance invoice on HubSpot deal 503569276136",
+        "Arrange PEL + health insurance retroactive June 2026 through January 2027; issue supplementary invoice on HubSpot deal 503569276136. See recipe: issue-13-lizbeth-health-insurance.md",
+        "27th check Tue 14 Jul UTC. UNCHANGED. Extra96 INSURANCE PEL;Health active=true (50d since May25). BK17981 CONF EUR1407.50/1407.50 conf=false. BC24773 AY-Aft Jun1-Jan29 active=true. Fix NOT RUN.",
+        "insurance unset; 50d"
+      ]
+    ]
+  },
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "• Booking 1308 CANCELLED, confirmed = false — cancellation intentional (per staff)\n• Amount paid = EUR 1530 = amount total — no refund issued\n• Payment 17186 (EUR 1280, HubSpot 1243664915703): xeroPaymentId = null, type = null — unreconciled\n• Payment 17050 (EUR 250, HubSpot 1243648063725): xeroPaymentId = null, type = null — unreconciled\n• Booking course 1350 (Academic Year Afternoon, 25 May – 13 Nov 2026): active = true on cancelled booking (zero class assignments)\n• Accounts decision needed: reconcile EUR 1530 in Xero or issue refund",
+        "Deactivate booking course 1350 (active on cancelled booking); reconcile payments 17186 + 17050 (EUR 1530 total) in Xero. See recipe: issue-17-ana-jessica-accidental-cancel.md",
+        "Tue 14 Jul UTC. UNCHANGED. BK1308 CANCELLED EUR1530/1530. PMT17186 EUR1280 xeroId=null. PMT17050 EUR250 xeroId=null. BC1350 AY-Aft active=true (zero SCAs). EUR1530 held on cancelled booking. Fix NOT RUN.",
+        "pmts unreconciled"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• Booking 1605 (Ariunsarnai Batbayar, student 1047): status = Pending — 92 calendar days without payment since course started 13 April 2026 (27th check, Tue 14 Jul UTC)\n• Amount paid = EUR 0 — no payments recorded — no class assignments on booking course 1791\n• Booking course 1791 (Academic Year Renewal Morning, 13 April to 23 October 2026): active = true, zero class assignments ever\n• HubSpot deal 502951083215: enrolment decision needed — advance to Won or cancel booking",
+        "Enrolment decision needed — advance HubSpot deal 502951083215 to Won or cancel booking 1605. See recipe: issue-20-ariunsarnai-payment-due.md",
+        "27th check Tue 14 Jul UTC. BK1605 STILL PENDING — day 92 since Apr13. EUR0/EUR1509. Zero payments, zero SCAs. BC1791 AY-Renewal active. Neil: contact student or agency, or cancel. Fix NOT RUN.",
+        "Day92; ENROLMENT"
+      ]
+    ]
+  },
+  {
+    "range": "H22:K22",
+    "values": [
+      [
+        "• Original display issue resolved: student 912 (Maurivan Kuhl) showed in A1 AM and A2 AM due to overlapping class assignments — fixed by issue 31\n• Class assignment 156 (A2 AM, class 8): week_end = 2 July 2026 — expired 12 days ago\n• Booking course 1604 (Morning General, 5 January to 3 July 2026): ended 3 July — active = still true (11 days stale)\n• Booking 1461: Confirmed, EUR 1509.60 / 1509.60 fully paid\n• Housekeeping: deactivate booking course 1604",
+        "Deactivate booking course 1604 (set active = false). See recipe: issue-21-maurivan-double-class.md",
+        "Tue 14 Jul UTC. UNCHANGED. SCA156 (class8) weekEnd=Jul02 expired 12d. BC1604 MG Jan05-Jul03 active=STILL true (11d stale). BK1461 CONF EUR1509.6. Fix NOT RUN.",
+        "bc stale 11d; SCA expired 12d"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking courses 24933 and 24934 (Edith Nunes, General English AM, 15 June–10 July 2026): both ended 4 days ago, both still active = true\n• Both courses on booking 18158 have identical date range (fees 380 and 360, total 740) — likely Fidelo webhook duplicate\n• Payment 17895 (EUR 740, booking 18158, 12 June 2026): xeroPaymentId = null — not reconciled in Xero\n• Zero documents on booking 18158 — no completion certificate generated\n• Booking 18214 (booking course 24991, General English AM, 13 July–7 August 2026, EUR 608): Day 2 of course — zero class assignments (also in issue 45)",
+        "Deactivate booking courses 24933 and 24934; generate completion certificate for booking 18158; reconcile payment 17895 in Xero; assign class for booking course 24991. See recipe: issue-22-edith-nunes-payment-dups.md",
+        "15th check Tue 14 Jul UTC. BC24933+24934 ended Jul10 active=STILL true (4d). Zero docs bk18158, no cert. PMT17895 EUR740 xeroId=null. BC24991 Day2 STILL zero SCAs (also issue45). Fix NOT RUN.",
+        "cert+Xero+class Day2"
+      ]
+    ]
+  }
+]

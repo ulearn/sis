@@ -1,0 +1,98 @@
+[
+  {
+    "range": "H2",
+    "values": [
+      [
+        "• Payments 16988 and 16989 (HubSpot 1204827374829 and 1204846469317): EUR 339.90 each — booking ID = null, Xero payment ID = null — unlinked since 28 April 2026 (242nd check, 6 Jul 2026 UTC)\n• Booking 17856 (Margherita Galbusera, student 14461): Confirmed status, confirmed = false — booking course 24631 (General English AM Plus, 29 Jun to 10 Jul 2026, fee = null)\n• Booking 17857 (Francesca Fassina, student 14462): Confirmed status, confirmed = false — booking course 24630 (General English AM Plus, 29 Jun to 10 Jul 2026, fee = null)\n• Both booking courses active — COURSE ENDS FRIDAY 10 JULY 2026 (today is Monday 6 July — 4 school days remaining)\n• Students in school with no attendance tracking; course fees still null\n• Root cause: webhook missed setting booking ID at payment creation on 28 April 2026"
+      ]
+    ]
+  },
+  {
+    "range": "J2",
+    "values": [
+      [
+        "242nd check 6 Jul UTC. UNCHANGED. Pmts 16988+16989 bookingId=STILL null xeroId=STILL null EUR339.90. Bks 17856+17857 CONFIRMED confirmed=STILL false EUR339.9/339.9. Booking courses 24630+24631 GE-AM-Plus Jun29-Jul10 fee=STILL null. COURSE ENDS FRIDAY JUL10 = 4 school days. SQL NOT RUN x242 checks. NEIL: run 4-step SQL TODAY — last week before course ends."
+      ]
+    ]
+  },
+  {
+    "range": "H16",
+    "values": [
+      [
+        "• Class assignment 255 (student 1001 Saikhantes Shagdarsuren, class 11 B1 Afternoon): week end = 3 July 2026 — EXPIRED (130th check, 6 Jul 2026 UTC)\n• Student missed class Monday 6 July 2026 — 1 school day absence so far\n• Active booking course: 24925 (Academic Year Afternoon, booking 18151, 9 March to 2 October 2026, fee EUR 1102.20) — still active, fully paid\n• Booking 18151: Confirmed, confirmed = true, fully paid EUR 1339.20\n• Fix: update class assignment 255 week_end to 2026-10-02 via SIS admin or SQL (NOT YET RUN)"
+      ]
+    ]
+  },
+  {
+    "range": "J16",
+    "values": [
+      [
+        "130th check 6 Jul UTC. UNCHANGED. SCA255 weekEnd=2026-07-03 STILL EXPIRED. Student missed Mon Jul6 = 1 school day lost. BC24925 AY-Aft Mar09-Oct02 fee=1102.20 active=true. BK18151 CONF EUR1339.2/1339.2. SQL NOT RUN x130 checks. NEIL: UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255 — or extend via SIS admin. URGENTLY TODAY."
+      ]
+    ]
+  },
+  {
+    "range": "H23",
+    "values": [
+      [
+        "• Booking 18158 (Edith Nunes, student 1015): Confirmed, confirmed = true, fully paid EUR 740 (95th check, 6 Jul 2026 UTC)\n• Two duplicate booking courses both still active with zero class assignments:\n  - Booking course 24933 (General English AM, 15 June to 10 July 2026, fee EUR 380) — primary\n  - Booking course 24934 (General English AM, 15 June to 10 July 2026, fee EUR 360) — DUPLICATE\n• Last class assignment for student 1015 expired 15 May 2026 — student in school since 15 June with no attendance tracking\n• COURSE ENDS THIS FRIDAY 10 JULY 2026 (4 school days remaining)\n• Fix: deactivate booking course 24934 (duplicate), then assign student 1015 to class 7 A1-AM on booking course 24933"
+      ]
+    ]
+  },
+  {
+    "range": "J23",
+    "values": [
+      [
+        "95th check 6 Jul UTC. UNCHANGED. BK18158 CONFIRMED EUR740/740. BC24933 GE-AM EUR380 + BC24934 DUP GE-AM EUR360 both active ends Jul10. Last SCA for s1015 expired May15. COURSE ENDS FRIDAY JUL10 = 4 school days. NEIL: deactivate BC24934 (dup) then assign student 1015 to class 7 A1-AM via SIS. Final week — urgent."
+      ]
+    ]
+  },
+  {
+    "range": "J30",
+    "values": [
+      [
+        "6 Jul UTC (mirrors issue 15, row 16) — class assignment 255 week_end=Jul3 STILL EXPIRED. Student 1001 (Saikhantes) missed Mon Jul6 = 1 school day absent. See Issue 15 (row 16) for full recipe and SQL."
+      ]
+    ]
+  },
+  {
+    "range": "H41",
+    "values": [
+      [
+        "• Accommodation 11358 (bed 180, Xuezhen Huang, student 14443): claim status = null — not yet confirmed via SIS Matching (59th check, 6 Jul 2026 UTC)\n• Accommodation dates: 12 July to 2 August 2026 — STARTS IN 6 DAYS\n• Booking 17831: Partial, confirmed = false, EUR 965.00 paid of EUR 1396.90 total (EUR 431.90 outstanding)\n• Payment 17180: EUR 431.90 — type = null, no Xero ID, no HubSpot ID (unclassified and unreconciled)\n• Payment 17963: EUR 965.00 — type = null, no Xero ID, HubSpot ID = 1273784562922 (tracked in HubSpot, not yet in Xero)\n• Student cannot be confirmed into accommodation without classifying both payments and confirming the claim via SIS Matching"
+      ]
+    ]
+  },
+  {
+    "range": "J41",
+    "values": [
+      [
+        "59th check 6 Jul UTC. UNCHANGED. BA11358 bed180 Jul12-Aug2 claimStatus=STILL null fee=900. BK17831 PARTIAL EUR965/1396.9 (EUR431.9 outstanding). Pmt17180 EUR431.9 type=null xeroId=null hsId=null. Pmt17963 EUR965 type=null xeroId=null hsId=1273784562922. ACCOMMODATION STARTS JUL12 = 6 DAYS. NEIL: (1) classify pmts 17180+17963; (2) confirm claim 11358 via SIS Matching; (3) reconcile in Xero."
+      ]
+    ]
+  },
+  {
+    "range": "H47",
+    "values": [
+      [
+        "• 63rd check, 6 July 2026 UTC — DAY 1 for 2 renewal students\n• Pietro Colombo (student 72, booking course 81, Morning General Plus, 6 July to 24 July 2026): COURSE STARTED TODAY — no class assignment\n• Tuguldurtugs Enkhtugs (student 858, booking course 1786, Academic Year Renewal Morning, 6 July to 25 December 2026): COURSE STARTED TODAY — no class assignment; booking 1601 EUR 1356.50 / 1606.50 (EUR 250 outstanding)\n• Veronica Martin (student 278, booking course 24931, General English AM, 6 July to 10 July 2026): in school, ENDS THIS FRIDAY — no class assignment (4 school days only)\n• Sarah Venturini Talizin (student 1055, booking course 24945, General English AM, 6 July to 31 July 2026): in school — no class assignment\n• Yuxi Ke (student 14577, booking course 24965, General English PM, 6 July to 21 August 2026): in school — no class assignment\n• Ettore Iovinella (student 14564, booking course 24968, General English AM Plus, 6 July to 13 July 2026): ends next Friday — no class assignment; old booking course 24941 (ended 3 July) still active = true (stale)\n• Booking course 24967 (Gustavo Da Silva duplicate) still active = true (stale)"
+      ]
+    ]
+  },
+  {
+    "range": "J47",
+    "values": [
+      [
+        "63rd check 6 Jul UTC. CONFIRMED ALL 6 STILL 0SCA (fresh DB). Pietro s72/bc81 + Tuguldurtugs s858/bc1786 both started TODAY with 0SCA. Veronica s278/bc24931 ends Fri Jul10 = 4 days only. Ettore s14564/bc24968 ends Jul13. BC24941 (Ettore old ended Jul3) + BC24967 (Gustavo dup) STILL active. bk1601 EUR250 outstanding. NEIL: assign ALL 6 NOW; deactivate BC24941+BC24967; chase EUR250 from Tuguldurtugs bk1601."
+      ]
+    ]
+  },
+  {
+    "range": "K47",
+    "values": [
+      [
+        "6 unassigned; Fri10"
+      ]
+    ]
+  }
+]

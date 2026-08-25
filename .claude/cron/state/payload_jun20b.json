@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H6:K6",
+    "values": [
+      [
+        "• Original issue resolved — Rakan Alghamdi (student 14444) LOA doc 204 ISSUED Jun 08 via booking 17915; Issue 14 (same booking, K=fixed) covered the QR/barcode bug\n• Previous diagnosis error — all prior checks used booking 17871 (student 14473 = Khongorzul Uranaa), which is NOT Rakan booking\n• Booking 17871 (Khongorzul Uranaa): ESCROW, confirmed = true; course Academic Year Morning ran Aug 04 2025 to Jan 23 2026 (ended 5 months ago)\n• Amount paid = EUR 300 of EUR 2313.62 total — EUR 2013.62 outstanding; xeroPaymentId = null; no Xero reconciliation\n• Stale ESCROW with significant outstanding balance on a completed course — Neil decision needed",
+        "Rakan LOA done (Issue 14). Decide fate of bk17871 Khongorzul: write off, pursue, or reclassify EUR 2013 stale ESCROW. See recipe: issue-4-rakan-loa-barcode.md",
+        "Jun20 hrly: bk17871 UNCHANGED (updAt=May08, 43d stale). ESCROW confirmed=true amtPaid=300/2313.62. pmt17375 EUR300 xeroId=null. bc24644 ended Jan23-26 (5m stale). EUR2013.62 outstanding. Awaiting Neil decision: write off / pursue / reclassify.",
+        "Rakan done; Khongorzul EUR2013"
+      ]
+    ]
+  },
+  {
+    "range": "H11:K11",
+    "values": [
+      [
+        "• Booking 97 is CONFIRMED, paid 1741 / 1741\n• Documents 63 and 64 are INVOICES (template 78), not certificates\n• Booking 97 has 0 certificate documents\n• Booking 18002 has Document 179 certificate ISSUED (OK, different booking)",
+        "(NOT RUN) Generate cert for bk97 (Apr27-May22) via SIS Massimiliano bk97 Docs Generate Certificate. recipe: issue-9-massimiliano-cert-split.md",
+        "Jun20 hrly: bk97 UNCHANGED (updAt=Jun05, 15d). doc63(REVOKED)+doc64(ISSUED) tmpl78 (invoices) only. 0 certs (tmpl82) for bk97. bc107 ended May22 (29d ago). NEIL: generate tmpl82 cert via SIS student 91 bk97 Docs.",
+        "cert bk97 pending"
+      ]
+    ]
+  },
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "• Extra 96 (INSURANCE) has fee = null — details = PEL;Health\n• Created and last updated 2026-05-25 — 26 days stale, no action taken\n• Booking 17981 is CONFIRMED, paid 1407.50 / 1407.50, but confirmed = false (minor anomaly)\n• No health insurance has been arranged; student has been in class since Jun 01",
+        "Set fee for extra 96 via SIS - bk17981 - Extras - INSURANCE. Or: UPDATE booking_extras SET fee=150 WHERE id=96 (NOT RUN). See recipe: issue-13-lizbeth-health-insurance.md",
+        "Jun20 hrly: extra96 INSURANCE fee=null UNCHANGED (updAt=May25, 26d stale). bk17981 CONF conf=false paid=1407.5/1407.5. Student in class since Jun01 (19d) with no insurance arranged. NEIL: arrange PEL+Health insurance retro Jun01; set fee via SIS bk17981 Extras.",
+        "ins fee; 26d uninsured"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• Booking course 24826 (Intensive General 30, Jun 08 – Jun 19) ended Jun 19\n• Booking 18034 is PARTIAL, confirmed = false — EUR 845 paid of EUR 1095 total (EUR 250 outstanding)\n• Payment 17683 = EUR 845 (Apr 23, xeroPaymentId = null) — not Xero-reconciled\n• Student on booking 18034 is Ernesto Pesoa Gil (student 14532), not Ivan Rodriguez\n• Ivan Rodriguez (student 18) has booking 22 CONFIRMED and fully paid — no outstanding issue\n• Column B student name is a mismatch — the EUR 250 debt belongs to Ernesto Pesoa Gil",
+        "Chase EUR 250 from Ernesto Pesoa Gil (student 14532, booking 18034). Reconcile payment 17683 in Xero. See recipe: issue-26-intensive-class-assign-once.md",
+        "Jun20 hrly: bc24826 ENDED Jun19 (yesterday). bk18034 PARTIAL 845/1095 conf=false EUR250 outstanding. pmt17683 EUR845 xeroId=null (updAt=Jun07). NEIL: chase EUR250 from Ernesto Pesoa Gil (s14532) + reconcile pmt17683 in Xero.",
+        "course ended;EUR250;chase"
+      ]
+    ]
+  },
+  {
+    "range": "H32:K32",
+    "values": [
+      [
+        "• Week calculation in src/routes/attendance.ts lines 213-214 uses local-time getDay() and setHours() on UTC-midnight dates — shows Sunday instead of Monday as week start on BST server\n• src/scripts/attendance.ts lines 36-37 already use UTC methods (correct, fixed earlier)\n• Bug affects attendance sheet print week-start day for all users in summer (BST active)",
+        "Change src/routes/attendance.ts L213-214: getDate() to getUTCDate(), getDay() to getUTCDay(), setHours() to setUTCHours(). See recipe: issue-31-attendance-sheet-week-bug.md",
+        "Jun20 hrly: UNCHANGED. routes/attendance.ts L213 getDay()/getDate() + L214 setHours() still local-time (BST week-start bug). 2-line UTC fix NOT applied.",
+        "route fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H42:K42",
+    "values": [
+      [
+        "• PM block duration hardcoded as 3.25 (gross 13:45-17:00) in src/scripts/attendance.ts line 84\n• All 4 active group PM classes have breakMinutes = 15, so net teaching hours = 3.00\n• The classes.ts financial calculator (line 1064) already uses gross-minus-break correctly\n• attendance.ts ignores breakMinutes entirely -- uses 3.25 not 3.00\n• Private 121 class (14:00-16:00, no break) = 2h net; hardcoded fix would give it 3h (minor, teacher overrides anyway)",
+        "(NOT RUN) Edit attendance.ts line 84: change 3.25 to 3 (Option A) or derive from class start/end/break (Option B). Rebuild. See recipe: issue-35-pm-attendance-duration.md",
+        "Jun20 hrly: UNCHANGED. attendance.ts L84 still 3.25 (should be 3.00 net for group PM classes). 1-line fix + rebuild NOT applied.",
+        "code fix pending"
+      ]
+    ]
+  }
+]

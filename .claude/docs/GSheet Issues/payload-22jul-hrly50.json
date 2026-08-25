@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 50th hourly check Wed 22 Jul 2026 UTC (82nd total)\n• LAST CHANCE (TODAY + TOMORROW) — Booking course 24828 (Martina Tartaro): Morning General Plus and IELTS, ends Fri 24 Jul 2026 — zero class assignments — 2 school days left (Thu 23 Jul + Fri 24 Jul)\n• LAST CHANCE (TODAY + TOMORROW) — Booking course 25011 (Eduardo Roche Diaz): General English PM, 20–24 Jul 2026 — zero class assignments — 2 school days left\n• Fresh DB query confirmed 0 assignments on both — fix NOT RUN",
+        "Assign Martina (BC24828) and Eduardo (BC25011) to classes before end of day Thu 23 Jul. See recipe: issue-45-addendum-22jul-l.md",
+        "50th hrly 82nd check Wed 22 Jul UTC. BC24828 Martina + BC25011 Eduardo end FRI 24 JUL. STILL 0 CAs. 2 days left. Fix NOT RUN.",
+        "LAST CHANCE: ends Fri 24 Jul"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 51st hourly check Wed 22 Jul 2026 UTC (124th total)\n• August Bank Holiday Mon 3 Aug 2026: STILL absent from school_closures — 12 calendar days away — URGENT\n• October Bank Holiday Mon 27 Oct 2026: STILL absent — 96 calendar days away\n• DB confirmed: 0 school_closure rows between 22 Jul 2026 and 1 Nov 2026\n• Fix NOT RUN",
+        "Add school_closure rows for Aug 3 2026 and Oct 27 2026 (both Bank Holiday). See recipe: issue-38-addendum-22jul-k.md",
+        "51st hrly 124th check Wed 22 Jul UTC. Aug BH STILL absent — 12 days to Aug 3. 0 closures Jul22-Nov01. UNCHANGED. Fix NOT RUN.",
+        "Aug BH; 12d URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 50th hourly check Wed 22 Jul 2026 UTC (100th total)\n• Booking 18180 (Giampaolo Russo, student 14571): 1 accommodation only — Capel Street apartment STILL MISSING\n• Host Family confirmed: Booking accommodation 11357, bed 178, 2 Aug to 6 Sep 2026, active\n• Payment 17954 (EUR 2584.96, Bank Transfer, created 29 Jun 2026): Xero payment ID still null — 23 days unreconciled\n• Check-in Host Family 2 Aug 2026 — 11 calendar days away\n• UNCHANGED — fresh DB query Wed 22 Jul 2026 UTC — fix NOT RUN",
+        "Add Capel Street apt to booking 18180; reconcile payment 17954 in Xero. See recipe: issue-41-addendum-22jul-i.md",
+        "50th hrly 100th check Wed 22 Jul UTC. Capel apt STILL missing. PMT17954 xeroId=null (23d since Jun 29). Check-in Aug 2 (11 days). UNCHANGED. Fix NOT RUN.",
+        "Xero null; Capel missing; 11d to check-in"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• 50th hourly check Wed 22 Jul 2026 UTC (75th total)\n• Booking course 24609 (Xuezhen Huang, student 14443): Morning General, 13 Jul to 31 Jul 2026 — zero class assignments — 7 school days remaining (Thu 23 Jul to Fri 31 Jul)\n• Accommodation BA 11358: Host Family, bed 180, 12 Jul to 2 Aug 2026, active — confirmed\n• UNCHANGED — fresh DB query Wed 22 Jul 2026 UTC — fix NOT RUN",
+        "Assign Xuezhen Huang (BC24609) to a Morning General class. See recipe: issue-39-addendum-22jul-j.md",
+        "50th hrly 75th check Wed 22 Jul UTC. BC24609 STILL 0 CAs — 7 remaining (ends Jul 31). Fix NOT RUN.",
+        "BC24609 0 CAs; 7d left (ends Jul 31)"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• 4th check Wed 22 Jul 2026 UTC\n• Booking accommodation 11352 (Veronica Martin, bed 83, booking 18156, 4 July to 11 July 2026): active = STILL true — 11 days post-checkout\n• Booking accommodation 11285 (Jesus Manuel Ramirez Diaz, bed 83, booking 17825, 21 June to 5 July 2026): active = STILL true — 17 days post-checkout\n• Both records on bed 83 — cosmetic data hygiene only, no current guest impact",
+        "Set active = false on accommodations 11285 and 11352 (both bed 83, both post-checkout). See recipe: issue-37-veronica-capel-accomm-allocation.md",
+        "4th check Wed 22 Jul UTC. BA11352 (Veronica Martin, bed 83, Jul 4-Jul 11): active=STILL true (11d post-checkout). BA11285 (Jesus Manuel, bed 83, Jun 21-Jul 5): active=STILL true (17d post-checkout — see Issue 43). Fix: UPDATE booking_accommodations SET active=false WHERE id IN (11285, 11352). Fix NOT RUN.",
+        "BA stale 11d+17d; cosmetic"
+      ]
+    ]
+  },
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 40th hourly check Wed 22 Jul 2026 UTC (96th total)\n• Payment 16988 (EUR 339.90, Bank, 28 Apr 2026): booking ID null — 86 days since creation\n• Payment 16989 (EUR 339.90, Bank, 28 Apr 2026): booking ID null — 86 days since creation\n• Payment 17187 (EUR 6151, TransferMate Escrow, payment date 1 May 2026, created 5 May 2026): booking ID null — 79 days since creation\n• Payment 4781 (EUR 380, Flywire): CORRECTION — payment date 20 Aug 2019 (7-year-old migration record, not a 2026 payment); created 10 Apr 2026 — likely permanently unresolvable\n• Stale booking courses: 24,436 with active = true and end date before 22 Jul 2026 — unchanged\n• Stale booking accommodations: 11,175 with active = true and end date before 22 Jul 2026 — unchanged",
+        "Link recent orphan payments 16988, 16989, 17187 to bookings; payment 4781 is 2019 FIDELO legacy - likely unresolvable. Run deactivation job. See recipe: issue-1-addendum-22jul-g.md",
+        "40th hrly 96th check Wed 22 Jul UTC. CORRECTION: PMT4781 payment_date=2019-08-20 (FIDELO legacy). Other 3: 16988+16989 EUR339.90 Bank Apr28, 17187 EUR6151 TM May01. Stale BCs: 24,436. Stale BAs: 11,175. Fix NOT RUN.",
+        "4 orphan pmts; 24,436 stale BCs"
+      ]
+    ]
+  }
+]

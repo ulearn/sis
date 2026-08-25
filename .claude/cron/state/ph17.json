@@ -1,0 +1,56 @@
+[
+  {
+    "range": "J21:K21",
+    "values": [
+      [
+        "Jun15 hrly17: bk1605 PEND 0/1509 updAt=Jun11(4d stale). bc1791 AY-MORN Apr13-Oct02 ACTIVE. HS deal 502951083215 not WON. NEIL: contact student/agent or cancel bk1605.",
+        "stale 4d pend"
+      ]
+    ]
+  },
+  {
+    "range": "J23:K23",
+    "values": [
+      [
+        "Jun15 hrly17: COURSE DAY1. bk18158 PEND 0/740 updAt=Jun11. bc24933+bc24934 DUP GE-AM Jun15-Jul10 STILL. bk18131 CONF 1185+bk18133 CONF 648 NOT cancelled. 0 SCAs s1015. 4 STEPS NOT RUN. NEIL: (1)CANCEL bk18131+18133; (2)void pmt17852(HS=1245328690407)+pmt17730(HS=1242902318299) via HubSpot; (3)DEL bc24934; (4)assign s1015 cls7/c24933 after bk18158 paid+confirmed.",
+        "today 0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "J27:K27",
+    "values": [
+      [
+        "Jun15 hrly17: 0 SCAs STILL. bc24826 INTENSIVE WK2(Jun15-19) DAY1. Course ends Jun19=4d. bk18034 PARTIAL 845/1095 conf=false. INSERT AM+PM SCAs ws=Jun15 we=Jun19 NOT RUN. NEIL: get Ernesto level from teacher NOW then insert 2 SCAs via SIS.",
+        "WK2 0SCA 4d"
+      ]
+    ]
+  },
+  {
+    "range": "J30:K30",
+    "values": [
+      [
+        "Jun15 hrly17: att=0 DB confirmed(0 total). sca255 cls11/B1PM bc24925 ends Jul03=18d. visa_status=null nationality=Mongolia. IRP risk if not attending. NEIL: ask B1PM teacher re Saikhantes TODAY.",
+        "IRP 18d"
+      ]
+    ]
+  },
+  {
+    "range": "J31:K31",
+    "values": [
+      [
+        "Jun15 hrly17: COURSE DAY1 ACTIVE. s88 Giulia 0 SCAs STILL. bk18044 DUP CONF 1106.5/1106.5 STILL. bk18152 Milena PEND 0/1151.5 STILL. bk94 CONF 1151.5/1151.5 c104 Jun15-26 OK. ALL 4 STEPS NOT RUN. NEIL: step1(get Giulia level from prev teacher)+step2(assign cls via SIS bk94/c104 ws=Jun15 we=Jun26) URGENT.",
+        "DAY1 0SCA NOW"
+      ]
+    ]
+  },
+  {
+    "range": "J32:K32",
+    "values": [
+      [
+        "Jun15 hrly17: TZ absent .env STILL(grep TZ=0). 43 null week_end SCAs: 9 ghost past-end(IDs:39/40/65/66/74/75/81/87/100 bc_end<=Jun12)+34 active. Att sheet showing Sun Jun14 heading+ghost students LIVE. BOTH FIXES NOT RUN. FIX1(NOT RUN): echo TZ=UTC>>.env && touch tmp/restart.txt. FIX2(NOT RUN): UPDATE student_class_assignments SET week_end=(SELECT end_date FROM booking_courses WHERE id=booking_course_id) WHERE week_end IS NULL;",
+        "APPLY NOW"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,58 @@
+[
+  {
+    "range": "J2",
+    "values": [
+      [
+        "212th check 5 Jul SUN UTC — UNCHANGED. Payments 16988+16989 booking_id=STILL null xero_payment_id=null EUR 339.90 each. Bookings 17856+17857 CONFIRMED confirmed=false amtPaid=339.9/339.9 (fully paid). Booking courses 24630+24631 General English AM Plus Jun 29 - Jul 10 active=true fee=null. Students IN CLASS Day 6 of 10 — 4 school days left (end Fri Jul 10). 4-step SQL NOT RUN across 212 hourly checks. NEIL: RUN NOW — COURSES END FRIDAY JUL 10. (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) UPDATE booking_courses SET fee=339.9 WHERE id IN (24630,24631); (4) UPDATE bookings SET confirmed=true WHERE id IN (17856,17857)."
+      ]
+    ]
+  },
+  {
+    "range": "J16",
+    "values": [
+      [
+        "104th check 5 Jul SUN UTC — SCA 255 EXPIRED 2 DAYS AGO (Jul 3). ZERO class assignments for student 1001 Saikhantes. Booking course 24925 Academic Year Afternoon Mar 9 - Oct 2 2026, active=true, fee=EUR 1102.20. Booking 18151 CONFIRMED EUR 1339.20/1339.20. MONDAY JUL 6 = TOMORROW — student will miss class. SQL NOT RUN across 104 hourly checks: UPDATE student_class_assignments SET week_end=2026-10-02 WHERE id=255. NEIL: RUN IMMEDIATELY or extend via SIS admin before Monday morning."
+      ]
+    ]
+  },
+  {
+    "range": "K16",
+    "values": [
+      [
+        "MISSED Mon Jul6"
+      ]
+    ]
+  },
+  {
+    "range": "J23",
+    "values": [
+      [
+        "67th check 5 Jul SUN UTC — UNCHANGED. Booking 18158 CONFIRMED confirmed=true EUR 740/740 (fully paid). Two duplicate booking courses: 24933 + 24934, both General English AM Jun 15 - Jul 10, both active=true, ZERO class assignments, no invoices. Single payment 17895 EUR 740 via HubSpot (Jun 12). Courses end FRIDAY JUL 10 = 5 days. Student may be in class 20 days with no attendance record in SIS. NEIL: (1) Deactivate one duplicate BC; (2) assign remaining to class ASAP — only 4 school days left."
+      ]
+    ]
+  },
+  {
+    "range": "J25",
+    "values": [
+      [
+        "31st check 5 Jul SUN UTC — UNCHANGED. Booking course 1797 Morning General ended Jun 26 = 9 days ago, still active=true. Booking 1611 CONFIRMED EUR 1280.12/1280.12 (fully paid). Note: BC fee=EUR 1836 vs booking total=EUR 1280.12 (likely discount or migration artifact, not urgent). Low priority — stale active flag only. No operational impact. Fix: UPDATE booking_courses SET active=false WHERE id=1797."
+      ]
+    ]
+  },
+  {
+    "range": "J41",
+    "values": [
+      [
+        "34th check 5 Jul SUN UTC — UNCHANGED. Booking 17831 PARTIAL confirmed=false EUR 965/1396.90 (EUR 431.90 outstanding). Accommodation 11358: Host Family bed 180, Jul 12 - Aug 2 (3 weeks), fee=EUR 900, active=true, claim_status=null, updated Jun 26. Accommodation IS in database with bed assigned. Not appearing in host family view likely because booking is PARTIAL and confirmed=false. NEIL: collect outstanding EUR 431.90 to trigger booking confirmation and make accommodation visible."
+      ]
+    ]
+  },
+  {
+    "range": "J47",
+    "values": [
+      [
+        "34th check 5 Jul SUN UTC — STUDENTS START TOMORROW MON JUL 6. NEW STUDENTS FOUND: booking course 1825 (Everton Streletcki s1075, Academic Year Afternoon Jun 29 - Dec 18) + booking course 95 (Florian Baury s81, Morning General Plus Jun 29 - Jul 17) started Jun 29 with ZERO class assignments. Also booking courses 24971+24972+24973+24974 (Ella s14579, Paul s14580, Diego s7359, Theo s14556) General English AM Jun 29 active, 0 SCAs. Total 30 active booking courses with no class assignment (Jun 25 - Jul 10). 8 long-course Jul 6 starters unassigned: Rakan s14444 bc24697, Zeyad s32 bc38, Sulaiman s7309 bc24930, Gustavo s14570 bc24955+bc24967 dup, Tuguldurtugs s858 bc1786, Shih-Wei s356 bc24913, Yuxi s14577 bc24965. Saikhantes s1001 SCA expired Jul 3 — see Issue 15. NEIL: ASSIGN ALL CONFIRMED STUDENTS BEFORE MON JUL 6 09:00."
+      ]
+    ]
+  }
+]

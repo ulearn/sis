@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 16th check Wed 5 Aug 2026 UTC — 3 booking courses end FRIDAY 7 Aug (2 days) still with 0 class assignments\n• Booking course 88 (Africa Mera Bachir, student 76): Morning General, ends 2026-08-07 — 0 class assignments\n• Booking course 24967 (Gustavo Da Silva, student 14570): General English AM, ends 2026-08-07 — 0 class assignments\n• Booking course 25038 (Eduardo Roche Diaz): General English PM, ends 2026-08-07 — 0 class assignments\n• 8 booking courses end Thu 14 Aug all with 0 class assignments: BC 24 (Amine Ibrani), BC 1144 (ANAR-ERDENE), BC 1305 (Nomin Nergui), BC 1344 (BAt-Orgil), BC 1572 (Ganchimeg), BC 1591 (Turbold), BC 25004 (Vincenzo Contu), BC 25005 (Claudia Mereu)",
+        "Assign class to BC 88, 24967, 25038 TODAY — ends Fri 7 Aug. Aug 14: assign BC 24/1305/1344/1591/1572/1144/25004/25005. See recipe: issue-38-addendum-5aug.md",
+        "16th hrly Wed 5 Aug UTC. URGENT: 3 BCs end FRIDAY 7 Aug (2 days), still 0 SCAs. 8 BCs end Aug 14 still 0 SCAs. Fix NOT RUN.",
+        "CRITICAL; Fri Aug 7; 2d"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 28th check Wed 5 Aug 2026 UTC — stale booking course count unchanged at 24,467\n• Booking course 25006 (Marina Larripa, General English AM Plus, ended 2026-08-03): active = true — 2 days stale, 2 class assignments present\n• All Issue 38 booking courses (future end dates Aug 7 / Aug 14) excluded from count — safe\n• Bulk deactivation still not run — awaiting decision from Neil",
+        "Run bulk deactivation of 24,467 stale booking courses. See recipe: issue-45-addendum-5aug.md",
+        "28th hrly Wed 5 Aug UTC. Count unchanged at 24,467. BC 25006 2d stale (2 SCAs). Awaiting decision.",
+        "24,467 stale; awaiting decision"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 147th check Wed 5 Aug 2026 UTC — no change since Tue 4 Aug\n• Pietro Caccianiga (booking 17980): accommodation 11311 (bed 84, 28 Jun to 13 Sep) — RESOLVED\n• Payment 17733 (Pietro, EUR 5,331): xero_payment_id = null — 64 days unreconciled (payment date 2026-06-02)\n• Paola Sthefane Missias Moreira (booking 17850): status = CONFIRMED, confirmed = false, amount_paid = null, amount_open = EUR 321.35 — anomaly\n• Booking course 24624 (Paola, Morning General, ended 2026-06-05): active = true — 61 days stale, 0 class assignments\n• Payment 17519 (Paola, EUR 321.35, booking 17850): xero_payment_id = null — unreconciled",
+        "Reconcile pmts 17733 + 17519 in Xero; deactivate BC 24624; confirm booking 17850 if paid in full. See recipe: issue-36b-addendum-5aug.md",
+        "147th hrly Wed 5 Aug UTC. Pietro pmt 17733 Xero null 64d. Paola bk17850 confirmed=false, pmt 17519 Xero null. BC 24624 stale 61d. Fix NOT RUN.",
+        "pmts unreconciled; 64d"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 12th check Wed 5 Aug 2026 UTC — no change since 11th check\n• Booking 18180 (Giampaolo Russo, student 14571): CONFIRMED, EUR 2,584.96 fully paid\n• Booking course 24956 (General English AM, 2026-08-03 to 2026-09-11): class assignment in place — OK\n• Booking accommodation 11357: Host Family (bed 178, Claremont Close), 2 Aug to 6 Sep 2026, fee EUR 1,250 — OK\n• Capel Street apartment booking accommodation: still absent — no BA for booking 18180 at provider 15\n• Payment 17954: EUR 2,584.96, xero_payment_id = null — 37 days unreconciled (created 2026-06-29)",
+        "Create Capel Street BA for booking 18180 (provider 15); reconcile payment 17954 in Xero. See recipe: issue-41-addendum-5aug.md",
+        "12th hrly Wed 5 Aug UTC. Class + host family BA (BA 11357 bed 178) done. Capel BA still absent. Payment 17954 xeroPaymentId=null, 37 days. Fix NOT RUN.",
+        "Capel BA absent; 37d"
+      ]
+    ]
+  },
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 147th check Wed 5 Aug 2026 UTC — 4 orphan payments unchanged (106 days since first flagged)\n• Payment 16988: EUR 339.90, booking_id = null, xero_payment_id = null — matches booking 17856 (Galbusera)\n• Payment 16989: EUR 339.90, booking_id = null, xero_payment_id = null — matches booking 17857 (Fassina)\n• Payment 17187: EUR 6,151, transaction_id = D2026226, booking_id = null — origin unknown\n• Payment 4781: EUR 380, transaction_id = D20191404, legacy 2019 (7 years old)\n• Booking course 24630 (Fassina, ended 2026-07-10): active = true — 26 days stale, 0 class assignments\n• Booking course 24631 (Galbusera, ended 2026-07-10): active = true — 26 days stale, 0 class assignments\n• Booking course 25006 (Marina Larripa, ended 2026-08-03): active = true — 2 days stale, 2 class assignments present\n• Bookings 17856 (Galbusera) + 17857 (Fassina): status = CONFIRMED, confirmed = false — anomaly",
+        "Link pmt 16988->bk17856, 16989->bk17857; deactivate BCs 24630+24631+25006; fix confirmed on bk17856+17857; investigate pmt 17187. See recipe: issue-1-addendum-5aug.md",
+        "147th hrly Wed 5 Aug UTC. 4 orphan payments unchanged (106d). BCs 24630+24631 26d stale. BC 25006 2d stale, 2 SCAs. Fix NOT RUN.",
+        "4 orphan pmts; 106d+"
+      ]
+    ]
+  },
+  {
+    "range": "H8:K8",
+    "values": [
+      [
+        "• 25th check Wed 5 Aug 2026 UTC — unchanged since Tue 4 Aug (51 days open)\n• Booking 17909 (Sofiia Korkishchenko, student 768): status = CANCELLED, confirmed = true — anomalous (cancelled should have confirmed = false)\n• Amount paid = EUR 0, amount open = EUR 727.50 — full balance unpaid on a CANCELLED booking\n• Booking course 24693 (Renewal Academic Year PM, ends 2026-11-13): active = true, 0 class assignments — BC active despite cancelled booking",
+        "Confirm intent with Neil (cancel vs reinstate); set confirmed=false on bk17909; deactivate BC 24693 if staying cancelled. See recipe: issue-7-addendum-5aug.md",
+        "25th hrly Wed 5 Aug UTC. Bk17909 CANCELLED + confirmed = true, EUR 0 paid, EUR 727.50 open. BC 24693 active to Nov 2026. 51 days open. Fix NOT RUN.",
+        "bk17909 anomaly; 51d"
+      ]
+    ]
+  }
+]

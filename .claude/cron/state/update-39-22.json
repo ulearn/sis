@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Booking course 24609 (Xuezhen Huang, student 14443, Morning General, 13 July to 31 July 2026): zero class assignments — 51st check Friday 17 July 2026 EOD\n• Full week 1 (Monday 13 July to Friday 17 July): ended with zero class assignments — attendance permanently missed\n• Week 2 (Monday 20 July to Friday 24 July): starts Monday — business hours ended 17 Jul, window now CLOSED for today\n• Booking 17831: Confirmed, EUR 1396.90 fully paid\n• Booking accommodation 11358 (bed 180, host Mary Carver, 12 July to 2 August 2026): active = true, fee = EUR 900 — correctly in SIS\n• 2 weeks of course remain: 20 July to 31 July 2026",
+        "Assign Xuezhen Huang (student 14443) to a Morning General class first thing Monday 20 July. See recipe: issue-39-addendum-17jul.md",
+        "51st check Fri 17 Jul UTC 19:03 (EOD). BC24609 0 SCAs CONFIRMED at EOD. Week 1 (Jul 13-17) PERMANENTLY MISSED. Week 2 (Jul 20-24) starts Monday — assign first thing Mon 20 Jul. BA11358 bed180 host Mary Carver Jul12-Aug2 EUR900 correct. Fix NOT RUN.",
+        "CRITICAL; assign Mon AM"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking course 24991 (Edith Nunes, student 1015, General English AM, 13 July to 7 August 2026): zero class assignments — 63rd check Friday 17 July 2026 EOD\n• Full week 1 (Monday 13 July to Friday 17 July): ended with zero class assignments — attendance permanently missed\n• Week 2 (Monday 20 July to Friday 24 July): starts Monday — business hours ended 17 Jul, window now CLOSED for today\n• Booking 18214: Confirmed, EUR 608 fully paid\n• Payment 18004: EUR 608, type = null — payment type unclassified\n• Booking courses 24933 and 24934 (General English AM, ended 10 July 2026): active = still true — 7 days stale\n• 3 weeks of course remain: 20 July to 7 August 2026",
+        "Assign student 1015 (Edith Nunes) to a General English AM class Monday 20 July; deactivate courses 24933 + 24934. See recipe: issue-22-addendum-17jul.md",
+        "63rd check Fri 17 Jul UTC 19:03 (EOD). BC24991 0 SCAs CONFIRMED at EOD. Week 1 (Jul 13-17) PERMANENTLY MISSED. Week 2 (Jul 20-24) starts Monday — assign first thing Mon 20 Jul. BC24933+BC24934 ended Jul10: active=STILL true (7d stale). Fix NOT RUN.",
+        "assign Mon AM; wk1 missed"
+      ]
+    ]
+  }
+]

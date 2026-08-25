@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 141st check Mon 17 Aug 2026 UTC — no change since 140th check\n• Student 1001 (Saikhantes Shagdarsuren), Booking 18151: CONFIRMED, EUR 1,339.20 fully paid\n• Booking serviceEnd = 2026-08-07 — expired 10 days ago (course continues to Oct 2 via BC 24925)\n• Booking Course 24925 (Academic Year Afternoon): Mar 9 to Oct 2 2026, active = true\n• Student Class Assignment 255: class 11, weekEnd = 2026-07-03 — expired 45 days ago\n• Critical: SCA expired July 3, 17 days before holiday started July 20 (student unassigned from July 3)\n• Holiday 2500: Jul 20 to Aug 21 — student returns Thu 21 Aug (4 DAYS FROM NOW)\n• On return: no active SCA, serviceEnd already passed — will not appear in to-be-assigned list\n• ACTION NEEDED before Aug 21: create new SCA and update serviceEnd",
+        "Create SCA class 11 weekStart Aug 24 to Oct 2; update Booking 18151 serviceEnd to Oct 2. See recipe: issue-15-addendum-17aug-b.md",
+        "141st Mon 17 Aug UTC. Returns Thu Aug 21 (4d). SCA 255 expired 45d (Jul 3). serviceEnd expired 10d (Aug 7). Fix NOT RUN.",
+        "URGENT: return Aug21 4d; SCA+svcEnd"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• 107th check Mon 17 Aug 2026 UTC — no change since 106th check\n• Booking 18151 (Saikhantes Shagdarsuren, student 1001): CONFIRMED, EUR 1,339.20 fully paid\n• Booking serviceEnd = 2026-08-07 — expired 10 days ago (student still enrolled via BC 24925)\n• Booking Course 24925: Academic Year Afternoon, end 2026-10-02, active = true\n• Student Class Assignment 255: weekEnd = 2026-07-03 — expired 45 days ago, class 11\n• Student on holiday Jul 20 to Aug 21; returns Thu 21 Aug (4 days) — URGENT action needed\n• No newer booking for student 1001\n• Original issue (BC start Jan 12 vs Mar 9): confirmed as Fidelo restart date artefact",
+        "Update Booking 18151 serviceEnd to 2026-10-02; create SCA week Aug 24 to Oct 2 class 11. See recipe: issue-29-addendum-17aug-b.md",
+        "107th Mon 17 Aug UTC. serviceEnd expired 10d (Aug 7). SCA 255 expired 45d (Jul 3). Returns Aug 21 (4d) — URGENT. Fix NOT RUN.",
+        "URGENT: return Aug21 4d; svc_end+SCA exp"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 178th check Mon 17 Aug 2026 UTC — no change since 177th check\n• Booking Course 25043 (General English PM): start 2026-08-10, end 2026-08-14, active = true\n• Student: Eduardo Roche Diaz (id 14602), Booking 18265: CONFIRMED\n• BC 25043 ended 3 days ago (2026-08-14) and is still active\n• Zero class assignments on BC 25043 — safe to deactivate\n• Stale active Booking Course total: 24,497 (unchanged)",
+        "Deactivate BC 25043 (0 class assignments, safe). See recipe: issue-38-addendum-17aug.md",
+        "178th Mon 17 Aug UTC. BC 25043 ended Aug 14 (3d ago), still active, 0 SCAs. Fix NOT RUN.",
+        "BC25043 3d past end"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 108th check Mon 17 Aug 2026 UTC — no change since 107th check\n• Student 14571 (Giampaolo Russo), Booking 18180: CONFIRMED, EUR 2,584.96 fully paid\n• Duplicate Student Class Assignment: SCA 424 (weekStart Aug 17 = today, BC 24956) and SCA 426 (weekStart Aug 10, BC 24956) — both class 12; SCA 424 is the duplicate, fix NOT RUN\n• Booking Accommodation 11357 (bed 178): Aug 2 to Aug 15, fee EUR 1,250, active = true — ended 2 days ago, stale\n• Booking Accommodation 11396 (bed 44): Aug 15 to Aug 22, fee = null — student currently here, fee missing since check-in (2 days)\n• Booking Accommodation 11397 (bed 89): Aug 22 to Sep 6, fee = null — check-in in 5 days, fee not set\n• Booking Accommodation 11392 (no bed, CCA apt): Sep 6 to Sep 14, fee = EUR 415 — bed not assigned, 20 days to check-in",
+        "Delete SCA 424 (duplicate, urgent); deactivate BA 11357 (2d stale); set fees BA 11396+11397; assign bed BA 11392. See recipe: issue-41-addendum-17aug-b.md",
+        "108th Mon 17 Aug UTC. SCA 424 duplicate live today. BA 11396 fee null day 2. BA 11357 stale 2d. Fix NOT RUN.",
+        "URGENT: SCA424 dup today; fee null BAs"
+      ]
+    ]
+  },
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• 181st check Mon 17 Aug 2026 UTC — no change since 180th check\n• Student Class Assignment 288: bookingCourseId = 24697 (WRONG), classId = 12, weekEnd = 2026-12-18\n• Booking Course 24697 (Academic Year Morning): ended 2026-07-31 — 17 days stale, active = true, 1 Student Class Assignment (SCA 288)\n• Booking Course 25035 (General English Academic Year AM Plus): start 2026-08-03, end 2026-12-18, active = true, 0 Student Class Assignments\n• SCA weekEnd = 2026-12-18 matches BC 25035 end — assignment must move from BC 24697 to BC 25035\n• BC 25035 running 14 days with no class assignment (student 14444, Rakan Alghamdi)",
+        "Move SCA 288 to BC 25035; deactivate BC 24697. See recipe: issue-12-addendum-17aug-b.md",
+        "181st Mon 17 Aug UTC. SCA 288 on wrong BC 24697 (17d stale). BC 25035 running 14d with 0 SCAs. Fix NOT RUN.",
+        "SCA on wrong BC; BC24697 17d"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 141st check Mon 17 Aug 2026 UTC — no change since 140th check\n• Booking 1624 (Telmuun Enkhsaikhan, student 293): status = PARTIAL, confirmed = false\n• Amount paid = EUR 1,406; amount open = EUR 250 — balance prevents CONFIRMED status\n• Booking Course 1810 (Academic Year Renewal Morning, Jun 29 2026 to Jan 1 2027): active = true, 0 class assignments — 49 days without assignment\n• Payment 17956: EUR 100, Bank, xeroPaymentId = null — unreconciled in Xero since Jun 29 (49 days)\n• PARTIAL + confirmed = false excludes student from active class assignment listings",
+        "Assign BC 1810 to class via SIS UI; reconcile Payment 17956 in Xero; settle EUR 250 open; set confirmed = true. See recipe: issue-48-addendum-17aug-b.md",
+        "141st Mon 17 Aug UTC. BC 1810 now 49d with 0 SCAs. EUR 250 open. Xero unreconciled 49d. Fix NOT RUN.",
+        "payment gap; BC1810 49d; SCA 0"
+      ]
+    ]
+  }
+]

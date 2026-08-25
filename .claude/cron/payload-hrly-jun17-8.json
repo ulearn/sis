@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• Booking course 24826 (2 weeks Intensive General 30, Jun 08 – Jun 19) has zero class assignments for entire course\n• Student Ernesto Pesoa Gil (ID 14532, currentLevel = null) has been in school with no SIS class record\n• Course ends Friday Jun 19 — only Thu Jun 18 and Fri Jun 19 remain (TODAY Jun17 = last day to act)\n• Booking 18034 is PARTIAL, paid 845 / 1095 (EUR 250 outstanding), confirmed = false — stale since Jun 07\n• HubSpot contact ID = 3344151 — check level in HubSpot or ask teacher directly",
+        "(NOT RUN) 1) Confirm Ernesto level (ask teacher or check HubSpot contact 3344151); 2) INSERT 2 class assignments (AM + PM) for booking course 24826, week start = 2026-06-17, week end = 2026-06-19. Level pairs: A2=cls8+cls9, B1=cls5+cls11, B2-C1=cls4+cls6, C1=cls13+cls14. See recipe: issue-26-intensive-class-assign-once.md",
+        "Jun17 hrly #4: bc24826 0 SCAs (fresh DB). s14532 level=null. bk18034 PARTIAL 845/1095 stale Jun07. Thu Jun18+Fri Jun19=2 school days left. NEIL: LAST CHANCE today.\nJun17 hrly #5 (re-check): STILL 0 SCAs confirmed. hsId=3344151 in HubSpot. 2 school days: Thu Jun18 + Fri Jun19. Course ENDS FRI JUN19. SQL NOT RUN: INSERT INTO student_class_assignments(booking_course_id,class_id,week_start,week_end,student_id) VALUES(24826,AM_id,2026-06-17,2026-06-19,14532),(24826,PM_id,2026-06-17,2026-06-19,14532). Level pairs: A2=cls8/9, B1=cls5+12/11, B2-C1=cls4/6, C1=cls13/14.\nJun17 #6: STILL 0 SCAs (fresh DB). bk18034 PARTIAL 845/1095 (stale Jun07=10d). LAST 2 school days: Thu Jun18 + Fri Jun19. Course ENDS FRI JUN19. Ask teacher Ernesto level NOW. SQL NOT RUN.\nJun17 #7: STILL 0 SCAs (fresh DB). currentLevel=null confirmed. bk18034 PARTIAL 845/1095. TODAY IS LAST DAY to act. Ask teacher level + INSERT 2 SCAs ws=2026-06-17 we=2026-06-19.\nJun17 hrly #8: STILL 0 SCAs (fresh DB). currentLevel=null. bk18034 PARTIAL 845/1095. Course ENDS FRI JUN19. 2 school days remain. SQL NOT RUN.",
+        "CRIT;2d;Jun19"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 is CONFIRMED, paid 740 / 740 — active booking for Edite Nunes (student 1015, A1)\n• Booking courses 24933 and 24934 are DUPLICATES — both General English AM, Jun 15 – Jul 10 on booking 18158\n• Zero class assignments on both booking courses — student in school since Jun 15 (Day 3) with no class record\n• Bookings 18131 (EUR 1185, ghost) and 18133 (EUR 648, ghost) are CONFIRMED, not cancelled — 12 and 13 days stale respectively",
+        "(NOT RUN) 1) UPDATE bookings SET status=CANCELLED WHERE id IN (18131, 18133); 2) void payments 17852 (EUR1185 HS=1245328690407) + 17730 (EUR648 HS=1242902318299) via HubSpot; 3) DELETE FROM booking_courses WHERE id=24934; 4) assign class 7 (A1-AM) to booking course 24933 week start = 2026-06-17, week end = 2026-07-10. See recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun17 hrly #4: bc24933+bc24934 BOTH 0 SCAs CONFIRMED (fresh DB). bk18158 CONF 740/740. bk18131 CONF 1185 stale Jun03=14d NOT cancelled. bk18133 CONF 648 stale Jun04=13d NOT cancelled. Student in school since Jun15 Day3. NEIL: execute 4-step recipe issue-22 URGENT.\nJun17 07:02 UTC: 0 SCAs still confirmed. Day3 in school. Recipe not run. Duplicate courses (bc24933+bc24934) still both present.\nJun17 hrly #5: bk18131+18133 still CONF NOT cancelled (fresh DB). 0 SCAs on bc24933+bc24934. Day3. Recipe not run.\nJun17 #6: bk18131 CONF 1185 (stale Jun05=12d, fresh DB). bk18133 CONF 648 (stale Jun04=13d). 0 SCAs on bc24933+bc24934. Day3 in school. SQL NOT RUN.\nJun17 #7: bk18131 CONF 1185 (stale Jun05=12d). bk18133 CONF 648 (stale Jun04=13d). 0 SCAs on bc24933+bc24934 (fresh DB). bk18158 CONF 740/740. Day3. Recipe not run.\nJun17 hrly #8: bc24933+bc24934 BOTH 0 SCAs (fresh DB). bk18158 CONF 740/740. Day3. Recipe not run.",
+        "D3;urgent;0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "• Booking 1308 is CANCELLED, confirmed = false — 10 days stale since Jun 07\n• Amount paid = 1530 / 1530 (fully paid genuine enrolment)\n• Booking course 1350 (Academic Year Afternoon, May 25 – Nov 13) is ACTIVE\n• Student 766 (Ana Jessica Rosa, A2) has 0 class assignments all time\n• HubSpot contact ID = 777791875262\n• Student in school since May 25 — no confirmed booking and no class record",
+        "(NOT RUN) UPDATE bookings SET status=CONFIRMED, confirmed=true WHERE id=1308; then assign A2-AFT class to booking course 1350. See recipe: issue-17-ana-jessica-accidental-cancel.md",
+        "Jun17 hrly #4: bk1308 STILL CANCELLED confirmed=false (stale Jun07=10d). 0 SCAs confirmed (fresh DB). bc1350 active. Day24. SQL not run.\nJun17 hrly #5: bk1308 still CANCELLED confirmed=false (stale Jun07). 0 SCAs (fresh DB). bc1350 active. Day24. SQL not run.\nJun17 #6: bk1308 STILL CANCELLED confirmed=false (stale Jun07=10d, fresh DB). 0 SCAs student 766. Day24 in school. SQL NOT RUN.\nJun17 #7: bk1308 STILL CANCELLED confirmed=false (stale Jun07=10d, fresh DB). 0 SCAs (fresh). bc1350 active May25-Nov13. Day24. SQL NOT RUN.\nJun17 hrly #8: bk1308 STILL CANCELLED confirmed=false. 0 SCAs (fresh DB). bc1350 active May25-Nov13. Day24. SQL NOT RUN.",
+        "D24;urgent;0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• Booking 1605 is PENDING, paid 0 / 1509 — day 66 in school\n• HubSpot deal 502951083215 (B2B Sales) is at ENROLMENT stage, not WON\n• Booking course 1791 (Academic Year Renewal Morning, Apr 13 – Oct 02) is ACTIVE\n• Student 1047 (Ariunsarnai Batbayar, B2) has 0 class assignments all time",
+        "Move HubSpot deal 502951083215 to WON stage to trigger webhook and confirm booking. See recipe: issue-20-ariunsarnai-payment-due.md",
+        "Jun17 hrly #4: bk1605 STILL PENDING confirmed=false 0/1509 (updAt=Jun11=6d stale). 0 SCAs confirmed (fresh DB). bc1791 AY-Ren-Morn Apr13-Oct02 ACTIVE. Day 65 in school. NEIL: move HubSpot deal 502951083215 to WON stage to trigger webhook. See recipe issue-20.\nJun17 hrly #5: bk1605 still PENDING 0/1509 (fresh DB, stale Jun11). 0 SCAs (fresh). bc1791 active. Day65. SQL not run.\nJun17 #6: bk1605 PENDING 0/1509 (stale Jun11=6d, fresh DB). 0 SCAs student 1047. Day65. SQL NOT RUN.\nJun17 #7: bk1605 STILL PENDING 0/1509 (stale Jun11=6d, fresh DB). 0 SCAs student 1047 (fresh). bc1791 active. Day66. NEIL: move HubSpot deal 502951083215 to WON.\nJun17 hrly #8: bk1605 STILL PENDING 0/1509 (stale Jun11). 0 SCAs (fresh DB). bc1791 active. Day66. Deal 502951083215 NOT moved to WON.",
+        "D66;pending;0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H32:K32",
+    "values": [
+      [
+        "• Week calculation in routes/attendance.ts lines 213-214 uses local-time getDay() and setHours() on UTC-midnight dates — shows Sunday Jun 14 instead of Monday Jun 15\n• scripts/attendance.ts lines 36-37 already use UTC methods (confirmed fixed)\n• Bug causes attendance sheet print to show wrong week start day for all users",
+        "Change routes/attendance.ts lines 213-214 to use getUTCDate/getUTCDay/setUTCHours (matches fix already in scripts/attendance.ts). See recipe: issue-31-attendance-sheet-week-bug.md",
+        "Jun17 hrly #3: routes/attendance.ts L213-214 STILL local-time getDay/setHours (bug NOT fixed, 9th check). scripts/attendance.ts L36-37 confirmed fixed (UTC). 119 active SCAs. NEIL: apply 2-line fix to routes/attendance.ts or mark wont-fix.\nJun17 hrly (10th check): routes/attendance.ts L213-214 STILL local-time getDay/setHours (bug NOT fixed). 119 active SCAs.",
+        "route fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• Student 917 (Uyanga) has visaStatus = null\n• Booking 1467 is CONFIRMED, 2405 / 2405\n• 0 class assignments (SCAs) — Day 51 in school with no class\n• hubspotContactId = null",
+        "Confirm visa approved then UPDATE students SET visa_status=approved WHERE id=917 (NOT RUN). Assign AY-MORN class (cls5 or cls12). see recipe: issue-25-uyanga-visa-escrow.md",
+        "Jun17 hrly: s917 visaStatus=null UNCHANGED (updAt=May21=27d stale). hubspotContactId=null. bk1467 CONF confirmed=true 2405/2405 (updAt=Jun11=6d stale). c1613 AY-MORN Apr27-Oct16 ACTIVE. 0 SCAs all time. Day 52 in school (Apr27-Jun17). SQL NOT RUN. NEIL: (1) confirm visa from IRP paperwork; (2) UPDATE students SET visa_status=approved WHERE id=917; (3) assign B1 Morning class id=5 or 12 via SIS. Recipe: issue-25-uyanga-visa-escrow.md\nJun17 hrly #8: s917 visaStatus=null hubspotContactId=null (fresh DB). bk1467 CONF 2405/2405. bc1613 active Apr27-Oct16. 0 SCAs. Day52.",
+        "visa null D52"
+      ]
+    ]
+  }
+]

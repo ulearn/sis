@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 101st check Sun 16 Aug 2026 UTC — ESCALATION: Class Assignment 424 starts TOMORROW (Mon 17 Aug)\n• Booking Accommodation 11357 (bed 178): ended 15 Aug, active = true — 1 day past end, not deactivated\n• Booking Accommodation 11396 (bed 44): 15–22 Aug, fee = null — Day 2 in situ, CRITICAL\n• Booking Accommodation 11397 (bed 89): 22 Aug–6 Sep, fee = null — check-in Sat 22 Aug (6 days)\n• Student Class Assignment 426: weekStart 10 Aug, weekEnd 11 Sep, class 12 — currently active, CORRECT\n• Student Class Assignment 424: weekStart 17 Aug, weekEnd 11 Sep, class 12 — DUPLICATE of SCA 426, starts tomorrow\n• Fix NOT RUN",
+        "Delete SCA 424 (duplicate); set fee on BA 11396 TODAY; set fee on BA 11397 before 22 Aug; deactivate BA 11357. See recipe: issue-41-addendum-16aug-b.md",
+        "101st Sun 16 Aug UTC. SCA 424 starts TOMORROW — duplicate of SCA 426, both class 12 BC 24956. BA 11396 Day 2 fee null CRITICAL. BA 11357 1d overdue. BA 11397 fee null, check-in 6d. Fix NOT RUN.",
+        "URGENT: SCA424 dup tomorrow; BA11396 day2 fee null"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 136th check Sun 16 Aug 2026 UTC — no change since 135th check\n• Student 1001 (Saikhantes Shagdarsuren), Booking 18151: Confirmed, EUR 1,339.20 fully paid\n• Booking Course 24925 (Academic Year Afternoon): 9 Mar–2 Oct 2026, active = true\n• Service end = 2026-08-07 — expired 9 days ago (must be extended to 2026-10-02)\n• Holiday 2500: 20 Jul–21 Aug 2026 (5 weeks) — student returns in 5 days (Fri 21 Aug)\n• Student Class Assignment 255: weekStart 12 Jan, weekEnd 3 Jul, class 11 — expired 44 days ago, no new SCA\n• Fix NOT RUN",
+        "Extend service_end to 2026-10-02; create SCA for week starting 24 Aug (class 11). See recipe: issue-15-addendum-16aug-b.md",
+        "136th hrly Sun 16 Aug UTC. Returns Fri 21 Aug (5d). Service_end expired 9d. SCA 255 expired 44d, no new SCA. Fix NOT RUN.",
+        "URGENT: return Aug21 5d; SCA+svcEnd"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• 102nd check Sun 16 Aug 2026 UTC — G column unchanged since 101st check\n• Booking 18151 (Saikhantes Shagdarsuren, student 1001): Confirmed, EUR 1,339.20 fully paid\n• Service end = 2026-08-07 — expired 9 days ago (must be extended to 2026-10-02)\n• Booking Course 24925 (Academic Year Afternoon): 9 Mar–2 Oct 2026, active = true\n• Holiday 2500: 20 Jul–21 Aug 2026 — student returns in 5 days (Fri 21 Aug)\n• Student Class Assignment 255: weekStart 12 Jan, weekEnd 3 Jul, class 11 — expired 44 days ago, no SCA for return\n• Fix NOT RUN",
+        "Extend service_end to 2026-10-02; create SCA for week starting 24 Aug (class 11). See recipe: issue-15-addendum-16aug-b.md",
+        "102nd hrly Sun 16 Aug UTC. G col unchanged. Returns Fri 21 Aug (5d). Fix NOT RUN.",
+        "URGENT: return Aug21 5d; svc_end+SCA exp"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 204th check Sun 16 Aug 2026 UTC — no change since 203rd check\n• Student: Pietro Caccianiga (booking 17980, student 14521) — Confirmed, fully paid EUR 5,331\n• Booking Accommodation 11311 (bed 84): 28 Jun–22 Aug 2026, fee = EUR 3,850, active — check-out Sat 22 Aug (6 days)\n• Booking Accommodation 11393 (bed 88): 22 Aug–13 Sep 2026, fee = null, active — check-in Sat 22 Aug (6 days), CRITICAL\n• Bed 88 historical rate ~EUR 328/week (from BA 11228); expected fee ~EUR 1,000 for 3.1 weeks\n• Fix NOT RUN",
+        "Set fee on Booking Accommodation 11393 before Sat 22 Aug; reconcile payment 17733 in Xero. See recipe: issue-36b-addendum-16aug-b.md",
+        "204th Sun 16 Aug UTC. No change. BA 11393 fee null, check-in Sat 22 Aug (6d). Fix NOT RUN.",
+        "fee null BA11393; check-in Aug22 (6d)"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 137th check Sun 16 Aug 2026 UTC — no change since 136th check\n• Booking 1624 (Telmuun Enkhsaikhan, student 293): PARTIAL, confirmed = false, EUR 1,406 paid, EUR 250 open\n• Booking Course 1810 (Academic Year Renewal Morning): 29 Jun 2026–1 Jan 2027, active = true — 49 days without class assignment\n• Student Class Assignments on BC 1810: 0 (student unassigned to any class)\n• Payment 17956: EUR 100, 31 Mar 2026, xeroPaymentId = null — only payment directly linked (amountPaid=1406 suggests Fidelo-imported payments)\n• Fix NOT RUN",
+        "Assign class to Booking Course 1810; chase EUR 250 balance; reconcile payment 17956 in Xero. See recipe: issue-48-addendum-16aug-b.md",
+        "137th Sun 16 Aug UTC. BC 1810 49d without class. EUR 250 open. Payment 17956 Xero null. No fix applied.",
+        "payment gap; BC1810 49d; SCA 0"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 101st check Sun 16 Aug 2026 UTC — no change since 100th check\n• Stale active Booking Courses (end date before 16 Aug 2026): 24,497 — unchanged\n• 18 Booking Courses ended 14–15 Aug 2026 — already counted in 24,497\n• Booking Course 25043 (Issue 38) also stale (ended 14 Aug) — included in count\n• Fix script prepared; not yet run",
+        "Run bulk deactivation of 24,497 stale Booking Courses. See recipe: issue-45-addendum-16aug-b.md",
+        "101st Sun 16 Aug UTC. 24,497 stale Booking Courses unchanged. 18 ended 14-15 Aug included. Fix NOT RUN.",
+        "24,497 stale; fix pending"
+      ]
+    ]
+  }
+]

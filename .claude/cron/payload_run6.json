@@ -1,0 +1,56 @@
+[
+  {
+    "range": "J27:K27",
+    "values": [
+      [
+        "Jun17 hrly #4: bc24826 0 SCAs (fresh DB). s14532 level=null. bk18034 PARTIAL 845/1095 stale Jun07. Thu Jun18+Fri Jun19=2 school days left. NEIL: LAST CHANCE today.\nJun17 hrly #5 (re-check): STILL 0 SCAs confirmed. hsId=3344151 in HubSpot — check level there. 2 school days: Thu Jun18 + Fri Jun19. Course ENDS FRI JUN19. SQL NOT RUN (ws=Jun17): INSERT INTO student_class_assignments(booking_course_id,class_id,week_start,week_end,student_id) VALUES(24826,<AM_id>,2026-06-17,2026-06-19,14532),(24826,<PM_id>,2026-06-17,2026-06-19,14532). Level pairs: A2=cls8/9, B1=cls5+12/11, B2-C1=cls4/6, C1=cls13/14.\nJun17 #6: STILL 0 SCAs (fresh DB). bk18034 PARTIAL 845/1095 (stale Jun07=10d). LAST 2 school days: Thu Jun18 + Fri Jun19. Course ENDS FRI JUN19. Ask teacher Ernesto level NOW then INSERT. SQL NOT RUN.",
+        "CRIT;2d;Jun19"
+      ]
+    ]
+  },
+  {
+    "range": "J18:K18",
+    "values": [
+      [
+        "Jun17 hrly #4: bk1308 STILL CANCELLED confirmed=false (stale Jun07=10d). 0 SCAs confirmed (fresh DB). bc1350 active. Day24. SQL not run.\nJun17 hrly #5: bk1308 still CANCELLED confirmed=false (stale Jun07). 0 SCAs (fresh DB). bc1350 active. Day24. SQL not run.\nJun17 #6: bk1308 STILL CANCELLED confirmed=false (stale Jun07=10d, fresh DB). 0 SCAs student 766. Day24 in school. SQL NOT RUN.",
+        "D24;urgent;0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "J23:K23",
+    "values": [
+      [
+        "Jun17 hrly #4: bc24933+bc24934 BOTH 0 SCAs CONFIRMED (fresh DB). bk18158 CONF 740/740. bk18131 CONF 1185 stale Jun03=14d NOT cancelled. bk18133 CONF 648 stale Jun04=13d NOT cancelled. Student in school since Jun15 Day3. NEIL: execute 4-step recipe issue-22 URGENT.\nJun17 07:02 UTC: 0 SCAs still confirmed. Day3 in school. Recipe not run. Duplicate courses (bc24933+bc24934) still both present.\nJun17 hrly #5: bk18131+18133 still CONF NOT cancelled (fresh DB). 0 SCAs on bc24933+bc24934. Day3. Recipe not run.\nJun17 #6: bk18131 CONF 1185 (stale Jun05=12d, fresh DB). bk18133 CONF 648 (stale Jun04=13d). 0 SCAs on bc24933+bc24934. Day3 in school. SQL NOT RUN.",
+        "D3;urgent;0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "J21:K21",
+    "values": [
+      [
+        "Jun17 hrly #4: bk1605 STILL PENDING confirmed=false 0/1509 (updAt=Jun11=6d stale). 0 SCAs confirmed (fresh DB). bc1791 AY-Ren-Morn Apr13-Oct02 ACTIVE. Day 65 in school. NEIL: move HubSpot deal 502951083215 to WON stage to trigger webhook. See recipe issue-20.\nJun17 hrly #5: bk1605 still PENDING 0/1509 (fresh DB, stale Jun11). 0 SCAs (fresh). bc1791 active. Day65. SQL not run.\nJun17 #6: bk1605 PENDING 0/1509 (stale Jun11=6d, fresh DB). 0 SCAs student 1047. Day65. SQL NOT RUN.",
+        "D65;pending;0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "J30:K30",
+    "values": [
+      [
+        "Jun17 hrly #3: sca255 cls11 weekStart=Jan12 weekEnd=Jul03 STILL WRONG (bc24925 correctly set to Mar09-Sep11 by Neil Jun16). bk18151 CONF conf=true 1339.2/1339.2. SQL NOT RUN. NEIL: run UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255;\nJun17 hrly #5: sca255 weekStart=Jan12 weekEnd=Jul03 STILL WRONG (fresh DB). bc24925 = Mar09-Sep11 (correct). SQL not run.\nJun17 #6: sca255 weekStart=Jan12 weekEnd=Jul03 STILL WRONG (fresh DB). bc24925=Mar09-Sep11 (correct, Neil Jun16). SQL NOT RUN: UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255;",
+        "sca fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "J31:K31",
+    "values": [
+      [
+        "Jun17 hrly #3: bk94 CONF 1151.5/1151.5 (correct). sca270 cls12 B1-AM2 Jun15-Jun26 ACTIVE — student IS in class (7 school days to Jun26). bk18044 DUP CONF 1106.5/1106.5 stale Jun07=10d NOT cancelled. pmt17607 EUR1151.5 xeroId=null bkId=18044 HS=1239529228498. NEIL: cancel bk18044 + void pmt17607 via HubSpot UI.\nJun17 hrly #5: bk18044 DUP still CONF 1106.5/1106.5 (stale Jun07, fresh DB). sca270 ACTIVE Jun15-Jun26. pmt17607 xeroId=null. Recipe not run.\nJun17 #6: sca270 cls12 B1-AM2 Jun15-Jun26 CONFIRMED ACTIVE (fresh DB). bk18044 DUP STILL CONFIRMED 1106.5/1106.5 (stale Jun07=10d, fresh DB). pmt17607 EUR1151.5 xeroId=null HS=1239529228498. 7 school days to Jun26. NOT RUN.",
+        "7 schl;ends Jun26"
+      ]
+    ]
+  }
+]

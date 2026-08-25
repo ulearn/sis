@@ -1,0 +1,56 @@
+[
+  {
+    "range": "J2:K2",
+    "values": [
+      [
+        "hrly Jun28 UTC (97th check): pmt16988 bookingId=STILL null xeroId=null EUR339.90. pmt16989 STILL null EUR339.90. bk17856 CONF confirmed=STILL false 339.9/339.9. bk17857 CONF confirmed=STILL false 339.9/339.9. bc24630+bc24631 GE-AM-Plus startDate=Jun29 fee=STILL null. CLASSES START TOMORROW 08:00 UTC (09:00 IST Mon Jun29). 4-step SQL STILL NOT RUN after 97 hourly checks. NEIL: PLEASE RUN 4-STEP SQL NOW — STUDENTS BLOCKED FROM CLASSES STARTING TOMORROW MORNING.",
+        "NOT RUN; CLASSES TOMORROW"
+      ]
+    ]
+  },
+  {
+    "range": "J16:K16",
+    "values": [
+      [
+        "hrly Jun28 UTC (re-check #4, fresh DB): sca255 weekStart=2026-01-12 STILL WRONG weekEnd=2026-07-03 (5 days to expire Thu Jul03). bc24925 AY Afternoon Mar09-Sep11 fee=1102.2 active=true UNCHANGED. 4-step SQL NOT RUN. NEIL: 5 days before assignment expires — student loses class from Jul03 if not fixed.",
+        "sca255; Jul03=5d; URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "J23:K23",
+    "values": [
+      [
+        "hrly Jun28 UTC (re-check, fresh DB): bk18158 CONF 740/740 (updAt=Jun15=13d stale). sca48 (classId=7, ended Apr-May) + sca146 (classId=7, ended Apr-May) = 0 CURRENT class assignments. bc24933 fee=380 + bc24934 fee=360 GE-AM Jun15-Jul10 both active. 12 days to course end Jul10. NEIL: assign Edith Nunes to current GE-AM class ASAP.",
+        "D13school; Jul10=12d"
+      ]
+    ]
+  },
+  {
+    "range": "J26:K26",
+    "values": [
+      [
+        "hrly Jun28 UTC (24th check, fresh DB): s917 visaStatus=STILL null (updAt=May21=38d stale). bk1467 CONF conf=true 2405/2405 fully paid. sca_count=STILL 0 (no class assignments at all). 38+ days with null visa blocking class assignment. NEIL: UPDATE students SET visa_status=Approved WHERE id=917; then assign to class.",
+        "D65; 0SCA; CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "J30:K30",
+    "values": [
+      [
+        "hrly Jun28 UTC (re-check #4, fresh DB): sca255 weekStart=STILL 2026-01-12 weekEnd=2026-07-03 (5 days to expire). bc24925 AY-AFT Mar09-Sep11 active=true UNCHANGED. 4-step SQL NOT RUN. See Issue 15 (row 16) for full details.",
+        "sca255; Jul03=5d; URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "J39:K39",
+    "values": [
+      [
+        "hrly Jun28 UTC (3rd check, fresh DB): accomm11352 bedId=STILL null (Jul04-Jul11 City Centre Apt EUR360). bk18156 STILL PENDING confirmed=false EUR 0/645 (updAt=Jun17=11d stale). 6 days to checkin Jul04. No bed assigned + no payment received. NEIL: URGENT — assign bed to accomm11352 + confirm payment before Jul04.",
+        "await bed+pmt; Jul4=6d"
+      ]
+    ]
+  }
+]

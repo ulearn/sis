@@ -1,0 +1,46 @@
+[
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 445th check Sat 22 Aug 2026 UTC — CRITICAL: checkout/checkin today (fix still not run since 444th)\n• Booking Accommodation 11311 (bed 84, booking 17980): ends today, fee EUR 3,850, active — Pietro checks out\n• Booking Accommodation 11393 (bed 88, booking 17980): starts today, ends 13 Sep 2026, fee = null — Pietro checks in, fee NOT SET\n• Fix NOT RUN — fee null on Booking Accommodation 11393 persists",
+        "Set fee EUR 1,481 on Booking Accommodation 11393; deactivate 11311 after checkout. Recipe: issue-36b-addendum-22aug.md",
+        "445th Sat 22 Aug UTC. CRITICAL: today. Fee null on Booking Accommodation 11393 persists. Fix NOT RUN.",
+        "URGENT: today"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 445th check Sat 22 Aug 2026 UTC — CRITICAL: checkout/checkin today (fix still not run since 444th)\n• Booking Accommodation 11396 (bed 44, booking 18180): ends today, fee = null, active — Giampaolo host family checkout, fee NOT SET\n• Booking Accommodation 11397 (bed 89, booking 18180): starts today, ends 6 Sep 2026, fee = null, active — Giampaolo apartment checkin, fee NOT SET\n• Booking Accommodation 11357 (bed 178): ended 15 Aug, 7 days stale, active — also needs deactivating\n• Fee split unresolved: EUR 306.65 / EUR 613.31 proportional — confirm with Diego\n• Fix NOT RUN",
+        "Set fees on Booking Accommodations 11396 + 11397 (confirm EUR 306.65/613.31 with Diego); deactivate 11396 + 11357 after checkout. Recipe: issue-41-addendum-22aug.md",
+        "445th Sat 22 Aug UTC. CRITICAL: today. Booking Accommodations 11396 + 11397 fee null. Booking Accommodation 11357 7d stale. Fee split unresolved. Fix NOT RUN.",
+        "URGENT: today"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 197th check Sat 22 Aug 2026 UTC — no change since 196th (Fri 21 Aug ~17:00 UTC)\n• Student 1001 (Saikhantes Shagdarsuren): Booking 18151 CONFIRMED, confirmed = true, paid EUR 1,339.20, open EUR 0\n• Booking Course 24925 (Academic Year Afternoon): active = true, runs 9 Mar to 2 Oct 2026 (41 days left)\n• 1 class assignment only — class 11 (B1 PM), week ending 3 Jul 2026 — gap now 50 days\n• Student returns Tue 25 Aug — deadline Mon 24 Aug = 2 days away\n• Fix NOT RUN",
+        "Create class assignment for Booking Course 24925, class 11 (B1 PM), week ending 28 Aug 2026; deactivate Booking Course 1982. Recipe: issue-15-addendum-22aug.md",
+        "197th Sat 22 Aug UTC. Class assignment gap 50 days (since 3 Jul). Returns Tue 25 Aug. Mon 24 = DEADLINE (2 days). Booking Course 24925 ends Oct 2. Fix NOT RUN.",
+        "URGENT: no SCA 50d; Mon24 2days"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• 157th check Sat 22 Aug 2026 UTC — unchanged since 156th (Fri 21 Aug ~17:00 UTC)\n• Duplicate of Issue 15 (row 16) — same student: Saikhantes Shagdarsuren (student 1001)\n• Booking Course 24925 (Academic Year Afternoon): active, ends 2 Oct 2026 (41 days left)\n• Class assignment gap: 50 days (1 class assignment, week ending 3 Jul 2026) — no new class assignments\n• Deadline Mon 24 Aug 2026 = 2 days away\n• Fix NOT RUN",
+        "See Issue 15 (row 16). Recipe: issue-29-15-addendum-22aug.md",
+        "157th Sat 22 Aug UTC. Returns Tue 25 Aug. Mon 24 = DEADLINE (2 days). Class assignment gap 50 days. Fix NOT RUN.",
+        "URGENT: no SCA; Mon24 2days"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• Stray cell — only content is '278' in column F (Area), all other fields are empty\n• No student name, no issue description, no context — cannot diagnose",
+        "Delete row 39 if accidental entry, or complete the missing fields (issue number, student, description).",
+        "Jun19 hrly9: phantom row STILL PRESENT — F=278 only, all other fields empty (39 days total, first seen ~May11). NEIL: delete row 39 or fill in issue#, student, description.",
+        "del or fill"
+      ]
+    ]
+  }
+]

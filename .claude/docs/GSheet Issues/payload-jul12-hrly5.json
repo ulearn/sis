@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payment 16988 (EUR 339.90): booking ID = null — not linked to booking 17856 (34th check, 12 Jul UTC)\n• Payment 16989 (EUR 339.90): booking ID = null — not linked to booking 17857\n• Booking 17856 (Margherita Galbusera, student 14461): status = Confirmed (updated 8 July 2026) — EUR 339.90 fully paid — no linked payment\n• Booking 17857 (Francesca Fassina, student 14462): status = Confirmed (updated 8 July 2026) — EUR 339.90 fully paid — no linked payment\n• Booking courses 24630 and 24631 (General English AM Plus, ended 10 July 2026): both still active = true — 2 days stale",
+        "Link payment 16988 to booking 17856 and payment 16989 to booking 17857; deactivate booking courses 24630 and 24631. See recipe: issue-1-orphan-payments.md",
+        "34th check 12 Jul SUN UTC. CHANGE: bk17856+bk17857 now status=CONFIRMED (updated 8 Jul) — H updated from prior false value. Payments 16988+16989 bookingId=STILL null. BCs 24630+24631 ended Jul10 STILL active=true (2d stale). Fix NOT RUN.",
+        "unlinked; 2d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Duplicate of issue 15 (row 16): student 1001 Saikhantes Shagdasuren — class assignment 255 (class 11) week end = 3 July 2026 — expired 9 days ago (13th check, 12 Jul UTC)\n• 5 school days missed 7 to 11 July — Monday 13 July = TOMORROW\n• See row 16 (issue 15) for full diagnosis and fix recipe",
+        "Extend class assignment 255 week end to 2026-10-02; deactivate booking course 1982. See recipe: issue-15-saikhantes-course-dates.md",
+        "13th check 12 Jul SUN UTC. Duplicate of row 16. UNCHANGED. SCA255 weekEnd=Jul3 STILL expired 9d. BC1982 ended Dec2025 STILL active=true (205d stale). Mon13=TOMORROW. NEIL: run SQL + deactivate BC1982 before Mon Jul13 09:00.",
+        "Mon13 TOMORROW; see row 16"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Booking course 104 (Morning General Plus, 15 to 26 June 2026): ended 26 June — active = still true (16 days stale) (27th check, 12 Jul UTC)\n• Payment 17102 (EUR 1151.50, booking 94): Xero payment ID = null, type = null — not reconciled in Xero\n• Booking 94 (Giulia Avallone, student 88): Confirmed, EUR 1151.50 / 1151.50 fully paid",
+        "Set booking course 104 active = false; reconcile payment 17102 with Xero. See recipe: issue-30-giulia-milena-parent-student.md",
+        "27th check 12 Jul SUN UTC. UNCHANGED. BC104 Morning-Gen-Plus Jun15-Jun26 active=STILL true (16d stale). PMT17102 EUR1151.50 xeroPaymentId=STILL null type=null. BK94 CONF EUR1151.50/1151.50. Low priority.",
+        "27th check; bc104 stale 16d"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Accommodation 11358 (bed 180, Host Family — Mary Carver): check-in = 12 July 2026 — student has ARRIVED TODAY — host family STILL NOT notified — claim status = null (40th check, 12 Jul UTC)\n• Host contact: Mary Carver, +353 87 927 1130, mary.carver28@gmail.com\n• Booking 17831 (Xuezhen Huang, student 14443): Confirmed, fully paid EUR 1396.90\n• 4 payments all unreconciled in Xero (Xero payment ID = null): payment 17180 (EUR 431.90, April 2026), payment 17963 (EUR 965, July 2026), payment 17987 (EUR 131.90, June 2026), payment 17988 (EUR 300, June 2026)\n• Note: payments 17987 + 17988 = EUR 431.90 = payment 17180 (likely Fidelo installment pair — verify before reconciling all four in Xero separately)",
+        "Contact Mary Carver NOW (+353 87 927 1130 / mary.carver28@gmail.com); submit host family claim for accommodation 11358 via SIS admin; reconcile payments in Xero (verify 17987+17988 vs 17180 first). See recipe: issue-39-xuezhen-huang-accomm-missing.md",
+        "40th check 12 Jul SUN UTC. UNCHANGED. BA11358 bed180 HF startDate=TODAY Jul12 endDate=Aug2 claimStatus=STILL null. STUDENT ARRIVED. HOST NOT NOTIFIED. BK17831 CONF EUR1396.90. 4 pmts xeroId=null sum=EUR1828.80 vs amountPaid=EUR1396.90. NEIL: call Mary Carver NOW.",
+        "URGENT; TODAY; HF unnotified"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• Payment 17954 (EUR 2584.96, booking 18180): Xero payment ID = null and type = null — payment not reconciled in Xero (28th check, 12 Jul UTC)\n• Booking 18180 (Giampaolo Russo, student 14571): Confirmed, EUR 2584.96 fully paid, paid 29 June 2026\n• Accommodation 11357 (bed 178, Host Family, 2 August to 6 September 2026): claim status = confirmed — OK\n• Capel Street accommodation (6 to 14 September 2026): STILL NOT added to booking 18180 — only 1 booking accommodation record in database\n• August check-in is 21 days away",
+        "Set payment type on payment 17954 and reconcile EUR 2584.96 in Xero before 2 August check-in; add Capel Street accommodation to booking 18180. See recipe: issue-41-giampaolo-dual-accomm.md",
+        "28th check 12 Jul SUN UTC. UNCHANGED. PMT17954 EUR2584.96 xeroPaymentId=STILL null type=STILL null. BA11357 bed178 HF Aug2-Sep6 claimStatus=confirmed OK. Capel St Sep6-14 STILL NOT in DB (only 1 BA on BK18180). BK18180 CONFIRMED EUR2584.96. Aug2 check-in in 21 days.",
+        "Xero pmt null; Aug2 21d"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Pietro Colombo (student 72, booking course 81, Morning General Plus, 6 to 24 July 2026): zero class assignments — 5 school days missed 7 to 11 July — 8 school days remaining from Monday 13 July (34th check, 12 Jul UTC)\n• Kayque Tauann Lopes Coelho (student 852, booking course 1821, Academic Year Renewal Afternoon, 29 June to 18 December 2026): zero class assignments — 10 school days missed since 29 June\n• Tuguldurtugs Enkhtugs (student 858, booking course 1786, Academic Year Renewal Morning, 6 July to 25 December 2026): zero class assignments — 5 school days missed since 7 July",
+        "Assign Pietro (student 72, booking course 81), Kayque (student 852, booking course 1821), and Tuguldurtugs (student 858, booking course 1786) to classes via SIS admin before Monday 13 July. See recipe: issue-45-renewal-arrivals.md",
+        "34th check 12 Jul SUN UTC. UNCHANGED (fresh DB). Pietro(s72/bc81 ends Jul24) STILL 0 SCAs, 5d missed Jul7-11. Kayque(s852/bc1821 Jun29-Dec18) STILL 0 active SCAs, 10d missed. Tuguldurtugs(s858/bc1786 Jul6-Dec25) STILL 0 active SCAs, 5d missed. bk1601 EUR250 outstanding. Mon13=TOMORROW. NEIL: assign all 3 via SIS before Mon.",
+        "CRITICAL; 0 SCAs; Mon13"
+      ]
+    ]
+  }
+]

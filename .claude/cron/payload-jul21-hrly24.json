@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H8:K8",
+    "values": [
+      [
+        "• Booking 17909 (Sofiia Korkishchenko): CANCELLED — confirmed flag = true (anomaly on cancelled booking)\n• Booking 17909: amount open = EUR 727.5, amount paid = EUR 0 — phantom balance, unchanged since Jun 17 2026\n• Booking course 24693 (Renewal Academic Year PM, May 25 to Nov 13 2026): active = true, ILEP code = null — stale on cancelled booking\n• Document 94 (Letter of Acceptance, ISSUED version 2, May 25 2026): still live on cancelled booking — should be revoked\n• Booking 1310 (ESCROW): 5 old Academic Year Morning courses (IDs 1352–1356, ended Dec 2025 to Apr 2026) all active = true — up to 214 days stale\n• 6th check Tue 21 Jul 2026 UTC — all UNCHANGED",
+        "Set confirmed = false on booking 17909; close EUR 727.5 phantom balance; revoke Letter of Acceptance 94; deactivate booking course 24693 + booking courses 1352–1356. See recipe: issue-7-addendum-21jul.md",
+        "6th check Tue 21 Jul UTC. BK17909 CANCELLED confirmed=STILL true, amtOpen=EUR727.5, amtPaid=EUR0 (updAt=Jun17, 34d). BC24693 (Renewal AY PM ends Nov13) active=STILL true, ilepCode=null. Doc94 STILL ISSUED v2. BCs 1352-1356 STILL all active (ended Apr24, 88d+). Fix NOT RUN.",
+        "bk17909 anomaly; 34d"
+      ]
+    ]
+  }
+]

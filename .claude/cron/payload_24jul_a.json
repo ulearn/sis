@@ -1,0 +1,13 @@
+[
+ {
+  "range": "H47:K47",
+  "values": [
+   [
+    "• 74th hourly check Fri 24 Jul 2026 UTC (148th total)\n• Booking course 25011 (Eduardo Roche Diaz, General English PM): STILL zero class assignments\n• Course runs Mon 20 Jul – Fri 24 Jul 2026 — COURSE ENDS TODAY (Fri 24 Jul)\n• Booking 18233: CONFIRMED, confirmed = true\n• 5 of 5 school days missed — window now CLOSED after today\n• LAST CHANCE: assign before end of business today or window is permanently gone",
+    "Assign BC25011 to PM class IMMEDIATELY — today Fri 24 Jul is the FINAL day. See recipe: issue-45-addendum-23jul-i.md",
+    "74th hrly 148th total Fri 24 Jul UTC. BC25011 STILL zero SCAs. 5/5 days missed. COURSE ENDS TODAY. Window permanently closed after today.",
+    "EXPIRED TODAY Fri 24 Jul"
+   ]
+  ]
+ }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Two payments are unlinked — booking_id = null and xeroPaymentId = null\n• Payment 16988 → Booking 17856 (Margherita Galbusera) — EUR 339.90\n• Payment 16989 → Booking 17857 (Francesca Fassina) — EUR 339.90\n• Both bookings are CONFIRMED, confirmed = false, amountPaid = 339.90 / amountTotal = 339.90\n• Linking payments reconciles Xero and HubSpot\n• Students arrive Jun 29 — 9 calendar days",
+        "UPDATE payments SET booking_id=17856 WHERE id=16988; UPDATE payments SET booking_id=17857 WHERE id=16989. See recipe: issue-1-orphan-payments.md",
+        "Jun20 hrly#5(Sat): pmts 16988/16989 STILL bookingId=null xeroPaymentId=null (fresh DB). EUR339.90 each. bk17856/17857 CONF conf=false. Students ARRIVE Jun29 = 9 cal days. HS pmt IDs: 16988=1204827374829, 16989=1204846469317. SQL NOT RUN — CRITICAL. Action needed before Jun29.",
+        "9d to Jun29"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking course 24934 (General English AM, Jun 15–Jul 10, fee = 360) is a duplicate of booking course 24933 (fee = 380) on booking 18158\n• Booking 18158 is CONFIRMED, paid 740 / 740 — correct booking\n• Student 1015 (Edith Nunes) has 0 active class assignments — last class assignment (sca146, class 7) expired May 15\n• Attendance records = 10 (Jun 15–19) — student attended all 5 days of Week 1 with no formal class assignment\n• Two steps still not run: delete booking course 24934 (duplicate); insert class assignment for bc24933 class 7",
+        "(NOT RUN) 1) DELETE bc24934 (dup course); 2) INSERT SCA bc24933 cls7 ws=2026-06-22 we=2026-07-10 s1015. See recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun20 hrly#5(Sat): bc24934 DUP still present, 0 SCAs for bc24933/bc24934 (fresh DB). sca146 expired May15. 10 attendance records wk1 Jun15-19, no SCA. MON JUN22 = 2 DAYS. Fix NOT RUN: (1) DELETE bc24934; (2) INSERT SCA bc24933 cls7 ws=Jun22 we=Jul10 s1015.",
+        "att10;0SCA;Mon22=2d"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• Student 917 (Uyanga Tungalag) has visa status = null and HubSpot contact ID = null (unchanged since May 21)\n• Booking 1467 is CONFIRMED, fully paid EUR 2405 / 2405 (updated Jun 11)\n• Booking course 1613 (Academic Year Morning, Apr 27 – Oct 16) is active — Day 55 calendar / approx 40 school days elapsed\n• Zero class assignments all time — student has been in school approx 40 school days with no class record\n• Cannot verify visa via HubSpot — no contact ID link on student record",
+        "Set student 917 visaStatus = Approved + hubspotContactId via SIS; then assign AY-MORN class (id 5 or 12). See recipe: issue-25-uyanga-visa-escrow.md",
+        "Jun20 hrly#5(Sat): UNCHANGED (fresh DB). s917 visaStatus=null hubspotContactId=null (May21=30d stale). 0 SCAs. bk1467 CONF 2405/2405. bc1613 AY-MORN Apr27-Oct16 Day55cal/~40sch. CRITICAL: ~40 school days unassigned, no class record. UPDATE students SET visa_status=Approved WHERE id=917 NOT RUN; then assign AY-MORN class.",
+        "D55cal;CRITICAL;visa null;0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Booking 94 (Giulia Avallone, student 88) is CONFIRMED and correct — paid EUR 1151.50, SCA 270 class 12 Jun 15-26 active\n• Booking 18044 is a DUPLICATE — same student, same dates (Jun 15-26), CONFIRMED, paid EUR 1106.50\n• Payment 17607 = EUR 1151.50 on booking 18044 (HubSpot payment ID 1239529228498, xeroId = null) — double-import of Fidelo payment 17102 (same date Mar 13)\n• Booking 18044 must be cancelled and payment 17607 voided via HubSpot UI before Jun 26\n• Course ends Jun 26 — 5 school days remaining; Giulia IS in class (SCA 270 active, class 12)",
+        "(NOT RUN) (1) Cancel booking 18044 via SIS UI; (2) Void payment 17607 via HubSpot UI (payment ID 1239529228498). See recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun20 hrly#5(Sat): bk18044 STILL CONFIRMED confirmed=true (updAt=Jun07=13d stale, fresh DB). pmt17607 EUR1151.50 xeroPaymentId=null NOT voided. bk94 correct CONF. SCA270 cls12 Jun15-26 active. FRI JUN26 = 6 days (5 school days Mon-Fri). (1) cancel bk18044 SIS UI; (2) void HS pmt 1239529228498.",
+        "bk18044 dup;Jun26;5sch"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Student 356 (Shih-Wei Huang) has gender = null — never set in personal details (last updated Jun 03)\n• Exit letter (document 238, template 4, booking 560) is ISSUED since Jun 18 08:53 UTC — wrong Ms./she/her pronouns, not yet revoked\n• Root cause: null gender defaults to female in src/scripts/documents.ts line 338\n• Students with null gender will produce documents with wrong female pronouns",
+        "1) Set gender=Male on student 356 via SIS personal details; 2) revoke document 238; 3) regenerate exit letter for booking 560. See recipe: issue-32-shih-wei-gender-default.md",
+        "Jun20 hrly#5(Sat): s356 gender=null (updAt=Jun03, 17d stale, fresh DB). doc238 ISSUED Jun18 08:53 UTC (2 days elapsed, wrong Ms./she/her pronouns on exit letter bk560). Null gender defaults to female (documents.ts L338). NEIL URGENT: (1) SIS personal details s356 set gender=Male; (2) revoke doc238; (3) regen exit letter bk560.",
+        "urgent; revoke doc238"
+      ]
+    ]
+  },
+  {
+    "range": "H42:K42",
+    "values": [
+      [
+        "• PM block duration hardcoded as 3.25 (gross 13:45-17:00) in src/scripts/attendance.ts line 84\n• All 4 active group PM classes have breakMinutes = 15, so net teaching hours = 3.00\n• The classes.ts financial calculator (line 1064) already uses gross-minus-break correctly\n• attendance.ts ignores breakMinutes entirely — uses 3.25 not 3.00\n• Private 121 class (14:00-16:00, no break) = 2h net; hardcoded fix would give it 3h (minor, teacher overrides anyway)",
+        "(NOT RUN) Edit attendance.ts line 84: change 3.25 to 3 (Option A) or derive from class start/end/break (Option B). Rebuild. See recipe: issue-35-pm-attendance-duration.md",
+        "Jun20 hrly#5(Sat): UNCHANGED (fresh code check). attendance.ts L84 still 3.25 gross hours (net = 3.00 after 15m break). Fix NOT applied. Option A: change 3.25 to 3 at L84 + rebuild. Option B: derive from class startTime/endTime/breakMinutes (matches classes.ts L1064).",
+        "code fix pending"
+      ]
+    ]
+  }
+]

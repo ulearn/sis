@@ -1,0 +1,50 @@
+[
+  {
+    "range": "J18",
+    "values": [
+      [
+        "Jun12 hrly (this run) D5: CONFIRMED UNCHANGED. bk1308 STILL CANCELLED conf=false amtPaid=1530=amtTotal updAt=Jun07T21:01. c1350 AY-Aft ACTIVE 19d. s766 0SCAs. SQL (NOT RUN): UPDATE bookings SET status=CONFIRMED,confirmed=true WHERE id=1308; then assign SCA PM class."
+      ]
+    ]
+  },
+  {
+    "range": "J21",
+    "values": [
+      [
+        "Jun12 hrly D71: CONFIRMED UNCHANGED. bk1605 PENDING conf=false 0/1509. HS deal 502951083215 ENROLMENT (not WON). s1047 B2 0SCAs. c1791 AY-Renew-MORN Apr13-Oct02 ACTIVE. NEIL: advance deal WON(104175589) or manual SQL."
+      ]
+    ]
+  },
+  {
+    "range": "J27",
+    "values": [
+      [
+        "Jun12 hrly D7 FINAL FRIDAY: CONFIRMED UNCHANGED. Ernesto s14532 0SCAs ALL TIME. c24826 INTENSIVE Jun08-Jun19 (5 school days Mon-Fri remain). bk18034 PARTIAL 845/1095. level=null DB+HS. Pairs: A2=8/9,B1=5or12/11,B2-C1=4/6,C1=13/14. NEIL: get level+insert SCAs before EOD."
+      ]
+    ]
+  },
+  {
+    "range": "J29",
+    "values": [
+      [
+        "Jun12 hrly D8: CONFIRMED UNCHANGED. bk17850 PENDING conf=false amtPaid=null/321.35. pmt17519 EUR321.35 Bank May07. c24624 ended Jun05(7d). Data-integrity only. NOT RUN: UPDATE bookings SET status=CONFIRMED,confirmed=true,amount_paid=321.35 WHERE id=17850;"
+      ]
+    ]
+  },
+  {
+    "range": "J30",
+    "values": [
+      [
+        "Jun12 hrly D152/D23: CONFIRMED UNCHANGED. s1001 att=0 ALL TIME. sca255 cls11-B1PM ws=Jan12 we=Jul03(21d). bk18151 CONF 1339.2. visaStatus=null. NOT in cls11 register. NEIL: ask B1PM teacher today; if absent contact management re IRP compliance."
+      ]
+    ]
+  },
+  {
+    "range": "J31",
+    "values": [
+      [
+        "Jun12 hrly CRITICAL 3d (20th check): CONFIRMED UNCHANGED. s88 Giulia JUNIOR level=null 0SCAs. bk94 CONF 1151.5/1151.5+bk18044 CONF DUP 1106.5/1106.5 c24836 Jun15-26. Milena s14557 bk18152 PEND 0/1151.5. NO MORN-PLUS cls in DB. COURSE STARTS MON JUN15=3d. NEIL: get Giulia level+assign std AM cls+cancel bk18044+resolve EUR44.5+cancel bk18152 TODAY."
+      ]
+    ]
+  }
+]

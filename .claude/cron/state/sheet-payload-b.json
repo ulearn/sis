@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 41st hourly check Wed 22 Jul 2026 UTC (70th check)\n• LAST CHANCE: Booking course 24828 (Martina Tartaro, student 14441): 12-week course ends Fri 24 Jul 2026 — zero class assignments for entire 12-week course — 2 school days left (Thu 23 + Fri 24 Jul)\n• LAST CHANCE: Booking course 25011 (Eduardo Roche Diaz, student 14602): General English PM, 20 to 24 Jul 2026 — zero class assignments — 3 school days missed — 2 school days remaining (Thu 23 + Fri 24 Jul)\n• Booking course 24609 (Xuezhen Huang, student 14443): Morning General, 13 to 31 Jul 2026 — zero class assignments — 8 days missed — 6 school days remaining (23-31 Jul)\n• Booking course 24991 (Edith Nunes, student 1015): General English AM, 13 Jul to 7 Aug 2026 — zero class assignments — 8 days missed — approx 12 days remaining\n• All 4 confirmed unchanged — fresh DB query Wed 22 Jul 2026",
+        "Assign all 4 students to classes immediately — Martina and Eduardo URGENT (ends Fri 24 Jul). See recipe: issue-45-addendum-22jul-b.md",
+        "41st hrly 70th check Wed 22 Jul UTC. LAST CHANCE: BC24828 Martina + BC25011 Eduardo end FRI 24 JUL — 2 school days left (Thu+Fri). BC24609 Xuezhen 8d missed 6 left. BC24991 Edith 8d missed ~12 left. Fix NOT RUN.",
+        "LAST CHANCE: ends Fri 24 Jul"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 41st hourly check Wed 22 Jul 2026 UTC (114th check)\n• August Bank Holiday Mon 3 Aug 2026: still absent from school closures — 12 days away — URGENT\n• October Bank Holiday Mon 26 Oct 2026: also absent from school closures\n• School closure table has 9 records: Good Fridays 2026-2030 and Christmas 2026-2029 — zero bank holidays recorded\n• Approximately 202 booking courses affected by August Bank Holiday; 114 by October Bank Holiday\n• Fresh confirmation: both bank holidays still absent — DB query Wed 22 Jul 2026",
+        "Add August Bank Holiday (3 Aug 2026) and October Bank Holiday (26 Oct 2026) to school closures. See recipe: issue-38-addendum-22jul-b.md",
+        "41st hrly 114th check Wed 22 Jul UTC. Aug BH STILL absent — 12 days to Aug 3. Oct BH also absent. 202 BCs affected (Aug); 114 (Oct). Fix NOT RUN.",
+        "Aug BH; 12d URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 41st hourly check Wed 22 Jul 2026 UTC (92nd check)\n• Payment 17954 (EUR 2584.96, Bank Transfer, paid 26 Jun 2026): Xero payment ID = null, type = null — 26 days unreconciled\n• Booking 18180 (Giampaolo Russo, student 14571): confirmed = true, fully paid EUR 2584.96\n• Accommodation 11357 (bed 178, Patty McSweeney / host family): 2 Aug to 6 Sep 2026 — active = true, fee EUR 1250 — in place\n• Capel apartment (6 Sep to 14 Sep 2026): STILL MISSING from booking 18180 — not in database\n• Booking course 24956 (General English AM, 3 Aug to 11 Sep 2026): 0 class assignments\n• Check-in 2 Aug 2026: 11 calendar days away\n• UNCHANGED — fix NOT RUN",
+        "Add Capel apartment to booking 18180; reconcile payment 17954 in Xero. See recipe: issue-41-addendum-22jul-b.md",
+        "41st hrly 92nd check Wed 22 Jul UTC. Capel apt STILL missing (EUR ~530 gap). Payment 17954 xeroId STILL null (26d, type null). BC24956 0 SCAs. Check-in Aug 2 (11 days). Fix NOT RUN.",
+        "Xero null; Capel missing; 11d to check-in"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• 41st hourly check Wed 22 Jul 2026 UTC (64th check)\n• Booking course 24991 (Edith Nunes / Edite, student 1015, booking 18214): General English AM, 13 Jul to 7 Aug 2026, confirmed, fee EUR 608 — STILL zero class assignments\n• Days missed: 8 school days (13 Jul Mon through 22 Jul Wed); approx 12 school days remaining (ends 7 Aug)\n• No class assignment means student cannot attend timetabled class; course counting down unattended\n• Fresh confirmation: still 0 class assignments as of 41st hourly check Wed 22 Jul 2026",
+        "Assign booking course 24991 to General English AM class. See recipe: issue-22-addendum-22jul-b.md",
+        "41st hrly 64th check Wed 22 Jul UTC. BC24991 Edith STILL 0 SCAs — 8 school days missed (13 Jul Mon to 22 Jul Wed), approx 12 days remaining (ends 7 Aug). Fix NOT RUN.",
+        "CRITICAL; assign NOW; 12 days left"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• 41st hourly check Wed 22 Jul 2026 UTC (66th check)\n• Booking course 24609 (Xuezhen Huang, student 14443, booking 17831): Morning General, 13 to 31 Jul 2026, confirmed, active = true — STILL zero class assignments\n• Days missed: 8 school days (13 Jul Mon through 22 Jul Wed); 6 school days remaining (Thu 23 to Fri 31 Jul)\n• Accommodation: in place (per prior checks)\n• Fresh confirmation: still 0 class assignments as of 41st hourly check Wed 22 Jul 2026",
+        "Assign booking course 24609 to Morning General class. See recipe: issue-39-addendum-22jul-b.md",
+        "41st hrly 66th check Wed 22 Jul UTC. BC24609 Xuezhen STILL 0 SCAs — 8 missed (13-22 Jul), 6 remaining (23-31 Jul). Fix NOT RUN.",
+        "BC24609 0 SCAs; 6d left (ends Jul 31)"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• 41st hourly check Wed 22 Jul 2026 UTC (54th check)\n• Booking 1605 (Ariunsarnai Batbayar, student 1047): status = PENDING, confirmed = false — Day 100+ since ~13 Apr 2026\n• Amount paid: EUR 0; amount total: EUR 1509; amount open: EUR 1509 — fully unpaid, zero payments on file\n• Booking last updated 23 Jun 2026 (29 days ago)\n• UNCHANGED from last check — fix NOT RUN",
+        "Confirm or cancel booking 1605; chase EUR 1509 payment or close. See recipe: issue-20-addendum-22jul-b.md",
+        "41st hrly 54th check Wed 22 Jul UTC. UNCHANGED. BK1605 STILL PENDING Day100+ (Apr13). EUR 0 / EUR 1509. Last updated Jun23 (29d ago). Fix NOT RUN.",
+        "Day100+; EUR 0 / 1509"
+      ]
+    ]
+  }
+]

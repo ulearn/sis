@@ -1,0 +1,46 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 49th check Thu 6 Aug 2026 17:02 UTC — service_end STILL NOT UPDATED (~7 hours remain)\n• Booking 18151 (Saikhantes Shagdarsuren, student 1001): serviceEnd = 2026-08-07T00:00:00Z (UNCHANGED)\n• Updated_at = 2026-07-08 — not touched since 8 Jul\n• Booking course 24925 (Academic Year Afternoon): endDate = 2026-10-02 — correct target\n• Portal will lock student out at midnight UTC tonight — fix BEFORE midnight",
+        "Update booking 18151 serviceEnd to 2026-10-02 TONIGHT; see recipe: issue-15-addendum-6aug-i.md",
+        "49th hrly Thu 6 Aug 17:02 UTC. ~7h left. serviceEnd still 2026-08-07. FIX TONIGHT or student locked out.",
+        "CRITICAL: ~7h left"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 44th check Thu 6 Aug 2026 17:02 UTC — DEADLINE TOMORROW Fri 7 Aug EOD\n• All 17 booking courses starting Mon 10 Aug still have 0 class assignments (UNCHANGED)\n• 13 confirmed ready to assign: BC 108, 109, 1313, 1818, 24915, 24970, 25004, 25005, 25024, 25027, 25031, 25036, 25039\n• 4 still blocked: BC 96 (CONFIRMED + confirmed=false, EUR 1,845 / 2,095 paid), BC 833 (ESCROW, EUR 4,847.50 / 4,847.50 fully paid), BC 25007 (PARTIAL, EUR 980 / 1,350 paid), BC 25042 (PENDING, EUR 0 / 456)",
+        "Assign 13 confirmed booking courses via SIS admin before Fri 7 Aug EOD; see recipe: issue-38-addendum-6aug-j.md",
+        "44th hrly Thu 6 Aug 17:02 UTC. All 17 BCs still 0 SCAs. 13 ready, 4 blocked. DEADLINE TOMORROW. Fix NOT RUN.",
+        "URGENT: deadline Fri 7 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 166th check Thu 6 Aug 2026 17:02 UTC — unchanged since 165th check\n• Payment 4781: EUR 380, Flywire, 20 Aug 2019 (legacy Fidelo, 2,544 days orphaned)\n• Payment 16988: EUR 339.90, Bank, 28 Apr 2026 (102 days orphaned)\n• Payment 16989: EUR 339.90, Bank, 28 Apr 2026 (102 days orphaned)\n• Payment 17187: EUR 6,151, TransferMate Escrow, 1 May 2026, txid D2026226 (98 days orphaned)\n• Booking 17856 (student 14461): CONFIRMED, confirmed=false, amount_paid=EUR 339.90, 0 payment records\n• Booking 17857 (student 14462): CONFIRMED, confirmed=false, amount_paid=EUR 339.90, 0 payment records\n• Payments 16988/16989 almost certainly belong to bookings 17857/17856 (amounts match)",
+        "Link payments 16988/16989 to bookings 17857/17856; set confirmed=true; deactivate Booking Courses 24630+24631. See recipe: issue-1-addendum-6aug-e.md",
+        "166th hrly Thu 6 Aug 17:02 UTC. 4 orphan pmts unchanged (102d max). Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 62nd check Thu 6 Aug 2026 17:02 UTC — unchanged\n• Booking course 25006 (General English AM Plus, ended 3 Aug 2026): still active, 5 days stale (booking 18228)\n• Booking course 24630 (General English AM Plus, ended 10 Jul 2026): still active, 29 days stale (booking 17857)\n• Booking course 24631 (General English AM Plus, ended 10 Jul 2026): still active, 29 days stale (booking 17856)\n• Overlaps Issue 1 — orphan payments 16988/16989 match bookings 17857/17856",
+        "Deactivate stale booking courses 25006/24630/24631; link orphan payments. See recipe: issue-48-addendum-6aug-b.md",
+        "62nd hrly Thu 6 Aug 17:02 UTC. BC 25006 5d stale, 24630/24631 29d stale. Unchanged. See Issue 1.",
+        "stale BCs + orphan pmts; see Issue 1"
+      ]
+    ]
+  }
+]

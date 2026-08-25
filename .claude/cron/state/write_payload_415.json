@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 249th check Thu 20 Aug 2026 (night) — no change since 248th (evening)\n• Booking Accommodation 11393 (bed 88): starts Sat 22 Aug, ends 13 Sep 2026, active, fee = null — not yet set\n• Booking Accommodation 11311 (bed 84): ends Sat 22 Aug, active, fee = EUR 3,850 (deactivate after checkout)\n• Fee to set on Booking Accommodation 11393: EUR 1,481 (total EUR 5,331 minus EUR 3,850 on BA 11311)\n• Fix NOT RUN — accommodation starts Sat 22 Aug in 2 days",
+        "Set fee EUR 1,481 on booking accommodation 11393; deactivate booking accommodation 11311 after checkout Sat 22 Aug. See recipe: issue-36b-addendum-20aug-d.md",
+        "249th Thu 20 Aug night. No change. BA 11393 fee null, starts Sat 22. Fix NOT RUN.",
+        "URGENT: Sat22 2d"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 146th check Thu 20 Aug 2026 (night) — no change since 145th (evening)\n• Booking Accommodation 11357 (ended 15 Aug 2026): still active — 5 days stale, deactivate ASAP\n• Booking Accommodation 11396 (15–22 Aug 2026): active, fee = null — set fee before Sat 22 checkout\n• Booking Accommodation 11397 (22 Aug – 6 Sep 2026): active, fee = null — set fee before Sat 22 start\n• Booking Accommodation 11392 (6–14 Sep 2026): fee = EUR 415 — no action yet\n• Total paid EUR 2,584.96: EUR 1,250 (BA 11357) + EUR 415 (BA 11392) = EUR 1,665 accounted; EUR 919.96 remaining for BAs 11396 + 11397 combined\n• Fix NOT RUN — accommodation transition Sat 22 Aug in 2 days",
+        "Deactivate booking accommodation 11357; set fees on BAs 11396+11397 (EUR 919.96 combined); deactivate BA 11396 after Sat 22 checkout. See recipe: issue-41-addendum-20aug-c.md",
+        "146th Thu 20 Aug night. No change. BA 11357 5d stale. BA 11396+11397 fee null. Sat 22 = 2 days.",
+        "URGENT: Sat22 2d"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 184th check Thu 20 Aug 2026 (night) — no change since 183rd (evening)\n• Student Class Assignment 255: booking course 24925, week start 12 Jan 2026, week end 3 Jul 2026, class 11 — 48 days since coverage ended, not covering current period\n• Booking Course 24925 (Academic Year Afternoon): active, ends 2 Oct 2026 — correct course exists\n• Booking Course 1982 (Academic Year Morning): active, ended 19 Dec 2025 — 244 days stale\n• New assignment needed: week 24–28 Aug 2026 on booking course 24925, class 11\n• Fix NOT RUN — student returns Tue 25 Aug; deadline Mon 24 Aug (4 days)",
+        "Insert Student Class Assignment for week 24–28 Aug on booking course 24925; deactivate booking course 1982. See recipe: issue-15-addendum-20aug-c.md",
+        "184th Thu 20 Aug night. Fix NOT RUN — student returns Tue 25 Aug. Deadline Mon 24 Aug (4 days).",
+        "URGENT: no SCA; 4d"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "145th check Thu 20 Aug 2026 (night) — no change since 144th (afternoon)\n• Duplicate of Issue 15 (row 16) — same student: Saikhantes Shagdarsuren (student 1001)\n• SQL correction: use student_class_assignments with snake_case columns (see issue-15-addendum-20aug-c.md)\n• Returns Tue 25 Aug 2026 (5 days) — still no class assignment since 3 Jul 2026 (48 days)",
+        "Dup of Issue 15; SQL fix; see issue-15-addendum-20aug-c.md",
+        "145th Thu 20 Aug night. Dup of Issue 15. Returns 25 Aug (5d). Deadline Mon 24 Aug (4d). URGENT.",
+        "URGENT: no SCA; 4d"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "55th check Thu 20 Aug 2026 (night) — no change from 54th (UTC)\n• Bed 83 next occupant BA 25 (booking 17844): starts 30 Aug (10 days), fee EUR 2,100\n• 5 stale Booking Accommodations on bed 83, all still active:\n  BA 11239 (ended 24 May — 88 days stale, fee EUR 1,050, booking 22)\n  BA 11168 (ended 20 Jun — 61 days stale, fee EUR 700, booking 92)\n  BA 11285 (ended 5 Jul — 46 days stale, fee null, booking 17825 — fully paid EUR 2,008; confirm fee)\n  BA 11352 (ended 11 Jul — 40 days stale, fee EUR 360, booking 18156)\n  BA 11179 (ended 9 Aug — 11 days stale, fee EUR 1,360, booking 82)\n• Current occupant BA 11173 (bk88): 9 Aug to 30 Aug, fee EUR 1,080 — active (correct)\n• Must deactivate all 5 before 30 Aug to prevent bed conflict (10 days)",
+        "Confirm fee on BA 11285 (booking 17825); deactivate BAs 11239, 11168, 11285, 11352, 11179. See recipe: issue-37-addendum-20aug-c.md",
+        "55th Thu 20 Aug night. 5 stale BAs unchanged. BA 11285 fee null; booking 17825 fully paid EUR 2,008. Aug 30 = 10d.",
+        "5 stale BAs; Aug 30 = 10d"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 115th check Thu 20 Aug 2026 (night) — no change from 114th (UTC)\n• Stale active Booking Courses (end date before 20 Aug 2026): 24,497 — unchanged\n• Impacts arrivals list: renewal students with stale active Booking Courses do not appear",
+        "Run bulk deactivation of 24,497 stale Booking Courses. See recipe: issue-45-addendum-20aug.md",
+        "115th Thu 20 Aug night. 24,497 stale Booking Courses unchanged. Fix NOT RUN.",
+        "24,497 stale; fix pending"
+      ]
+    ]
+  }
+]

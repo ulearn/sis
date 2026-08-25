@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 21st check Wed 5 Aug 2026 UTC — CRITICAL: 2 days to Friday deadline\n• BC 88 (Africa Mera Bachir, student 76, Morning General, Aug 3–7): 0 class assignments — in school since Mon Aug 3, 3 days untracked\n• BC 25038 (Eduardo Roche Diaz, student 14602, General English PM, Aug 3–7): 0 class assignments — same, 3 days untracked\n• BC 24967 (Gustavo Da Silva, General English AM, Jul 6–Aug 7): 0 class assignments — likely duplicate of BC 24955 (AM Plus, 2 SCAs) on same booking 18179; deactivate rather than assign\n• BC 25004 (Vincenzo Contu, student 14597, General English AM Plus, Aug 10–14): 0 class assignments — starts Sunday, must assign by Friday\n• BC 25005 (Claudia Mereu, student 14598, General English AM, Aug 10–14): 0 class assignments — starts Sunday, must assign by Friday\n• BC 24 (Amine Ibrani, ends Aug 14): booking 23 CANCELLED — deactivate, do not assign\n• BC 1572 (Ganchimeg Ganbaatar, ends Aug 14): booking 1435 PENDING — cannot assign until paid\n• Legacy BCs 1144/1305/1344/1591 (AY Morning, CONFIRMED, 0 SCAs, end Aug 14): ANAR-ERDENE BATBAYAR, Nomin Nergui, BAt-Orgil Baljinnyam, Turbold Altankhuyag — migration artifacts; Neil to decide before assigning",
+        "Assign BCs 88+25038 IMMEDIATELY (+ manual attendance entry); deactivate BC 24967 dup; assign 25004+25005 by Fri; deactivate BC 24. See recipe: issue-38-addendum-5aug-f.md",
+        "21st hrly Wed 5 Aug UTC. CRITICAL: Africa (bc88) + Eduardo (bc25038) in school since Mon, 0 SCAs, end Fri Aug 7. BC 24967 dup on bk18179. Vincenzo+Claudia bc25004/25005 start Sun. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 13th check Wed 5 Aug 2026 UTC — no change since 12th check\n• Booking 18180 (Giampaolo Russo, student 14571): CONFIRMED, EUR 2,584.96 paid\n• Booking course 24956 (General English AM, Aug 3–Sep 11): class assignment in place — OK\n• Booking accommodation 11357: Host Family (bed 178, Claremont Close), Aug 2–Sep 6 — OK\n• Capel Street accommodation: still absent — no booking accommodation for booking 18180 at provider 15\n• Payment 17954: EUR 2,584.96, xero_payment_id = null — 37 days unreconciled (created 2026-06-29)",
+        "Create Capel Street BA for booking 18180 (provider 15); reconcile payment 17954 in Xero. See recipe: issue-41-addendum-5aug-b.md",
+        "13th hrly Wed 5 Aug UTC. Capel BA still absent. Payment 17954 xeroId=null, 37 days. Fix NOT RUN.",
+        "Capel BA absent; 37d"
+      ]
+    ]
+  },
+  {
+    "range": "H8:K8",
+    "values": [
+      [
+        "• 29th check Wed 5 Aug 2026 UTC — unchanged (55 days open)\n• Booking 17909 (Sofiia Korkishchenko, student 768): status = CANCELLED, confirmed = true (anomaly)\n• Amount paid = EUR 0, amount open = EUR 727.50 — fully unpaid, 0 payment records\n• Booking course 24693 (Renewal Academic Year PM, ends 2026-11-13): active = true, 0 class assignments — active despite CANCELLED booking",
+        "Set confirmed=false on booking 17909; deactivate booking course 24693. See recipe: issue-7-addendum-5aug-d.md",
+        "29th hrly Wed 5 Aug UTC. Booking 17909 CANCELLED + confirmed=true. BC 24693 active, 0 SCAs. 55 days open. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• 26th check Wed 5 Aug 2026 UTC — day 116 since course start 2026-04-13\n• Booking 1605 (Ariunsarnai Batbayar, student 1047): status = PENDING, confirmed = false\n• Amount paid = EUR 0, amount open = EUR 1,509 — fully unpaid, 0 payment records\n• Booking course 1791 (Academic Year Renewal Morning, ends 2026-10-23): active = true, 0 class assignments\n• Student excluded from assignment queue until booking confirmed and paid",
+        "Collect EUR 1,509 for booking 1605; confirm once paid; assign class to booking course 1791. See recipe: issue-20-addendum-5aug-c.md",
+        "26th hrly Wed 5 Aug UTC. Day 116. EUR 0 / 1,509 outstanding. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 29th check Wed 5 Aug 2026 UTC — stale booking course count unchanged at 24,467\n• Booking course 25006 (Marina Larripa, General English AM Plus, ended 2026-08-03): active = true — 2 days stale, 2 class assignments present\n• All Issue 38 booking courses (end dates Aug 7 / Aug 14) excluded from count — safe\n• Bulk deactivation still not run — awaiting decision from Neil",
+        "Run bulk deactivation of 24,467 stale booking courses. See recipe: issue-45-addendum-5aug.md",
+        "29th hrly Wed 5 Aug UTC. Count still 24,467. BC 25006 2d stale (2 SCAs). Awaiting decision.",
+        "24,467 stale; awaiting decision"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 56th check Wed 5 Aug 2026 UTC — unchanged, overlaps Issue 1\n• Booking course 25006 (ended 2026-08-03): active = true, 2 days stale, 2 class assignments\n• Booking course 24630 (Fassina, ended 2026-07-10): active = true, 26 days stale, 0 class assignments\n• Booking course 24631 (Galbusera, ended 2026-07-10): active = true, 26 days stale, 0 class assignments\n• Payment 16988 (EUR 339.90, 28 Apr 2026): booking_id = null, xero_payment_id = null — 108 days orphaned\n• Payment 16989 (EUR 339.90, 28 Apr 2026): booking_id = null, xero_payment_id = null — 108 days orphaned\n• Booking 17856 (Galbusera): status = CONFIRMED, confirmed = false, amount_paid = EUR 339.90 — no formal payment link\n• Booking 17857 (Fassina): status = CONFIRMED, confirmed = false, amount_paid = EUR 339.90 — no formal payment link",
+        "Deactivate booking courses 25006/24630/24631; link payments 16988/16989 to bookings 17856/17857. See recipe: issue-48-addendum-5aug-d.md",
+        "56th hrly Wed 5 Aug UTC. Unchanged. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  }
+]

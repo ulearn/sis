@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "bk18158 PEND 0/740. bc24933(GE-AM fee=380)+bc24934(DUP fee=360) Jun15-Jul10. 0pmts 0SCAs. bk18131 CONF 1185+bk18133 CONF 648 NOT cancelled.",
+        "SQL(NOT RUN): (1)DELETE pmts WHERE id IN(17728,17730,17852); (2)UPDATE bks SET status=CANCELLED WHERE id IN(18131,18133); (3)DELETE bc WHERE id=24934; (4)check HS 505836060909+assign s1015 cls7(A1) c24933. see recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun14 SUN hrly: CONFIRMED UNCHANGED. bk18158 PEND 0/740(updAt=Jun11). c24933(fee=380)+c24934(DUP fee=360) BOTH Jun15-Jul10. bk18131 CONF 1185+bk18133 CONF 648 NOT cancelled. pmt17728/17730/17852 xeroId=null. 0pmts on bk18158. s1015 0 active SCAs. COURSE STARTS MON JUN15. ALL 5 STEPS NOT RUN.",
+        "CRITICAL Mon AM"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "s14532 Ernesto level=null 0SCAs ALL TIME. bk18034 PARTIAL 845/1095 conf=false. bc24826 INTENSIVE Jun08-19. WK1(Jun08-12) ENTIRELY MISSED. WK2(Jun15-19) FINAL WEEK.",
+        "Mon 08:00: ask teacher level then INSERT 2 SCA rows WK2(Jun15-19): (bci=24826,AM_id,Jun15,Jun19,14532)+(bci=24826,PM_id,Jun15,Jun19,14532). Pairs: A2=cls8/9,B1=cls5+12/11,B2-C1=cls4/6,C1=cls13/14. see recipe: issue-26-intensive-class-assign-once.md",
+        "Jun14 SUN hrly: CONFIRMED UNCHANGED. s14532 currentLevel=null(updAt=May31) 0SCAs ALL TIME. bc24826 INTENSIVE Jun08-Jun19. WK1 ENTIRELY MISSED. WK2(Jun15-19) FINAL WEEK starts TOMORROW. bk18034 PARTIAL 845/1095 conf=false. EUR250 still owed.",
+        "Mon AM LAST CHANCE"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "s88 Giulia bk94 CONF 1151.5(pmt17102 Fidelo) + bk18044 CONF DUP 1106.5(pmt17607 EUR1151.5 dbl-import Mar13 xero=null). bk18152 Milena(s14557) PEND 0pmts. 0SCAs all 3 bks. STARTS MON JUN15.",
+        "(NOT RUN): (1)get Giulia level from staff; (2)assign s88 std AM class bk94/c104; (3)cancel bk18044+DELETE pmt17607(dbl-import not refund); (4)cancel bk18152+delete Milena s14557. see recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun14 SUN hrly: CONFIRMED UNCHANGED. s88 Giulia JUNIOR currentLevel=null 0SCAs. bk94 CONF 1151.5 c104 Jun15-26. bk18044 CONF DUP c24836 Jun15-26 (pmt17607 EUR1151.5 hs=1239529228498 xero=null=dbl-import Mar13 DELETE not refund). bk18152 Milena(s14557) PEND 0/1151.5 0pmts. ALL 4 STEPS NOT RUN. COURSE STARTS MON JUN15.",
+        "CRITICAL Mon AM"
+      ]
+    ]
+  },
+  {
+    "range": "H32:K32",
+    "values": [
+      [
+        "TZ=UTC NOT in .env. 9 ghost SCAs week_end=null(IDs:39,40,65,66,74,75,81,87,100; all bc ended<=Jun12). Mon att sheet shows Sun Jun14+9 ghost students.",
+        "FIX1(NOT RUN): echo TZ=UTC>>.env && touch tmp/restart.txt. FIX2 SQL(NOT RUN): UPDATE student_class_assignments SET week_end=(SELECT end_date FROM booking_courses WHERE id=booking_course_id) WHERE week_end IS NULL; see recipe: issue-31-attendance-sheet-week-bug.md",
+        "Jun14 SUN hrly: BOTH FIXES CONFIRMED NOT RUN. TZ still absent. All 9 ghost SCAs still present: 39=Aika/May22,40=Isabela/Jun12,65=Willians/Jun12,66=Eduardo/May15,74=Gabriel/May15,75=Javkhlan/Jun12,81=Diego/Jun05,87=Teofilo/Jun05,100=Luca/May29. Mon Jun15 att sheet WILL show Sun Jun14+9 ghosts. NEIL: FIX NOW before Mon 07:00.",
+        "URGENT Mon 07:00"
+      ]
+    ]
+  },
+  {
+    "range": "H6:K6",
+    "values": [
+      [
+        "ba11287 bedId=null(updAt=Jun05) active Jun27-Dec12. doc204 LOA v1 ISSUED Jun08(manually fixed). Accom block absent; bed still unassigned.",
+        "Assign bed to ba11287 in SIS Accom module before Jun27 arrival. see recipe: issue-4-rakan-loa-barcode.md",
+        "Jun14 SUN hrly: ba11287 STILL bedId=null claimStatus=pending Jun27-Dec12(updAt=Jun05). doc204 LOA ISSUED Jun08=manually fixed(ok). Accom block still absent from SIS. 13d to Jun27 arrival. NEIL: assign bed to ba11287 in SIS.",
+        "bed assign 13d"
+      ]
+    ]
+  },
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "bk1498 CONF conf=false amtPaid=null/null(updAt=May21 24d stale). 0pmts. doc171 DRAFT cert. c1660 ended Jun05(9d ago).",
+        "(NOT RUN): check HubSpot/Xero if bk paid; UPDATE bookings SET confirmed=true WHERE id=1498; then issue doc171 via SIS. see recipe: issue-8-suvderdene-cert-dates.md",
+        "Jun14 SUN hrly: UNCHANGED. bk1498 STILL conf=false amtPaid=null(updAt=May21=24d stale). 0 pmts. doc171 DRAFT cert(c1660 ended Jun05=9d). amtPaid=null may block issuance. NEIL: check HubSpot/Xero if bk was paid; if yes UPDATE confirmed=true+amtPaid+amtTotal WHERE id=1498; then issue doc171.",
+        "cert DRAFT 24d"
+      ]
+    ]
+  }
+]

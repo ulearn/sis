@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payment 16988 (EUR 339.90, HubSpot 1204827374829): booking ID null — 82 days since 28 Apr 2026\n• Payment 16989 (EUR 339.90, HubSpot 1204846469317): booking ID null — 82 days since 28 Apr 2026\n• Payment 17187 (EUR 6151, TransferMate Escrow, Fidelo 37587, ref ULEARNP2026124): booking ID null — 79 days since 1 May 2026\n• Payment 4781 (EUR 380, Flywire, Fidelo 32056, ref ULS771773625/21022): booking ID null — 100 days since creation 10 Apr 2026 (paymentDate 2019)\n• Booking 17856 (Margherita Galbusera): CONFIRMED, amountPaid = EUR 339.90 vs amountTotal = EUR 339.90, confirmed = false (anomaly)\n• Booking 17857 (Francesca Fassina): CONFIRMED, amountPaid = EUR 339.90 vs amountTotal = EUR 339.90, confirmed = false (anomaly)\n• Booking courses 24630 + 24631 (Galbusera/Fassina, ended 10 Jul): active = still true — 9 days stale\n• Systemic: 24,436 booking courses have active = true with end date passed — auto-deactivation not running",
+        "Link payment 16988 to booking 17856, payment 16989 to booking 17857; set confirmed = true on both bookings; deactivate BCs 24630+24631; investigate payments 4781+17187; fix BC auto-deactivation. See recipe: issue-1-orphan-payments.md",
+        "70th check Sun 19 Jul UTC. UNCHANGED. 4 orphan pmts: 16988+16989 (EUR 339.90 ea, HubSpot), 17187 (EUR 6151 TM Escrow Fidelo 37587), 4781 (EUR 380 Flywire Fidelo 32056). BK17856 CONF amtPaid=339.90/339.90 confirmed=false. BK17857 same. Stale BCs: 24,436. Fix NOT RUN.",
+        "4 orphan pmts; 24,436 stale BCs"
+      ]
+    ]
+  },
+  {
+    "range": "H4:K4",
+    "values": [
+      [
+        "Christmas shunt implemented. AY webhook auto-applies school closures.",
+        "",
+        "70th check Sun 19 Jul UTC. Hash changed (whitespace/formatting artifact). STILL RESOLVED. 9 school closures: Good Fridays 2026-2030 + Christmas 2026-2029 — 4 Xmas records intact. Shunt active.",
+        "Jun06: verified working. Xmas 2026-29 present. Shunt active."
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "75th check Sun 19 Jul 2026 UTC (17th today)\n• Booking course 24991 (Edith Nunes, student 1015, General English AM, 13 Jul – 7 Aug 2026): STILL 0 class assignments — confirmed fresh database\n• Week 1 (Mon 13 Jul to Fri 17 Jul 2026): ended with 0 class assignments — attendance permanently missed\n• Week 2 starts TOMORROW Monday 20 July 2026 — final opportunity to assign before more attendance is lost\n• Stale split BCs 24933+24934 (ended ~Jul 10) and BC1797 (ended ~Jun 26) still active\n• Fix NOT Run",
+        "Assign booking course 24991 to a class before 09:00 Monday 20 July. Deactivate BCs 24933+24934+1797. See recipe: issue-22-addendum-19jul.md",
+        "75th check Sun 19 Jul UTC (17th today). BC24991 STILL 0 SCAs. Week 2 starts TOMORROW Mon 20 Jul. BCs 24933+24934 ended Jul10 + BC1797 ended Jun26: all still active. Fix NOT RUN.",
+        "CRITICAL; assign Mon 20 Jul"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "21st check Sun 19 Jul 2026 UTC (17th today)\n• Booking accommodation 11265 (Kanna Hasegawa, bed 157): ended TODAY Sunday 19 Jul 2026 — still active — deactivate first thing Monday 20 Jul\n• 5 other stale booking accommodations still active:\n  11156 (ended 2 May 2026, 78 days stale, no bed)\n  11175 (ended 29 Mar 2026, 112 days stale, no bed)\n  11264 (ended 9 May 2026, 71 days stale, bed 156)\n  11270 (ended 23 May 2026, 57 days stale, bed 38)\n  11271 (ended 7 May 2026, 73 days stale, no bed)\n• Fix NOT Run",
+        "Deactivate booking accommodations 11265 (urgent, ended TODAY), 11156, 11175, 11264, 11270, 11271. See recipe: issue-36b-addendum-19jul.md",
+        "21st check Sun 19 Jul UTC. BA11265 Kanna bed 157 ended TODAY Sun 19 Jul — still active. Deactivate Mon morning. 5 others stale: BA11156 (78d), BA11175 (112d), BA11264 (71d), BA11270 (57d), BA11271 (73d, no bed). Fix NOT RUN.",
+        "6 stale BAs; BA11265 ended TODAY"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "66th check Sun 19 Jul 2026 UTC (17th today)\n• August Bank Holiday (Monday 3 August 2026): STILL absent from school_closures — 15 days away\n• October Bank Holiday (Monday 26 October 2026): STILL absent — 99 days away\n• School closures table has 9 records: Good Fridays 2026–2030 and Christmas breaks 2026–2029 — zero bank holiday Mondays\n• Fix NOT Run",
+        "Add school_closure records for August Bank Holiday (Mon 3 Aug 2026) and October Bank Holiday (Mon 26 Oct 2026). See recipe: issue-38-course-date-ux.md",
+        "66th check Sun 19 Jul UTC. UNCHANGED. Aug BH Mon 3 Aug 2026 = 15d away (was 16d). Oct BH Mon 26 Oct 2026 = 99d away. 9 school_closures: Good Fridays 2026-2030 + Christmas 2026-2029. Fix NOT RUN.",
+        "Aug BH missing; 15d URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "150th check Sun 19 Jul 2026 UTC (17th today)\n• Monday 20 July 2026 starters with 0 class assignments: 9 total (was 7 yesterday — 2 new bookings added)\n  BC1630 Saranzaya Khishigbayar (AY Afternoon, bk1481, CONFIRMED)\n  BC24616 Mia Wehrli (GE AM Plus, bk17842, CONFIRMED)\n  BC24686 Alberto Squillace (Morning General, bk1611, CONFIRMED) — also Issue 24\n  BC24932 Stephany Martins Pardinho (Life Pass Morning, bk18157, PENDING — skip)\n  BC24942 Lorena Fernanda Pizarro Araya (AY Morning, bk18166, CONFIRMED)\n  BC24966 Filippo Corazzini (GE AM Plus, bk18190, CONFIRMED)\n  BC24989 Marcos Abrego Tofe (GE AM, bk18212, CONFIRMED) — NEW\n  BC25000 Giorgio Sau (GE AM Plus, bk18223, CONFIRMED) — NEW\n  BC25009 Neil Mc Mahon (GE AM, bk18231, PARTIAL) — verify before assigning\n• July 13 actives with 0 class assignments: 12 total (was 7 yesterday)\n  Incl. BC24991 Edith Nunes (Issue 22) + BC24609 Xuezhen Huang (Issue 39)\n• BC24967 Gustavo Da Silva (GE AM, 6 Jul – 7 Aug, CONFIRMED): STILL 0 SCAs — 11 school days missed\n• Fix NOT Run",
+        "Assign 8 confirmed Mon starters (skip BC24932 PENDING + verify BC25009) + 10 Jul13 CONFIRMED actives + BC24967 Gustavo before 09:00 Monday 20 July. See recipe: issue-45-addendum-19jul.md",
+        "150th check Sun 19 Jul UTC. 9 Mon starters 0 SCAs (was 7, +2 new). 12 Jul13 actives 0 SCAs (was 7). BC24967 Gustavo 11 school days missed. Fix NOT RUN.",
+        "CRITICAL; assign Mon 20 Jul"
+      ]
+    ]
+  }
+]

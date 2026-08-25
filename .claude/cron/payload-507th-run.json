@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H52:K52",
+    "values": [
+      [
+        "• 507th check Mon 24 Aug 2026 UTC — count DECREASED: 158 → 152 (-6 since run 500 at ~13:07 UTC)\n• Query: active=true AND end_date < CURRENT_DATE AND start_date >= 2026-01-01 (table: booking_accommodations)\n• 9 specific BAs ended Aug 20–23 confirmed still active: BA 11372 (bed 186, EUR 750), BA 11160 (bed 174, EUR 420), BA 11177 (bed null, EUR 200), BA 11340 (bed 88, EUR 1), BA 11311 (bed 84, EUR 3,850), BA 11387 (bed 89, fee null), BA 11395 (bed 59, EUR 250), BA 11161 (bed 168, EUR 420), BA 11396 (bed 44, fee null)\n• Net -6 unexplained: likely 6 other BAs deactivated in normal operations between 13:07 and 21:08 UTC\n• Fix recipe NOT RUN",
+        "Batch deactivate: UPDATE booking_accommodations SET active=false WHERE active=true AND end_date < CURRENT_DATE AND start_date >= 2026-01-01. See recipe: issue-50-addendum-24aug-b.md",
+        "507th Mon 24 Aug UTC. Count 158→152 (-6 since run 500). 9 known stale BAs still active. Fix NOT RUN.",
+        "152 stale BAs; fix pending"
+      ]
+    ]
+  }
+]

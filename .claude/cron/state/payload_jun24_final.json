@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Two payments are unlinked — booking ID = null and Xero payment ID = null\n• Payment 16988 (HubSpot payment 1204827374829) maps to Booking 17856 (Margherita Galbusera) — EUR 339.90, created 28 Apr\n• Payment 16989 (HubSpot payment 1204846469317) maps to Booking 17857 (Francesca Fassina) — EUR 339.90, created 28 Apr\n• Both bookings are Confirmed (status), confirmed = false, amount paid = 339.90 — payment audit trail broken\n• Booking courses 24631 (booking 17856) + 24630 (booking 17857) — General English AM Plus start Mon 29 Jun, fee = null (not set)",
+        "UPDATE payments SET booking_id=17856 WHERE id=16988; UPDATE payments SET booking_id=17857 WHERE id=16989; then set bc fees. See recipe: issue-1-orphan-payments.md",
+        "hrly Jun24 UTC (19th+ check): CONFIRMED UNCHANGED. pmts 16988/16989 bookingId=null xeroPaymentId=null. bks 17856/17857 CONF conf=false amtPaid=339.9 amtTotal=339.9 (fully paid). bc24630/24631 start Mon Jun29=5d fee=null. NEIL: run recipe issue-1-orphan-payments.md NOW — courses start in 5 days.",
+        "Jun29=5d; EMERGENCY"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Course bc1797 (Morning General Apr06-Jun26) ends Fri Jun26 — 2 days from today (Jun24)\n• Student 1052 (Alberto Squillace) zero attendance records all time — bereavement leave since late Apr confirmed\n• Class assignment 229 (class 12, weekEnd Apr26) expired 59 days ago — no new SCA ever created\n• Booking 1611 Confirmed, fully paid EUR 1280.12\n• Booking course 24686 (Morning General Jul20-Sep18) fee = null — must be set before Jul20\n• Payment 17124 (EUR 1280.12) Xero payment ID = null — not reconciled in Xero",
+        "Acknowledge zero attendance bc1797 (bereavement leave). Set bc24686 fee before Jul20. Reconcile pmt17124 in Xero. See recipe: issue-24-alberto-fidelo-course-split.md",
+        "hrly Jun24 UTC (4th check): CONFIRMED UNCHANGED. bc1797 ends Fri Jun26=2d (final 2 days, sca229 expired Apr26 — no valid SCA for remaining course days). bc24686 Jul20-Sep18 fee=null (41d stale). pmt17124 EUR1280.12 xeroId=null. NEIL: (1) set bc24686 fee BEFORE Jul20; (2) reconcile pmt17124 in Xero.",
+        "Jun26=2d; FINAL WINDOW"
+      ]
+    ]
+  },
+  {
+    "range": "H44:K44",
+    "values": [
+      [
+        "• Accommodation 11311 (bed 84, Pietro Caccianiga): start Jun 28, 11 weeks, fee = EUR 3,850 — correct\n• Four stale bed 84 records still active = true (fresh DB Jun24 UTC):\n  — Accommodation 9917 (booking 1274): ended May 16 — 39 days stale\n  — Accommodation 11157 (booking 100): ended May 10 — 45 days stale\n  — Accommodation 11159 (booking 100): ended May 30 — 25 days stale\n  — Accommodation 11180 (booking 81): ended Jun 20 — 4 days stale (last modified Jun 22)\n• All 4 stale records block bed 84 — Pietro cannot check in Jun 28 unless deactivated first",
+        "(NOT RUN) UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180). See recipe: issue-36b-pietro-accomm-dates.md",
+        "hrly Jun24 UTC (3rd check): ba9917 ended May16 active=true (stale). ba11157 ended May10 active=true (stale). ba11159 ended May30 active=true (stale). ba11180 ended Jun20 active=true (stale). All 4 blocking bed 84 UNCHANGED. ba11311 Pietro Jun28-Sep13 fee=3850 active=true (updatedAt=Jun24 18:25 UTC — touched today). NEIL: SET active=false WHERE id IN (9917,11157,11159,11180) BEFORE Jun28 — 4 days.",
+        "Jun28=4d; EMERGENCY"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Student 356 (Shih-Wei Huang) still has gender = null — last updated 3 Jun (21 days stale)\n• Document record 238 (exit letter, template 4, booking 560) is STILL ISSUED — issued 18 Jun 08:53 UTC (6 days ago)\n• Source JSON in document 238 has salutation = Ms., gender = Female, pronouns = she / her — all wrong for Shih-Wei Huang\n• Code fix needed in src/scripts/documents.ts: null-gender guard (null currently defaults to Female for all null-gender students)\n• Two manual steps required: (1) set student gender, (2) revoke document 238 and regenerate",
+        "(NOT RUN) SIS student 356 Personal Details -> set Gender Male. Then SIS bk560 Documents -> Revoke doc238 -> Regenerate. Code fix: null-gender guard. See recipe: issue-32-shih-wei-gender-default.md",
+        "hrly Jun24 UTC (7th check): s356 Shih-Wei gender=null UNCHANGED (Jun03=21d stale). doc238 STILL ISSUED exit letter (template 4, Jun18=6d stale). Wrong Ms./she/her pronouns on live issued document. NEIL: (1) SIS Student 356 -> Personal Details -> set Gender Male; (2) SIS bk560 Docs -> Revoke doc238; (3) Regenerate exit letter.",
+        "urgent; revoke doc238"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Booking 18151 (Academic Year Afternoon, Mar 09 – Sep 11) is Confirmed, fully paid EUR 1339.20\n• Class assignment 255 (class 11 B1 PM) has week start 12 Jan 2026 (wrong — should be 09 Mar) and week end 03 Jul 2026 (wrong — should be 11 Sep)\n• Week end 03 Jul expires in 9 days — after that Saikhantes is invisible to class scheduling for 10 weeks\n• Booking course 24925 (Academic Year Afternoon) runs correctly to 11 Sep — only the class assignment window is wrong\n• Saikhantes has NO other class assignments — SCA 255 is the only record",
+        "One SQL line (NOT RUN): UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255. See recipe: issue-29-saikhantes-jan12-start-date.md",
+        "hrly Jun24 UTC (3rd check): sca255 weekStart=2026-01-12 weekEnd=2026-07-03 STILL WRONG (createdAt Jun09). bc24925 AY-Aft Mar09-Sep11 active fee=1102.20. Jul03=9d until sca255 expires — 10 weeks uncovered after that. NEIL: UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255.",
+        "sca255; Jul03=9d; URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Class assignment 255 (class 11, B1 PM) has week start = 12 Jan and week end = 3 Jul — both wrong (live check Jun24: still unchanged)\n• Booking course 24925 (Academic Year Afternoon, 9 Mar to 11 Sep) is the correct course for student Saikhantes (student 1001)\n• Class assignment week end expires in 9 days (3 Jul) — leaves 10 weeks uncovered through 11 Sep",
+        "(NOT RUN) UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255. See recipe: issue-29-saikhantes-jan12-start-date.md",
+        "hrly Jun24 UTC (3rd check): sca255 weekStart=2026-01-12 weekEnd=2026-07-03 STILL WRONG (createdAt Jun09). bc24925 AY-Aft Mar09-Sep11 active fee=1102.20. Jul03=9d until sca255 expires — 10 weeks uncovered after that. NEIL: UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255.",
+        "sca255; Jul03=9d; URGENT"
+      ]
+    ]
+  }
+]

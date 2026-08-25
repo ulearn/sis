@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { PrismaClient } from '../generated/prisma/client';
 import { classScripts } from '../scripts/classes';
 import { schedulingScripts } from '../scripts/scheduling';
+import { bankHolidaysInRange } from '../scripts/irish-holidays';
 
 export function classRoutes(prisma: PrismaClient) {
   const router = Router();
@@ -35,6 +36,19 @@ export function classRoutes(prisma: PrismaClient) {
   router.delete('/closures/:id', async (req, res) => {
     try { res.json(await sched.deleteClosure(parseInt(req.params.id))); }
     catch (e) { res.status(400).json({ error: String(e) }); }
+  });
+
+  // Statutory IE bank holidays — COMPUTED, read-only, never persisted. Purely a
+  // reference overlay for the Holidays UI. Bank holidays have no payroll
+  // treatment (normal paid day; only the building closes), so they must NEVER
+  // enter school_closures. Default window: this year + next.
+  router.get('/bank-holidays', async (req, res) => {
+    try {
+      const y = new Date().getUTCFullYear();
+      const from = (req.query.from as string) || `${y}-01-01`;
+      const to = (req.query.to as string) || `${y + 1}-12-31`;
+      res.json(bankHolidaysInRange(from, to));
+    } catch (e) { res.status(500).json({ error: String(e) }); }
   });
 
   // Pull approved leave from Zoho People → write OccurrenceAbsence rows (source='zoho').
@@ -153,6 +167,29 @@ export function classRoutes(prisma: PrismaClient) {
     catch (e) { res.status(400).json({ error: String(e) }); }
   });
 
+  // Change a cover's teacher (correct a mistake / last-minute swap).
+  router.patch('/covers/:id', async (req, res) => {
+    try { res.json(await scripts.changeCover(parseInt(req.params.id), req.body)); }
+    catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }
+  });
+
+  // Pause a teacher for a class on a given date (no cover, no pay). Class+date
+  // wrapper so the UI needn't resolve the occurrence id itself.
+  router.post('/pause', async (req: any, res) => {
+    try {
+      const { classId, date, teacherId, reason } = req.body;
+      const by = req.session?.name || req.session?.role || null;
+      res.status(201).json(await scripts.pauseByDate(parseInt(classId), date, parseInt(teacherId), reason || null, by));
+    } catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }
+  });
+
+  router.delete('/pause', async (req: any, res) => {
+    try {
+      const { classId, date } = req.body;
+      res.json(await scripts.unpauseByDate(parseInt(classId), date));
+    } catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }
+  });
+
   router.get('/cover-dashboard', async (req, res) => {
     try { res.json(await scripts.coverDashboard(req.query)); }
     catch (e) { res.status(500).json({ error: String(e) }); }
@@ -178,6 +215,16 @@ export function classRoutes(prisma: PrismaClient) {
     catch (e) { res.status(500).json({ error: String(e) }); }
   });
 
+  // Seat occupancy report (Centre 1) — feeds the Seats report + (later) the seat
+  // clearance sale's genuinely-empty inventory. Finance/DOS gated.
+  router.get('/seat-occupancy', async (req, res) => {
+    if (!FINANCE_ROLES.includes((req as any).session?.role)) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    try { res.json(await scripts.seatOccupancy(req.query)); }
+    catch (e) { res.status(500).json({ error: String(e) }); }
+  });
+
   // Student assignments
   router.post('/assign', async (req, res) => {
     try {
@@ -190,6 +237,16 @@ export function classRoutes(prisma: PrismaClient) {
   router.delete('/assign/:id', async (req, res) => {
     try { await scripts.removeAssignment(parseInt(req.params.id)); res.json({ deleted: true }); }
     catch (e) { res.status(400).json({ error: String(e) }); }
+  });
+
+  // Move a student from one class to another in one atomic step (end old at the
+  // cutover week + create new from the cutover). Body: { assignmentId,
+  // targetClassId, cutover: 'YYYY-MM-DD' }.
+  router.post('/move', async (req, res) => {
+    try {
+      const role = (req as any).session?.role;
+      res.json(await scripts.moveStudent(req.body, role));
+    } catch (e: any) { res.status(400).json({ error: e?.message || String(e) }); }
   });
 
   // Clip an assignment so the student is removed from `weekStart` onward but kept
@@ -210,6 +267,20 @@ export function classRoutes(prisma: PrismaClient) {
     catch (e) { res.status(500).json({ error: String(e) }); }
   });
 
+  // Zoho pull — MUST be before '/teachers/:id' (else :id swallows the path).
+  router.get('/teachers/zoho-candidates', async (req, res) => {
+    try { res.json(await scripts.zohoTeacherCandidates()); }
+    catch (e) { res.status(500).json({ error: e instanceof Error ? e.message : String(e) }); }
+  });
+
+  router.post('/teachers/zoho-import', async (req, res) => {
+    try {
+      const ids = Array.isArray(req.body?.recordIds) ? req.body.recordIds : [];
+      if (!ids.length) return res.status(400).json({ error: 'No records selected' });
+      res.json(await scripts.importZohoTeachers(ids));
+    } catch (e) { res.status(400).json({ error: e instanceof Error ? e.message : String(e) }); }
+  });
+
   router.get('/teachers/:id', async (req, res) => {
     const id = parseInt(req.params.id);
     if (isNaN(id)) return res.status(400).json({ error: 'Invalid teacher ID' });
@@ -227,6 +298,11 @@ export function classRoutes(prisma: PrismaClient) {
 
   router.post('/teachers/assign', async (req, res) => {
     try { res.status(201).json(await scripts.assignClassTeacher(req.body)); }
+    catch (e) { res.status(400).json({ error: String(e) }); }
+  });
+
+  router.patch('/teachers/class-assign/:id', async (req, res) => {
+    try { res.json(await scripts.updateClassTeacher(parseInt(req.params.id), req.body)); }
     catch (e) { res.status(400).json({ error: String(e) }); }
   });
 

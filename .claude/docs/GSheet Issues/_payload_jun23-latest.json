@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H6:K6",
+    "values": [
+      [
+        "• Rakan Alghamdi LOA resolved — doc 204 issued Jun 08 via booking 17915 (see Issue 14)\n• Khongorzul Uranaa booking 17871 remains in ESCROW — confirmed = true (database anomaly)\n• Amount paid EUR 300 of EUR 2313.62 total — EUR 2013.62 outstanding, 46 days with no change\n• Booking course 24644 (Academic Year Morning Aug 04 2025 – Jan 23 2026) ended 5 months ago, active = false\n• Payment 17375 (EUR 300) has no Xero payment ID and no HubSpot payment ID\n• Last booking update: 08 May 2026 (46 days stale) — no action taken",
+        "Rakan LOA done (Issue 14). Decide fate of bk17871 Khongorzul: write off, pursue, or reclassify EUR 2013.62 stale ESCROW. See recipe: issue-4-rakan-loa-barcode.md",
+        "Jun23 hrly: bk17871 ESCROW UNCHANGED (fresh DB). s14473 Khongorzul Uranaa. amtPaid=300/2313.62 (EUR2013.62 outstanding). bc24644 AY-Morn ended Jan23-2026 active=false fee=3350. pmt17375 EUR300 xeroId=null hsId=null. updAt=May08=46d stale. Await Neil: write off / pursue / reclassify.",
+        "Khongorzul EUR2013; 46d"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Booking 18151 (Academic Year Afternoon, Mar 09 – Sep 11) is Confirmed, fully paid EUR 1339.20\n• Class assignment 255 (class 11 B1 PM) has week start 12 Jan 2026 (wrong — should be 09 Mar) and week end 03 Jul 2026 (wrong — should be 11 Sep)\n• Week end 03 Jul expires in 10 days — after that Saikhantes is invisible to class scheduling for 10 weeks\n• Booking course 24925 (Academic Year Afternoon) runs correctly to 11 Sep — only the class assignment window is wrong\n• Saikhantes has NO other class assignments — SCA 255 is the only record\n• Fix is one SQL line: UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255",
+        "One SQL line (NOT RUN): UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255. See recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun23 hrly: sca255 STILL WRONG (fresh DB). classId=11 B1-PM weekStart=Jan12 weekEnd=Jul03. Only SCA for student 1001. bc24925 AY-Aft Mar09-Sep11 active. bk18151 CONF 1339.2/1339.2 (updAt=Jun16=7d). weekEnd=Jul03=10d — then 10 weeks uncovered through Sep11. SQL NOT RUN.",
+        "sca255; Jul03=10d"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• Student 983 (Flávia Nascimento Mariano) visa status = null — Prisma save error prevents updating via the UI\n• Booking 1534 is Confirmed, fully paid EUR 1308 — booking course 1710 (Academic Year Afternoon Jun 01 – Nov 20) is active\n• Class assignment 265 (class 11 B1 PM, Jun 15 – Nov 20) is active — student is attending normally\n• Null visa status passes the class assignment filter — no operational impact\n• Cosmetic fix pending: UPDATE students SET visa_status='Approved' WHERE id=983 (NOT RUN)",
+        "SQL (NOT RUN): UPDATE students SET visa_status='Approved' WHERE id=983. See recipe: issue-18-flavia-visa-save-error.md",
+        "Jun23 hrly: s983 visaStatus=null (updAt=Jun15=8d — Prisma save error not fixed). bk1534 CONF 1308/1308. bc1710 AY-Aft Jun01-Nov20 active. Student attending via sca265 cls11 B1-PM Jun15-Nov20. Cosmetic fix pending.",
+        "in class; visa cosmetic"
+      ]
+    ]
+  },
+  {
+    "range": "H24:K24",
+    "values": [
+      [
+        "• Booking course 828 (Academic Year Morning, booking 787) has end date 27 Feb 2026 — 3 days before its start date 02 Mar 2026 (backwards date)\n• Legacy DST off-by-one bug from Issue 2 — one of 56 rows not auto-corrected in the batch fix\n• All four booking courses on booking 787 show active = true despite courses ending in Nov 2025, Jan 2026, and Jun 2026 (stale flags)\n• Student Enshi Lu (397) fully paid EUR 2147.50 — course completed 05 Jun 2026 (18 days ago)\n• Data-hygiene fix only: UPDATE booking_courses SET end_date='2026-03-20' WHERE id=828",
+        "SQL (NOT RUN): UPDATE booking_courses SET end_date='2026-03-20' WHERE id=828 — cosmetic, course completed. See recipe: issue-23-enshi-lu-backwards-course.md",
+        "Jun23 hrly: bc828 STILL BACKWARDS (start=Mar02 end=Feb27, updAt=May11=43d stale). bc829 ended Jun05=18d. bk787 CONF 2147.5 fully paid. All BCs show active=true stale. No urgency — data hygiene only. Fix NOT RUN.",
+        "ended;date bug"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking 1611 is Confirmed, fully paid EUR 1280.12\n• Booking course 1797 (Morning General, Apr 06 – Jun 26) ends THIS FRIDAY — 3 days away (final week underway)\n• Booking course 24686 (Morning General, Jul 20 – Sep 18) exists but has no fee set — must be filled before billing\n• Class assignment 229 (class 12 B1 AM-2) expired 27 Apr — 58 days without a class assignment\n• Zero attendance records ever for student 1052 — absent since at least late April (bereavement leave)\n• No holiday block recorded — bereavement leave from week of 27 Apr was never formalised in SIS\n• Payment 17124 (EUR 1280.12) has no Xero payment ID",
+        "Assign SCA on bc1797 cls12 ws=today we=Jun26 via SIS if returning this week (NOT RUN); set bc24686 fee before Jul20. See recipe: issue-24-alberto-fidelo-course-split.md",
+        "Jun23 hrly TUE (final week): UNCHANGED (fresh DB). bk1611 CONF 1280.12/1280.12 (updAt=Jun11=12d). bc1797 Morning General ends Fri Jun26=3d. sca229 cls12-B1AM2 weekEnd=Apr26 EXPIRED 58d. att=0 ALL TIME confirmed. bc24686 Jul20-Sep18 fee=null (0 SCAs). pmt17124 xeroId=null. 0 booking_holidays. NEIL: if Alberto in school this week assign SCA bc1797 cls12 via SIS TODAY. If not: bc1797 expires unused; set bc24686 fee + assign SCA Jul20.",
+        "FINAL WEEK; Jun26=3d"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Bug in public/admin.html sendBulkEmail() at line 1494 — reads the live bulkSelectedStudents set, not the intended frozen snapshot\n• Variable _bulkEmailRecipientIds (line 1349) declared as frozen snapshot but never assigned in openBulkEmailModal() and never read in sendBulkEmail()\n• showStudentsInSchoolReport() clears bulkSelectedStudents on every render (line 2219) — applying any filter after selecting students wipes all selections\n• Modal header shows correct count at open time (local ids var, line 1367) but sendBulkEmail re-reads the now-empty live set\n• Fix: two lines in public/admin.html — no server restart or build needed",
+        "Add _bulkEmailRecipientIds=ids after line 1367 in openBulkEmailModal; change line 1494 in sendBulkEmail to: const ids=_bulkEmailRecipientIds.length?[..._bulkEmailRecipientIds]:[...bulkSelectedStudents]. No build. See recipe: issue-33-khulan-reports-email-send.md",
+        "Jun23 hrly: Bug CONFIRMED STILL PRESENT (fresh code check). L1349 _bulkEmailRecipientIds=[] declared but never assigned in openBulkEmailModal (L1365). L1494 sendBulkEmail reads live bulkSelectedStudents. L2219 showStudentsInSchoolReport clears on every render. Fix: 2 lines in admin.html, no build/restart. NOT YET APPLIED.",
+        "code fix pending"
+      ]
+    ]
+  }
+]

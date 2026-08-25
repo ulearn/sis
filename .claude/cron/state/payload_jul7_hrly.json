@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payment 16988 (EUR 339.90, HubSpot 1204827374829): booking ID = STILL null, Xero payment ID = null — orphaned since 28 April 2026\n• Payment 16989 (EUR 339.90, HubSpot 1204846469317): booking ID = STILL null, Xero payment ID = null — orphaned since 28 April 2026\n• Booking 17856 (Margherita Galbusera, student 14461): Confirmed, confirmed = false, EUR 339.90 / 339.90\n• Booking 17857 (Francesca Fassina, student 14462): Confirmed, confirmed = false, EUR 339.90 / 339.90\n• Booking courses 24630 and 24631 (General English AM Plus, 29 Jun – 10 Jul 2026): fee = null, active = true\n• Course ends Friday 10 July 2026 — 3 school days remain (Wed 8, Thu 9, Fri 10)\n• Root cause: webhook missed setting booking ID at payment creation 28 April 2026",
+        "",
+        "Run 4-step SQL: (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) UPDATE booking_courses SET fee=339.9 WHERE id IN(24630,24631); (4) UPDATE bookings SET confirmed=true WHERE id IN(17856,17857)",
+        "7 Jul 2026 UTC (14th check). UNCHANGED (fresh DB). Pmts 16988+16989 bookingId=null xeroId=null EUR339.90 ea. Bks 17856+17857 CONF confirmed=false EUR339.90/339.90. BCs 24630+24631 fee=null active=true ends Jul10. COURSE ENDS FRI 10 JUL = 3 DAYS LEFT (today Mon 7, Wed 8, Thu 9). 4-STEP SQL NOT RUN. NEIL: LAST CHANCE — RUN TODAY."
+      ]
+    ]
+  },
+  {
+    "range": "H9:K9",
+    "values": [
+      [
+        "• ILEP edit unlocked via date whitelist — codes can now be edited in the admin UI\n• Aurora (student 841): all past booking courses have code 0318/0003; new AY booking course 24958 (Aug 2026) has code 0318/0010 — set\n• Pedro (student 911): booking course 1602 (Dec 2025) = 0318/0011, booking course 1603 (Jan–Jun 2026) = 0318/0012 — note: original cause field incorrectly stated 0318/0013\n• Diego (student 840): booking courses 1482 and 1483 = 0318/0003; booking course 1484 (Feb–Jun 2026) = 0318/0021 (was flagged as possibly wrong); new future AY booking course 24959 (Aug 2026) = ilep_code null — must be set before certificate generation\n• All three students have new AY bookings starting Aug 2026; old courses ended June 2026",
+        "",
+        "ILEP edit unlocked; fix Diego#840 0318/0021 row if wrong; regen certs. recipe: issue-7-ilep-codes.md",
+        "7 Jul 2026 UTC. DB verified. Aurora bc24958=0318/0010 (set). Pedro bc1602=0318/0011, bc1603=0318/0012 (note: H previously stated 0318/0013 — corrected). Diego bc24959 (future AY Aug03) ilep_code=null — must be set. NEIL: confirm correct codes; set Diego bc24959 ilep_code before Aug cert run."
+      ]
+    ]
+  },
+  {
+    "range": "H12:K12",
+    "values": [
+      [
+        "• Junior Valeriya (student 1063): dad Egor booked for her under his own HubSpot contact — created dad-as-student (14502) and a shell record (14545)\n• Duplicates merged: kept booking 17912 on Valeriya 1063, folded in host family accommodation, deleted Fidelo duplicate (booking 1622) and Egor record (14502)\n• Booking 17912: Confirmed, confirmed = true, EUR 1938 / 1938 — financially correct\n• Remaining anomaly: student 1063 hubspot_contact_id = null (HubSpot link not restored post-merge)",
+        "",
+        "Merged: kept the Hub/invoice booking (bk17912) on Valeriya 1063, fixed its dates + folded in Host Family accom, deleted her Fidelo dup (bk1622) + Egor (14502). Backup saved. She now shows as arrival 06/06.",
+        "7 Jul 2026 UTC. Valeriya 1063 hubspotContactId=STILL null. bk17912 CONF confirmed=true EUR1938/1938. Pmts 17428 (€1125) + 17429 (€653) found — sum €1778 vs amtPaid=€1938 (may be a 3rd payment with different ID). Low priority; booking correct but HubSpot link broken."
+      ]
+    ]
+  },
+  {
+    "range": "H15:K15",
+    "values": [
+      [
+        "• QR verify() recomputes LIVE (not frozen): name Academic Year -> computeVisaWindow stretches to 35 weeks (start+35)\n• student.visaFrom / visaUntil were null -> AY fallback fired, inflating to 35-week window\n• Letter PDF was already frozen at 24 weeks; only the live QR page mismatched\n• Fix applied: student 14444 visaFrom set to 2026-06-29, visaUntil set to 2026-12-11\n• Verified 7 Jul 2026: visa_from=2026-06-29, visa_until=2026-12-11; document 204 status=ISSUED",
+        "",
+        "Set student 14444 visaFrom=2026-06-29, visaUntil=2026-12-11 (manual dates override AY stretch). NO code/template/calc change - 2 date fields only. Editable in UI: Student Edit > Visa box (Visa From / Visa To). QR now 29Jun->11Dec26 = 24wk, matches letter+accom.",
+        "RESOLVED"
+      ]
+    ]
+  },
+  {
+    "range": "H34:K34",
+    "values": [
+      [
+        "• SIS database default for gender is null (no default) — not female; the original question was answered\n• Student 356 (Shih-Wei Huang): gender field = null (still not set, 35+ days)\n• Exit letter document 238 generated with she/her pronouns because code used gender=null as default-to-female\n• Document 238 status = ISSUED — has not been revoked or regenerated with correct pronouns\n• Code-level fix needed: documents.ts should guard against null gender (avoid any pronoun assumption)",
+        "",
+        "• Student 356 (Shih-Wei Huang) gender = null — 35+ days since issue raised\n\n• Exit letter doc 238 shows incorrect pronouns (she/her) because gender field is null — must be revoked and regenerated after gender is set\n\n• Code-level fix also needed: documents.ts should guard against null gender",
+        "7 Jul 2026 UTC. Student 356 gender=STILL null. Doc 238 STILL ISSUED (not revoked). Pending staff action: set gender for Shih-Wei, revoke doc 238, regenerate exit letter."
+      ]
+    ]
+  },
+  {
+    "range": "H48:K48",
+    "values": [
+      [
+        "• Fix applied (confirmed 7 Jul 2026): class_teacher record 46 (ULearn ADoS, teacher 3) end_date now set to 2026-06-27 — overlap closed\n• Class 7 (A1) now has one active teacher: record 34, Dave Booth (teacher 4), assigned 8 June 2026, end_date = null — correct\n• Record 50 (Margaret Woods, teacher 17, 25 May – 5 Jun 2026): end_date = 2026-06-05 — correctly closed\n• A1 attendance sheets should now print Dave Booth as teacher",
+        "",
+        "Fix applied: end_date=2026-06-27 set on class_teacher id=46 (ULearn ADoS). Verified 7 Jul 2026: single active record Dave Booth (ct34) on class 7 (A1). See recipe: issue-46-a1-teacher-ados.md",
+        "fixed"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 (HubSpot 1204827374829) and 16989 (HubSpot 1204846469317): EUR 339.90 each — booking ID = null, Xero payment ID = null — unlinked since 28 April 2026 (216 hourly checks)\n• Booking 17856 (Margherita Galbusera, student 14461): status = Confirmed, confirmed field = false — booking course 24631 (General English AM Plus, 29 June to 10 July, fee = null)\n• Booking 17857 (Francesca Fassina, student 14462): status = Confirmed, confirmed field = false — booking course 24630 (General English AM Plus, 29 June to 10 July, fee = null)\n• Booking courses 24630 + 24631: both active, both end Friday 10 July 2026 — 5 school days remaining\n• Root cause: webhook missed setting booking ID at payment creation on 28 April 2026",
+        "(NOT RUN) (1) UPDATE payments SET booking_id = 17856 WHERE id = 16988; (2) UPDATE payments SET booking_id = 17857 WHERE id = 16989; (3) UPDATE booking_courses SET fee = 339.9 WHERE id IN (24630, 24631); (4) UPDATE bookings SET confirmed = true WHERE id IN (17856, 17857). See recipe: issue-1-orphan-payments.md",
+        "216th check 5 Jul UTC - UNCHANGED. Payments 16988+16989 bookingId=null xeroId=null EUR339.90 each. Bookings 17856+17857 CONFIRMED confirmed=false. BCs 24630+24631 GE-AM-Plus Jun29-Jul10 active=true fee=null. COURSES END FRIDAY JUL 10 = 5 SCHOOL DAYS. NEIL: run 4-step SQL before Friday.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• Email address in phone field — Dolgormaa Bayaraa (student 1897): saraa.tpb@gmail.com; unchanged since 28 April 2026 (68 days)\n• Email address in phone field — Aki Miura (student 8567): aki-hinaaki1116@ezudo.he.jp; unchanged since 10 April 2026 (86 days)\n• Annotation in phone field — Jieun Lee (student 1194): 00821097366523 (home contry); unchanged since 7 May 2026 (59 days)\n• Annotation in phone field — Lisa Li (student 5345): 0864645297 (Husband); unchanged since 10 April 2026 (86 days)\n• Unicode trailing characters in phone field — Alessandra Saito de Araujo (student 10343): +353 (83) 885 9162 with trailing Unicode chars; unchanged since 28 April 2026 (68 days)\n• All 5 records confirmed unchanged in fresh DB query, 5 July 2026 UTC — row B/F/G hash changed (someone edited the sheet; DB data confirmed unchanged)\n• Students 1194, 5345, 10343: can be corrected by stripping annotation text or Unicode now\n• Students 1897 and 8567: require a real phone number from HubSpot or staff before correcting",
+        "Clean per recipe; students 1194/5345/10343 fixable now (strip annotation/unicode); students 1897/8567 need real number from HubSpot/staff. See recipe: issue-5-mobile-numbers.md",
+        "5 Jul UTC - B/F/G hash changed (row edited), but all 5 phone records CONFIRMED UNCHANGED in DB. Dolgormaa s1897 phone=email (Apr28). Aki s8567 phone=email (Apr10). Jieun s1194 annotation (May7). Lisa s5345 annotation (Apr10). Alessandra s10343 unicode (Apr28). Self-fixable: s1194/5345/10343. Need HubSpot/staff for: s1897/s8567.",
+        "info needed"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Class assignment 255 (Saikhantes Shagdarsuren, student 1001, class 11 B1 Afternoon): week end = 3 July 2026 — EXPIRED 2 DAYS AGO (108th check, 5 July 2026 UTC)\n• Student 1001 has zero other class assignments — fully unassigned since 3 July 2026\n• Missed Friday 4 July 2026; will miss Monday 6 July 2026 TOMORROW if fix not run before 09:00\n• Booking course 24925 (Academic Year Afternoon, 9 March to 2 October 2026): active = true, fee = EUR 1102.20\n• Booking 18151: Confirmed, confirmed = true, EUR 1339.20 / EUR 1339.20 (fully paid)",
+        "(NOT RUN) UPDATE student_class_assignments SET week_end = '2026-10-02' WHERE id = 255; — run before 09:00 Mon 6 Jul. See recipe: issue-15-saikhantes-course-dates.md",
+        "108th check 5 Jul SUN UTC - SCA 255 STILL EXPIRED (weekEnd=Jul3=2 days ago). Student 1001 ZERO SCAs. Missed Fri Jul4; MISSES MON JUL6 TOMORROW. bc24925 AY-Afternoon Mar9-Oct2 active=true. bk18151 CONFIRMED EUR1339.20/1339.20. NEIL: UPDATE student_class_assignments SET week_end=2026-10-02 WHERE id=255 - BEFORE MON 09:00.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 (Edite Nunes, student 1015): Confirmed, confirmed = true, fully paid EUR 740 / EUR 740 (71st check, 5 July 2026 UTC)\n• Booking course 24933 (General English AM, 15 June to 10 July, fee EUR 380): active — zero class assignments for current booking course period\n• Booking course 24934 (General English AM, 15 June to 10 July, fee EUR 360): duplicate, still active — should be deactivated\n• Student 1015 has two historical class assignments (class 7, A1 AM) — both expired (17 April and 15 May), none covering booking course 24933\n• Courses end Friday 10 July 2026 — 5 school days remaining — student has attended weeks with no active class assignment",
+        "(NOT RUN) (1) UPDATE booking_courses SET active = false WHERE id = 24934; (2) Assign student 1015 to class 7 (A1 AM) via SIS admin for booking course 24933 before 10 July. See recipe: issue-22-edith-nunes-payment-dups.md",
+        "71st check 5 Jul UTC - UNCHANGED. bk18158 CONFIRMED EUR740/740. BCs 24933+24934 both GE-AM Jun15-Jul10 both active=true (dup bc24934 still active). s1015 SCAs id48+id146 both expired. ZERO for bc24933. COURSES END FRIDAY JUL 10. NEIL: (1) UPDATE booking_courses SET active=false WHERE id=24934; (2) Assign s1015 to class 7 A1 AM for bc24933.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking course 1797 (Morning General, 6 April to 26 June 2026): ended 9 days ago — still active = true (34th check, 5 July 2026 UTC)\n• Booking course 24686 (Morning General, 20 July to 18 September 2026): starts in 15 days — fee = null; set fee before 20 July\n• Payment 17124 (EUR 1280.12, 5 May 2026, Fidelo bank transfer): type = null, Xero payment ID = null — unreconciled in Xero; booking ID = 1611 (correctly linked)\n• Booking 1611 (Alberto Squillace, student 1052): Confirmed, confirmed = true, EUR 1280.12 / EUR 1280.12 (fully paid — booking course 1797 fee EUR 1836 is a Fidelo migration artefact)",
+        "(1) UPDATE booking_courses SET active=false WHERE id=1797 (NOT RUN); (2) Set booking course 24686 fee via SIS admin before 20 July; (3) Reconcile payment 17124 in Xero. See recipe: issue-24-alberto-fidelo-course-split.md",
+        "34th check 5 Jul UTC - UNCHANGED. bc1797 ended Jun26=9 days still active=true. bc24686 starts Jul20=15 days fee=null. pmt17124 EUR1280.12 type=null xeroId=null. bk1611 CONFIRMED EUR1280.12/1280.12. Deadline: deactivate bc1797 + set bc24686 fee before Jul20.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 16 active booking courses start Monday 6 July 2026 — all with zero class assignments (38th check, 5 July 2026 UTC)\n• 11 confirmed starters needing class assignment BEFORE 09:00 MON 6 JUL: Aitana Lopez student 7 booking course 7 (AM); Pietro Colombo student 72 booking course 81 (AM-Plus); Tuguldurtugs Enkhtugs student 858 booking course 1786 (AY-Renewal-Morning, EUR250 outstanding); Rakan Alghamdi student 14444 booking course 24697 (AY-Morning); Mario Roggi student 14528 booking course 24776 (GE-AM); Ettore Iovinella student 14564 booking course 24968 (GE-AM-Plus); Veronica Martin student 278 booking course 24931 (GE-AM, ends Fri 10 Jul); Sarah Venturini Talizin student 1055 booking course 24945 (GE-AM); Hugo Lopez Tamayo student 14572 booking course 24960 (GE-AM); Kiyoshi Fujino student 14445 booking course 24907 (GE-AM, ends Fri 10 Jul); Yuxi Ke student 14577 booking course 24965 (GE-PM)\n• 4 not yet confirmed — advance HubSpot deal first: Zeyad Alharbi student 32 booking course 38 (AM-Plus, EUR0/4765 due); Shih-Wei Huang student 356 booking course 24913 (AY-Morning, EUR0/1832.50 due); Sulaiman Abdullatif student 7309 booking course 24930 (Intensive GE, EUR0/4259 due); Gustavo Da Silva student 14570 booking course 24955 (plus duplicate booking course 24967 — deactivate 24967 first)\n• Kiyoshi Fujino (booking course 24907) and Veronica Martin (booking course 24931) end Friday 10 July — only 5 school days if assigned now",
+        "URGENT before Mon 09:00: (1) Assign 11 confirmed starters to classes in SIS; (2) Deactivate duplicate booking course 24967 (Gustavo Da Silva); (3) Advance HubSpot deals for Zeyad/Shih-Wei/Sulaiman/Gustavo to unlock class assignment. See recipe: issue-45-renewal-arrivals.md",
+        "38th check 5 Jul UTC - STILL 16 BCs starting Jul6 with 0 SCAs. 11 confirmed (assign NOW before Mon 09:00), 4 pending (advance deal first). Gustavo s14570 duplicate bcs 24955+24967 - deactivate bc24967. Kiyoshi bc24907 + Veronica bc24931 end Fri Jul10 (5 days). bk1601 (Tuguldurtugs) EUR1356.5/1606.5 (EUR250 outstanding). NEIL: LAST CHANCE - BEFORE MON 09:00 JUL 6.",
+        ""
+      ]
+    ]
+  }
+]

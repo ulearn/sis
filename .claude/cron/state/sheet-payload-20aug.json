@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "143rd check Thu 20 Aug 2026 UTC — no change from 142nd check (same day)\n• Booking Accommodation 11394 (bed 89): ended 9 Aug 2026, fee = null, STILL ACTIVE — 11 days stale; deactivate TODAY before bed conflict Sat 22\n• Booking Accommodation 11396 (bed 44): 15–22 Aug, fee = null, active — checkout Sat 22; set fee before checkout\n• Booking Accommodation 11397 (bed 89): starts Sat 22 Aug, fee = null, active — set fee TODAY before move-in\n• Booking Accommodation 11357 (bed 178): ended 15 Aug, fee = EUR 1,250, active — 5 days stale; deactivate\n• Booking 18180 (Giampaolo, student 14571): CONFIRMED, fully paid EUR 5,331",
+        "Deactivate BAs 11394+11357 TODAY; set fees on 11396+11397 before Sat 22. See recipe: issue-41-addendum-20aug-b.md",
+        "143rd Thu 20 Aug UTC. No change. Sat 22 = 2 days. Bed 89 conflict if 11394 not deactivated TODAY. URGENT.",
+        "URGENT: bed89 conflict Sat22"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "246th check Thu 20 Aug 2026 UTC — no change from 245th check (same day)\n• Booking Accommodation 11393 (bed 88): starts Sat 22 Aug, endDate 13 Sep, fee = null, active — fee must be set TODAY (2 days to move-in)\n• Booking Accommodation 11311 (bed 84): ends Sat 22 Aug, fee = EUR 3,850, active — deactivate after checkout\n• Booking 17980 (Pietro, student 14521): CONFIRMED, fully paid EUR 5,331\n• Calculated fee for BA 11393: EUR 5,331 − EUR 3,850 = EUR 1,481 (3 weeks) — confirm before setting",
+        "Set fee EUR 1,481 on BA 11393 TODAY; deactivate BA 11311 after Sat 22 checkout. See recipe: issue-36b-addendum-20aug-c.md",
+        "246th Thu 20 Aug UTC. No change. BA 11393 fee null, starts Sat 22 (2d). URGENT: set fee TODAY.",
+        "URGENT: fee null Sat 22"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "181st check Thu 20 Aug 2026 UTC — no change from 180th check (same day)\n• Booking 18151 (Saikhantes, student 1001): CONFIRMED, confirmed = true, fully paid EUR 1,339.20\n• Booking Course 24925 (Academic Year Afternoon): 9 Mar to 2 Oct 2026, active\n• Last class assignment: week ending 3 Jul 2026 (class 11) — 48 days with no new assignment\n• Student returns Tue 25 Aug 2026 (5 days) — SCA needed for week Mon 24 Aug before first class back\n• Booking Course 1982 (Academic Year Morning, 2025): ended 19 Dec 2025, active — 244 days stale; deactivate",
+        "Create SCA on BC 24925 (class 11, week 24-28 Aug) before Mon 24; deactivate BC 1982. See recipe: issue-15-addendum-20aug-b.md",
+        "181st Thu 20 Aug UTC. Returns Tue 25 Aug (5d). No SCA since 3 Jul (48d). Needs SCA for week Mon 24 Aug. URGENT.",
+        "URGENT: no SCA; returns 25 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "54th check Thu 20 Aug 2026 UTC — no change from 53rd check (same day)\n• Bed 83 next occupant BA 25 (booking 17844): starts 30 Aug (10 days), fee EUR 2,100\n• 5 stale Booking Accommodations on bed 83, all still active:\n  BA 11239 (ended 24 May — 88 days stale, fee EUR 1,050, booking 22)\n  BA 11168 (ended 20 Jun — 61 days stale, fee EUR 700, booking 92)\n  BA 11285 (ended 5 Jul — 46 days stale, fee null, booking 17825 — fully paid EUR 2,008; confirm fee)\n  BA 11352 (ended 11 Jul — 40 days stale, fee EUR 360, booking 18156)\n  BA 11179 (ended 9 Aug — 11 days stale, fee EUR 1,360, booking 82)\n• Must deactivate all 5 before 30 Aug to prevent bed 83 conflict (10 days)",
+        "Confirm fee on BA 11285 (booking 17825); deactivate BAs 11239, 11168, 11285, 11352, 11179. See recipe: issue-37-addendum-20aug-c.md",
+        "54th Thu 20 Aug UTC. 5 stale BAs unchanged. BA 11285 fee null; booking 17825 fully paid EUR 2,008. Aug 30 = 10d.",
+        "5 stale BAs; Aug 30 = 10d"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "150th check Thu 20 Aug 2026 UTC — no change from 149th check (Wed 19 Aug)\n• Booking 1624 (Telmuun Enkhsaikhan, student 293): PARTIAL, confirmed = false\n• Amount paid = EUR 1,406; amount open = EUR 250; total EUR 1,656\n• Only 1 payment in database: ID 17956, EUR 100, 31 Mar 2026, Xero Payment ID = null — EUR 1,306 unaccounted\n• Booking Course 1810 (Academic Year Renewal Morning): 29 Jun to 1 Jan 2027, active, 0 class assignments confirmed — day 52",
+        "Investigate EUR 1,306 payment gap via Hub fins/; create SCA on BC 1810; settle EUR 250; set confirmed = true. See recipe: issue-48-addendum-20aug-b.md",
+        "150th Thu 20 Aug UTC. No change. BC 1810 day 52, 0 SCAs confirmed by DB. EUR 1,306 gap. Fix NOT RUN.",
+        "payment gap; BC1810 52d; SCA 0"
+      ]
+    ]
+  },
+  {
+    "range": "H52:K52",
+    "values": [
+      [
+        "15th check Thu 20 Aug 2026 UTC — no change from 14th check (earlier today)\n• 61 stale Booking Accommodations (ended but still active) — unchanged\n• 5 no-bed stale BAs: 11230, 11362, 11276, 11174, 11347\n• 30 bed-assigned stale BAs: none deactivated\n• 11 null-fee BAs (including BA 11280 bed 188 ended Jun 27; BA 11264 bed 156 ended May 9)\n• Checkout code bug unchanged — stale BAs inflate weekly checkout count",
+        "Deactivate 50 confirmed-fee stale BAs; confirm fees on BAs 11280+11264; fix checkout code. See recipe: issue-50-addendum-20aug-c.md",
+        "15th Thu 20 Aug UTC. No change from 14th. 61 stale BAs, 11 null-fee. Fix NOT RUN.",
+        "61 stale BAs; fix pending"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• Email in phone field — Dolgormaa Bayaraa (student 1897): saraa.tpb@gmail.com — record updated 17 Jul 2026 (other fields), phone still wrong\n• Email in phone field — Aki Miura (student 8567): aki-hinaaki1116@ezudo.he.jp — 102 days unchanged\n• Annotation in phone field — Jieun Lee (student 1194): 00821097366523 (home contry) — 75 days unchanged\n• Annotation in phone field — Lisa Li (student 5345): 0864645297 (Husband) — 102 days unchanged\n• Unicode trailing chars — Alessandra Saito de Araujo (student 10343): +353 (83) 885 9162 with trailing Unicode — 84 days unchanged\n• All 5 confirmed unchanged — fresh query 21 Jul 2026 UTC (74th check)",
+        "Strip annotations on students 1194 and 5345; strip Unicode on 10343; get real numbers for 1897 and 8567 from HubSpot. See recipe: issue-5-mobile-numbers.md",
+        "74th check Tue 21 Jul UTC. UNCHANGED. 5 phones still wrong: 1897 Dolgormaa (email, record touched Jul17 other fields), 8567 Aki (email, 102d), 1194 Jieun (annotation, 75d), 5345 Lisa (annotation, 102d), 10343 Alessandra (Unicode, 84d). Fix NOT RUN.",
+        "5 phones wrong; 102d"
+      ]
+    ]
+  },
+  {
+    "range": "H9:K9",
+    "values": [
+      [
+        "• Original ILEP certificate issue resolved — Diego (document 181), Pedro (document 184), Aurora (document 183) all issued June 2026\n• Diego (student 840): booking course 24959 (Academic Year Morning, 3 Aug 2026) — ILEP code 0318/0010 set\n• Aurora (student 841): booking course 24958 (Academic Year Morning, 3 Aug 2026) — ILEP code 0318/0010 set\n• Pedro (student 911): no 2026–27 booking course in SIS — may not have renewed\n• 8 stale booking courses still active = true: BCs 1482, 1483, 1484 (Diego); BCs 1485, 1486, 1487 (Aurora); BCs 1602, 1603 (Pedro)\n• BCs 1482+1485+1602 ended Dec 19 2025 (214 days stale)\n• BCs 1483+1486 ended Feb 13 2026 (158 days stale)\n• BCs 1484+1487+1603 ended Jun 5 2026 (46 days stale)\n• 5th check Tue 21 Jul 2026 UTC — all UNCHANGED",
+        "Set active = false on booking courses 1482, 1483, 1484, 1485, 1486, 1487, 1602, 1603. See recipe: issue-8-ilep-certs.md",
+        "5th check Tue 21 Jul UTC (fresh DB). CONFIRMED UNCHANGED. 8 stale BCs still active=true: BCs 1482+1485+1602 ended Dec19 2025 (214d), BCs 1483+1486 ended Feb13 2026 (158d), BCs 1484+1487+1603 ended Jun05 2026 (46d). Fix NOT RUN.",
+        "cert resolved; 8 stale BCs 214d"
+      ]
+    ]
+  },
+  {
+    "range": "H11:K11",
+    "values": [
+      [
+        "• Massimiliano Cameran (student 91, booking 97): Confirmed, EUR 1741 / 1741 fully paid — confirmed flag = false (46 days since 5 Jun 2026)\n• Document 63 (accounts, booking 97): REVOKED May 2026\n• Document 64 (accounts, booking 97): ISSUED May 2026 — invoice only, no completion certificate\n• Document 179 (certificate, booking 18002): ISSUED 5 June 2026 — separate renewal booking, not original booking 97\n• No completion certificate exists for original booking 97\n• 31st check, 21 Jul 2026 UTC — UNCHANGED",
+        "Generate certificate on booking 97 (SIS student 91 > bk97 > Documents). Set confirmed=true first if button blocked. See recipe: issue-9-massimiliano-cert-split.md",
+        "31st check Tue 21 Jul UTC (fresh DB). UNCHANGED. BK97 CONF EUR1741/1741 confirmed=false (updAt=Jun05, 46d). Doc63 REVOKED bk97. Doc64 ISSUED bk97. No ISSUED cert on bk97. Fix NOT RUN.",
+        "no cert bk97; 46d"
+      ]
+    ]
+  },
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "• Extra 96 (booking 17981, Lizbeth del Carmen Sierra Martinez, student 14522): Insurance — details = PEL;Health, fee = null — 57 days unpriced (since 25 May 2026)\n• Booking 17981: CONFIRMED, EUR 1407.50 / 1407.50 fully paid — confirmed flag = false (last updated 23 Jun 2026)\n• Student on course since 1 June 2026 — 50 days attending with insurance extra unpriced\n• 31st check, 21 Jul 2026 UTC — UNCHANGED",
+        "Arrange insurance; set fee on extra 96 via SIS bk17981 Extras; supplementary invoice on HS deal 503569276136. See recipe: issue-13-lizbeth-health-insurance.md",
+        "Tue 21 Jul UTC (31st check). UNCHANGED. bookingExtra96 INSURANCE PEL;Health: fee=STILL null (57d since May25). Student Lizbeth del Carmen unpriced for 50d since course start Jun01. bk17981 CONFIRMED EUR1407.50/1407.50 confirmed=false (updAt=Jun23). Fix NOT RUN.",
+        "insurance fee null; 57d"
+      ]
+    ]
+  },
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "• Booking 1308 (Ana Jessica Rosa de Paula Santos): CANCELLED — accidental click 7 Jun 2026, confirmed flag = false; 44 days since cancellation\n• Amount paid = EUR 1530 / 1530 (fully paid) despite cancelled status\n• Payment 17186 (EUR 1280, Bank Transfer, 1 May 2026): Xero payment ID = null — 81 days unreconciled\n• Booking course 1350 (Academic Year Afternoon, May 25 to Nov 13 2026): active = true on cancelled booking — data inconsistency\n• 6th check, 21 Jul 2026 UTC — UNCHANGED",
+        "Reconcile payments 17186 (EUR 1280) and 17050 (EUR 250) in Xero; deactivate booking course 1350. See recipe: issue-17-ana-jessica-accidental-cancel.md",
+        "Tue 21 Jul UTC (6th check). UNCHANGED. bk1308 CANCELLED EUR1530/1530 confirmed=false (updAt=Jun07, 44d since accidental cancel). PMT17186 EUR1280 xeroId=STILL null (payDate May01, 81d unreconciled). BC1350 (AY Afternoon May25-Nov13) active=STILL true on cancelled booking. Fix NOT RUN.",
+        "pmts 81d; BC stale; 44d"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• Student 917 (Uyanga Tungalag): visa status = null — 61 days since last update (21 May 2026)\n• HubSpot contact ID = null — student not linked to HubSpot (61 days)\n• Booking 1467: CONFIRMED, EUR 2405 / 2405 fully paid, confirmed = true (last updated 8 Jul 2026)\n• Booking course 1613 (Academic Year Morning, 27 Apr to 16 Oct 2026): active = true, ILEP code 0318/0010\n• Zero class assignments (SCAs) — 85 days since course start (27 Apr) with no class recorded\n• 82nd check Tue 21 Jul 2026 UTC — UNCHANGED",
+        "Set student 917 visa status to Approved in SIS admin; reconcile payment 17258 (EUR 3066 Escrow) in Xero. See recipe: issue-25-uyanga-visa-escrow.md",
+        "82nd check Tue 21 Jul UTC (fresh DB). UNCHANGED. s917 visaStatus=null hubspotContactId=null (61d since May21). BC1613 AY Morning Apr27-Oct16 active=true ilepCode=0318/0010. ZERO SCAs (85d since Apr27 course start). bk1467 CONF EUR2405/2405 confirmed=true (updAt=Jul08). Fix NOT RUN.",
+        "visa null 61d; zero SCAs 85d"
+      ]
+    ]
+  }
+]

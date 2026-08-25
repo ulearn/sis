@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "Student not invoiced for Insurance. extra96 fee=null. bk17981 confirmed=false (bool drift).",
+        "Set extra96 fee; UPDATE bk17981.confirmed=true; gen supp invoice. see recipe: issue-13-lizbeth-health-insurance.md",
+        "Jun12 D15+: extra96 INSURANCE fee=null UNCHANGED. bk17981 CONF conf=false amtPaid=1407.5 updAt=Jun04. doc213 LOA ISSUED Jun10(NEW). s14522 insurance_from=null visaStatus=null. ~15 school days uninsured. NEIL: (1)WORLD2GO re HI+PEL; (2)UPDATE booking_extras SET fee=150 WHERE id=96(NOT RUN); (3)supp invoice deal 503569276136.",
+        "ins fee null D15"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "bk18158 PEND 0/740: c24933(fee=380)+c24934(DUP fee=360) same GE-AM Jun15-Jul10; 380+360=740=amtTotal(webhook dbl-insert Jun11). Dup pmts 17728+17730+17852 on old Fidelo bkgs.",
+        "del c24934; del dup pmts 17728+17730+17852; CANCEL bk18131+18133. Check HS 505836060909. see recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun12 FINAL FRIDAY: bk18158 PEND 0/740. c24933(380)+c24934(360) STILL DUP GE-AM Jun15-Jul10. bk18131 CONF 1185+bk18133 CONF 648 NOT CANCELLED. dup pmts 17728/17730/17852 xeroId=null NOT DELETED. ALL 4 STEPS NOT RUN. NEIL: fix before EOD — Edith starts Mon Jun15.",
+        "CRITICAL starts Mon"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "Ernesto s14532 0SCAs ALL TIME. bk18034 PARTIAL 845/1095. c24826 INTENSIVE Jun08-19. Level=null. WK1 MISSED.",
+        "FINAL FRIDAY: get Ernesto level+INSERT 2 SCAs(AM+PM) bci=24826 Jun15-Jun19. see recipe: issue-26-intensive-class-assign-once.md",
+        "Jun12 FINAL FRIDAY D7: WK1(Jun08-12) MISSED. WK2(Jun15-19) FINAL WEEK. s14532 currentLevel=null DB+HS(id=3344151), no level changes. bk18034 PARTIAL 845/1095 conf=false updAt=Jun07. 0SCAs ALL TIME. SQL(NOT RUN): INSERT INTO student_class_assignments (booking_course_id,class_id,week_start,week_end,student_id) VALUES (24826,<AM_id>,2026-06-08,2026-06-19,14532),(24826,<PM_id>,2026-06-08,2026-06-19,14532). Pairs: A2=cls8/9,B1=cls5/12/11,B2-C1=cls4/6,C1=cls13/14. NEIL: get level NOW.",
+        "WK2 Mon CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "s1001 att=0 ALL TIME 154d. sca255 cls11-B1PM ws=Jan12 we=Jul03(21d). bk18151 CONF 1339.2.",
+        "Check cls11 register; if alias merge att; if absent IRP compliance (NOT RUN). recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun12 D154 21d-left: att COUNT=0 CONFIRMED (DB). sca255 cls11-B1PM ws=Jan12 we=Jul03. visaStatus=null currentLevel=B1. bk18151 CONF 1339.2 updAt=Jun11. NOT in cls11 register. No 2026 morning bk. NEIL: ask B1PM teacher TODAY; if absent: contact student+management IRP compliance.",
+        "0att URGENT 21d"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "s88 JUNIOR 0SCAs lvl=null. 3 MORN-PLUS bkgs Jun15-26: bk94(orig pmt17102 Fidelo xeroId=null), bk18044(dup pmt17607 EUR1151.5 xeroId=null DOUBLE-IMPORT), bk18152(Milena PEND).",
+        "(1)get Giulia level(2)assign std AM cls bk94/c104(3)cancel bk18044+DELETE pmt17607(dbl-import not refund)(4)cancel bk18152+del s14557. see recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun12 3d CRITICAL: s88 Giulia JUNIOR currentLevel=null 0SCAs. bk94 CONF 1151.5 c104 MORN-PLUS Jun15-26 pmt17102(Fidelo Mar13). bk18044 CONF DUP 1106.5 c24836 pmt17607(HS DOUBLE-IMPORT Mar13 xeroId=null). bk18152 Milena(s14557) PEND 0/1151.5. ALL 4 STEPS NOT RUN. STARTS MON JUN15. NEIL: action TODAY.",
+        "CRITICAL starts Mon"
+      ]
+    ]
+  },
+  {
+    "range": "H32:K32",
+    "values": [
+      [
+        "Bug1: BST setHours shifts week header to Sunday(Jun14 not Mon Jun15). Bug2: 9 stale SCAs weekEnd=null(6 ended, 3 ended today Jun12).",
+        "Fix: rm setHours(0,0,0,0) in attendance.ts OR TZ=UTC .env+restart. Clamp 9 SCAs. see recipe: issue-31-attendance-sheet-week-bug.md",
+        "Jun12 EOD: ALL 9 SCAs(ids:39,40,65,66,74,75,81,87,100) courses ended(3 ended TODAY:bci1539/1641/1683). week_end=null persists. BST bug NOT FIXED-Mon sheet shows Sun Jun14. SQL(NOT RUN): UPDATE student_class_assignments SET week_end=(SELECT end_date FROM booking_courses WHERE id=booking_course_id) WHERE id IN(39,40,65,66,74,75,81,87,100). Code fix: rm setHours(0,0,0,0) from attendance.ts OR add TZ=UTC. NEIL: fix TONIGHT.",
+        "fix TONIGHT"
+      ]
+    ]
+  }
+]

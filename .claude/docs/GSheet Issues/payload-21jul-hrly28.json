@@ -1,0 +1,46 @@
+[
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 57th check Tue 21 Jul 2026 UTC (28th hourly)\n• EXPANDED: 28 students with zero class assignments (up from 18 in 27th hourly)\n• Eduardo Roche Diaz (BC25011, GE PM, booking 18233): ENDS FRIDAY 24 Jul — 2 school days missed, must assign today\n• 6 NEW booking courses start Monday 27 Jul and need assignment BEFORE school: BC52 (Bernardo Hughes Pimentel), BC1711 (Izabelle Ruas Souto), BC24950 (Vincenzo Gagliano), BC24983 (Erin Pastorelli), BC24987 (Nezha Soulimani), BC25008 (Roberta Capitini)\n• NEW: BC1786 (Tuguldurtugs Enkhtugs, s858, AY Morning Renewal, 6 Jul–25 Dec): ~12 school days missed — the original student named in this issue\n• NEW: BC24968 (Ettore Iovinella, s14564, GE AM Plus, 6–10 Jul): already ENDED without assignment — irrecoverable\n• 4 courses already ended with zero class assignments: BC24931, BC24946, BC24994 (previous), BC24968 (new)\n• Unchanged 22 active BCs from 27th hourly still at zero SCAs",
+        "Assign all 28 BCs; Eduardo TODAY; 6 starters BEFORE Mon 27 Jul. See recipe: issue-45-addendum-21jul-f.md",
+        "28th hrly Tue 21 Jul UTC. EXPANDED 28 BCs (was 18). Eduardo ends Fri. 6 start Mon. Tuguldurtugs (the original student) still unassigned 12d. Fix NOT RUN.",
+        "CRITICAL; 28 unassigned; 6 start Mon"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 101st check Tue 21 Jul 2026 UTC (28th hourly)\n• August Bank Holiday Mon 3 Aug 2026: STILL absent from school_closures — 13 days away URGENT\n• October Bank Holiday Mon 26 Oct 2026: also absent from school_closures\n• 202 active booking courses span 3 Aug 2026 — need end-date shunt if bank holiday added\n• 114 active booking courses span 26 Oct 2026\n• Unchanged from 27th hourly check",
+        "Add Aug BH + Oct BH to school_closures; trigger shunt for 202 affected booking courses. See recipe: issue-38-addendum-21jul-e.md",
+        "101st check (28th hrly) Tue 21 Jul UTC. Aug BH STILL absent. 202 active BCs span Aug 3. Oct BH also absent (114 BCs). Fix NOT RUN.",
+        "Aug BH; 13d URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• 51st check Tue 21 Jul 2026 UTC (28th hourly)\n• Booking course 24991 (Edith Nunes, General English AM, 13 Jul to 7 Aug 2026): confirmed, EUR 608 paid, zero class assignments\n• 8 school days missed (Jul 13–17 + Jul 20–21); 11 remaining (Jul 22 – Aug 7)\n• Existing class assignments (IDs 48 and 146) are for past booking courses ended Apr/May 2026 — not for BC24991\n• Duplicate booking courses in booking 18158: BC24933 and BC24934 (both General English AM, 15 Jun – 10 Jul 2026) both active = true, 11 days stale\n• Unchanged from 27th hourly check",
+        "Assign via SIS Student 1015 > Booking 18214 > BC24991. Deactivate BC24933 + BC24934. See recipe: issue-22-addendum-21jul-d.md",
+        "51st check 28th hrly Tue 21 Jul UTC. BC24991 still 0 SCAs, 8 days missed, 11 remaining. Duplicate BCs 24933+24934 active=true (11d stale). Fix NOT RUN.",
+        "CRITICAL; assign NOW"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• 105th check Tue 21 Jul 2026 UTC (28th hourly)\n• Booking course 24686 (Alberto Squillace, Morning General, booking 1611): fee = null — day 2 since start 20 Jul 2026, ends 18 Sep 2026\n• Booking course 24616 (Mia Wehrli, General English AM Plus, booking 17842): fee = null — day 2 since start 20 Jul 2026, ends 31 Jul 2026\n• Booking course 1797 (Alberto Squillace, Morning General, booking 1611): fee = EUR 1836, active = true — ended 26 Jun 2026, 25 days stale\n• Note: BC24686 (Alberto) also appears in Issue 45 zero-SCA sweep",
+        "Set fee on booking courses 24686 and 24616; deactivate booking course 1797 (ended Jun 26). See recipe: issue-24-addendum-21jul.md",
+        "105th check 28th hrly Tue 21 Jul UTC. BC24686 Alberto Morning General fee=STILL null. BC24616 Mia GE AM Plus fee=STILL null. BC1797 ended Jun26 active=STILL true (25d). Fix NOT RUN.",
+        "fee null; day 2"
+      ]
+    ]
+  }
+]

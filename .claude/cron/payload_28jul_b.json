@@ -1,0 +1,57 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 139th check Tue 28 Jul 2026 UTC — still absent, DEADLINE IN 3 DAYS\n• August Bank Holiday (Mon 3 Aug 2026) not in school_closures — 9 closures only (Good Fridays 2026-2030, Christmas 2026-2029)\n• 18 booking courses start Mon 3 Aug 2026 (up from 17) — all will miss the Bank Holiday shunt\n• Deadline: Fri 31 Jul 2026 (3 days)",
+        "Add school_closure row: Aug Bank Holiday Mon 3 Aug 2026 (isPaidHoliday = true). See issue-38-addendum-28jul.md",
+        "139th hrly Tue 28 Jul UTC. Aug BH still absent (9 closures only). 18 BCs start Aug 3 (was 17). DEADLINE Fri Jul 31 (3d). Fix NOT RUN.",
+        "Aug BH; DEADLINE Fri; 3 days"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• 139th check Tue 28 Jul 2026 UTC — UNCHANGED: 0 class assignments, 3 days to course end\n• Student 14443 (Xuezhen Huang): booking 17831 Confirmed, EUR 1396.90/1396.90 fully paid\n• Booking course 24609 (Morning General, 13 Jul-31 Jul 2026): 0 class assignments — ends Fri 31 Jul\n• Accommodation booking 11358 (bed 180, 12 Jul-2 Aug): present and active, EUR 900\n• Student enrolled 18 days with zero class assignment — assign immediately or last day is Fri",
+        "Assign student 14443 to Morning General class on BC 24609 immediately. See issue-39-xuezhen-host-class.md",
+        "139th hrly Tue 28 Jul UTC. BC24609 0 SCAs. Course ends Fri Jul 31 (3d). LAST CHANCE — assign today. Fix NOT RUN.",
+        "CRITICAL; 3d left; assign today"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 139th check Tue 28 Jul 2026 UTC — Capel accommodation still absent, BC 24956 still unassigned\n• Booking 18180 (Giampaolo Russo, student 14571): Confirmed, EUR 2584.96/2584.96 fully paid\n• Accommodation booking 11357: Host Family bed 178, 2 Aug-6 Sep 2026, active = true, EUR 1250\n• Capel apartment accommodation (6 Sep-14 Sep 2026): absent from database — not added\n• Booking course 24956 (General English AM, 3 Aug-11 Sep 2026): 0 class assignments — starts Mon 3 Aug\n• Host Family check-in: Sun 2 Aug 2026 (5 days)",
+        "Add Capel apartment BA (Sep 6-14) to booking 18180; assign BC 24956 to class. See issue-41-giampaolo-dual-accomm.md",
+        "139th hrly Tue 28 Jul UTC. Capel BA still absent (1 BA: HF bed 178 Aug 2-Sep 6). BC 24956 0 SCAs (starts Mon Aug 3). Check-in Sun Aug 2 (5d). Fix NOT RUN.",
+        "Capel missing; check-in 5d"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 126th check Tue 28 Jul 2026 UTC — unchanged (hash artefact: B spelling normalised)\n• Student 1001 (Saikhantes Shagdarsuren): on holiday 20 Jul-21 Aug 2026, returns Mon 24 Aug\n• Booking course 24925 (Academic Year Afternoon, 9 Mar-2 Oct 2026): active, booking 18151\n• Class assignment 255: class 11, week start 12 Jan 2026, week end 3 Jul 2026 — expired 25 days ago\n• New class assignment needed: class 11, week start 24 Aug, week end 2 Oct (booking course end)",
+        "Create new class assignment for student 1001 on BC 24925 class 11 from 24 Aug to 2 Oct 2026. See recipe: issue-15-addendum-28jul.md",
+        "126th hrly Tue 28 Jul UTC. Hash artefact (B spelling). SCA 255 expired Jul 3 class 11 (25d). On holiday Jul 20-Aug 21, returns Mon Aug 24. New SCA needed Aug 24-Oct 2 BC 24925. Fix NOT RUN.",
+        "new SCA needed; returns 24 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 112th check Tue 28 Jul 2026 UTC — 5 days stale (was 4 days)\n• Booking course 25011 (General English PM, 20 Jul-24 Jul 2026): active = true, ended Fri 24 Jul — 5 days stale\n• Class assignment window permanently closed; attendance for 20-24 Jul irrecoverable\n• Booking 18233: student 14602 Eduardo Roche Diaz, status = Confirmed\n• Only booking course on this booking — data hygiene only, deactivate BC 25011",
+        "Deactivate BC 25011 (set active = false). See recipe: issue-45-addendum-28jul.md",
+        "112th hrly Tue 28 Jul UTC. BC 25011 ended Jul 24 still active (5d stale, was 4d). Data hygiene only. Fix NOT RUN.",
+        "window closed; 5d stale"
+      ]
+    ]
+  }
+]

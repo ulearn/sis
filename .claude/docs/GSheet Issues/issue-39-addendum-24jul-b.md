@@ -1,0 +1,1 @@
+Issue 39 Xuezhen Huang BC24609 Zero CAs 71st hourly 149th total Fri 24 Jul 2026. BC24609 Morning General 13 Jul - 31 Jul 2026 active=true CAs=0. Accomm BA11357 bed180 12 Jul - 2 Aug active=true EUR900. 10 days missed. 5 days remaining (27-31 Jul). Course ends 31 Jul. Fix NOT RUN. CRITICAL window closing.

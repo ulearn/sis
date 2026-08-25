@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "bk1498.confirmed=false (bool; status=CONFIRMED). doc171 DRAFT cert(c1660 Dec15-Jun05, ended). Not issued.",
+        "Issue doc171 via SIS->bk1498->Docs. If blocked: SET confirmed=true WHERE id=1498 (NOT RUN). see recipe: issue-8-suvderdene-cert-dates.md",
+        "bk1498 status=CONFIRMED confirmed=false (Prisma drift). doc171 DRAFT. c1660 Dec15-Jun05 ENDED 4d.\nJun08-09: UNCHANGED. NEIL: SIS->student947->bk1498->Docs->Issue. Or SET confirmed=true WHERE id=1498 (NOT RUN).\nJun09 hrly(5): UNCHANGED.",
+        "cert pending"
+      ]
+    ]
+  },
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "extra96 INSURANCE fee=NULL. bk17981.confirmed=false. visa_status=null (3rd Prisma drift). c24773 AY Aft Jun1-Nov20.",
+        "SET extra96.fee (150?). SET confirmed=true bk17981. SET visa_status=Approved s14522. see recipe: issue-13-lizbeth-health-insurance.md",
+        "extra96.fee=null. bk17981 status=CONFIRMED amtPaid=1407.5 but confirmed=false. s14522.visaStatus=null. 9+ school days uninsured.\nJun08-09: UNCHANGED. Jun09 hrly(5): UNCHANGED. Await Neil.",
+        "HI urgent"
+      ]
+    ]
+  },
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "Accidental cancel Jun07 20:41 (changedBy=null). FULLY PAID 1530. Course c1350 AY Aft May25-Nov13 ACTIVE.",
+        "UPDATE bookings SET status=CONFIRMED, confirmed=true WHERE id=1308 (NOT RUN). see recipe: issue-17-ana-jessica-accidental-cancel.md",
+        "bk1308 STILL CANCELLED (3d). amtPaid=1530 fully paid. c1350 May25-Nov13 ACTIVE mid-course.\nJun08-09: UNCHANGED. Jun09 hrly(5): UNCHANGED. NEIL: URGENT - run recipe NOW.",
+        "cancel urgent"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "Code bug: unassignedStudents() excludes after 1 SCA. INTENSIVE needs 2.",
+        "Workaround: assign PM via roster. Code fix: filter bc classAssignments.length<2 for INTENSIVE. see recipe: issue-26-intensive-class-assign-once.md",
+        "Active urgent: Daniela Perozo Gil (s75) sca161 A1 AM ONLY. c86 Intensive Jun8-19 ACTIVE ends Jun19 (10d). NO PM SCA.\nNote: B=Ivan Rodriguez (triggered report) but c23 ended May22. Daniela is current case.\nJun09 hrly(5): UNCHANGED. NEIL: assign Daniela PM via class roster NOW.",
+        "PM assign needed"
+      ]
+    ]
+  },
+  {
+    "range": "H28:K28",
+    "values": [
+      [
+        "sca14 week_start=Mar30 premature (bc24623 Jun08). bk17909 CANCELLED confirmed=true(!). DOUBLE CHARGE: bk17849 pmt17468 EUR1455.5; pmt17477+17478 on bk17909 orphaned.",
+        "Step1: UPDATE sca14 SET week_start=2026-06-08 (NOT RUN). Step2: REFUND EUR1455.5 to Sofiia (pmts 17477+17478). see recipe: issue-27-sofiia-sca-cancelled-booking.md",
+        "pmts17477(EUR727.5)+17478(EUR728) STILL on bk17909(CANCELLED). bk17909 amtPaid=1455.5>amtTotal=727.5. sca14 STILL Mar30.\nJun08-09: UNCHANGED. Jun09 hrly(5): EUR1455.5 unrefunded. Await Neil.",
+        "pmts+sca open"
+      ]
+    ]
+  },
+  {
+    "range": "H29:K29",
+    "values": [
+      [
+        "Won-webhook never fired. bk17850 PENDING; pmt17519 EUR321.35 Bank May07 exists. Course c24624 ENDED Jun05.",
+        "UPDATE bookings SET status=CONFIRMED, confirmed=true, amount_paid=321.35 WHERE id=17850 (NOT RUN). see recipe: issue-28-paola-pending-won-deal.md",
+        "bk17850 STILL PENDING. pmt17519 EUR321.35 Bank May07. c24624 ENDED Jun05 (4d). Data-integrity fix.\nJun08-09: UNCHANGED. Jun09 hrly(5): UNCHANGED. Await Neil.",
+        "course ended"
+      ]
+    ]
+  }
+]

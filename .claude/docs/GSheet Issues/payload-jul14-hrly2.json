@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• Student 917 (Uyanga Tungalag): visa status = null — 54 days since last update (21 May 2026)\n• HubSpot contact ID = null — student profile link missing\n• Booking 1467: Confirmed, EUR 2405 / 2405 fully paid — last touched 8 July 2026\n• Payment 17258 (EUR 3066): type = Escrow, Xero payment ID = null, HubSpot payment ID = null — not converted or released\n• Booking course 1613 (Academic Year Morning, 27 April to 16 October 2026): zero class assignments — Day 79 in school (~57 school days untracked)\n• Root blocker: unassignedStudents() filter requires at least one non-Escrow payment — payment 17258 is Escrow → student excluded from to-be-assigned",
+        "Check Hub fins / TransferMate to confirm payment 17258 (EUR 3066 Escrow) released; if released, convert type + set visa approved + assign to class; see recipe: issue-25-uyanga-visa-escrow.md",
+        "78th check Tue 14 Jul UTC. UNCHANGED. s917 visaStatus=STILL null (54d since May21). hubspotContactId=null. pmt17258 EUR3066 type=Escrow xeroId=null hsId=null. bk1467 CONF EUR2405/2405 (updAt=Jul8). bc1613 AY-Morn Apr27-Oct16 active=true. SCAs=ZERO (Day79 in school, ~57 school days untracked). Hub/TM check NOT run (headless cron). Fix NOT RUN.",
+        "visa null 54d; zero SCAs"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• Booking course 23 (Ivan Rodriguez Solares, Intensive General 30, 4 to 22 May 2026): still active = true — 53 days past end date\n• Booking course 24826 (Ernesto Pesoa Gil, 2-week Intensive General 30, 8 to 19 June 2026): still active = true — 25 days past end date\n• Booking 18034 (Ernesto Pesoa Gil): Partial, EUR 845 paid of EUR 1095 total — EUR 250 outstanding, last updated 7 June 2026 (37 days ago)\n• Payment 17683 (EUR 845, HubSpot payment 1241215836360): Xero payment ID = null, type = null — not reconciled in Xero",
+        "Deactivate booking courses 23 + 24826 (both ended weeks ago); reconcile payment 17683 EUR 845 in Xero; chase EUR 250 from Ernesto (booking 18034); see recipe: issue-26-intensive-class-assign-once.md",
+        "32nd check Tue 14 Jul UTC. UNCHANGED. BC23 (Ivan ended May22=53d) active=STILL true. BC24826 (Ernesto ended Jun19=25d) active=STILL true. BK18034 PARTIAL EUR845/1095 EUR250 outstanding confirmed=false (updAt=Jun7=37d). PMT17683 EUR845 xeroId=STILL null type=null. Fix NOT RUN.",
+        "bc stale 53d; open"
+      ]
+    ]
+  },
+  {
+    "range": "H28:K28",
+    "values": [
+      [
+        "• Booking 17909 is CANCELLED but confirmed = true — database anomaly (last updated 17 June 2026)\n• Payments 17477 and 17478 were deleted from the database on 17 June — amount paid = EUR 0\n• HubSpot Commerce payment 1230788330738 (EUR 727.50): not voided — void deadline 25 October 2026 (103 days away)\n• HubSpot Commerce payment 1230645766331 (EUR 728.00): not voided — void deadline 11 November 2026 (120 days away)\n• Student may have been double-charged EUR 1455.50 — Xero verification required before issuing refund\n• Booking course 24693 (Renewal Academic Year PM, 25 May to 13 November 2026): still active = true — anomaly on a cancelled booking",
+        "Xero check Sofiia Korkishchenko April to May 2026; void HubSpot Commerce payments before 25 October 2026; see recipe: issue-27-sofiia-sca-cancelled-booking.md",
+        "24th check Tue 14 Jul UTC. UNCHANGED. BK17909 CANCELLED confirmed=STILL true amtPaid=0. BC24693 STILL active=true (anomaly on cancelled booking). HS pmts 1230788330738(EUR727.50)+1230645766331(EUR728.00): NOT voided. Void deadline Oct25=103 days, Nov11=120 days. Fix NOT RUN.",
+        "void by Oct25; 103d"
+      ]
+    ]
+  },
+  {
+    "range": "H29:K29",
+    "values": [
+      [
+        "• Booking 17850 (Paola Moreira, student 14456): status changed to Confirmed on 8 July 2026 — confirmed flag = still false\n• Amount paid = null — payment type = null blocking the calculation, amount total = EUR 321.35\n• Payment 17519 (EUR 321.35, HubSpot payment 1231805396201): Xero payment ID = null, type = null — not reconciled\n• Booking course 24624 (Morning General, 18 May to 5 June 2026): still active = true — 39 days past end date\n• Historical case — student has left; all items are low-priority cleanup",
+        "SET payment 17519 type='one_time_or_initial'; SET booking 17850 confirmed=true, amount_paid=321.35; deactivate booking course 24624; see recipe: issue-28-paola-pending-won-deal.md",
+        "19th check Tue 14 Jul UTC. UNCHANGED. BK17850 status=CONFIRMED (Jul8 19:29 UTC) confirmed=STILL false amtPaid=STILL null. PMT17519 EUR321.35 type=STILL null xeroPaymentId=null. BC24624 Morning May18-Jun5 STILL active=true (39d stale). Historical — student left. Low priority.",
+        "bk confirmed=false; low-pri"
+      ]
+    ]
+  },
+  {
+    "range": "H37:K37",
+    "values": [
+      [
+        "• Homework section: renderSheetHtml() in src/routes/attendance.ts — no homework block; awaiting Paul / Neil layout spec\n• Holiday display bug: getWeekAttendance() in src/scripts/attendance.ts line 31 — no bookingHoliday fetch; students on holiday appear as absent in attendance sheets\n• Code confirmed unchanged since commit 9008d10 — no attendance output or holiday handling changes",
+        "Get Paul / Neil layout spec then add homework block to renderSheetHtml() (attendance.ts); add bookingHoliday fetch to getWeekAttendance() (attendance.ts:31); see recipe: issue-36-attendance-homework-section.md",
+        "Tue 14 Jul UTC. Code at 9008d10 confirmed (git log — last attendance.ts change in same commit). renderSheetHtml: no homework block. getWeekAttendance attendance.ts:31: no bookingHoliday fetch. No spec from Paul / Neil. Both issues open.",
+        "code open; awaiting spec"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Gap 1 — Course start Monday snap: open — calcCourseEnd() at admin.html line 13824 adds (weeks x 7 minus 3) days with no Monday enforcement\n• Gap 3 — Irish bank holidays: open — school_closures confirmed 9 records: 4 Christmas (2026-2029) and 5 Good Friday (2026-2030) only\n• August Bank Holiday Monday 3 August 2026: NOT in school_closures — 20 days away (courses starting around 4 August will calculate wrong end dates)\n• October Bank Holiday Monday 26 October 2026: also NOT in school_closures — 104 days away\n• June Bank Holiday Monday 1 June 2026: already passed — no action needed for this year\n• Gap 2 — Holiday weeks auto-set: fixed",
+        "Add Monday snap to calcCourseEnd() (admin.html:13824); INSERT August Bank Holiday 3 Aug 2026 and October Bank Holiday 26 Oct 2026 into school_closures; see recipe: issue-38-course-date-ux.md",
+        "Tue 14 Jul UTC. CONFIRMED: school_closures = 9 records (id1+11+12+13+14=Good Friday 2026-30; id7+8+9+10=Christmas 2026-29). Aug BH Mon 3 Aug 2026 = 20 days away — NOT in table. Oct BH Mon 26 Oct 2026 also missing. calcCourseEnd() admin.html:13824 confirmed no Monday snap. Gaps 1+3 STILL open.",
+        "Aug BH 20d; URGENT"
+      ]
+    ]
+  }
+]

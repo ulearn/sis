@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "bk1498.confirmed=false (bool drift). doc171 DRAFT cert (c1660 Jun05 ended). amtPaid=null.",
+        "UPDATE bookings SET confirmed=true WHERE id=1498 (NOT RUN); issue doc171 in SIS. see recipe: issue-8-suvderdene-cert-dates.md",
+        "Jun11 hrly(2) D6: bk1498 status=CONFIRMED confirmed=false amtPaid=null amtTotal=null. doc171 DRAFT issued_at=null. UNCHANGED. NEIL: run SQL + issue doc171.",
+        "cert pending D6"
+      ]
+    ]
+  },
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "CANCELLED Jun7 accidental. StatusHist: CONF>PEND May28(unexplained), CONF>CANCEL Jun7 20:41UTC. amtPaid=1530 full.",
+        "UPDATE bookings SET status=CONFIRMED,confirmed=true WHERE id=1308 (NOT RUN). see recipe: issue-17-ana-jessica-accidental-cancel.md",
+        "Jun11 hrly(3) D14: bk1308 STILL CANCELLED confirmed=false. updatedAt=Jun07 21:01UTC (not touched since cancel). paid=1530/1530 full. c1350 AFT ACTIVE. NEIL: run UPDATE NOW.",
+        "D14 CRITICAL restore now"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "bk1611 CONF paid=1280.12. c1797 MORN Apr6-Jun26. c24686 MORN Jul20-Sep18. 0 holidays. sca229(cls12) we=Apr26 ENDED(46d no class).",
+        "1)Confirm hol dates BEFORE Jun26. 2)Add holiday(est Apr27-Jul17). 3)Add SCA c24686 Jul20. see recipe: issue-24-alberto-fidelo-course-split.md",
+        "Jun11 hrly(2) D15: UNCHANGED. 0 hols confirmed. sca229 we=Apr26 ONLY SCA (46d unassigned). c1797 ends Jun26(15d). c24686 Jul20 0SCAs. NEIL: holiday dates NEEDED TODAY - window closing.",
+        "holiday/SCA urgent 15d"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "CRITICAL. bk18034 PARTIAL 845/1095. s14532 Ernesto 0 SCAs c24826 INTENSIVE Jun8-19. Daniela s75 sca161 A1(cls7 AM). Fabrizio s14440 sca174 B2-C1(cls4 AM) needs cls6 PM.",
+        "Ernesto: assign AM+PM INTENSIVE NOW(8d left). Daniela: add PM(A1 PM gap). Fabrizio: add cls6(B2&C1 PM). see recipe: issue-26-intensive-class-assign-once.md",
+        "Jun11 hrly(2) D4 8d left: Ernesto(14532) 0SCAs UNCHANGED. Daniela(75) sca161 cls7 we=Jun8-Jun19(AM only). Fabrizio(14440) sca174 cls4 we=Jun1-Aug7(AM only). bk18034 PARTIAL 845/1095. Jun19=8d.",
+        "CRITICAL D4 8d left"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "s1001 Saikhantes 0 att ALL TIME. sca255 cls11(B1-PM) we=Jul03(22d left).",
+        "Check cls11 register: is Saikhantes present under alias? If never attended: IRP/immigration emergency. see recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun11 hrly(2) D22: att=0 CONFIRMED AGAIN (all-time 0). sca255 B1-PM wkEnd Jul03(22d). bk18151 CONF 1339.2/1339.2. 149d enrolled 0 att. IMMIGRATION RISK.",
+        "0 att CRITICAL 22d left"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "s88 Giulia 0 SCAs. bk94 CONF c104 Jun15-26. bk18044 CONF dup c24836 Jun15-26. Milena s14557 PENDING bk18152.",
+        "URGENT 1)Assign Giulia cls Mon Jun15. 2)Cancel dup bk18044. 3)Fix pmt17607(excess EUR44.5). 4)Del Milena. see recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun11 hrly(3): 0SCAs CONFIRMED. bk94 CONF 1151.5 + bk18044 CONF 1106.5 dup. Jun15=4d. NEIL: ASSIGN CLASS + CANCEL BK18044 BEFORE EOD TODAY.",
+        "class CRITICAL 4d Jun15"
+      ]
+    ]
+  }
+]

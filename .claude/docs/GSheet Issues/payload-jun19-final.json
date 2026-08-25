@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H42:K42",
+    "values": [
+      [
+        "• PM block duration hardcoded as 3.25 (gross 13:45-17:00) in src/scripts/attendance.ts line 84\n• All 4 active group PM classes have breakMinutes = 15, so net teaching hours = 3.00\n• The classes.ts financial calculator (line 1064) already uses gross-minus-break correctly\n• attendance.ts ignores breakMinutes entirely -- uses 3.25 not 3.00\n• Private 121 class (14:00-16:00, no break) = 2h net; hardcoded fix would give it 3h (minor, teacher overrides anyway)",
+        "(NOT RUN) Edit attendance.ts line 84: change 3.25 to 3 (Option A) or derive from class start/end/break (Option B). Rebuild. See recipe: issue-35-pm-attendance-duration.md",
+        "Jun19 hrly(final): DB re-verified. 4 group PM classes 13:45-17:00 breakMin=15 net=3h UNCHANGED. attendance.ts L84 still reads 3.25 (fresh code check Jun19). 1-line fix + rebuild. No DB change. Option B recommended.",
+        "code fix pending"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,56 @@
+[
+  {
+    "range": "J2:K2",
+    "values": [
+      [
+        "Jun23 hrly#6: UNCHANGED (fresh DB). pmt16988 bookingId=null xeroPaymentId=null (56d orphaned Apr28 hsId=1204827374829). pmt16989 bookingId=null xeroPaymentId=null (56d hsId=1204846469317). bc24630+bc24631 fee=null starts Mon Jun29=6d. bk17856+17857 CONFIRMED conf=false amtPaid=339.9. NEIL CRITICAL: link pmts + set bc fees BEFORE Mon Jun29.",
+        "Mon Jun29=6d; CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "J23:K23",
+    "values": [
+      [
+        "Jun23 hrly#6: UNCHANGED (fresh DB). bc24933(fee=380)+bc24934(fee=360) BOTH active (dup confirmed). 0 SCAs on bc24933/bc24934. bk18158 CONF 740/740 (Jun15=8d). Last SCA sca146 cls7 expired May15 (39d no class). NEIL URGENT: (1) SIS bk18158 deactivate bc24934; (2) Assign student 1015 to class 7 (A1 AM) on bc24933.",
+        "D9; 0SCA; URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "J25:K25",
+    "values": [
+      [
+        "Jun23 hrly#6: UNCHANGED (fresh DB). bk1611 CONF conf=true amtPaid=1280.12/1280.12 (Jun11=12d). bc1797 Morning General ends Fri Jun26=3d fee=1836 active. sca229 cls12 weekEnd=Apr26 EXPIRED 58d. 0 holidays (bereavement Apr27 never recorded). bc24686 Jul20-Sep18 fee=null. NEIL ACTION TODAY (Tue Jun23): (1) Confirm Alberto attending Mon23-Fri26; if yes assign SCA on bc1797; if no record holiday Apr27-Jun26. (2) Set bc24686 fee before Jul20.",
+        "Jun26=Fri=3d; DECIDE TODAY"
+      ]
+    ]
+  },
+  {
+    "range": "J26:K26",
+    "values": [
+      [
+        "Jun23 hrly#5: UNCHANGED (fresh DB). s917 visaStatus=null hubspotContactId=null (May21=33d stale). bk1467 CONF conf=true amtPaid=2405/2405. bc1613 AY-Morn Apr27-Oct16 active fee=3370. 0 SCAs on bc1613 (Day58 since Apr27). NEIL CRITICAL: SIS UI bk1467 bc1613 Assign Class (weekStart=Jun23 weekEnd=Oct16). Then student 917 set visaStatus=Approved.",
+        "D58; 0SCA; CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "J31:K31",
+    "values": [
+      [
+        "Jun23 hrly#6: UNCHANGED (fresh DB). bk18044 STILL CONFIRMED conf=true amtPaid=1106.5 (Jun07=16d stale). bc24836 ends Fri Jun26=3d active=true. pmt17607 EUR1151.5 HS=1239529228498 xeroId=null STILL LIVE. bk94 OK: SCA270 cls12 Jun15-26 active. NEIL URGENT: Cancel bk18044 in SIS + void HS pmt 1239529228498 BEFORE FRI JUN26.",
+        "Jun26=Fri=3d; URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "J44:K44",
+    "values": [
+      [
+        "Jun23 hrly#6: UNCHANGED (fresh DB). ba11311 Jun28-Aug23 weeks=10 fee=3500 active=true (created May25). Stale active=true bed84: ba11157(May10=44d), ba9917(May16=38d), ba11159(May30=24d), ba11180(Jun20=3d). bk17980 CONFIRMED 5331/5331. Pietro arrives Jun28=5d. Step1 SQL NOT RUN. NEIL URGENT: UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180) to unblock SIS date edit.",
+        "Jun28=Sat=5d; Step1 NOW"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "range": "H2",
+    "values": [
+      [
+        "• Payments 16988 + 16989 still unlinked — booking_id = null, xero_payment_id = null — 61 days since 28 Apr\n• Payment 16988 (HubSpot 1204827374829) → Booking 17856 Margherita Galbusera — EUR 339.90\n• Payment 16989 (HubSpot 1204846469317) → Booking 17857 Francesca Fassina — EUR 339.90\n• Both bookings: status = Confirmed, confirmed = false — students blocked from class assignment lists\n• Booking courses 24630 + 24631: General English AM Plus, 29 Jun to 10 Jul — fee = null\n• Classes start TOMORROW Mon 29 Jun — 4-step SQL NOT RUN (93rd hourly check, Jun 28 UTC)"
+      ]
+    ]
+  },
+  {
+    "range": "J2",
+    "values": [
+      [
+        "hrly Jun28 SUN UTC (93rd check): pmt16988 bookingId=STILL null xeroId=null EUR339.90 (61d). pmt16989 STILL null. bk17856 CONF conf=STILL false 339.9/339.9 (Margherita s14461). bk17857 CONF conf=STILL false 339.9/339.9 (Francesca s14462). bc24630+24631 GE-AM-Plus Jun29-Jul10 fee=STILL null. CLASSES <24h (09:00 IST Mon Jun29). 4-STEP SQL NOT RUN. NEIL: RUN IMMEDIATELY."
+      ]
+    ]
+  },
+  {
+    "range": "K2",
+    "values": [
+      [
+        "start <24h; SQL NOT RUN"
+      ]
+    ]
+  },
+  {
+    "range": "J16",
+    "values": [
+      [
+        "hrly Jun28 SUN UTC: sca255 weekStart=2026-01-12 STILL WRONG weekEnd=2026-07-03 (5d to expire). bc24925 AY-AFT Mar09-Sep11 fee=1102.20 bk18151 CONF conf=true amtPaid=1339.2/1339.2. SQL NOT RUN. NEIL: run before Thu Jul 03 or Saikhantes loses class slot through Sep 11."
+      ]
+    ]
+  },
+  {
+    "range": "J26",
+    "values": [
+      [
+        "hrly Jun28 SUN UTC (20th check): s917 visaStatus=STILL null (updAt=May21, 38d stale). bk1467 CONF conf=true 2405/2405 (updAt=Jun11). bc1613 AY-Morn Apr27-Oct16 0 class assignments. D64 in school no class. UNCHANGED. NEIL: (1) set s917 visa_status in SIS UI; (2) assign class for bc1613."
+      ]
+    ]
+  },
+  {
+    "range": "J28",
+    "values": [
+      [
+        "hrly Jun28 SUN UTC (10th check): bk17909 CANCELLED confirmed=STILL TRUE 0/727.5 (updAt=Jun17=11d stale). bk17849 CONF 1455.5/1455.5 pmt17468 hsId=1230607249606 xeroId=null. HS Commerce pmts EUR727.50+EUR728.00 not verifiable from DB — refund deadlines Oct25/Nov11-26. UNCHANGED. Neil: (1) Xero check Apr-May26 -> refund EUR1455.50 via HS Commerce before Oct25; (2) UPDATE bookings SET confirmed=false WHERE id=17909."
+      ]
+    ]
+  },
+  {
+    "range": "J30",
+    "values": [
+      [
+        "hrly Jun28 SUN UTC: sca255 weekStart=2026-01-12 STILL WRONG weekEnd=2026-07-03 (5d to expire). bc24925 AY-AFT Mar09-Sep11 fee=1102.20 bk18151 CONF conf=true amtPaid=1339.2/1339.2. SQL NOT RUN. NEIL: run before Thu Jul 03 or Saikhantes loses class slot through Sep 11."
+      ]
+    ]
+  },
+  {
+    "range": "J38",
+    "values": [
+      [
+        "hrly Jun28 SUN UTC (63rd check): Pietro ARRIVED TODAY Jun28. ba11311 bed84 Jun28-Sep13 active=true CONFIRMED (updAt=Jun24). bk17980 CONF conf=true 5331/5331 fully paid. 4 stale bed84 recs STILL active=true (ba9917 bk1274 endMay16=43d, ba11157 bk100 endMay10=49d, ba11159 bk100 endMay30=29d, ba11180 bk81 endJun20=8d anomaly updAt=Jun22). No date overlap with Pietro Jun28-Sep13 — accommodation READY. Stale cleanup NOT RUN (low pri): UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180)."
+      ]
+    ]
+  },
+  {
+    "range": "K38",
+    "values": [
+      [
+        "Pietro arrived; stale recs"
+      ]
+    ]
+  },
+  {
+    "range": "J39",
+    "values": [
+      [
+        "hrly Jun28 SUN UTC: bk18156 STILL PENDING 0/645 (updAt=Jun17=11d stale). accomm11352 Jul4-Jul11 City Centre Apartment fee=360 bed=STILL null. 0 payments. Jul4=6d to check-in. UNCHANGED. NEIL: assign bed to accomm11352 AND chase EUR645 payment from Veronica Martin."
+      ]
+    ]
+  }
+]

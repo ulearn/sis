@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• 75th check Wed 22 Jul 2026 UTC — all 5 phones still wrong\n• Dolgormaa Bayaraa (student 1897): email saraa.tpb@gmail.com in phone field — record updated 17 Jul 2026 (other fields), phone unchanged\n• Aki Miura (student 8567): email aki-hinaaki1116@ezudo.he.jp in phone field — 103 days unchanged\n• Jieun Lee (student 1194): annotation \"00821097366523 (home contry)\" — 76 days unchanged\n• Lisa Li (student 5345): annotation \"0864645297 (Husband)\" — 103 days unchanged\n• Alessandra Saito de Araujo (student 10343): +353 (83) 885 9162 with trailing Unicode chars — 85 days unchanged",
+        "Strip annotations on students 1194 and 5345; strip Unicode on 10343; get real numbers for 1897 and 8567 from HubSpot. See recipe: issue-5-mobile-numbers.md",
+        "75th check Wed 22 Jul UTC. UNCHANGED. 5 phones still wrong: 1897 Dolgormaa (email, record touched Jul17 other fields), 8567 Aki (email, 103d), 1194 Jieun (annotation, 76d), 5345 Lisa (annotation, 103d), 10343 Alessandra (Unicode, 85d). Fix NOT RUN.",
+        "5 phones wrong; 103d"
+      ]
+    ]
+  },
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "• 32nd check Wed 22 Jul 2026 UTC — unchanged\n• Booking extra 96 (Lizbeth del Carmen Sierra Martinez, booking 17981): Insurance — details = PEL;Health, fee = null — 58 days unpriced (since 25 May 2026)\n• Booking 17981: CONFIRMED, EUR 1407.50 / 1407.50 fully paid — confirmed flag = false (last updated 23 Jun 2026)\n• Student on course since 1 June 2026 — 51 days attending with insurance extra unpriced",
+        "Arrange insurance; set fee on extra 96 via SIS bk17981 Extras; supplementary invoice on HubSpot deal. See recipe: issue-13-lizbeth-health-insurance.md",
+        "Wed 22 Jul UTC (32nd check). UNCHANGED. bookingExtra96 INSURANCE PEL;Health: fee=STILL null (58d since May25). Lizbeth del Carmen on course since Jun01 (51d). bk17981 CONFIRMED EUR1407.50/1407.50 confirmed=false (updAt=Jun23). Fix NOT RUN.",
+        "insurance fee null; 58d"
+      ]
+    ]
+  },
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "• 7th check Wed 22 Jul 2026 UTC — unchanged\n• Booking 1308 (Ana Jessica Rosa de Paula Santos): CANCELLED — accidental click 7 Jun 2026, confirmed flag = false; 45 days since cancellation\n• Amount paid = EUR 1530 / 1530 (fully paid) despite cancelled status\n• Payment 17186 (EUR 1280, Bank Transfer, 1 May 2026): Xero payment ID = null — 82 days unreconciled\n• Booking course 1350 (Academic Year Afternoon, May 25 to Nov 13 2026): active = true on cancelled booking — data inconsistency",
+        "Reconcile payments 17186 (EUR 1280) and 17050 (EUR 250) in Xero; deactivate booking course 1350. See recipe: issue-17-ana-jessica-accidental-cancel.md",
+        "Wed 22 Jul UTC (7th check). UNCHANGED. bk1308 CANCELLED EUR1530/1530 confirmed=false (updAt=Jun07, 45d since accidental cancel). PMT17186 EUR1280 xeroId=STILL null (payDate May01, 82d unreconciled). BC1350 (AY Afternoon May25-Nov13) active=STILL true on cancelled booking. Fix NOT RUN.",
+        "pmts 82d; BC stale; 45d"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• 41st hourly check Wed 22 Jul 2026 UTC (117th check)\n• Booking course 24686 (Alberto Squillace, student 1052, booking 1611): Morning General, 20 Jul to 18 Sep 2026 — fee = null, zero class assignments — Day 3 since course start (Mon 20 Jul)\n• Booking 1611: status CONFIRMED, confirmed = true, amount paid EUR 1280.12 / EUR 1280.12 (fully paid)\n• Fee null means course fee cannot appear on invoices or certificates\n• UNCHANGED from last check",
+        "Set fee on booking course 24686; assign to Morning General class. See recipe: issue-24-addendum-21jul-e.md",
+        "41st hrly 117th check Wed 22 Jul UTC. BC24686 Alberto: STILL fee=null, STILL 0 SCAs — Day 3 (started Mon 20 Jul). BK1611 CONF EUR1280.12/1280.12. Fix NOT RUN.",
+        "fee null; Alberto 0 SCAs; Day 3"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• 83rd check Wed 22 Jul 2026 UTC — unchanged\n• Student 917 (Uyanga Tungalag): visa status = null — 62 days since last update (21 May 2026)\n• HubSpot contact ID = null — student not linked to HubSpot (62 days)\n• Booking 1467: CONFIRMED, EUR 2405 / 2405 fully paid, confirmed = true (last updated 8 Jul 2026)\n• Booking course 1613 (Academic Year Morning, 27 Apr to 16 Oct 2026): active = true, ILEP code 0318/0010\n• Zero class assignments — 86 days since course start (27 Apr) with no class recorded",
+        "Set student 917 visa status to Approved in SIS admin; reconcile payment 17258 (EUR 3066 Escrow) in Xero. See recipe: issue-25-uyanga-visa-escrow.md",
+        "83rd check Wed 22 Jul UTC. UNCHANGED. s917 visaStatus=null hubspotContactId=null (62d since May21). BC1613 AY Morning Apr27-Oct16 active=true ilepCode=0318/0010. ZERO SCAs (86d since Apr27 course start). bk1467 CONF EUR2405/2405 confirmed=true (updAt=Jul08). Fix NOT RUN.",
+        "visa null 62d; zero SCAs 86d"
+      ]
+    ]
+  },
+  {
+    "range": "H34:K34",
+    "values": [
+      [
+        "• 7th check Wed 22 Jul 2026 UTC — unchanged\n• Student 356 (Shih-Wei Huang): gender field = null — not set (last updated 3 June 2026, 49 days ago)\n• Document 238 (exit letter, template 4): status = ISSUED version 1 — 34 days with wrong Ms. and she/her pronouns (issued 18 Jun 2026)\n• Code bug: null gender defaults to female — all null-gender students get wrong pronouns on any document\n• Fix requires: set gender = Male for student 356, revoke document 238, regenerate exit letter, guard null gender in documents.ts",
+        "Set student 356 gender = Male; revoke document 238; regenerate exit letter; fix null-gender guard in documents.ts. See recipe: issue-32-shih-wei-gender-default.md",
+        "7th check Wed 22 Jul UTC (fresh DB). UNCHANGED. Student 356 Shih-Wei Huang: gender=STILL null (updatedAt=Jun03, 49d). Document 238 STILL ISSUED v1 since Jun18 (34d wrong Ms./she-her). Fix NOT RUN.",
+        "49d; doc238 wrong pronouns"
+      ]
+    ]
+  }
+]

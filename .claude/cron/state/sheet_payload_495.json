@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• 195th check Mon 24 Aug 2026 UTC — no change since 194th (Sun 23 Aug)\n• Student Class Assignment 288 (class 12): linked to Booking Course 24697 (ended 31 Jul 2026), week_end 2026-12-18\n• Booking Course 24697 (Academic Year Morning, ILEP 0318/0020): ended 31 Jul 2026 — 24 days stale, active = true\n• Booking Course 25035 (General English Academic Year AM Plus): ends 8 Jan 2027, active = true — 0 student class assignments\n• SCA week_end extends 140 days past BC 24697 end — SCA is on the wrong booking course\n• Rakan unclassed since 3 Aug 2026 = 21 days",
+        "Move SCA 288 from BC 24697 to BC 25035; deactivate BC 24697. See recipe: issue-12-addendum-24aug.md",
+        "195th Mon 24 Aug UTC. BC 24697 now 24d stale. Rakan unclassed 21d. Fix NOT RUN.",
+        "SCA on wrong BC; 21d unclassed"
+      ]
+    ]
+  },
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "• 471st check Mon 24 Aug 2026 UTC — no change since 470th (Sun 23 Aug)\n• Student 14522 (Lizbeth del Carmen Sierra Martinez): visa_status = null, last updated 19 Aug 2026\n• Booking 17981: CONFIRMED, confirmed = false (anomaly); amount paid = EUR 1,407.50; amount total = EUR 1,407.50 — fully paid\n• Payment 17520: EUR 1,407.50, xero_payment_id = null\n• Booking Course 24773 (Academic Year Afternoon): ends 29 Jan 2027, active = true\n• No insurance document on booking 17981 — day 84 without insurance\n• Documents on record: doc 213 (template 1, Invoice): ISSUED | doc 211 (template 1): REVOKED",
+        "Set confirmed = true; generate insurance doc; see recipe: issue-13-addendum-24aug.md",
+        "471st Mon 24 Aug UTC. Day 84. Fully paid but confirmed=false. No insurance doc. Xero null. Fix NOT RUN.",
+        "insurance null; day 84"
+      ]
+    ]
+  },
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "• 43rd check Mon 24 Aug 2026 UTC — no change since 42nd (Sun 23 Aug)\n• Booking 1308: status = CANCELLED, confirmed = false, amount paid = EUR 1,530, amount open = null\n• Booking Course 1350 (Academic Year Afternoon): active = true, ends 27 Nov 2026 — 0 class assignments\n• BC 1350 end date was extended (Nov 13 to Nov 27) on 21 Aug 2026 (3 days ago) on a CANCELLED booking\n• Payment 17186: EUR 1,280, Bank Transfer, 1 May 2026, Xero payment ID = null\n• Payment 17050: EUR 250, Bank Transfer, 17 Feb 2026, Xero payment ID = null\n• EUR 1,530 received but booking is CANCELLED; both payments unreconciled in Xero",
+        "Confirm with staff re booking 1308 (BC extended 21 Aug); if cancelled deactivate BC 1350 + resolve Xero. See recipe: issue-17-addendum-24aug.md",
+        "43rd Mon 24 Aug UTC. BC end unchanged (27 Nov). Booking CANCELLED. Fix NOT RUN.",
+        "BC1350 active; EUR1530 unreconciled"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• 41st check Mon 24 Aug 2026 UTC — no change since 40th (Sun 23 Aug)\n• Student 983 (Flávia Nascimento Mariano): visa_status = null, last updated 19 Aug 2026\n• Booking 1534: CONFIRMED, confirmed = true, amount paid EUR 1,308, amount open EUR 0 (fully paid)\n• Payment 17035: EUR 250, Bank Transfer, Xero payment ID = null\n• Payment 17527: EUR 1,058, Bank, Xero payment ID = null\n• Payments sum correctly to EUR 1,308 = amount paid — only Xero reconciliation is missing\n• Booking Course 1710 (Academic Year Afternoon): active, ends 27 Nov 2026 — student currently in school",
+        "Set visa_status = Approved; reconcile payments 17035 + 17527 in Xero. See recipe: issue-18-addendum-24aug.md",
+        "41st Mon 24 Aug UTC. Unchanged. Visa null. Both payments Xero unreconciled. Fix NOT RUN.",
+        "visa null; Xero unreconciled"
+      ]
+    ]
+  },
+  {
+    "range": "H20:K20",
+    "values": [
+      [
+        "• 471st check Mon 24 Aug 2026 UTC — no change since 470th (Sun 23 Aug)\n• Booking Course 89 (Morning IELTS): ended 22 May 2026 — 94 days stale, active = true, 1 class assignment (historical)\n• Booking Course 90 (Private Lessons): ended 22 May 2026 — 94 days stale, active = true, 0 class assignments\n• Booking 83: CONFIRMED, confirmed = true, amount paid = EUR 2,629.80 = amount total\n• Payment anomaly — total received EUR 5,014.80 vs amount total EUR 2,629.80 = EUR 2,385 gap:\n  Payment 27: EUR 2,135, Bank Transfer, Mar 2024, Xero payment ID = null (likely migration artifact)\n  Payment 17002: EUR 2,629.80, TransferMate, Apr 2026, Xero payment ID = null\n  Payment 17019: EUR 250, Stripe, Feb 2026, Xero payment ID = null",
+        "Investigate EUR 2,385 payment gap (payment 27 likely migration duplicate); deactivate BCs 89+90. See recipe: issue-19-addendum-24aug.md",
+        "471st Mon 24 Aug UTC. 94d stale. EUR 2,385 excess confirmed. Fix NOT RUN.",
+        "BC89+90 stale 94d; EUR2385 gap"
+      ]
+    ]
+  },
+  {
+    "range": "H29:K29",
+    "values": [
+      [
+        "• 64th check Mon 24 Aug 2026 UTC — no change since 63rd (Sun 23 Aug)\n• Booking 17850 (student 14456, Paola Sthefane Moreira): status = CONFIRMED, confirmed = false (anomaly)\n• Amount paid = null, amount total = EUR 321.35, amount open = EUR 321.35\n• Payment 17519 (EUR 321.35, Bank, 7 May 2026) exists but is not reflected in booking amount paid field\n• Payment 17519: Xero payment ID = null — 109 days unreconciled\n• Booking Course 24624 (Morning General): ended 5 Jun 2026 — 80 days stale, active = true, 0 class assignments\n• Document 44 (template 3): ISSUED",
+        "Set confirmed = true; set amount_paid = 321.35; deactivate BC 24624; reconcile Xero. See recipe: issue-28-addendum-24aug.md",
+        "64th Mon 24 Aug UTC. Payment 17519 now 109d unreconciled. BC 24624 80d stale. Fix NOT RUN.",
+        "bk confirmed=false; stale BC80d"
+      ]
+    ]
+  }
+]

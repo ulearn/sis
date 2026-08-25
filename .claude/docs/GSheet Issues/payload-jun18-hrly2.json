@@ -1,0 +1,35 @@
+[
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 confirmed, paid 740 / 740 — active booking for Edith Nunes (student 1015, A1)\n• Ghost bookings 18131 and 18133 and their payments deleted from database on Jun 17 (done)\n• Booking course 24934 (duplicate of 24933) still present — both General English AM, Jun 15 – Jul 10, on booking 18158\n• Class 7 confirmed active (A1 Morning) — correct class for Edith\n• 0 active class assignments — last expired May 15 (class assignment 146)\n• Edith in school since Jun 15 — Day 4 (Jun 18 Thu) with no class record",
+        "(NOT RUN) 1) DELETE FROM booking_courses WHERE id=24934; 2) INSERT INTO student_class_assignments(booking_course_id,class_id,week_start,week_end,student_id) VALUES(24933,7,'2026-06-15','2026-07-10',1015). See recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun18 THU hrly#2: bc24933(fee=380) + bc24934(DUP fee=360) BOTH Jun15-Jul10 on bk18158 — 0 SCAs each (fresh DB confirmed). bk18158 CONFIRMED 740/740 confirmed=true (paid Jun15). Class 7 (A1-AM) active confirmed. Steps 1+2 NOT RUN. Edith Day 4 in school (Jun15-18) with no class record.",
+        "step3+4 pending;0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• Booking course 24826 (2 weeks Intensive General 30, Jun 08 – Jun 19) has zero class assignments — entire course unattended\n• Student Ernesto Pesoa Gil (id 14532) has currentLevel = null — level unknown in both SIS and HubSpot (contact 3344151, last updated May 31)\n• Booking 18034 is PARTIAL, paid 845 / 1095 (EUR 250 outstanding), confirmed = false\n• Course ends TOMORROW Fri Jun 19 — today Thu Jun 18 is the last full school day\n• 11 school days elapsed with zero class record — entire 2-week intensive course unattended",
+        "(NOT RUN) Ask teacher Ernesto level then INSERT 2 SCAs ws=2026-06-18 we=2026-06-19: VALUES(24826,AM_id,14532)+(24826,PM_id,14532). Pairs: A2=cls8/9, B1=cls5+12/11, B2-C1=cls4/6, C1=cls13/14. See recipe: issue-26-intensive-class-assign-once.md",
+        "Jun18 THU hrly: STILL 0 SCAs (fresh DB confirmed). s14532 Ernesto Pesoa Gil currentLevel=null. bk18034 PARTIAL 845/1095 confirmed=false. TODAY JUN18 (THU) = LAST FULL SCHOOL DAY — course ends TOMORROW FRI JUN19. 11 school days ZERO class record. NEIL: GET ERNESTO LEVEL FROM TEACHER TODAY — ABSOLUTE LAST CHANCE. SQL NOT RUN.\nJun18 hrly#2: CONFIRMED STILL 0 SCAs (2nd check today, fresh DB). Course ends TOMORROW Jun19. SQL NOT RUN.",
+        "CRIT;LAST DAY;0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H32:K32",
+    "values": [
+      [
+        "• Week calculation in src/routes/attendance.ts lines 213-214 uses local-time getDay() and setHours() on UTC-midnight dates — shows Sunday Jun 14 instead of Monday Jun 15\n• src/scripts/attendance.ts lines 36-37 already use UTC methods (confirmed fixed)\n• Bug causes attendance sheet print to show wrong week start day for all users",
+        "Change src/routes/attendance.ts lines 213-214 to use getUTCDate/getUTCDay/setUTCHours (matches fix already in src/scripts/attendance.ts). See recipe: issue-31-attendance-sheet-week-bug.md",
+        "Jun18 THU hrly#2: src/routes/attendance.ts L213-214 STILL local-time getDay()/setHours() (12th check). null week_end SCAs = 0 (all 236 SCAs have weekEnd set — Bug 2 resolved Jun16). 119 active SCAs (ending >= Jun18). scripts/attendance.ts L36-37 confirmed UTC. Bug 1 (Sunday heading) still in routes/attendance.ts only. NEIL: 2-line fix or mark wont-fix.",
+        "route fix pending"
+      ]
+    ]
+  }
+]

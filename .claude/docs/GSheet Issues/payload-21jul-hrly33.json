@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• 33rd hourly check Tue 21 Jul 2026 UTC (56th check)\n• Booking course 24991 (Edite Nunes, student 1015, booking 18214): General English AM, 13 Jul-7 Aug 2026 — confirmed, fee EUR 608, zero class assignments — confirmed this run\n• CRITICAL: 7 school days missed (Jul 13-17 and Jul 20-21); 13 remaining (Jul 22-24 and Jul 27-Aug 7)\n• Duplicate booking courses 24933 and 24934 on booking 18158 still active — both ended 10 Jul 2026, 11 days stale\n• UNCHANGED from 32nd hourly",
+        "Assign booking course 24991 to a class. Deactivate booking courses 24933 + 24934. See recipe: issue-22-addendum-21jul-f.md",
+        "33rd hrly 56th check Tue 21 Jul UTC. Booking course 24991 STILL 0 class assignments — 7 missed, 13 remaining (ends 7 Aug). Booking courses 24933+24934 ended Jul10, still active (11d). Fix NOT RUN.",
+        "CRITICAL; assign NOW; 13 days left"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• 30th hourly check Tue 21 Jul 2026 UTC (107th check)\n• Booking course 24686 (Alberto Squillace, student 1052, booking 1611): Morning General, 20 Jul-18 Sep 2026 — fee = null, zero class assignments — day 2 since start\n• Booking course 24616 (Mia Wehrli, booking 17842): General English AM Plus, 20-31 Jul 2026 — fee = null — NEW: class assignment 308 found → assigned to class 4 — day 2 since start, ends 31 Jul\n• Booking course 1797 (Alberto Squillace, booking 1611): Morning General, ended 26 Jun 2026 — active = true, 25 days stale\n• Alberto booking course 24686 still zero class assignments",
+        "Set fee on booking courses 24686 + 24616. Assign Alberto (BC24686) to a class. Deactivate BC1797. See recipe: issue-24-addendum-21jul-c.md",
+        "30th hrly 107th check Tue 21 Jul UTC. NEW: Booking course 24616 Mia has class assignment 308 to class 4 (assigned). Booking course 24686 Alberto STILL 0 class assignments, fee=null. BC1797 ended Jun26 active=true (25d). Fix NOT RUN.",
+        "fee null; Alberto 0 class assigns"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 33rd hourly check Tue 21 Jul 2026 UTC (106th check)\n• August Bank Holiday Mon 3 Aug 2026: still absent from school closures — 13 days away — URGENT\n• October Bank Holiday Mon 26 Oct 2026: also absent from school closures\n• 202 active booking courses span 3 Aug 2026 (confirmed this run)\n• 9 school closures in database: Good Fridays 2026-2030, Christmas 2026-2029 — no bank holidays present\n• UNCHANGED from 32nd hourly",
+        "Add August Bank Holiday (Aug 3 2026) + October Bank Holiday (Oct 26 2026) to school closures. See recipe: issue-38-addendum-21jul-g.md",
+        "33rd hrly 106th check Tue 21 Jul UTC. August Bank Holiday STILL absent — 13 days to Aug 3. 202 booking courses affected. October Bank Holiday also absent (114 courses). Fix NOT RUN.",
+        "Aug BH; 13d URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• 33rd hourly check Tue 21 Jul 2026 UTC (58th check)\n• Booking course 24609 (Xuezhen Huang, student 14443, booking 17831): Morning General, 13-31 Jul 2026 — zero class assignments — confirmed this run\n• 7 school days missed (Jul 13-17 and Jul 20-21); 8 remaining (Jul 22-24 and Jul 27-31) — ends 31 Jul (10 calendar days)\n• Accommodation 11358 (bed 180, Host Family, 12 Jul-2 Aug 2026): present and correct\n• UNCHANGED from 32nd hourly",
+        "Assign booking course 24609 to a class. See recipe: issue-39-addendum-21jul-f.md",
+        "33rd hrly 58th check Tue 21 Jul UTC. Booking course 24609 Xuezhen STILL 0 class assignments — 7 missed, 8 remaining (ends 31 Jul). Accommodation correct. Fix NOT RUN.",
+        "BC24609 0 SCAs; 8d left (ends Jul 31)"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 32nd hourly check Tue 21 Jul 2026 UTC (84th check)\n• Payment 17954 (EUR 2584.96, Bank Transfer, paid 26 Jun 2026): Xero payment ID = null — 25 days unreconciled\n• Booking 18180 (Giampaolo Russo, student 14571): confirmed, EUR 2584.96 total and paid, amount open = EUR 0\n• Booking course 24956 (General English AM, 3 Aug-11 Sep 2026): fee EUR 804.96\n• Accommodation 11357 (bed 178, Patty McSweeney host family, Glasnevin, 2 Aug-6 Sep 2026): fee EUR 1250 — confirmed in database\n• Fee gap: EUR 804.96 (course) + EUR 1250 (accommodation) = EUR 2054.96 vs EUR 2584.96 paid — EUR 530 unaccounted for\n• Capel Street apartment accommodation (6 Sep-14 Sep 2026): still missing from SIS\n• Check-in 2 Aug 2026 is 12 days away — URGENT\n• UNCHANGED from 31st hourly",
+        "Add Capel apartment accommodation (6-14 Sep) to booking 18180. Reconcile payment 17954 in Xero. See recipe: issue-41-addendum-21jul-g.md",
+        "32nd hrly 84th check Tue 21 Jul UTC. Accommodation 11357 bed 178 Patty McSweeney host family (Glasnevin Aug2-Sep6) confirmed. Capel STILL missing (EUR 530 gap). Payment 17954 Xero null (25d from Jun26). Check-in Aug 2 (12d). Fix NOT RUN.",
+        "Xero null; Capel missing; 12d to check-in"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 33rd hourly check Tue 21 Jul 2026 UTC (62nd check)\n• CRITICAL: Booking course 24828 (Martina Tartaro, student 14441, booking 18036): Morning General Plus + IELTS Easter Promo, 5 May-24 Jul 2026 — zero class assignments — 3 days to end (Fri 24 Jul)\n• CRITICAL: Booking course 25011 (Eduardo Roche Diaz, student 14602, booking 18233): General English PM, 20-24 Jul 2026 — zero class assignments — 3 days to end (Fri 24 Jul)\n• Both bookings fully paid and confirmed\n• Also urgent: Booking course 24609 Xuezhen (ends 31 Jul) and booking course 24991 Edite (ends 7 Aug) — zero class assignments\n• All confirmed by live database query this run — UNCHANGED",
+        "Assign all 4 students to classes immediately. See recipe: issue-45-addendum-21jul-j.md",
+        "33rd hrly 62nd check Tue 21 Jul UTC. Booking course 24828 Martina + Booking course 25011 Eduardo: STILL 0 class assignments, END FRIDAY (3 days). BC24609 Xuezhen + BC24991 Edite also 0. Fix NOT RUN.",
+        "CRITICAL; Martina+Eduardo end Fri 24 Jul"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student class assignment 255 (Saikhantes Shagdarsuren, student 1001, booking course 24925): still the only assignment — class ID 11, week end 3 July 2026 — no assignment for week 13–17 July\n• Booking course 24925 (Academic Year Afternoon, 9 March to 2 October 2026): active = true — 11 weeks remaining after this week\n• Week ending 17 July: TODAY IS THE LAST SCHOOL DAY — four school days (Monday 13 to Thursday 16 July) already missed without assignment\n• 73rd check, Thursday 16 July UTC (6th check today)",
+        "Assign student 1001 (Saikhantes Shagdarsuren) to class 11 for week ending 17 July TODAY (last chance). See recipe: issue-15-addendum-16jul.md",
+        "73rd check Thu 16 Jul UTC (6th check today). SCA 255 class_id=11 weekEnd=Jul03. Week Jul13-17: 0 SCAs (Mon/Tue/Wed/Thu all missed). bc24925 AY Afternoon active ends Oct02. TODAY LAST DAY WB Jul17. Fix NOT RUN.",
+        "CRITICAL; LAST DAY TODAY"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Duplicate of issue 15 (row 16) — same student: Saikhantes Shagdarsuren (student 1001)\n• Class assignment 255 (class ID 11, booking course 24925): week end 3 July — no assignment for week ending 17 July\n• Week ending 17 July: TODAY IS THE LAST SCHOOL DAY — 31st check, Thursday 16 July UTC",
+        "See issue 15 (row 16) for full fix. Same root cause.",
+        "31st check Thu 16 Jul UTC (6th check today). CONFIRMED UNCHANGED. TODAY=LAST DAY for week ending Jul17. SCA 255 weekEnd=Jul03, no Jul13-17 assignment. See row 16. Fix NOT RUN.",
+        "CRITICAL; TODAY IS LAST DAY"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 3 confirmed booking courses end TOMORROW (Friday 17 July) with zero class assignments — 108th check, Thursday 16 July UTC\n• Booking course 1719 (Maria Magdalena Hermosilla Ogaz, student 992): Academic Year Afternoon, 26 January to 17 July 2026 — zero class assignments for entire course\n• Booking course 24946 (Lunel Dubost, student 14566): General English AM, 13 to 17 July 2026 — zero class assignments\n• Booking course 24994 (Petru Ous, student 14591): General English AM, 13 to 17 July 2026 — zero class assignments\n• 3 additional PENDING bookings also end tomorrow: booking 18208 (Silvia Maza Valladolid, EUR 265 / EUR 0 paid), booking 18209 (Gladis Maza Valladolid, EUR 265 / EUR 0 paid), booking 25 (Kritchana RATCHA-ANAN, EUR 2638.75 / null paid)",
+        "Assign booking courses 1719/24946/24994 in To Be Assigned NOW (today is last day). Accounts check PENDING bookings 18208/18209/25. See recipe: issue-45-addendum-16jul.md",
+        "108th check Thu 16 Jul UTC (6th check today). CONFIRMED UNCHANGED. bc1719 (Maria Magdalena), bc24946 (Lunel), bc24994 (Petru): all 0 SCAs, all end Fri Jul17. TODAY IS LAST DAY. bks 18208/18209/25 still PENDING. Fix NOT RUN.",
+        "CRITICAL; LAST DAY TODAY"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking course 24991 (Edith Nunes, student 1015, General English AM, 13 July to 7 August 2026): zero class assignments — Day 4, Thursday 16 July UTC — 48th check\n• Booking 18214: Confirmed, EUR 608 fully paid\n• Booking courses 24933 and 24934 (General English AM, ended 10 July 2026): active = still true — 6 days stale\n• Four school days missed without a class assignment: Monday 13, Tuesday 14, Wednesday 15, Thursday 16 July\n• Course runs to 7 August 2026 — assignment still needed",
+        "Assign booking course 24991 (Edith Nunes) in To Be Assigned. Deactivate booking courses 24933 and 24934 (stale, ended Jul 10). See recipe: issue-22-addendum-16jul.md",
+        "48th check Thu 16 Jul UTC (6th check today). bc24991 General AM Jul13-Aug07 still 0 SCAs (Day 4, Mon-Thu missed). BCs 24933+24934 ended Jul10 still active=true (6d stale). Fix NOT RUN.",
+        "Day4 URGENT; 0 SCAs"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Booking course 24609 (Xuezhen Huang, student 14443, Morning General, 13 to 31 July 2026): zero class assignments — Day 4, Thursday 16 July UTC — 33rd check\n• Booking 17831: Confirmed, EUR 1396.90 fully paid\n• Booking accommodation 11358 (bed 180, host Mary Carver, 12 July to 2 August 2026): active — correctly assigned (accommodation issue resolved)\n• Four school days missed without a class assignment: Monday 13, Tuesday 14, Wednesday 15, Thursday 16 July",
+        "Assign student 14443 (Xuezhen Huang) to a class on booking course 24609 (Morning General). See recipe: issue-39-addendum-16jul.md",
+        "33rd check Thu 16 Jul UTC (6th check today). CONFIRMED UNCHANGED. bc24609 Morning General Jul13-Jul31 still 0 SCAs (Day 4, Mon-Thu missed). bk17831 Confirmed EUR1396.90/1396.90. Accommodation 11358 bed 180 active (resolved). Fix NOT RUN.",
+        "Day4; 0 SCAs; BA ok"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• August Bank Holiday 2026 (Monday 3 August): still missing from school closures — 18 days away — 31st check, Thursday 16 July UTC\n• October Bank Holiday 2026 (Monday 26 October): still missing from school closures — 102 days away\n• Current school closures: 9 records — Good Friday 2026/2027/2028/2029/2030 (IDs 1, 11, 12, 13, 14) and Christmas break 2026/2027/2028/2029 (IDs 7, 8, 9, 10) — zero bank holiday records in the database",
+        "Add August Bank Holiday (Monday 3 August 2026) and October Bank Holiday (Monday 26 October 2026) to school_closures table. See recipe: issue-38-course-date-ux.md",
+        "31st check Thu 16 Jul UTC (6th check today). Aug BH Aug 3 missing (18d away). Oct BH Oct 26 missing (102d away). School closures: Good Friday x5 (IDs 1,11,12,13,14) + Christmas x4 (IDs 7,8,9,10). Zero bank holiday records. Fix NOT RUN.",
+        "Aug BH missing; 18d"
+      ]
+    ]
+  }
+]

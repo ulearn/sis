@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Two payments are unlinked — booking ID = null and Xero payment ID = null\n• Payment 16988 (HubSpot payment 1204827374829) maps to Booking 17856 (Margherita Galbusera) — EUR 339.90, created 28 Apr\n• Payment 16989 (HubSpot payment 1204846469317) maps to Booking 17857 (Francesca Fassina) — EUR 339.90, created 28 Apr\n• Both bookings are Confirmed (status), confirmed = false, amount paid = 339.90 — payment audit trail broken\n• Booking courses 24631 (bk17856) + 24630 (bk17857) (General English AM Plus, start Mon 29 Jun, end 10 Jul) — fee = null (still not set)",
+        "(1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; then set bc fees. See recipe: issue-1-orphan-payments.md",
+        "hrly Jun26 FRI UTC (59th check, fresh DB): pmt16988+16989 STILL bookingId=null xeroId=null — 59d since Apr28. bc24631(bk17856)+bc24630(bk17857) start=Mon Jun29=3 DAYS fee=STILL NULL. bk17856+17857 CONF conf=false amtPaid=339.9 UNCHANGED. NEIL: TODAY=LAST WORKING DAY BEFORE CLASS STARTS MON JUN29. SQL: (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) set bc24631+bc24630 fees.",
+        "Jun29=Mon; EMERGENCY"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,50 @@
+[
+  {
+    "range": "J2",
+    "values": [
+      [
+        "hrly 30 Jun UTC (117th check, fresh DB): pmts 16988+16989 bookingId=STILL null xeroId=null EUR339.9 each. bk17856+17857 CONFIRMED confirmed=STILL false amtPaid=339.9 amtOpen=null. bc24630+24631 GE-AM-Plus Jun29-Jul10 fee=STILL null. SQL STILL NOT RUN - 117 CHECKS. STUDENTS IN CLASS DAY 2 - NEIL: RUN 4-STEP SQL NOW."
+      ]
+    ]
+  },
+  {
+    "range": "J16",
+    "values": [
+      [
+        "hrly 30 Jun UTC (24th check, fresh DB): SCA 255 weekStart=STILL 2026-01-12 weekEnd=STILL 2026-07-03 = EXPIRES FRI 3 JUL = 3 DAYS. bc24925 AY-Afternoon Mar09-Sep11 active=true bk18151 CONF confirmed=true. After Fri Jul03 Saikhantes has 0 SCA = dropped from class 11 B1-PM through Sep11 (10 weeks uncovered). SQL NOT RUN: UPDATE student_class_assignments SET week_start=2026-03-09, week_end=2026-09-11 WHERE id=255. NEIL: RUN BEFORE FRI 3 JUL."
+      ]
+    ]
+  },
+  {
+    "range": "J26",
+    "values": [
+      [
+        "hrly 30 Jun UTC (43rd check, fresh DB): s917 Uyanga Tungalag visaStatus=STILL null (updAt=May21=40d stale). bk1467 CONF confirmed=true amtPaid=2405/2405 amtOpen=0 (fully paid). bc1613 AY-Morn Apr27-Oct16 active=true fee=3370. SCA=STILL 0 (65d in school, 0 class assignments). Fix NOT RUN: (1) UPDATE students SET visa_status=Approved WHERE id=917; (2) assign class for bc1613 via SIS. NEIL: 43 CHECKS UNRESOLVED."
+      ]
+    ]
+  },
+  {
+    "range": "J30",
+    "values": [
+      [
+        "hrly 30 Jun UTC (24th check, fresh DB): SCA 255 weekStart=STILL 2026-01-12 weekEnd=STILL 2026-07-03 = EXPIRES FRI 3 JUL = 3 DAYS. bc24925 AY-Afternoon Mar09-Sep11 active=true bk18151 CONF confirmed=true. After Fri Jul03 Saikhantes dropped from class 11 B1-PM through Sep11 (10 weeks uncovered). SQL NOT RUN: UPDATE student_class_assignments SET week_start=2026-03-09, week_end=2026-09-11 WHERE id=255. NEIL: RUN BEFORE FRI 3 JUL."
+      ]
+    ]
+  },
+  {
+    "range": "J39",
+    "values": [
+      [
+        "hrly 30 Jun UTC (11th check, fresh DB): accomm 11352 Veronica bed83 Jul04-Jul11 STILL NOT REASSIGNED. accomm 11285 Jesus bed83 Jun21-Jul05 STILL UNCHANGED (updated Jun16=14d stale). Overlap Jul04-Jul05 = 2 DAYS on same bed. Beds 174, 175, 176 confirmed FREE for Jul04-Jul11 (0 active bookings, fresh DB). bk18156 CONFIRMED 573.2/573.2 amtOpen=0. VERONICA ARRIVES SAT 4 JUL = 4 DAYS. NEIL: reassign accomm 11352 from bed83 to bed 174/175/176 via SIS (Student 278, Booking 18156, Accommodation) URGENTLY."
+      ]
+    ]
+  },
+  {
+    "range": "J43",
+    "values": [
+      [
+        "hrly 30 Jun UTC (4th check, fresh DB): bk18180 CONF confirmed=true 2584.96/2584.96 amtOpen=0 updAt=Jun29 (updated yesterday, no accomm change). ba11357 Host Family Aug02-Sep06 fee=1250 bedId=STILL null. HF beds occupied Aug02-Sep06: 83, 112, 179, 190. 0 Capel accomm records for bk18180. BOTH PENDING. Neil: (1) assign HF bed to ba11357 in SIS (avoid beds 83/112/179/190); (2) add Capel Sep06-Sep14 accomm in SIS for booking 18180."
+      ]
+    ]
+  }
+]

@@ -1,0 +1,46 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 283rd check Fri 21 Aug 2026 (very late evening) — no change since 282nd\n• Payment 16988: EUR 339.90, Bank, 28 Apr 2026 — booking_id = null (orphan)\n• Payment 16989: EUR 339.90, Bank, 28 Apr 2026 — booking_id = null (orphan)\n• Booking 17856 (Margherita Galbusera): CONFIRMED, fully paid EUR 339.90, zero payments linked — Payment 16989 is the match\n• Booking 17857 (Francesca Fassina): CONFIRMED, fully paid EUR 339.90, zero payments linked — Payment 16988 is the match\n• Booking Courses 24630 + 24631 (General English AM Plus): ended 10 Jul 2026, active = true — 42 days stale\n• Payment 17187: EUR 6,151 TransferMate Escrow — leave as-is\n• Payment 4781: EUR 380, Flywire 2019 — legacy orphan, low priority\n• Fix NOT RUN",
+        "Link Payment 16989 → Booking 17856, Payment 16988 → Booking 17857; deactivate Booking Courses 24630+24631. See recipe: issue-1-addendum-21aug-b.md",
+        "283rd Fri 21 Aug very late evening. No change. Booking Courses 42d stale. Both bookings show fully paid but zero linked payments confirmed.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 258th check Fri 21 Aug 2026 (very late evening) — no change since 257th\n• Booking Accommodation 11311 (bed 84, booking 17980): ends Sat 22 Aug, fee EUR 3,850, active — checkout overnight/Sat morning\n• Booking Accommodation 11393 (bed 88, booking 17980): starts Sat 22 Aug to 13 Sep, fee = null, active — CRITICAL: checkin Sat 22, fee still not set\n• Booking 17980: CONFIRMED, fully paid EUR 5,331, open EUR 0\n• Fee for Booking Accommodation 11393 = EUR 5,331 minus EUR 3,850 = EUR 1,481\n• Fix NOT RUN — checkin <12 hours away",
+        "Set fee EUR 1,481 on Booking Accommodation 11393 before checkin; deactivate Booking Accommodation 11311 after checkout Sat 22. See recipe: issue-36b-addendum-21aug-b.md",
+        "258th Fri 21 Aug very late evening. <12h to checkin. Booking Accommodation 11393 fee still null. Fix NOT RUN.",
+        "URGENT: Sat22 <12h"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 155th check Fri 21 Aug 2026 (very late evening) — no change since 154th\n• Booking Accommodation 11396 (bed 44, booking 18180): ends Sat 22 Aug, fee = null, active — checkout Sat 22; CRITICAL: fee still not set\n• Booking Accommodation 11397 (bed 89, booking 18180): starts Sat 22 Aug to 6 Sep, fee = null, active — checkin Sat 22; CRITICAL: fee still not set\n• Booking Accommodation 11357 (bed 178, booking 18180): ended 15 Aug, fee EUR 1,250, active — 6 days stale, deactivate\n• Booking Accommodation 11394 (bed 89, booking 17826): ended 9 Aug, fee = null, active — 12 days stale\n• Booking 18180: CONFIRMED, fully paid EUR 2,584.96\n• Fee split: Booking Accommodation 11396 = EUR 306.65 (1 week), Booking Accommodation 11397 = EUR 613.31 (2 weeks)\n• Fix NOT RUN — checkout/checkin <12 hours away",
+        "Set fees on Booking Accommodations 11396 (EUR 306.65) and 11397 (EUR 613.31); deactivate 11357 and 11394. See recipe: issue-41-addendum-21aug-b.md",
+        "155th Fri 21 Aug very late evening. <12h. Booking Accommodations 11396 and 11397 fee null; checkout/checkin Sat 22. Fix NOT RUN.",
+        "URGENT: Sat22 <12h"
+      ]
+    ]
+  },
+  {
+    "range": "H52:K52",
+    "values": [
+      [
+        "• 20th check Fri 21 Aug 2026 (very late evening) — no change since 19th\n• Stale active Booking Accommodations (end date before 21 Aug 2026, 2026+): 149 — unchanged\n• Oldest stale: Booking Accommodation 10079 (booking 1120), ended 3 Jan 2026\n• Checkout query pulls all active Booking Accommodations regardless of end date, including historical stale records\n• Total active Booking Accommodations including pre-2026 legacy: approx 11,194\n• Fix NOT RUN",
+        "Deactivate 149 stale 2026 Booking Accommodations (preview first); investigate checkout query. Recipe: issue-50-addendum-21aug-b.md",
+        "20th Fri 21 Aug very late evening. 149 stale 2026 Booking Accommodations unchanged. Total approx 11,194 including legacy. Fix NOT RUN.",
+        "149 stale BAs; fix pending"
+      ]
+    ]
+  }
+]

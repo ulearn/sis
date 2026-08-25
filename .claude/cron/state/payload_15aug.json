@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 80th check Sat 15 Aug 2026 UTC — URGENT: fee still null, check-in day 2\n• Booking Accommodation 11396: bed 44, Aug 15–Aug 22, fee = NULL — student arrived TODAY (fee unset for 2nd day)\n• Booking Accommodation 11397: bed 89, Aug 22–Sep 6, fee = NULL — check-in in 7 days\n• Booking Accommodation 11357: bed 178, ended today (Aug 15), active = true — deactivate\n• Booking Accommodation 11392: City Centre apt, Sep 6–Sep 14, fee = EUR 415, bed not yet assigned\n• Booking 18180 (Giampaolo Russo, student 14571): CONFIRMED, confirmed = true, fully paid EUR 2,584.96",
+        "Set fee on Booking Accommodation 11396 NOW (est. EUR 625, bed 44, 1 week); deactivate Booking Accommodation 11357; set fee Booking Accommodation 11397 before Aug 22; assign bed Booking Accommodation 11392 before Sep 6. See recipe: issue-41-addendum-15aug.md",
+        "80th hrly Sat 15 Aug UTC. URGENT day 2: fee null on Booking Accommodation 11396 (check-in today) + Booking Accommodation 11397 (Aug 22). Booking Accommodation 11357 ended today still active. Fix NOT RUN.",
+        "URGENT: fees null check-in TODAY"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 94th check Sat 15 Aug 2026 UTC — stale count INCREASED since yesterday\n• Active Booking Courses ended before 15 Aug 2026 (stale): 24,497 — up from 24,479 yesterday (+18 in 24 hours)\n• 18 courses whose end date was 14 Aug 2026 joined the stale pool overnight\n• Live active Booking Courses (end date on or after 15 Aug 2026): 268 — down from 286 yesterday",
+        "Mass deactivation script required (3 staged SQL updates). See recipe: issue-45-addendum-15aug.md",
+        "94th hrly Sat 15 Aug UTC. Stale count UP: 24,479 to 24,497 (+18 from Aug 14 end-dates). Live: 286 to 268. Fix NOT RUN.",
+        "24,497 stale (+18); fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 168th check Sat 15 Aug 2026 UTC — 1 day past end\n• Booking Course 25043 (Eduardo Roche Diaz, General English PM): ended 2026-08-14, active = true — 1 day stale\n• 0 class assignments — safe to deactivate\n• Certificate 566 already issued — no blockers",
+        "Deactivate Booking Course 25043 (0 class assignments, 1 day past end). See recipe: issue-38-addendum-15aug.md",
+        "168th hrly Sat 15 Aug UTC. Booking Course 25043 ended Aug 14, still active. 1 day past end. Fix NOT RUN.",
+        "BC25043 1d past end"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• 33rd check Sat 15 Aug 2026 UTC — no change since 32nd check\n• Next occupant Rosa Maria Mollica (Booking Accommodation 25) arrives Aug 30 — 15 days\n• 5 stale Booking Accommodations on bed 83 (all active, past endDate):\n  Booking Accommodation 11239 (Ivan Rodriguez Solares): ended 24 May 2026, 83 days stale\n  Booking Accommodation 11168 (Diego Da Silva Saldanha): ended 20 Jun 2026, 56 days stale\n  Booking Accommodation 11285 (Jesus Ramirez Diaz): ended 5 Jul 2026, 41 days stale, fee = null\n  Booking Accommodation 11352 (Veronica Martin): ended 11 Jul 2026, 35 days stale\n  Booking Accommodation 11179 (Africa Mera Bachir): ended 9 Aug 2026, 6 days stale\n• Current occupant: Booking Accommodation 11173 (Alessandro Signorotti, Aug 9–Aug 30, fee = EUR 1,080, active — OK)",
+        "Deactivate Booking Accommodations 11239/11168/11285/11352/11179; confirm fee for Booking Accommodation 11285 first. See recipe: issue-37-43-addendum-15aug.md",
+        "33rd Sat 15 Aug UTC. Rosa Mollica (Booking Accommodation 25) check-in Aug 30 (15 days). 5 stale Booking Accommodations unchanged. Fix NOT RUN.",
+        "5 stale BAs; Aug 30 check-in (15d)"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 127th check Sat 15 Aug 2026 UTC — no change since 126th check\n• Booking 1624 (Telmuun Enkhsaikhan, student 293): status = PARTIAL, confirmed = false, amount paid = EUR 1,406, amount open = EUR 250\n• Booking Course 1810 (Academic Year Renewal Morning): started 29 Jun 2026, ends 1 Jan 2027, active = true, 0 class assignments — 47 days without assignment\n• Only 1 payment record in database: Payment 17956 = EUR 100, Bank, 31 Mar 2026, xeroPaymentId = null\n• Discrepancy: booking amountPaid = EUR 1,406 vs database payment record sum = EUR 100 — EUR 1,306 gap (likely Fidelo migration lump sum)",
+        "Assign Booking Course 1810 to AM class; collect EUR 250 open balance; reconcile Payment 17956 in Xero. See recipe: issue-48-addendum-15aug.md",
+        "127th Sat 15 Aug UTC. No change. Booking Course 1810 still 0 class assignments (47 days). EUR 250 open. Fix NOT RUN.",
+        "payment gap; BC1810 47d; bk PARTIAL"
+      ]
+    ]
+  },
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 260th check Sat 15 Aug 2026 UTC — no change since 259th check\n• Payment 4781: EUR 380, Flywire, 2019-08-20 — booking_id = null (legacy orphan, Fidelo ref D20191404)\n• Payment 16988: EUR 339.90, Bank, 2026-04-28 — booking_id = null (likely Booking 17856, Margherita Galbusera)\n• Payment 16989: EUR 339.90, Bank, 2026-04-28 — booking_id = null (likely Booking 17857, Francesca Fassina)\n• Payment 17187: EUR 6,151, TransferMate Escrow, ref D2026226 — booking_id = null, no matching booking found\n• Booking 17856 (Margherita Galbusera): CONFIRMED, confirmed = false, amount paid = EUR 339.90\n• Booking 17857 (Francesca Fassina): CONFIRMED, confirmed = false, amount paid = EUR 339.90\n• Booking Courses 24630 + 24631 (General English AM Plus): ended 2026-07-10, active = true — 36 days stale",
+        "Link Payments 16988/16989 to Bookings 17856/17857; set confirmed = true; deactivate Booking Courses 24630 + 24631. See recipe: issue-1-addendum-15aug.md",
+        "260th Sat 15 Aug UTC. No change. Fix NOT RUN. Payment 17187 (EUR 6,151 ref D2026226) needs manual TransferMate lookup. Payment 4781 (Flywire 2019) is a legacy orphan.",
+        ""
+      ]
+    ]
+  }
+]

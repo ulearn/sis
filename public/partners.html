@@ -95,6 +95,9 @@ body {
 }
 .nav-tab:hover { color: var(--ink); }
 .nav-tab.active { color: var(--green); border-bottom-color: var(--green); }
+.nav-tab.lp-tab { color: #f429ff; font-weight: 800; }
+.nav-tab.lp-tab:hover { color: #d600e0; }
+.nav-tab.lp-tab.active { color: #f429ff; border-bottom-color: #f429ff; }
 .nav-tab svg { width: 16px; height: 16px; }
 .nav-tab.cta {
   background: var(--green);
@@ -106,6 +109,40 @@ body {
   box-shadow: 0 4px 12px rgba(51,153,0,0.2);
 }
 .nav-tab.cta:hover { background: var(--green-deep); }
+
+/* Blanket challenge opt-in toggle (beside Partnership) */
+.chal-optin {
+  display: flex; align-items: center; gap: 12px; align-self: center; margin: 0 6px 6px 10px;
+  padding: 6px 10px 6px 14px; border-radius: 999px;
+  background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%); color: #fff;
+  box-shadow: 0 4px 14px rgba(249,115,22,0.34);
+}
+.chal-optin-copy { display: flex; flex-direction: column; line-height: 1.15; }
+.chal-optin-t { font-size: 12.5px; font-weight: 800; letter-spacing: -0.01em; }
+.chal-optin-t a { color: inherit; text-decoration: underline; text-underline-offset: 2px; transition: color .15s; }
+.chal-optin-t a:hover { color: #fde047; }
+.chal-optin-s { font-size: 10.5px; font-weight: 600; opacity: 0.92; }
+.chal-switch {
+  flex: 0 0 auto; width: 44px; height: 25px; border-radius: 999px; border: none; cursor: pointer;
+  background: rgba(0,0,0,0.28); position: relative; padding: 0; transition: background .18s;
+}
+.chal-switch .chal-knob {
+  position: absolute; top: 3px; left: 3px; width: 19px; height: 19px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.35); transition: left .18s;
+}
+.chal-switch[aria-checked="true"] { background: #16a34a; }
+.chal-switch[aria-checked="true"] .chal-knob { left: 22px; }
+
+/* Next-month challenge PREVIEW pill — greyed, non-interactive (no switch).
+   Advertises the upcoming taper so partners close deals this month. */
+.chal-next {
+  display: flex; align-items: center; align-self: center; margin: 0 6px 6px 0;
+  padding: 6px 16px; border-radius: 999px;
+  background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%); color: #fff;
+  box-shadow: 0 4px 14px rgba(100,116,139,0.28);
+}
+.chal-next .chal-optin-t { opacity: 0.95; }
+.chal-next .chal-optin-s { opacity: 0.88; }
 
 /* ── Main content ── */
 .main { max-width: 1200px; margin: 0 auto; padding: 24px; }
@@ -121,6 +158,30 @@ body {
   margin-bottom: 16px;
 }
 .card-title { font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 16px; }
+/* Collapsible card sections (chevron chip — mirrors the SIS admin pattern) */
+.p-collapse-head { cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: space-between; }
+.p-collapse-head::after { content: '\25B6'; font-size: 11px; color: var(--muted); transition: transform .2s; margin-left: 12px; flex: 0 0 auto; }
+.p-collapse-head.open::after { transform: rotate(90deg); }
+.p-collapse-head:not(.open) { margin-bottom: 0; }
+.p-collapse-body { display: none; }
+.p-collapse-body.open { display: block; }
+.empty-cta { text-align: center; padding: 16px 12px; color: var(--muted); font-size: 13px; }
+.empty-cta .btn-getquote { display: inline-block; margin-top: 10px; padding: 9px 20px; border: none; border-radius: 8px; background: var(--green); color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; }
+.empty-cta .btn-getquote:hover { filter: brightness(0.95); }
+/* Partner resources — video guide tiles + Wistia lightbox */
+.guide-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+.guide-tile { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; transition: all .15s; }
+.guide-tile:hover { border-color: var(--green); background: #f8fafc; transform: translateY(-1px); }
+.guide-play { flex: 0 0 auto; width: 38px; height: 38px; border-radius: 50%; background: var(--green); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; padding-left: 2px; }
+.guide-t { font-weight: 700; font-size: 13px; color: var(--navy); }
+.guide-s { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.video-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.72); display: flex; align-items: center; justify-content: center; z-index: 1200; padding: 24px; animation: vidIn .15s ease; }
+.video-box { width: 100%; max-width: 920px; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.45); }
+.video-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; background: #111; color: #fff; font-size: 14px; font-weight: 600; }
+.video-close { background: none; border: none; color: #fff; font-size: 18px; cursor: pointer; line-height: 1; }
+.video-frame { position: relative; width: 100%; aspect-ratio: 16 / 9; }
+.video-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+@keyframes vidIn { from { opacity: 0; } }
 
 /* ── Stat grid (dashboard) ── */
 .stat-grid {
@@ -152,6 +213,108 @@ body {
 }
 .stat-card.green .stat-value { color: var(--green); }
 .stat-card.blue .stat-value { color: var(--blue); }
+
+/* ── LifePass ── */
+.lp-demo-tag {
+  font-size: 10px; font-weight: 800; letter-spacing: 0.08em;
+  color: #b300bf; background: #fde6ff; border: 1px solid #f8c8ff;
+  padding: 4px 9px; border-radius: 999px; white-space: nowrap; align-self: center;
+}
+.lp-hero {
+  background: linear-gradient(135deg, #7a0a85 0%, #c20cd0 55%, #f429ff 100%);
+  border-radius: var(--radius); padding: 26px 28px; color: #fff;
+  box-shadow: 0 10px 34px rgba(244,41,255,0.30); margin-bottom: 16px;
+  position: relative; overflow: hidden;
+}
+.lp-hero::after {
+  content: ''; position: absolute; right: -40px; top: -40px; width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0) 70%);
+}
+.lp-hero-num { font-size: 44px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
+.lp-hero-sub { font-size: 13px; opacity: 0.92; margin-top: 8px; font-weight: 500; }
+.lp-hero-pace { font-size: 12px; opacity: 0.8; margin-top: 10px; }
+.lp-cards { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 16px; }
+@media (max-width: 700px) { .lp-cards { grid-template-columns: 1fr; } }
+.lp-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 20px; }
+.lp-card-v { font-size: 24px; font-weight: 800; color: var(--navy); letter-spacing: -0.02em; }
+.lp-card-l { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 3px; }
+.lp-panel { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px 22px; margin-bottom: 16px; }
+.lp-panel-t { font-size: 13px; font-weight: 800; color: var(--navy); margin-bottom: 2px; }
+.lp-panel-s { font-size: 11px; color: var(--muted); margin-bottom: 16px; }
+/* staircase / climbing bars */
+.lp-bars { display: flex; align-items: flex-end; gap: 4px; height: 150px; position: relative; }
+.lp-bar { flex: 1; background: linear-gradient(180deg,#f9a0ff,#f429ff); border-radius: 4px 4px 0 0; min-height: 3px; position: relative; transition: filter .15s, opacity .15s; }
+.lp-bar.future { background: #fbe0ff; }
+.lp-bar.now { box-shadow: 0 0 0 2px #f429ff, 0 0 0 4px #f8c8ff; }
+.lp-bar[data-tip]:hover { filter: brightness(1.08); z-index: 7; }
+.lp-bar[data-tip]:hover::after {
+  content: attr(data-tip);
+  position: absolute; bottom: calc(100% + 9px); left: 50%; transform: translateX(-50%);
+  background: linear-gradient(135deg,#7a0a85,#f429ff); color: #fff;
+  font-size: 11px; font-weight: 700; line-height: 1.2; white-space: nowrap;
+  padding: 7px 11px; border-radius: 9px;
+  box-shadow: 0 8px 22px rgba(244,41,255,0.40), inset 0 1px 0 rgba(255,255,255,0.25);
+  pointer-events: none; z-index: 7;
+}
+.lp-bar[data-tip]:hover::before {
+  content: ''; position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+  border: 6px solid transparent; border-top-color: #f429ff; pointer-events: none; z-index: 7;
+}
+.lp-checkline { position: absolute; left: 0; right: 0; border-top: 2px dashed #f59e0b; }
+.lp-checkline span { position: absolute; right: 0; top: -16px; font-size: 10px; font-weight: 800; color: #d97706; background: var(--card); padding: 0 4px; }
+.lp-axis { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-top: 6px; }
+/* student grid */
+.lp-srow {
+  display: grid; grid-template-columns: 1.4fr 90px 1fr 110px 18px; gap: 12px; align-items: center;
+  padding: 11px 14px; border-radius: var(--radius-sm); cursor: pointer; border: 1px solid transparent;
+}
+.lp-srow:hover { background: #fdf2ff; border-color: #f8c8ff; }
+.lp-srow + .lp-srow { margin-top: 2px; }
+.lp-mini { height: 8px; border-radius: 999px; background: #fbe0ff; overflow: hidden; position: relative; }
+.lp-mini > i { display: block; height: 100%; background: linear-gradient(90deg,#f9a0ff,#f429ff); border-radius: 999px; }
+.lp-mini-check { position: absolute; top: -3px; width: 2px; height: 14px; background: #f59e0b; }
+.lp-chev { color: #f3a3ff; font-weight: 800; }
+.lp-back {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #b300bf;
+  background: none; border: none; cursor: pointer; padding: 4px 0; margin-bottom: 14px;
+}
+.lp-pill-ok { display:inline-block; font-size:10px; font-weight:800; color:#065f46; background:#d1fae5; padding:2px 8px; border-radius:999px; }
+.lp-pill-climb { display:inline-block; font-size:10px; font-weight:800; color:#9a00a8; background:#fbe0ff; padding:2px 8px; border-radius:999px; }
+/* LifePass badge in students list + drawer mini */
+.lp-badge {
+  display:inline-block; font-size:9px; font-weight:800; letter-spacing:0.04em; vertical-align:middle;
+  color:#fff; background:linear-gradient(135deg,#f429ff,#c20cd0); padding:2px 7px; border-radius:999px; margin-left:7px;
+}
+
+/* ── Challenge promotion (enrolment form) ── */
+.challenge-block {
+  margin: 4px 0 8px; border: 1.5px solid #bbf7d0; border-radius: var(--radius);
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+}
+.challenge-toggle { display: flex; align-items: center; gap: 14px; padding: 16px 18px; cursor: pointer; user-select: none; }
+.challenge-toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+.challenge-box {
+  flex: 0 0 auto; margin-left: auto; width: 30px; height: 30px; border-radius: 9px;
+  border: 2.5px solid #34d399; background: #fff; display: flex; align-items: center; justify-content: center;
+  color: #fff; transition: all .15s; box-shadow: 0 1px 2px rgba(0,0,0,.05);
+}
+.challenge-box svg { width: 20px; height: 20px; opacity: 0; transform: scale(.5); transition: all .15s; }
+.challenge-toggle input:checked + .challenge-box {
+  background: var(--green); border-color: var(--green); box-shadow: 0 4px 14px rgba(51,153,0,.40);
+}
+.challenge-toggle input:checked + .challenge-box svg { opacity: 1; transform: scale(1); }
+.challenge-toggle:hover .challenge-box { border-color: var(--green); }
+.challenge-toggle input:focus-visible + .challenge-box { outline: 3px solid #bbf7d0; outline-offset: 2px; }
+/* Renewal checkbox — same green KickStart box, compact + inline beside Session */
+.renewal-toggle { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+.renewal-toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+.renewal-toggle input:checked + .challenge-box { background: var(--green); border-color: var(--green); }
+.renewal-toggle input:checked + .challenge-box svg { opacity: 1; transform: scale(1); }
+.renewal-toggle:hover .challenge-box { border-color: var(--green); }
+.renewal-label { font-weight: 700; color: #166534; font-size: 13px; }
+.challenge-copy { display: flex; flex-direction: column; gap: 2px; }
+.challenge-title { font-size: 14px; font-weight: 800; color: #166534; }
+.challenge-sub { font-size: 12px; color: #15803d; }
 
 /* ── Tables ── */
 .table-wrap { overflow-x: auto; }
@@ -186,7 +349,7 @@ tr:hover td { background: #fafaf8; }
   letter-spacing: 0.02em;
 }
 .badge-pending { background: #fef3c7; color: #92400e; }
-.badge-partial { background: #dbeafe; color: #1e40af; }
+.badge-partial { background: #ffedd5; color: #c2410e; }
 .badge-confirmed { background: #d1fae5; color: #065f46; }
 .badge-cancelled { background: #fee2e2; color: #991b1b; }
 .badge-escrow { background: #ede9fe; color: #5b21b6; }
@@ -249,21 +412,46 @@ tr:hover td { background: #fafaf8; }
   transition: all 0.15s;
 }
 .filter-pill:hover { color: var(--ink); }
+/* Status filter pills (Pending/Paid) — coloured by meaning, faded when inactive */
+.invpill { padding: 5px 14px; border-radius: 999px; border: none; font-size: 12px; font-weight: 700; cursor: pointer; color: #fff; opacity: .4; transition: opacity .15s; }
+.invpill.active { opacity: 1; }
+.invpill.pending { background: #f59e0b; }
+.invpill.paid { background: var(--green); }
+/* Sortable column headers in the Finance list */
+.sort-h { cursor: pointer; user-select: none; }
+.sort-h:hover { color: var(--ink); }
 .filter-pill.active {
   background: var(--green);
   color: #fff;
   box-shadow: 0 2px 6px rgba(51,153,0,0.2);
 }
+/* Credit pill — persistently green-tinted so it reads as its own category. */
+.filter-pill.credit-pill { color: var(--green); }
+.filter-pill.credit-pill.active { color: #fff; }
 .history-row {
   display: grid;
-  grid-template-columns: 80px 100px 1fr 110px 120px 100px 100px;
-  gap: 12px;
-  padding: 10px 4px;
+  grid-template-columns: 72px 92px 1fr 100px 64px 96px 88px 60px;
+  gap: 10px;
+  padding: 11px 6px;
   border-bottom: 1px solid var(--line);
   font-size: 13px;
   align-items: center;
 }
 .history-row:last-child { border-bottom: none; }
+.history-row > div { min-width: 0; overflow-wrap: anywhere; }
+/* Credit ledger row — ID | Issue Date | Reason | Amount */
+.credit-row {
+  display: grid;
+  grid-template-columns: 72px 110px 1fr 110px;
+  gap: 10px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+  align-items: center;
+}
+.credit-row:last-child { border-bottom: none; }
+.credit-row > div { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 560px){ .credit-row { grid-template-columns: 48px 84px 1fr 84px; gap:6px; font-size:12px; } }
 .history-row .type-pill {
   display: inline-block;
   padding: 2px 10px;
@@ -374,6 +562,13 @@ tr:hover td { background: #fafaf8; }
   color: #78350f;
   border-left: 3px solid #f59e0b;
 }
+/* Staff completed the HubSpot task → query resolved (green). */
+.quote-comments-view.resolved {
+  background: rgba(22, 163, 74, 0.10);
+  color: #14532d;
+  border-left-color: #16a34a;
+}
+.quote-comments-view .resolved-tag { font-weight: 800; color: #16a34a; margin-right: 6px; }
 @media (max-width: 768px) {
   .quote-main { grid-template-columns: 1fr; gap: 4px; }
   .quote-main .amt { text-align: left; }
@@ -469,6 +664,19 @@ tr:hover td { background: #fafaf8; }
 }
 .drawer-kv .k { color: var(--muted); }
 .drawer-kv .v { color: var(--ink); font-weight: 500; }
+/* Passport + uploads + issued documents (student drawer) */
+.pp-grid { display: grid; grid-template-columns: 110px 1fr; gap: 8px 10px; align-items: center; font-size: 12px; margin-bottom: 10px; }
+.pp-grid .k { color: var(--muted); }
+.pp-inp { width: 100%; box-sizing: border-box; padding: 6px 8px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 13px; }
+.pp-save { padding: 6px 12px; border: none; border-radius: 6px; background: var(--navy); color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; }
+.pp-save:disabled { opacity: .7; cursor: default; }
+.pp-drop { display: block; margin-top: 12px; padding: 14px; border: 1.5px dashed #cbd5e1; border-radius: 8px; text-align: center; color: var(--muted); font-size: 12px; cursor: pointer; transition: all .15s; }
+.pp-drop:hover, .pp-drop.drag { border-color: var(--navy); background: #f8fafc; color: var(--ink); }
+.pp-file { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 13px; }
+.pp-file a { color: var(--navy); text-decoration: none; }
+.pp-file a:hover { text-decoration: underline; }
+.pp-date { color: var(--muted); font-size: 11px; margin-left: auto; }
+.pp-del { margin-left: auto; border: none; background: none; color: #dc2626; cursor: pointer; font-size: 13px; }
 .drawer-booking {
   border: 1px solid var(--line);
   border-radius: 10px;
@@ -511,6 +719,23 @@ tr:hover td { background: #fafaf8; }
 .drawer-fin-grid .val { font-size: 13px; font-weight: 700; color: var(--ink); margin-top: 2px; }
 .drawer-fin-grid .val.green { color: var(--green); }
 .drawer-fin-grid .val.amber { color: #f59e0b; }
+/* Booking middle (course/accom/dates) — collapsed teaser, tap to expand. Bill/
+   Paid/Balance stay outside this so they're always visible. */
+.bk-more { position: relative; max-height: 46px; overflow: hidden; cursor: pointer; transition: max-height .25s ease; }
+.bk-more::after { content: '▾ Expand'; position: absolute; left: 0; right: 0; bottom: 0; height: 26px; display: flex; align-items: flex-end; justify-content: center; font-size: 10px; font-weight: 600; color: var(--muted); background: linear-gradient(rgba(250,250,248,0), #fafaf8 75%); pointer-events: none; }
+.bk-more.expanded { max-height: 1200px; }
+.bk-more.expanded::after { display: none; }
+/* Flights — label | inbound | outbound */
+.flight-grid { display: grid; grid-template-columns: 46px 1fr 1fr; gap: 5px 12px; font-size: 12px; align-items: center; }
+.flight-grid .fh { font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); font-weight: 700; }
+.flight-grid .k { color: var(--muted); }
+.flight-grid .v { color: var(--ink); font-weight: 500; }
+.flight-grid .co { border-left: 1px solid var(--line); padding-left: 12px; }
+.flight-grid input { width: 100%; box-sizing: border-box; padding: 5px 7px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 12px; }
+/* Passport / upload action row: green drag-drop (left) + save button (right) */
+.pp-actions { display: flex; gap: 10px; align-items: stretch; margin: 10px 0; }
+.pp-drop-c { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 38px; padding: 8px 12px; border: 1.5px dashed var(--green); border-radius: 8px; background: #f0fbef; color: #2b8a3e; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s; text-align: center; }
+.pp-drop-c:hover, .pp-drop-c.drag { background: #d8f3d8; border-color: #2f9e44; color: #2f9e44; }
 .students-table tr { cursor: pointer; }
 .students-table tr:hover td { background: var(--bg); }
 @media (max-width: 768px) { .drawer-panel { width: 100%; } }
@@ -601,6 +826,142 @@ tr:hover td { background: #fafaf8; }
   box-shadow: 0 6px 16px rgba(245, 158, 11, 0.25);
 }
 .modal-btn.warn:hover { background: #d97706; border-color: #d97706; }
+
+/* ═══════════════════════════════════════════════════
+   CONTRACT SIGNING MODAL — non-dismissible first-login gate
+   ═══════════════════════════════════════════════════ */
+@font-face { font-family: 'Tomatoes';   src: url('/sis/partners/public/fonts/Tomatoes.ttf') format('truetype');   font-display: swap; }
+@font-face { font-family: 'Autography'; src: url('/sis/partners/public/fonts/Autography.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'Bulgatti';   src: url('/sis/partners/public/fonts/Bulgatti.ttf') format('truetype');   font-display: swap; }
+
+.contract-overlay {
+  position: fixed; inset: 0;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(6px);
+  z-index: 9999;
+  display: none;
+  align-items: center; justify-content: center;
+  padding: 20px;
+}
+.contract-overlay.show { display: flex; }
+.contract-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  width: 100%; max-width: 980px;
+  max-height: calc(100vh - 40px);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+.contract-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(135deg, #339900 0%, #1a6600 100%);
+  color: #fff;
+  position: relative;
+}
+.contract-header a:hover { opacity: 1; }
+.contract-header h2 { margin: 0 0 4px 0; font-size: 18px; font-weight: 700; }
+.contract-header p  { margin: 0; font-size: 13px; opacity: 0.92; }
+.contract-body {
+  display: grid; grid-template-columns: 1.4fr 1fr;
+  flex: 1; min-height: 0;
+}
+@media (max-width: 760px) { .contract-body { grid-template-columns: 1fr; } }
+.contract-pdf {
+  background: #f4f3f0;
+  border-right: 1px solid var(--line);
+  display: flex; flex-direction: column;
+}
+.contract-pdf iframe { flex: 1; border: 0; width: 100%; min-height: 360px; }
+.contract-sign {
+  padding: 20px 24px;
+  display: flex; flex-direction: column; gap: 14px;
+  overflow-y: auto;
+}
+.contract-sign h3 { margin: 0; font-size: 14px; font-weight: 700; color: var(--ink); }
+.contract-sign label { font-size: 12px; font-weight: 600; color: var(--muted); display: block; margin-bottom: 4px; }
+.contract-sign input[type="text"] {
+  width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px;
+  font-size: 13px; box-sizing: border-box;
+}
+.contract-sign input[type="text"]:focus,
+.contract-sign input[type="email"]:focus { outline: none; border-color: var(--green); }
+.contract-sign input[type="email"] {
+  width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px;
+  font-size: 13px; box-sizing: border-box;
+}
+.contract-sign input[readonly] { background: #f1f5f9; color: var(--muted); }
+.cd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; }
+.cd-grid .cd-full { grid-column: 1 / -1; }
+.req { color: #dc2626; }
+#contractTermsGate {
+  padding: 14px 16px; background: #fff7ed; border: 1px solid #fed7aa;
+  border-radius: 8px; font-size: 13px; color: #9a3412; line-height: 1.5;
+}
+#contractTermsGate a { color: #9a3412; font-weight: 700; }
+.sig-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); }
+.sig-tab {
+  flex: 1; padding: 8px; cursor: pointer; text-align: center;
+  font-size: 13px; font-weight: 600; color: var(--muted);
+  border: 0; background: none; border-bottom: 2px solid transparent;
+}
+.sig-tab.active { color: var(--green); border-bottom-color: var(--green); }
+.sig-panel { display: none; padding: 10px 0; }
+.sig-panel.active { display: block; }
+.font-choice { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+.font-option {
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  min-height: 44px;
+}
+.font-option.selected { border-color: var(--green); background: var(--green-light); }
+.font-preview { font-size: 22px; color: var(--ink); line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
+.font-preview.tomatoes   { font-family: 'Tomatoes', cursive; font-size: 22px; }
+.font-preview.autography { font-family: 'Autography', cursive; font-size: 26px; }
+.font-preview.bulgatti   { font-family: 'Bulgatti', cursive; font-size: 24px; }
+.font-label { font-size: 11px; color: var(--muted); margin-left: 8px; }
+#sig-canvas-wrap {
+  border: 2px dashed var(--line);
+  border-radius: 8px;
+  height: 130px;
+  position: relative;
+  background: #fafafa;
+}
+#sig-canvas { width: 100%; height: 100%; touch-action: none; }
+.sig-canvas-hint {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted); font-size: 12px; pointer-events: none;
+}
+.sig-canvas-hint.hide { display: none; }
+.sig-clear-btn {
+  font-size: 11px; color: var(--muted);
+  background: none; border: 0; cursor: pointer; padding: 4px 0;
+  margin-top: 4px; text-decoration: underline;
+}
+.contract-agree {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 12px; background: var(--bg); border-radius: 8px;
+  font-size: 13px; line-height: 1.4;
+}
+.contract-agree input { margin-top: 3px; }
+.contract-submit {
+  padding: 12px 16px;
+  background: var(--green); color: #fff;
+  border: 0; border-radius: 8px;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+}
+.contract-submit:disabled { background: #cbd5e1; cursor: not-allowed; }
+.contract-submit:not(:disabled):hover { background: var(--green-deep); }
+.contract-error {
+  color: #b91c1c; font-size: 12px; padding: 8px; background: #fef2f2; border-radius: 6px;
+  display: none;
+}
+.contract-error.show { display: block; }
 
 /* ═══════════════════════════════════════════════════
    ENROLLMENT FORM — adapted from booking-form.css
@@ -821,24 +1182,50 @@ tr:hover td { background: #fafaf8; }
   </div>
 </div>
 
+<!-- Accelerator non-blocking opt-in banner (populated by maybeShowAccelerator) -->
+<div id="accelBanner" style="display:none"></div>
+
 <!-- ═══ Nav tabs ═══ -->
 <div class="nav-tabs" id="navTabs">
   <button class="nav-tab active" data-tab="dashboard">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
     Dashboard
   </button>
+  <button class="nav-tab clr-tab" data-tab="clearance" style="display:none;color:#1a6600">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+    Seat Clearance
+  </button>
   <button class="nav-tab" data-tab="students">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
     Students
   </button>
   <button class="nav-tab" data-tab="history">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-    History
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+    Finance
+  </button>
+  <button class="nav-tab lp-tab" data-tab="lifepass">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg>
+    LifePass
   </button>
   <button class="nav-tab" data-tab="documents">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-    Documents
+    Partnership
   </button>
+  <!-- Blanket challenge opt-in — bright, beside Partnership; shown only when a challenge is live -->
+  <div id="challengeOptIn" class="chal-optin" style="display:none">
+    <span class="chal-optin-copy">
+      <span class="chal-optin-t" id="optinTitle"></span>
+      <span class="chal-optin-s" id="optinSub"></span>
+    </span>
+    <button type="button" class="chal-switch" id="optinSwitch" role="switch" aria-checked="false" aria-label="Apply this month's Challenge to all enrolments" onclick="toggleChallengeOptIn()"><span class="chal-knob"></span></button>
+  </div>
+  <!-- Next-month preview (greyed, read-only) — shows the upcoming Challenge % -->
+  <div id="challengeNext" class="chal-next" style="display:none" title="Next month's Challenge — not yet live">
+    <span class="chal-optin-copy">
+      <span class="chal-optin-t" id="nextTitle"></span>
+      <span class="chal-optin-s" id="nextSub"></span>
+    </span>
+  </div>
   <button class="nav-tab cta" data-tab="enroll">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     Add New
@@ -862,34 +1249,54 @@ tr:hover td { background: #fafaf8; }
       <div class="loading">Loading dashboard...</div>
     </div>
     <div class="card">
-      <div class="card-title">Quotes</div>
-      <div id="quoteList"><div class="loading">Loading...</div></div>
-      <div id="quoteViewMore" style="display:none;text-align:center;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)">
-        <a href="#" class="view-more-link" data-go-history="quotes">View all quotes →</a>
+      <div class="card-title p-collapse-head open" id="quotesHead" onclick="pToggle(this)">Quotes</div>
+      <div class="p-collapse-body open" id="quotesBody">
+        <div id="quoteList"><div class="loading">Loading...</div></div>
+        <div id="quoteViewMore" style="display:none;text-align:center;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)">
+          <a href="#" class="view-more-link" data-go-history="quotes">View all quotes →</a>
+        </div>
       </div>
     </div>
     <div class="card">
-      <div class="card-title">Invoices</div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Invoice #</th><th>Status</th><th>Billed</th><th>Paid</th><th>Balance</th><th>Issued</th><th>Due</th><th></th></tr></thead>
-          <tbody id="invoiceRows"><tr><td colspan="8" class="loading">Loading...</td></tr></tbody>
-        </table>
-      </div>
-      <div id="invoiceViewMore" style="display:none;text-align:center;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)">
-        <a href="#" class="view-more-link" data-go-history="invoices">View all invoices →</a>
+      <div class="card-title p-collapse-head open" id="invoicesHead" onclick="pToggle(this)">Invoices</div>
+      <div class="p-collapse-body open" id="invoicesBody">
+        <div class="filter-pills" id="dashInvFilters" style="margin-bottom:14px">
+          <button class="invpill pending active" data-invf="pending">Pending</button>
+          <button class="invpill paid" data-invf="paid">Paid</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Invoice #</th><th>Student</th><th>Status</th><th>Billed</th><th>Paid</th><th>Balance</th><th>Issued</th><th>Due</th><th></th></tr></thead>
+            <tbody id="invoiceRows"><tr><td colspan="9" class="loading">Loading...</td></tr></tbody>
+          </table>
+        </div>
+        <div id="invoiceViewMore" style="display:none;text-align:center;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)">
+          <a href="#" class="view-more-link" data-go-history="invoices">View all invoices →</a>
+        </div>
       </div>
     </div>
   </div>
 
+  <!-- ── Seat Clearance ── -->
+  <div class="section" id="sec-clearance">
+    <div id="clearanceBody"><div style="padding:48px;text-align:center;color:#6b7280">Loading…</div></div>
+  </div>
+
   <!-- ── History ── -->
   <div class="section" id="sec-history">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div style="display:flex;align-items:center;margin-bottom:16px;gap:12px;flex-wrap:wrap">
       <div class="filter-pills" id="historyFilters">
         <button class="filter-pill active" data-filter="all">All</button>
         <button class="filter-pill" data-filter="quotes">Quotes</button>
         <button class="filter-pill" data-filter="invoices">Invoices</button>
+        <button class="filter-pill credit-pill" data-filter="credits">Credit</button>
       </div>
+      <div class="filter-pills" id="finInvStatus" style="display:none">
+        <button class="invpill all active" data-fst="all" style="background:var(--navy)">All</button>
+        <button class="invpill pending" data-fst="open">Open</button>
+        <button class="invpill paid" data-fst="paid">Paid</button>
+      </div>
+      <input id="financeSearch" placeholder="Search № or student…" style="margin-left:auto;min-width:170px;max-width:280px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px">
       <div style="font-size:12px;color:var(--muted)"><span id="historyCount"></span></div>
     </div>
     <div class="card">
@@ -897,8 +1304,60 @@ tr:hover td { background: #fafaf8; }
     </div>
   </div>
 
+  <!-- ── LifePass ── -->
+  <div class="section" id="sec-lifepass">
+    <!-- Macro view (default) -->
+    <div id="lpMacro">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+        <div>
+          <div style="font-size:18px;font-weight:800;color:var(--navy)">LifePass — Recurring Commission</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Your monthly income stream from students on the LifePass programme — recurring income you can count on.</div>
+        </div>
+        <div class="lp-demo-tag" id="lpDataTag" title="LIVE = your real LifePass students (figures from reconciled payments). SAMPLE = illustrative demo.">SAMPLE DATA</div>
+      </div>
+      <div id="lpHero"></div>
+      <div id="lpCards"></div>
+      <div id="lpStair"></div>
+      <div id="lpGrid"></div>
+    </div>
+    <!-- Per-student drill-down -->
+    <div id="lpStudent" style="display:none"></div>
+  </div>
+
   <!-- ── Documents ── -->
   <div class="section" id="sec-documents">
+    <div class="card">
+      <div class="card-title">Getting Started</div>
+      <script src="https://fast.wistia.com/player.js" async></script>
+      <script src="https://fast.wistia.com/embed/fri6fgl7st.js" async type="module"></script>
+      <script src="https://fast.wistia.com/embed/2g6to6sqpz.js" async type="module"></script>
+      <script src="https://fast.wistia.com/embed/wvqjyf1si1.js" async type="module"></script>
+      <!-- Seat Clearance UI (shared with the public tease iframe) -->
+      <script src="/sis/partners/public/clearance-render.js"></script>
+      <style>
+        wistia-player[media-id='fri6fgl7st']:not(:defined){background:center/contain no-repeat url('https://fast.wistia.com/embed/medias/fri6fgl7st/swatch');display:block;filter:blur(5px)}
+        wistia-player[media-id='2g6to6sqpz']:not(:defined){background:center/contain no-repeat url('https://fast.wistia.com/embed/medias/2g6to6sqpz/swatch');display:block;filter:blur(5px)}
+        wistia-player[media-id='wvqjyf1si1']:not(:defined){background:center/contain no-repeat url('https://fast.wistia.com/embed/medias/wvqjyf1si1/swatch');display:block;filter:blur(5px)}
+        .guide-vid wistia-player { border-radius: 10px; overflow: hidden; cursor: pointer; }
+      </style>
+      <div style="display:flex;gap:18px;flex-wrap:wrap">
+        <div class="guide-vid" style="width:280px"><wistia-player media-id="fri6fgl7st" wistia-popover="true" aspect="1.7777777777777777" style="width:280px;height:158px"></wistia-player><div class="guide-t" style="margin-top:7px">Welcome</div><div class="guide-s">Getting started as a ULearn partner</div></div>
+        <div class="guide-vid" style="width:280px"><wistia-player media-id="2g6to6sqpz" wistia-popover="true" aspect="1.7777777777777777" style="width:280px;height:158px"></wistia-player><div class="guide-t" style="margin-top:7px">Continuing Support</div><div class="guide-s">How we support you &amp; your students</div></div>
+        <div class="guide-vid" style="width:280px"><wistia-player media-id="wvqjyf1si1" wistia-popover="true" aspect="1.7777777777777777" style="width:280px;height:158px"></wistia-player><div class="guide-t" style="margin-top:7px">Maintaining Relationships</div><div class="guide-s">Building lasting partnerships</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Partnership Certificate</div>
+      <div class="history-row" style="grid-template-columns: 1fr 200px;align-items:center">
+        <div>
+          <strong>ULearn Certificate of Partnership</strong>
+          <div style="font-size:12px;color:var(--muted)">Signed by Neil Mc Mahon (CEO) · Refresh date 01/01/2026</div>
+        </div>
+        <div style="text-align:right">
+          <a href="/sis/partners/api/certificate/pdf" target="_blank" style="color:var(--green);text-decoration:none;font-weight:600;font-size:13px">View PDF →</a>
+        </div>
+      </div>
+    </div>
     <div class="card">
       <div class="card-title">Signed Documents</div>
       <div id="documentList"><div class="loading">Loading documents...</div></div>
@@ -914,7 +1373,14 @@ tr:hover td { background: #fafaf8; }
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>Name</th><th>Nationality</th><th>Level</th><th>Course</th><th>Dates</th><th>Status</th></tr>
+            <tr>
+              <th class="sort-h" onclick="stuSort('name')">Name<span id="stuArr-name"></span></th>
+              <th class="sort-h" onclick="stuSort('nationality')">Nationality<span id="stuArr-nationality"></span></th>
+              <th class="sort-h" onclick="stuSort('level')">Level<span id="stuArr-level"></span></th>
+              <th class="sort-h" onclick="stuSort('course')">Course<span id="stuArr-course"></span></th>
+              <th class="sort-h" onclick="stuSort('date')">Dates<span id="stuArr-date"></span></th>
+              <th class="sort-h" onclick="stuSort('status')">Status<span id="stuArr-status"></span></th>
+            </tr>
           </thead>
           <tbody id="studentRows">
             <tr><td colspan="6" class="loading">Loading students...</td></tr>
@@ -958,6 +1424,10 @@ tr:hover td { background: #fafaf8; }
                 <input type="tel" name="phone">
               </div>
               <div class="field">
+                <label>Instagram <span class="req" id="igReq" style="display:none">*</span></label>
+                <input type="text" name="instagram" id="enrollInstagram" placeholder="@instagram">
+              </div>
+              <div class="field">
                 <label>Date of Birth</label>
                 <input type="date" name="dateOfBirth">
               </div>
@@ -967,6 +1437,18 @@ tr:hover td { background: #fafaf8; }
                   <option value="">Select nationality...</option>
                 </select>
               </div>
+            </div>
+
+            <!-- Challenge promotion — visible on load (not collapsible); shown only when a challenge is live this month -->
+            <div id="challengeBlock" class="challenge-block" style="display:none">
+              <label class="challenge-toggle">
+                <span class="challenge-copy">
+                  <span class="challenge-title" id="challengeTitle"></span>
+                  <span class="challenge-sub" id="challengeSub"></span>
+                </span>
+                <input type="checkbox" name="challenge" id="challengeCheck">
+                <span class="challenge-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+              </label>
             </div>
 
             <!-- Accordion: Course / Accommodation / Extras -->
@@ -1053,6 +1535,13 @@ tr:hover td { background: #fafaf8; }
                         <input type="radio" name="aySlot" id="ay-pm" value="afternoon"><label for="ay-pm">Afternoon</label>
                       </div>
                     </div>
+                    <div class="field"><label>Renewal?</label>
+                      <label class="renewal-toggle">
+                        <input type="checkbox" name="ayRenewal" id="ayRenewal">
+                        <span class="challenge-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                        <span class="renewal-label">Renewal</span>
+                      </label>
+                    </div>
                   </div>
                   <div class="sub-options" data-sub="lifepass">
                     <div class="field"><label>Session</label>
@@ -1125,6 +1614,16 @@ tr:hover td { background: #fafaf8; }
                       <input type="radio" name="accommType" id="acc-host" value="host"><label for="acc-host">Host Family</label>
                       <input type="radio" name="accommType" id="acc-apt" value="apartment"><label for="acc-apt">Apartment</label>
                       <input type="radio" name="accommType" id="acc-hostel" value="hostel_hotel"><label for="acc-hostel">Hostel / Hotel</label>
+                    </div>
+                  </div>
+
+                  <!-- Host Family room type -->
+                  <div class="sub-options" data-accomm-sub="host">
+                    <div class="field"><label>Room Type</label>
+                      <div class="chip-row">
+                        <input type="radio" name="accommRoom" id="hf-ind" value="host-individual"><label for="hf-ind">Individual</label>
+                        <input type="radio" name="accommRoom" id="hf-shr" value="host-shared"><label for="hf-shr">Shared</label>
+                      </div>
                     </div>
                   </div>
 
@@ -1267,15 +1766,165 @@ tr:hover td { background: #fafaf8; }
   };
 
   // ── Init ──
+  // ── Accelerator programme (non-blocking opt-in) ──────────────────
+  async function maybeShowAccelerator(suppressPopup) {
+    let st;
+    try { st = await fetch('/sis/partners/api/accelerator/status').then(r => r.json()); } catch { return; }
+    if (!st || st.signed || !st.eligible) return;
+    // Persistent banner — remains until they sign (Neil: no dismiss).
+    const bar = document.getElementById('accelBanner');
+    if (bar) {
+      bar.style.display = 'block';
+      bar.innerHTML = `
+        <div style="background:linear-gradient(90deg,#318817,#3fa523);color:#fff;padding:10px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center">
+          <span style="font-weight:800;font-size:14px">🚀 Higher Volume. Higher Rates. Accelerate Growth.</span>
+          <button onclick="openAccelModal()" style="background:#fff;color:#256b12;border:0;border-radius:8px;padding:7px 16px;font-weight:800;font-size:13px;cursor:pointer">View &amp; Activate →</button>
+        </div>`;
+    }
+    // Surface the contract as a NON-BLOCKING popup on EVERY page load — login AND
+    // refresh — until they sign (Neil, 2026-08-16). They can click off it
+    // (backdrop / ×); the banner stays regardless. After signing, the st.signed
+    // early-return above stops both banner and popup.
+    // EXCEPT while a Seat Clearance sale takes the load for a clearance-eligible partner
+    // — the Accelerator popup would clash with it (Neil, 2026-08-23). The banner above
+    // still shows, so they can open the Accelerator manually any time.
+    if (suppressPopup) return;
+    openAccelModal();
+  }
+  function dismissAccelBanner() {
+    try { sessionStorage.setItem('accelBannerDismissed', '1'); } catch (_) {}
+    const b = document.getElementById('accelBanner'); if (b) b.style.display = 'none';
+  }
+  async function openAccelModal() {
+    let ov = document.getElementById('accelModal');
+    if (ov) ov.remove();
+    ov = document.createElement('div');
+    ov.id = 'accelModal';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:20px';
+    ov.innerHTML = `<div style="background:#fff;border-radius:14px;width:min(920px,96vw);max-height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.35)">
+        <div style="display:flex;justify-content:flex-end;padding:10px 14px 0"><button onclick="document.getElementById('accelModal').remove()" style="background:transparent;border:0;font-size:22px;cursor:pointer;color:#807F83;line-height:1">&times;</button></div>
+        <div id="accelBody" style="overflow-y:auto;padding:0 30px 24px"><div style="padding:40px;text-align:center;color:#807F83">Loading…</div></div>
+      </div>`;
+    ov.addEventListener('click', function (e) { if (e.target === ov) ov.remove(); });
+    document.body.appendChild(ov);
+    try {
+      const html = await fetch('/sis/partners/api/accelerator/contract').then(r => r.text());
+      const body = document.getElementById('accelBody');
+      body.innerHTML = html;
+      wireAccelActivate(body);
+    } catch (_) {
+      const b = document.getElementById('accelBody');
+      if (b) b.innerHTML = '<div style="padding:30px;color:#991b1b">Could not load the contract. Please try again.</div>';
+    }
+  }
+  function wireAccelActivate(root) {
+    const agree = root.querySelector('#accel-agree');
+    const btn = root.querySelector('#accel-activate');
+    if (!btn) return;
+    const setState = () => { const on = agree ? agree.checked : true; btn.disabled = !on; btn.style.opacity = on ? '1' : '.5'; btn.style.cursor = on ? 'pointer' : 'not-allowed'; };
+    if (agree) agree.addEventListener('change', setState);
+    setState();
+    btn.addEventListener('click', async () => {
+      if (agree && !agree.checked) return;
+      btn.disabled = true; const label = btn.textContent; btn.textContent = 'Activating…';
+      try {
+        const r = await fetch('/sis/partners/api/accelerator/activate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }).then(r => r.json());
+        if (!r.success) throw new Error(r.error || 'failed');
+        const nextYear = new Date().getUTCFullYear() + 1;
+        document.getElementById('accelBody').innerHTML = `<div style="padding:44px 30px;text-align:center">
+          <div style="font-size:44px">✅</div>
+          <div style="font-size:19px;font-weight:800;color:#256b12;margin-top:8px">You're in!</div>
+          <div style="color:#333;font-size:14px;margin-top:8px;line-height:1.55">Your Accelerator is active. Your first cycle runs to <strong>31 December ${nextYear}</strong>. Enrolments you send from now climb the ladder — and your rate never drops below your base.</div>
+          <button onclick="document.getElementById('accelModal').remove();location.reload()" style="margin-top:18px;background:#318817;color:#fff;border:0;border-radius:9px;padding:11px 24px;font-weight:800;cursor:pointer">Done</button>
+        </div>`;
+        dismissAccelBanner();
+      } catch (e) {
+        btn.disabled = false; btn.textContent = label;
+        alert('Could not activate: ' + (e && e.message ? e.message : e));
+      }
+    });
+  }
+
+  // Exposed for the banner/modal inline onclick handlers (script runs in an IIFE).
+  window.openAccelModal = openAccelModal;
+  window.dismissAccelBanner = dismissAccelBanner;
+
   async function init() {
     try {
       const res = await fetch('/sis/partners/api/me');
       if (!res.ok) { location.href = '/sis/partners/login'; return; }
       me = await res.json();
       if (!me.success) { location.href = '/sis/partners/login'; return; }
+      // Scale the LifePass projection to THIS partner's real commission rate
+      // (percentage points from /me; null → 25% default inside lpApplyRate).
+      lpApplyRate(me.commissionRate);
       document.getElementById('agencyName').textContent = me.agencyName || '';
       document.getElementById('userName').textContent = me.displayName || me.user;
+      // LifePass isn't offered to Visa-Before-Departure / Unsupported partner territories — hide the tab
+      if (me.lifePassEligible === false) {
+        const lpTab = document.querySelector('.nav-tab[data-tab="lifepass"]');
+        if (lpTab) lpTab.style.display = 'none';
+      }
+      if (me.impersonating) {
+        // Staff-only discreet return link (a real partner never has this flag).
+        // Replaces the old full-width "Admin view — read-only" banner: staff now
+        // routinely work in here, so it just needs a quiet way back to the SIS.
+        const b = document.createElement('a');
+        b.href = '/sis/partners/impersonate/exit';
+        b.textContent = '← Back to SIS';
+        b.title = 'Staff: return to the SIS admin (' + (me.agencyName || 'this partner') + ')';
+        b.style.cssText = 'position:fixed;left:12px;bottom:12px;z-index:99999;background:rgba(26,26,46,.88);color:#fff;font-size:12px;font-weight:700;padding:7px 12px;border-radius:999px;text-decoration:none;box-shadow:0 4px 14px rgba(0,0,0,.25);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)';
+        document.body.appendChild(b);
+      }
     } catch { location.href = '/sis/partners/login'; return; }
+
+    // Contract gate — if unsigned, surface the signing modal and skip everything else.
+    if (!me.contractSigned) {
+      setupContractGate();
+      return;
+    }
+
+    // Just signed the agreement → welcome them with the intro video (one-shot,
+    // survives the post-sign reload). They can re-watch it any time under
+    // Partnership → Getting Started.
+    try {
+      if (sessionStorage.getItem('ulearnJustSigned')) {
+        sessionStorage.removeItem('ulearnJustSigned');
+        setTimeout(() => openVideoModal('fri6fgl7st', 'Welcome to the ULearn Partnership'), 700);
+      }
+    } catch (_) {}
+
+    // Seat Clearance — show the tab to eligible partners; while a sale is LIVE it
+    // takes prominence over Dashboard on load. Once ended, Dashboard leads again but
+    // the tab stays (shows the countdown to the next sale).
+    if (me.clearance && me.clearance.eligible) {
+      const clrTab = document.querySelector('.nav-tab[data-tab="clearance"]');
+      if (clrTab) clrTab.style.display = '';
+      // Take prominence on load while LIVE, or when deep-linked (?tab=clearance —
+      // used by the launch email + the ulearnschool.com/partners/seat-clearance iframe),
+      // or when returning from Stripe checkout (?clr_paid=<session>).
+      const _params = new URLSearchParams(location.search);
+      const _forceClr = _params.get('tab') === 'clearance';
+      const _clrPaid = _params.get('clr_paid');
+      if (me.clearance.state === 'live' || _forceClr || _clrPaid) {
+        document.querySelectorAll('.nav-tab').forEach(n => n.classList.remove('active'));
+        clrTab && clrTab.classList.add('active');
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById('sec-clearance').classList.add('active');
+        setTimeout(loadClearance, 0);
+      }
+      // Returned from Stripe embedded checkout (top-level redirect) → confirm the
+      // payment, flip the seats to RESERVED, celebrate, and strip the query params.
+      if (_clrPaid) {
+        fetch('/sis/partners/api/clearance/checkout-status?sessionId=' + encodeURIComponent(_clrPaid))
+          .then(r => r.json()).then(s => {
+            const u = new URL(location.href); u.searchParams.delete('clr_paid'); u.searchParams.delete('tab');
+            history.replaceState(null, '', u.toString());
+            if (s.paid) setTimeout(() => alert('Payment received — your seats are reserved. 🎉'), 400);
+            loadClearance();
+          }).catch(() => {});
+      }
+    }
 
     populateNationalities();
     setupTabs();
@@ -1285,7 +1934,16 @@ tr:hover td { background: #fafaf8; }
     setupAccommToggle();
     setupExtrasToggle();
     setupEnrollForm();
+    loadChallenge();
     loadDashboard();
+    // Suppress the Accelerator auto-popup when the Seat Clearance tab takes the load
+    // (clearance-eligible + a live sale, or deep-linked / returning from checkout) so the
+    // two don't clash onLoad. The Accelerator banner still shows for manual opt-in.
+    const _clrTakesLoad = !!(me.clearance && me.clearance.eligible &&
+      (me.clearance.state === 'live'
+        || new URLSearchParams(location.search).get('tab') === 'clearance'
+        || new URLSearchParams(location.search).get('clr_paid')));
+    maybeShowAccelerator(_clrTakesLoad);
 
     // Refresh button → re-poll live finance
     const refreshBtn = document.getElementById('refreshBtn');
@@ -1308,15 +1966,316 @@ tr:hover td { background: #fafaf8; }
       });
     });
 
-    // Filter pills inside History tab
-    document.querySelectorAll('.filter-pill').forEach(p => {
+    // Dashboard invoice Pending/Paid pills (default Pending)
+    document.querySelectorAll('#dashInvFilters .invpill').forEach(p => {
+      p.addEventListener('click', () => {
+        dashInvFilter = p.dataset.invf;
+        document.querySelectorAll('#dashInvFilters .invpill').forEach(x => x.classList.toggle('active', x === p));
+        renderDashInvoices();
+      });
+    });
+
+    // Filter pills inside Finance tab (All / Quotes / Invoices)
+    document.querySelectorAll('#historyFilters .filter-pill').forEach(p => {
       p.addEventListener('click', () => {
         historyFilter = p.dataset.filter || 'all';
-        document.querySelectorAll('.filter-pill').forEach(x => x.classList.toggle('active', x === p));
+        document.querySelectorAll('#historyFilters .filter-pill').forEach(x => x.classList.toggle('active', x === p));
         loadHistory();
       });
     });
+
+    // Finance invoice status sub-filter (Open / Paid) — no default
+    document.querySelectorAll('#finInvStatus .invpill').forEach(p => {
+      p.addEventListener('click', () => {
+        financeInvStatus = p.dataset.fst;
+        document.querySelectorAll('#finInvStatus .invpill').forEach(x => x.classList.toggle('active', x === p));
+        loadHistory();
+      });
+    });
+
+    // Finance search (debounced)
+    const fSearch = document.getElementById('financeSearch');
+    if (fSearch) { let t; fSearch.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => { financeSearch = fSearch.value; loadHistory(); }, 200); }); }
   }
+
+  // ── Contract signing gate ──
+  function setupContractGate() {
+    const overlay = document.getElementById('contractOverlay');
+    const frame = document.getElementById('contractPdfFrame');
+    const nameInput = document.getElementById('sigSignerName');
+    const titleInput = document.getElementById('sigSignerTitle');
+    const agreed = document.getElementById('sigAgreed');
+    const submitBtn = document.getElementById('contractSubmit');
+    const errBox = document.getElementById('contractError');
+    let currentMode = 'typed';
+    let currentFont = 'Tomatoes';
+    let drawnStrokes = []; // [[{x,y},...], ...]
+
+    // Load the responsive HTML preview (native PDF-in-iframe renders blank /
+    // no pinch-zoom on mobile) so the user has something to read while we
+    // fetch their HubSpot-canonical details.
+    frame.src = '/sis/partners/api/contract/preview.html';
+    overlay.classList.add('show');
+
+    const gateBox = document.getElementById('contractTermsGate');
+    const signFlow = document.getElementById('contractSignFlow');
+    const cd = {
+      etoName: document.getElementById('cdEtoName'),
+      street: document.getElementById('cdStreet'),
+      city: document.getElementById('cdCity'),
+      zip: document.getElementById('cdZip'),
+      country: document.getElementById('cdCountry'),
+      taxNo: document.getElementById('cdTaxNo'),
+      contact: document.getElementById('cdContact'),
+      email: document.getElementById('cdEmail'),
+      phone: document.getElementById('cdPhone'),
+      discount: document.getElementById('cdDiscount'),
+    };
+
+    // Pre-fill signer + confirm-details from HubSpot. Falls back to the session
+    // display name if the endpoint can't enrich.
+    nameInput.value = (me && me.displayName) || '';
+    fetch('/sis/partners/api/contract').then(r => r.json()).then(d => {
+      if (d && d.suggestedName) nameInput.value = d.suggestedName;
+      if (d && d.suggestedTitle && !titleInput.value) titleInput.value = d.suggestedTitle;
+
+      // Commercial gate — no wholesale discount set → not signable.
+      if (d && d.commissionSet === false) {
+        gateBox.style.display = 'block';
+        signFlow.style.display = 'none';
+      }
+
+      const x = (d && d.details) || {};
+      if (cd.etoName) cd.etoName.value = x.etoName || '';
+      if (cd.street) cd.street.value = x.street || '';
+      if (cd.city) cd.city.value = x.city || '';
+      if (cd.zip) cd.zip.value = x.zip || '';
+      if (cd.country) cd.country.value = x.country || '';
+      if (cd.taxNo) cd.taxNo.value = x.companyTaxNo || '';
+      if (cd.contact) cd.contact.value = x.primaryContact || '';
+      if (cd.email) cd.email.value = x.email || '';
+      if (cd.phone) cd.phone.value = x.telephone || '';
+      if (cd.discount) cd.discount.value = x.wholesaleDiscount ? (x.wholesaleDiscount + '% of gross tuition fees') : 'Not set';
+
+      updateFontPreviews();
+      updateSubmitState();
+    }).catch(() => {});
+
+    // ── Tab switching ──
+    document.querySelectorAll('.sig-tab').forEach(t => {
+      t.addEventListener('click', () => {
+        document.querySelectorAll('.sig-tab').forEach(x => x.classList.toggle('active', x === t));
+        currentMode = t.dataset.sigMode;
+        document.getElementById('sigPanelTyped').classList.toggle('active', currentMode === 'typed');
+        document.getElementById('sigPanelDrawn').classList.toggle('active', currentMode === 'drawn');
+        if (currentMode === 'drawn') setupCanvas();
+        updateSubmitState();
+      });
+    });
+
+    // ── Font selection ──
+    document.querySelectorAll('.font-option').forEach(o => {
+      o.addEventListener('click', () => {
+        document.querySelectorAll('.font-option').forEach(x => x.classList.toggle('selected', x === o));
+        currentFont = o.dataset.font;
+      });
+    });
+
+    // Live update of font previews with the typed name
+    function updateFontPreviews() {
+      const display = (nameInput.value || 'Your name').trim() || 'Your name';
+      document.querySelectorAll('.font-preview').forEach(el => el.textContent = display);
+    }
+    nameInput.addEventListener('input', () => { updateFontPreviews(); updateSubmitState(); });
+    titleInput.addEventListener('input', updateSubmitState);
+    agreed.addEventListener('change', updateSubmitState);
+
+    // ── Canvas drawing ──
+    let canvas, ctx, drawing = false, lastPt = null, dpr = window.devicePixelRatio || 1;
+    function setupCanvas() {
+      if (canvas) return;
+      canvas = document.getElementById('sig-canvas');
+      const wrap = document.getElementById('sig-canvas-wrap');
+      canvas.width = wrap.offsetWidth * dpr;
+      canvas.height = wrap.offsetHeight * dpr;
+      ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = '#1e293b';
+
+      const hint = document.getElementById('sigCanvasHint');
+      const ptFrom = (e) => {
+        const r = canvas.getBoundingClientRect();
+        const pt = e.touches ? e.touches[0] : e;
+        return { x: pt.clientX - r.left, y: pt.clientY - r.top };
+      };
+      const start = (e) => {
+        e.preventDefault();
+        drawing = true;
+        lastPt = ptFrom(e);
+        drawnStrokes.push([lastPt]);
+        hint.classList.add('hide');
+      };
+      const move = (e) => {
+        if (!drawing) return;
+        e.preventDefault();
+        const p = ptFrom(e);
+        ctx.beginPath(); ctx.moveTo(lastPt.x, lastPt.y); ctx.lineTo(p.x, p.y); ctx.stroke();
+        drawnStrokes[drawnStrokes.length - 1].push(p);
+        lastPt = p;
+        updateSubmitState();
+      };
+      const end = (e) => { if (drawing) { e.preventDefault(); drawing = false; } };
+      canvas.addEventListener('mousedown', start);
+      canvas.addEventListener('mousemove', move);
+      canvas.addEventListener('mouseup', end);
+      canvas.addEventListener('mouseleave', end);
+      canvas.addEventListener('touchstart', start, { passive: false });
+      canvas.addEventListener('touchmove', move, { passive: false });
+      canvas.addEventListener('touchend', end, { passive: false });
+    }
+    document.getElementById('sigClearBtn').addEventListener('click', () => {
+      if (!ctx) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawnStrokes = [];
+      document.getElementById('sigCanvasHint').classList.remove('hide');
+      updateSubmitState();
+    });
+
+    function hasDrawing() { return drawnStrokes.some(s => s.length > 1); }
+
+    function updateSubmitState() {
+      const nameOk = !!nameInput.value.trim();
+      const agreeOk = agreed.checked;
+      const sigOk = currentMode === 'typed' ? nameOk : hasDrawing();
+      const detailsOk = !!(cd.etoName && cd.etoName.value.trim())
+        && !!(cd.contact && cd.contact.value.trim())
+        && !!(cd.email && cd.email.value.trim());
+      submitBtn.disabled = !(nameOk && agreeOk && sigOk && detailsOk);
+    }
+    [cd.etoName, cd.contact, cd.email].forEach(el => el && el.addEventListener('input', updateSubmitState));
+
+    // ── Render typed signature to a hidden canvas → PNG dataURL ──
+    function renderTypedSignaturePng() {
+      const name = nameInput.value.trim();
+      const c = document.createElement('canvas');
+      const w = 720, h = 130;
+      c.width = w; c.height = h;
+      const cx = c.getContext('2d');
+      cx.fillStyle = '#fff'; cx.fillRect(0, 0, w, h);
+      // Map our font names to CSS family
+      const fam = currentFont === 'Autography' ? "'Autography', cursive"
+                : currentFont === 'Bulgatti'   ? "'Bulgatti', cursive"
+                : "'Tomatoes', cursive";
+      // Auto-shrink if name is long. Tomatoes is a marker-style face and
+      // renders much wider per character than the script faces, so it
+      // gets a smaller starting size to avoid overflow in the PDF cell.
+      const startSize = currentFont === 'Tomatoes' ? 48 : 60;
+      let size = startSize;
+      cx.fillStyle = '#1e293b';
+      cx.textBaseline = 'middle';
+      while (size > 22) {
+        cx.font = `${size}px ${fam}`;
+        if (cx.measureText(name).width <= w - 40) break;
+        size -= 4;
+      }
+      cx.font = `${size}px ${fam}`;
+      cx.fillText(name, 20, h / 2);
+      return c.toDataURL('image/png');
+    }
+    function renderDrawnSignaturePng() {
+      // Re-render at a fixed scale into a clean canvas with white background
+      const wrap = document.getElementById('sig-canvas-wrap');
+      const w = wrap.offsetWidth, h = wrap.offsetHeight;
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      const cx = c.getContext('2d');
+      cx.fillStyle = '#fff'; cx.fillRect(0, 0, w, h);
+      cx.strokeStyle = '#1e293b'; cx.lineWidth = 2; cx.lineCap = 'round'; cx.lineJoin = 'round';
+      for (const stroke of drawnStrokes) {
+        if (stroke.length < 2) continue;
+        cx.beginPath();
+        cx.moveTo(stroke[0].x, stroke[0].y);
+        for (let i = 1; i < stroke.length; i++) cx.lineTo(stroke[i].x, stroke[i].y);
+        cx.stroke();
+      }
+      return c.toDataURL('image/png');
+    }
+    function strokesToSvg() {
+      const wrap = document.getElementById('sig-canvas-wrap');
+      const w = wrap.offsetWidth, h = wrap.offsetHeight;
+      const paths = drawnStrokes.filter(s => s.length > 1).map(s => {
+        const d = s.map((p, i) => (i ? 'L' : 'M') + p.x.toFixed(1) + ' ' + p.y.toFixed(1)).join(' ');
+        return `<path d="${d}" />`;
+      }).join('');
+      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" fill="none" stroke="#1e293b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
+    }
+
+    // ── Submit ──
+    submitBtn.addEventListener('click', async () => {
+      errBox.classList.remove('show');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Signing…';
+
+      const payload = {
+        mode: currentMode,
+        signerName: nameInput.value.trim(),
+        signerTitle: titleInput.value.trim() || null,
+        agreed: agreed.checked,
+        font: currentMode === 'typed' ? currentFont : null,
+        signatureSvg: currentMode === 'drawn' ? strokesToSvg() : null,
+        signaturePngB64: currentMode === 'typed' ? renderTypedSignaturePng() : renderDrawnSignaturePng(),
+        companyTaxNo: (cd.taxNo && cd.taxNo.value.trim()) || null,
+      };
+
+      try {
+        // Write any corrected details back to HubSpot first (canonical record).
+        await fetch('/sis/partners/api/contract/confirm', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            etoName: cd.etoName && cd.etoName.value.trim(),
+            primaryContact: cd.contact && cd.contact.value.trim(),
+            email: cd.email && cd.email.value.trim(),
+            telephone: cd.phone && cd.phone.value.trim(),
+            companyTaxNo: cd.taxNo && cd.taxNo.value.trim(),
+            street: cd.street && cd.street.value.trim(),
+            city: cd.city && cd.city.value.trim(),
+            zip: cd.zip && cd.zip.value.trim(),
+            country: cd.country && cd.country.value.trim(),
+          }),
+        }).catch(() => {});   // non-fatal — signing proceeds even if write-back hiccups
+
+        const res = await fetch('/sis/partners/api/contract/sign', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Sign failed');
+        // One-shot flag: after the reload, auto-surface the Welcome video.
+        try { sessionStorage.setItem('ulearnJustSigned', '1'); } catch (_) {}
+        // Force a reload so the gate releases.
+        location.reload();
+      } catch (e) {
+        errBox.textContent = String(e.message || e);
+        errBox.classList.add('show');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Sign agreement';
+      }
+    });
+
+    updateFontPreviews();
+    updateSubmitState();
+  }
+
+  // ── Seat Clearance Sale ──────────────────────────────────────────────
+  // ── Seat Clearance ── the entire UI (load/render/seat-select/cart/Stripe/countdown)
+  // now lives in the SHARED /sis/partners/public/clearance-render.js (one source of truth
+  // for the portal + the public tease iframe). It exposes window.loadClearance + the _clr*
+  // onclick handlers, called from the tab nav below.
 
   // ── Tab navigation ──
   function setupTabs() {
@@ -1332,6 +2291,9 @@ tr:hover td { background: #fafaf8; }
         else if (t === 'dashboard') loadDashboard();
         else if (t === 'history') loadHistory();
         else if (t === 'documents') loadDocuments();
+        else if (t === 'lifepass') loadLifePass();
+        else if (t === 'clearance') loadClearance();
+        else { if (window._clrStopCountdown) window._clrStopCountdown(); }
       });
     });
   }
@@ -1446,6 +2408,12 @@ tr:hover td { background: #fafaf8; }
         } else {
           wf.style.display = '';
           lp.style.display = 'none';
+          // Academic Year is a 25+ week programme — default the weeks to 25 so the
+          // partner isn't scrolling the full 1–24 list (confusing for AY).
+          if (inp.value === 'academic_year') {
+            const wk = document.getElementById('courseWeeks');
+            if (wk) { wk.value = '25'; wk.dispatchEvent(new Event('change')); }
+          }
         }
         // Hide bundled extras (Exam Fee + Insurance) for AY / LifePass — they're auto-applied server-side
         const bundled = inp.value === 'lifepass' || inp.value === 'academic_year';
@@ -1460,6 +2428,8 @@ tr:hover td { background: #fafaf8; }
         // Hide the "Exam Type" sub-options when bundled — exam type is set later from level test
         const examSub = document.querySelector('[data-extra-sub="exam_fee"]');
         if (examSub && bundled) examSub.classList.remove('show');
+        // KickStart × LifePass are mutually exclusive — drop the Challenge line for LifePass
+        syncChallengeVisibility();
       });
     });
 
@@ -1489,6 +2459,79 @@ tr:hover td { background: #fafaf8; }
       }
     });
   }
+
+  // Is there a live challenge this month? (set by loadChallenge; gates the card's visibility)
+  let challengeLive = false;
+  // KickStart and LifePass are mutually exclusive — hide + uncheck the Challenge card for LifePass.
+  function syncChallengeVisibility() {
+    const block = document.getElementById('challengeBlock');
+    if (!block) return;
+    const sel = document.querySelector('input[name="courseType"]:checked');
+    const isLifePass = sel && sel.value === 'lifepass';
+    const cb = document.getElementById('challengeCheck');
+    if (!challengeLive || isLifePass) {
+      block.style.display = 'none';
+      if (isLifePass && cb) cb.checked = false; // never submit a challenge on a LifePass booking
+    } else {
+      block.style.display = '';
+    }
+  }
+
+  // ── Challenge promotion — one call drives the enrol-form card, its pre-check, and the nav opt-in switch ──
+  async function loadChallenge() {
+    const block = document.getElementById('challengeBlock');
+    const optin = document.getElementById('challengeOptIn');
+    let d = null;
+    try { d = await fetch('/sis/partners/api/challenge/opt-in').then(r => r.json()); } catch (_) {}
+    const c = d && d.success ? d.challenge : null;
+    // Next-month preview pill (greyed, read-only) — independent of whether a
+    // challenge is live right now, so the taper is always advertised.
+    const nextEl = document.getElementById('challengeNext');
+    const n = d && d.next ? d.next : null;
+    if (nextEl) {
+      if (n) {
+        const nMonth = new Date((n.starts || n.ends || (n.month + '-01')) + 'T00:00:00').toLocaleString('en-IE', { month: 'long' });
+        document.getElementById('nextTitle').textContent = `${n.type} ${nMonth} ${n.percent}% Off`;
+        document.getElementById('nextSub').textContent = 'Coming next month...';
+        nextEl.style.display = '';
+      } else {
+        nextEl.style.display = 'none';
+      }
+    }
+    if (!c) { challengeLive = false; if (block) block.style.display = 'none'; if (optin) optin.style.display = 'none'; return; }
+    challengeLive = true;
+    const monthName = new Date((c.starts || c.ends) + 'T00:00:00').toLocaleString('en-IE', { month: 'long' });
+    // Enrol-form card
+    document.getElementById('challengeTitle').textContent = `Enter Student into ${c.type}?`;
+    document.getElementById('challengeSub').textContent = `Complete Payment in ${monthName} - Get ${c.percent}% Off`;
+    // Pre-check the per-student box if the blanket opt-in is on for this month
+    const cb = document.getElementById('challengeCheck');
+    if (cb) cb.checked = !!d.on;
+    syncChallengeVisibility(); // respects LifePass mutual-exclusivity if already selected
+    // Nav opt-in switch
+    document.getElementById('optinTitle').innerHTML = `<a href="https://ulearnschool.com/kick-start-challenge" target="_blank" rel="noopener" title="Click to find out more...">${c.type} · ${c.percent}% Off in ${monthName}</a>`;
+    document.getElementById('optinSub').textContent = `Apply to all ${monthName} enrolments?`;
+    document.getElementById('optinSwitch').setAttribute('aria-checked', d.on ? 'true' : 'false');
+    optin.style.display = '';
+  }
+
+  // Flip the blanket opt-in — persists per agency; keeps the form's default checkbox in sync.
+  window.toggleChallengeOptIn = async function () {
+    const sw = document.getElementById('optinSwitch');
+    const next = sw.getAttribute('aria-checked') !== 'true';
+    sw.setAttribute('aria-checked', next ? 'true' : 'false'); // optimistic
+    try {
+      const d = await fetch('/sis/partners/api/challenge/opt-in', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ on: next }),
+      }).then(r => r.json());
+      const on = !!(d && d.success && d.on);
+      sw.setAttribute('aria-checked', on ? 'true' : 'false');
+      const cb = document.getElementById('challengeCheck');
+      if (cb) cb.checked = on; // the blanket sets the per-student box's default
+    } catch (_) {
+      sw.setAttribute('aria-checked', next ? 'false' : 'true'); // revert on failure
+    }
+  };
 
   // ── Date auto-computation ──
   function setupDateComputation() {
@@ -1645,7 +2688,7 @@ tr:hover td { background: #fafaf8; }
         <div>${actionHtml}</div>
         <div>${viewLink}</div>
       </div>
-      ${isQueried && q.partnerComments ? `<div class="quote-comments-view"><strong>Query:</strong> ${esc(q.partnerComments)}</div>` : ''}
+      ${isQueried && q.partnerComments ? `<div class="quote-comments-view${q.resolved ? ' resolved' : ''}">${q.resolved ? '<span class="resolved-tag">✓ Resolved</span>' : ''}<strong>Query:</strong> ${esc(q.partnerComments)}</div>` : ''}
       <div class="quote-comments-box" id="qc-${esc(q.id)}">
         <textarea placeholder="Explain your query (e.g. 'Wrong course', 'Price doesn't match our email conversation')..."></textarea>
         <div class="quote-comments-actions">
@@ -1711,6 +2754,44 @@ tr:hover td { background: #fafaf8; }
   let lastFinance = null;
   const DASH_LIMIT = 5;
 
+  // Collapsible card sections (chevron chip)
+  window.pToggle = function(head){ head.classList.toggle('open'); const b = head.nextElementSibling; if (b && b.classList.contains('p-collapse-body')) b.classList.toggle('open'); };
+  function setCollapsed(key, collapsed){
+    const head = document.getElementById(key + 'Head'), body = document.getElementById(key + 'Body');
+    if (head) head.classList.toggle('open', !collapsed);
+    if (body) body.classList.toggle('open', !collapsed);
+  }
+  window.goEnroll = function(){ const t = document.querySelector('.nav-tab[data-tab="enroll"]'); if (t) t.click(); };
+  window.openVideoModal = function(wistiaId, title){
+    const ov = document.createElement('div');
+    ov.className = 'video-overlay';
+    ov.addEventListener('click', (e) => { if (e.target === ov) ov.remove(); });
+    ov.innerHTML = `<div class="video-box"><div class="video-head"><span>${esc(title || '')}</span><button class="video-close" aria-label="Close" onclick="this.closest('.video-overlay').remove()">✕</button></div><div class="video-frame"><iframe src="https://fast.wistia.net/embed/iframe/${wistiaId}?videoFoam=true&autoPlay=true" allow="autoplay; fullscreen" allowtransparency="true" scrolling="no"></iframe></div></div>`;
+    document.body.appendChild(ov);
+  };
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') document.querySelector('.video-overlay')?.remove(); });
+  function getQuoteCta(line){ return `<div class="empty-cta">${esc(line)}<br><button class="btn-getquote" onclick="goEnroll()">Get Quote</button></div>`; }
+
+  // Dashboard invoices — Pending (open) / Paid pill filter, defaults to Pending.
+  let dashInvFilter = 'pending';
+  function renderDashInvoices(){
+    const d = lastFinance; if (!d) return;
+    const itbody = document.getElementById('invoiceRows');
+    const all = d.invoices || [];
+    const subset = all.filter(i => dashInvFilter === 'paid' ? i.status === 'paid' : i.status === 'open');
+    const recent = subset.slice(0, DASH_LIMIT);
+    if (!all.length) {
+      itbody.innerHTML = `<tr><td colspan="9">${getQuoteCta('Invoices appear here once a quote is accepted.')}</td></tr>`;
+    } else if (!recent.length) {
+      const msg = dashInvFilter === 'pending' ? 'No pending invoices — all settled.' : 'No paid invoices yet.';
+      itbody.innerHTML = `<tr><td colspan="9"><div class="empty-cta" style="padding:14px">${esc(msg)}</div></td></tr>`;
+    } else {
+      itbody.innerHTML = recent.map(renderInvoiceRow).join('');
+    }
+    document.getElementById('invoiceViewMore').style.display = subset.length > DASH_LIMIT ? 'block' : 'none';
+    setCollapsed('invoices', !all.length);   // only collapse when there are NO invoices at all
+  }
+
   async function loadDashboard() {
     const refreshBtn = document.getElementById('refreshBtn');
     if (refreshBtn) { refreshBtn.disabled = true; refreshBtn.textContent = '⟳ Loading...'; }
@@ -1722,35 +2803,31 @@ tr:hover td { background: #fafaf8; }
 
       // Stat cards — all from live HubSpot data
       document.getElementById('dashStats').innerHTML = `
-        <div class="stat-card"><div class="stat-value">${d.dealCount}</div><div class="stat-label">Total Deals</div></div>
-        <div class="stat-card green"><div class="stat-value">&euro;${fmt(d.totals.billed)}</div><div class="stat-label">Total Billed</div></div>
-        <div class="stat-card green"><div class="stat-value">&euro;${fmt(d.totals.paid)}</div><div class="stat-label">Total Paid</div></div>
-        <div class="stat-card" style="${d.totals.balance > 0 ? 'border: 2px solid #f59e0b' : ''}"><div class="stat-value">&euro;${fmt(d.totals.balance)}</div><div class="stat-label">Balance Open</div></div>
+        <div class="stat-card"><div class="stat-value">${d.dealCount}</div><div class="stat-label">Enrolments</div></div>
+        <div class="stat-card blue"><div class="stat-value">&euro;${fmt(d.totals.billed)}</div><div class="stat-label">Total Billed</div></div>
+        <div class="stat-card" style="${d.totals.balance > 0 ? 'border: 2px solid #f59e0b' : ''}"><div class="stat-value" style="color:#f59e0b">&euro;${fmt(d.totals.balance)}</div><div class="stat-label">Balance Open</div></div>
+        <div class="stat-card green"><div class="stat-value">&euro;${fmt(d.commissionsEarned || 0)}</div><div class="stat-label">Commissions</div></div>
       `;
 
       // Quotes — newest first, show 5 max, "View all" link when there are more
       const qList = document.getElementById('quoteList');
       const recent = d.quotes.slice(0, DASH_LIMIT);
-      if (!recent.length) {
-        qList.innerHTML = '<div class="loading">No quotes yet</div>';
+      const qEmpty = !recent.length;
+      if (qEmpty) {
+        qList.innerHTML = getQuoteCta('Quotes you request will appear here.');
       } else {
         qList.innerHTML = recent.map(q => renderQuoteRow(q)).join('');
       }
       document.getElementById('quoteViewMore').style.display = d.quotes.length > DASH_LIMIT ? 'block' : 'none';
+      setCollapsed('quotes', qEmpty);   // collapse on load when empty
 
       // Invoices — newest first, show 5 max
-      const itbody = document.getElementById('invoiceRows');
-      const recentInvs = d.invoices.slice(0, DASH_LIMIT);
-      if (!recentInvs.length) {
-        itbody.innerHTML = '<tr><td colspan="8" class="loading">No invoices yet</td></tr>';
-      } else {
-        itbody.innerHTML = recentInvs.map(renderInvoiceRow).join('');
-      }
+      renderDashInvoices();
       document.getElementById('invoiceViewMore').style.display = d.invoices.length > DASH_LIMIT ? 'block' : 'none';
 
       // Timestamp
       const lr = document.getElementById('lastRefresh');
-      if (lr) lr.textContent = 'Last refreshed: ' + new Date().toLocaleTimeString('en-IE', { hour: '2-digit', minute: '2-digit' });
+      if (lr) lr.textContent = 'Last refreshed: ' + new Date().toLocaleString('en-IE', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
     } catch (e) {
       console.error('Dashboard load error:', e);
     } finally {
@@ -1765,18 +2842,26 @@ tr:hover td { background: #fafaf8; }
       : inv.balance > 0 ? '#f59e0b' : 'var(--muted)';
     return `<tr>
       <td><strong>${esc(inv.number || inv.id)}</strong></td>
+      <td>${esc(inv.studentName || '—')}</td>
       <td><span class="badge" style="background:${statusColor};color:#fff">${esc(inv.status || '-')}</span></td>
       <td><strong>&euro;${fmt(inv.billed)}</strong></td>
       <td style="color:var(--green)">&euro;${fmt(inv.paid)}</td>
       <td style="${inv.balance > 0 ? 'color:#f59e0b;font-weight:600' : 'color:var(--muted)'}">&euro;${fmt(inv.balance)}</td>
       <td>${fmtDate(inv.invoiceDate)}</td>
       <td>${fmtDate(inv.dueDate)}</td>
-      <td style="white-space:nowrap;text-align:right">
-        ${inv.pdfUrl ? `<a href="${esc(inv.pdfUrl)}" target="_blank" style="color:var(--muted);text-decoration:none;font-weight:600;font-size:12px">PDF</a>` : ''}
-        ${inv.pdfUrl && inv.invoiceUrl ? ' · ' : ''}
-        ${inv.invoiceUrl ? `<a href="${esc(inv.invoiceUrl)}" target="_blank" style="color:var(--green);text-decoration:none;font-weight:600">View →</a>` : ''}
+      <td style="white-space:nowrap;text-align:right;font-size:11px">
+        ${inv.pdfUrl ? `<a href="${esc(inv.pdfUrl)}" target="_blank" style="color:#dc2626;text-decoration:none;font-weight:700">PDF</a>` : ''}${inv.pdfUrl && inv.invoiceUrl ? ' <span style="color:#d1d5db">|</span> ' : ''}${inv.invoiceUrl ? `<a href="${esc(inv.invoiceUrl)}" target="_blank" style="color:var(--green);text-decoration:none;font-weight:600">View</a>` : (inv.pdfUrl ? '' : '<span style="color:#d1d5db">—</span>')}
       </td>
     </tr>`;
+  }
+
+  // Open the GROSS receipt for a paid invoice. ON-DEMAND: generated live on this
+  // click — nothing is stored. Agency-scoped server-side (a partner can only ever
+  // pull a receipt for one of their own bookings).
+  window.openGrossDoc = function(bookingId) {
+    // Opens the A4 receipt page (generated live server-side); that page carries
+    // its own Download-PDF + Print toolbar. Real URL → relative ?format=pdf works.
+    window.open('/sis/partners/api/gross-receipt/' + bookingId + '?format=html', '_blank');
   }
 
   // ── Documents tab — Zoho-signed partner contracts (mirrored, read-only) ──
@@ -1798,16 +2883,20 @@ tr:hover td { background: #fafaf8; }
         <div>Document</div><div>Signer</div><div>Status</div><div>Signed</div><div style="text-align:right">Actions</div>
       </div>`;
       html += d.documents.map(doc => {
-        const statusPill = doc.requestStatus === 'completed'
+        const status = doc.status || doc.requestStatus;
+        const statusPill = status === 'completed'
           ? '<span class="type-pill" style="background:#d1fae5;color:#065f46">Signed</span>'
-          : `<span class="type-pill" style="background:#fef3c7;color:#92400e">${esc(doc.requestStatus || '-')}</span>`;
+          : `<span class="type-pill" style="background:#fef3c7;color:#92400e">${esc(status || '-')}</span>`;
+        const pdfUrl = doc.source === 'internal'
+          ? `/sis/partners/api/contract/signatures/${doc.id}/pdf`
+          : `/sis/partners/api/documents/${doc.id}/pdf`;
         return `<div class="history-row" style="grid-template-columns: 1fr 160px 120px 120px 100px">
           <div><strong>${esc(doc.requestName || '(untitled)')}</strong>${doc.folderName ? `<div style="font-size:11px;color:var(--muted)">${esc(doc.folderName)}</div>` : ''}</div>
           <div><div>${esc(doc.signerName || '-')}</div><div style="font-size:11px;color:var(--muted)">${esc(doc.signerEmail || '')}</div></div>
           <div>${statusPill}</div>
           <div>${fmtDate(doc.signedAt)}</div>
           <div style="text-align:right">
-            ${doc.hasPdf ? `<a href="/sis/partners/api/documents/${doc.id}/pdf" target="_blank" style="color:var(--green);text-decoration:none;font-weight:600;font-size:13px">View PDF →</a>` : '<span style="color:var(--muted);font-size:12px">No PDF</span>'}
+            ${doc.hasPdf ? `<a href="${pdfUrl}" target="_blank" style="color:var(--green);text-decoration:none;font-weight:600;font-size:13px">View PDF →</a>` : '<span style="color:var(--muted);font-size:12px">No PDF</span>'}
           </div>
         </div>`;
       }).join('');
@@ -1817,11 +2906,203 @@ tr:hover td { background: #fafaf8; }
     }
   }
 
-  // ── History tab — combined/filterable list of all quotes + invoices ──
+  // ── Finance tab — combined/filterable list of all quotes + invoices ──
   let historyFilter = 'all';
+  let financeInvStatus = 'all', financeSearch = '', financeSort = { col: 'date', dir: 'desc' };
+  window.finSort = function(col){
+    if (financeSort.col === col) financeSort.dir = financeSort.dir === 'desc' ? 'asc' : 'desc';
+    else { financeSort.col = col; financeSort.dir = (col === 'date' || col === 'amount') ? 'desc' : 'asc'; }
+    loadHistory();
+  };
+  let lastCredits = null;
+  async function renderCredits(list, count) {
+    if (!lastCredits) {
+      try {
+        const res = await fetch('/sis/partners/api/credits');
+        lastCredits = await res.json();
+      } catch (e) { list.innerHTML = '<div class="loading">Failed to load credits</div>'; return; }
+    }
+    const d = lastCredits || {};
+    const rows = d.credits || [];
+    count.textContent = `${rows.length} ${rows.length === 1 ? 'record' : 'records'}`;
+
+    const bal = Number(d.balance || 0);
+    const btns = d.canManage
+      ? `<div style="display:flex;gap:8px">
+           <button onclick="openAddCredit()" style="padding:7px 14px;border:0;border-radius:8px;background:var(--green);color:#fff;font-weight:700;font-size:13px;cursor:pointer">+ Add Credit</button>
+           <button onclick="openUseCredit()" style="padding:7px 14px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font-weight:700;font-size:13px;cursor:pointer">− Use Credit</button>
+         </div>`
+      : '';
+    const header = `<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)">
+      <div><span style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em">Credit on Account</span>
+        <div style="font-size:22px;font-weight:800;color:${bal > 0 ? 'var(--green)' : bal < 0 ? '#b91c1c' : 'var(--ink)'}">&euro;${fmt(bal)}</div></div>
+      ${btns}
+    </div>`;
+
+    if (!rows.length) {
+      list.innerHTML = header + '<div class="loading">No credit on account.</div>';
+      return;
+    }
+    let html = header + `<div class="credit-row" style="font-size:10px;text-transform:uppercase;letter-spacing:0.04em;color:var(--muted);font-weight:700;border-bottom:2px solid var(--line)">
+      <div>ID</div><div>Issue Date</div><div>Reason</div><div style="text-align:right">Amount</div></div>`;
+    html += rows.map(c => {
+      const voided = c.status === 'VOID';
+      const debit = c.entryType === 'DEBIT' || Number(c.amount) < 0;
+      const sub = [];
+      if (c.sourceRef) sub.push(`Source: ${esc(c.sourceRef)}`);
+      if (debit) {
+        const to = [];
+        if (c.appliedToBookingId) to.push(`booking #${c.appliedToBookingId}`);
+        if (c.appliedInvoice) to.push(esc(c.appliedInvoice));
+        if (to.length) sub.push(to.join(' · '));
+        if (c.fromPayment) sub.push('via ULearn Credit payment');
+      } else if (!voided) {
+        // Grant → mirrored to Xero + HubSpot on create
+        if (c.pushed) sub.push(`<span style="color:var(--green)">→ Xero ${esc(c.xeroCreditNoteNumber || 'CN')} · HubSpot task ✓</span>`);
+        else if (d.canManage) sub.push(`<a href="#" onclick="event.preventDefault();retryPush(${c.id})" style="color:#b45309;font-weight:600;text-decoration:none">Push to Xero/HubSpot →</a>`);
+      }
+      const subLine = sub.length ? `<div style="font-size:11px;color:var(--muted);margin-top:2px">${sub.join(' &nbsp;·&nbsp; ')}</div>` : '';
+      const amt = Number(c.amount);
+      const amtStr = (amt >= 0 ? '+' : '−') + '&euro;' + fmt(Math.abs(amt));
+      const amtColor = voided ? 'var(--muted)' : amt >= 0 ? 'var(--green)' : '#b91c1c';
+      const voidTag = voided ? ' <span style="font-size:10px;color:#b91c1c">(void)</span>' : '';
+      // Delete affordance for manually-set rows only (not system auto-debits or
+      // ULearn-Credit-payment debits, which are managed elsewhere).
+      const delable = d.canManage && !c.auto && !c.fromPayment;
+      const delIcon = delable
+        ? ` <a href="#" onclick="event.preventDefault();deleteCredit(${c.id})" title="Delete — removes from SIS, voids the Xero credit note, deletes the HubSpot task" style="color:#b91c1c;text-decoration:none;font-weight:700;margin-left:8px">×</a>`
+        : '';
+      return `<div class="credit-row"${voided ? ' style="opacity:0.55;text-decoration:line-through"' : ''}>
+        <div><strong>#${c.id}</strong></div>
+        <div>${fmtDate(c.issueDate)}</div>
+        <div>${esc(c.reason || '—')}${voidTag}${subLine}</div>
+        <div style="text-align:right;font-weight:700;color:${amtColor}">${amtStr}${delIcon}</div>
+      </div>`;
+    }).join('');
+    list.innerHTML = html;
+  }
+
+  window.openAddCredit = function() {
+    document.getElementById('addCreditOverlay')?.remove();
+    const today = new Date().toISOString().slice(0, 10);
+    const o = document.createElement('div');
+    o.id = 'addCreditOverlay';
+    o.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:10002;display:flex;align-items:center;justify-content:center;padding:24px';
+    o.addEventListener('click', e => { if (e.target === o) o.remove(); });
+    o.innerHTML = `<div style="background:var(--card-bg,#fff);border-radius:12px;width:min(420px,94vw);padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.4)" onclick="event.stopPropagation()">
+      <h3 style="margin:0 0 14px;font-size:16px">Add Credit</h3>
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">Amount (&euro;)</label>
+      <input id="acAmount" type="number" step="0.01" min="0" placeholder="250.00" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px;box-sizing:border-box;margin-bottom:12px">
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">Reason</label>
+      <input id="acReason" type="text" placeholder="e.g. Duplicate payment — Salah (dad paid twice)" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px;box-sizing:border-box;margin-bottom:12px">
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">Source <span style="font-weight:400">(invoice it came from, if any)</span></label>
+      <input id="acSource" type="text" placeholder="e.g. INV-1422 — or leave blank for goodwill" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px;box-sizing:border-box;margin-bottom:12px">
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">Issue Date</label>
+      <input id="acDate" type="date" value="${today}" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px;box-sizing:border-box;margin-bottom:16px">
+      <div id="acErr" style="color:#b91c1c;font-size:12px;margin-bottom:10px;display:none"></div>
+      <div style="display:flex;gap:8px">
+        <button id="acSave" style="flex:1;padding:10px;border:0;border-radius:8px;background:var(--green);color:#fff;font-weight:700;cursor:pointer">Save Credit</button>
+        <button onclick="document.getElementById('addCreditOverlay').remove()" style="padding:10px 16px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer">Cancel</button>
+      </div>
+    </div>`;
+    document.body.appendChild(o);
+    document.getElementById('acSave').addEventListener('click', async () => {
+      const amount = parseFloat(document.getElementById('acAmount').value);
+      const reason = document.getElementById('acReason').value.trim();
+      const sourceRef = document.getElementById('acSource').value.trim();
+      const issueDate = document.getElementById('acDate').value;
+      const err = document.getElementById('acErr');
+      if (!amount || amount <= 0) { err.textContent = 'Enter a valid amount.'; err.style.display = 'block'; return; }
+      const btn = document.getElementById('acSave'); btn.disabled = true; btn.textContent = 'Saving…';
+      try {
+        const res = await fetch('/sis/partners/api/credits', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount, reason, sourceRef, issueDate }),
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Failed');
+        o.remove();
+        lastCredits = null;   // force refetch
+        loadHistory();
+      } catch (e) { err.textContent = String(e.message || e); err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Save Credit'; }
+    });
+  };
+
+  window.openUseCredit = function() {
+    document.getElementById('useCreditOverlay')?.remove();
+    const o = document.createElement('div');
+    o.id = 'useCreditOverlay';
+    o.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:10002;display:flex;align-items:center;justify-content:center;padding:24px';
+    o.addEventListener('click', e => { if (e.target === o) o.remove(); });
+    o.innerHTML = `<div style="background:var(--card-bg,#fff);border-radius:12px;width:min(420px,94vw);padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.4)" onclick="event.stopPropagation()">
+      <h3 style="margin:0 0 4px;font-size:16px">Use Credit</h3>
+      <p style="margin:0 0 14px;color:var(--muted);font-size:13px">Draw down the balance and record where it went. <strong>Ledger only</strong> — this does not add a payment (use that when the money was handled in HubSpot/Xero).</p>
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">Amount (&euro;)</label>
+      <input id="ucAmount" type="number" step="0.01" min="0" placeholder="980.00" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px;box-sizing:border-box;margin-bottom:12px">
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">Booking № <span style="font-weight:400">(this partner's)</span></label>
+      <input id="ucBooking" type="number" placeholder="e.g. 18229" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px;box-sizing:border-box;margin-bottom:12px">
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">Invoice № <span style="font-weight:400">(optional)</span></label>
+      <input id="ucInvoice" type="text" placeholder="e.g. INV-1422" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px;box-sizing:border-box;margin-bottom:16px">
+      <div id="ucErr" style="color:#b91c1c;font-size:12px;margin-bottom:10px;display:none"></div>
+      <div style="display:flex;gap:8px">
+        <button id="ucSave" style="flex:1;padding:10px;border:0;border-radius:8px;background:var(--green);color:#fff;font-weight:700;cursor:pointer">Use Credit</button>
+        <button onclick="document.getElementById('useCreditOverlay').remove()" style="padding:10px 16px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer">Cancel</button>
+      </div>
+    </div>`;
+    document.body.appendChild(o);
+    document.getElementById('ucSave').addEventListener('click', async () => {
+      const amount = parseFloat(document.getElementById('ucAmount').value);
+      const bookingId = document.getElementById('ucBooking').value.trim();
+      const invoice = document.getElementById('ucInvoice').value.trim();
+      const err = document.getElementById('ucErr');
+      if (!amount || amount <= 0) { err.textContent = 'Enter a valid amount.'; err.style.display = 'block'; return; }
+      if (!bookingId && !invoice) { err.textContent = 'Enter a booking № or an invoice №.'; err.style.display = 'block'; return; }
+      const btn = document.getElementById('ucSave'); btn.disabled = true; btn.textContent = 'Applying…';
+      try {
+        const res = await fetch('/sis/partners/api/credits/use', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount, bookingId, invoice }),
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Failed');
+        o.remove();
+        lastCredits = null;
+        loadHistory();
+      } catch (e) { err.textContent = String(e.message || e); err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Use Credit'; }
+    });
+  };
+
+  window.deleteCredit = async function(id) {
+    if (!confirm('Delete this credit?\n\nIt will be removed from SIS, the Xero credit note voided, and the HubSpot task deleted.')) return;
+    try {
+      const res = await fetch('/sis/partners/api/credits/' + id, { method: 'DELETE' });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Delete failed');
+      lastCredits = null;
+      loadHistory();
+    } catch (e) { alert('Delete failed: ' + (e.message || e)); }
+  };
+
+  window.retryPush = async function(creditId) {
+    try {
+      const res = await fetch('/sis/partners/api/credits/' + creditId + '/push', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      const data = await res.json();
+      const p = data.push || {};
+      const msg = `Xero: ${p.xero && p.xero.ok ? '✓ ' + (p.xero.creditNoteNumber || '') : '✗ ' + ((p.xero && p.xero.reason) || 'failed')}\nHubSpot: ${p.hubspot && p.hubspot.ok ? '✓ task' : '✗ ' + ((p.hubspot && p.hubspot.reason) || 'failed')}`;
+      alert(msg);
+      lastCredits = null;
+      loadHistory();
+    } catch (e) { alert('Push failed: ' + (e.message || e)); }
+  };
+
   async function loadHistory() {
     const list = document.getElementById('historyList');
     const count = document.getElementById('historyCount');
+    if (historyFilter === 'credits') {
+      const subC = document.getElementById('finInvStatus');
+      if (subC) subC.style.display = 'none';
+      return renderCredits(list, count);
+    }
     if (!lastFinance) {
       // Ensure we have data — typically we already do from Dashboard load
       try {
@@ -1831,53 +3112,94 @@ tr:hover td { background: #fafaf8; }
     }
     const d = lastFinance;
 
-    // Build a merged list of entries with a sortable date
-    const entries = [];
+    // Invoice status sub-filter only applies (and only shows) when viewing Invoices.
+    const subEl = document.getElementById('finInvStatus');
+    if (subEl) subEl.style.display = historyFilter === 'invoices' ? 'flex' : 'none';
+
+    // Build a merged list of entries.
+    let entries = [];
     for (const q of d.quotes || []) entries.push({ kind: 'quote', date: q.createdAt || '', item: q });
     for (const inv of d.invoices || []) entries.push({ kind: 'invoice', date: inv.invoiceDate || '', item: inv });
-    entries.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
-    const filtered = historyFilter === 'all' ? entries
-      : entries.filter(e => (historyFilter === 'quotes' && e.kind === 'quote') || (historyFilter === 'invoices' && e.kind === 'invoice'));
+    // Type filter
+    if (historyFilter === 'quotes') entries = entries.filter(e => e.kind === 'quote');
+    else if (historyFilter === 'invoices') entries = entries.filter(e => e.kind === 'invoice');
 
-    count.textContent = `${filtered.length} ${filtered.length === 1 ? 'record' : 'records'}`;
+    // Invoice status sub-filter (Open / Paid) — no default, only when viewing invoices
+    if (historyFilter === 'invoices' && financeInvStatus !== 'all') {
+      entries = entries.filter(e => e.item.status === financeInvStatus);
+    }
 
-    if (!filtered.length) {
-      list.innerHTML = '<div class="loading">No records match this filter</div>';
+    // Search (number or student)
+    const term = (financeSearch || '').trim().toLowerCase();
+    if (term) entries = entries.filter(e => {
+      const it = e.item;
+      const num = String(e.kind === 'quote' ? (it.quoteNumber || it.id) : (it.number || it.id)).toLowerCase();
+      const name = String(it.studentName || it.title || '').toLowerCase();
+      return num.includes(term) || name.includes(term);
+    });
+
+    // Sort by the chosen column
+    const sortVal = (e) => { const it = e.item; switch (financeSort.col) {
+      case 'number': return String(e.kind === 'quote' ? (it.quoteNumber || it.id) : (it.number || it.id)).toLowerCase();
+      case 'student': return String(it.studentName || it.title || '').toLowerCase();
+      case 'amount': return e.kind === 'quote' ? Number(it.amount || 0) : Number(it.billed || 0);
+      case 'status': return String(it.status || '').toLowerCase();
+      case 'type': return e.kind;
+      default: return e.date || '';
+    } };
+    entries.sort((a, b) => { const va = sortVal(a), vb = sortVal(b); const c = va < vb ? -1 : va > vb ? 1 : 0; return financeSort.dir === 'desc' ? -c : c; });
+
+    count.textContent = `${entries.length} ${entries.length === 1 ? 'record' : 'records'}`;
+
+    if (!entries.length) {
+      list.innerHTML = '<div class="loading">No records match.</div>';
       return;
     }
 
-    // Header row
+    // Header row — sortable columns
+    const arr = (col) => financeSort.col === col ? (financeSort.dir === 'desc' ? ' ▾' : ' ▴') : '';
     let html = `<div class="history-row" style="font-size:10px;text-transform:uppercase;letter-spacing:0.04em;color:var(--muted);font-weight:700;border-bottom:2px solid var(--line)">
-      <div>Type</div><div>Number</div><div>Title / Ref</div><div>Amount</div><div>Status</div><div>Date</div><div style="text-align:right">Actions</div>
+      <div class="sort-h" onclick="finSort('type')">Type${arr('type')}</div>
+      <div class="sort-h" onclick="finSort('number')">Number${arr('number')}</div>
+      <div class="sort-h" onclick="finSort('student')">Student${arr('student')}</div>
+      <div class="sort-h" onclick="finSort('amount')">Amount${arr('amount')}</div>
+      <div class="sort-h" onclick="finSort('status')">Status${arr('status')}</div>
+      <div class="sort-h" onclick="finSort('date')">Date${arr('date')}</div>
+      <div style="text-align:left">Net</div>
+      <div style="text-align:right">Gross</div>
     </div>`;
 
-    html += filtered.map(e => {
+    html += entries.map(e => {
       if (e.kind === 'quote') {
         const q = e.item;
         const statusLabel = q.partnerAction === 'ACCEPTED' ? 'Accepted' : q.partnerAction === 'QUERIED' ? 'Queried' : q.status;
         return `<div class="history-row">
           <div><span class="type-pill quote">Quote</span></div>
           <div><strong>${esc(q.quoteNumber || q.id)}</strong></div>
-          <div>${esc(q.title || '-')}</div>
+          <div>${esc(q.studentName || q.title || '-')}</div>
           <div><strong>&euro;${fmt(q.amount)}</strong></div>
           <div style="font-size:11px">${esc(statusLabel || '-')}</div>
           <div>${fmtDate(q.createdAt)}</div>
-          <div style="text-align:right">${q.publicUrl ? `<a href="${esc(q.publicUrl)}" target="_blank" style="color:var(--green);text-decoration:none;font-weight:600;font-size:13px">View →</a>` : ''}</div>
+          <div style="text-align:left">${q.publicUrl ? `<a href="${esc(q.publicUrl)}" target="_blank" style="color:var(--green);text-decoration:none;font-weight:600;font-size:13px">View →</a>` : ''}</div>
+          <div style="text-align:right;color:#d1d5db">—</div>
         </div>`;
       } else {
         const inv = e.item;
         return `<div class="history-row">
-          <div><span class="type-pill invoice">Invoice</span></div>
+          <div><span class="type-pill invoice"${inv.status === 'open' ? ' style="background:#f59e0b;color:#fff"' : ''}>Invoice</span></div>
           <div><strong>${esc(inv.number || inv.id)}</strong></div>
-          <div style="color:var(--muted)">${esc(inv.balance > 0 ? 'Open balance' : 'Settled')}</div>
+          <div><strong>${esc(inv.studentName || '—')}</strong></div>
           <div><strong>&euro;${fmt(inv.billed)}</strong><br><span style="font-size:11px;color:var(--green)">Paid: &euro;${fmt(inv.paid)}</span>${inv.balance > 0 ? `<br><span style="font-size:11px;color:#f59e0b">Due: &euro;${fmt(inv.balance)}</span>` : ''}</div>
           <div style="font-size:11px">${esc(inv.status || '-')}</div>
           <div>${fmtDate(inv.invoiceDate)}</div>
+          <div style="text-align:left;white-space:nowrap">
+            ${inv.pdfUrl ? `<a href="${esc(inv.pdfUrl)}" target="_blank" title="Download" aria-label="Download" style="color:#dc2626;text-decoration:none;display:inline-flex;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg></a>` : ''}
+            ${inv.pdfUrl && inv.invoiceUrl ? ' <span style="color:#d1d5db">|</span> ' : ''}
+            ${inv.invoiceUrl ? `<a href="${esc(inv.invoiceUrl)}" target="_blank" style="color:var(--green);text-decoration:none;font-weight:600;font-size:12px">View</a>` : (inv.pdfUrl ? '' : '<span style="color:#d1d5db">—</span>')}
+          </div>
           <div style="text-align:right;white-space:nowrap">
-            ${inv.pdfUrl ? `<a href="${esc(inv.pdfUrl)}" target="_blank" style="color:var(--muted);text-decoration:none;font-weight:600;font-size:11px">PDF</a>` : ''}
-            ${inv.pdfUrl && inv.invoiceUrl ? ' · ' : ''}
-            ${inv.invoiceUrl ? `<a href="${esc(inv.invoiceUrl)}" target="_blank" style="color:var(--green);text-decoration:none;font-weight:600;font-size:13px">View →</a>` : ''}
+            ${(inv.status === 'paid' && inv.bookingId) ? `<a href="/sis/partners/api/gross-receipt/${inv.bookingId}?format=pdf" title="Download" aria-label="Download" style="color:#dc2626;text-decoration:none;display:inline-flex;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg></a> <span style="color:#d1d5db">|</span> <a href="#" onclick="openGrossDoc(${inv.bookingId});return false;" style="color:var(--green);text-decoration:none;font-weight:600;font-size:12px" title="Gross receipt — generated on demand">View</a>` : '<span style="color:#d1d5db">—</span>'}
           </div>
         </div>`;
       }
@@ -1888,6 +3210,65 @@ tr:hover td { background: #fafaf8; }
 
   // ── Students ──
   let studentSearchTimer;
+  let _studentRows = [];
+  // Default: most recent commencement (start date) first — partners want their
+  // current/upcoming students up top, not 2020 arrivals. Click any header to re-sort.
+  let studentSort = { col: 'date', dir: 'desc' };
+
+  function _stuSortKey(s, col) {
+    const b = s.bookings && s.bookings[0];
+    const course = b && b.courses && b.courses[0];
+    switch (col) {
+      case 'name':        return ((s.lastName || '') + ' ' + (s.firstName || '')).toLowerCase();
+      case 'nationality': return (s.nationality || '').toLowerCase();
+      case 'level':       return (s.currentLevel || (course && course.level) || '').toLowerCase();
+      case 'course':      return ((course && course.name) || '').toLowerCase();
+      case 'date':        return (b && b.serviceStart) ? new Date(b.serviceStart).getTime() : 0;
+      case 'status':      return ((b && b.status) || '').toLowerCase();
+      default:            return '';
+    }
+  }
+
+  window.stuSort = function(col) {
+    if (studentSort.col === col) studentSort.dir = (studentSort.dir === 'asc' ? 'desc' : 'asc');
+    else studentSort = { col, dir: (col === 'date' ? 'desc' : 'asc') };  // dates default newest-first
+    renderStudents();
+  };
+
+  function renderStudents() {
+    const tbody = document.getElementById('studentRows');
+    if (!_studentRows.length) { tbody.innerHTML = '<tr><td colspan="6" class="loading">No students found</td></tr>'; return; }
+    const { col, dir } = studentSort;
+    const rows = _studentRows.slice().sort((a, b) => {
+      const ka = _stuSortKey(a, col), kb = _stuSortKey(b, col);
+      const c = ka < kb ? -1 : ka > kb ? 1 : 0;
+      return dir === 'desc' ? -c : c;
+    });
+    // Header arrow indicators
+    ['name','nationality','level','course','date','status'].forEach(c => {
+      const el = document.getElementById('stuArr-' + c);
+      if (el) el.textContent = col === c ? (dir === 'desc' ? ' ▾' : ' ▴') : '';
+    });
+    tbody.innerHTML = rows.map(s => {
+      const b = s.bookings[0];
+      const course = b?.courses?.[0];
+      const age = s.birthday ? Math.floor((Date.now() - new Date(s.birthday).getTime()) / 31557600000) : '';
+      // Name colour tracks booking status so partial/pending stand out (orange = unpaid, like an OPEN invoice)
+      const nameCol = { CONFIRMED:'var(--green)', PARTIAL:'#f59e0b', PENDING:'#d97706', CANCELLED:'#dc2626', ESCROW:'#7c3aed' }[(b?.status||'').toUpperCase()] || 'var(--green)';
+      const lpTag = isLifePass(s) ? '<span class="lp-badge">LIFEPASS</span>' : '';
+      return `<tr onclick="openStudentDrawer(${s.id})" style="cursor:pointer">
+          <td><strong style="color:${nameCol}">${esc(s.firstName)} ${esc(s.lastName)}</strong>${lpTag}${age ? ' <span style="color:var(--muted);font-size:11px">('+age+')</span>' : ''}</td>
+          <td>${esc(s.nationality || '-')}</td>
+          <td>${esc(s.currentLevel || course?.level || '-')}</td>
+          <td>${esc(course?.name || '-')}</td>
+          <td>${b ? fmtDate(b.serviceStart) + ' — ' + fmtDate(b.serviceEnd) : '-'}</td>
+          <td>${b ? badge(b.status) : '-'}</td>
+        </tr>`;
+    }).join('');
+    // Apply hover highlight — the class is style-only, no JS needed
+    document.querySelector('#sec-students table')?.classList.add('students-table');
+  }
+
   async function loadStudents(search) {
     const tbody = document.getElementById('studentRows');
     tbody.innerHTML = '<tr><td colspan="6" class="loading">Loading...</td></tr>';
@@ -1895,26 +3276,9 @@ tr:hover td { background: #fafaf8; }
       const q = search ? '?search=' + encodeURIComponent(search) : '';
       const res = await fetch('/sis/partners/api/students' + q);
       const d = await res.json();
-      if (!d.success || !d.rows.length) {
-        tbody.innerHTML = '<tr><td colspan="6" class="loading">No students found</td></tr>';
-        return;
-      }
-      tbody.innerHTML = d.rows.map(s => {
-        const b = s.bookings[0];
-        const course = b?.courses?.[0];
-        const age = s.birthday ? Math.floor((Date.now() - new Date(s.birthday).getTime()) / 31557600000) : '';
-        return `<tr onclick="openStudentDrawer(${s.id})" style="cursor:pointer">
-          <td><strong style="color:var(--green)">${esc(s.firstName)} ${esc(s.lastName)}</strong>${age ? ' <span style="color:var(--muted);font-size:11px">('+age+')</span>' : ''}</td>
-          <td>${esc(s.nationality || '-')}</td>
-          <td>${esc(s.currentLevel || course?.level || '-')}</td>
-          <td>${esc(course?.name || '-')}</td>
-          <td>${b ? fmtDate(b.serviceStart) + ' — ' + fmtDate(b.serviceEnd) : '-'}</td>
-          <td>${b ? badge(b.status) : '-'}</td>
-        </tr>`;
-      }).join('');
-      // Apply hover highlight — the class is style-only, no JS needed
-      document.querySelector('#sec-students table')?.classList.add('students-table');
-    } catch (e) { console.error(e); }
+      _studentRows = (d.success && d.rows) ? d.rows : [];
+      renderStudents();
+    } catch (e) { console.error(e); _studentRows = []; renderStudents(); }
   }
 
   // ── Student detail drawer ──
@@ -1922,9 +3286,7 @@ tr:hover td { background: #fafaf8; }
     const overlay = document.getElementById('studentDrawerOverlay');
     const panel = document.getElementById('studentDrawer');
     const body = document.getElementById('drawerBody');
-    const title = document.getElementById('drawerStudentName');
     body.innerHTML = '<div class="loading">Loading...</div>';
-    title.textContent = 'Loading...';
     overlay.classList.add('show');
     panel.classList.add('show');
     document.body.style.overflow = 'hidden';
@@ -1934,16 +3296,17 @@ tr:hover td { background: #fafaf8; }
       const d = await res.json();
       if (!d.success) throw new Error(d.error || 'Not found');
       const s = d.student;
-      title.textContent = `${s.firstName} ${s.lastName}`;
 
       const initials = ((s.firstName?.[0] || '') + (s.lastName?.[0] || '')).toUpperCase();
       const age = s.birthday ? Math.floor((Date.now() - new Date(s.birthday).getTime()) / 31557600000) : null;
       const dob = s.birthday ? fmtDate(s.birthday) : '-';
 
-      // Header block
-      let html = `<div style="display:flex;gap:16px;align-items:center">
+      // Header block — avatar + name at the very top, with email/phone/DOB folded
+      // directly underneath (no redundant name line, no separate "Contact" card).
+      const phone = s.phoneMobile || s.phone;
+      let html = `<div style="display:flex;gap:14px;align-items:flex-start">
         <div class="drawer-avatar">${s.profilePicture ? `<img src="${esc(s.profilePicture)}">` : esc(initials)}</div>
-        <div>
+        <div style="min-width:0;flex:1">
           <div style="font-size:18px;font-weight:800;color:var(--navy);letter-spacing:-0.01em">${esc(s.firstName)} ${esc(s.lastName)}</div>
           <div class="drawer-chips">
             ${s.nationality ? `<span class="drawer-chip">${esc(s.nationality)}</span>` : ''}
@@ -1951,26 +3314,18 @@ tr:hover td { background: #fafaf8; }
             ${s.currentLevel ? `<span class="drawer-chip" style="background:#dbeafe;color:#1e40af">${esc(s.currentLevel)}</span>` : ''}
             ${s.studentType === 'JUNIOR' ? '<span class="drawer-chip" style="background:#fef3c7;color:#92400e">Junior</span>' : ''}
           </div>
+          ${(s.email || phone || s.birthday) ? `<div class="drawer-kv" style="grid-template-columns:48px 1fr;gap:3px 10px;margin-top:10px;font-size:12px">
+            ${s.email ? `<div class="k">Email</div><div class="v" style="word-break:break-all">${esc(s.email)}</div>` : ''}
+            ${phone ? `<div class="k">Phone</div><div class="v">${esc(phone)}</div>` : ''}
+            ${s.birthday ? `<div class="k">DOB</div><div class="v">${dob}</div>` : ''}
+          </div>` : ''}
         </div>
+        <button class="drawer-close" id="drawerCloseBtn" aria-label="Close" style="flex:0 0 auto">✕</button>
       </div>`;
-
-      // Contact (if we have any)
-      if (s.email || s.phone || s.phoneMobile || s.birthday) {
-        html += `<div class="drawer-section">
-          <div class="drawer-section-title">Contact</div>
-          <div class="drawer-kv">
-            ${s.email ? `<div class="k">Email</div><div class="v">${esc(s.email)}</div>` : ''}
-            ${s.phone ? `<div class="k">Phone</div><div class="v">${esc(s.phone)}</div>` : ''}
-            ${s.phoneMobile ? `<div class="k">Mobile</div><div class="v">${esc(s.phoneMobile)}</div>` : ''}
-            ${s.birthday ? `<div class="k">Date of Birth</div><div class="v">${dob}</div>` : ''}
-          </div>
-        </div>`;
-      }
 
       // Bookings — each with course, accommodation, financials
       if (s.bookings && s.bookings.length) {
         html += `<div class="drawer-section">
-          <div class="drawer-section-title">${s.bookings.length > 1 ? 'Bookings' : 'Booking'}</div>
           ${s.bookings.map(b => {
             const courseLines = (b.courses || []).map(c =>
               `<div style="font-size:12px;color:var(--ink)">${esc(c.name || '-')}${c.level ? ' · ' + esc(c.level) : ''}${c.weeks ? ' · ' + c.weeks + ' wk' : ''}<br><span style="color:var(--muted);font-size:11px">${fmtDate(c.startDate)} → ${fmtDate(c.endDate)}</span></div>`
@@ -1981,17 +3336,20 @@ tr:hover td { background: #fafaf8; }
             ).join('<div style="height:4px"></div>') || '';
 
             const open = Number(b.amountOpen || 0);
+            // Collapsed by default: only the first course line peeks through;
+            // tap to expand the rest (other courses, accommodation, dates).
+            // Billed/Paid/Balance live OUTSIDE the collapse so they always show.
             return `<div class="drawer-booking">
               <div class="drawer-booking-title">
                 <span>Booking #${b.id}</span>
                 ${b.status ? badge(b.status) : ''}
               </div>
-              <div class="drawer-booking-meta">
-                ${b.serviceStart ? fmtDate(b.serviceStart) : '?'} — ${b.serviceEnd ? fmtDate(b.serviceEnd) : '?'}
-              </div>
-              <div class="drawer-kv" style="grid-template-columns: 90px 1fr;gap:6px 10px;font-size:12px">
-                <div class="k">Course</div><div class="v">${courseLines}</div>
-                ${accommLines ? `<div class="k">Accommodation</div><div class="v">${accommLines}</div>` : ''}
+              <div class="bk-more" onclick="this.classList.toggle('expanded')">
+                <div class="drawer-kv" style="grid-template-columns: 90px 1fr;gap:6px 10px;font-size:12px">
+                  <div class="k">Course</div><div class="v">${courseLines}</div>
+                  ${accommLines ? `<div class="k">Accommodation</div><div class="v">${accommLines}</div>` : ''}
+                  <div class="k">Dates</div><div class="v" style="color:var(--muted)">${b.serviceStart ? fmtDate(b.serviceStart) : '?'} → ${b.serviceEnd ? fmtDate(b.serviceEnd) : '?'}</div>
+                </div>
               </div>
               <div class="drawer-fin-grid">
                 <div class="cell"><div class="label">Billed</div><div class="val">&euro;${fmt(b.amountTotal || 0)}</div></div>
@@ -2003,10 +3361,210 @@ tr:hover td { background: #fafaf8; }
         </div>`;
       }
 
+      // ── LifePass recurring-commission mini — sits below Booking, above Passport ──
+      html += lpDrawerMini(s);
+
+      // ── Passport (LOA-required fields) + document upload — sits above Documents ──
+      const ppDate = (v) => v ? new Date(v).toISOString().slice(0, 10) : '';
+      const ppWin = ppCourseWindow(s.bookings);
+      html += `<div class="drawer-section">
+        <div class="drawer-section-title">Passport</div>
+        <div class="pp-grid">
+          <div class="k">Passport №</div><div><input id="ppNum" class="pp-inp" value="${esc(s.passportNumber || '')}" placeholder="—"></div>
+          <div class="k">Issue Date</div><div><input id="ppFrom" type="date" class="pp-inp" value="${ppDate(s.passportValidFrom)}"></div>
+          <div class="k">Expiry Date</div><div><input id="ppUntil" type="date" class="pp-inp" value="${ppDate(s.passportValidUntil)}" oninput="updatePpExpiryBadge(this)"><div id="ppExpiryBadge" data-start="${ppWin.start}" data-end="${ppWin.end}">${ppExpiryBadgeHtml(s.passportValidUntil, ppWin.start, ppWin.end)}</div></div>
+        </div>
+        <div class="pp-actions">
+          <label id="ppDrop" class="pp-drop-c" title="Drag &amp; drop or click — PDF / JPG / PNG" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="event.preventDefault();this.classList.remove('drag');uploadPassportFile(${s.id}, event.dataTransfer.files[0])">
+            <input type="file" accept="application/pdf,image/*" style="display:none" onchange="uploadPassportFile(${s.id}, this.files[0]); this.value=''">
+            <span>⬆ Drag &amp; Drop / Click Upload</span>
+          </label>
+          <button class="pp-save" onclick="savePassport(${s.id})">Save Passport</button>
+        </div>
+        ${(d.passportUploads || []).map(u => `<div class="pp-file"><a href="/sis/partners/api/students/${s.id}/uploads/${u.id}" target="_blank" rel="noopener">📎 ${esc(u.originalName || 'file')}</a><button class="pp-del" title="Remove" onclick="deletePassportDoc(${s.id},${u.id})">✕</button></div>`).join('')}
+      </div>`;
+
+      // ── Flights (partner-editable) — inbound arrival to Dublin + outbound return ──
+      html += `<div class="drawer-section">
+        <div class="drawer-section-title" style="cursor:pointer" onclick="toggleDrawerSection(this,'flightsBody')"><span class="chev">▸</span> Flights</div>
+        <div id="flightsBody" style="display:none">
+          <div class="flight-grid">
+            <div></div><div class="fh">Inbound</div><div class="fh co">Outbound</div>
+            <div class="k">No.</div><div><input id="flInN" value="${esc(s.flightNumber || '')}" placeholder="—"></div><div class="co"><input id="flOutN" value="${esc(s.outboundFlightNumber || '')}" placeholder="—"></div>
+            <div class="k">Date</div><div><input id="flInD" type="date" value="${ppDate(s.flightDate)}"></div><div class="co"><input id="flOutD" type="date" value="${ppDate(s.outboundFlightDate)}"></div>
+            <div class="k">Time</div><div><input id="flInT" value="${esc(s.flightTime || '')}" placeholder="HH:MM"></div><div class="co"><input id="flOutT" value="${esc(s.outboundFlightTime || '')}" placeholder="HH:MM"></div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;margin-top:10px"><button class="pp-save" id="flSaveBtn" onclick="saveFlights(${s.id})">Save Flight</button></div>
+        </div>
+      </div>`;
+
+      // ── ULearn documents — what WE'VE issued (LOA / certificates). ──
+      html += `<div class="drawer-section">
+        <div class="drawer-section-title">ULearn Documents</div>
+        ${(d.issuedDocuments || []).length
+          ? (d.issuedDocuments || []).map(doc => `<div class="pp-file"><a href="/sis/partners/api/students/${s.id}/issued/${doc.id}/pdf" target="_blank" rel="noopener">📄 ${esc(doc.template?.name || doc.documentType || 'Document')}</a><span class="pp-date">${doc.issuedAt ? fmtDate(doc.issuedAt) : ''}</span></div>`).join('')
+          : '<div style="color:var(--muted);font-size:12px">No documents issued yet.</div>'}
+      </div>`;
+
+      // ── Other uploads — partner-uploaded docs + student/staff self-uploads, LAST.
+      //    Who uploaded shows as a row tooltip; date stays visible. ──
+      const upWho = (by) => String(by || '').startsWith('partner:') ? 'Uploaded by partner' : 'Uploaded by ULearn';
+      html += `<div class="drawer-section">
+        <div class="drawer-section-title">Other Uploads</div>
+        <label id="otherDrop" class="pp-drop-c" style="margin-bottom:10px" title="Drag &amp; drop or click — any document" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="event.preventDefault();this.classList.remove('drag');uploadStudentDoc(${s.id}, event.dataTransfer.files[0])">
+          <input type="file" style="display:none" onchange="uploadStudentDoc(${s.id}, this.files[0]); this.value=''">
+          <span>⬆ Drag &amp; Drop / Click Upload</span>
+        </label>
+        ${(d.studentUploads || []).length
+          ? (d.studentUploads || []).map(u => {
+              const url = u.category === 'other' ? `/sis/partners/api/students/${s.id}/uploads/${u.id}` : `/sis/partners/api/students/${s.id}/files/${u.id}`;
+              const canDel = u.category === 'other' && String(u.uploadedBy || '').startsWith('partner:');
+              return `<div class="pp-file" title="${upWho(u.uploadedBy)}"><a style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" href="${url}" target="_blank" rel="noopener">📎 ${esc(u.originalName || 'file')}</a><span style="color:var(--muted);font-size:11px;white-space:nowrap">${u.createdAt ? fmtDate(u.createdAt) : ''}</span>${canDel ? `<button class="pp-del" style="margin-left:4px" title="Remove" onclick="deleteStudentDoc(${s.id},${u.id})">✕</button>` : ''}</div>`;
+            }).join('')
+          : '<div style="color:var(--muted);font-size:12px">No other documents uploaded.</div>'}
+      </div>`;
+
       body.innerHTML = html;
     } catch (e) {
       body.innerHTML = `<div class="loading">Failed to load: ${esc(String(e.message || e))}</div>`;
     }
+  };
+
+  window.savePassport = async function(id){
+    const get = x => document.getElementById(x)?.value || '';
+    try{
+      const r = await fetch('/sis/partners/api/students/'+id+'/passport',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({passportNumber:get('ppNum'),passportValidFrom:get('ppFrom'),passportValidUntil:get('ppUntil')})});
+      const d = await r.json(); if(!d.success) throw new Error(d.error||'Save failed');
+      const btn = document.querySelector('.pp-save'); if(btn){const t=btn.textContent;btn.textContent='✓ Saved';btn.disabled=true;setTimeout(()=>{btn.textContent=t;btn.disabled=false;},1500);}
+    }catch(e){ alert(e.message||e); }
+  };
+  // Collapse/expand a drawer section: header carries a .chev; body is the next
+  // element by id. Collapsed by default (body display:none in markup).
+  window.toggleDrawerSection = function(header, bodyId){
+    const b = document.getElementById(bodyId);
+    if(!b) return;
+    const open = b.style.display === 'none';
+    b.style.display = open ? '' : 'none';
+    const chev = header.querySelector('.chev'); if(chev) chev.textContent = open ? '▾' : '▸';
+  };
+  window.saveFlights = async function(id){
+    const get = x => document.getElementById(x)?.value || '';
+    try{
+      const r = await fetch('/sis/partners/api/students/'+id+'/flights',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+        flightNumber:get('flInN'), flightDate:get('flInD'), flightTime:get('flInT'),
+        outboundFlightNumber:get('flOutN'), outboundFlightDate:get('flOutD'), outboundFlightTime:get('flOutT'),
+      })});
+      const d = await r.json(); if(!d.success) throw new Error(d.error||'Save failed');
+      const btn = document.getElementById('flSaveBtn'); if(btn){const t=btn.textContent;btn.textContent='✓ Saved';btn.disabled=true;setTimeout(()=>{btn.textContent=t;btn.disabled=false;},1500);}
+    }catch(e){ alert(e.message||e); }
+  };
+  window.uploadStudentDoc = async function(id,file){
+    if(!file) return;
+    const drop = document.querySelector('#otherDrop span'); const orig = drop?drop.textContent:'';
+    if(drop) drop.textContent = 'Uploading…';
+    try{
+      // Partners are consumers — they never upload insurance, so force 'other'
+      // (no classification/insurance branch on this surface).
+      const fd = new FormData(); fd.append('file',file); fd.append('docType','other');
+      const r = await fetch('/sis/partners/api/students/'+id+'/document-upload',{method:'POST',body:fd});
+      const d = await r.json(); if(!d.success) throw new Error(d.error||'Upload failed');
+      openStudentDrawer(id);
+    }catch(e){ if(drop) drop.textContent = orig; alert(e.message||e); }
+  };
+  window.deleteStudentDoc = async function(id,docId){
+    if(!confirm('Remove this upload?')) return;
+    try{
+      const r = await fetch('/sis/partners/api/students/'+id+'/docs/'+docId,{method:'DELETE'});
+      const d = await r.json(); if(!d.success) throw new Error(d.error||'Delete failed');
+      openStudentDrawer(id);
+    }catch(e){ alert(e.message||e); }
+  };
+  window.uploadPassportFile = async function(id,file){
+    if(!file) return;
+    const drop = document.querySelector('#ppDrop span'); const orig = drop?drop.textContent:'';
+    if(drop) drop.textContent = 'Uploading & reading passport…';
+    try{
+      const fd = new FormData(); fd.append('file',file);
+      const r = await fetch('/sis/partners/api/students/'+id+'/passport-upload',{method:'POST',body:fd});
+      const d = await r.json(); if(!d.success) throw new Error(d.error||'Upload failed');
+      // If the image was read by AI, open the split-screen confirm dialog
+      // (image left, extracted fields right) for a human check before saving.
+      // Otherwise (PDF/HEIC, or read failed) fall back to the normal flow.
+      if(d.extracted){ openPassportConfirm(id, d.id, d.extracted, (d.mimeType||'').includes('pdf')); }
+      else { openStudentDrawer(id); }
+    }catch(e){ alert(e.message||e); }
+    finally{ if(drop) drop.textContent = orig; }
+  };
+  // Split-screen confirm: uploaded passport image on the left, AI-extracted
+  // fields (editable) on the right. Nothing is saved until the human confirms.
+  window.openPassportConfirm = function(studentId, docId, ex, isPdf){
+    ex = ex || {};
+    document.getElementById('ppConfirmOverlay')?.remove();
+    const imgUrl = '/sis/partners/api/students/'+studentId+'/uploads/'+docId;
+    // PDFs render in an iframe (browser PDF viewer); images in an <img>.
+    const preview = isPdf
+      ? '<iframe src="'+imgUrl+'" style="width:100%;height:100%;border:none;background:#fff"></iframe>'
+      : '<img src="'+imgUrl+'" alt="passport" style="max-width:100%;max-height:100%;object-fit:contain;background:#fff;border-radius:4px">';
+    const name = [ex.givenNames, ex.surname].filter(Boolean).join(' ') || '—';
+    const review = Array.isArray(ex.needsReview) ? ex.needsReview.filter(x=>x!=='not_a_passport') : [];
+    const notPassport = Array.isArray(ex.needsReview) && ex.needsReview.includes('not_a_passport');
+    const v = x => esc(x==null?'':String(x));
+    const o = document.createElement('div');
+    o.id = 'ppConfirmOverlay';
+    o.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:10001;display:flex;align-items:center;justify-content:center;padding:24px';
+    o.addEventListener('click', e=>{ if(e.target===o) closePassportConfirm(studentId); });
+    o.innerHTML = `<div style="background:#fff;border-radius:12px;width:min(1000px,96vw);height:min(680px,92vh);display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.35);overflow:hidden" onclick="event.stopPropagation()">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid #e5e7eb">
+        <h3 style="margin:0;font-size:15px">Confirm passport details</h3>
+        <button onclick="closePassportConfirm(${studentId})" title="Cancel" style="background:transparent;border:1px solid #d1d5db;border-radius:6px;width:30px;height:28px;cursor:pointer;font-size:14px">✕</button>
+      </div>
+      <div style="flex:1;display:flex;min-height:0">
+        <div style="flex:1;background:#111;display:flex;align-items:center;justify-content:center;overflow:auto;padding:10px">${preview}</div>
+        <div style="width:380px;max-width:44%;padding:18px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;font-size:13px">
+          <p style="margin:0;color:#555;line-height:1.4">🤖 Read automatically from the image. <strong>Please check each field against the passport</strong>, correct if needed, then confirm.</p>
+          ${notPassport ? '<div style="padding:8px 10px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;color:#991b1b">The image didn’t look like a passport — fields may be empty. Enter them manually.</div>' : ''}
+          ${review.length ? '<div style="padding:8px 10px;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;color:#92400e">Couldn’t read clearly: '+review.map(esc).join(', ')+'. Please double-check these.</div>' : ''}
+          <label style="display:flex;flex-direction:column;gap:3px;font-weight:600">Passport №
+            <input id="ppcNum" value="${v(ex.passportNumber)}" style="padding:8px;border:1px solid #d1d5db;border-radius:6px;font-weight:400">
+          </label>
+          <label style="display:flex;flex-direction:column;gap:3px;font-weight:600">Issue Date
+            <input id="ppcFrom" type="date" value="${v(ex.dateOfIssue)}" style="padding:8px;border:1px solid #d1d5db;border-radius:6px;font-weight:400">
+          </label>
+          <label style="display:flex;flex-direction:column;gap:3px;font-weight:600">Expiry Date
+            <input id="ppcUntil" type="date" value="${v(ex.dateOfExpiry)}" style="padding:8px;border:1px solid #d1d5db;border-radius:6px;font-weight:400">
+          </label>
+          <div style="border-top:1px solid #eee;padding-top:10px;color:#555;font-size:12px;line-height:1.6">
+            <div style="font-weight:600;color:#333;margin-bottom:2px">Cross-check (not saved)</div>
+            Name: ${v(name)}<br>DOB: ${v(ex.dateOfBirth)||'—'} &nbsp;·&nbsp; Nat: ${v(ex.nationality)||'—'} &nbsp;·&nbsp; Sex: ${v(ex.sex)||'—'}
+          </div>
+          <div style="margin-top:auto;display:flex;gap:8px;padding-top:8px">
+            <button onclick="confirmPassportSave(${studentId})" style="flex:1;padding:10px;background:#16a34a;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600">Confirm &amp; Save</button>
+            <button onclick="closePassportConfirm(${studentId})" style="padding:10px 14px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:6px;cursor:pointer">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+    document.body.appendChild(o);
+  };
+  window.confirmPassportSave = async function(id){
+    const get = x => document.getElementById(x)?.value || '';
+    try{
+      const r = await fetch('/sis/partners/api/students/'+id+'/passport',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({passportNumber:get('ppcNum'),passportValidFrom:get('ppcFrom'),passportValidUntil:get('ppcUntil')})});
+      const d = await r.json(); if(!d.success) throw new Error(d.error||'Save failed');
+      closePassportConfirm(id);
+    }catch(e){ alert(e.message||e); }
+  };
+  window.closePassportConfirm = function(id){
+    document.getElementById('ppConfirmOverlay')?.remove();
+    openStudentDrawer(id); // refresh so saved values + the uploaded file show
+  };
+  window.deletePassportDoc = async function(id,docId){
+    if(!confirm('Remove this uploaded file?')) return;
+    try{
+      const r = await fetch('/sis/partners/api/students/'+id+'/uploads/'+docId,{method:'DELETE'});
+      const d = await r.json(); if(!d.success) throw new Error(d.error||'Delete failed');
+      openStudentDrawer(id);
+    }catch(e){ alert(e.message||e); }
   };
 
   function closeStudentDrawer() {
@@ -2035,6 +3593,13 @@ tr:hover td { background: #fafaf8; }
   // ═══ Enrollment form submission → HubSpot ═══
   function setupEnrollForm() {
     const form = document.getElementById('enrollForm');
+    // Instagram becomes required when the Challenge is opted into (Progress Posts
+    // need a social handle). Show/hide the red * as the checkbox toggles.
+    const _chk = document.getElementById('challengeCheck');
+    const _igReq = document.getElementById('igReq');
+    const _syncIgReq = () => { if (_igReq) _igReq.style.display = _chk?.checked ? '' : 'none'; };
+    _chk?.addEventListener('change', _syncIgReq);
+    _syncIgReq();
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('enrollSubmit');
@@ -2049,6 +3614,16 @@ tr:hover td { background: #fafaf8; }
       try {
         const fd = new FormData(form);
 
+        // Challenge opt-in requires an Instagram handle (Progress Posts).
+        if (document.getElementById('challengeCheck')?.checked && !String(fd.get('instagram') || '').trim()) {
+          statusEl.textContent = '';
+          btn.disabled = false;
+          errEl.textContent = "Please add the student's Instagram handle — it's required to join the Challenge.";
+          errEl.style.display = 'block';
+          document.getElementById('enrollInstagram')?.focus();
+          return;
+        }
+
         // Build contact properties
         const courseType = fd.get('courseType');
 
@@ -2060,11 +3635,17 @@ tr:hover td { background: #fafaf8; }
           lastName: fd.get('lastName'),
           email: fd.get('email'),
           phone: fd.get('phone') || '',
+          instagram: fd.get('instagram') || '',
           dateOfBirth: fd.get('dateOfBirth') || '',
           nationality: fd.get('nationality'),
+          // Challenge opt-in — server stamps the active challenge name onto the deal
+          challenge: document.getElementById('challengeCheck')?.checked || false,
           courseType: courseType,
           courseSlot: fd.get('courseSlot') || '',
           aySlot: fd.get('aySlot') || '',
+          // Academic Year renewal flag → HubSpot deal `renewal` (Yes/No bool).
+          // Guarded by courseType so a stale tick can't ride on a non-AY deal.
+          isRenewal: courseType === 'academic_year' && (document.getElementById('ayRenewal')?.checked || false),
           lpSlot: fd.get('lpSlot') || '',
           courseHours: fd.get('courseHours') || '',
           examType: fd.get('examType') || '',
@@ -2114,6 +3695,34 @@ tr:hover td { background: #fafaf8; }
 
   // ── Helpers ──
   function fmt(n) { return Math.round(Number(n || 0)).toLocaleString('en-IE'); }
+  // Passport-expiry vs course-dates badge (mirrors the SIS staff badge). Red =
+  // expires before the course starts (student can't travel — renew before
+  // flying); amber = expires before it ends (renew at home; overseas renewals
+  // take months). Only the most severe applicable badge shows.
+  function ppExpiryBadgeHtml(until, start, end) {
+    if (!until || !start) return '';
+    const exp = new Date(until), s0 = new Date(start);
+    if (isNaN(exp) || isNaN(s0)) return '';
+    const base = 'display:inline-block;border-radius:4px;padding:1px 7px;font-size:11px;font-weight:700;margin-top:5px';
+    if (exp < s0) return `<span title="Passport expires before course start" style="${base};background:#fef3c7;color:#dc2626">Expiring</span>`;
+    const e0 = end ? new Date(end) : null;
+    if (e0 && !isNaN(e0) && exp < e0) return `<span title="Passport expires before course end" style="${base};background:#fef9c3;color:#92400e">Expiring</span>`;
+    return '';
+  }
+  function ppCourseWindow(bookings) {
+    const now = Date.now();
+    const bs = (bookings || []).filter(b => b.serviceEnd && new Date(b.serviceEnd).getTime() >= now);
+    const starts = bs.map(b => new Date(b.serviceStart).getTime()).filter(t => !isNaN(t));
+    const ends = bs.map(b => new Date(b.serviceEnd).getTime()).filter(t => !isNaN(t));
+    return {
+      start: starts.length ? new Date(Math.min(...starts)).toISOString() : '',
+      end: ends.length ? new Date(Math.max(...ends)).toISOString() : '',
+    };
+  }
+  window.updatePpExpiryBadge = function(inputEl) {
+    const box = document.getElementById('ppExpiryBadge');
+    if (box) box.innerHTML = ppExpiryBadgeHtml(inputEl.value, box.dataset.start || '', box.dataset.end || '');
+  };
   function fmtDate(d) { return d ? new Date(d).toLocaleDateString('en-IE', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'; }
   function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
   function badge(status) {
@@ -2122,20 +3731,316 @@ tr:hover td { background: #fafaf8; }
     return '<span class="badge ' + cls + '">' + status + '</span>';
   }
 
+  // ═══════════════════════════════════════════════════════════
+  //  LifePass — recurring-commission display  ·  SAMPLE DATA
+  //  The cohort below is a hardcoded FRONT-END fixture. It is NOT
+  //  in the database, so it can never leak into Class / Accommodation
+  //  / Attendance / Finance / HubSpot lists. When this graduates to a
+  //  persistent "Load / Remove Sample Data", keep demo rows behind an
+  //  OPT-IN source the operational queries never read.
+  // ═══════════════════════════════════════════════════════════
+  // Commissionable BASES for the standard LifePass programme (rate-independent €).
+  // Everything a partner earns = base × their own commission rate, so the whole
+  // projection re-scales for a 15% / 20% / 22% / 25% partner — and because BOTH
+  // the recurring side and the "beat a normal upfront deal" benchmark scale by
+  // the same rate, the break-even month stays put (month 10) for every rate.
+  //   ONBOARD_FEE 647 = €997 onboard pack − €350 extras we cover
+  //   SUB         269 = €297 sub − €28 extras/sub (€700 extras balance ÷ 25 subs)
+  //   MONTHS       25 = onboard sub on/before Day 1, then 24 monthly (1/month)
+  //   UPFRONT_ALT 3100 = commissionable value of a normal upfront booking (the
+  //                      amber benchmark; €3,100 × 25% = the €775 mark). Adjust
+  //                      here if the reference deal size changes.
+  const LP_BASE = { ONBOARD_FEE: 647, SUB: 269, MONTHS: 25, UPFRONT_ALT: 3100 };
+  const LP = { MONTHS: LP_BASE.MONTHS, RATE: 0.25, ONBOARD: 0, MONTHLY: 0, LIFETIME: 0, BREAKEVEN: 0, BREAKEVEN_MONTH: 10 };
+  // pct = commission rate in percentage points (e.g. 25). null/0/unset → 22% default
+  // (the common partner rate) so the projection still renders for a rate-not-yet-set partner.
+  function lpApplyRate(pct) {
+    const r = (typeof pct === 'number' && pct > 0) ? pct / 100 : 0.22;
+    LP.RATE     = r;
+    LP.ONBOARD  = LP_BASE.ONBOARD_FEE * r;
+    LP.MONTHLY  = LP_BASE.SUB * r;
+    LP.LIFETIME = (LP_BASE.ONBOARD_FEE + LP_BASE.MONTHS * LP_BASE.SUB) * r;
+    LP.BREAKEVEN = LP_BASE.UPFRONT_ALT * r;
+  }
+  lpApplyRate(22); // default until /me resolves the partner's real rate
+  // monthsIn = subscription months paid so far (0..25); one-a-month cohort
+  const LIFEPASS_DEMO = [
+    { name:'Alicia Anderson',  nat:'Brazil', monthsIn:10 },
+    { name:'Berta Bertoli',    nat:'Brazil', monthsIn:9 },
+    { name:'Carlos Campos',    nat:'Brazil', monthsIn:8 },
+    { name:'Diana Dias',       nat:'Brazil', monthsIn:7 },
+    { name:'Eduardo Esposito', nat:'Brazil', monthsIn:6 },
+    { name:'Fernanda Faria',   nat:'Brazil', monthsIn:5 },
+    { name:'Gustavo Gomes',    nat:'Brazil', monthsIn:4 },
+    { name:'Helena Henriques', nat:'Brazil', monthsIn:3 },
+    { name:'Igor Inácio',      nat:'Brazil', monthsIn:2 },
+    { name:'Julia Jardim',     nat:'Brazil', monthsIn:1 },
+  ];
+  // Real-data detector: a student is on LifePass if any booking course is "Life Pass Morning/Afternoon".
+  // /life\s*pass/i won't false-match EUROPASS. Used by the students-list badge + drawer mini (NOT the demo tab).
+  function isLifePass(s){
+    return (s.bookings||[]).some(b => (b.courses||[]).some(c => /life\s*pass/i.test(c && c.name || '')));
+  }
+  // Months "paid" for a real LifePass student = number of ALLOCATED sub drawdowns
+  // (Xero-reconciled €297 payments), NOT time elapsed. Bars light up only as
+  // payments actually reconcile — the honest signal. 0 until the first sub lands.
+  function lpMonthsIn(s){
+    let paid = 0;
+    (s.bookings||[]).forEach(b => {
+      if (isLifePass({bookings:[b]})) {
+        const n = (b.paymentInstalments||[]).filter(pi => pi.allocationStatus === 'allocated').length;
+        if (n > paid) paid = n;
+      }
+    });
+    return Math.max(0, Math.min(LP.MONTHS, paid));
+  }
+  // Live cohort = real LifePass students from the loaded list; monthsIn = their
+  // allocated sub count. Same maths + display as the sample, just real numbers.
+  function lpLiveCohort(){
+    return (typeof _studentRows !== 'undefined' ? _studentRows : []).filter(isLifePass).map(s => ({
+      name: ((s.firstName||'') + ' ' + (s.lastName||'')).trim() || 'Student',
+      nat: s.nationality || '',
+      monthsIn: lpMonthsIn(s),
+    }));
+  }
+  let lpShowLive = null;          // null = auto (live if any live students exist); true/false = user override
+  let _lpCohort  = LIFEPASS_DEMO; // the cohort the current macro render + drill-downs read from
+  const lpEur  = n => '€' + Number(n).toLocaleString('en-IE', { minimumFractionDigits:2, maximumFractionDigits:2 });
+  const lpEur0 = n => '€' + Math.round(n).toLocaleString('en-IE');
+  const lpEarned = m => LP.ONBOARD + Math.min(m, LP.MONTHS) * LP.MONTHLY;
+
+  // 25-bar sparkline for the student drawer (real LifePass students only; numbers off the booking start date)
+  function lpDrawerMini(s){
+    if (!isLifePass(s)) return '';
+    const m = lpMonthsIn(s);
+    const e = lpEarned(m);
+    const beat = e >= LP.BREAKEVEN;
+    const checkH = (LP.BREAKEVEN/LP.LIFETIME)*100;
+    const steps = Array.from({length:LP.MONTHS}, (_,k)=>{
+      const mm = k+1, cum = lpEarned(mm), h = Math.max(6,(cum/LP.LIFETIME)*100);
+      const cls = mm < m ? '' : (mm===m ? ' now' : ' future');
+      return `<div class="lp-bar${cls}" style="height:${h}%" data-tip="Month ${mm} · ${lpEur(cum)}"></div>`;
+    }).join('');
+    return `<div class="drawer-section">
+      <div class="drawer-section-title" style="display:flex;align-items:center;gap:7px">LifePass <span class="lp-badge" style="margin-left:0">RECURRING</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px">
+        <div style="font-size:20px;font-weight:800;color:#b300bf">${lpEur(e)}</div>
+        <div style="font-size:11px;color:var(--muted)">earned · ${lpEur(LP.MONTHLY)}/mo · month ${m}/25</div>
+      </div>
+      <div class="lp-bars" style="height:64px;gap:2px">
+        <div class="lp-checkline" style="bottom:${checkH}%"><span>${lpEur0(LP.BREAKEVEN)}</span></div>
+        ${steps}
+      </div>
+      <div class="lp-axis"><span>${beat?'Past the €775 upfront ✓':'Climbing to €775'}</span><span>→ ${lpEur(LP.LIFETIME)} lifetime</span></div>
+    </div>`;
+  }
+
+  window.lpSetView = function(live){ lpShowLive = !!live; loadLifePass(); };
+  function loadLifePass() {
+    document.getElementById('lpStudent').style.display = 'none';
+    document.getElementById('lpMacro').style.display = '';
+    // Live cohort drives the view once any real LifePass student exists (default);
+    // the SAMPLE demo stays one click away. monthsIn = allocated (paid) subs.
+    const live = lpLiveCohort();
+    const hasLive = live.length > 0;
+    const showLive = (lpShowLive === null ? hasLive : lpShowLive) && hasLive;
+    const students = showLive ? live : LIFEPASS_DEMO;
+    _lpCohort = students;
+    const tag = document.getElementById('lpDataTag');
+    if (tag) {
+      const pill = (label, on, act) => `<span onclick="${act}" style="cursor:pointer;padding:2px 9px;border-radius:10px;font-size:10px;font-weight:800;letter-spacing:.05em;${on?'background:#16a34a;color:#fff':'background:#ede9fe;color:#7c3aed'}">${label}</span>`;
+      tag.innerHTML = hasLive
+        ? pill('LIVE', showLive, 'lpSetView(true)') + ' ' + pill('SAMPLE', !showLive, 'lpSetView(false)')
+        : '<span style="padding:2px 9px;border-radius:10px;font-size:10px;font-weight:800;letter-spacing:.05em;background:#ede9fe;color:#7c3aed">SAMPLE DATA</span>';
+    }
+    const active = students.filter(s => s.monthsIn < LP.MONTHS);
+    const mrr = active.length * LP.MONTHLY;
+    const earned = students.reduce((s,x)=>s+lpEarned(x.monthsIn),0);
+    const contracted = students.length * LP.LIFETIME;
+
+    document.getElementById('lpHero').innerHTML = `
+      <div class="lp-hero">
+        <div class="lp-hero-num">${lpEur(mrr)} <span style="font-size:18px;font-weight:600;opacity:.85">/ month</span></div>
+        <div class="lp-hero-sub">Recurring commission across ${active.length} active LifePass students — paid to you every month, for up to 24 months each.</div>
+        <div class="lp-hero-pace">At one new student a month you add ${lpEur(LP.MONTHLY)}/mo to this — ${lpEur0(LP.MONTHLY*12)}/mo more by this time next year.</div>
+      </div>`;
+
+    document.getElementById('lpCards').innerHTML = `
+      <div class="lp-cards">
+        <div class="lp-card"><div class="lp-card-v">${active.length}</div><div class="lp-card-l">Active students</div></div>
+        <div class="lp-card"><div class="lp-card-v">${lpEur(earned)}</div><div class="lp-card-l">Earned to date</div></div>
+        <div class="lp-card"><div class="lp-card-v">${lpEur0(contracted)}</div><div class="lp-card-l">Contracted lifetime</div></div>
+      </div>`;
+
+    // Staircase — cumulative MRR over the timeline (each step = a student starting to pay)
+    const maxM = Math.max.apply(null, students.map(s=>s.monthsIn));
+    const series = Array.from({length:maxM}, (_,t)=> students.filter(s => s.monthsIn >= (maxM - t)).length * LP.MONTHLY);
+    const peak = Math.max.apply(null, series.concat([LP.MONTHLY]));
+    const bars = series.map((v,i)=>{
+      const h = Math.max(4, (v/peak)*100);
+      const last = i===series.length-1;
+      return `<div class="lp-bar${last?' now':''}" style="height:${h}%" data-tip="${Math.round(v/LP.MONTHLY)} active · ${lpEur(v)}/mo"></div>`;
+    }).join('');
+    document.getElementById('lpStair').innerHTML = `
+      <div class="lp-panel">
+        <div class="lp-panel-t">Monthly recurring revenue — building month by month</div>
+        <div class="lp-panel-s">Each step is another student starting to pay you. The staircase only goes up.</div>
+        <div class="lp-bars">${bars}</div>
+        <div class="lp-axis"><span>${maxM} months ago</span><span>now · ${lpEur(mrr)}/mo</span></div>
+      </div>`;
+
+    const checkPct = (LP.BREAKEVEN/LP.LIFETIME)*100;
+    const rows = students.map((s,i)=>{
+      const e = lpEarned(s.monthsIn);
+      const pct = Math.min(100, (e/LP.LIFETIME)*100);
+      const beat = e >= LP.BREAKEVEN;
+      return `<div class="lp-srow" onclick="lpDrill(${i})">
+        <div style="font-weight:700;color:var(--navy)">${esc(s.name)}<div style="font-size:11px;color:var(--muted);font-weight:500">${esc(s.nat)}</div></div>
+        <div style="font-size:12px;color:var(--muted)">Mo ${s.monthsIn}/25</div>
+        <div class="lp-mini"><i style="width:${pct}%"></i><span class="lp-mini-check" style="left:${checkPct}%"></span></div>
+        <div style="text-align:right"><div style="font-weight:800;color:var(--navy);font-size:13px">${lpEur(e)}</div><div style="font-size:10px;margin-top:2px">${beat?'<span class="lp-pill-ok">PAST €775 ✓</span>':'<span class="lp-pill-climb">CLIMBING</span>'}</div></div>
+        <div class="lp-chev">›</div>
+      </div>`;
+    }).join('');
+    document.getElementById('lpGrid').innerHTML = `
+      <div class="lp-panel" style="margin-bottom:0">
+        <div class="lp-panel-t">Your LifePass students</div>
+        <div class="lp-panel-s">Each is climbing toward ${lpEur(LP.LIFETIME)} lifetime commission. The amber mark is ${lpEur0(LP.BREAKEVEN)} — where they beat a normal upfront deal. Tap a student to open their climb.</div>
+        ${rows}
+      </div>`;
+  }
+  window.loadLifePass = loadLifePass;
+
+  window.lpDrill = function(i){
+    const s = _lpCohort[i];
+    if (!s) return;
+    const e = lpEarned(s.monthsIn);
+    const remainMonths = Math.max(0, LP.MONTHS - s.monthsIn);
+    const beat = e >= LP.BREAKEVEN;
+    const checkH = (LP.BREAKEVEN/LP.LIFETIME)*100;
+    const steps = Array.from({length:LP.MONTHS}, (_,k)=>{
+      const m = k+1;
+      const cum = lpEarned(m);
+      const h = Math.max(4,(cum/LP.LIFETIME)*100);
+      const cls = m < s.monthsIn ? '' : (m===s.monthsIn ? ' now' : ' future');
+      return `<div class="lp-bar${cls}" style="height:${h}%" data-tip="Month ${m} · ${lpEur(cum)} earned"></div>`;
+    }).join('');
+    document.getElementById('lpMacro').style.display = 'none';
+    const el = document.getElementById('lpStudent');
+    el.style.display = '';
+    el.innerHTML = `
+      <button class="lp-back" onclick="loadLifePass()">‹ All LifePass students</button>
+      <div style="font-size:18px;font-weight:800;color:var(--navy)">${esc(s.name)} <span class="lp-badge">LIFEPASS</span></div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:16px">${esc(s.nat)} · Month ${s.monthsIn} of 25</div>
+      <div class="lp-cards">
+        <div class="lp-card"><div class="lp-card-v">${lpEur(e)}</div><div class="lp-card-l">Earned to date</div></div>
+        <div class="lp-card"><div class="lp-card-v">${lpEur(LP.MONTHLY)}</div><div class="lp-card-l">Every month</div></div>
+        <div class="lp-card"><div class="lp-card-v">${remainMonths}</div><div class="lp-card-l">Months remaining</div></div>
+      </div>
+      <div class="lp-panel">
+        <div class="lp-panel-t">The climb to ${lpEur(LP.LIFETIME)}</div>
+        <div class="lp-panel-s">${beat ? 'Already past the '+lpEur0(LP.BREAKEVEN)+' a normal upfront booking would earn — everything above the amber line is extra.' : 'Climbing toward the '+lpEur0(LP.BREAKEVEN)+' amber line (a normal upfront commission). Crosses it at month '+LP.BREAKEVEN_MONTH+'.'}</div>
+        <div class="lp-bars">
+          <div class="lp-checkline" style="bottom:${checkH}%"><span>${lpEur0(LP.BREAKEVEN)}</span></div>
+          ${steps}
+        </div>
+        <div class="lp-axis"><span>Month 1</span><span>Month 25 · ${lpEur(LP.LIFETIME)}</span></div>
+      </div>`;
+  };
+
   init();
 })();
 </script>
 <!-- ═══ Student detail drawer ═══ -->
 <div class="drawer-overlay" id="studentDrawerOverlay"></div>
 <aside class="drawer-panel" id="studentDrawer" role="dialog" aria-modal="true" aria-label="Student detail">
-  <div class="drawer-header">
-    <h2 id="drawerStudentName" style="font-size:16px;font-weight:800;color:var(--navy);margin:0">Student</h2>
-    <button class="drawer-close" id="drawerCloseBtn" aria-label="Close">✕</button>
-  </div>
   <div class="drawer-body" id="drawerBody">
     <div class="loading">Loading...</div>
   </div>
 </aside>
+
+<!-- ═══ Contract signing gate ═══ -->
+<div class="contract-overlay" id="contractOverlay" role="dialog" aria-modal="true" aria-labelledby="contractTitle">
+  <div class="contract-card">
+    <div class="contract-header">
+      <h2 id="contractTitle">Sign your ULearn Partner Agreement</h2>
+      <p>Review the agreement below and sign to access the partner portal.</p>
+      <a id="contractLogout" href="/sis/partners/auth/logout" style="position:absolute;top:14px;right:18px;color:#fff;font-size:12px;text-decoration:underline;opacity:0.85">Sign out</a>
+    </div>
+    <div class="contract-body">
+      <div class="contract-pdf">
+        <iframe id="contractPdfFrame" title="Partner agreement preview" src="about:blank"></iframe>
+        <div style="padding:8px 12px;border-top:1px solid var(--line);background:#fafafa;font-size:12px;color:var(--muted);text-align:center">
+          Can't see the contract above?
+          <a href="/sis/partners/api/contract/preview.pdf" target="_blank" rel="noopener" download="ulearn-partner-agreement.pdf" style="color:var(--green);font-weight:600;text-decoration:none;margin-left:4px">Download as PDF</a>
+        </div>
+      </div>
+      <div class="contract-sign">
+        <div id="contractTermsGate" style="display:none">
+          <strong>Your commercial terms aren't finalised yet.</strong><br>
+          Your wholesale discount hasn't been set, so the agreement isn't ready to sign. Please contact <a href="mailto:partners@ulearnschool.com">partners@ulearnschool.com</a> and we'll finalise it.
+        </div>
+
+        <div id="contractSignFlow">
+        <h3>Confirm Your Details</h3>
+        <div class="cd-grid">
+          <div class="cd-full"><label for="cdEtoName">ETO Name <span class="req">*</span></label><input type="text" id="cdEtoName" /></div>
+          <div class="cd-full"><label for="cdStreet">Street</label><input type="text" id="cdStreet" /></div>
+          <div><label for="cdCity">City</label><input type="text" id="cdCity" /></div>
+          <div><label for="cdZip">Postcode</label><input type="text" id="cdZip" /></div>
+          <div><label for="cdCountry">Country</label><input type="text" id="cdCountry" /></div>
+          <div><label for="cdTaxNo">Tax Number</label><input type="text" id="cdTaxNo" /></div>
+          <div class="cd-full"><label for="cdContact">Primary Contact <span class="req">*</span></label><input type="text" id="cdContact" /></div>
+          <div><label for="cdEmail">Email <span class="req">*</span></label><input type="email" id="cdEmail" /></div>
+          <div><label for="cdPhone">Phone</label><input type="text" id="cdPhone" /></div>
+          <div class="cd-full"><label for="cdDiscount">Wholesale Discount</label><input type="text" id="cdDiscount" readonly /></div>
+        </div>
+
+        <h3 style="margin-top:8px">Sign As</h3>
+        <div>
+          <label for="sigSignerName">Full name</label>
+          <input type="text" id="sigSignerName" autocomplete="name" placeholder="Your full name" />
+        </div>
+        <div>
+          <label for="sigSignerTitle">Job title (optional)</label>
+          <input type="text" id="sigSignerTitle" autocomplete="organization-title" placeholder="e.g. Director, Owner" />
+        </div>
+
+        <h3 style="margin-top:8px">Signature</h3>
+        <div class="sig-tabs">
+          <button type="button" class="sig-tab active" data-sig-mode="typed">Type</button>
+          <button type="button" class="sig-tab" data-sig-mode="drawn">Draw</button>
+        </div>
+
+        <div class="sig-panel active" id="sigPanelTyped">
+          <div class="font-choice" id="fontChoice">
+            <div class="font-option selected" data-font="Tomatoes"><span class="font-preview tomatoes">Your name</span><span class="font-label">Tomatoes</span></div>
+            <div class="font-option" data-font="Autography"><span class="font-preview autography">Your name</span><span class="font-label">Autography</span></div>
+            <div class="font-option" data-font="Bulgatti"><span class="font-preview bulgatti">Your name</span><span class="font-label">Bulgatti</span></div>
+          </div>
+        </div>
+
+        <div class="sig-panel" id="sigPanelDrawn">
+          <div id="sig-canvas-wrap">
+            <canvas id="sig-canvas"></canvas>
+            <div class="sig-canvas-hint" id="sigCanvasHint">Sign here using your mouse or finger</div>
+          </div>
+          <button type="button" class="sig-clear-btn" id="sigClearBtn">Clear</button>
+        </div>
+
+        <label class="contract-agree">
+          <input type="checkbox" id="sigAgreed" />
+          <span>I have read the agreement above and I am authorised to sign it on behalf of the partner.</span>
+        </label>
+
+        <div class="contract-error" id="contractError"></div>
+
+        <button type="button" class="contract-submit" id="contractSubmit" disabled>Sign agreement</button>
+        </div><!-- /contractSignFlow -->
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ═══ Modal shell (branded confirm / alert) ═══ -->
 <div class="modal-overlay" id="modalOverlay">

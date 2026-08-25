@@ -1,0 +1,46 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Aug Bank Holiday 2026-08-03 absent from school_closures (verified Thu 30 Jul)\n• 19 active booking courses start 2026-08-03 - must be shunted to 2026-08-04 before Monday\n• Was 20 BCs; BC24970 (Tsengelbayar Mendsaikhan) no longer on the list - deactivated/rescheduled\n• School closure insert + 19-row date UPDATE not yet run\n• Deadline: TOMORROW Fri 31 Jul 2026 - urgent",
+        "Insert school_closure for 2026-08-03, shunt 19 BCs to Aug 4. See recipe: issue-38-addendum-30jul-g.md",
+        "Thu 30 Jul UTC 3rd check. 19 BCs (1 less than before - BC24970 gone). Fix NOT RUN. DEADLINE TOMORROW.",
+        "URGENT; BH unshunted"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• Booking 18180 (Giampaolo Russo, student 14571): Confirmed, fully paid EUR 2,584.96\n• Accommodation 11357: Host Family, bed 178 (Edel McDonald), Aug 2-Sep 6, confirmed\n• Capel Street apartment: still absent - no second booking accommodation record\n• Check-in Sunday 2 Aug 2026 - 2 days away\n• Booking course 24956 starts Aug 3 (bank holiday) - also needs shunting per issue 38",
+        "Diego to confirm Capel dates/bed/fee; insert BA record. See recipe: issue-41-addendum-30jul-c.md",
+        "Thu 30 Jul UTC 3rd check. Capel BA absent (unchanged). Check-in now 2 days away. Fix NOT RUN.",
+        "Capel missing; check-in Sun 2 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 27 booking courses still active=true with end dates in the past - fix not yet run\n• Batch 1 (11 BCs, ended Jul 24): 6 days stale - BC24776, BC1781, BC25011, BC20, BC81, BC24620, BC24606, BC24828, BC1792, BC24989, BC37\n• Batch 2 (15 BCs, ended Jul 17): 13 days stale\n• Legacy: BC505 (Tuguldur Otgonbaatar, ended Aug 2025)\n• BC25023 (Eduardo Roche Diaz, bk18245) ends TOMORROW Jul 31 - deactivate after end of day",
+        "UPDATE active=false on 27 BCs; then BC25023 on/after Aug 1. See recipe: issue-45-addendum-30jul-e.md",
+        "Thu 30 Jul UTC 3rd check. All 27 unchanged. BC25023 ends tomorrow. Fix NOT RUN.",
+        "27 stale BCs; fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student 1001 (Saikhantes Shagdarsuren): on holiday Jul 20-Aug 21, returns Mon 24 Aug\n• Class assignment 255 (class B1 PM) expired Jul 3 - 27 days ago, no replacement created\n• Booking course 24925 (Academic Year Afternoon, Mar 9-Oct 2): active, needs new assignment for Aug 24\n• Old booking course 1982 (Academic Year Morning, ended Dec 2025): still active - stale\n• Visa status: null (unchanged)",
+        "INSERT new SCA for Aug 24-Oct 2, class 11; deactivate BC1982. See recipe: issue-15-addendum-30jul-e.md",
+        "Thu 30 Jul UTC 132nd check. No change. SCA expired 27d. Returns Aug 24. Fix NOT RUN.",
+        "new SCA needed; returns 24 Aug"
+      ]
+    ]
+  }
+]

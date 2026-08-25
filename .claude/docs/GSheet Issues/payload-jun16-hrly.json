@@ -1,0 +1,60 @@
+[
+  {
+    "range": "J27:K27",
+    "values": [
+      [
+        "Jun16 hrly D2: s14532 Ernesto 0SCAs CONFIRMED (DB: 0 rows bci=24826). bc24826 INTENSIVE WK2 D2 -- 4 school days remain (Jun16-19). bk18034 PARTIAL 845/1095 conf=false updAt=Jun07. currentLevel=null DB+HS(id=3344151). WK1(Jun08-12) ENTIRELY MISSED. SQL NOT RUN. NEIL: get level from teacher NOW then INSERT AM+PM SCAs ws=Jun15 we=Jun19. Level pairs: A2=cls8/9, B1=cls5+12/11, B2-C1=cls4/6, C1=cls13/14.",
+        "CRIT D2;4d left"
+      ]
+    ]
+  },
+  {
+    "range": "J23:K23",
+    "values": [
+      [
+        "Jun16 hrly D2: bk18158 CONFIRMED 740/740 (paid Jun15 10:10UTC). s1015 0 active SCAs for bc24933 (GE-AM Jun15-Jul10). bc24934 DUP still live. bk18131 CONF 1185+bk18133 CONF 648 NOT cancelled. Steps 1-4 NOT RUN. NEIL: step4=assign s1015 cls7(A1) bc24933 IMMEDIATELY (student in school D2 no class).",
+        "D2;paid;0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Student 1001 has attendance = 0 for ALL TIME\n• Class assignment 255 (B1 PM class 11), booking course 24925, booking 18151, Jan 12 – Jul 03 (17 days left)\n• Visa status = null, nationality = Mongolia\n• IRP risk if attendance unverified",
+        "(1) Ask cls11 / B1 PM teacher if Saikhantes attends; (2) YES: backfill attendance; (3) NO: IRP escalation. see recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun16 hrly: att=0 ALL TIME s1001 CONFIRMED (DB count=0). sca255 B1PM cls11 bc24925 Jan12-Jul03 (17d remain). visaStatus=null Mongolia. bk18151 CONF 1339.2/1339.2. NEIL: ask B1PM teacher if Saikhantes attends TODAY -- IRP risk, course ends Jul03 in 17d.",
+        "IRP 17d;att=0"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Milena Vinci removed from SIS database (resolved)\n• Giulia (student 88) has 0 class assignments – course started Mon Jun 15 (Day 2)\n• Booking 18044 CONFIRMED (duplicate, 1106.5 / 1106.5) not yet cancelled\n• Booking course 104 Morning General Plus Jun 15 – Jun 26 active (10 days remaining)",
+        "Milena deleted (done). Cancel booking 18044 + DELETE payment 17607 (double-import Mar 13, xeroId = null); assign student 88 to standard AM class via SIS bk94/bc104. see recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun16 hrly D2: s88 Giulia 0SCAs CONFIRMED (DB classAssignments=[]). bk94 CONF 1151.5/1151.5 bc104 ACTIVE. bk18044 DUP CONF 1106.5/1106.5 NOT cancelled (pmt17607 EUR1151.5 xeroId=null=dbl-import Mar13, DELETE not refund). Milena s14557 NOT in DB (confirmed deleted). Steps 1-3 NOT RUN. NEIL: step1=get Giulia level from prev teacher; step2=assign s88 std AM class SIS bk94/bc104 ws=Jun15 we=Jun26 IMMEDIATELY.",
+        "D2;0SCA;dup"
+      ]
+    ]
+  },
+  {
+    "range": "J18:K18",
+    "values": [
+      [
+        "Jun16 hrly D40+: bk1308 CANCELLED confirmed=false 1530/1530 UNCHANGED (updAt=Jun07, 9d stale). bc1350 AY-AFT May25-Nov13 ACTIVE. s766 0 SCAs. Course running 22d with booking cancelled. NEIL: UPDATE bookings SET status=CONFIRMED, confirmed=true WHERE id=1308 (NOT RUN).",
+        "D40+ cancelled"
+      ]
+    ]
+  },
+  {
+    "range": "J21:K21",
+    "values": [
+      [
+        "Jun16 hrly D80: bk1605 PENDING 0/1509 UNCHANGED (updAt=Jun11, 5d stale). bc1791 AY-Ren-Morn Apr13-Oct02 ACTIVE. 0 SCAs s1047. hubspotDealId=502951083215 NOT WON. NEIL: WIN deal 502951083215 in HubSpot to trigger webhook.",
+        "D80 pending"
+      ]
+    ]
+  }
+]

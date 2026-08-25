@@ -78,7 +78,7 @@ function classifyItem(desc: string): ItemKind {
   return 'course';
 }
 
-function pickBestInvoice(invoices: InvoiceShape[]): InvoiceShape | null {
+export function pickBestInvoice(invoices: InvoiceShape[]): InvoiceShape | null {
   if (!invoices?.length) return null;
   // Filter out credit-note types and clearly-inactive invoices
   const usable = invoices.filter(i => {

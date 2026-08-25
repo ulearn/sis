@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• 58th check Mon 17 Aug 2026 UTC — no change since 57th check\n• Total students: 14,472 (+1 new student vs yesterday)\n• 552 students without + prefix (unchanged)\n• ~419 students with + prefix but spaces or dashes (unchanged)\n• Total non-E.164: ~971 (basis unchanged)\n• Day 42 — fix not applied",
+        "Strip spaces; normalise to E.164. See recipe: issue-6-addendum-17aug.md",
+        "58th hrly Mon 17 Aug UTC. Day 42. Total students 14,472 (+1 new). Non-E.164: ~971 (unchanged). Fix NOT RUN.",
+        "~971 phones; 42d"
+      ]
+    ]
+  },
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• 182nd check Mon 17 Aug 2026 UTC — no change since 181st check\n• Student Class Assignment 288: bookingCourseId = 24697 (WRONG), classId = 12, weekEnd = 2026-12-18\n• Booking Course 24697 (Academic Year Morning): ended 2026-07-31 — 17 days stale, active = true, 1 assignment\n• Booking Course 25035 (General English Academic Year AM Plus): start 2026-08-03, end 2026-12-18, active = true, 0 assignments\n• Assignment weekEnd matches Booking Course 25035 end — must move from 24697 to 25035\n• Booking Course 25035 running 14 days with no class assignment (Rakan Alghamdi, student 14444)",
+        "Move SCA 288 to BC 25035; deactivate BC 24697. See recipe: issue-12-addendum-17aug-b.md",
+        "182nd Mon 17 Aug UTC. SCA 288 on wrong BC 24697 (17d stale). BC 25035 running 14d with 0 SCAs. Fix NOT RUN.",
+        "SCA on wrong BC; BC24697 17d"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 147th check Mon 17 Aug 2026 UTC — no change since 146th check\n• Booking 18151: CONFIRMED, fully paid EUR 1,339.20, amountOpen = EUR 0\n• Booking Course 24925 (Academic Year Afternoon): 2026-03-09 to 2026-10-02, active\n• Student Class Assignment 255: class 11, weekStart 2026-01-12, weekEnd 2026-07-03 — expired 45 days ago (only assignment on record)\n• Holiday 2500: 2026-07-20 to 2026-08-21 — student returns Mon 24 Aug 2026 (7 days from now)\n• No class assignment exists for 24 Aug to 2 Oct — student will not appear in register on return\n• URGENT: fix required before Monday 24 Aug",
+        "Insert class assignment: class 11, BC 24925, weekStart 2026-08-24, weekEnd 2026-10-02. See recipe: issue-15-addendum-17aug-e.md",
+        "147th Mon 17 Aug UTC. Returns Mon 24 Aug (7 days). SCA 255 expired 45d. No return class assignment. URGENT. Fix NOT RUN.",
+        "URGENT: return Mon24 7d; SCA exp 45d"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• 31st check Mon 17 Aug 2026 UTC — no change since 30th check (Sun 16 Aug)\n• Student 983 (Flávia Nascimento Mariano): visa_status = null — last updated 28 Jul 2026\n• Booking 1534: CONFIRMED, fully paid EUR 1,308, amountOpen = EUR 0 — last updated 10 Aug 2026\n• Booking Course 1710 (Academic Year Afternoon): 2026-06-01 to 2026-11-27, active = true\n• Student IS in class — SCA 265 (class 11, 15 Jun to 20 Nov 2026)\n• Payment 17035 (EUR 250, 17 Feb 2026): xeroPaymentId = null — unreconciled\n• Payment 17527 (EUR 1,058, 19 May 2026): xeroPaymentId = null — unreconciled\n• Day 78 — fix not applied",
+        "Set visa_status = APPROVED on student 983; reconcile Xero payments 17035 + 17527. See recipe: issue-18-addendum-16aug.md",
+        "31st Mon 17 Aug UTC. Day 78. visa_status null (unchanged). Booking fully paid (updated Aug 10). Xero unreconciled. Fix NOT RUN.",
+        "visa null; in class; day 78; Xero unconfirmed"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 105th check Mon 17 Aug 2026 UTC — no change since 104th check\n• Stale active Booking Courses (endDate before 17 Aug 2026): 24,497 — unchanged\n• Most recent ended Booking Courses: Academic Year and general courses ending 14 Aug 2026\n• No new stale Booking Courses added since 14 Aug (count stable)\n• Fix script prepared; not yet run",
+        "Run bulk deactivation of 24,497 stale Booking Courses. See recipe: issue-45-addendum-17aug.md",
+        "105th Mon 17 Aug UTC. 24,497 stale BCs unchanged. No new ended BCs since Aug 14. Fix NOT RUN.",
+        "24,497 stale; fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 143rd check Mon 17 Aug 2026 UTC — no change since 142nd check\n• Booking 1624 (Telmuun Enkhsaikhan, student 293): PARTIAL, confirmed = false — last updated 5 Aug 2026\n• Amount paid = EUR 1,406; amount open = EUR 250 — balance prevents CONFIRMED status\n• Anomaly: only 1 payment of EUR 100 (id 17956) linked to booking 1624; amountPaid = EUR 1,406 — other payments may be unlinked\n• Booking Course 1810 (Academic Year Renewal Morning, 2026-06-29 to 2027-01-01): active = true, 0 class assignments — 50 days without assignment\n• Payment 17956 (EUR 100, 2026-03-31): xeroPaymentId = null — unreconciled (50 days)",
+        "Assign BC 1810 to class; reconcile Payment 17956; investigate payment shortfall (EUR 100 in DB vs EUR 1,406 paid); settle EUR 250; set confirmed = true. See recipe: issue-48-addendum-17aug-b.md",
+        "143rd Mon 17 Aug UTC. BC 1810 now 50d with 0 SCAs. EUR 250 open. Payment 17956 unreconciled 50d. EUR 100 in DB vs EUR 1,406 amountPaid — discrepancy. Fix NOT RUN.",
+        "payment gap; BC1810 50d; SCA 0"
+      ]
+    ]
+  }
+]

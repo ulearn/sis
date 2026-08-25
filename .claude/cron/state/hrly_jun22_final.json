@@ -1,0 +1,36 @@
+[
+  {
+    "range": "J23:K23",
+    "values": [
+      [
+        "Jun22 hrly x5 (Week 2): Day 9 in school (Mon Jun22). bk18158 CONF 740/740. bc24934 STILL active=true (fee=360, duplicate). bc24933 active (fee=380). 0 SCAs. Student has been in school since Jun15 with NO class assignment. URGENT: deactivate bc24934, insert SCA bc24933 cls7 A1-AM ws=Jun22 we=Jul10.",
+        "D9; 0SCA; URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "J25:K25",
+    "values": [
+      [
+        "Jun22 hrly x5 (FINAL WEEK Mon-Fri): bc1797 ends Fri Jun26. Class 12 occurrences exist Jun22-26 — Alberto (s1052) NOT in attendance (no records this week). No SCA since Apr26 (57d). Neil: if Alberto in school TODAY, INSERT SCA bc1797 cls12 ws=Jun22 we=Jun26. Then set bc24686.fee before Jul20.",
+        "Jun26=LAST DAY; DECIDE"
+      ]
+    ]
+  },
+  {
+    "range": "J30",
+    "values": [
+      [
+        "Jun22 hrly x4: sca255 STILL cls11 weekStart=Jan12 weekEnd=Jul03 (wrong). Jul03=11d. bc24925 AY-Afternoon Mar09-Sep11 is the correct course. After Jul03, 10 weeks of school uncovered to Sep11. SQL NOT RUN: UPDATE student_class_assignments SET week_start=2026-03-09, week_end=2026-09-11 WHERE id=255."
+      ]
+    ]
+  },
+  {
+    "range": "K43",
+    "values": [
+      [
+        "awaiting spec"
+      ]
+    ]
+  }
+]

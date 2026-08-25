@@ -1,0 +1,5 @@
+{
+  "_comment": "CANONICAL peak-season windows for ULearn pricing. Single source of truth for the peak/off-peak split, meant to be read by BOTH hub autoQuote (hubapp/scripts/quote-inv/autoQuote.js) and SIS invoice-sync (src/routes/webhooks.ts) so the two can never drift. Month indices are 0-based: 0=Jan, 6=Jul, 7=Aug, 8=Sep, 11=Dec. A week counts as PEAK if ANY of its 7 days falls within [peakStartMonth, peakEndMonth] of any year (see peakWeeksInRange). Accom and course windows differ because the published price lists disagree — accom says Jul-Sep, course says Jul-Aug — kept as-is until the 2027 price list reconciles them.",
+  "accom":  { "peakStartMonth": 6, "peakEndMonth": 8, "label": "Jul–Sep" },
+  "course": { "peakStartMonth": 6, "peakEndMonth": 7, "label": "Jul–Aug" }
+}

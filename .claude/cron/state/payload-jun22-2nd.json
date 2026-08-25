@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• renderSheetHtml() in src/routes/attendance.ts (lines 36-182) generates all printable sheets\n• No homework section has ever been implemented in this function\n• Reference template TEMPLATE_29.05.2026.pdf also has no homework section — new requirement, not a regression\n• Additional discrepancies vs reference PDF: SIS uses IN+OUT pairs per day (10 cols); reference uses single col per day plus LT (Late Total) column; reference has DAYS COVERED field; SIS has HEAD COUNT row (reference does not)",
+        "Add homework section to renderSheetHtml(); get spec from Paul first. See recipe: issue-36-attendance-homework-section.md",
+        "Need Paul/Neil to confirm layout: (A) teacher notes box per day at bottom, (B) per-student HW column in grid, or (C) free-text box. Also confirm IN+OUT vs single-col format and LT column vs reference PDF.",
+        ""
+      ]
+    ]
+  }
+]

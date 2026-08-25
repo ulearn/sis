@@ -1,0 +1,56 @@
+[
+  {
+    "range": "J2:K2",
+    "values": [
+      [
+        "hrly Jun26 FRI UTC (51st check): pmt16988 EUR339.90 bookingId=null xeroId=null + pmt16989 EUR339.90 bookingId=null xeroId=null STILL UNLINKED — 59d since Apr28. bc24630+bc24631 STILL fee=null starts Mon Jun29=3 DAYS. NEIL: TODAY IS LAST WORKING DAY. NOT RUN: (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) set bc24630+bc24631 fees.",
+        "Jun29=Mon; EMERGENCY"
+      ]
+    ]
+  },
+  {
+    "range": "J16:K16",
+    "values": [
+      [
+        "hrly Jun26 FRI UTC (26th check, fresh DB): sca255 classId=11 weekStart=2026-01-12(wrong) weekEnd=2026-07-03(wrong) STILL UNCHANGED. bc24925 AY-Aft Mar09-Sep11 active fee=1102.20. weekEnd=Jul03 = 7 DAYS. After Jul03, Saikhantes invisible to B1-PM for 10 weeks through Sep11. SQL NOT RUN: UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255. Neil: run before Thu Jul03.",
+        "sca255; Jul03=7d; URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "J25:K25",
+    "values": [
+      [
+        "hrly Jun26 FRI UTC (22nd check, fresh DB): bc1797 (Morning General Apr06-Jun26) ENDED TODAY — active=true stale (updAt=May03=54d). BEREAVEMENT LEAVE: att=0 all time. bc24686 Morning General Jul20-Sep18 fee=STILL NULL (updAt=May14=43d). pmt17124 EUR1280.12 bk1611 xeroId=null hsId=null. bk1611 CONF 1280.12/1280.12 (updAt=Jun11). Neil: (1) deactivate bc1797 via SIS (course ended today); (2) set bc24686 fee before Jul20=24d; (3) reconcile pmt17124 in Xero.",
+        "bc24686 fee=null; Jul20=24d"
+      ]
+    ]
+  },
+  {
+    "range": "J27:K27",
+    "values": [
+      [
+        "hrly Jun26 FRI UTC (8th check, fresh DB): bc24826 STILL active=true (ended Jun19=7d ago, updAt=Jun07=19d stale). bk18034 PARTIAL EUR845/1095 amountOpen=EUR250 conf=false (updAt=Jun07=19d stale). pmt17683 EUR845 xeroPaymentId=null hsId=1241215836360. EUR250 from Ernesto Pesoa Gil (s14532) STILL outstanding. Neil: (1) SIS deactivate bc24826; (2) chase EUR250 from Ernesto; (3) reconcile pmt17683 in Xero.",
+        "EUR250; bc24826 7d stale"
+      ]
+    ]
+  },
+  {
+    "range": "J44:K44",
+    "values": [
+      [
+        "hrly Jun26 FRI UTC (36th check): ba9917(bk1274 endMay16=41d)+ba11157(bk100 endMay10=47d)+ba11159(bk100 endMay30=27d)+ba11180(bk81 endJun20=6d anomaly updAt=Jun22) ALL STILL active=true bed84 BLOCKED. ba11311 Pietro Jun28-Sep13 active=true fee=3850 bk17980 PAID 5331/5331. NEIL ABSOLUTE EMERGENCY: Pietro ARRIVES TOMORROW (SUNDAY JUN28) — TODAY IS THE LAST DAY. NOT RUN: UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180). RUN NOW.",
+        "Jun28=Sun; EMERGENCY"
+      ]
+    ]
+  },
+  {
+    "range": "J47:K47",
+    "values": [
+      [
+        "hrly Jun26 UTC (fresh DB): pmt17180 EUR431.9 xeroPaymentId=null hubspotPaymentId=null (created May05=52d). ba11358 bed180 Jul12-Aug02 active=true — RESOLVED. Xero reconciliation of pmt17180 still pending (low priority).",
+        "accomm fixed; Xero TBD"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 + 16989 still unlinked — booking_id = null, xero_payment_id = null — 62 days since 28 Apr\n• Payment 16988 (HubSpot 1204827374829) → Booking 17856 Margherita Galbusera — EUR 339.90\n• Payment 16989 (HubSpot 1204846469317) → Booking 17857 Francesca Fassina — EUR 339.90\n• Both bookings: status = Confirmed, confirmed = false — students blocked from class assignment lists\n• Booking courses 24630 + 24631: General English AM Plus, 29 Jun to 10 Jul — fee = null\n• Classes start TOMORROW Mon 29 Jun — 4-step SQL NOT RUN (96th hourly check, Jun 28 UTC)",
+        "(NOT RUN) (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) UPDATE booking_courses SET fee=339.9 WHERE id IN (24630,24631); (4) UPDATE bookings SET confirmed=true WHERE id IN (17856,17857). See recipe: issue-1-orphan-payments.md",
+        "hrly Jun28 SUN UTC (96th check, CRITICAL): pmt16988 bookingId=STILL null xeroId=null EUR339.90. pmt16989 STILL null. bk17856 CONF conf=STILL false 339.9/339.9. bk17857 CONF conf=STILL false 339.9/339.9. bc24630+bc24631 GE-AM-Plus Jun29 fee=STILL null. CLASSES TOMORROW 09:00 IST Mon Jun29. 4-step SQL NOT RUN. NEIL: RUN THE 4-STEP SQL NOW.",
+        "SQL NOT RUN; Jun29 9am"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Class assignment 255 (class 11, B1 PM) has week_start = 12 Jan 2026 (wrong — booking course 24925 starts 9 Mar 2026)\n• Week end = 3 Jul 2026 — assignment expires in 5 days (URGENT: student loses class slot after Thu 3 Jul)\n• Booking course 24925: Academic Year Afternoon, 9 Mar to 11 Sep 2026, fully paid EUR 1339.20\n• Booking 18151 Confirmed, confirmed = true — student Saikhantes Shagdarsuren (student 1001)\n• Fix: one SQL UPDATE to set week_start = 2026-03-09, week_end = 2026-09-11 on student_class_assignments id = 255",
+        "(NOT RUN) UPDATE student_class_assignments SET week_start=2026-03-09, week_end=2026-09-11 WHERE id=255. See Issue 29 recipe: issue-29-saikhantes-jan12-start-date.md",
+        "hrly Jun28 SUN UTC (re-check #3, fresh DB): sca255 weekStart=2026-01-12 STILL WRONG weekEnd=2026-07-03 (5d to expire Thu Jul03). bc24925 AY Afternoon Mar09-Sep11 confirmed (bk18151 EUR1339.20). URGENT: 5 days to expiry — student Saikhantes loses class slot Thu Jul03. SQL NOT RUN. Neil: run UPDATE student_class_assignments SET week_start=2026-03-09, week_end=2026-09-11 WHERE id=255.",
+        "sca255; Jul03=5d; URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• Student 917 (Uyanga Tungalag) visa status = null — blocks appearance in class to be assigned list\n• Booking 1467 is Confirmed, confirmed = true, fully paid EUR 2405 (amountOpen = 0)\n• Booking course 1613 (Academic Year Morning, 27 Apr to 16 Oct 2026) active — zero class assignments\n• Day 63 in school with no class assigned — student cannot be placed via SIS while visa status is null\n• Fix: set student 917 visa_status to Approved via SIS UI, then assign to class",
+        "(NOT RUN) UPDATE students SET visa_status='Approved' WHERE id=917; then assign Uyanga to class via SIS admin. See recipe: issue-25-uyanga-visa-escrow.md",
+        "hrly Jun28 SUN UTC (23rd check, fresh DB): s917 visaStatus=STILL null visa_required=true (updAt=May21=38d stale). bk1467 CONF conf=true fully paid 2405/2405. bc1613 AY-Morning Apr27-Oct16 active. 0 class assignments. Day 63 in school with no class. UNCHANGED. Neil: SIS student 917 → set visaStatus=Approved → assign to class.",
+        "D65; 0SCA; CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Class assignment 255 (class 11, B1 PM) has week_start = 12 Jan 2026 (wrong — booking course 24925 starts 9 Mar 2026)\n• Week end = 3 Jul 2026 — assignment expires in 5 days (URGENT: student loses class slot after Thu 3 Jul)\n• Booking course 24925: Academic Year Afternoon, 9 Mar to 11 Sep 2026, fully paid EUR 1339.20\n• Booking 18151 Confirmed, confirmed = true — student Saikhantes Shagdarsuren (student 1001)\n• Fix: one SQL UPDATE to set week_start = 2026-03-09, week_end = 2026-09-11 on student_class_assignments id = 255",
+        "(NOT RUN) UPDATE student_class_assignments SET week_start=2026-03-09, week_end=2026-09-11 WHERE id=255. See recipe: issue-29-saikhantes-jan12-start-date.md",
+        "hrly Jun28 SUN UTC (re-check #3, fresh DB): sca255 weekStart=2026-01-12 STILL WRONG weekEnd=2026-07-03 (5d to expire Thu Jul03). bc24925 AY Afternoon Mar09-Sep11 confirmed (bk18151). URGENT: same issue as #15 — expires Thu Jul03 in 5 days. SQL NOT RUN. Neil: run UPDATE student_class_assignments SET week_start=2026-03-09, week_end=2026-09-11 WHERE id=255.",
+        "sca255; Jul03=5d; URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H35:K35",
+    "values": [
+      [
+        "• Bug in public/admin.html sendBulkEmail() — reads the live bulkSelectedStudents set, not a frozen snapshot\n• _bulkEmailRecipientIds declared at line 1355 but never assigned in openBulkEmailModal()\n• Comment at lines 1351–1354 documents the intended fix but the code change was not applied\n• sendBulkEmail() at line 1500 still reads [...bulkSelectedStudents] (cleared on navigation or report reload)\n• Fix: add _bulkEmailRecipientIds = ids after line 1373 in openBulkEmailModal(); use it at line 1500 in sendBulkEmail()",
+        "Add _bulkEmailRecipientIds=ids after line 1373 in openBulkEmailModal; change line 1500 to use _bulkEmailRecipientIds. No build needed. See recipe: issue-33-khulan-reports-email-send.md",
+        "hrly Jun28 SUN UTC (3rd code check, public/admin.html): Bug STILL PRESENT. L1355 _bulkEmailRecipientIds=[] declared; comment L1351-1354 added (describes intent) but fix NOT applied. L1373 const ids=[...bulkSelectedStudents] correct capture but NOT assigned to _bulkEmailRecipientIds. L1500 sendBulkEmail() reads [...bulkSelectedStudents] directly. Fix (NOT RUN, 2 lines): add _bulkEmailRecipientIds=ids at L1374; change L1500 to const ids=_bulkEmailRecipientIds.",
+        "code fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• Accommodation 11352 exists (City Centre Apartment, 4 Jul to 11 Jul, 1 week, fee EUR 360)\n• Bed not yet assigned — bed_id = null\n• Booking 18156 (Verónica Martín, student 278) is Pending, confirmed = false, amount paid = EUR 0 of EUR 645\n• Zero payments on record — student not yet confirmed or paid (last booking update 17 Jun, 11 days stale)\n• Premium beds 174, 175, 176 confirmed available for 4–11 Jul (0 conflicts, re-verified Jun 28)\n• Accommodation check-in 4 Jul = 6 days away — bed allocation and payment urgently needed",
+        "(NOT RUN) Assign a bed to accommodation 11352 in SIS. Chase payment for booking 18156 (EUR 645 total, EUR 360 accommodation). See recipe: issue-37-veronica-capel-accomm-allocation.md",
+        "hrly Jun28 SUN UTC (2nd check, fresh DB): bk18156 STILL PENDING 0/645 confirmed=false (updAt=Jun17=11d stale). accomm11352 Jul4-Jul11 City Centre Apt Premium fee=360 bed_id=STILL null. 0 payments on bk18156. Beds 174 (A1/Rm1), 175 (A1/Rm2), 176 (A2/Rm1) CONFIRMED FREE Jul4-11. bc24931 GE-AM Jul6-Jul10 fee=148.2. JUL4=6 DAYS. Neil: (1) assign Premium bed 174/175/176 to accomm 11352 via SIS; (2) chase EUR 645 payment.",
+        "await bed+pmt; Jul4=6d"
+      ]
+    ]
+  }
+]

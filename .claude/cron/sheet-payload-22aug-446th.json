@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 446th check Sat 22 Aug 2026 UTC — CRITICAL: fix still not run (2nd check today)\n• Booking Accommodation 11311 (bed 84, booking 17980): ends today, fee EUR 3,850, active — checkout done but record not deactivated\n• Booking Accommodation 11393 (bed 88, booking 17980): starts today, fee = null, active — checkin done but fee NOT SET\n• Booking 17980: CONFIRMED, fully paid EUR 5,331, amount open = 0\n• Fee for Booking Accommodation 11393: EUR 5,331 minus EUR 3,850 = EUR 1,481",
+        "Set fee EUR 1,481 on Booking Accommodation 11393; deactivate 11311. Recipe: issue-36b-addendum-22aug-b.md",
+        "446th Sat 22 Aug UTC. Still unfixed. BA 11311 active; BA 11393 fee null. Fix NOT RUN.",
+        "URGENT: today"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 446th check Sat 22 Aug 2026 UTC — CRITICAL: fix still not run (2nd check today)\n• Booking Accommodation 11357 (bed 178, booking 18180): ended 15 Aug, fee EUR 1,250, active — 7 days stale, deactivate\n• Booking Accommodation 11396 (bed 44, booking 18180): ends today, fee = null, active — host family checkout done, fee NOT SET\n• Booking Accommodation 11397 (bed 89, booking 18180): starts today, fee = null, active — apartment checkin done, fee NOT SET\n• Booking 18180: CONFIRMED, fully paid EUR 2,584.96\n• Fee split (confirm with Diego): Booking Accommodation 11396 = EUR 306.65, Booking Accommodation 11397 = EUR 613.31",
+        "Set fees on Booking Accommodations 11396 + 11397; deactivate 11396 + 11357. Recipe: issue-41-addendum-22aug-b.md",
+        "446th Sat 22 Aug UTC. Still unfixed. BAs 11396 + 11397 fee null. BA 11357 7d stale. Fix NOT RUN.",
+        "URGENT: today"
+      ]
+    ]
+  },
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 288th check Sat 22 Aug 2026 UTC — no change since 287th (Fri 21 Aug ~19:00 UTC)\n• Payment 16988: EUR 339.90, Bank, 28 Apr 2026 — booking_id = null (orphan)\n• Payment 16989: EUR 339.90, Bank, 28 Apr 2026 — booking_id = null (orphan)\n• Booking 17856 (Margherita Galbusera): CONFIRMED, confirmed = false, amountPaid = EUR 339.90 — zero Payment records linked\n• Booking 17857 (Francesca Fassina): CONFIRMED, confirmed = false, amountPaid = EUR 339.90 — zero Payment records linked\n• Booking Courses 24630 + 24631 (General English AM Plus): ended 10 Jul 2026, active = true — 43 days stale\n• Payment 17187: EUR 6,151 TransferMate Escrow — leave as-is\n• Payment 4781: EUR 380, Flywire 2019 — legacy orphan, low priority\n• Fix NOT RUN",
+        "Link Payment 16989 to Booking 17856, Payment 16988 to Booking 17857; deactivate Booking Courses 24630+24631. Recipe: issue-1-addendum-22aug.md",
+        "288th Sat 22 Aug UTC. No change. Booking Courses now 43 days stale. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• 446th check Sat 22 Aug 2026 UTC — no change since check 63 (Fri 21 Aug ~12:00 UTC)\n• 5 stale Booking Accommodations on bed 83, all active:\n  - BA 11239 (ended 24 May, 90 days stale, fee EUR 1,050, booking 22)\n  - BA 11168 (ended 20 Jun, 63 days stale, fee EUR 700, booking 92)\n  - BA 11285 (ended 5 Jul, 48 days stale, fee = null, booking 17825)\n  - BA 11352 (ended 11 Jul, 42 days stale, fee EUR 360, booking 18156)\n  - BA 11179 (ended 9 Aug, 13 days stale, fee EUR 1,360, booking 82)\n• Booking 17825 (BA 11285): CONFIRMED, amountTotal = EUR 2,008, amountOpen = 0 — fee not set\n• Current occupant Booking Accommodation 11173 (booking 88): active, ends 30 Aug — 8 days away\n• Next occupant Booking Accommodation 25 (booking 17844): starts 30 Aug",
+        "Set fee EUR 2,008 on BA 11285; deactivate BAs 11239, 11168, 11285, 11352, 11179 before 30 Aug. Recipe: issue-37-addendum-22aug.md",
+        "446th Sat 22 Aug UTC. No change. 5 stale BAs. BA 11285 fee null. Aug 30 = 8 days. Fix NOT RUN.",
+        "5 stale BAs; Aug 30 = 8d"
+      ]
+    ]
+  },
+  {
+    "range": "H55:K55",
+    "values": [
+      [
+        "• Feature request: no email template covers a student with 2 accommodation periods\n• Token resolver (documents.ts ~499) uses pickAccommByArrival — picks one record only, no multi-period support\n• Fanny Scelles (student 14451, booking 17843): 2 hosts — BA 11267 OSullivan Aug 29-Oct 4 (fee EUR 3,840), BA 11399 Land Oct 4-Dec 19 (fee = null)\n• NEW: BA 11399 fee = null — booking 17843 fully paid EUR 5,595.16; expected fee = EUR 5,595.16 minus EUR 3,840 = EUR 1,755.16\n• Fanny arrives 29 Aug — 7 days away; host confirmation email blocked until template built",
+        "Set fee EUR 1,755.16 on BA 11399; build indexed token support + Host Booking (Multiple) template. Recipe: issue-53-multi-accomm-template.md",
+        "Checked 22 Aug. NEW: BA 11399 fee null (= EUR 1,755.16). Fanny arrives Aug 29 (7d). Option A (indexed tokens) recommended.",
+        "recipe ready; fee fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H37:K37",
+    "values": [
+      [
+        "• Code check 47 Sat 22 Aug 2026 UTC — no changes since check 46 (Fri 21 Aug)\n• Bug A — Homework block: confirmed absent from renderSheetHtml() in src/routes/attendance.ts (lines 36-120) — awaiting spec from Paul/Neil\n• Bug B — Holiday filter: getWeekAttendance() does not check school_closures — attendance sheets may show lessons on closure days",
+        "Add homework block to renderSheetHtml() after attendance grid; add closure check to getWeekAttendance(). Awaiting spec. See recipe: issue-36-addendum-22aug.md",
+        "47th Sat 22 Aug UTC. Both bugs confirmed. renderSheetHtml lines 36-120 verified — no homework. Awaiting spec from Paul/Neil.",
+        "code open; awaiting spec"
+      ]
+    ]
+  }
+]

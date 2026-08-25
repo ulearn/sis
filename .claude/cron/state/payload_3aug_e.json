@@ -1,0 +1,35 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 78th check Mon 3 Aug 2026 UTC (7th today) — Bank Holiday today, shunt STILL not run\n• school_closures: no entry for 2026-08-03 (August Bank Holiday absent — confirmed)\n• 21 booking courses with start date = 2026-08-03 still active and unshunted (unchanged)\n• Booking course 25006 (General English AM Plus): ends today, active = true — must deactivate before shunt\n• First teaching day: Tuesday 4 August 2026. Shunt window closes tonight",
+        "Run BH shunt (see recipe issue-38-addendum-3aug-e.md); deactivate booking course 25006 first",
+        "78th hrly Mon 3 Aug UTC (7th today). STILL NOT RUN. 21 unshunted start-Aug3 BCs. BC25006 ends today. Fix NOT RUN.",
+        "URGENT; BH TODAY; shunt pending"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 71st check Mon 3 Aug 2026 UTC (7th today) — bank holiday today, first class TOMORROW Tue 4 Aug\n• Booking 18180: CONFIRMED, EUR 2,584.96 fully paid, EUR 0 open\n• Booking course 24956 (General English AM, Aug 3 to Sep 11 2026): active = true, 0 class assignments\n• Bank holiday shunt (Issue 38) not yet run — booking course 24956 start date still 2026-08-03\n• Capel apartment accommodation (Sep 6–Sep 14 2026): not yet added\n• No invoice or LOA on booking 18180",
+        "Run BH shunt (Issue 38); create class assignment week of Aug 4; add Capel BA Sep 6-14; issue invoice. See recipe issue-41-addendum-3aug-e.md",
+        "71st hrly Mon 3 Aug UTC (7th today). BH today. First class Tue 4 Aug. BC24956 unshunted (Issue 38 list). 0 SCAs. No docs on bk18180. Fix NOT RUN.",
+        "SCA+Capel urgent; 1st class Tue"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 19th check Mon 3 Aug 2026 UTC (1st today) — 24,466 stale booking courses unchanged\n• All active booking courses with end date before 2026-08-03: 24,466 (stable, same as yesterday)\n• Booking course 25006 (General English AM Plus, ends today Aug 3): active = true — joins stale pool after today, total 24,467\n• Arrivals-list bug caused by stale booking courses masking newly-starting renewal students\n• Neil decision still pending: Option A (bulk all ~24,467) vs Option B (named 27-item subset)",
+        "Bulk deactivate using WHERE end_date < '2026-08-04' (captures 24,467 incl. BC25006). See recipe: issue-45-addendum-3aug.md",
+        "19th hrly Mon 3 Aug UTC (1st today). 24,466 stale (unchanged). BC25006 ends today adding 1 more (24,467 after Aug 3). Awaiting Neil decision. Fix NOT RUN.",
+        "24,466+1 stale; awaiting decision"
+      ]
+    ]
+  }
+]

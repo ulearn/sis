@@ -27,9 +27,221 @@ const upload = multer({
   }
 });
 
+// ── Printable attendance sheet ───────────────────────────────────────────
+// Renders one or many classes' rosters as the paper sheet teachers fill in
+// by hand (pre-fills student names so absences become visible by what's NOT
+// ticked, instead of teachers writing the present list — the original gap
+// Neil flagged). Auto-triggers window.print() on load; print stylesheets
+// hide the browser chrome and page-break between classes.
+function renderSheetHtml(opts: {
+  weekStart: string;        // YYYY-MM-DD (Monday)
+  classes: Array<{
+    className: string;
+    classroom: string | null;
+    session: string;        // MORNING / AFTERNOON / PLUS_FIVE
+    teacher: { firstName: string; lastName: string } | null;
+    students: Array<{ firstName: string; lastName: string; nationality?: string | null }>;
+  }>;
+}): string {
+  const fmtUK = (iso: string) => {
+    const d = new Date(iso); const pad = (n: number) => String(n).padStart(2, '0');
+    return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
+  };
+  const escHtml = (s: string) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]!));
+  const sessionLabel = (s: string) => s === 'MORNING' ? 'Morning' : s === 'AFTERNOON' ? 'Afternoon' : s === 'PLUS_FIVE' ? '+5 Afternoon' : '';
+  const yearOf = (iso: string) => new Date(iso).getFullYear();
+
+  // Always render at least 18 rows (matches the legacy template) so there's room
+  // for late-add students written in by hand. Pre-filled rows come first.
+  // IN / OUT cells are sized for STUDENT SIGNATURES (not just times) — that's
+  // the actual workflow per Paul/Neil: each student signs in on arrival, signs
+  // out at end. Late/early-exit rule enforced via the signature timestamps.
+  const sheetFor = (cls: typeof opts.classes[number]) => {
+    const minRows = 18;
+    const totalRows = Math.max(minRows, cls.students.length + 2);
+    const teacherName = cls.teacher ? `${cls.teacher.firstName} ${cls.teacher.lastName}` : '';
+    const title = `ULearn ${sessionLabel(cls.session)} - Full Time Weekly Attendance ${yearOf(opts.weekStart)}`;
+    return `
+<section class="sheet">
+  <header class="sheet-head">
+    <img class="logo" src="https://ulearnschool.com/sites/default/files/images/logos/logo.png" alt="ULearn">
+    <div class="nb">
+      <strong>N.B.</strong> Late arrival = 50% attendance. Early exit = 50%. Late arrival <strong>and</strong> early exit = 0%.<br>
+      For more information about how ULearn records attendance, please see the <strong>Student Handbook</strong>.
+    </div>
+  </header>
+  <h2 class="sheet-title">${escHtml(title)}</h2>
+  <table class="meta">
+    <tr>
+      <th class="lbl">Week<br>starting:</th><td class="val">${escHtml(fmtUK(opts.weekStart))}</td>
+      <th class="lbl">GROUP:</th><td class="val">${escHtml(cls.className)}${cls.classroom ? ' · ' + escHtml(cls.classroom) : ''}</td>
+      <th class="lbl">Teacher:</th><td class="val">${escHtml(teacherName)}</td>
+      <th class="lbl">Cover Teacher: Y / N</th><td class="val"></td>
+    </tr>
+    <tr>
+      <th class="lbl" colspan="2"></th>
+      <th class="lbl">Signature</th><td class="val"></td>
+      <th class="lbl" colspan="2"></th>
+      <th class="lbl">Name &amp; Signature:</th><td class="val"></td>
+    </tr>
+  </table>
+  <table class="grid">
+    <thead>
+      <tr>
+        <th class="num" rowspan="2"></th>
+        <th class="name" rowspan="2">FIRST (GIVEN) NAME</th>
+        <th class="name" rowspan="2">SURNAME</th>
+        <th colspan="2">MON</th><th colspan="2">TUE</th><th colspan="2">WED</th><th colspan="2">THUR</th><th colspan="2">FRI</th>
+      </tr>
+      <tr>
+        <th class="inout">IN</th><th class="inout">OUT</th>
+        <th class="inout">IN</th><th class="inout">OUT</th>
+        <th class="inout">IN</th><th class="inout">OUT</th>
+        <th class="inout">IN</th><th class="inout">OUT</th>
+        <th class="inout">IN</th><th class="inout">OUT</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${Array.from({ length: totalRows }, (_, i) => {
+        const s = cls.students[i];
+        return `<tr>
+          <td class="num">${i + 1}</td>
+          <td class="name">${escHtml(s?.firstName || '')}</td>
+          <td class="name">${escHtml(s?.lastName || '')}</td>
+          <td class="inout"></td><td class="inout"></td>
+          <td class="inout"></td><td class="inout"></td>
+          <td class="inout"></td><td class="inout"></td>
+          <td class="inout"></td><td class="inout"></td>
+          <td class="inout"></td><td class="inout"></td>
+        </tr>`;
+      }).join('')}
+      <tr class="headcount">
+        <td colspan="3" class="hc-lbl">HEAD COUNT</td>
+        <td class="inout"></td><td class="inout"></td>
+        <td class="inout"></td><td class="inout"></td>
+        <td class="inout"></td><td class="inout"></td>
+        <td class="inout"></td><td class="inout"></td>
+        <td class="inout"></td><td class="inout"></td>
+      </tr>
+    </tbody>
+  </table>
+</section>`;
+  };
+
+  return `<!doctype html><html><head>
+<meta charset="utf-8">
+<title>Attendance Sheets — Week of ${fmtUK(opts.weekStart)}</title>
+<style>
+  @page { size: A4 landscape; margin: 10mm; }
+  html, body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #111; }
+  body { padding: 12px; background: #f3f3f3; }
+  .toolbar { max-width: 1100px; margin: 0 auto 16px; display: flex; gap: 8px; align-items: center; }
+  .toolbar button { padding: 8px 14px; border: 1px solid #ccc; background: #fff; border-radius: 6px; font-size: 13px; cursor: pointer; }
+  .toolbar button.primary { background: #2563eb; color: #fff; border-color: #2563eb; }
+  .sheet { background: #fff; padding: 14mm 10mm; max-width: 1100px; margin: 0 auto 18px; box-shadow: 0 1px 3px rgba(0,0,0,.1); page-break-after: always; }
+  .sheet:last-child { page-break-after: auto; }
+  .sheet-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 12px; }
+  .logo { height: 56px; width: auto; }
+  .nb { font-size: 10.5px; line-height: 1.35; max-width: 70%; }
+  .sheet-title { background: #e8e8e8; margin: 0 0 0 0; padding: 6px 10px; font-size: 13px; font-weight: 700; text-align: center; letter-spacing: .5px; border: 1px solid #999; border-bottom: 0; }
+  table.meta { width: 100%; border-collapse: collapse; border: 1px solid #999; font-size: 11px; }
+  table.meta th, table.meta td { border: 1px solid #ccc; padding: 5px 8px; vertical-align: middle; text-align: left; }
+  table.meta th.lbl { background: #f4f4f4; font-weight: 700; font-size: 10.5px; width: 8%; }
+  table.meta td.val { font-weight: 500; width: 12%; }
+  table.grid { width: 100%; border-collapse: collapse; border: 1px solid #999; margin-top: 0; font-size: 12px; }
+  table.grid th, table.grid td { border: 1px solid #bbb; padding: 6px 8px; }
+  table.grid thead th { background: #f4f4f4; font-weight: 700; font-size: 11px; text-align: center; }
+  table.grid th.num, table.grid td.num { width: 28px; text-align: center; font-size: 11px; color: #666; }
+  table.grid th.name { text-align: left; }
+  table.grid td.name { text-align: left; font-weight: 500; }
+  /* IN/OUT sub-cells per day — sized for STUDENT SIGNATURES (each student
+     signs in on arrival, signs out at end of session) per Paul's workflow.
+     Late arrival = 50% / early exit = 50% / both = 0%; the signed timestamps
+     make the rule auditable. */
+  table.grid th.inout { width: 65px; text-align: center; font-size: 10px; font-weight: 600; color: #555; padding: 3px 0; }
+  table.grid td.inout { width: 65px; text-align: center; padding: 4px 2px; font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 10.5px; }
+  table.grid tbody td { height: 32px; }   /* taller — fits a handwritten signature */
+  table.grid tr.headcount td { background: #f4f4f4; font-weight: 700; font-size: 11px; height: 28px; }
+  table.grid tr.headcount td.hc-lbl { text-align: right; padding-right: 14px; letter-spacing: .3px; }
+  @media print {
+    body { background: #fff; padding: 0; }
+    .toolbar { display: none; }
+    .sheet { box-shadow: none; margin: 0; padding: 0; }
+    .sheet-title { background: #e8e8e8 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    table.meta th.lbl, table.grid thead th { background: #f4f4f4 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style></head><body>
+<div class="toolbar">
+  <button class="primary" onclick="window.print()">Print</button>
+  <button onclick="window.close()">Close</button>
+  <span style="color:#666;font-size:12px">${opts.classes.length} sheet${opts.classes.length===1?'':'s'} — week of ${fmtUK(opts.weekStart)}</span>
+</div>
+${opts.classes.map(sheetFor).join('\n')}
+<script>window.addEventListener('load', () => setTimeout(() => window.print(), 300));</script>
+</body></html>`;
+}
+
 export function attendanceRoutes(prisma: PrismaClient) {
   const router = Router();
   const scripts = attendanceScripts(prisma);
+
+  // Print a single class's attendance sheet for a given week.
+  router.get('/print/class/:classId/:weekOf', async (req, res) => {
+    try {
+      const data = await scripts.getWeekAttendance(parseInt(req.params.classId), req.params.weekOf);
+      if (!data) return res.status(404).send('Class not found');
+      const html = renderSheetHtml({
+        weekStart: data.weekStart,
+        classes: [{
+          className: data.className,
+          classroom: data.classroom || null,
+          session: data.session,
+          teacher: data.teacher ? { firstName: data.teacher.firstName, lastName: data.teacher.lastName } : null,
+          students: data.students.map((s: any) => ({ firstName: s.firstName, lastName: s.lastName, nationality: s.nationality })),
+        }],
+      });
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.send(html);
+    } catch (e: any) { res.status(500).send(`Error: ${e.message}`); }
+  });
+
+  // Print every class's sheet for a given week — single page, page-breaks between.
+  router.get('/print/week/:weekOf', async (req, res) => {
+    try {
+      const weekOf = req.params.weekOf;
+      // UTC throughout — weekOf parses to UTC midnight; local getDay/setDate/
+      // setHours shift the header back a day on the BST server, printing the week
+      // as Sunday-14 instead of Monday-15 (issue #31). Matches getWeekAttendance.
+      const monday = new Date(weekOf);
+      monday.setUTCDate(monday.getUTCDate() - ((monday.getUTCDay() + 6) % 7));
+      monday.setUTCHours(0, 0, 0, 0);
+      // List all classes that have any students assigned this week — same
+      // visibility rule as the main attendance page (active classes only).
+      const classes = await prisma.class.findMany({
+        where: { active: true } as any,
+        select: { id: true, name: true, session: true },
+        orderBy: [{ session: 'asc' }, { name: 'asc' }],
+      });
+      const sheets = [];
+      for (const c of classes) {
+        const data = await scripts.getWeekAttendance(c.id, weekOf);
+        if (!data || !data.students.length) continue; // skip empty classes — no point printing them
+        sheets.push({
+          className: data.className,
+          classroom: data.classroom || null,
+          session: data.session,
+          teacher: data.teacher ? { firstName: data.teacher.firstName, lastName: data.teacher.lastName } : null,
+          students: data.students.map((s: any) => ({ firstName: s.firstName, lastName: s.lastName, nationality: s.nationality })),
+        });
+      }
+      const html = renderSheetHtml({
+        weekStart: monday.toISOString().split('T')[0],
+        classes: sheets,
+      });
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.send(html);
+    } catch (e: any) { res.status(500).send(`Error: ${e.message}`); }
+  });
 
   // Get weekly attendance for a class
   router.get('/week/:classId/:weekOf', async (req, res) => {

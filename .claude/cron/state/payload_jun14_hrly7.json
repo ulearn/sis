@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H32:K32",
+    "values": [
+      [
+        "TZ NOT SET .env. 43 SCAs week_end=null(9 ghost past-end IDs:39/40/65/66/74/75/81/87/100 + 34 active ongoing). Mon att sheet WILL show Sun Jun14+9 ghosts.",
+        "FIX1(NOT RUN): echo TZ=UTC>>.env && touch tmp/restart.txt. FIX2(NOT RUN): UPDATE student_class_assignments SET week_end=(SELECT end_date FROM booking_courses WHERE id=booking_course_id) WHERE week_end IS NULL; recipe: issue-31-attendance-sheet-week-bug.md",
+        "Jun14 SUN hrly7: TZ STILL ABSENT .env(grep=null). 43 NULL week_end UNCHANGED(9 ghost IDs:39/40/65/66/74/75/81/87/100+34 active). Mon att sheet WILL break(Sun Jun14 row+ghosts). BOTH FIXES NOT RUN. NEIL: run FIX1+FIX2 BEFORE MIDNIGHT.",
+        "URGENT TONIGHT"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "bk18158 PEND 0/740 c24933+c24934(DUP) GE-AM Jun15-Jul10 STARTS TODAY. bk18131(CONF 1185 ghost pmt17852)+bk18133(CONF 648 ghost pmt17730). 0SCA. NOTE: pmt17728 on OLD bk1567(unrelated)=DO NOT DELETE.",
+        "(NOT RUN) CANCEL bk18131+18133; DEL c24934; refund/re-link pmt17852(1185)+pmt17730(648) via HS; collect EUR740 for bk18158; assign cls7 c24933. DO NOT touch pmt17728. recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun14 SUN hrly7: STARTS MON. bk18158 PEND 0/740 NO pmts NO SCAs. bk18131(CONF 1185 pmt17852)+bk18133(CONF 648 pmt17730) GHOST still CONF. c24933+c24934=DUP bc on bk18158. Edite has NO class Mon. NEIL: urgent tonight per recipe.",
+        "URGENT MON 0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "s88 Giulia JUNIOR 0SCA. bk94(REAL CONF 1151.5/1151.5)+bk18044(DUP CONF 1106.5/1106.5 pmt17607 xero=null). c104 Morning General Plus STARTS TODAY Jun15.",
+        "(1)get level; (2)assign cls bk94/c104; (3)CANCEL bk18044+handle pmt17607(EUR44.5 excess); (4)CANCEL bk18152+del s14557 Milena. recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun14 SUN hrly7: STARTS MON. bk94 CONF(REAL 1151.5 pmt17102). c104 Jun15-26. bk18044 DUP CONF(1106.5 pmt17607 xero=null). s88 0SCA CONFIRMED. bk18152 Milena s14557 PEND 0. NEIL: Mon 08:00 get level assign cls c104 bk94.",
+        "Mon 08:00 URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "s14532 Ernesto 0SCA ENTIRE COURSE. bc24826 INTENSIVE Jun08-Jun19. bk18034 conf=false PARTIAL 845/1095. WK2 STARTS TOMORROW.",
+        "(NOT RUN) Mon 08:00: ask teacher Ernesto level; INSERT 2 SCAs AM+PM bc24826 wkStart=Jun15 wkEnd=Jun19. recipe: issue-26-intensive-class-assign-once.md",
+        "Jun14 SUN hrly7: FINAL WK STARTS MON. bc24826 Jun08-19 INTENSIVE. bk18034 PARTIAL 845/1095 conf=false. s14532 0SCA ENTIRE COURSE. WK1(Jun08-12) MISSED. NEIL: Mon 08:00 ask Ernesto Ivan level; INSERT 2 SCAs(AM+PM) Jun15-19 ONLY.",
+        "Mon 08:00 SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "s1001 att=0 ALL TIME(163d enrolled). sca255 B1PM bc24925 Jan12-Jul03(19d to end). visa_status=null. IRP risk.",
+        "(1)Mon 08:00 ask B1PM teacher if Saikhantes attended; (2)YES: backfill att; (3)NO: IRP escalation. recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun14 SUN hrly7: att=0 RECONFIRMED(0 rows attendance table). sca255 bc24925 B1PM(cls11) Jan12-Jul03 ends 19d. visa_status=null nationality=Mongolia. bk18151 CONF 1339.2(AFT). bk1605 PEND 0/1509(MORN D74). NEIL: Mon 08:00 cls11 B1PM teacher check. IRP CRITICAL.",
+        "IRP CRITICAL 19d"
+      ]
+    ]
+  },
+  {
+    "range": "H28:K28",
+    "values": [
+      [
+        "bk17909 status=CANCELLED(ok) but confirmed=true(anomaly). amtPaid=1455.5 vs total=727.5(EUR728 excess). pmts 17477(727.5)+17478(728) both xeroId=null.",
+        "Steps(NOT RUN): (1)Xero check Sofiia Apr-May 2026; (2)if 1 real pmt: DELETE pmts WHERE id IN(17477,17478); if 2 real pmts: refund EUR728; (3)UPDATE bookings SET confirmed=false WHERE id=17909. see recipe: issue-27-sofiia-sca-cancelled-booking.md",
+        "Jun14 SUN hrly7: bk17909 CANCELLED(status ok) but confirmed=true(anomaly). pmt17477(727.5 Apr28)+pmt17478(728.0 May15) both xero_payment_id=null. sca254 ACTIVE(Sofiia in class correctly bk17849). Xero check pending Neil.",
+        "Xero check pending"
+      ]
+    ]
+  }
+]

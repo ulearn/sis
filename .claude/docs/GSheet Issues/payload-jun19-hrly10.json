@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H17:K17",
+    "values": [
+      [
+        "• Bed assignment 11282 (bed 66) ran May 15 – Jun 05 but active = true (stale flag — ended 14 days ago)\n• Historical issue — Mélie term completed Jun 05\n• Overlap constraint from bed assignment 11158 (ended May 17) is also cleared",
+        "UPDATE booking_accommodations SET active=false WHERE id=11282 (low-priority cleanup). Re-issue doc148 only if student requests. See recipe: issue-16-melie-accomm-dates.md",
+        "Jun19 hrly10: ba11282 STILL active=true (endDate=Jun05, updAt=Jun05 — 14d stale, fresh DB). Historical stale flag — no operational impact. Low priority cleanup.",
+        "historical"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• Student 917 (Uyanga) has visaStatus = null\n• Booking 1467 is CONFIRMED, 2405 / 2405\n• 0 class assignments (SCAs) all time — booking course 1613 (Academic Year Morning) started Apr 27\n• hubspotContactId = null",
+        "Confirm visa approved then UPDATE students SET visa_status='approved' WHERE id=917 (NOT RUN). Assign AY-MORN class (cls5 or cls12). See recipe: issue-25-uyanga-visa-escrow.md",
+        "Jun19 hrly10: UNCHANGED (fresh DB). s917 visaStatus=null hubspotContactId=null (updAt=May21). bk1467 CONF conf=true 2405/2405. bc1613 AY-MORN Apr27-Oct16. 0 SCAs. Day 53 calendar (~37 school days) in school with no class. NEIL URGENT: (1) confirm visa; (2) set via SIS s917 personal details; (3) assign AY morning class.",
+        "D37schl;visa null;0SCA;URGENT"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 120th check Sat 15 Aug 2026 UTC — no change since 119th check\n• Holiday 2500: 20 Jul to 21 Aug 2026 — student on holiday; returns Monday 25 Aug 2026 (10 days)\n• Booking Course 24925 (Academic Year Afternoon): 9 Mar to 2 Oct 2026, active = true\n• Student Class Assignment 255: class 11, week end 3 Jul 2026 — 43 days expired, no newer assignment\n• service_end = 7 Aug 2026 — expired 8 days ago (course end is 2 Oct 2026)\n• Action: create new Student Class Assignment from 25 Aug; update service_end to 2 Oct 2026",
+        "Create Student Class Assignment from 25 Aug (class 11); update service_end to 2 Oct. See recipe: issue-15-addendum-15aug.md",
+        "120th Sat 15 Aug UTC. Holiday Jul 20-Aug 21. Returns Aug 25 (10 days). SCA 255 expired Jul 3. Fix NOT RUN.",
+        "svc_end 9d exp; return Aug 25 (10d)"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 83rd check Sat 15 Aug 2026 UTC — ONGOING: fees still null; Booking Accommodation 11357 not deactivated\n• Booking Accommodation 11357: bed 178 (host family), ended today (15 Aug), fee = EUR 1,250, active = true — deactivate now\n• Booking Accommodation 11396: bed 44 (Capel Street week 1), 15–22 Aug, fee = NULL — student in residence today (day 1)\n• Booking Accommodation 11397: bed 89 (Capel Street weeks 2–4), 22 Aug – 6 Sep, fee = NULL — fee needed before 22 Aug\n• Booking Accommodation 11392: 6–14 Sep, fee = EUR 415, no bed assigned — bed needed before 6 Sep\n• Booking 18180: CONFIRMED, fully paid EUR 2,584.96",
+        "Set fee on Booking Accommodation 11396 NOW; deactivate Booking Accommodation 11357 (ended today); set fee Booking Accommodation 11397 before Aug 22; assign bed Booking Accommodation 11392 before Sep 6. See recipe: issue-41-addendum-15aug.md",
+        "83rd Sat 15 Aug UTC. URGENT day 1: Booking Accommodation 11396 fee null, student in Capel since today. Booking Accommodation 11357 still active (ended today). Fix NOT RUN.",
+        "URGENT: fee null BA11396 (day 1)"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 98th check Sat 15 Aug 2026 UTC — no change in stale count since 97th check\n• Stale active Booking Courses (end date before 15 Aug 2026): 24,497 — unchanged\n• 18 Booking Courses ended in past 7 days (8–15 Aug 2026)\n• Fix script prepared; not yet run",
+        "Run staged deactivation SQL (3 stages). See recipe: issue-45-addendum-15aug.md",
+        "98th Sat 15 Aug UTC. Stale=24,497 (unchanged from 97th). 18 ended this week. Fix NOT RUN.",
+        "24,497 stale; fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 131st check Sat 15 Aug 2026 UTC — no change since 130th check\n• Booking 1624 (Telmuun Enkhsaikhan, student 293): status = PARTIAL, confirmed = false, EUR 1,406 paid, EUR 250 open\n• Booking Course 1810 (Academic Year Renewal Morning): 29 Jun 2026 to 1 Jan 2027, active = true — 47 days without class assignment\n• Payment 17956: EUR 100, Bank, 29 Jun 2026, xero = null — only payment in database\n• Discrepancy: booking amount paid = EUR 1,406 vs payment table total = EUR 100 — EUR 1,306 gap (likely Fidelo migration lump sum)",
+        "Assign Booking Course 1810 to class (urgent, 47d overdue); collect EUR 250; reconcile Xero. See recipe: issue-48-addendum-15aug.md",
+        "131st Sat 15 Aug UTC. BC 1810 unassigned 47d. EUR 250 outstanding. Payment 17956 not in Xero. Fix NOT RUN.",
+        "payment gap; BC1810 47d; bk PARTIAL"
+      ]
+    ]
+  },
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• 178th check Sat 15 Aug 2026 UTC — no change since 177th check\n• Student Class Assignment 288 (Rakan Alghamdi, student 14444): class 12, week start 6 Jul 2026, week end 18 Dec 2026 — assigned to Booking Course 24697 (wrong)\n• Booking Course 24697 (Academic Year Morning): ended 31 Jul 2026, active = true — 15 days stale, 1 class assignment (SCA 288)\n• Booking Course 25035 (General English Academic Year AM Plus): 3 Aug to 18 Dec 2026, active = true, 0 class assignments — correct target for SCA 288\n• Fix not applied",
+        "Move Student Class Assignment 288 to Booking Course 25035; deactivate Booking Course 24697. See recipe: issue-12-addendum-15aug.md",
+        "178th Sat 15 Aug UTC. Unchanged 15d. Fix NOT RUN.",
+        "SCA on wrong BC; BC24697 15d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• 29th check Sat 15 Aug 2026 UTC — no change since 28th check\n• Student 983 (Flávia Nascimento Mariano): visa_status = null\n• Booking 1534: CONFIRMED, confirmed = true, fully paid EUR 1,308, open EUR 0\n• Booking Course 1710 (Academic Year Afternoon): ends 27 Nov 2026, active = true\n• Student Class Assignment 265: class 11, week start 15 Jun 2026, week end 20 Nov 2026 — student IS in class\n• Root cause of Prisma error: UI likely sends visaApproved field which does not exist in schema (correct field: visa_status)\n• Payments 17035 (EUR 250) and 17527 (EUR 1,058): xero_payment_id = null — unreconciled",
+        "Set visa_status = APPROVED (SQL or UI); patch visa save endpoint field name; reconcile Xero payments. See recipe: issue-18-addendum-15aug-b.md",
+        "29th Sat 15 Aug UTC. No change. Student in class (SCA 265 to Nov 20). visa_status null. Xero payments 17035+17527 unreconciled. Fix NOT RUN.",
+        "visa null; in class; day 76; Xero unconfirmed"
+      ]
+    ]
+  }
+]

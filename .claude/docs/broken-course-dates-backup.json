@@ -1,0 +1,135 @@
+[
+  {
+    "id": 24816,
+    "booking_id": 18026,
+    "name": "3 weeks Morning General 27/04/2026 - 15/05/2026 Easter Promo",
+    "start_date": "2026-04-27",
+    "end_date": "2026-04-27"
+  },
+  {
+    "id": 24818,
+    "booking_id": 18028,
+    "name": "4 weeks Morning General 23/03/2026 - 17/04/2026 St Patrick´s Day Promo",
+    "start_date": "2026-05-31",
+    "end_date": "2026-05-31"
+  },
+  {
+    "id": 24819,
+    "booking_id": 18029,
+    "name": "2 weeks Morning General 08/06/2026 - 19/06/2026 - St Patrick's Promo",
+    "start_date": "2026-06-08",
+    "end_date": "2026-06-08"
+  },
+  {
+    "id": 24820,
+    "booking_id": 18030,
+    "name": "23 weeks Academic Year Afternoon 13/07/2026 - 18/12/2026 - St Patrick's Day Promo",
+    "start_date": "2026-05-31",
+    "end_date": "2026-05-31"
+  },
+  {
+    "id": 24821,
+    "booking_id": 18030,
+    "name": "2 weeks Academic Year Afternoon 04/01/2027 - 15/01/2027 - St Patrick's Day Promo",
+    "start_date": "2026-05-31",
+    "end_date": "2026-05-31"
+  },
+  {
+    "id": 24826,
+    "booking_id": 18034,
+    "name": "2 weeks Intensive General 30 08/06/2026 - 19/06/2026",
+    "start_date": "2026-05-31",
+    "end_date": "2026-05-31"
+  },
+  {
+    "id": 24828,
+    "booking_id": 18036,
+    "name": "12 weeks Morning General Plus & IELTS 05/05/2026 - 24/07/2026 Easter Promo",
+    "start_date": "2026-05-04",
+    "end_date": "2026-05-04"
+  },
+  {
+    "id": 24834,
+    "booking_id": 18042,
+    "name": "12 weeks Morning General 09/03/2026 - 29/05/2026",
+    "start_date": "2025-12-01",
+    "end_date": "2025-12-01"
+  },
+  {
+    "id": 24836,
+    "booking_id": 18044,
+    "name": "2 weeks Morning General Plus 15/06/2026 - 26/06/2026 St Patrick's Day Promo",
+    "start_date": "2026-05-31",
+    "end_date": "2026-05-31"
+  },
+  {
+    "id": 24838,
+    "booking_id": 18046,
+    "name": "10 weeks Morning General 27/04/2026 - 03/07/2026",
+    "start_date": "2026-05-31",
+    "end_date": "2026-05-31"
+  },
+  {
+    "id": 24842,
+    "booking_id": 18050,
+    "name": "2 weeks Afternoon General 28/09/2026 - 09/10/2026 Easter Promo",
+    "start_date": "2026-05-31",
+    "end_date": "2026-05-31"
+  },
+  {
+    "id": 24845,
+    "booking_id": 18053,
+    "name": "6 Lessons Private lessons 13/04/2026 - 22/05/2026",
+    "start_date": "2026-04-13",
+    "end_date": "2026-04-13"
+  },
+  {
+    "id": 24846,
+    "booking_id": 18053,
+    "name": "6 weeks Morning IELTS 13/04/2026 - 22/05/2026",
+    "start_date": "2026-04-13",
+    "end_date": "2026-04-13"
+  },
+  {
+    "id": 24871,
+    "booking_id": 18079,
+    "name": "1 Week Morning General 16/03/2026 - 20/03/2026",
+    "start_date": "2026-05-31",
+    "end_date": "2026-05-31"
+  },
+  {
+    "id": 24872,
+    "booking_id": 18080,
+    "name": "14 weeks Academic Year Morning 06/04/2026 - 10/07/2026",
+    "start_date": "2025-12-15",
+    "end_date": "2025-12-15"
+  },
+  {
+    "id": 24873,
+    "booking_id": 18081,
+    "name": "6 weeks Academic Year Morning 04/01/2027 - 12/02/2027 St Patrick´s Promo",
+    "start_date": "2026-08-10",
+    "end_date": "2026-08-10"
+  },
+  {
+    "id": 24874,
+    "booking_id": 18081,
+    "name": "19 weeks Academic Year Morning 10/08/2026 - 18/12/2026 St Patrick´s Promo",
+    "start_date": "2026-08-10",
+    "end_date": "2026-08-10"
+  },
+  {
+    "id": 24885,
+    "booking_id": 18092,
+    "name": "25 weeks Academic Year Morning 02/03/2026 - 21/08/2026",
+    "start_date": "2026-02-02",
+    "end_date": "2026-02-02"
+  },
+  {
+    "id": 24890,
+    "booking_id": 18100,
+    "name": "25 weeks Academic Year Afternoon 27/04/2026 - 16/10/2026 - St Patrick's Day Promo",
+    "start_date": "2026-04-27",
+    "end_date": "2026-04-27"
+  }
+]

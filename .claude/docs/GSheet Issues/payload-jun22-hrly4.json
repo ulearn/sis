@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H44:K44",
+    "values": [
+      [
+        "• Accommodation id 11311 exists — bed 84 (Capel Street A1/Room 3), check-in Jun 28\n• Three-way inconsistency: weeks field = 10, but end_date Aug 23 = only 8 weeks from Jun 28, and KC/Diego say student paid for 11 weeks (to Sep 13)\n• 11 weeks from Jun 28 = Sep 13 (matches KC); 10 weeks from Jun 28 = Sep 6; 8 weeks = Aug 23 (matches end_date only)\n• Fee in record = EUR 3500; inferred rate EUR 350/week: 11 weeks = EUR 3850\n• Booking 17980 fully paid EUR 5331 (course EUR 1260 + accomm EUR 3500 + other EUR 571)\n• Bed 84 has no other booking after Aug 23 — no conflict if extended to Sep 13",
+        "Clarify with Diego: 8 / 10 / 11 weeks? Then UPDATE booking_accommodations SET end_date=..., weeks=..., fee=... WHERE id=11311. See recipe: issue-36b-pietro-accomm-dates.md",
+        "Jun22 hrly (URGENT 6d to Jun28): accomm 11311 UNCHANGED (updAt=Jun18=4d). start=Jun28, end=Aug23 (8wk actual), weeks=10, fee=EUR3500. bk17980 CONF amtPaid=EUR5331=total. Bed 84 free — no conflicts through Sep13. NEIL: confirm week count with Diego (8wk=Aug23 / 10wk=Sep6 / 11wk=Sep13). Recipe: issue-36b-pietro-accomm-dates.md",
+        "awaiting Diego"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• Accommodation id 11352 EXISTS in SIS for booking 18156 (City Centre Apartment Premium, Jul 4-11, EUR 360, active=true)\n• bed_id = null — no specific bed assigned; this is why it does not appear in the allocation view\n• Booking 18156 is PENDING (unconfirmed, EUR 0 of EUR 645 paid), course starts Jul 6\n• 3 Premium beds free for Jul 4-11: bed 174 (A1/Room 1), bed 175 (A1/Room 2), bed 176 (A2/Room 1)\n• Bed 173 is Twin/Shared — not a match for her Premium booking type\n• Record is not missing — it just needs a Premium bed assigned to appear in allocation",
+        "SIS: Student 278 bk18156 Accommodation — assign one of Premium bed 174/175/176. Confirm booking once EUR 645 paid. See recipe: issue-37-veronica-capel-accomm-allocation.md",
+        "Jun22 hrly (CORRECTION — bed 173 is Twin/Shared, not Premium): Free Premium beds Jul4-11: id174 (A1/Rm1), id175 (A1/Rm2), id176 (A2/Rm1). accomm 11352 UNCHANGED (updAt=Jun17=5d), bed_id=null. bk18156 PENDING amtPaid=EUR0/645. Course bc24931 Jul6-10=14d. NEIL: assign Premium bed 174/175/176 via SIS UI, confirm once EUR645 paid.",
+        "awaiting bed assign"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,57 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 58th hourly check Fri 24 Jul 2026 UTC (154th total)\n• Payment 16988 (EUR 339.90, Bank, 28 Apr 2026): booking ID null — 87 days orphaned\n• Payment 16989 (EUR 339.90, Bank, 28 Apr 2026): booking ID null — 87 days orphaned\n• Payment 17187 (EUR 6,151, TransferMate Escrow, 1 May 2026): booking ID null — fideloPaymentId = 37587, transactionId = D2026226 — 84 days orphaned\n• Payment 4781 (EUR 380, Flywire, Aug 2019): fideloPaymentId = 32056 — permanently unresolvable\n• Stale booking courses: 24,436 — unchanged\n• Stale booking accommodations with beds: 43 — unchanged",
+        "Link payments 16988 + 16989 to correct bookings; investigate fideloId=37587 on payment 17187. See recipe: issue-1-addendum-24jul-e.md",
+        "58th hrly 154th check Fri 24 Jul UTC. UNCHANGED. Same 4 orphan pmts. Stale BCs: 24,436. Stale BAs with beds: 43. Fix NOT RUN.",
+        "4 orphan pmts; 24,436 stale BCs"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 81st hourly check Fri 24 Jul 2026 UTC (154th total)\n• August Bank Holiday Mon 3 Aug 2026: STILL absent from school_closures — 10 calendar days away — CRITICAL\n• October Bank Holiday Mon 26 Oct 2026: STILL absent from school_closures\n• Database confirmed: 9 closures only (Good Fridays 2026-2030 + Christmas 2026-2029)\n• 17 booking courses start on Mon 3 Aug 2026 (the unrecognised Bank Holiday)\n• Affected (sample): BC 24956 Giampaolo Russo, BC 24958 Aurora Madril, BC 24959 Diego Molina, BC 24970 Tsengelbayar, BC 25016 Anderson da Silva, and 12 more\n• Full list in recipe issue-38-addendum-24jul-e.md\n• Fix NOT RUN",
+        "Insert school_closures: Aug BH 3 Aug 2026 (isPaidHoliday=true); Oct BH 26 Oct 2026. See recipe: issue-38-addendum-24jul-e.md",
+        "81st hrly Fri 24 Jul UTC (154th total). UNCHANGED. Aug BH 10 days. 17 courses affected on BH date. Fix NOT RUN.",
+        "Aug BH; 10d CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• 76th hourly check Fri 24 Jul 2026 UTC (154th total)\n• Booking course 24609 (Morning General, booking 17831): active = true — STILL zero class assignments\n• Booking 17831: confirmed = true, fully paid EUR 1,396.90\n• Accommodation 11358 (bed 180, Host Family, 12 Jul - 2 Aug 2026, EUR 900): active = true\n• School days missed: Mon 13 Jul - Fri 24 Jul 2026 = 10 school days\n• School days remaining: Mon 27 Jul - Fri 31 Jul 2026 = 5 school days — FINAL WEEK\n• Mon 27 Jul 2026 is last possible class assignment date — 3 days from now\n• Fix NOT RUN",
+        "Assign BC 24609 to Morning General class — Mon 27 Jul IS THE LAST DAY. See recipe: issue-39-addendum-24jul-f.md",
+        "76th hrly Fri 24 Jul UTC (154th total). UNCHANGED. 10 days missed. Mon 27 Jul LAST CHANCE (3 days). Fix NOT RUN.",
+        "CRITICAL; FINAL WEEK"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 76th hourly check Fri 24 Jul 2026 UTC (154th total)\n• Booking 18180 (Giampaolo Russo, student 14571): CONFIRMED, fully paid EUR 2,584.96\n• Payment 17954 (EUR 2,584.96, Bank, 26 Jun 2026): Xero payment ID = STILL null — 28 days unreconciled\n• Accommodation 11357 (bed 178, Host Family, 2 Aug - 6 Sep 2026, EUR 1,250): active = true — host claim confirmed by provider 24 on 1 Jul 2026\n• Capel Street accommodation (6 Sep - 14 Sep 2026): STILL missing — only 1 accommodation on booking 18180\n• Booking course 24956 (General English AM): starts Mon 3 Aug 2026 = August Bank Holiday — fix Issue 38 first\n• Check-in: Sun 2 Aug 2026 — 9 calendar days away\n• Fix NOT RUN",
+        "Add Capel Street accomm to booking 18180 (6 Sep - 14 Sep); reconcile payment 17954 in Xero. See recipe: issue-41-addendum-24jul-e.md",
+        "76th hrly Fri 24 Jul UTC (154th total). UNCHANGED. Xero null 28 days. Capel missing. Host family CONFIRMED (provider 24, 1 Jul). Check-in 2 Aug (9 days). Fix NOT RUN.",
+        "Xero null; Capel missing; 9d to check-in"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• 9th check Fri 24 Jul 2026 UTC (154th total) — unchanged\n• Booking accommodation 11285 (Jesus Manuel Ramirez Diaz, bed 83, booking 17825): dates 21 Jun - 5 Jul — 19 days post-checkout — active = true; fee = null\n• Booking accommodation 11352 (Veronica Martin, bed 83, booking 18156): dates 4 Jul - 11 Jul — 13 days post-checkout — active = true\n• Same BAs tracked under Issue 37 (row 39)\n• Root cause: active flag not auto-cleared on checkout\n• Fix NOT RUN",
+        "Set active = false on BAs 11285 and 11352. Same fix as Issue 37. See recipe: issue-43-addendum-24jul.md",
+        "9th check Fri 24 Jul UTC (154th total). UNCHANGED. BA11285: 19d stale (ended Jul 5). BA11352: 13d stale (ended Jul 11). Fix NOT RUN.",
+        "cosmetic; 19d+13d stale"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,56 @@
+[
+  {
+    "range": "J9:K9",
+    "values": [
+      [
+        "15th check 10 Jul UTC (hrly, fresh DB). CONFIRMED UNCHANGED. BC24959 (Diego s840, AY Morning, Aug3-Feb5/27) ilepCode=STILL null — 24 days to course start (Aug3). BK18183 PARTIAL EUR1485/1735 (EUR250 open) confirmed=false. Aurora bc24958 DONE (ilepCode=0318/0010). Pedro bc1603 ended Jun5, no new booking course in DB. NEIL: set ILEP code via SIS admin student 840 > booking 18183 > bc24959.",
+        "ilep null; Aug3 24d"
+      ]
+    ]
+  },
+  {
+    "range": "J16:K16",
+    "values": [
+      [
+        "10 Jul FRI UTC (hrly, fresh DB). CONFIRMED UNCHANGED. SCA255 weekEnd=2026-07-03 STILL only class assignment on bc24925 (AY Afternoon, booking 18151) — expired 7 school days. 5 school days missed: Mon 6 Jul, Tue 7 Jul, Wed 8 Jul, Thu 9 Jul, Fri 10 Jul (today). Holiday 2500 (Jul20-Aug21, 5 weeks) factored into Oct2 end date. Week 2 starts Monday 13 July — MUST assign before Monday or second full week missed. NEIL: UPDATE student_class_assignments SET week_end=2026-10-02 WHERE id=255 BEFORE MONDAY 13 JUL.",
+        "Mon13 DEADLINE"
+      ]
+    ]
+  },
+  {
+    "range": "J25:K25",
+    "values": [
+      [
+        "10 Jul FRI UTC (hrly, fresh DB). CONFIRMED UNCHANGED. BC24686 Morning General Jul20-Sep18 fee=STILL null — COURSE STARTS JUL20 (10 DAYS DEADLINE). BC1797 Morning General Apr6-Jun26 STILL active=true (14 days stale after course end). Pmt17124 EUR1280.12 type=null xeroPaymentId=null hubspotPaymentId=null (107 days unreconciled). BK1611 CONFIRMED EUR1280.12/1280.12 (fully paid). NEIL: set bc24686 fee via SIS admin (student 1052 > booking 1611 > bc24686) BEFORE JUL20; deactivate bc1797; reconcile pmt17124 in Xero.",
+        "Jul20; fee null; 10 days"
+      ]
+    ]
+  },
+  {
+    "range": "J30:K30",
+    "values": [
+      [
+        "10 Jul FRI UTC (hrly, fresh DB). DUPLICATE ROW — same student as issue 15 (row 16). SCA255 weekEnd=2026-07-03 STILL expired (7 school days). 5 school days missed Jul6-10 (today). Week2 Mon Jul13=3 DAYS. NEIL: UPDATE student_class_assignments SET week_end=2026-10-02 WHERE id=255 BEFORE MON 13 JUL. See issue 15 (row 16) for full context.",
+        "5 days missed; assign Mon13"
+      ]
+    ]
+  },
+  {
+    "range": "J41:K41",
+    "values": [
+      [
+        "10 Jul FRI UTC (hrly, fresh DB). CONFIRMED UNCHANGED. BA11358 bed180 Host Family Jul12-Aug2 active=true claimStatus=STILL null fee=EUR900. BK17831 CONFIRMED EUR1396.90/1396.90. 4 pmts ALL xeroPaymentId=null type=null: pmt17180(EUR431.90 Fidelo-Escrow Apr27 no-HS-ID), pmt17963(EUR965 Bank Jul1 HS1273784562922), pmt17987(EUR131.90 Bank Jun25 HS1277724782804), pmt17988(EUR300 Bank Jun12 HS1277795367133). pmt17987+17988=EUR431.90=pmt17180 (Fidelo pair — verify before reconciling all 4 separately). STUDENT CHECK-IN TOMORROW SATURDAY 12 JULY. No HF claim submitted. NEIL: submit claim TODAY + notify host family + reconcile pmt17963+pmt17180 in Xero.",
+        "URGENT; checkin TOMORROW"
+      ]
+    ]
+  },
+  {
+    "range": "J47:K47",
+    "values": [
+      [
+        "10 Jul FRI UTC (hrly, fresh DB). CONFIRMED UNCHANGED (3rd pass today). BC81 Pietro s72 ZERO SCAs — week1 Jul6-10 ENDED TODAY, week2 Mon13=3 DAYS, 10 school days remain Jul13-24. BC24968 Ettore s14564 ZERO SCAs — COURSE ENDED TODAY (retroactive SCA window closes today). BC24931 Veronica s278 ZERO SCAs — COURSE ENDED TODAY (retroactive SCA window closes today). BK78 Pietro EUR1880 / BK18191 Ettore EUR190.63 / BK18156 Veronica EUR573.20 all CONFIRMED fully paid. NEIL: (1) assign Pietro bc81 class BEFORE MON 13 JUL; (2) retroactive SCA for Ettore bc24968 + Veronica bc24931 TODAY only.",
+        "Pietro MON13 URGENT"
+      ]
+    ]
+  }
+]

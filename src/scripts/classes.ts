@@ -44,18 +44,38 @@ export function classScripts(prisma: PrismaClient) {
         studentAssignments: {
           where: {
             weekStart: { lte: rangeEnd },
+            // Active-in-range = weekEnd hasn't passed yet, OR (weekEnd is null
+            // AND the bookingCourse itself is still active). The null+ended-
+            // course case used to slip through and create ghost rosters; the
+            // backfill cleaned existing rows but this clause keeps the count
+            // honest if a new ghost ever appears.
             OR: [
-              { weekEnd: null },
               { weekEnd: { gte: rangeStart } },
+              {
+                AND: [
+                  { weekEnd: null },
+                  { bookingCourse: { endDate: { gte: rangeStart } } },
+                ],
+              },
             ],
           },
           include: {
-            student: { select: { id: true, firstName: true, lastName: true, currentLevel: true } },
+            student: {
+              select: {
+                id: true, firstName: true, lastName: true, currentLevel: true,
+                levelChanges: { select: { id: true, fromLevel: true, toLevel: true, effectiveFrom: true } },
+              },
+            },
             bookingCourse: {
               include: {
                 booking: {
                   include: {
-                    student: { select: { id: true, firstName: true, lastName: true, currentLevel: true } },
+                    student: {
+                      select: {
+                        id: true, firstName: true, lastName: true, currentLevel: true,
+                        levelChanges: { select: { id: true, fromLevel: true, toLevel: true, effectiveFrom: true } },
+                      },
+                    },
                     // Holidays needed by the frontend so the class roster can mark students
                     // as 🏖️ on-holiday during their absence window. Only those overlapping
                     // the requested week range are loaded — keeps payload small.
@@ -83,11 +103,14 @@ export function classScripts(prisma: PrismaClient) {
         classroom: true,
         studentAssignments: {
           include: {
-            student: true,
+            student: { include: { levelChanges: { select: { id: true, fromLevel: true, toLevel: true, effectiveFrom: true } } } },
             bookingCourse: {
               include: {
                 booking: {
-                  include: { student: true, holidays: true }
+                  include: {
+                    student: { include: { levelChanges: { select: { id: true, fromLevel: true, toLevel: true, effectiveFrom: true } } } },
+                    holidays: true,
+                  }
                 }
               }
             }
@@ -195,6 +218,34 @@ export function classScripts(prisma: PrismaClient) {
       throw new Error('Cannot assign: outstanding balance on this booking. Escalate to admin or DOS.');
     }
 
+    // Occupancy guard: a student can be in AT MOST ONE class per session at a
+    // time (you can't be in two rooms at once). Reject a second assignment to
+    // the SAME class, or to a DIFFERENT class in the SAME session, whose week
+    // range overlaps. Cross-session (AM + PM + 5) is allowed. This is the
+    // server-side backstop behind the picker's client-side "already assigned"
+    // filter — it stops the double-click duplicate (Rafael, 03 Jun) and the
+    // physically-impossible same-session double-booking at the source.
+    if (studentId) {
+      const targetClass = await prisma.class.findUnique({
+        where: { id: data.classId }, select: { session: true, name: true },
+      });
+      if (targetClass) {
+        const stu = await prisma.student.findUnique({ where: { id: studentId }, select: { firstName: true, lastName: true } });
+        const who = stu ? `${stu.firstName} ${stu.lastName || ''}`.trim() : 'This student';
+        const sLabel = (s: any) => s === 'MORNING' ? 'morning' : s === 'AFTERNOON' ? 'afternoon' : s === 'PLUS_FIVE' ? '+5' : String(s || '');
+        const overlapWhere: any = { studentId, OR: [{ weekEnd: null }, { weekEnd: { gte: weekStart } }] };
+        if (weekEnd) overlapWhere.weekStart = { lte: weekEnd };
+        const overlapping = await prisma.studentClassAssignment.findMany({
+          where: overlapWhere,
+          include: { class_: { select: { id: true, name: true, session: true } } },
+        });
+        const sameClass = overlapping.find(a => a.class_?.id === data.classId);
+        if (sameClass) throw new Error(`${who} is already in ${targetClass.name} for these weeks.`);
+        const sameSession = overlapping.find(a => a.class_?.session === targetClass.session && a.class_?.id !== data.classId);
+        if (sameSession) throw new Error(`${who} is already in ${sameSession.class_!.name} (${sLabel(targetClass.session)}) for these weeks — remove or move them first.`);
+      }
+    }
+
     const created = await prisma.studentClassAssignment.create({
       data: {
         bookingCourseId: data.bookingCourseId,
@@ -225,6 +276,37 @@ export function classScripts(prisma: PrismaClient) {
    * Sets weekEnd = (weekStart - 1 day). If weekStart is before the existing
    * weekStart, the assignment is fully deleted (clipping to an empty range).
    */
+  // Delete attendance the student had in `classId` from `from` (through `to` if
+  // given) that is now ORPHANED by a class change — i.e. no remaining assignment
+  // for this student+class still covers that window. Mirrors the bookings.ts
+  // teardown guard so a parallel booking on the same class is never touched.
+  // Fixes the recurring "stale attendance after a class move" pattern (issue 47):
+  // register rows the teacher/lock left against the OLD class on or after the
+  // move are no longer valid once the student has been reassigned. Accepts a tx
+  // or the base client. Returns the number of rows removed.
+  async function pruneOrphanAttendance(
+    db: any, studentId: number | null, classId: number | null, from: Date, to?: Date | null,
+  ): Promise<number> {
+    if (!studentId || !classId) return 0;
+    const stillCovered = await db.studentClassAssignment.findFirst({
+      where: {
+        studentId, classId,
+        weekStart: { lte: to ?? new Date('2099-12-31') },
+        OR: [{ weekEnd: null }, { weekEnd: { gte: from } }],
+      },
+      select: { id: true },
+    });
+    if (stillCovered) return 0;
+    const res = await db.attendance.deleteMany({
+      where: {
+        studentId,
+        occurrence: { classId, date: { gte: from, ...(to ? { lte: to } : {}) } },
+      },
+    });
+    if (res.count) console.log(`[attendance-prune] removed ${res.count} orphaned row(s) — student ${studentId}, class ${classId}, from ${from.toISOString().slice(0, 10)}`);
+    return res.count;
+  }
+
   async function endAssignment(id: number, weekStart: string) {
     const existing = await prisma.studentClassAssignment.findUnique({ where: { id } });
     if (!existing) return { clipped: false };
@@ -243,6 +325,11 @@ export function classScripts(prisma: PrismaClient) {
       const { schedulingScripts } = await import('./scheduling');
       await schedulingScripts(prisma).cleanupPrivateClassOccurrences(existing.classId);
     } catch (e) { console.error('cleanup after endAssignment failed:', e); }
+    // Prune now-orphaned attendance for this student in this class from the clip
+    // point forward (coverage ended at weekStart-1 → rows on/after weekStart are stale).
+    try {
+      await pruneOrphanAttendance(prisma, existing.studentId, existing.classId, new Date(weekStart), null);
+    } catch (e) { console.error('attendance prune after endAssignment failed:', e); }
 
     return clipDate < new Date(existing.weekStart)
       ? { clipped: false, deleted: true }
@@ -257,8 +344,71 @@ export function classScripts(prisma: PrismaClient) {
         const { schedulingScripts } = await import('./scheduling');
         await schedulingScripts(prisma).cleanupPrivateClassOccurrences(existing.classId);
       } catch (e) { console.error('cleanup after removeAssignment failed:', e); }
+      // The whole placement is gone → prune this student's attendance in that
+      // class across the removed window (guarded against a parallel booking).
+      try {
+        await pruneOrphanAttendance(prisma, existing.studentId, existing.classId, existing.weekStart, existing.weekEnd);
+      } catch (e) { console.error('attendance prune after removeAssignment failed:', e); }
     }
     return result;
+  }
+
+  // Move a student from their current class into another in ONE atomic step:
+  // end the existing placement at the cutover week (clip weekEnd to the day
+  // before — history preserved, NOT deleted) and create the new placement from
+  // the cutover forward. Replaces the manual Remove→navigate→Assign two-step,
+  // and crucially sets the new weekStart to the cutover (not course-start) so
+  // the old and new placements ABUT with no overlap — no same-session double.
+  // Cross-session moves (financial impact) are allowed here; the warning +
+  // escalation are surfaced/handled at the UI + (later) Slack layer.
+  async function moveStudent(
+    data: { assignmentId: number; targetClassId: number; cutover: string },
+    _callerRole?: string,
+  ) {
+    const existing = await prisma.studentClassAssignment.findUnique({
+      where: { id: data.assignmentId },
+      include: { bookingCourse: { select: { endDate: true } } },
+    });
+    if (!existing) throw new Error('Assignment not found');
+    if (existing.classId === data.targetClassId) throw new Error('Student is already in that class');
+    const cutover = new Date(data.cutover);
+    const clip = new Date(cutover);
+    clip.setDate(clip.getDate() - 1); // old placement ends the day before cutover
+
+    const result = await prisma.$transaction(async (tx) => {
+      // End the old placement (delete only if the cutover is at/before its start)
+      if (clip < new Date(existing.weekStart)) {
+        await tx.studentClassAssignment.delete({ where: { id: existing.id } });
+      } else {
+        await tx.studentClassAssignment.update({ where: { id: existing.id }, data: { weekEnd: clip } });
+      }
+      // Create the new placement FROM the cutover (not course-start → no overlap)
+      const created = await tx.studentClassAssignment.create({
+        data: {
+          bookingCourseId: existing.bookingCourseId,
+          studentId: existing.studentId,
+          classId: data.targetClassId,
+          weekStart: cutover,
+          weekEnd: existing.bookingCourse?.endDate ?? null,
+        } as any,
+      });
+      // Drop the student's now-orphaned attendance in the OLD class from the
+      // cutover forward (in-txn so it's atomic with the move). The old SCA was
+      // just clipped to cutover-1, so the guard sees no remaining coverage.
+      const prunedAttendance = await pruneOrphanAttendance(tx, existing.studentId, existing.classId, cutover, null);
+      return { newAssignmentId: created.id, prunedAttendance };
+    });
+
+    // Materialise occurrences for both classes (best-effort, outside the txn).
+    try {
+      const { schedulingScripts } = await import('./scheduling');
+      const sched = schedulingScripts(prisma);
+      await sched.regenerateForClass(existing.classId);
+      await sched.regenerateForClass(data.targetClassId);
+      await sched.cleanupPrivateClassOccurrences(existing.classId);
+    } catch (e) { console.error('schedule sync after moveStudent failed:', e); }
+
+    return { moved: true, from: existing.classId, to: data.targetClassId, newAssignmentId: result.newAssignmentId, prunedAttendance: result.prunedAttendance };
   }
 
   // ── Unassigned students (booking courses not in any class) ──
@@ -274,17 +424,21 @@ export function classScripts(prisma: PrismaClient) {
     let rangeStart: Date | null = null;
     let rangeEnd: Date | null = null;
 
+    // Parse the window in UTC. booking_course dates are @db.Date (stored as UTC
+    // midnight); parsing 'T00:00:00' as LOCAL on a Dublin (DST) server lands an hour
+    // into the previous UTC day, so the >= rangeStart comparison drags in courses that
+    // ended the DAY BEFORE the window (off-by-one — a 31-May course leaking into the
+    // 1-Jun week). Always do this date arithmetic in UTC. (See the UTC date-math gotcha.)
     if (fromStr || toStr) {
-      if (fromStr) rangeStart = new Date(fromStr + 'T00:00:00');
-      if (toStr)   rangeEnd   = new Date(toStr   + 'T23:59:59');
+      if (fromStr) rangeStart = new Date(fromStr + 'T00:00:00Z');
+      if (toStr)   rangeEnd   = new Date(toStr   + 'T23:59:59Z');
     } else if (weekOf) {
-      const weekStart = new Date(weekOf + 'T12:00:00');
-      const monday = new Date(weekStart);
-      monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
-      monday.setHours(0, 0, 0, 0);
+      const wk = new Date(weekOf + 'T12:00:00Z');
+      const monday = new Date(Date.UTC(wk.getUTCFullYear(), wk.getUTCMonth(), wk.getUTCDate() - ((wk.getUTCDay() + 6) % 7)));
       rangeStart = monday;
       rangeEnd = new Date(monday);
-      rangeEnd.setDate(rangeEnd.getDate() + 6);
+      rangeEnd.setUTCDate(rangeEnd.getUTCDate() + 6);
+      rangeEnd.setUTCHours(23, 59, 59, 999);
     }
     // else: both null → unbounded, return everything matching session+payment
 
@@ -294,6 +448,33 @@ export function classScripts(prisma: PrismaClient) {
     if (session === 'MORNING') sessionCategories.push('MORNING', 'MORNING_PLUS', 'INTENSIVE', 'PRIVATE');
     else if (session === 'AFTERNOON') sessionCategories.push('AFTERNOON', 'AFTERNOON_PLUS', 'INTENSIVE', 'PRIVATE');
     else sessionCategories.push('MORNING', 'MORNING_PLUS', 'AFTERNOON', 'AFTERNOON_PLUS', 'INTENSIVE', 'PRIVATE', 'OTHER');
+
+    // ── Placement is decided per SESSION, not per student ──────────────────
+    // A student counts as "placed" for a pool only once they hold a class
+    // assignment in that pool's operative session. This is what lets a genuine
+    // two-session student (Intensive, or AM + PM) stay in the OTHER pool after
+    // their first class is set — the previous student-wide check dropped them
+    // from EVERY pool the moment they had any assignment that week, so their
+    // second course sat silently unassigned ("one class only" — Paul, 03/07).
+    // +5 / *_PLUS courses are rostered INTO the base morning/afternoon class in
+    // practice (every MORNING_PLUS assignment lands on a MORNING class, none on
+    // the lone PLUS_FIVE class), so the base assignment covers them — they don't
+    // nag for a separate slot. Intensive is the one course that needs BOTH: it
+    // maps to MORNING in the AM pool and AFTERNOON in the PM pool, clearing one
+    // side at a time.
+    const weekIntersect: any = {};
+    if (rangeEnd)   weekIntersect.weekStart = { lte: rangeEnd };
+    if (rangeStart) weekIntersect.OR = [{ weekEnd: null }, { weekEnd: { gte: rangeStart } }];
+    // category → the ClassSession(s) that count as covering it in THIS pool.
+    // null ⇒ no session mapping (PRIVATE/OTHER) → fall back to a per-course check.
+    const coverSessionsFor = (category: string): string[] | null => {
+      switch (category) {
+        case 'MORNING': case 'MORNING_PLUS': return ['MORNING'];
+        case 'AFTERNOON': case 'AFTERNOON_PLUS': return ['AFTERNOON'];
+        case 'INTENSIVE': return session === 'AFTERNOON' ? ['AFTERNOON'] : ['MORNING'];
+        default: return null; // PRIVATE / OTHER
+      }
+    };
 
     const dateWhere: any = {};
     if (rangeStart) dateWhere.endDate = { gte: rangeStart };
@@ -309,18 +490,64 @@ export function classScripts(prisma: PrismaClient) {
         // Partial-paid bookings (paid > 0 but not in full) are still surfaced
         // here and tagged below so the UI can render an orange warning + lock
         // for non-admin staff. (Mirrors getUnplacedStudents in accommodation.)
-        booking: { amountPaid: { gt: 0 }, status: { notIn: ['ESCROW', 'CANCELLED'] } },
+        //
+        // Use an EXIST check on real (non-escrow) Payment rows rather than the
+        // denormalised `amountPaid > 0`. Fidelo-imported amountPaid sometimes
+        // includes TransferMate escrow money, leaking visa-pending students
+        // into the placement pool — booking.status='ESCROW' isn't always set
+        // even when the only payments are escrow. The Payment-row check is
+        // authoritative: escrow rows (type='Escrow' OR
+        // method='TransferMate Escrow') are shadow payments and must not
+        // unlock class placement. Mirrors the rollup logic in
+        // bookings.ts:495–512.
+        booking: {
+          payments: {
+            some: {
+              amount: { gt: 0 },
+              // SQL NULL trap: `NOT (type='Escrow' OR method='...')` evaluates
+              // to UNKNOWN when either field is NULL, which Prisma's `some`
+              // treats as no-match — so non-escrow payments (type=null) get
+              // wrongly excluded. Use the explicit dual-AND form so NULL
+              // values pass cleanly: NEITHER condition for escrow holds.
+              AND: [
+                { OR: [{ type: null }, { type: { not: 'Escrow' } }] },
+                { OR: [{ method: null }, { method: { not: 'TransferMate Escrow' } }] },
+              ],
+            },
+          },
+          status: { notIn: ['ESCROW', 'CANCELLED'] },
+          student: { is: { AND: [
+            { OR: [
+              { visaStatus: null },
+              { visaStatus: { notIn: ['Pending', 'Appeal'] } },
+            ]},
+            // "Already placed" is now decided per-session in JS below (see
+            // coverSessionsFor) rather than with a student-wide filter here —
+            // the old check hid a two-session student from EVERY pool after one
+            // assignment. Orphan assignments (bookingCourseId=null) are still
+            // honoured: they carry a classId → class.session, so they cover the
+            // matching pool. (Felix Edgardo Lopez Rivera id 14 was the orphan
+            // smoking gun; session-matching covers that case too.)
+          ]}},
+        },
       },
       include: {
         booking: {
-          include: { student: { select: { id: true, firstName: true, lastName: true, currentLevel: true, nationality: true } } }
-        },
-        classAssignments: rangeStart || rangeEnd ? {
-          where: {
-            ...(rangeEnd   ? { weekStart: { lte: rangeEnd } } : {}),
-            ...(rangeStart ? { OR: [{ weekEnd: null }, { weekEnd: { gte: rangeStart } }] } : {}),
+          include: {
+            agency: { select: { id: true, name: true } },
+            student: {
+              select: {
+                id: true, firstName: true, lastName: true, currentLevel: true, nationality: true,
+                email: true, fideloCustomerNum: true,
+                levelChanges: { select: { id: true, fromLevel: true, toLevel: true, effectiveFrom: true } },
+                // This week's assignments (with class session) — drives the
+                // per-session coverage filter below.
+                classAssignments: { where: weekIntersect, select: { bookingCourseId: true, class_: { select: { session: true } } } },
+              },
+            },
           },
-        } : true,
+        },
+        classAssignments: (rangeStart || rangeEnd) ? { where: weekIntersect } : true,
       },
     });
 
@@ -342,12 +569,29 @@ export function classScripts(prisma: PrismaClient) {
       return { ...bc, paymentStatus, paymentBalance };
     });
 
-    // When a range is bound, filter to bookings with no overlapping assignment in that range.
-    // When unbounded, return all (caller filters client-side per class context).
-    if (rangeStart || rangeEnd) {
-      return tagged.filter((bc: any) => bc.classAssignments.length === 0);
-    }
-    return tagged;
+    // Range-bound: keep a course only if the student is NOT yet covered in that
+    // course's operative session (so a two-session student stays in the other
+    // pool). Unbounded: return all (caller filters client-side per class context).
+    if (!(rangeStart || rangeEnd)) return tagged;
+    return tagged.filter((bc: any) => {
+      const stuAssigns: any[] = bc.booking?.student?.classAssignments || [];
+      // No pool context (aggregate view — the class-list "Unassigned Pool"). An
+      // INTENSIVE course needs BOTH a morning AND an afternoon class, so a student
+      // holding only one session still belongs here (issue 26: the old student-wide
+      // "any assignment placed them" check dropped partially-placed intensives).
+      // Every other category keeps the legacy student-wide behaviour.
+      if (!session) {
+        if (bc.category === 'INTENSIVE') {
+          const has = new Set(stuAssigns.map(a => a.class_?.session));
+          return !(has.has('MORNING') && has.has('AFTERNOON'));
+        }
+        return stuAssigns.length === 0;
+      }
+      const coverSessions = coverSessionsFor(bc.category);
+      if (coverSessions) return !stuAssigns.some(a => coverSessions.includes(a.class_?.session));
+      // PRIVATE / OTHER — no session mapping; use this course's own assignment.
+      return bc.classAssignments.length === 0;
+    });
   }
 
   // ── Class teachers (default assignment) ─────
@@ -377,19 +621,76 @@ export function classScripts(prisma: PrismaClient) {
     const teacherId = parseInt(data.teacherId);
     const startDate = new Date(data.startDate);
     const endDate = data.endDate ? new Date(data.endDate) : null;
-    // Close any existing open assignment for the same (teacher, class) so we never accumulate dupes
+
+    // Time-overlap guard, symmetric to the cover guard: a teacher can't be the
+    // standing (default) teacher of two classes whose session times overlap over
+    // an overlapping date range — they can't be in two rooms at once. Times
+    // compared on HH:MM; an open (null) end date is treated as far-future.
+    {
+      const FAR = new Date('2999-12-31');
+      const hm = (t: string | null | undefined) => (t || '').slice(0, 5);
+      const timeOverlap = (s1: string, e1: string, s2: string, e2: string) => hm(s1) < hm(e2) && hm(s2) < hm(e1);
+      const newClass = await prisma.class.findUnique({ where: { id: classId }, select: { startTime: true, endTime: true } });
+      if (newClass) {
+        const others = await prisma.classTeacher.findMany({
+          where: { teacherId, classId: { not: classId } },
+          include: { class_: { select: { name: true, startTime: true, endTime: true } } },
+        });
+        for (const o of others) {
+          const dateOverlap = o.startDate <= (endDate ?? FAR) && startDate <= (o.endDate ?? FAR);
+          if (dateOverlap && timeOverlap(newClass.startTime, newClass.endTime, o.class_.startTime, o.class_.endTime)) {
+            const t = await prisma.teacher.findUnique({ where: { id: teacherId }, select: { firstName: true, lastName: true } });
+            throw new Error(
+              `${t?.firstName} ${t?.lastName} is already the teacher of "${o.class_.name}" (${hm(o.class_.startTime)}–${hm(o.class_.endTime)}) over an overlapping period — a teacher can't hold two classes at the same time.`
+            );
+          }
+        }
+      }
+    }
+
+    // Close any existing open assignment for the SAME (teacher, class) so we never
+    // accumulate literal dupes of one teacher.
     await prisma.classTeacher.updateMany({
       where: { classId, teacherId, endDate: null },
       data: { endDate: new Date(startDate.getTime() - 86400000) }, // end the day before the new start
     });
-    return prisma.classTeacher.create({
+
+    // Non-destructive integrity WARNING (not an auto-close — that could be wrong
+    // in the other direction): if the class already has a DIFFERENT open-ended
+    // teacher, it will now have two concurrent active teachers — the state that
+    // had A1's attendance sheet print ULearn ADoS alongside Dave Booth because a
+    // cover was entered without an end date (SIS Cleanup issue #46). We flag it so
+    // ops set an end date on the outgoing teacher.
+    const otherOpen = await prisma.classTeacher.findMany({
+      where: { classId, teacherId: { not: teacherId }, endDate: null },
+      include: { teacher: { select: { firstName: true, lastName: true } } },
+    });
+
+    const created = await prisma.classTeacher.create({
       data: { classId, teacherId, startDate, endDate } as any,
       include: { teacher: true },
     });
+
+    if (otherOpen.length) {
+      const names = otherOpen.map(o => `${o.teacher?.firstName || ''} ${o.teacher?.lastName || ''}`.trim()).filter(Boolean).join(', ');
+      (created as any).warning = `Heads up — this class still has an active teacher with no end date (${names}), so it now has two active teachers. That can make the attendance sheet print the wrong name. Set an end date on the outgoing teacher to resolve.`;
+    }
+    return created;
   }
 
   async function removeClassTeacher(id: number) {
     return prisma.classTeacher.delete({ where: { id } });
+  }
+
+  // Edit an existing class-teacher assignment's start/end date. Used to correct
+  // a wrong "since" date (e.g. one auto-stamped to the viewed week at assign
+  // time) without removing + re-adding. Either field may be set; endDate null
+  // clears it (open-ended).
+  async function updateClassTeacher(id: number, data: Record<string, any>) {
+    const patch: any = {};
+    if (data.startDate !== undefined) patch.startDate = new Date(data.startDate);
+    if (data.endDate !== undefined) patch.endDate = data.endDate ? new Date(data.endDate) : null;
+    return prisma.classTeacher.update({ where: { id }, data: patch, include: { teacher: true } });
   }
 
   // ── Teacher covers (exceptions) ───────────
@@ -404,24 +705,160 @@ export function classScripts(prisma: PrismaClient) {
     });
   }
 
+  // Time-overlap guard. A teacher can be in exactly one place at one time, and
+  // one class-occurrence can have one cover. Pegged to TIME (not session label)
+  // so flexibly-timed individual / closed-group classes are covered by the same
+  // rule. Blocks the three impossible states that previously slipped through
+  // (no DB constraint, no app check existed):
+  //   • duplication  — same teacher → same class, entered twice
+  //   • conflict     — two teachers → one class slot
+  //   • double-book  — one teacher → two classes whose times overlap
+  // Times are "HH:MM" / "HH:MM:SS"; compare on the first 5 chars (HH:MM).
   async function createCover(data: Record<string, any>) {
+    const classId = parseInt(data.classId);
+    const coverTeacherId = parseInt(data.coverTeacherId);
+    const date = new Date(data.date);
+    const startTime: string = data.startTime;
+    const endTime: string = data.endTime;
+
+    const hm = (t: string | null | undefined) => (t || '').slice(0, 5);
+    const overlaps = (s1: string, e1: string, s2: string, e2: string) =>
+      hm(s1) < hm(e2) && hm(s2) < hm(e1);
+
+    // (1) Is this class-occurrence already covered at an overlapping time?
+    //     Kills duplication (same teacher twice) AND conflict (a 2nd teacher on
+    //     the same slot). Non-overlapping split covers are still allowed.
+    const sameClass = await prisma.teacherCover.findMany({ where: { classId, date } });
+    for (const c of sameClass) {
+      if (overlaps(startTime, endTime, c.startTime, c.endTime)) {
+        const who = await prisma.teacher.findUnique({ where: { id: c.coverTeacherId }, select: { firstName: true, lastName: true } });
+        const same = c.coverTeacherId === coverTeacherId;
+        throw new Error(
+          same
+            ? `This class is already covered by ${who?.firstName} ${who?.lastName} at an overlapping time on that date (duplicate).`
+            : `This class is already covered by ${who?.firstName} ${who?.lastName} at an overlapping time on that date (conflict — one cover per class).`
+        );
+      }
+    }
+
+    // (2) Is the cover teacher already deployed elsewhere at an overlapping time
+    //     that day? Check their other covers, their occurrence-level assignments,
+    //     and the default classes they teach (unless they're covered out of one).
+    const sched = await teacherBusyAt(coverTeacherId, date);
+    for (const b of sched) {
+      if (b.classId !== classId && overlaps(startTime, endTime, b.startTime, b.endTime)) {
+        const t = await prisma.teacher.findUnique({ where: { id: coverTeacherId }, select: { firstName: true, lastName: true } });
+        throw new Error(
+          `${t?.firstName} ${t?.lastName} is already deployed to "${b.className}" (${hm(b.startTime)}–${hm(b.endTime)}) on that date — a teacher can't be in two places at once.`
+        );
+      }
+    }
+
     return prisma.teacherCover.create({
       data: {
-        classId: parseInt(data.classId),
-        date: new Date(data.date),
+        classId,
+        date,
         originalTeacherId: parseInt(data.originalTeacherId),
-        coverTeacherId: parseInt(data.coverTeacherId),
-        startTime: data.startTime,
-        endTime: data.endTime,
+        coverTeacherId,
+        startTime,
+        endTime,
         reason: data.reason || null,
       } as any,
       include: { originalTeacher: true, coverTeacher: true },
     });
   }
 
+  // Every teaching slot a teacher already holds on a given date: their covers,
+  // their occurrence assignments, and the default classes they teach that have
+  // a (non-cancelled, non-covered-out) occurrence that day. Used by the cover
+  // guard's overlap check.
+  async function teacherBusyAt(teacherId: number, date: Date): Promise<Array<{ classId: number; className: string; startTime: string; endTime: string }>> {
+    const slots: Array<{ classId: number; className: string; startTime: string; endTime: string }> = [];
+
+    // Covers this teacher is already doing that day.
+    const covers = await prisma.teacherCover.findMany({
+      where: { coverTeacherId: teacherId, date },
+      include: { class_: { select: { name: true } } },
+    });
+    for (const c of covers) slots.push({ classId: c.classId, className: c.class_?.name || 'class', startTime: c.startTime, endTime: c.endTime });
+
+    // Occurrences that day, with assignments + their class + whether covered out.
+    const occs = await prisma.classOccurrence.findMany({
+      where: { date, cancelled: false },
+      include: {
+        class_: { select: { id: true, name: true, startTime: true, endTime: true } },
+        teacherAssignments: { select: { teacherId: true, startTime: true, endTime: true } },
+      },
+    });
+    const coveredClassIds = new Set((await prisma.teacherCover.findMany({ where: { date }, select: { classId: true } })).map(c => c.classId));
+    // Default class teachers active on that date.
+    const defaults = await prisma.classTeacher.findMany({
+      where: { teacherId, startDate: { lte: date }, OR: [{ endDate: null }, { endDate: { gte: date } }] },
+      select: { classId: true },
+    });
+    const defaultClassIds = new Set(defaults.map(d => d.classId));
+
+    for (const o of occs) {
+      // Occurrence-level assignment for this teacher (explicit override).
+      const mine = o.teacherAssignments.find(a => a.teacherId === teacherId);
+      if (mine) { slots.push({ classId: o.class_.id, className: o.class_.name, startTime: mine.startTime, endTime: mine.endTime }); continue; }
+      // Default teacher of this class, and not covered out of it that day.
+      if (defaultClassIds.has(o.class_.id) && !coveredClassIds.has(o.class_.id) && o.teacherAssignments.length === 0) {
+        slots.push({ classId: o.class_.id, className: o.class_.name, startTime: o.class_.startTime, endTime: o.class_.endTime });
+      }
+    }
+    return slots;
+  }
+
   async function removeCover(id: number) {
     return prisma.teacherCover.delete({ where: { id } });
   }
+
+  // "Pause teacher" by class+date (UI-friendly wrapper): resolve/create the
+  // occurrence, then upsert a MANUAL absence — payroll drops that teacher for the
+  // day (no pay). The deliberate exception to always-a-teacher, for the second
+  // simultaneous absence the DOS can only babysit (Neil/Paul 2026-08-14).
+  async function pauseByDate(classId: number, dateStr: string, teacherId: number, reason: string | null, createdBy: string | null) {
+    const date = new Date(dateStr + 'T00:00:00.000Z');
+    const occ = await prisma.classOccurrence.upsert({
+      where: { classId_date: { classId, date } },
+      create: { classId, date },
+      update: {},
+    });
+    return prisma.occurrenceAbsence.upsert({
+      where: { occurrenceId: occ.id },
+      create: { occurrenceId: occ.id, teacherId, source: 'manual', reason, createdBy },
+      update: { teacherId, source: 'manual', reason, createdBy },
+    });
+  }
+
+  async function unpauseByDate(classId: number, dateStr: string) {
+    const date = new Date(dateStr + 'T00:00:00.000Z');
+    const occ = await prisma.classOccurrence.findUnique({ where: { classId_date: { classId, date } } });
+    if (occ) await prisma.occurrenceAbsence.deleteMany({ where: { occurrenceId: occ.id } });
+    return { unpaused: true };
+  }
+
+  // Change a cover in place (Paul: line one up, then swap at the last minute).
+  // Reuses createCover's conflict checks by deleting then re-creating, so the
+  // "one cover per class / teacher-can't-be-in-two-places" guards still apply to
+  // the NEW cover teacher. Keeps the same date/times/original teacher unless
+  // overridden. Guarded server-side; the payroll period lock is enforced upstream.
+  async function changeCover(id: number, data: { coverTeacherId: number; reason?: string | null }) {
+    const existing = await prisma.teacherCover.findUnique({ where: { id } });
+    if (!existing) throw new Error('Cover not found');
+    await prisma.teacherCover.delete({ where: { id } });
+    return createCover({
+      classId: existing.classId,
+      date: existing.date.toISOString().slice(0, 10),
+      originalTeacherId: existing.originalTeacherId,
+      coverTeacherId: data.coverTeacherId,
+      startTime: existing.startTime,
+      endTime: existing.endTime,
+      reason: data.reason ?? existing.reason,
+    } as any);
+  }
+
 
   // Cover Dashboard — month-anchored view of:
   //  (a) Forecast: who is on Zoho leave each week of the month (Mon–Fri grid)
@@ -718,6 +1155,87 @@ export function classScripts(prisma: PrismaClient) {
     return prisma.teacher.delete({ where: { id } });
   }
 
+  // ── Zoho People teacher pull ("+ Zoho Teacher") ─────────────────────────
+  // Zoho dates come as "dd-MMM-yyyy" (e.g. "01-Jul-2026"). Parse in UTC so the
+  // @db.Date columns don't shift a day on the Dublin/DST server.
+  function parseZohoDate(s: any): Date | null {
+    if (!s) return null;
+    const m = String(s).trim().match(/^(\d{1,2})-([A-Za-z]{3})-(\d{4})$/);
+    if (m) {
+      const months: Record<string, number> = { jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11 };
+      const mm = months[m[2].toLowerCase()];
+      if (mm != null) return new Date(Date.UTC(+m[3], mm, +m[1]));
+    }
+    const d = new Date(s);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  function parseSalary(s: any): number | null {
+    if (s == null || s === '') return null;
+    const n = parseFloat(String(s).replace(/[^0-9.]/g, ''));
+    return isNaN(n) ? null : n;
+  }
+  function mapZohoToTeacher(emp: any): Record<string, any> {
+    return {
+      firstName: emp.firstName || '',
+      lastName: emp.lastName || '',
+      email: emp.email || null,
+      zohoEmployeeId: emp.zohoEmployeeId || null,
+      zohoRecordId: emp.zohoRecordId || null,
+      pps: emp.pps || null,
+      dateOfBirth: parseZohoDate(emp.dateOfBirth),
+      address: emp.address || null,
+      startDate: parseZohoDate(emp.startDate),
+      title: emp.title || emp.designation || null,
+      reportingTo: emp.reportingTo || null,
+      contractType: emp.contractType || null,
+      standardHours: emp.standardHours != null ? String(emp.standardHours) : null,
+      hourlyRate: parseSalary(emp.salary),
+    };
+  }
+
+  // List Zoho employees whose Designation === "Teacher", minus any already
+  // linked to a SIS teacher (by zohoEmployeeId). Each candidate is flagged with
+  // `existingTeacherId` when a same-email SIS teacher exists but isn't yet linked
+  // (→ import will LINK it rather than create a duplicate).
+  async function zohoTeacherCandidates() {
+    const ZohoPeopleAPI = require('./zoho-people-api');
+    const zoho = new ZohoPeopleAPI();
+    const teachers = await zoho.listTeacherEmployees();
+    const sis = await prisma.teacher.findMany({ select: { id: true, zohoEmployeeId: true, email: true } });
+    const linked = new Set(sis.filter(t => t.zohoEmployeeId).map(t => t.zohoEmployeeId as string));
+    const byEmail = new Map(sis.filter(t => t.email).map(t => [(t.email as string).toLowerCase(), t.id] as const));
+    return teachers
+      .filter((t: any) => !(t.zohoEmployeeId && linked.has(t.zohoEmployeeId)))
+      .map((t: any) => ({ ...t, existingTeacherId: t.email ? (byEmail.get(t.email.toLowerCase()) ?? null) : null }));
+  }
+
+  // Import selected Zoho records → create (or link an existing same-email row).
+  // Re-fetches each record from Zoho (authoritative — never trusts client data).
+  async function importZohoTeachers(recordIds: string[]) {
+    const ZohoPeopleAPI = require('./zoho-people-api');
+    const zoho = new ZohoPeopleAPI();
+    const results: any[] = [];
+    for (const rid of (recordIds || [])) {
+      const emp = await zoho.getMappedEmployee(rid);
+      if (!emp) { results.push({ recordId: rid, ok: false, error: 'not found in Zoho' }); continue; }
+      const data = mapZohoToTeacher(emp);
+      let existing = emp.zohoEmployeeId
+        ? await prisma.teacher.findUnique({ where: { zohoEmployeeId: emp.zohoEmployeeId } })
+        : null;
+      if (!existing && emp.email) {
+        existing = await prisma.teacher.findFirst({ where: { email: { equals: emp.email, mode: 'insensitive' }, zohoEmployeeId: null } });
+      }
+      if (existing) {
+        const t = await prisma.teacher.update({ where: { id: existing.id }, data: data as any });
+        results.push({ recordId: rid, ok: true, teacherId: t.id, name: `${t.firstName} ${t.lastName}`, action: 'linked' });
+      } else {
+        const t = await prisma.teacher.create({ data: data as any });
+        results.push({ recordId: rid, ok: true, teacherId: t.id, name: `${t.firstName} ${t.lastName}`, action: 'created' });
+      }
+    }
+    return { results, imported: results.filter(r => r.ok).length };
+  }
+
   // ── PROFIT MARGIN DASHBOARD ─────────────────
   // Per-class gross profit / gross margin over a date range, bucketed by week.
   // Cost = teacher hours × Teacher.hourlyRate (salaried teachers contribute 0,
@@ -953,7 +1471,20 @@ export function classScripts(prisma: PrismaClient) {
         // Ignore trivial residuals (rounding noise, €0.50 reconciliation
         // dust, etc) — only surface balances that are worth chasing.
         amountOpen: { gte: 5 },
-        status: { not: 'CANCELLED' },
+        // Exclude ESCROW: visa-pending bookings have money sitting in the
+        // TransferMate escrow account, not in BoI. Surfacing them here would
+        // generate phantom chases for funds we technically don't hold yet.
+        // They reappear in balances when the visa resolves and status flips.
+        status: { notIn: ['CANCELLED', 'ESCROW'] },
+        // Belt-and-braces — also exclude any booking whose student's visa
+        // is still in process (Pending / In Appeal). A booking can sometimes
+        // sit in PARTIAL/CONFIRMED while the visa is still pending (card
+        // payment that bypassed escrow gating, manual override, etc.) and
+        // we don't want to chase that balance until the visa clears.
+        student: { is: { OR: [
+          { visaStatus: null },
+          { visaStatus: { notIn: ['Pending', 'Appeal'] } },
+        ]}},
         OR: [
           { serviceStart: { gt: today } },                           // future arrivals
           { AND: [                                                   // in school now
@@ -1075,12 +1606,62 @@ export function classScripts(prisma: PrismaClient) {
     };
   }
 
+  // ── Seat occupancy (Centre 1 — Harcourt) ─────────────────────────────────
+  // Level-agnostic, bookings-based (Neil 2026-08-22). Each active, non-cancelled
+  // booking that has PAID something (>0) and whose group course spans the week
+  // counts as ONE occupied seat in its session. Session from CourseCategory
+  // (2-session model): AM = MORNING|MORNING_PLUS|INTENSIVE, PM = AFTERNOON|
+  // AFTERNOON_PLUS|INTENSIVE (Intensive takes one of EACH). PRIVATE + Closed-group
+  // bookings excluded. Split FULLY-PAID (definite arrivals bubble) vs PROVISIONAL
+  // (partial). Capacity defaults 112/session (7×16) — tunable via ?amCap/?pmCap
+  // until the Centre table lands. Uses amount_paid/amount_total directly (amount_open
+  // is a derived field observed to drift — same call the accom + assign engines make).
+  async function seatOccupancy(query: Record<string, any>) {
+    const AM_CAP = Number.isFinite(Number(query.amCap)) && query.amCap ? Number(query.amCap) : 112;
+    const PM_CAP = Number.isFinite(Number(query.pmCap)) && query.pmCap ? Number(query.pmCap) : 112;
+    const weeksN = Math.min(Math.max(Number(query.weeks) || 14, 1), 52);
+    const toMonday = (d: Date) => { const x = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())); x.setUTCDate(x.getUTCDate() - ((x.getUTCDay() + 6) % 7)); return x; };
+    const base = query.from ? new Date(query.from + 'T00:00:00Z') : new Date();
+    const fromMon = toMonday(base);
+    const AM = ['MORNING', 'MORNING_PLUS', 'INTENSIVE'];
+    const PM = ['AFTERNOON', 'AFTERNOON_PLUS', 'INTENSIVE'];
+    const NOTCLOSED = `NOT EXISTS (SELECT 1 FROM groups g WHERE g.id=b.group_id AND g.type ILIKE '%closed%')`;
+    const countSess = async (wsIso: string, weIso: string, cats: string[]) => {
+      const list = cats.map(c => `'${c}'`).join(',');
+      const r: any[] = await prisma.$queryRawUnsafe(
+        `SELECT
+           count(DISTINCT b.id) FILTER (WHERE b.amount_total>0 AND (b.amount_total-b.amount_paid)<=0.01)::int AS fully,
+           count(DISTINCT b.id) FILTER (WHERE b.amount_paid>0 AND (b.amount_total IS NULL OR (b.amount_total-b.amount_paid)>0.01))::int AS prov
+         FROM bookings b JOIN booking_courses bc ON bc.booking_id=b.id
+          WHERE bc.active=true AND b.status NOT IN ('CANCELLED') AND b.amount_paid>0
+            AND bc.start_date <= '${weIso}'::date AND bc.end_date >= '${wsIso}'::date
+            AND bc.category IN (${list}) AND ${NOTCLOSED}`);
+      return r[0] || { fully: 0, prov: 0 };
+    };
+    const weeks: any[] = [];
+    for (let i = 0; i < weeksN; i++) {
+      const ws = new Date(fromMon); ws.setUTCDate(ws.getUTCDate() + i * 7);
+      const we = new Date(ws); we.setUTCDate(we.getUTCDate() + 6);
+      const wsIso = ws.toISOString().slice(0, 10), weIso = we.toISOString().slice(0, 10);
+      const am = await countSess(wsIso, weIso, AM);
+      const pm = await countSess(wsIso, weIso, PM);
+      weeks.push({
+        weekStart: wsIso,
+        am: { fully: am.fully, prov: am.prov, empty: AM_CAP - am.fully, cap: AM_CAP },
+        pm: { fully: pm.fully, prov: pm.prov, empty: PM_CAP - pm.fully, cap: PM_CAP },
+      });
+    }
+    return { centre: 'Harcourt Centre', amCap: AM_CAP, pmCap: PM_CAP, weeks };
+  }
+
   return {
+    seatOccupancy,
     listClassrooms,
     listClasses, getClassById, createClass, updateClass, deleteClass,
-    assignStudent, removeAssignment, endAssignment, unassignedStudents,
-    getClassTeachers, assignClassTeacher, removeClassTeacher,
-    getCovers, createCover, removeCover, coverDashboard, profitMargin, balances,
+    assignStudent, removeAssignment, endAssignment, moveStudent, unassignedStudents,
+    getClassTeachers, assignClassTeacher, removeClassTeacher, updateClassTeacher,
+    getCovers, createCover, removeCover, changeCover, pauseByDate, unpauseByDate, coverDashboard, profitMargin, balances,
     listTeachers, getTeacherById, createTeacher, updateTeacher, deleteTeacher,
+    zohoTeacherCandidates, importZohoTeachers,
   };
 }

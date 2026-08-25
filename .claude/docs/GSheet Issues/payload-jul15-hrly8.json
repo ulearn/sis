@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H20:K20",
+    "values": [
+      [
+        "• Booking 83 courses — Morning IELTS (booking course 89, ended 22 May 2026) and Private Lessons (booking course 90, ended 22 May 2026): both still active = true — 54 days stale (15 Jul 2026 UTC)\n• No class assignment was ever created for student 77 (Mai Lan Chu) — Private Lessons is 1-on-1 tuition so no slot is required\n• Student 77 has no current or future booking — both courses are historical\n• Both booking courses should have active set to false (data hygiene only)",
+        "Set booking course 89 and 90 active = false (data hygiene). See recipe: issue-19-mailan-class-assign.md",
+        "15 Jul WED UTC (fresh DB). CONFIRMED UNCHANGED. BC89 Morning IELTS ended May22 active=STILL true (54d stale). BC90 Private Lessons ended May22 active=STILL true (54d stale). No current booking for student 77. Fix NOT RUN.",
+        "BC89+90 stale 54d"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• Booking course 23 (Ivan Rodriguez Solares, Intensive General 30, 4 to 22 May 2026): still active = true — 54 days past end date\n• Booking course 24826 (Ernesto Pesoa Gil, 2-week Intensive General 30, 8 to 19 June 2026): still active = true — 26 days past end date\n• Booking 18034 (Ernesto Pesoa Gil): Partial, EUR 845 paid of EUR 1095 total — EUR 250 outstanding, last updated 7 June 2026 (38 days ago)\n• Payment 17683 (EUR 845, HubSpot payment 1241215836360): Xero payment ID = null, type = null — not reconciled in Xero",
+        "Deactivate booking courses 23 + 24826 (both ended weeks ago); reconcile payment 17683 EUR 845 in Xero; chase EUR 250 from Ernesto (booking 18034); see recipe: issue-26-intensive-class-assign-once.md",
+        "33rd check Wed 15 Jul UTC. UNCHANGED. BC23 (Ivan ended May22=54d) active=STILL true. BC24826 (Ernesto ended Jun19=26d) active=STILL true. BK18034 PARTIAL EUR845/1095 EUR250 outstanding confirmed=false (updAt=Jun7=38d). PMT17683 EUR845 xeroId=STILL null type=null. Fix NOT RUN.",
+        "bc stale 54d; open"
+      ]
+    ]
+  }
+]

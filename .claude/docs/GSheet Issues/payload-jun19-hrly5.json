@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H6:K6",
+    "values": [
+      [
+        "• Original issue resolved — Rakan Alghamdi (student 14444) LOA doc 204 ISSUED Jun 08 via booking 17915; Issue 14 (same booking, K=fixed) covered the QR/barcode bug\n• Previous diagnosis error — all prior checks used booking 17871 (student 14473 = Khongorzul Uranaa), which is NOT Rakan booking\n• Booking 17871 (Khongorzul Uranaa): ESCROW, confirmed = true; course Academic Year Morning ran Aug 04 2025 to Jan 23 2026 (ended 5 months ago)\n• Amount paid = EUR 300 of EUR 2313.62 total — EUR 2013.62 outstanding; xeroPaymentId = null; no Xero reconciliation\n• Stale ESCROW with significant outstanding balance on a completed course — Neil decision needed",
+        "Rakan LOA done (Issue 14). Decide fate of bk17871 Khongorzul: write off, pursue, or reclassify EUR 2013 stale ESCROW. See recipe: issue-4-rakan-loa-barcode.md",
+        "Jun19 hrly5: bk17871 UNCHANGED (updAt=May08). Status=ESCROW confirmed=true amtPaid=300 amtTotal=2313.62. Payment 17375 EUR 300 xeroId=null. bc24644 ended Jan23-26 (5m stale). EUR2013.62 outstanding, unreconciled. Neil decision needed: write off / pursue / reclassify.",
+        "Rakan done; Khongorzul EUR2013"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Booking 18151 (Afternoon Academic Year) is CONFIRMED, paid EUR 1339.20 / 1339.20 — updated Jun 16 by Neil\n• Course 24925 correctly set to Mar 09 to Sep 11 (confirmed Jun 16)\n• Class assignment 255 (class 11, B1 PM) still has week start = Jan 12 and week end = Jul 03 — not yet corrected\n• Course ends Sep 11; week end Jul 03 is also likely wrong (should be Sep 11)",
+        "(NOT RUN) UPDATE student_class_assignments SET week_start=2026-03-09, week_end=2026-09-11 WHERE id=255. See recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun19 hrly5: sca255 weekStart=Jan12 weekEnd=Jul03 STILL WRONG (fresh DB). bc24925 Mar09-Sep11 correct. Both weekStart AND weekEnd need fixing (Jan12 to Mar09; Jul03 to Sep11). Fix NOT RUN. Attending B1-PM normally; SCA window mismatch not blocking.",
+        "sca fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking 1611 is CONFIRMED, paid EUR 1280.12 / 1280.12\n• Course 1797 (Morning General) ends THIS FRIDAY Jun 26 — 5 school days remain (Mon 22 to Fri 26)\n• Last class assignment sca229 (class 12, B1-AM2) expired April 26 — 54 days with no active class record\n• Student id 1052 on bereavement leave; no attendance records at all\n• Course 24686 (Morning General Jul 20 to Sep 18) is future; gap Jun 27 to Jul 19",
+        "Confirm if Alberto returning before Jun 26. If yes: assign SCA cls12 bc1797 ws=Jun22 we=Jun26 via SIS (NOT RUN). See recipe: issue-24-alberto-fidelo-course-split.md",
+        "Jun19 hrly5: UNCHANGED (bk1611 updAt=Jun11). sca229 EXPIRED Apr26 (54d). bc1797 ends THIS FRI Jun26 — 5 school days Mon22-Fri26. att=0 (s1052 confirmed). NEIL FINAL: Alberto returning Mon Jun22? If yes assign SCA bc1797 cls12 ws=Jun22 we=Jun26 via SIS NOW. If no, let bc1797 expire unfulfilled.",
+        "5d;FINAL;Jun26"
+      ]
+    ]
+  },
+  {
+    "range": "H32:K32",
+    "values": [
+      [
+        "• Week calculation in src/routes/attendance.ts lines 213-214 uses local-time getDay() and setHours() on UTC-midnight dates — shows Sunday instead of Monday as week start on BST server\n• src/scripts/attendance.ts lines 36-37 already use UTC methods (correct, fixed earlier)\n• Bug affects attendance sheet print week-start day for all users in summer (BST active)",
+        "Change src/routes/attendance.ts L213-214: getDate() to getUTCDate(), getDay() to getUTCDay(), setHours() to setUTCHours(). See recipe: issue-31-attendance-sheet-week-bug.md",
+        "Jun19 hrly5: routes/attendance.ts L213 getDay()/getDate() + L214 setHours() STILL local-time (code unchanged). Reproduces every BST week boundary. 2-line UTC fix NOT applied.",
+        "route fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Student 356 (Shih-Wei Huang) has gender = null — never set in personal details (last updated Jun 03)\n• Exit letter (document 238, template 4, booking 560) is ISSUED since Jun 18 08:53 UTC — wrong Ms./she/her pronouns, not yet revoked\n• Root cause: null gender defaults to female in src/scripts/documents.ts line 338\n• 14,052 students with null gender will produce documents with wrong female pronouns",
+        "1) Set gender=Male on student 356 via SIS personal details; 2) revoke document 238; 3) regenerate exit letter for booking 560. See recipe: issue-32-shih-wei-gender-default.md",
+        "Jun19 hrly5: s356 gender=null UNCHANGED (updAt=Jun03, 16d). doc238 STILL ISSUED Jun18 08:53 UTC — 2 days elapsed, wrong Ms./she/her pronouns on exit letter bk560. NEIL URGENT: (1) SIS Students s356 Personal Details set Gender=Male; (2) revoke doc238; (3) regenerate exit letter bk560.",
+        "urgent; set gender"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Bug in sendBulkEmail() (admin.html line 1494) reads live bulkSelectedStudents instead of frozen snapshot\n• showStudentsInSchoolReport() clears bulkSelectedStudents on every reload (line 2219) — including while modal is open\n• _bulkEmailRecipientIds declared at line 1349 as the intended frozen snapshot — never set in openBulkEmailModal()\n• Net effect: report view reload between checkbox-tick and Send wipes recipients — 0 students sent\n• Paul (Jun 2026) reported same bug — comment at line 1348 describes the fix but it was not implemented\n• 2-line fix in public/admin.html: set _bulkEmailRecipientIds in openBulkEmailModal after L1367 + read it in sendBulkEmail L1494",
+        "Set _bulkEmailRecipientIds=ids in openBulkEmailModal + read it in sendBulkEmail. See recipe: issue-33-khulan-reports-email-send.md",
+        "Jun19 hrly5: admin.html L1349 _bulkEmailRecipientIds STILL never set in openBulkEmailModal (L1365-1367). sendBulkEmail L1494 still reads live bulkSelectedStudents (cleared on reload L2219). Reports-section email send broken — 0 recipients reach server. 2-line fix NOT applied.",
+        "code fix pending"
+      ]
+    ]
+  }
+]

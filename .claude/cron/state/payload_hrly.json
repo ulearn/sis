@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "• Document 171 is a DRAFT certificate — created 5 June 2026, 37 days old, never issued (38th check, 12 Jul 2026 UTC)\n• Booking 1498: status = Confirmed, confirmed = false, amount paid = null\n• Booking course 1660 (ULearn Renewal Morning): ended 5 June 2026, still active = true (37 days stale)\n• Certificate content confirmed complete — student name, dates, ILEP code correct\n• Fix: issue document 171",
+        "Issue document 171 in SIS (student 947 > booking 1498 > Documents); set booking course 1660 active = false; set booking 1498 confirmed = true. See recipe: issue-9-suvderdene-draft-cert.md",
+        "38th check 12 Jul SUN UTC. UNCHANGED. Doc171 DRAFT issuedAt=null (37d). BK1498 CONF confirmed=false amtPaid=null (updAt=May21). BC1660 ULearn-Renewal-Morn ended Jun05 active=STILL true (37d stale). NEIL: SIS student 947 > booking 1498 > Documents > Issue.",
+        "38 days; unissued"
+      ]
+    ]
+  },
+  {
+    "range": "H11:K11",
+    "values": [
+      [
+        "• Massimiliano Cameran (student 91, booking 97): Confirmed, EUR 1741 / 1741 fully paid — confirmed flag = false (minor anomaly)\n• Booking last updated 5 June 2026 (37 days ago) — no recent activity\n• Document 63 (accounts / invoice): status = REVOKED — was the version 1 invoice, superseded by document 64\n• Document 64 (accounts / invoice): ISSUED 19 May 2026 (current invoice)\n• No completion certificate on booking 97 — certificate has not been generated\n• (26th check, 12 Jul UTC)",
+        "Generate completion certificate for booking 97 via SIS (student 91 > booking 97 > Documents). See recipe: issue-9-massimiliano-cert-split.md",
+        "26th check 12 Jul SUN UTC. Doc63 REVOKED accounts + doc64 ISSUED accounts — ZERO certs (invoices only). BK97 CONF confirmed=false EUR1741/1741 updAt=Jun05. NEIL: SIS student 91 > booking 97 > Documents > Generate Certificate.",
+        "no cert; open"
+      ]
+    ]
+  },
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• Accommodation 11162 (Massimiliano Cameran, booking 97, bed 179): 21 April to 23 May 2026 — active = still true (50 days stale since ended 23 May, 12 Jul UTC)\n• Accommodation 11319 (student 14532, booking 18034): start date = end date = 31 May 2026 (zero-duration record), bed = null, fee = EUR 400 — stale placeholder, no bed ever assigned\n• Accommodation 11287 (Rakan Alghamdi, booking 17915, bed 190): correct, active dates valid",
+        "Set accommodation 11162 active = false (ended 50 days ago); investigate accommodation 11319 (zero-day record, no bed, EUR 400 fee — may need cancellation). See recipe: issue-12-accomm-dates-mismatch.md",
+        "12 Jul SUN UTC (fresh DB). CONFIRMED UNCHANGED. BA11162 bed179 Apr21-May23 active=STILL true (50d stale). BA11319 bk18034 s14532 bed=null May31-May31 active=true EUR400 (zero-day placeholder). NEIL: (1) SET active=false WHERE id=11162; (2) Review BA11319 (EUR400, no bed, cancel?).",
+        "BA11162 stale 50d; BA11319 no-bed"
+      ]
+    ]
+  },
+  {
+    "range": "H22:K22",
+    "values": [
+      [
+        "• Original display issue resolved: student 912 (Maurivan Kuhl) was showing in A1 AM and A2 AM due to two overlapping class assignment records — anomaly fixed by issue 31\n• Class assignment 156 (A2 AM, class 8): week_end = 2 July 2026 — expired 10 days ago\n• Booking course 1604 (Morning General, 5 January to 3 July 2026): ended 3 July — active = still true (9 days stale)\n• Booking 1461: Confirmed, EUR 1509.60 / 1509.60 fully paid\n• New housekeeping item: deactivate booking course 1604",
+        "Deactivate booking course 1604 (set active = false). See recipe: issue-21-maurivan-double-class.md",
+        "12 Jul SUN UTC re-check. Original A1/A2 double-display issue RESOLVED (fixed Jun, see issue 31). New: sca156 week_end=Jul02 (expired 10d). BC1604 Morning General Jan05-Jul03 active=STILL true (9d stale). BK1461 CONF EUR1509.6/1509.6. NEIL: UPDATE booking_courses SET active=false WHERE id=1604.",
+        "original resolved; bc1604 stale 9d"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Booking 18044 (duplicate Milena Vinci entry) deleted — confirmed 27 June 2026\n• Giulia Avallone (student 88) retains only booking 94 — Confirmed, EUR 1151.50 / 1151.50 fully paid\n• Booking course 104 (Morning General Plus, 15 June to 26 June 2026): ended 26 June — active = still true (16 days stale, 26th check 12 July 2026)\n• Milena Vinci no longer appears as a student in the database\n• Payment 17102 (EUR 1151.50): xeroPaymentId = null, type = null, payment date 13 March 2026 — not reconciled with Xero",
+        "Set booking course 104 active = false; reconcile payment 17102 with Xero. See recipe: issue-30-giulia-milena-parent-student.md",
+        "26th check 12 Jul SUN UTC. UNCHANGED. BC104 Morning-Gen-Plus Jun15-Jun26 active=STILL true (16d stale). PMT17102 EUR1151.5 xeroPaymentId=STILL null type=null (pmt date Mar13). BK94 CONF EUR1151.5/1151.5 confirmed=true. NEIL: (1) SET active=false WHERE id=104; (2) Reconcile pmt17102 with Xero.",
+        "26th check; bc104 stale 16d"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Gap 2 — Holiday weeks field: FIXED — calcHolEnd() / calcHolWeeks() present at admin.html lines 13832–13843\n• Gap 1 — Admin course start Monday snap: STILL OPEN — calcCourseEnd() at admin.html line 13806 computes end from raw start date; no Monday enforcement\n• Gap 3 — Irish bank holiday Mondays: STILL OPEN — SchoolClosure table has 9 records (Good Friday x 5 for 2026-2030, Christmas x 4 for 2026-2029); zero Irish bank holiday Mondays (no Easter Monday, May Day, June, August, October bank holidays)",
+        "Add Monday-snap logic to calcCourseEnd() in admin.html (line 13806); add Irish bank holiday Mondays to school_closures table. See recipe: issue-38-course-date-ux.md",
+        "3rd check 12 Jul SUN UTC. UNCHANGED. calcCourseEnd() admin.html L13806 no Monday snap. SchoolClosure: 9 records (5 Good Fri 2026-30, 4 Xmas 2026-29), zero Irish bank holiday Mondays. Gap2 FIXED. Gaps 1+3 STILL OPEN.",
+        "open; Gaps 1+3"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "460th check Sat 22 Aug 2026 UTC — no change since 9th check today (run 453)\nBA 11311 (bed 84): Jun 28 to Aug 22, fee EUR 3,850, active = true — end date passed midnight UTC today, not deactivated\nBA 11393 (bed 88): Aug 22 to Sep 13, fee = null, active = true — started today, fee still unset\nFix NOT RUN",
+        "Deactivate BA 11311; set fee on BA 11393. Recipe: issue-36b-addendum-22aug-e.md",
+        "460th Sat 22 Aug UTC. 9th check today. BA 11311 past midnight, still active. BA 11393 started today, fee null. Fix NOT RUN.",
+        "URGENT: today"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "460th check Sat 22 Aug 2026 UTC — no change since 9th check today (run 453)\nBA 11357 (bed 178): Aug 2 to Aug 15, fee EUR 1,250, active = true — 7 days stale\nBA 11396 (bed 44): Aug 15 to Aug 22, fee = null, active = true — end date passed midnight UTC today, not deactivated\nBA 11397 (bed 89): Aug 22 to Sep 6, fee = null, active = true — starts today, fee unset\nFix NOT RUN",
+        "Deactivate BA 11357 + 11396; set fees on BA 11396 + 11397. Recipe: issue-41-addendum-22aug-f.md",
+        "460th Sat 22 Aug UTC. 9th check today. BA 11396 past midnight. BA 11397 starts today fee null. Fix NOT RUN.",
+        "URGENT: today"
+      ]
+    ]
+  },
+  {
+    "range": "H52:K52",
+    "values": [
+      [
+        "22nd check Sat 22 Aug 2026 UTC — count corrected: 143 (459th run) to 149 (this run)\nStale active Booking Accommodations (endDate before 22 Aug 2026, 2026 start dates): 149\n+6 since Fri: BAs with endDate = 21 Aug now included in stale boundary — no deactivations occurred overnight\nOldest: BA 11237 (ended 31 Jan 2026, fee EUR 1,400) — 203 days stale\nFix NOT RUN",
+        "Deactivate all 149 stale 2026 Booking Accommodations. See recipe: issue-50-addendum-22aug-b.md",
+        "22nd Sat 22 Aug UTC. Count 149 (up from 143 Fri — 6 more expired Aug 21). Oldest BA 11237 ended Jan 31. Fix NOT RUN.",
+        "149 stale BAs"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "137th check Sat 22 Aug 2026 UTC — no change since 136th\nBooking Course 104 (Morning General Plus, booking 94): active = true, ended 26 Jun 2026 — 57 days stale\nPayment 17102: EUR 1,151.50, booking 94, 13 Mar 2026, Xero payment ID = null — 162 days unreconciled\nPayment 945: EUR 4,231, booking 79, 30 Jan 2026, Xero payment ID = null — 204 days unreconciled\nMilena Vinci: not found in student table — verify or check alternate surname\nFix NOT RUN",
+        "Deactivate BC 104; reconcile Payments 17102 + 945 in Xero; verify Milena Vinci record. See recipe: issue-30-addendum-22aug.md",
+        "137th Sat 22 Aug UTC. BC104 57d stale. Pmt 17102: 162d, Pmt 945: 204d Xero null. Milena Vinci not in DB. Fix NOT RUN.",
+        "BC104 57d; 2 pmts Xero null"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "447th check Sat 22 Aug 2026 UTC — no change since 446th\n5 stale Booking Accommodations on bed 83, all active:\n  BA 11239 (ended 24 May, 90 days stale, fee EUR 1,050, booking 22)\n  BA 11168 (ended 20 Jun, 63 days stale, fee EUR 700, booking 92)\n  BA 11285 (ended 5 Jul, 48 days stale, fee null, booking 17825)\n  BA 11352 (ended 11 Jul, 42 days stale, fee EUR 360, booking 18156)\n  BA 11179 (ended 9 Aug, 13 days stale, fee EUR 1,360, booking 82)\nDeadline: Aug 30 = 8 days\nFix NOT RUN",
+        "Set fee EUR 2,008 on BA 11285; deactivate BAs 11239, 11168, 11285, 11352, 11179 before 30 Aug. Recipe: issue-37-addendum-22aug.md",
+        "447th Sat 22 Aug UTC. No change. 5 stale BAs on bed 83. BA 11285 fee null. Aug 30 = 8 days. Fix NOT RUN.",
+        "5 stale BAs; Aug 30 = 8d"
+      ]
+    ]
+  },
+  {
+    "range": "H54:K54",
+    "values": [
+      [
+        "460th check Sat 22 Aug 2026 UTC — no change since 459th check today\nBA 11399 (bed 54, booking 17843): starts Oct 4 2026, ends Dec 19 2026, fee = null, active = true\nBA 11267 (Fanny Scelles, student 14451): Aug 29 to Oct 4, fee EUR 3,840 — arrives in 7 days (Aug 29)\nHost email auto-populate: code change required\nFix NOT RUN",
+        "Set fee on BA 11399 before Oct 4; add host email auto-populate. Recipe: issue-52-addendum-22aug-b.md",
+        "460th Sat 22 Aug UTC. BA 11399 fee null (Oct 4, 43d). Fanny arrives Aug 29 (7d). Fix NOT RUN.",
+        "BA11399 fee null; 7d"
+      ]
+    ]
+  }
+]

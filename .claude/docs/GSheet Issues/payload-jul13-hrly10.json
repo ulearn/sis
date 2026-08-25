@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student class assignment 255 (Saikhantes Shagdarsuren, student 1001, class 11 B1 PM): week end = 3 July 2026 — expired\n• No class assignment for weeks of 6 July or 13 July — 6 school days missed (Mon 6 Jul – Mon 13 Jul)\n• Booking course 24925 (Academic Year Afternoon, 9 March to 2 October 2026): active, fully paid EUR 1339.20\n• Root cause: class assignment 255 expired 3 July and was never renewed (31st check, Mon 13 Jul UTC)",
+        "Assign new class via SIS > Classes > To Be Assigned for Saikhantes (student 1001). See recipe: issue-15-saikhantes-class.md",
+        "31st check Mon 13 Jul UTC. SCA 255 (week end Jul 3) still only record. No new SCA for Jul 6 or Jul 13 weeks. 6 school days missed. BC 24925 active to Oct 2. Fix NOT RUN.",
+        "CRITICAL; 6d missed"
+      ]
+    ]
+  },
+  {
+    "range": "H37:K37",
+    "values": [
+      [
+        "• Homework section: renderSheetHtml() in src/routes/attendance.ts — no homework block present; awaiting Paul / Neil layout spec (Mon 13 Jul UTC)\n• Holiday display bug: getWeekAttendance() in src/scripts/attendance.ts line 31 — no bookingHoliday fetch; students on holiday appear as absent\n• Code unchanged since commit 9008d10",
+        "Get Paul / Neil layout spec then add homework block to renderSheetHtml (attendance.ts). Add bookingHoliday fetch to getWeekAttendance (attendance.ts:31). See recipe: issue-36-attendance-homework-section.md",
+        "Mon 13 Jul UTC. renderSheetHtml (attendance.ts) confirmed no homework block. getWeekAttendance (attendance.ts:31) confirmed no bookingHoliday fetch. Code at commit 9008d10 — unchanged. Awaiting spec from Paul / Neil.",
+        "code open; awaiting spec"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Gap 2 — Holiday weeks field: FIXED — calcHolEnd() confirmed correct at admin.html line 13855 (Mon 13 Jul UTC)\n• Gap 1 — Course start Monday snap: STILL OPEN — calcCourseEnd() at admin.html line 13824 adds (weeks×7-3) days with no Monday enforcement\n• Gap 3 — Irish bank holiday Mondays: STILL OPEN — school_closures has 9 records (Christmas 2026-2029 + Good Friday 2026-2030 only); August Bank Holiday (Mon 3 Aug 2026, 21 days away) not in table",
+        "Add Monday snap to calcCourseEnd() (admin.html:13824). Add Irish bank holiday Mondays (Jun, Aug, Oct) to school_closures. See recipe: issue-38-course-date-ux.md",
+        "Mon 13 Jul UTC. calcCourseEnd() admin.html:13824 confirmed no Monday snap. school_closures: 9 records (Christmas + Good Friday only) — Aug BH Mon 3 Aug 2026 (21d away) not present. Gap 2 holWeeks fixed. Gaps 1+3 open.",
+        "open; Gaps 1+3"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Accommodation 11358 (Xuezhen Huang, student 14443, bed 180, 12 July to 2 August 2026): claim status = null — host Mary Carver (+353 87 927 1130) has NOT claimed (Day 2, Mon 13 Jul UTC)\n• Booking course 24609 (Morning General, 13 July to 31 July 2026): started today — Day 1, 0 class assignments\n• Booking 17831: Confirmed, fully paid EUR 1396.90",
+        "Call host Mary Carver (+353 87 927 1130) or confirm BA 11358 manually in admin. Assign class for Xuezhen (booking course 24609) via SIS > Classes > To Be Assigned. See recipe: issue-39-xuezhen-host-class.md",
+        "Mon 13 Jul UTC. BA 11358 claim STILL null (Day 2 of accommodation). BC 24609 started today — 0 SCAs, Day 1 class missed. Host Mary Carver +353 87 927 1130 has not claimed. Fix NOT RUN.",
+        "host unclaimed; no class"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• Payment 17954 (Giampaolo Russo, EUR 2584.96, HubSpot payment 1268783973563): Xero ID = null, type = null — paid 26 June 2026, 17 days unreconciled (Mon 13 Jul UTC)\n• Booking 18180: Confirmed, fully paid EUR 2584.96\n• Accommodation 11357 (bed 178, Host Family, 2 August to 6 September 2026): claim status = confirmed, host claimed 1 July 2026 — resolved\n• Capel Street period (6 to 14 September 2026): covered by accommodation 11311 on booking 17980 (apartment, Jun 28 – Sep 13 2026) — no separate record needed\n• Outstanding: reconcile payment 17954 in Xero before 2 August check-in (20 days)",
+        "Reconcile payment 17954 (EUR 2584.96, HubSpot 1268783973563) in Xero against booking 18180. See recipe: issue-41-giampaolo-dual-accomm.md",
+        "Mon 13 Jul UTC. PMT17954 xeroId STILL null (17 days since Jun 26 payment). BA11357 bed 178 confirmed Jul 6 (OK). Capel Sep6-14 covered by BA11311 on bk17980 — not missing. Only Xero reconciliation remains. Aug 2 check-in = 20 days. Fix NOT RUN.",
+        "Xero pmt pending"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• CRITICAL: All 11 booking courses still have 0 class assignments (re-verified Mon 13 Jul UTC, 57th check)\n• Lunel Dubost (student 14566, booking course 24946, General English AM, 13-17 July): Day 1, 4 school days remain — MOST URGENT, assign NOW\n• Pietro Colombo (student 72, booking course 81, Morning General Plus, 6-24 July): Day 6, 9 school days remain (14-24 Jul)\n• Sophia Borim (student 853, booking course 1820, AY Afternoon, 29 Jun-18 Dec): 11 school days missed, 0 class assignments\n• Kayque Coelho (student 852, booking course 1821, AY Afternoon, 29 Jun-18 Dec): 11 school days missed, 0 class assignments\n• Tuguldurtugs (student 858, booking course 1786, AY Morning, 6 Jul-25 Dec): 6 school days missed, 0 class assignments\n• 6 new starters today with 0 class assignments: Munkhtsetseg (BC 1619, booking PARTIAL), Pedro (BC 1788), Wanqiong (BC 1814), Italo (BC 24820), Samuele (BC 24990), Edith Nunes (BC 24991)",
+        "Assign class for all 11 via SIS > Classes > To Be Assigned. Start with Lunel (BC 24946, ends Fri 17 Jul). See recipe: issue-45-addendum-13jul.md",
+        "57th check Mon 13 Jul UTC. All 11 BCs confirmed 0 SCAs. Lunel (BC 24946) ends Fri 17 Jul — 4 days remain. Pietro (BC 81) ends Jul 24 — 9 days. Sophia/Kayque 11 days missed. 6 Jul13 starters all Day 1. Fix NOT RUN.",
+        "CRITICAL; Lunel ends Fri"
+      ]
+    ]
+  }
+]

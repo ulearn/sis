@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Aug Bank Holiday 2026-08-03 still absent from school_closures — confirmed Thu 30 Jul UTC\n• 20 active BCs start 2026-08-03 — all need shunting to 2026-08-04\n• Affected: Giampaolo Russo, Aurora Madril Oliveira Molina, Diego Alves da Silva Molina,\n  Luana Salzano, Aleix Cervera Gonzalez (2 BCs — possible duplicate), and 14 others\n• No closure record = no shunt protection",
+        "1) INSERT school_closure for 2026-08-03; 2) UPDATE 20 BCs start_date to 2026-08-04. See recipe: issue-38-addendum-30jul-f.md",
+        "Thu 30 Jul UTC. 20 BCs unshunted. DEADLINE TOMORROW (Fri 31 Jul). Fix NOT RUN.",
+        "URGENT; BH unshunted"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• Booking 18180 (Giampaolo Russo, student 14571): confirmed, paid EUR 2,584.96, open = 0\n• BA 11357: Host Family bed 178, 2026-08-02 to 2026-09-06, fee EUR 1,250 — confirmed by host portal\n• Capel Street apartment: ABSENT — no booking accommodation record in SIS\n• BC 24956: General English AM, start 2026-08-03 (bank holiday — also needs shunting per issue 38)\n• Check-in Sunday 2 Aug 2026 — 3 days away",
+        "Confirm Capel dates + bed with Diego, then INSERT booking_accommodation. See recipe: issue-41-addendum-30jul-b.md",
+        "Thu 30 Jul UTC. HF BA confirmed. Capel BA absent. Need: dates, bed, fee from Diego. Check-in Sun 2 Aug.",
+        "Capel missing; check-in Sun 2 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Student 1015 (Edith Nunes): SCA 368 active (class 8 A2 AM, Jul 13 to Aug 7) — IS assigned\n• Booking 18214: CONFIRMED, fully paid EUR 608, open = 0\n• 7 stale BCs still active: BC24933 + BC24934 (duplicates, Jun 15-Jul 10), BC24665,\n  BC24668, BC1751, BC1750, BC1749 — oldest 159 days stale\n• BC24933 and BC24934 are exact duplicates — original 'two payments same invoice' anomaly\n• visaStatus = null remains",
+        "Investigate dup BC24933/24934, then deactivate 7 stale BCs. See recipe: issue-22-addendum-30jul-b.md",
+        "Thu 30 Jul UTC. CRITICAL status outdated — assigned through Aug 7. 7 stale BCs + visa null remain. Fix NOT RUN.",
+        "Assigned Aug 7; stale BCs"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• Booking 1605 (Ariunsarnai Batbayar, student 1047): PENDING, confirmed = false\n• Amount paid = EUR 0 of EUR 1,509 — zero payments ever received\n• BC 1791: Apr 13 to Oct 23 2026, active — course running 117+ days with no payment\n• confirmed = false blocks class assignment (payment gate)",
+        "Chase EUR 1,509 via HubSpot; if no payment coming, cancel booking 1605. See recipe: issue-20-addendum-30jul-b.md",
+        "Thu 30 Jul UTC. Day 117. EUR 0 paid. Is student attending? Check HubSpot deal for bk1605. Fix NOT RUN.",
+        "Day 117; EUR 0 / 1509"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student 1001 (Saikhantes Shagdarsuren): on holiday Jul 20 to Aug 21 2026 (holiday 2500, 25 weekdays)\n• Returns Mon Aug 24 — no SCA exists from Aug 24 onward\n• SCA 255 (class 11 B1 PM) ended Jul 3 — also a Jul 6-18 SCA gap before holiday\n• BC 24925 (Academic Year Afternoon, Mar 9 to Oct 2): active, course continues after return\n• BC 1982 (AY Morning, ended Dec 2025): still active=true (stale)",
+        "Confirm level, create SCA class 11 Aug 24 to Oct 2; deactivate BC1982. See recipe: issue-15-addendum-30jul-d.md",
+        "Thu 30 Jul UTC. Returns Aug 24. No SCA post-Jul 3. Need teacher level confirm. Fix NOT RUN.",
+        "new SCA needed; returns 24 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 11 BCs ended 2026-07-24 still active=true — blocking correct arrivals list display\n• Affected students: Lalita Champakhong, Ralph Calderon, Pietro Colombo, Jose Geraldo Cursino,\n  Nicole Rueda Mendoza, Martina Tartaro (2 BCs same booking), Jade Ribeiro, Mario Roggi,\n  Marcos Abrego Tofe, Eduardo Roche Diaz\n• Legacy BC505 (Tuguldur Otgonbaatar, ended Aug 2025) also still active\n• 'Tuguldurtugs Enkhtugs' from issue text not found in DB by that spelling",
+        "Deactivate 11 Jul-24 BCs + BC505 (Tuguldur). See recipe: issue-45-addendum-30jul-c.md",
+        "Thu 30 Jul UTC. 11 stale Jul-24 BCs unchanged. Fix NOT RUN. See also issue 36b (stale BAs).",
+        "11 stale BCs; fix pending"
+      ]
+    ]
+  }
+]

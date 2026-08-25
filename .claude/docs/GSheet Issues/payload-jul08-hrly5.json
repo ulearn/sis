@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 + 16989 (EUR 339.90 each, HubSpot 1204827374829 / 1204846469317): booking ID = STILL null, Xero payment ID = null — orphaned since 28 April 2026\n• Bookings 17856 (Margherita Galbusera) and 17857 (Francesca Fassina): Confirmed, confirmed = STILL false, EUR 339.90 / 339.90\n• Booking courses 24630 and 24631 (General English AM Plus, 29 Jun to 10 Jul 2026): fee = STILL null, active = true\n• Course ends FRIDAY 10 July 2026 — 2 school days remain (Thu 9 Jul, Fri 10 Jul)\n• Root cause: webhook missed setting booking ID at payment creation 28 April 2026\n• 4-step SQL not run after 72 days",
+        "Run all 4 SQL steps TODAY (Wed 8 Jul) or Thu 9 Jul latest — course ends Fri 10 Jul; see recipe issue-1-orphan-payments.md",
+        "22nd check 8 Jul UTC. UNCHANGED (fresh DB). Payments 16988+16989 booking_id=STILL null xeroPaymentId=null EUR339.90 each (72 days since Apr28). Bookings 17856+17857 CONFIRMED confirmed=STILL false. Courses 24630+24631 General English AM Plus Jun29-Jul10 fee=STILL null active=true. COURSE ENDS FRI JUL10 (2 school days: Thu9+Fri10). SQL NOT RUN. NEIL: TODAY is last chance — Thu Jul9 absolute latest. Recipe: issue-1-orphan-payments.md.",
+        "CRITICAL; Thu9 last chance"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Class assignment 255 (student 1001 Saikhantes Shagdarsuren, class 11 B1 Afternoon): week end = 3 July 2026 — EXPIRED 5 days ago, student invisible to class scheduling\n• Booking course 24925 (Academic Year Afternoon, 9 Mar to 2 Oct 2026): active, fee EUR 1102.20\n• Booking 18151: Confirmed, confirmed = true, EUR 1339.20 / 1339.20 — fully paid\n• School days missed: Mon 6 Jul (Day 1), Tue 7 Jul (Day 2), Wed 8 Jul (Day 3 today) — Day 4 Thu 9 Jul tomorrow\n• Fix not yet run: UPDATE student_class_assignments SET week_end = '2026-10-02' WHERE id = 255",
+        "Extend class assignment 255 week_end to 2026-10-02 via SIS or SQL — see recipe issue-15-saikhantes-course-dates.md",
+        "19th check 8 Jul UTC. SCA255 class11 B1-PM weekEnd=2026-07-03 STILL EXPIRED (5d). BC24925 Academic Year Afternoon Mar9-Oct2 active EUR1102.20. BK18151 CONFIRMED EUR1339.20/1339.20. No level changes (student 1001 confirmed). Today=Wed Jul8=Day3 missed. Tomorrow Thu Jul9=Day4. NEIL: SIS student 1001 > Classes > extend SCA255 weekEnd to 2026-10-02. OR SQL (NOT RUN): UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255. Recipe: issue-15-saikhantes-course-dates.md.",
+        "3 missed; Day4 tomorrow"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 (Edith Nunes, student 1015): Confirmed, confirmed = true, fully paid EUR 740 / 740\n• Booking course 24933 (General English AM, 15 Jun to 10 Jul 2026): active, fee EUR 380 — COURSE ENDS FRIDAY 10 JULY 2026\n• Booking course 24934 (DUPLICATE General English AM, 15 Jun to 10 Jul 2026): ALSO active on booking 18158, fee EUR 360 — deactivate after class assignment\n• Class assignment for student 1015: last valid record (assignment 146) expired 15 May 2026 — class 7 A1 AM; zero assignments for entire Jun 15 to Jul 10 course period\n• 2 school days remaining: Thu 9 Jul and Fri 10 Jul 2026\n• Payment 17895: EUR 740, Xero payment ID = null (not yet reconciled in Xero)",
+        "Assign student 1015 to class 7 (A1 AM) TODAY for booking course 24933; deactivate duplicate course 24934 — see recipe issue-22-edith-nunes-payment-dups.md",
+        "19th check 8 Jul UTC. BK18158 CONFIRMED EUR740/740. BC24933(GE-AM fee=380)+BC24934(DUP GE-AM fee=360) BOTH Jun15-Jul10 STILL ACTIVE (fresh DB). Last SCA: SCA146 expired May15 cls7 A1 — ZERO SCA for entire Jun15-Jul10 course (23 days, 16+ school days). COURSE ENDS FRI JUL10 = 2 SCHOOL DAYS LEFT (Thu9+Fri10). Pmt17895 EUR740 xeroPaymentId=null. NEIL: TODAY (Wed Jul8) assign cls7(A1-AM) via SIS student1015 > bk18158 > bc24933, then deactivate bc24934. Recipe: issue-22-edith-nunes-payment-dups.md.",
+        "CRITICAL; Fri Jul10; TODAY"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Accommodation 11358 (Xuezhen Huang, bed 180, Host Family): 12 Jul to 2 Aug 2026, active = true, fee EUR 900 — CHECK-IN THIS SUNDAY 12 JULY\n• Booking 17831: Confirmed, confirmed = true, amount paid = EUR 1396.90 / 1396.90 (updated 7 Jul 2026)\n• 4 payments linked to booking 17831 — ALL have Xero payment ID = null (not reconciled in Xero)\n• Payment 17180: EUR 431.90, TransferMate Escrow, no HubSpot ID — Fidelo-era escrow, 74 days old\n• Payment 17963: EUR 965.00, HubSpot 1273784562922, Bank — created 2 Jul 2026\n• Payment 17987: EUR 131.90, HubSpot 1277724782804, Bank — created 7 Jul 2026\n• Payment 17988: EUR 300.00, HubSpot 1277795367133, Bank — created 7 Jul 2026\n• Note: payments 17987 + 17988 sum to EUR 431.90 = exact match to Escrow payment 17180; confirm if installment replacements or new charges before reconciling\n• Booking course 24609 (Morning General, 13 Jul to 31 Jul 2026, EUR 570): course starts Monday 13 July\n• Accommodation claim status = null — host has not received booking notification",
+        "Reconcile all 4 payments in Xero; verify pmt17987+17988 vs Escrow pmt17180; confirm host family before Sun 12 Jul — see recipe issue-39-xuezhen-huang-accomm-missing.md",
+        "6th check 8 Jul UTC (fresh DB). BK17831 CONFIRMED EUR1396.9/1396.9 (updAt=Jul7). BA11358 bed180 Jul12-Aug2 active claimStatus=null. BC24609 Morning-General Jul13-31 EUR570. All 4 payments xeroPaymentId=STILL null. SUNDAY JUL12 CHECK-IN = 4 DAYS. NEIL: (1) verify pmt17987(EUR131.9)+pmt17988(EUR300)=EUR431.9=pmt17180 Escrow relationship; (2) reconcile all 4 payments in Xero before Sun Jul12; (3) send host family notification (claimStatus=null). Recipe: issue-39-xuezhen-huang-accomm-missing.md.",
+        "Xero; Sun Jul12; 4 days"
+      ]
+    ]
+  },
+  {
+    "range": "H46:K46",
+    "values": [
+      [
+        "• Student Gretel Merlina Nuñez (student 1010): booking 18159, Life Pass Morning (booking course 24935, 9 Mar 2026 to 11 Apr 2028)\n• Student visa: from 9 Mar 2026 to 9 Nov 2026 (35 weeks) — Life Pass student will renew visa for year 2\n• Requested student holiday: 20 to 24 July 2026 — NOT YET ADDED in SIS (12 days until holiday)\n• Booking 18159: Confirmed, fully paid EUR 1294 / 1294\n• Error when adding holiday: 35-week visa ceiling blocks the request\n• Code fix reportedly applied 3 July 2026 — SIS admin may now accept the holiday\n• If error persists after fix: update student 1010 visaUntil to next visa expiry date, then add holiday",
+        "Add holiday via SIS student 1010 > booking 18159 > Holidays > 20-24 Jul 2026; if error persists update visaUntil first — see recipe issue-44-gretel-holiday.md",
+        "6th check 8 Jul UTC (fresh DB). S1010 Gretel visaFrom=2026-03-09 visaUntil=2026-11-09 (35 weeks exactly). BK18159 CONFIRMED EUR1294/1294. BC24935 Life Pass Morning Mar2026-Apr2028 active ilepCode=null. No student holiday Jul20-24 in DB (only 2 school closures Dec2026+Dec2027). 12 days to Mon Jul20. NEIL: try adding Jul20-24 holiday in SIS now (bug reportedly fixed Jul3). If visa ceiling error persists, update student 1010 visaUntil to 2027-11-09 (assumed renewal) first, then add holiday. Recipe: issue-44-gretel-holiday.md.",
+        "Jul20-24; not added"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 6 students with zero valid class assignments — 19th check 8 Jul 2026 UTC, zero action taken\n• Pietro Colombo (student 72, booking course 81, Morning General Plus, 6 to 24 Jul 2026): zero assignments, 3 school days missed; booking 78 fully paid EUR 1880\n• Tuguldurtugs Enkhtugs (student 858, booking course 1786, Academic Year Renewal Morning, 6 Jul to 25 Dec): old assignment 55 expired 1 May; 3 days missed; EUR 250 outstanding on booking 1601\n• Verónica Martín (student 278, booking course 24931, General English AM, 6 to 10 Jul): zero assignments — COURSE ENDS FRIDAY 10 JULY; 2 school days remaining (Thu 9 + Fri 10); booking 18156 fully paid EUR 573.20\n• Sarah Venturini Talizin (student 1055, booking course 24945, General English AM, 6 to 31 Jul): zero assignments, 3 days missed; booking 18169 fully paid EUR 611\n• Yuxi Ke (student 14577, booking course 24965, General English PM, 6 Jul to 21 Aug): zero assignments, 3 days missed; booking 18189 fully paid EUR 792.56\n• Ettore Iovinella (student 14564, booking course 24968, General English AM Plus, 6 to 13 Jul): old assignment 281 on expired course 24941 (ended 3 Jul, still active = true); zero for current course 24968; 3 days missed; course ends Monday 13 Jul\n• Booking course 24941 (Ettore previous, ended 3 Jul 2026): still active = true — deactivate after assigning Ettore to booking course 24968",
+        "Assign all 6 via SIS admin TODAY — Veronica course ends Fri 10 Jul; Ettore course ends Mon 13 Jul; deactivate booking course 24941 after Ettore assigned — see recipe issue-45-renewal-arrivals.md",
+        "19th check 8 Jul UTC. UNCHANGED (fresh DB). Pietro s72/bc81 Morning-Gen-Plus Jul6-24 (3 missed). Tuguldurtugs s858/bc1786 AY-Renewal-Morn Jul6-Dec25 (3 missed; EUR250 outstanding bk1601). Veronica s278/bc24931 GE-AM Jul6-10 ENDS FRI JUL10 (3 missed; 2 days left — CRITICAL TODAY). Sarah s1055/bc24945 GE-AM Jul6-31 (3 missed). Yuxi s14577/bc24965 GE-PM Jul6-Aug21 (3 missed). Ettore s14564/bc24968 GE-AM-Plus Jul6-13 (3 missed; bc24941 STILL active=true). NEIL: ASSIGN ALL 6 TODAY — Veronica ends Fri10 (assign TODAY or Thu9); Ettore ends Mon13 (assign before Fri10). Deactivate bc24941 after assigning Ettore. Recipe: issue-45-renewal-arrivals.md.",
+        "CRITICAL; Veronica Fri+Ettore Mon"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,50 @@
+[
+  {
+    "range": "J2:J2",
+    "values": [
+      [
+        "30th check 12 Jul SUN UTC. UNCHANGED. PMT16988 EUR339.90 bookingId=STILL null. PMT16989 EUR339.90 bookingId=STILL null. BK17856+17857 CONF confirmed=STILL false. BC24630+24631 ended Jul10 active=STILL true (2d stale). NOT RUN."
+      ]
+    ]
+  },
+  {
+    "range": "J16:J16",
+    "values": [
+      [
+        "9th check 12 Jul SUN UTC. UNCHANGED. SCA255 weekEnd=Jul3 class11 STILL expired 9d. BC24925 AY-Afternoon Oct2 active=true. BC1982 AY-Morning endDec25 STILL active=true (205d stale). NEIL: assign class FIRST THING Mon13 TOMORROW."
+      ]
+    ]
+  },
+  {
+    "range": "J25:J25",
+    "values": [
+      [
+        "29th check 12 Jul SUN UTC. UNCHANGED. BC24686 Morning-General Jul20-Sep18 fee=STILL null ilepCode=null active=true. 8 days to Jul20 start. ACTION NEEDED before Jul20."
+      ]
+    ]
+  },
+  {
+    "range": "J30:J30",
+    "values": [
+      [
+        "7th check 12 Jul SUN UTC. UNCHANGED. Duplicate of row 16 (issue 15). SCA255 weekEnd=Jul3 STILL expired 9d. Mon13=TOMORROW. NEIL: see row 16 for recipe."
+      ]
+    ]
+  },
+  {
+    "range": "J41:J41",
+    "values": [
+      [
+        "34th check 12 Jul SUN UTC. UNCHANGED. BA11358 bed180 HF Jul12-Aug2 claimedAt=STILL null claimStatus=STILL null fee=EUR900 active=true. CHECK-IN IS TODAY. Host Mary Carver (+353 87 927 1130 / mary.carver28@gmail.com) NOT NOTIFIED. NEIL: call NOW + submit HF claim."
+      ]
+    ]
+  },
+  {
+    "range": "J47:J47",
+    "values": [
+      [
+        "34th check 12 Jul SUN UTC. UNCHANGED. Pietro(s72) 0 SCAs BC81-MorGenPlus ends Jul24. Kayque(s852) lastSCA26 weekEnd=Apr24 79d expired class5. Tuguldurtugs(s858) lastSCA55 weekEnd=May01 72d expired class8. ALL 3 UNASSIGNED. NEIL: assign to classes FIRST THING Mon13 TOMORROW."
+      ]
+    ]
+  }
+]

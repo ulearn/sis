@@ -27,26 +27,49 @@ export function bookingScripts(prisma: PrismaClient) {
     if (query.status) where.status = query.status;
     if (query.agencyId) where.agencyId = parseInt(query.agencyId);
 
-    // Date range filters on serviceStart and serviceEnd
+    // Date range filters match against COURSE start/end dates — not booking-level
+    // serviceStart/serviceEnd, which Fidelo populates from "earliest of any
+    // service" (often the accommodation check-in, which can be days before the
+    // course starts). DOS users mean "course start" when they pick a date; the
+    // booking-level field bled in students whose accom started in the window
+    // but whose course did not (Odgerel/Quiñoa case, May 2026). Match if ANY
+    // course on the booking starts/ends in range.
     if (query.startFrom || query.startTo) {
-      where.serviceStart = {};
-      if (query.startFrom) where.serviceStart.gte = new Date(query.startFrom);
-      if (query.startTo) where.serviceStart.lte = new Date(query.startTo);
+      const sd: any = {};
+      if (query.startFrom) sd.gte = new Date(query.startFrom);
+      if (query.startTo)   sd.lte = new Date(query.startTo);
+      where.courses = { some: { startDate: sd } };
     }
     if (query.endFrom || query.endTo) {
-      where.serviceEnd = {};
-      if (query.endFrom) where.serviceEnd.gte = new Date(query.endFrom);
-      if (query.endTo) where.serviceEnd.lte = new Date(query.endTo);
+      const ed: any = {};
+      if (query.endFrom) ed.gte = new Date(query.endFrom);
+      if (query.endTo)   ed.lte = new Date(query.endTo);
+      // Prisma can only have one `courses` filter; merge with any startDate
+      // condition above so both apply to the same `some` lookup.
+      const existing = where.courses?.some || {};
+      where.courses = { some: { ...existing, endDate: ed } };
     }
 
     if (search) {
-      where.student = {
-        OR: [
-          { firstName: { contains: search, mode: 'insensitive' } },
-          { lastName: { contains: search, mode: 'insensitive' } },
-          { email: { contains: search, mode: 'insensitive' } },
-        ],
-      };
+      // A purely-numeric search is a precise ID lookup — match the booking id OR
+      // the student id exactly (no name/email contains, which would bury the exact
+      // hit under every email that happens to contain those digits). Non-numeric
+      // searches stay name/email.
+      if (/^\d+$/.test(search)) {
+        const n = parseInt(search, 10);
+        where.OR = [
+          { id: n },
+          { studentId: n },
+        ];
+      } else {
+        where.student = {
+          OR: [
+            { firstName: { contains: search, mode: 'insensitive' } },
+            { lastName: { contains: search, mode: 'insensitive' } },
+            { email: { contains: search, mode: 'insensitive' } },
+          ],
+        };
+      }
     }
 
     // Sorting — default is createdAt desc. Supports student name, serviceStart, serviceEnd.
@@ -64,7 +87,7 @@ export function bookingScripts(prisma: PrismaClient) {
         take: limit,
         orderBy,
         include: {
-          student: { select: { id: true, firstName: true, lastName: true, email: true, nationality: true } },
+          student: { select: { id: true, firstName: true, lastName: true, email: true, nationality: true, birthday: true, currentLevel: true, placementTestScore: true } },
           agency: { select: { id: true, name: true, nickname: true } },
           courses: true,
           accommodations: true,
@@ -83,13 +106,22 @@ export function bookingScripts(prisma: PrismaClient) {
         student: true,
         agency: true,
         courses: true,
-        accommodations: true,
+        // Include matched bed → provider so the Accomm header can surface the
+        // placed host (name, linked to the provider page) once matching is done.
+        accommodations: {
+          include: {
+            bed: { include: { room: { include: { property: { include: { provider: true } } } } } },
+          },
+        },
         extras: true,
         holidays: true,
         payments: { orderBy: { paymentDate: 'desc' } },
         invoices: { include: { lineItems: true } },
         documents: true,
         statusHistory: { orderBy: { createdAt: 'desc' } },
+        // LifePass instalment ledger — only present on LifePass bookings.
+        // Empty array on non-LifePass means the UI hides the panel.
+        paymentInstalments: { orderBy: { sequence: 'asc' } },
       },
     });
   }
@@ -122,12 +154,16 @@ export function bookingScripts(prisma: PrismaClient) {
     const existing = await prisma.booking.findUnique({ where: { id } });
     if (!existing) return null;
 
-    // Track status change
-    if (data.status && data.status !== existing.status) {
+    // Track status change. Skip when there's no prior status (existing.status
+    // is null) — e.g. hand-created "wrapper" bookings that never went through
+    // the normal flow. There's no real transition to record a `fromStatus`
+    // from, and from_status is a required enum, so writing null crashes the
+    // insert and blocks the whole save.
+    if (data.status && data.status !== existing.status && existing.status) {
       await prisma.bookingStatusHistory.create({
         data: {
           bookingId: id,
-          fromStatus: existing.status!,
+          fromStatus: existing.status,
           toStatus: data.status,
           changedBy: data._changedBy,
         },
@@ -254,10 +290,19 @@ export function bookingScripts(prisma: PrismaClient) {
     if (data.commission) data.commission = parseFloat(data.commission);
     for (const k of Object.keys(data)) { if (data[k] === '') data[k] = null; }
     const updated = await prisma.bookingCourse.update({ where: { id }, data: data as any });
-    const bc = await prisma.bookingCourse.findUnique({ where: { id }, select: { booking: { select: { studentId: true } } } });
+    const bc = await prisma.bookingCourse.findUnique({ where: { id }, select: { bookingId: true, booking: { select: { studentId: true } } } });
     const studentId = bc?.booking?.studentId;
     if (studentId) {
       try { await autoFillIlepForStudent(prisma, studentId); } catch (e) { console.error('autoFillIlep failed', e); }
+    }
+    // Living-document sync: the course date is the single source of truth for the
+    // LoA visa window, so re-render any auto-tracking issued LoA for this booking
+    // in place (portal copy + QR follow automatically). Best-effort.
+    if (bc?.bookingId) {
+      try {
+        const { documentScripts } = await import('./documents');
+        await documentScripts(prisma).syncLoaToBooking(bc.bookingId);
+      } catch (e) { console.error('syncLoaToBooking failed', e); }
     }
     return updated;
   }
@@ -293,39 +338,45 @@ export function bookingScripts(prisma: PrismaClient) {
   // window. Weekends don't extend the course because students only attend
   // Mon–Fri. Accommodation and extras are untouched per spec.
 
+  // ── All weekday math is done in UTC ──────────────────────────────────────
+  // Course/holiday dates are Prisma @db.Date (stored as UTC midnight). The
+  // server runs in IST (UTC+1 in summer/BST), so using LOCAL methods
+  // (setHours/getDay/setDate) rolls a UTC-midnight date back to 23:00 the prior
+  // UTC day; the result then saves one calendar day early on any summer date.
+  // UTC methods keep the arithmetic consistent with how the value is stored.
   function countWeekdays(start: Date, end: Date): number {
     // Inclusive range, Mon=1..Fri=5
-    const s = new Date(start); s.setHours(0,0,0,0);
-    const e = new Date(end); e.setHours(0,0,0,0);
+    const s = new Date(start); s.setUTCHours(0,0,0,0);
+    const e = new Date(end); e.setUTCHours(0,0,0,0);
     if (e < s) return 0;
     let days = 0;
     const cur = new Date(s);
     while (cur <= e) {
-      const d = cur.getDay();
+      const d = cur.getUTCDay();
       if (d >= 1 && d <= 5) days++;
-      cur.setDate(cur.getDate() + 1);
+      cur.setUTCDate(cur.getUTCDate() + 1);
     }
     return days;
   }
 
   function addWeekdays(date: Date, weekdays: number): Date {
     // Skip past weekends so the new end-date lands on a working day.
-    const d = new Date(date); d.setHours(0,0,0,0);
+    const d = new Date(date); d.setUTCHours(0,0,0,0);
     let added = 0;
     while (added < weekdays) {
-      d.setDate(d.getDate() + 1);
-      const dow = d.getDay();
+      d.setUTCDate(d.getUTCDate() + 1);
+      const dow = d.getUTCDay();
       if (dow >= 1 && dow <= 5) added++;
     }
     return d;
   }
 
   function subWeekdays(date: Date, weekdays: number): Date {
-    const d = new Date(date); d.setHours(0,0,0,0);
+    const d = new Date(date); d.setUTCHours(0,0,0,0);
     let removed = 0;
     while (removed < weekdays) {
-      d.setDate(d.getDate() - 1);
-      const dow = d.getDay();
+      d.setUTCDate(d.getUTCDate() - 1);
+      const dow = d.getUTCDay();
       if (dow >= 1 && dow <= 5) removed++;
     }
     return d;
@@ -351,6 +402,59 @@ export function bookingScripts(prisma: PrismaClient) {
     const totalWeekdays = countWeekdays(startDate, endDate);
     if (totalWeekdays === 0) throw new Error('Holiday range contains no weekdays');
     const weeks = Math.ceil(totalWeekdays / 5);
+
+    // ── Entitlement guards (spec: holidays apply only to non-EU Academic Year /
+    // LifePass students; 10-week entitlement). Eligibility + the 10-week cap are
+    // SOFT — they throw a ⚠ warning the staffer can override with force=true.
+    // The 35-week visa ceiling further down is a HARD block (see there).
+    {
+      const bk = await prisma.booking.findUnique({
+        where: { id: bookingId },
+        select: { serviceStart: true, serviceEnd: true,
+          student: { select: { nationality: true } },
+          courses: { select: { name: true, startDate: true, endDate: true, isRenewal: true } } },
+      });
+      if (!bk) throw new Error('Booking not found');
+      const EU = new Set(['austria','belgium','bulgaria','croatia','cyprus','czechia','czech republic','denmark','estonia','finland','france','germany','greece','hungary','ireland','italy','latvia','lithuania','luxembourg','malta','netherlands','poland','portugal','romania','slovakia','slovenia','spain','sweden','iceland','liechtenstein','norway','switzerland']);
+      const warnings: string[] = [];
+      const nat = (bk.student?.nationality || '').trim();
+      if (nat && EU.has(nat.toLowerCase())) warnings.push(`${nat} is an EU/EEA/Swiss nationality — holidays apply only to non-EU (visa) students.`);
+      const isAYorLP = bk.courses.some(c => /academic year|life ?pass/i.test(c.name || '') || (c as any).isRenewal);
+      if (!isAYorLP) warnings.push('This booking has no Academic Year / LifePass course — only those students may take holidays.');
+      const existing = await prisma.bookingHoliday.findMany({ where: { bookingId }, select: { weeks: true } });
+      const existingWeeks = existing.reduce((s, h) => s + (h.weeks || 0), 0);
+      if (existingWeeks + weeks > 10) warnings.push(`This brings total holidays to ${existingWeeks + weeks} weeks — the entitlement is 10 weeks.`);
+
+      // 35-week visa ceiling — HARD block, Academic Year ONLY. The AY visa
+      // permission is a fixed 35 weeks from the course start (mirrors
+      // computeVisaWindow, documents.ts). Because tuition is a fixed 25 weeks,
+      // capping the OUTER window at ~36 weeks (35 + a week of wiggle for
+      // weekday/arrival oddities) mathematically caps holidays at ~10 with no
+      // separate count needed (Neil, 2026-07-03: "set the limit at the outside
+      // and it stops giving them more holidays"). Measured on the AY course(s)
+      // in THIS booking only — earliest AY start → latest shunted AY end — NOT
+      // the whole booking span (the old ~110wk bug). LifePass / short courses
+      // aren't 35-week visa products, so they're exempt (this is why Gretel's
+      // LifePass holiday, gsheet #44, is allowed).
+      const isAY = (c: any) => /academic year|renewal/i.test(c.name || '') || c.isRenewal;
+      const ayCourses = bk.courses.filter((c: any) => isAY(c) && c.startDate && c.endDate);
+      if (ayCourses.length) {
+        const earliestStart = Math.min(...ayCourses.map((c: any) => +new Date(c.startDate)));
+        let latestShuntedEnd = 0;
+        for (const c of ayCourses) {
+          const shuntedEnd = +addWeekdays(c.endDate!, effectiveWeekdays(startDate, endDate, c.endDate));
+          if (shuntedEnd > latestShuntedEnd) latestShuntedEnd = shuntedEnd;
+        }
+        const windowWeeks = (latestShuntedEnd - earliestStart) / (7 * 86400000);
+        if (windowWeeks > 36) {
+          throw new Error(`35-week visa ceiling: this holiday would run the Academic Year to ~${Math.round(windowWeeks)} weeks from the course start. The visa permission is 35 weeks (25 tuition + 10 holiday) — shorten the holiday.`);
+        }
+      }
+
+      if (warnings.length && !data.force) {
+        throw new Error('⚠ ' + warnings.join(' ') + ' — re-confirm to add anyway.');
+      }
+    }
 
     return prisma.$transaction(async (tx) => {
       const courses = await tx.bookingCourse.findMany({
@@ -452,11 +556,173 @@ export function bookingScripts(prisma: PrismaClient) {
     return prisma.bookingExtra.delete({ where: { id } });
   }
 
+  // ── Payments ────────────────────────────────
+  // Auto-confirm a booking the moment its balance zeroes out. Mirrors the
+  // display-only effStatus() in admin.html but WRITES it so the stored status
+  // stops going stale (a fully-paid PENDING/PARTIAL booking used to show red on
+  // the Students list forever). Upgrade-only: PENDING/PARTIAL → CONFIRMED on a
+  // settled balance; never downgrades, never touches CANCELLED/ESCROW — so a
+  // manual status override still stands. Called from every payment rollup point.
+  // Neil 2026-07-08.
+  function autoConfirmPatch(status: string | null | undefined, total: number | null, realPaid: number): { status?: string } {
+    const EPS = 0.01;
+    if ((status === 'PENDING' || status === 'PARTIAL') && total !== null && total > 0 && realPaid >= total - EPS) {
+      return { status: 'CONFIRMED' };
+    }
+    return {};
+  }
+
+  // Manual payment entry (admin-only — guarded at the route layer). Stamps
+  // dataSource=MANUAL so it's distinguishable from Fidelo/HubSpot imports
+  // when reconciling. Recomputes booking.amountPaid + amountOpen as the
+  // sum of non-escrow payment rows so the booking-header rollups stay
+  // honest immediately (matches how the Fidelo importer thinks about it).
+  async function addPayment(bookingId: number, body: Record<string, any>, paidBy: string | null) {
+    const amount = Number(body.amount);
+    if (!(amount > 0)) throw new Error('Amount must be positive');
+    const dateStr = body.paymentDate;
+    if (!dateStr) throw new Error('paymentDate required');
+
+    const created = await prisma.payment.create({
+      data: {
+        bookingId,
+        amount,
+        paymentDate: new Date(dateStr),
+        method: body.method || null,
+        type: body.type || null,
+        receiptNumber: body.receiptNumber || null,
+        comment: body.comment || null,
+        paidBy: paidBy || null,
+        dataSource: 'MANUAL',
+      } as any,
+    });
+
+    // Roll up booking.amountPaid from non-escrow payment rows. Escrow shadow
+    // rows (type='Escrow' OR method='TransferMate Escrow') intentionally don't
+    // contribute — they represent money that hasn't actually settled to BoI.
+    const allPayments = await prisma.payment.findMany({
+      where: { bookingId },
+      select: { amount: true, method: true, type: true },
+    });
+    const realPaid = allPayments.reduce((sum, p) => {
+      const m = (p.method || '').toLowerCase();
+      const t = (p.type || '').toLowerCase();
+      const isEscrow = t === 'escrow' || m === 'transfermate escrow';
+      return isEscrow ? sum : sum + Number(p.amount);
+    }, 0);
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      select: { amountTotal: true, status: true },
+    });
+    const total = booking?.amountTotal ? Number(booking.amountTotal) : null;
+    // Allow NEGATIVE balance (no Math.max clamp): an overpayment surfaces as a
+    // minus rather than being hidden at 0. A negative is a signal — duplicate /
+    // over-assigned payment — and does NOT block anything (the LoA gate keys on
+    // balance > 0.01). Per Neil 2026-06-04: this is a display/signal layer that
+    // must stay adaptive to payments.
+    const open = total !== null ? total - realPaid : null;
+    await prisma.booking.update({
+      where: { id: bookingId },
+      data: { amountPaid: realPaid, amountOpen: open, ...autoConfirmPatch(booking?.status, total, realPaid) } as any,
+    });
+
+    // NOTE: the credit-ledger draw-down for "ULearn Credit" is NOT done here.
+    // It's owned by the invoice-paid webhook's reconcile (reconcileBookingCredit),
+    // which detects the applied credit memo from the HubSpot invoice and posts the
+    // store debit + stamps the "ULearn Credit" display payment row. Doing it here
+    // too would double-count.
+    return created;
+  }
+
+  // Delete a single payment row (Super-Admin-only — for duplicate clearing).
+  // Re-rolls booking.amountPaid/amountOpen from the remaining non-escrow rows,
+  // mirroring addPayment's rollup. Guarded so a paymentId can only be deleted
+  // from the booking it actually belongs to.
+  async function deletePayment(bookingId: number, paymentId: number) {
+    const pay = await prisma.payment.findUnique({ where: { id: paymentId }, select: { bookingId: true } });
+    if (!pay) throw new Error('Payment not found');
+    if (pay.bookingId !== bookingId) throw new Error('Payment does not belong to this booking');
+    await prisma.payment.delete({ where: { id: paymentId } });
+    const allPayments = await prisma.payment.findMany({ where: { bookingId }, select: { amount: true, method: true, type: true } });
+    const realPaid = allPayments.reduce((sum, p) => {
+      const m = (p.method || '').toLowerCase(), t = (p.type || '').toLowerCase();
+      const isEscrow = t === 'escrow' || m === 'transfermate escrow';
+      return isEscrow ? sum : sum + Number(p.amount);
+    }, 0);
+    const booking = await prisma.booking.findUnique({ where: { id: bookingId }, select: { amountTotal: true, status: true } });
+    const total = booking?.amountTotal ? Number(booking.amountTotal) : null;
+    // Allow NEGATIVE balance (no Math.max clamp): an overpayment surfaces as a
+    // minus rather than being hidden at 0. A negative is a signal — duplicate /
+    // over-assigned payment — and does NOT block anything (the LoA gate keys on
+    // balance > 0.01). Per Neil 2026-06-04: this is a display/signal layer that
+    // must stay adaptive to payments.
+    const open = total !== null ? total - realPaid : null;
+    // Deleting a payment only ever REDUCES realPaid, so this can only re-settle a
+    // still-covered balance — it never spuriously confirms (autoConfirmPatch is
+    // upgrade-only and gated on realPaid >= total).
+    await prisma.booking.update({ where: { id: bookingId }, data: { amountPaid: realPaid, amountOpen: open, ...autoConfirmPatch(booking?.status, total, realPaid) } as any });
+    return { deleted: true, amountPaid: realPaid, amountOpen: open };
+  }
+
+  // Edit a single payment (Super-Admin OR Accounts — gated at the route). Fixes
+  // a mis-keyed amount / date / method / type without the delete-and-re-add
+  // dance. Only the provided fields are touched. Re-rolls amountPaid/amountOpen
+  // from non-escrow rows exactly like addPayment, so correcting an escrow row's
+  // amount fixes the ledger figure WITHOUT changing received-revenue totals
+  // (escrow shadow rows stay excluded from the rollup).
+  async function updatePayment(bookingId: number, paymentId: number, body: Record<string, any>) {
+    const pay = await prisma.payment.findUnique({ where: { id: paymentId }, select: { bookingId: true } });
+    if (!pay) throw new Error('Payment not found');
+    if (pay.bookingId !== bookingId) throw new Error('Payment does not belong to this booking');
+
+    const data: Record<string, any> = {};
+    if (body.amount !== undefined) {
+      const amt = Number(body.amount);
+      if (!(amt > 0)) throw new Error('Amount must be positive');
+      data.amount = amt;
+    }
+    if (body.paymentDate !== undefined) {
+      if (!body.paymentDate) throw new Error('paymentDate required');
+      data.paymentDate = new Date(body.paymentDate);
+    }
+    if (body.method !== undefined) data.method = body.method || null;
+    if (body.type !== undefined) data.type = body.type || null;
+    if (body.receiptNumber !== undefined) data.receiptNumber = body.receiptNumber || null;
+    if (body.comment !== undefined) data.comment = body.comment || null;
+    if (Object.keys(data).length === 0) throw new Error('No fields to update');
+
+    await prisma.payment.update({ where: { id: paymentId }, data });
+
+    // Re-roll booking totals from non-escrow rows (mirrors addPayment/deletePayment).
+    const allPayments = await prisma.payment.findMany({
+      where: { bookingId },
+      select: { amount: true, method: true, type: true },
+    });
+    const realPaid = allPayments.reduce((sum, p) => {
+      const m = (p.method || '').toLowerCase();
+      const t = (p.type || '').toLowerCase();
+      const isEscrow = t === 'escrow' || m === 'transfermate escrow';
+      return isEscrow ? sum : sum + Number(p.amount);
+    }, 0);
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      select: { amountTotal: true, status: true },
+    });
+    const total = booking?.amountTotal ? Number(booking.amountTotal) : null;
+    const open = total !== null ? total - realPaid : null;
+    await prisma.booking.update({
+      where: { id: bookingId },
+      data: { amountPaid: realPaid, amountOpen: open, ...autoConfirmPatch(booking?.status, total, realPaid) } as any,
+    });
+    return { updated: true, amountPaid: realPaid, amountOpen: open };
+  }
+
   return {
     list, getById, create, update, remove,
     addCourse, updateCourse, removeCourse,
     addAccommodation, updateAccommodation, removeAccommodation,
     addExtra, updateExtra, removeExtra,
     addHoliday, removeHoliday, listHolidays,
+    addPayment, updatePayment, deletePayment,
   };
 }

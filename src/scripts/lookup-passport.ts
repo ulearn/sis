@@ -12,7 +12,7 @@ async function main() {
     select: {
       id: true, firstName: true, lastName: true, email: true,
       nationality: true, passportNumber: true,
-      visaRequired: true, visaFrom: true, visaUntil: true,
+      visaFrom: true, visaUntil: true,
     },
   });
   console.log('Matches for', target, ':', rows.length);

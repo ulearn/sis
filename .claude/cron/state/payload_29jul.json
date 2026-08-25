@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 153rd check Wed 29 Jul 2026 UTC — UNCHANGED, DEADLINE Fri 31 Jul (2 days)\n• August Bank Holiday 2026-08-03 absent from school_closures — confirmed fresh query\n• 20 active booking courses start Aug 3 — all need shunting to Aug 4\n• Includes BC 24956 (Giampaolo Russo, issue 41) and BC 25003 (duplicate on booking 18225)\n• School closures table has 9 entries; none for 2026-08-03",
+        "Add Aug BH 2026-08-03 to school_closures; shunt 19 BCs to start Aug 4; deactivate BC 25003. See recipe: issue-38-addendum-29jul-b.md",
+        "153rd hrly Wed 29 Jul UTC. DEADLINE Fri 31 Jul — 2 days. 20 BCs start Aug 3 confirmed fresh. Fix NOT RUN.",
+        "Aug BH; DEADLINE Fri; 2 days"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• 151st check Wed 29 Jul 2026 UTC — UNCHANGED, CRITICAL\n• Student 14443 (Xuezhen Huang): booking 17831, fully paid EUR 1396.90, confirmed=true\n• Booking course 24609 (Morning General, 13 Jul – 31 Jul 2026): 0 class assignments — confirmed fresh\n• Course ends Fri 31 Jul 2026 — last 2 days; student has NEVER been assigned to a class",
+        "Assign BC 24609 to Morning General class for Thu 30 + Fri 31 Jul NOW. See recipe: issue-39-addendum-29jul-b.md",
+        "151st hrly Wed 29 Jul UTC. 0 SCAs confirmed fresh. Course ends Fri 31 Jul — last 2 days. ASSIGN NOW. Fix NOT RUN.",
+        "CRITICAL; 2d left; assign now"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 150th check Wed 29 Jul 2026 UTC — Capel apartment STILL absent; check-in Sun Aug 2 (4 days)\n• Booking 18180 (Giampaolo Russo, student 14571): EUR 2584.96 paid, fully confirmed\n• Host family: accommodation 11357 (bed 178), Aug 2 – Sep 6, active — confirmed\n• Booking course 24956 (General English AM, Aug 3 – Sep 11): starts on Bank Holiday — needs Issue 38 shunt to Aug 4\n• Capel apartment booking accommodation: still not in DB",
+        "Fix Issue 38 first (shunt BC 24956 to Aug 4); then add Capel apartment BA to booking 18180. See recipe: issue-41-addendum-29jul.md",
+        "150th hrly Wed 29 Jul UTC. Host family BA 11357 confirmed. Capel absent. BC 24956 starts Aug 3 (BH). Check-in Sun Aug 2 (4d). Fix NOT RUN.",
+        "Capel missing; check-in 4d"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• 146th check Wed 29 Jul 2026 UTC — 0 class assignments confirmed fresh on BC 24991\n• Student 1015 (Edith Nunes): booking 18214 Confirmed, EUR 608 paid, confirmed=true\n• Booking course 24991 (General English AM, 13 Jul – 7 Aug 2026): 0 SCAs, ends 7 Aug (9 days)",
+        "Assign student 1015 to class on BC 24991; deactivate BCs 24933+24934. See recipe: issue-22-addendum-29jul-b.md",
+        "146th hrly Wed 29 Jul UTC. 0 SCAs confirmed fresh. Ends Aug 7 (9d). Fix NOT RUN.",
+        "CRITICAL; 9d left"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• 43rd check Wed 29 Jul 2026 UTC — UNCHANGED\n• Booking course 23 (Intensive General 30, ended 22 May 2026, booking 22): active=true — 68 days stale\n• Booking course 24826: active=true — stale (ended earlier 2026)\n• Booking 18034: EUR 250 open, status=PARTIAL, confirmed=false\n• Booking 22: fully paid EUR 1948, confirmed=true — no issue",
+        "Deactivate BC 23 + 24826; chase EUR 250 on booking 18034. See recipe: issue-26-addendum-29jul.md",
+        "43rd hrly Wed 29 Jul UTC. BC 23 now 68d stale. BC 24826 stale. EUR 250 open bk18034 PARTIAL confirmed=false. Fix NOT RUN.",
+        "2 BCs stale; EUR250 open; 68d"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• 62nd hourly check Wed 29 Jul 2026 UTC — UNCHANGED\n• Booking 1605 (Ariunsarnai Batbayar, student 1047): status=PENDING, confirmed=false — Day 115 since 6 Apr 2026\n• Amount paid EUR 0; amount total EUR 1509; 0 payments in DB\n• Booking course 1791 (Academic Year Renewal Morning, Apr 13 – Oct 23 2026): active=true\n• Last booking update: 23 Jun 2026 (36 days ago); source=FIDELO",
+        "Investigate booking 1605: check HubSpot deal and Hub/Xero for any payment. See recipe: issue-20-addendum-29jul.md",
+        "62nd hrly Wed 29 Jul UTC. UNCHANGED. Day 115, EUR 0/1509, 0 payments in DB. Last bk update 23 Jun (36d ago). Fix NOT RUN.",
+        "Day 115; EUR 0 / 1509"
+      ]
+    ]
+  }
+]

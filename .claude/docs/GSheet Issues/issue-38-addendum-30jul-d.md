@@ -1,0 +1,2 @@
+Issue 38 Aug BH - Confirmed unchanged (late run Thu 30 Jul UTC).
+BC IDs to shunt: 88,97,1755,1766,24627,24908,24956,24958,24959,24964,24970,24984,24999,25002,25010,25016,25028,25029,25030 (19 rows). Deactivate BC 25003 (duplicate bk18225). See issue-38-addendum-30jul-c.md for full recipe. NOT YET RUN.

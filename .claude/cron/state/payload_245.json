@@ -1,0 +1,46 @@
+[
+  {
+    "range": "H4:K4",
+    "values": [
+      [
+        "• 229th check Thu 13 Aug 2026 UTC — closures unchanged\n• 9 closures in DB: Good Fridays 2026-2030, Christmas 2026-2029\n• August Bank Holiday 2026-08-03 passed without DB entry — no impact\n• August Bank Holidays 2027, 2028, 2029, 2030 absent from school_closures",
+        "Add Aug BH 2027-2030 to school_closures (low priority). See recipe: issue-3-addendum-13aug.md",
+        "229th Thu 13 Aug UTC. 9 closures unchanged. Aug BH 2027+ still absent.",
+        "fixed"
+      ]
+    ]
+  },
+  {
+    "range": "H37:K37",
+    "values": [
+      [
+        "• Code check 38 Thu 13 Aug 2026 UTC — no changes since check 37 (Wed 12 Aug)\n• Bug A — Homework block: absent from renderSheetHtml() in src/routes/attendance.ts (lines 36-128) — awaiting spec from Paul/Neil\n• Bug B — Holiday filter: getWeekAttendance() in src/scripts/attendance.ts creates occurrences for all 5 days (lines 102-106) without checking school closures; filterOutHolidayDates() only used in attendance-pct context\n• Both bugs unchanged; attendance.ts files unmodified since last run",
+        "Fix holiday filter Bug B (no spec needed); add homework block Bug A after spec. See: issue-36-addendum-13aug-b.md",
+        "Code check 38 Thu 13 Aug UTC. Both bugs open. No code changes since Wed 12 Aug. Bug B implementable. Awaiting spec for Bug A.",
+        "code open; awaiting spec"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 153rd check Thu 13 Aug 2026 UTC — LAST DAY: course ends tomorrow Fri 14 Aug 2026\n• Booking Course 25043 (General English PM, Eduardo Roche Diaz): still 0 class assignments (confirmed ~14:xx UTC this run)\n• Booking 18265: CONFIRMED, confirmed = true, EUR 126 paid, EUR 0 open\n• Mon 10 – Thu 13 Aug — 4 school days permanently lost\n• Fri 14 Aug is the ABSOLUTE LAST CHANCE — assign before school starts Friday morning",
+        "Assign Booking Course 25043 to Class 6 (B2/C1 PM 13:45-17:00) before Fri 14 Aug morning — FINAL CHANCE. See recipe: issue-38-addendum-13aug-j.md",
+        "153rd hrly Thu 13 Aug UTC. Course ends tomorrow. Still 0 class assignments confirmed ~14:xx UTC. 4 school days lost. URGENT — act before Fri morning.",
+        "CRITICAL: ends Fri 14 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• 27th check Thu 13 Aug 2026 UTC — unchanged since 26th check\n• 5 stale Booking Accommodations on bed 83\n• Booking Accommodation 11239 (Ivan Rodriguez Solares): ended 24 May 2026, 81 days stale, fee EUR 1,050\n• Booking Accommodation 11168 (Diego Da Silva Saldanha): ended 20 Jun 2026, 54 days stale, fee EUR 700\n• Booking Accommodation 11285 (Jesus Manuel Ramirez Diaz): ended 5 Jul 2026, 39 days stale, fee null\n• Booking Accommodation 11352 (Veronica Martin): ended 11 Jul 2026, 33 days stale, fee EUR 360\n• Booking Accommodation 11179 (Africa Mera Bachir): ended 9 Aug 2026, 4 days stale, fee EUR 1,360\n• Current occupant: Booking Accommodation 11173 (Alessandro Signorotti, 9 to 30 Aug 2026)\n• Future: Booking Accommodation 25 (Rosa Maria Mollica, 30 Aug to 11 Oct 2026)",
+        "Deactivate Booking Accommodations 11239/11168/11285/11352/11179 on bed 83. See recipe: issue-43-addendum-13aug.md",
+        "27th Thu 13 Aug UTC. 5 stale Booking Accommodations unchanged (81d max). Booking Accommodation 11285 fee null. Fix NOT RUN.",
+        "5 stale BAs; 81d max; bed occupied"
+      ]
+    ]
+  }
+]

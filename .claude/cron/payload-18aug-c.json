@@ -1,0 +1,57 @@
+[
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "• 69th check Tue 18 Aug 2026 UTC — no change since 68th check (Mon 17 Aug)\n• Document 171 (booking 1498, template 82): DRAFT v1, created 5 Jun 2026 — 74 days unissued\n• Booking Course 1660 (ULearn Renewal Morning): ended 5 Jun 2026, active = true — 74 days stale\n• Booking 1498 (Suvderdene Bayartsog, student 593): confirmed = false — anomaly unchanged",
+        "Reissue document 171; deactivate Booking Course 1660. See recipe: issue-9-addendum-18aug.md",
+        "69th Tue 18 Aug UTC. No change. Document 171 DRAFT 74d. Booking Course 1660 stale 74d. Fix NOT RUN.",
+        "doc DRAFT 74d; BC stale"
+      ]
+    ]
+  },
+  {
+    "range": "H11:K11",
+    "values": [
+      [
+        "• 55th check Tue 18 Aug 2026 UTC — no change since 54th check (Mon 17 Aug)\n• Booking 97 (Massimiliano Cameran, student 1): CONFIRMED, confirmed = false — fully paid EUR 1,741, amountOpen = 0 (anomaly)\n• Booking Course 107 (Morning General): ended 22 May 2026, active = true — 88 days stale\n• Booking Course 24793 (General English AM): ended 5 Jun 2026, active = true — 74 days stale\n• No certificate generated — stale course records block completion cert",
+        "Set confirmed = true on booking 97; deactivate Booking Courses 107 + 24793. See recipe: issue-10-addendum-18aug.md",
+        "55th Tue 18 Aug UTC. No change. BC 107 now 88d stale, BC 24793 74d stale. Fix NOT RUN.",
+        "no cert; BC107 stale 88d"
+      ]
+    ]
+  },
+  {
+    "range": "H17:K17",
+    "values": [
+      [
+        "• 30th check Tue 18 Aug 2026 UTC — no change since 29th check (Mon 17 Aug)\n• Booking Accommodation 11216 (booking 100, bed 66): ended 9 May 2026 — 101 days stale (max)\n• Booking Accommodation 11158 (booking 46, bed 66): ended 17 May 2026 — 93 days stale\n• Booking Accommodation 11282 (bed 66): ended 5 Jun 2026 — 74 days stale\n• Booking Accommodation 11361 (bed 66): ended 9 Aug 2026 — 9 days stale\n• Bed 66 effectively free since 9 Aug 2026",
+        "Deactivate 4 stale Booking Accommodations on bed 66. See recipe: issue-16-stale-bas.md",
+        "30th Tue 18 Aug UTC. BA 11216 now 101d stale (max). Bed 66 free since Aug 9. Fix NOT RUN.",
+        "4 BAs stale; 101d max"
+      ]
+    ]
+  },
+  {
+    "range": "H22:K22",
+    "values": [
+      [
+        "• 26th check Tue 18 Aug 2026 UTC — no change since 25th check (Mon 17 Aug)\n• Booking Course 1604 (Morning General, booking 1461, student 912 Maurivan Kuhl): ended 3 Jul 2026 — 46 days stale, active = true\n• 2 historical class assignments; no active assignments\n• Low priority — no impact on current student activity",
+        "Deactivate Booking Course 1604. See recipe: issue-21-maurivan-double-class.md",
+        "26th Tue 18 Aug UTC. BC 1604 now 46d stale. Low priority. Fix NOT RUN.",
+        "BC1604 stale 46d; safe"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• 165th check Tue 18 Aug 2026 UTC — CHANGE: payment gap resolved (amountOpen = EUR 0, was EUR 661)\n• Student 917 (Uyanga Tungalag): visaStatus = null, hubspotContactId = null — updatedAt 28 Jul 2026 (unchanged)\n• Booking 1467: CONFIRMED, confirmed = true, amountPaid = EUR 2,405, amountOpen = EUR 0\n• 0 student class assignments — student still unassigned\n• Root cause unchanged: visaStatus = null blocks class-to-be-assigned list\n• Day 113 in course",
+        "Set visaStatus = approved on student 917; assign to class. See recipe: issue-25-addendum-18aug.md",
+        "165th Tue 18 Aug UTC. CHANGE: amountOpen now EUR 0 (was EUR 661). Visa still null. 0 SCAs. Day 113. Fix NOT RUN.",
+        "visa null; 0 SCAs; day 113; pmt resolved"
+      ]
+    ]
+  }
+]

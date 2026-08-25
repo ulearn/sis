@@ -1,0 +1,40 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "Pmts unlinked(not spurious): pmt16988->bk17856 Margherita, pmt16989->bk17857 Francesca",
+        "UPDATE payments SET booking_id=17856 WHERE id=16988; UPDATE payments SET booking_id=17857 WHERE id=16989. see recipe: issue-1-orphan-payments.md",
+        "Jun15 08:04UTC: pmt16988+pmt16989 bookingId=null CONFIRMED. bk17856+bk17857 status=CONFIRMED confirmed=false(anomaly) amtPaid=339.9/339.9(stale - no linked pmts exist). SQL NOT RUN. 14d to Jun29.",
+        "14d to Jun29"
+      ]
+    ]
+  },
+  {
+    "range": "H11:K11",
+    "values": [
+      [
+        "bk97 CONF paid 1741/1741. doc63/64=INVOICES(tmpl78) NOT certs. bk97 0 cert docs. bk18002 doc179 cert ISSUED(ok).",
+        "(NOT RUN) Generate cert for bk97(Apr27-May22) via SIS->Massimiliano->bk97->Docs->Generate Certificate. recipe: issue-9-massimiliano-cert-split.md",
+        "Jun15 08:04UTC: UNCHANGED. bk97 doc63(REVOKED)+doc64(ISSUED) both tmpl78=invoice. 0 cert(tmpl82) docs. bc107 MORNING Apr27-4wks ended~May23. bk18002 doc179 tmpl82 ISSUED OK. NEIL: generate tmpl82 cert via SIS->bk97->Docs.",
+        "cert bk97 pending"
+      ]
+    ]
+  },
+  {
+    "range": "K23",
+    "values": [
+      [
+        "STARTED 0SCA urgent"
+      ]
+    ]
+  },
+  {
+    "range": "K27",
+    "values": [
+      [
+        "WK2 D1 4d left"
+      ]
+    ]
+  }
+]

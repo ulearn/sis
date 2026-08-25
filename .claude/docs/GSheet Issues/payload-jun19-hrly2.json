@@ -1,0 +1,35 @@
+[
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking 1611 is CONFIRMED, paid EUR 1280.12 / 1280.12\n• Course 1797 (Morning General) ends Friday Jun 26 — 5 school days remaining next week (Jun 22-26)\n• Last class assignment (sca229, class 12, B1-AM2) expired April 26 — 54 days with no active class record\n• No attendance records in SIS at all — student on extended holiday since late April\n• Course 24686 (Morning General Jul 20 – Sep 18) is future; gap Jun 27 – Jul 19",
+        "Confirm if Alberto returning before Jun 26. If yes: assign SCA cls12 bc1797 ws=Jun22 we=Jun26 via SIS (NOT RUN). See recipe: issue-24-alberto-fidelo-course-split.md",
+        "Jun19 (Fri) hrly(2): CONFIRMED STILL UNCHANGED (fresh DB). bk1611 CONF 1280.12/1280.12. sca229 cls12 B1-AM2 STILL EXPIRED Apr26 (54d). bc1797 Morning General ends Fri Jun26 — 5 school days next week (Jun22,23,24,25,26). bc24686 Jul20-Sep18 future 0 SCAs. att=0 ALL TIME. NEIL FINAL CHANCE: confirm if Alberto returning next week; if yes assign SCA via SIS (bc1797 cls12 ws=Jun22 we=Jun26). Step NOT RUN.",
+        "5d;FINAL;Jun26"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Booking 94 is CONFIRMED (1151.50 / 1151.50) — correct booking for Giulia (student 88)\n• Class assignment 270 (class 12, B1-AM2) is ACTIVE Jun 15 – Jun 26 — student in class, 5 school days remaining next week (Jun 22-26)\n• Booking 18044 is STILL CONFIRMED (1106.50 / 1106.50) — duplicate booking, stale since Jun 07, not yet cancelled\n• Payment 17607 (EUR 1151.50) on booking 18044 has HubSpot payment ID 1239529228498, xeroId = null — must void via HubSpot UI\n• Deadline: cancel duplicate booking and void payment before course ends Fri Jun 26",
+        "(NOT RUN) 1) Cancel booking 18044 via SIS UI; 2) void payment 17607 via HubSpot UI (payment ID 1239529228498). See recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun19 (Fri) hrly(2): CONFIRMED STILL OPEN (fresh DB). bk94 CONF 1151.5/1151.5 OK. sca270 cls12 Jun15-Jun26 ACTIVE. bk18044 STILL CONFIRMED (dup updAt=Jun07=12d stale) NOT cancelled. pmt17607 EUR1151.5 hsId=1239529228498 xeroId=null NOT voided. NEIL URGENT: (1) cancel bk18044 via SIS UI (Giulia bookings bk18044 Cancel); (2) void pmt17607 via HubSpot UI (ID 1239529228498). Deadline Fri Jun26 — 5 school days next week.",
+        "bk18044 dup;void;Jun26"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Student 356 (Shih-Wei Huang) has gender = null — never set in personal details (last updated Jun 03)\n• Exit letter (document 238, template 4, booking 560) is ISSUED since Jun 18 08:53 UTC — wrong Ms./she/her pronouns, not yet revoked\n• Root cause: null gender defaults to female in src/scripts/documents.ts line 338\n• 14,052 students with null gender will produce documents with wrong female pronouns",
+        "1) Set gender=Male on student 356 via SIS personal details; 2) revoke document 238; 3) regenerate exit letter for booking 560. See recipe: issue-32-shih-wei-gender-default.md",
+        "Jun19 hrly: STILL UNCHANGED (fresh DB). s356 gender=null (updAt=Jun03 — 16d stale). doc238 STILL ISSUED Jun18 08:53 UTC (1+ day ago, wrong pronouns Ms./she/her on exit letter bk560) — not yet revoked. NEIL: (1) SIS Students s356 Personal Details set Gender=Male; (2) revoke doc238 via SIS documents tab; (3) regenerate exit letter bk560.",
+        "urgent; set gender"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,35 @@
+[
+  {
+    "range": "H17:K17",
+    "values": [
+      [
+        "• Bed assignment 11282 (bed 66, booking 17897, Mélie Villard): ran 15 May to 5 June 2026 — active = still true (43 days stale since student left 5 June)\n• Historical issue — Mélie Villard term completed 5 June 2026, no guest impact\n• Overlap constraint from bed assignment 11158 (ended 17 May) is also cleared",
+        "Set active = false on BA 11282 (SIS: Booking 17897 > Accommodation > BA 11282). See recipe: issue-16-melie-accomm-dates.md",
+        "Sat 18 Jul UTC (3rd check). CONFIRMED UNCHANGED. BA11282 bed66 May15-Jun05 active=STILL true (43d stale, updAt=Jun05). Fix NOT RUN.",
+        "43d stale; cosmetic"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• Student 983 (Flávia Nascimento Mariano): visa status = null — Prisma enum mismatch prevents UI save\n• HubSpot contact ID = 783659478249 (linked by Jul 14 2026 — this was the unrelated field change noted in prior checks; previously null)\n• Booking 1534: Confirmed, EUR 1308 fully paid\n• Student attending normally via class assignment 265 (class 11, B1 PM) — no operational impact\n• Sat 18 Jul 2026 UTC (3rd check)",
+        "UPDATE \"Student\" SET visa_status = 'Approved' WHERE id = 983 (confirm approval in HubSpot first). See recipe: issue-18-flavia-visa-save-error.md",
+        "Sat 18 Jul UTC (3rd check). s983 Flavia visaStatus=STILL null. NEW: hubspotContactId=783659478249 (set Jul14, was null). BK1534 CONF EUR1308/1308. Attending normally SCA265. Cosmetic. Fix NOT RUN.",
+        "visa null; cosmetic; HS linked"
+      ]
+    ]
+  },
+  {
+    "range": "H24:K24",
+    "values": [
+      [
+        "• Booking course 828 (Academic Year Morning, booking 787): end date 27 Feb 2026 — 3 days before start date 2 Mar 2026 (backwards dates; 18 Jul 2026 UTC, 13th check)\n• Legacy DST off-by-one bug from Issue 2 — one of 56 flagged rows — course actually ended approximately 20 Mar 2026\n• All courses for student 397 (Enshi Lu) complete — student left approximately March 2026\n• Cosmetic data-hygiene fix: correct end date to 2026-03-20, deactivate course",
+        "Set BC828 end date = 2026-03-20, active = false. See recipe: issue-23-enshi-lu-backwards-course.md",
+        "Sat 18 Jul UTC (13th check, fresh DB). CONFIRMED UNCHANGED. BC828 AY Morning bk787: startDate=Mar02 endDate=Feb27 2026 (backwards, 3d before start) active=STILL true (updAt=May11, 68d stale). Student 397 Enshi Lu: all courses complete, left ~Mar 2026. Cosmetic fix only. Fix NOT RUN.",
+        "backwards dates; low-pri"
+      ]
+    ]
+  }
+]

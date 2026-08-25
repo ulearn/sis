@@ -1,0 +1,18 @@
+[
+  {
+    "range": "J25",
+    "values": [
+      [
+        "Jun19 hrly15 FRI 14:08UTC: bk1611 CONF amtPaid=1280.12/1280.12 (updAt=Jun11). bc1797 Morning General Apr06-Jun26 ends THIS FRI — 5 school days remain: Mon22 Tue23 Wed24 Thu25 Fri26. sca229 cls12 B1-AM2 EXPIRED Apr26 (54d). 0 att ALL TIME (fresh DB). bc24686 Jul20-Sep18 future (0 SCAs). Pmt17124 EUR1280.12 xeroId=null. NEIL FINAL CALL BEFORE WEEKEND: if Alberto returning Mon Jun22 assign SCA bc1797 cls12 ws=2026-06-22 we=2026-06-26 via SIS NOW. If still on holiday -> bc1797 expires unused Jun26; SCA on bc24686 when Jul20."
+      ]
+    ]
+  },
+  {
+    "range": "J41",
+    "values": [
+      [
+        "Jun19 hrly15: admin.html L1349 _bulkEmailRecipientIds=[] declared but NEVER set. L1366 openBulkEmailModal() does NOT assign _bulkEmailRecipientIds=ids (fresh grep L1365-1367). L1494 sendBulkEmail() reads live [...bulkSelectedStudents] not snapshot. L2219 showStudentsInSchoolReport() clears bulkSelectedStudents on reload. Bug: send fails if report reloads between checkbox and Send click. Fix: 2 lines — no build. recipe: issue-33-khulan-reports-email-send.md."
+      ]
+    ]
+  }
+]

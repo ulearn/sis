@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• 170th check Thu 13 Aug 2026 UTC — no change since 169th check\n• Student Class Assignment 288 (class 12): booking_course_id = 24697 (ended 31 Jul 2026), week_end = 18 Dec 2026\n• Booking Course 25035 (General English AY AM Plus, 3 Aug–18 Dec 2026): still 0 class assignments\n• Booking Course 24697 (Academic Year Morning, ended 31 Jul 2026): still active = true (anomaly)\n• ~14 school days of attendance unrecorded on Booking Course 25035 since 3 Aug 2026\n• Fix NOT RUN",
+        "Move SCA 288 from BC 24697 to BC 25035; deactivate BC 24697. See recipe: issue-12-addendum-13aug-d.md",
+        "170th Thu 13 Aug UTC. SCA 288 still on BC 24697 (ended Jul 31). BC 25035 still 0 SCAs. ~14 school days lost. Fix NOT RUN.",
+        "SCA on wrong BC; 14d lost"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 111th check Thu 13 Aug 2026 UTC — unchanged since 110th check\n• Booking 18151 (Saikhantes Shagdarsuren): CONFIRMED, confirmed = true, EUR 1,339.20 fully paid\n• service_end = 2026-08-07 — expired 6 days; correct end = 2026-10-02 (Booking Course 24925)\n• Booking Course 24925 (Academic Year Afternoon): ends 2026-10-02, active = true, 1 class assignment\n• Student Class Assignment 255: class 11 (B1 PM), week_end = 2026-07-03 — expired 41 days\n• Booking last updated 2026-07-08 (36 days ago)\n• Fix NOT RUN",
+        "Update booking 18151 service_end to 2026-10-02; extend SCA 255 week_end to 2026-10-02. See recipe: issue-15-addendum-13aug-d.md",
+        "111th Thu 13 Aug UTC. service_end expired 6d (Aug 7). SCA 255 expired 41d (Jul 3). Unchanged. Fix NOT RUN.",
+        "SCA expired 41d; svc_end 6d exp"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• 21st check Thu 13 Aug 2026 UTC — day 73 since course start; unchanged\n• Student 983 (Flávia Nascimento Mariano): visaStatus = null, visaId = null\n• Visa dates: visaFrom 1 Jun 2026, visaUntil 1 Feb 2027 — dates present; approval status not set\n• Booking 1534: CONFIRMED, confirmed = true, EUR 1,308 paid, EUR 0 open; service end 27 Nov 2026; updated 10 Aug 2026\n• Payment 17035: EUR 250, 17 Feb 2026, Fidelo, xeroPaymentId = null — 177 days unreconciled\n• Payment 17527: EUR 1,058, 19 May 2026, HubSpot, xeroPaymentId = null — 86 days unreconciled",
+        "Set visaStatus = approved for student 983. See recipe: issue-18-addendum-13aug-c.md",
+        "21st Thu 13 Aug UTC. Day 73. Visa null; dates present. Pmts 17035 (Fidelo, 177d) + 17527 (HubSpot, 86d) Xero unconfirmed. Bk updated Aug 10 (no visa change). Fix NOT RUN.",
+        "visa null; day 73; Xero unconfirmed"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• 77th check Thu 13 Aug 2026 UTC — no change since 76th check\n• Booking Course 24686 (Morning General, Alberto Squillace): 20 Jul–18 Sep 2026, active = true, 0 class assignments\n• 24 calendar days since course start — approximately 18–19 school days without a class\n• Course ends 18 Sep 2026 (36 days remaining — still actionable)\n• Fix NOT RUN",
+        "Add class assignment to BC 24686. See recipe: issue-24-addendum-13aug-d.md",
+        "77th Thu 13 Aug UTC. No change. BC 24686 still 0 SCAs — ~19 school days lost. Course ends Sep 18 (36d). Fix NOT RUN.",
+        "BC24686 24d; 0 SCAs; ends Sep 18"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 84th check Thu 13 Aug 2026 UTC — stale count unchanged (24,479)\n• Active Booking Courses ended before 13 Aug 2026 (stale): 24,479\n• Live Booking Courses (end date on or after 13 Aug 2026): 285 (unchanged from 83rd check)\n• No change in stale count since 83rd check\n• Fix NOT RUN",
+        "Mass-deactivate active Booking Courses where end_date < today. See recipe: issue-45-addendum-13aug-h.md",
+        "84th Thu 13 Aug UTC. Stale: 24,479 (unchanged). Live: 285 (unchanged). No change.",
+        "24,479 stale; fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 114th check Thu 13 Aug 2026 UTC — no change since 113th check\n• Booking Course 1810 (Academic Year Renewal Morning, Telmuun Enkhsaikhan): 29 Jun 2026 to 1 Jan 2027, active = true, 0 class assignments (45 days since start)\n• Booking 1624: PARTIAL, confirmed = false, amountPaid = EUR 1,406, amountOpen = EUR 250; updated 5 Aug 2026\n• Payment 17956: EUR 100, xeroPaymentId = null, paymentDate 31 Mar 2026, dataSource = HubSpot — 135 days unreconciled in Xero\n• Fix NOT RUN",
+        "Assign BC 1810 to AM class; reconcile Payment 17956 in Xero; confirm Booking 1624 once EUR 250 settled. See recipe: issue-48-addendum-13aug-h.md",
+        "114th Thu 13 Aug UTC. No change. BC 1810 0 class assignments (45d). Booking 1624 PARTIAL EUR 250 open. Payment 17956 Xero null (135d). Fix NOT RUN.",
+        "payment gap; BC1810 45d"
+      ]
+    ]
+  }
+]

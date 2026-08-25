@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• 46th check Wed 12 Aug 2026 UTC — phone count unchanged from 45th check\n• 552 without + prefix (unchanged)\n• ~417 with + but containing spaces or dashes (unchanged from 45th)\n• Total non-E.164: ~969 (no change detected)\n• Total students with mobile: 1,372 (unchanged)\n• Day 33 — fix not applied",
+        "Strip spaces; normalise to E.164. See recipe: issue-6-addendum-12aug-b.md",
+        "46th hrly Wed 12 Aug UTC. Day 33. Non-E.164: ~969 (unchanged). Fix NOT RUN.",
+        "~969 phones; 33d"
+      ]
+    ]
+  }
+]

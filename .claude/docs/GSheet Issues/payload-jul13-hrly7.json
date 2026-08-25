@@ -1,0 +1,56 @@
+[
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Pietro Colombo (student 72, booking course 81): Morning General Plus, 6-24 July 2026 — confirmed, zero class assignments, course day 8, 9 school days left\n• Sophia Emilly Gallo Borim (student 853, booking course 1820): Academic Year Afternoon, 29 June-18 December 2026 — confirmed, zero class assignments, 14+ days untracked\n• Tuguldurtugs Enkhtugs (student 858, booking course 1786): Academic Year Morning, 6 July-25 December 2026 — confirmed, zero class assignments, 8 days untracked\n• Kayque Tauann Lopes Coelho (student 852, booking course 1821): Academic Year Afternoon, 29 June-18 December 2026 — confirmed, zero class assignments, 14+ days untracked\n• Munkhtsetseg Tserennadmid (student 922, booking course 1619): Academic Year Morning, 13 July 2026-1 January 2027 — started today, zero class assignments\n• Pedro Campion Teixeira (student 1045, booking course 1788): Academic Year Afternoon, 13 July-18 December 2026 — started today, zero class assignments\n• Wanqiong Hou (student 1068, booking course 1814): Academic Year Morning, 13 July-18 December 2026 — started today, zero class assignments\n• Italo Teixeira (student 14530, booking course 24820): Academic Year Afternoon, 13 July-18 December 2026 — started today, zero class assignments\n• Lunel Dubost (student 14566, booking course 24946): General English AM, 13-17 July 2026 — started today, zero class assignments, course ends this Friday\n• Samuele Stenico (student 14588, booking course 24990): General English AM, 13 July-7 August 2026 — started today, zero class assignments\n• Edith Nunes (student 1015, booking course 24991, booking 18214): General English AM, 13 July-7 August 2026 — started today, zero class assignments",
+        "Assign class for all 11 students via SIS Classes > To Be Assigned; deactivate 6 stale old booking courses. See recipe: issue-45-addendum-13jul.md",
+        "51st check 13 Jul UTC. EXPANDED: 11 confirmed students with zero class assignments. Original 4 (Pietro/Sophia/Kayque/Tuguldurtugs) unchanged. NEW today (all started Jul13): Munkhtsetseg BC1619, Pedro BC1788, Wanqiong BC1814, Italo BC24820, Lunel BC24946 (ends Fri!), Samuele BC24990, Edith BC24991 (new bk18214). Recipe updated: issue-45-addendum-13jul.md. Fix NOT RUN.",
+        "CRITICAL; 11 students; Lunel ends Fri"
+      ]
+    ]
+  },
+  {
+    "range": "J16:J16",
+    "values": [
+      [
+        "26th check 13 Jul UTC. UNCHANGED. Class assignment 255 weekEnd=Jul3 still expired. BC24925 AY Afternoon Mar9-Oct2 active, zero new class assignments. BC1982 AY Morning 2025 still active (206d stale). Week of Jul7 + week of Jul14 = 11 school days without class record. SQL NOT RUN. Neil: UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255;"
+      ]
+    ]
+  },
+  {
+    "range": "J41:J41",
+    "values": [
+      [
+        "51st check 13 Jul UTC. UNCHANGED. Accommodation 11358 claimStatus=null (Day 2, bed 180). Host: Mary Carver +353 87 927 1130 (verify — 45th check named Kathleen Delahunty). BC24609 Morning General Jul13-31 started today, zero class assignments. 4 payments all xeroPaymentId=null. Fix NOT RUN. Neil: confirm host identity, call to claim; assign class for BC24609 today."
+      ]
+    ]
+  },
+  {
+    "range": "J43:J43",
+    "values": [
+      [
+        "34th check 13 Jul UTC. UNCHANGED. Payment 17954 EUR2584.96 xeroPaymentId=null, type=null (paid Jun29, 14d old, HubSpot payment 1268783973563). Booking 18180 confirmed EUR2584.96/2584.96. Accommodation 11357 bed178 Aug2-Sep6 claimStatus=confirmed. BC24956 Aug3-Sep11 (21d to start). Only Xero reconciliation remains. Fix NOT RUN."
+      ]
+    ]
+  },
+  {
+    "range": "J25:J25",
+    "values": [
+      [
+        "36th check 13 Jul UTC. UNCHANGED. BC24686 Morning General Jul20-Sep18 fee=null (7 days to start). BC1797 ended Jun26 still active=true (17d stale). Payment 17124 EUR1280.12 type=null xeroPaymentId=null. Fix NOT RUN. Neil: set fee on BC24686 BEFORE Jul20; deactivate BC1797; reconcile pmt17124 in Xero."
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking courses 24933 and 24934 (Edith Nunes, General English AM, 15 June-10 July 2026): both ended 3 days ago, both still active = true\n• Both courses on booking 18158 have identical date range (fees 380 and 360, total 740) — likely Fidelo webhook duplicate\n• Payment 17895 (EUR 740, booking 18158, 12 June 2026): xeroPaymentId = null — not reconciled in Xero\n• Zero documents on booking 18158 — no completion certificate generated\n• Booking 18214 (booking course 24991, General English AM, 13 July-7 August 2026, EUR 608): started today — zero class assignments, also listed in issue 45",
+        "Deactivate booking courses 24933 and 24934; generate completion certificate for booking 18158; reconcile payment 17895 in Xero; assign class for booking course 24991. See recipe: issue-22-edith-nunes-payment-dups.md",
+        "13th check 13 Jul UTC. BC24933+BC24934 ended Jul10, both still active (3d stale). Zero docs on bk18158, no cert. Payment 17895 EUR740 xeroId=null. NEW: Booking 18214 (BC24991 GE-AM Jul13-Aug7, EUR608, confirmed): started today, zero class assignments — also in issue 45. Fix NOT RUN.",
+        "cert+Xero+new class needed"
+      ]
+    ]
+  }
+]

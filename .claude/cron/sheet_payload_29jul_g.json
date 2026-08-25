@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• CA 351 created: class 12, weekStart Jul 13 – weekEnd Jul 31 (full course) — 159th check Wed 29 Jul UTC\n• BA 11358: bed 180, Jul 12 – Aug 2, active = true — accommodation set up\n• ISSUE RESOLVED — class assignment and accommodation both in place",
+        "No action needed — resolved. See recipe: issue-39-addendum-29jul-f.md",
+        "159th hrly Wed 29 Jul UTC. CA351 class12 WB Jul13-Jul31. BA11358 bed180 Jul12-Aug2. RESOLVED.",
+        "RESOLVED"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• August Bank Holiday 2026-08-03: still absent from school_closures — 159th check Wed 29 Jul UTC\n• 20 active booking courses start on 2026-08-03 — count UNCHANGED\n• BC 25006 (Marina Larripa, booking 18228): ends 2026-08-03 — needs end_date extended to 2026-08-04\n• BC 25003 (Aleix Cervera Gonzalez, booking 18225): duplicate of BC 25002 (same booking) — deactivate, do not shunt\n• DEADLINE: Fri 31 Jul 2026 (2 days) — must act by Thu 30 Jul EOD",
+        "Insert Aug BH closure + shunt 19 BCs to Aug 4 + extend BC 25006 end + deactivate BC 25003. See recipe: issue-38-addendum-29jul-f.md",
+        "159th hrly Wed 29 Jul UTC. Still 20 BCs starting Aug3. No closure. BC25006 ends Aug3 (Marina). BC25003 dup. DEADLINE Fri31. Fix NOT RUN.",
+        "Aug BH; DEADLINE Fri 31 Jul"
+      ]
+    ]
+  }
+]

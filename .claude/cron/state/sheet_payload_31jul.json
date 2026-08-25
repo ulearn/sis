@@ -1,0 +1,46 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 116th check Fri 31 Jul 2026 UTC — 4 orphan payments unchanged\n• Payment 16988: EUR 339.90, Bank, bookingId = null (94 days, HubSpot payment ID 1204827374829)\n• Payment 16989: EUR 339.90, Bank, bookingId = null (94 days, HubSpot payment ID 1204846469317)\n• Payment 17187: EUR 6,151, TransferMate Escrow, bookingId = null (91 days, Fidelo ID 37587, ref D2026226)\n• Payment 4781: EUR 380, Flywire 2019, bookingId = null (legacy ~7yr, Fidelo ID 32056)",
+        "Link pmts 16988+16989 to bookings via HubSpot; investigate 17187 via deal D2026226. See recipe: issue-1-addendum-31jul.md",
+        "116th hrly Fri 31 Jul UTC. 4 orphan pmts unchanged (94d/94d/91d/legacy). Fix NOT RUN.",
+        "4 orphan pmts; 94d+"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• 45th check Fri 31 Jul 2026 UTC — unchanged\n• Booking course 23 (Intensive General 30, ended 22 May 2026, booking 22): active = true — 70 days stale\n• Booking course 24826 (2 wks Intensive General 30, ended 19 Jun 2026, booking 18034): active = true — 42 days stale\n• Booking 18034 (student 14532): PARTIAL, confirmed = false, amountTotal = EUR 1,095, amountOpen = EUR 250\n• Payment 17683 (EUR 845): Bank, 23 Apr 2026, bookingId = 18034, xeroPaymentId = null — 99 days without Xero link",
+        "Deactivate BCs 23+24826; chase EUR 250 on booking 18034 via HubSpot; link payment 17683 in Xero. See recipe: issue-26-addendum-31jul.md",
+        "45th check Fri 31 Jul UTC. UNCHANGED. BCs 23+24826 stale 70d/42d. Booking 18034 EUR 250 open PARTIAL confirmed=false. Payment 17683 xeroId null (99d). Fix NOT RUN.",
+        "2 BCs stale; EUR250 open; 70d"
+      ]
+    ]
+  },
+  {
+    "range": "H37:K37",
+    "values": [
+      [
+        "• Fri 31 Jul 2026 UTC (code check 24) — attendance.ts last changed 9008d10 (May 8 2026)\n• May 8 change: compressUploads() middleware on upload routes only — homework and holiday logic untouched\n• Bug A — homework block: absent from renderSheetHtml() in src/routes/attendance.ts — awaiting spec from Neil+Paul\n• Bug B — holiday filter: getWeekAttendance() in src/scripts/attendance.ts has no BookingHoliday filter — holiday students show with live checkboxes\n• 84 days since last attendance logic change",
+        "Fix BookingHoliday filter in getWeekAttendance() (no spec needed); add homework block after spec confirmed. See recipe: issue-36-addendum-31jul.md",
+        "Fri 31 Jul UTC (code check 24). Attendance.ts last logic change May 8 (84d). Bug A awaiting spec; Bug B (holiday filter) ready to fix now.",
+        "code open; awaiting spec"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 5th check Fri 31 Jul 2026 UTC — unchanged\n• Fassina (student 14462, booking 17857): CONFIRMED, confirmed = false, EUR 339.90 fully paid; BC 24630 active = true, 21 days stale; 0 class assignments\n• Galbusera (student 14461, booking 17856): CONFIRMED, confirmed = false, EUR 339.90 fully paid; BC 24631 active = true, 21 days stale; 0 class assignments\n• Saikhantes (student 1001): on holiday (booking 18151, holiday 2500) until 21 Aug 2026; returns 24 Aug; new class assignment needed then\n• Enshi (student 397): booking 787 fully paid + CONFIRMED (no issue); BC 829 active = true, 56 days stale",
+        "Set confirmed=true for bookings 17857+17856; deactivate BCs 24630+24631+829; confirm Jun 29-Jul 10 class with staff; add Saikhantes SCA week of Aug 24. See recipe: issue-48-addendum-31jul.md",
+        "5th check Fri 31 Jul UTC. Fassina+Galbusera unchanged (21d stale, 0 SCAs). Saikhantes on holiday until Aug 21 (confirmed via holiday 2500). Enshi BC 829 stale 56d. Fix NOT RUN.",
+        "4 items open; Saikhantes not urgent"
+      ]
+    ]
+  }
+]

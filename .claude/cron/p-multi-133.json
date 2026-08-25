@@ -1,0 +1,46 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 133rd check Wed 12 Aug 2026 UTC — STILL 0 class assignments; CRITICAL: 2 school days remain\n• Booking Course 25043 (General English PM): 10-14 Aug 2026, student 14602 Eduardo Roche Diaz — 0 class assignments\n• Pattern confirmed: SCA 421 (BC 25038, Aug 3-7) = class 6; all 4 prior weeks Class 6 (B2+C1 PM)\n• Mon 10 + Tue 11 + Wed 12 attendance unrecorded (3 of 5 days lost)\n• Fix: INSERT SCA booking_course_id=25043, class_id=6, week 2026-08-10 to 2026-08-14\n• Thu 13 + Fri 14 still recoverable",
+        "INSERT SCA class 6 week Aug 10-14 for BC 25043. See recipe: issue-38-addendum-12aug-h.md",
+        "133rd Wed 12 Aug UTC. BC 25043 STILL 0 SCAs. 3 days lost. 2 days left. Fix NOT RUN.",
+        "CRITICAL: ends Fri 14 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• 163rd check Wed 12 Aug 2026 UTC — BC 25035 still 0 SCAs\n• Booking Course 25035 (General English AM Plus, Rakan Alghamdi, booking 17915): start 2026-08-03, end 2026-12-18 — 0 class assignments\n• Student Class Assignment 288 is on old ended Booking Course 24697 (not on BC 25035)\n• 9 school days since course start with no attendance recorded on correct booking course\n• Note: BC 25035 is a long AY course (Aug 3 to Dec 18, 2026)",
+        "Create SCA for BC 25035 (class 12, weekStart Aug 3, weekEnd Dec 18). See recipe: issue-12-addendum-12aug.md",
+        "163rd check Wed 12 Aug UTC. BC 25035 still 0 SCAs — 9 school days lost. SCA 288 on ended BC 24697. Fix NOT RUN.",
+        "day 9; SCA on wrong BC"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 104th check Wed 12 Aug 2026 UTC — unchanged\n• Booking 18151 (Saikhantes Shagdarsuren): CONFIRMED, confirmed = true, EUR 1,339.20 paid, EUR 0 open\n• service_end = 2026-08-07 — expired 5 days ago; student still attending (course ends Oct 2)\n• Booking Course 24925 (Academic Year Afternoon): active, ends 2 Oct 2026, 1 class assignment\n• Student Class Assignment 255: class 11, weekEnd = 2026-07-03 — 40 days expired (student effectively unassigned since Jul 3)\n• Xero payment reconciliation still pending",
+        "Extend booking 18151 service_end to 2026-10-02; extend SCA 255 weekEnd to 2026-10-02; reconcile Xero. See recipe: issue-15-addendum-12aug.md",
+        "104th check Wed 12 Aug UTC. service_end 5d expired. SCA 255 40d expired (weekEnd Jul 3). Course ends Oct 2. Fix NOT RUN.",
+        "SCA expired 40d; svc_end 5d exp"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 69th check Wed 12 Aug 2026 UTC — stale count unchanged (24,479)\n• Total active Booking Courses: approx 24,762; stale (end_date before 2026-08-12): 24,479\n• Mass deactivation fix not yet run",
+        "Mass-deactivate all active Booking Courses where end_date < today. See recipe: issue-45-addendum-12aug.md",
+        "69th Wed 12 Aug UTC. 24,479 stale unchanged. Fix NOT RUN.",
+        "24,479 stale; fix pending"
+      ]
+    ]
+  }
+]

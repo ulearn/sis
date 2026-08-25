@@ -1,0 +1,65 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 6th check Tue 4 Aug 2026 UTC — school open day 2, shunt still not run\n• 21 booking courses still have startDate = 2026-08-03 (Aug Bank Holiday), all active, 0 class assignments\n• August Bank Holiday 2026-08-03 absent from school_closures table (only Good Fridays 2026-2030 + Christmas 2026-2029 present)\n• School open since Tue 4 Aug — all 21 affected students attending with 0 class assignments\n• Aleix Cervera Gonzalez has 2 booking courses (25002+25003) both on Aug 3 for same booking 18225 — possible duplication, investigate\n• Students: Africa Mera Bachir (BC 88), Gustavo Ferreira (BC 97), Maria Giulia Serpi (BC 1755), Maria Eduarda Alves Paiva (BC 1766), Angelica Guerrin (BC 24627), Ai Tsunashima (BC 24908), Giampaolo Russo (BC 24956), Aurora Madril Oliveira Molina (BC 24958), Diego Alves da Silva Molina (BC 24959), Luana Salzano (BC 24964), Deva Sofia Onorato (BC 24984), Soumaya Bourguiba (BC 24999), Aleix Cervera Gonzalez (BCs 25002+25003), Alin Merticariu (BC 25010), Anderson da Silva Martins (BC 25016), Edgar Gilabert Mata (BC 25028), Monica Breier Fiametti (BC 25029), Tayron Sanches Feijo Filho (BC 25030), Jingyi Yang (BC 25033), Rakan Alghamdi (BC 25035)",
+        "Insert Aug BH closure; update 21 BC start_dates 2026-08-03 to 2026-08-04; deactivate BC 25006. See recipe: issue-38-addendum-4aug-d.md",
+        "6th hrly Tue 4 Aug UTC. School open day 2. 21 BCs still on Aug 3. Shunt NOT run. Russo (BC 24956) linked to Issue 41. FIX URGENT.",
+        "CRITICAL; 21 students; day 2"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 5th check Tue 4 Aug 2026 UTC — school open day 2, Russo attending with 0 class assignments\n• Booking course 24956 (General English AM, Aug 3-Sep 11): startDate = 2026-08-03, active = true, 0 class assignments\n• Issue 38 shunt prerequisite still not run — BC 24956 is one of 21 BCs blocked on Aug 3\n• Booking accommodation 11357 (bed 178, host family, Aug 2-Sep 6): in place, active, fee EUR 1,250\n• Capel Street accommodation (Sep 6-Sep 14): still absent from database — missing second accommodation\n• Booking 18180: fully paid EUR 2,584.96, amount open EUR 0",
+        "Run Issue 38 shunt first; create class assignment for BC 24956 (week Aug 4); create Capel accommodation. See recipe: issue-41-addendum-4aug-c.md",
+        "5th check Tue 4 Aug UTC. School open day 2. Russo attending 0 SCAs. BC 24956 still Aug 3. Capel absent. URGENT.",
+        "CRITICAL; SCA+Capel; day 2"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• 20th check Tue 4 Aug 2026 UTC — day 114 since course start Apr 13\n• Booking 1605 (Ariunsarnai Batbayar, student 1047): status = PENDING, confirmed = false\n• Amount paid = EUR 0, amount open = EUR 1,509 — unchanged, no payments on record\n• Booking course 1791 (Academic Year Renewal Morning, Apr 13-Oct 23 2026): active = true, 0 class assignments",
+        "Chase EUR 1,509 payment or cancel booking 1605; if confirmed create SCA on BC 1791. See recipe: issue-20-addendum-3aug-b.md",
+        "20th hrly Tue 4 Aug UTC. Day 114. EUR 0/1,509. 0 SCAs. 0 payments on record. Fix NOT RUN.",
+        "Day 114; EUR 0 / 1,509"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 30th check Tue 4 Aug 2026 UTC\n• Student on holiday (Holiday 2500: 2026-07-20 to 2026-08-21) — returns Mon 24 Aug 2026 (20 days from today)\n• Last class assignment: SCA 255, class 11, weekStart 2026-01-12 (weekEnd Jul 3) — expired 32 days ago, no new assignment\n• Booking course 24925 (Academic Year Afternoon, 2026-03-09 to 2026-10-02): active = true, current course\n• Booking course 1982 (Academic Year Morning, 2025-06-30 to 2025-12-19): active = true — 229 days stale\n• Action needed: assign class for BC 24925 starting week of 2026-08-24 (first full week after holiday ends)",
+        "Deactivate booking course 1982; assign class for booking course 24925 starting week of 2026-08-24. See recipe: issue-15-addendum-4aug.md",
+        "30th hrly Tue 4 Aug UTC. Returns Mon 24 Aug (20 days). SCA 255 weekEnd Jul 3, expired 32 days. BC 1982 stale 229d. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "J18:J18",
+    "values": [
+      [
+        "21st hrly Tue 4 Aug UTC. Both pmts created May 5 2026 (~91d). Booking 1308 CANCELLED EUR 1,530 paid. BC 1350 stale ends Nov 13. Neil: reinstate or cancel? Fix NOT RUN."
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 49th check Tue 4 Aug 2026 UTC — all items unchanged\n• Booking course 24630 (Fassina, General English AM Plus, ended Jul 10): active = true — 25 days stale (booking 17857)\n• Booking course 24631 (Galbusera, General English AM Plus, ended Jul 10): active = true — 25 days stale (booking 17856)\n• Booking course 25006 (Marina Larripa, General English AM Plus, ended Aug 3): active = true — 1 day stale (booking 18228)\n• Payment 16988 (EUR 339.90): booking_id = null, xero_payment_id = null — 98 days since creation (Apr 28)\n• Payment 16989 (EUR 339.90): booking_id = null, xero_payment_id = null — 98 days since creation (Apr 28)",
+        "Deactivate booking courses 24630+24631+25006; link payments 16988+16989 to bookings 17856+17857. See recipe: issue-48-addendum-4aug-c.md",
+        "49th hrly Tue 4 Aug UTC. BCs 24630+24631 25d stale (corrected from 26d prev run). BC 25006 1d stale. Payments 98d since creation. Fix NOT RUN.",
+        "4 items open; BCs 25d stale"
+      ]
+    ]
+  }
+]

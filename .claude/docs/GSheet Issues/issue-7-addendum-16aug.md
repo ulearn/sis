@@ -1,0 +1,2 @@
+Issue 7 - Booking 17909 (44th check Sun 16 Aug 2026)
+No change. Booking 17909 (Sofiia Korkishchenko student 768): CANCELLED, confirmed=true (anomaly). amountPaid=0, amountOpen=727.50. Last updated 2026-06-17 = 60 days stale. BC24693 Renewal Academic Year PM end 2026-11-13 active=true on cancelled booking. Fix: set confirmed=false on bk17909, deactivate BC24693. Status: NOT RUN.

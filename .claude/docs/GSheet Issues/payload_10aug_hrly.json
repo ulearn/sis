@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "111th check Mon 10 Aug 2026 UTC — unchanged from 110th\n• Booking Course 25043 (Eduardo Roche Diaz, General English PM, Aug 10-14): Day 1, ends Friday, 0 class assignments — MOST URGENT\n• Fidelo ghost Booking Courses 1144/1305/1344/1591 (Mongolian students): all end Fri 14 Aug, 0 class assignments throughout — expire Friday automatically\n• Aug-10 starters with 0 class assignments: Booking Courses 1313 (Ana Luiza De Sousa), 24970 (Tsengelbayar Mendsaikhan), 25024 (Josimar Roberto), 25036 (Jorge Perez Aldana), 25039 (Cristian Ravai)\n• Aug-3 stragglers (day 8): Booking Courses 1766, 25003, 25010, 25016, 25029, 25035 incl. Rakan — all 0 class assignments",
+        "Assign Eduardo BC 25043 TODAY (ends Fri). Assign 5 Aug-10 starters. Fidelo ghosts expire Fri. See recipe: issue-38-addendum-10aug-i.md",
+        "111th hrly Mon 10 Aug UTC. No change. Eduardo Day 1 ends Fri. Fidelo ghosts expire Fri. 6 Aug-3 stragglers day 8. Fix NOT RUN.",
+        "CRITICAL: 10 BCs; Eduardo ends Fri"
+      ]
+    ]
+  },
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "154th check Mon 10 Aug 2026 UTC — unchanged (day 8)\n• Booking Course 25035 (Rakan Alghamdi, student 14444): General English Academic Year AM Plus, 2026-08-03 to 2026-12-18\n• Active: true, Class assignments: 0 — 8 days of attendance unrecorded\n• Also tracked in Issue 38 Aug-3 stragglers",
+        "Assign Rakan Alghamdi to AM Plus class in SIS admin. Coordinate with Issue 38. See recipe: issue-12-addendum-10aug-f.md",
+        "154th hrly Mon 10 Aug UTC. Day 8. BC 25035 still 0 SCAs. Fix NOT RUN.",
+        "CRITICAL: day 8 no class"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "58th check Mon 10 Aug 2026 UTC — 24,479 stale Booking Courses still active (unchanged from 57th)\n• Total active Booking Courses: 24,763; stale (ended before 2026-08-10): 24,479 — 98.9%\n• Current (ending on or after 2026-08-10): 283\n• Mass deactivation not yet run",
+        "Mass-deactivate all active Booking Courses where endDate < today. See recipe: issue-45-addendum-10aug-c.md",
+        "58th Mon 10 Aug UTC. 24,479 stale unchanged. 283 current. Fix NOT RUN.",
+        "24,479 stale; fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "68th check Mon 10 Aug 2026 UTC — Booking Course 24686 day 21, 0 class assignments (unchanged)\n• Booking Course 24686 (Morning General, Alberto Squillace, booking 1611): started 20 Jul 2026, ends 18 Sep 2026 — 21 days active, 0 class assignments\n• Booking Course 1797 (Morning General, booking 1611): ended 26 Jun 2026 — 45 days stale, active = true, 1 class assignment\n• Booking 1611: Confirmed, EUR 1,280.12 paid, service end 18 Sep 2026",
+        "Assign BC 24686 to class in SIS admin; deactivate stale Booking Course 1797. See recipe: issue-24-addendum-10aug-b.md",
+        "68th hrly Mon 10 Aug UTC. BC 24686 day 21, 0 SCAs. BC 1797 45d stale. Fix NOT RUN.",
+        "BC24686 0 SCAs; 21d"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "75th check Mon 10 Aug 2026 UTC — service_end still expired (5 days, expired 7 Aug 2026)\n• Booking 18151 (Saikhantes Shagdarsuren, student 1001): CONFIRMED, EUR 1,339.20 paid, EUR 0 open\n• service_end = 2026-08-07 — expired 5 days ago; Booking Course 24925 ends 2026-10-02 (53 days remaining)\n• Booking Course 24925: active = true, 1 class assignment present — student in class\n• Trivial fix: set service_end = 2026-10-02",
+        "Set booking 18151 service_end = 2026-10-02. See recipe: issue-29-addendum-10aug-d.md",
+        "75th hrly Mon 10 Aug UTC. service_end 5 days expired. BC 24925 ends Oct 2. Student in class. Fix NOT RUN.",
+        "svc_end 5d exp"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "42nd check Mon 10 Aug 2026 UTC — bed still unassigned, 27 days to check-in (Sep 6)\n• Booking Accommodation 11392 (Giampaolo Russo, student 14571, booking 18180): active = true\n• Type: City Centre Apartment, Premium, 2026-09-06 to 2026-09-14, bed = null\n• Available Premium beds at Capel Street for Sep 6-14: Bed 168 (A1/Room 1/Bed A) and Bed 174 (A1/Room 1/Bed B) — both free (private room = best option)\n• Bed 175 (A1/Room 2/Bed B) also free but bed 83 in same room occupied Aug 30-Oct 11\n• Host Family Booking Accommodation 11357 (bed 178, Aug 2-Sep 6): correctly assigned",
+        "Assign bed 168 (A1/Room1, Premium, Capel) to Booking Accommodation 11392. See recipe: issue-41-addendum-10aug-c.md",
+        "42nd Mon 10 Aug UTC. Bed null. Bed 168 confirmed free Sep 6-14 (private Premium room). 27d to check-in. Fix NOT RUN.",
+        "bed null; 27d; bed 168 free"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• 57th check Mon 17 Aug 2026 UTC — no change since 56th check\n• 552 students without + prefix (unchanged; 14,471 total students, unchanged)\n• ~419 students with + prefix but spaces or dashes (unchanged)\n• Total non-E.164: ~971 (basis unchanged)\n• Day 41 — fix not applied",
+        "Strip spaces; normalise to E.164. See recipe: issue-6-addendum-17aug.md",
+        "57th hrly Mon 17 Aug UTC. Day 41. Non-E.164: ~971 (unchanged). Total students 14,471 (unchanged). Fix NOT RUN.",
+        "~971 phones; 41d"
+      ]
+    ]
+  },
+  {
+    "range": "H8:K8",
+    "values": [
+      [
+        "• 45th check Mon 17 Aug 2026 UTC — no change since 44th check\n• Booking 17909 (Sofiia Korkishchenko, student 768): status = CANCELLED, confirmed = true (anomaly)\n• Amount paid = EUR 0, amount open = EUR 727.50, no payment records\n• Last updated 2026-06-17 — 61 days since last change\n• Booking Course 24693 (Renewal - Academic Year PM, ends 13 Nov 2026): active = true on cancelled booking, 0 class assignments\n• Student correctly enrolled via Booking 17849 / Booking Course 24623 — no current student impact\n• Same anomaly tracked under Issue 27 (row 28)",
+        "Set Booking 17909 confirmed = false; deactivate Booking Course 24693. See recipe: issue-7-addendum-17aug.md",
+        "45th hrly Mon 17 Aug UTC. Unchanged 61d. Fix NOT RUN.",
+        "bk17909 CANCELLED+confirmed; 61d"
+      ]
+    ]
+  },
+  {
+    "range": "H9:K9",
+    "values": [
+      [
+        "• 31st check Mon 17 Aug 2026 UTC — no change since 30th check (Sun 16 Aug)\n• Booking Course 1482 (Academic Year Afternoon): ended 2025-12-19 — 241 days stale, active = true, 0 class assignments\n• Booking Course 1483 (Academic Year Afternoon): ended 2026-02-13 — 185 days stale, active = true, 0 class assignments\n• Booking Course 1485 (Academic Year Afternoon): ended 2025-12-19 — 241 days stale, active = true, 0 class assignments\n• Booking Course 1486 (Academic Year Afternoon): ended 2026-02-13 — 185 days stale, active = true, 0 class assignments\n• Booking Course 1487 (Academic Year Afternoon): ended 2026-06-05 — 73 days stale, active = true, 2 class assignments (verify before deactivating)\n• Booking Course 1488 (Afternoon General): ended 2025-09-19 — 332 days stale, active = true, 0 class assignments",
+        "Deactivate BCs 1482/1483/1485/1486/1488 (0 class assignments, safe); verify BC 1487 class assignments historical before deactivating. See recipe: issue-8-addendum-17aug.md",
+        "31st hrly Mon 17 Aug UTC. Unchanged. 6 stale Booking Courses (332d max, BC1488). Fix NOT RUN.",
+        "6 stale BCs; 332d max"
+      ]
+    ]
+  },
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "• 68th check Mon 17 Aug 2026 UTC — no change since 67th check (Sun 16 Aug)\n• Document 171 (booking 1498, template 82): DRAFT v1, created 2026-06-05 — 73 days unissued\n• Booking 1498 (Suvderdene Bayartsog): CONFIRMED, confirmed = false — anomaly (amount_paid = null)\n• Booking Course 1660 (ULearn Renewal MORN): ended 2026-06-05 — 73 days stale, active = true, 0 class assignments",
+        "Issue or delete Document 171; verify payment then set Booking 1498 confirmed = true; deactivate Booking Course 1660. See recipe: issue-9-addendum-17aug.md",
+        "68th hrly Mon 17 Aug UTC. No change. Document 171 DRAFT 73d. Booking Course 1660 stale 73d. confirmed = false, amount_paid = null. Fix NOT RUN.",
+        "doc DRAFT 73d; BC stale"
+      ]
+    ]
+  },
+  {
+    "range": "H11:K11",
+    "values": [
+      [
+        "• 54th check Mon 17 Aug 2026 UTC — no change since 53rd check (Sun 16 Aug)\n• Booking 97 (Massimiliano Cameran, student 1): CONFIRMED, confirmed = false — anomaly (fully paid EUR 1,741, amountOpen = 0)\n• Booking Course 107 (Morning General): ended 2026-05-22 — 87 days stale, active = true, 1 class assignment (historical)\n• Booking Course 24793 (General English AM): ended 2026-06-05 — 73 days stale, active = true, 1 class assignment (historical)\n• Documents on Booking 97: doc 64 (Net-to-Gross Invoice, ISSUED) — no completion certificate generated",
+        "Set Booking 97 confirmed = true; deactivate BCs 107 + 24793 (verify historical class assignments); generate completion certificate. See recipe: issue-10-addendum-17aug.md",
+        "54th Mon 17 Aug UTC. No change. BC 107 now 87d stale (1 historical class assignment). BC 24793 73d stale (1 historical class assignment). No cert on Booking 97. Fix NOT RUN.",
+        "no cert; BC107 stale 87d"
+      ]
+    ]
+  },
+  {
+    "range": "H12:K12",
+    "values": [
+      [
+        "• 25th check Mon 17 Aug 2026 UTC — no change since 24th check (Sun 16 Aug)\n• Booking Course 24696 (General English AM Plus): active, ended 2026-07-03 — 45 days stale\n• Class assignment 164: week 2026-06-08 to 2026-07-03, class 12 (historical, within course period — safe to deactivate)\n• Booking 17912: CONFIRMED, confirmed = true, fully paid EUR 1,938 — no anomaly\n• Student 1063 (Valeriya Salauyova): hubspotContactId = null — not linked to HubSpot",
+        "Deactivate BC 24696 (class assignment 164 is historical, within period); link HubSpot contact to student 1063. See recipe: issue-11-addendum-17aug.md",
+        "25th check Mon 17 Aug UTC. BC 24696 now 45d stale. Class assignment 164 historical (within period). HubSpot null. Fix NOT RUN.",
+        "BC24696 45d stale; HS null"
+      ]
+    ]
+  }
+]

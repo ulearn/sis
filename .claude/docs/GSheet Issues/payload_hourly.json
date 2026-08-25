@@ -1,0 +1,50 @@
+[
+  {
+    "range": "J2:J2",
+    "values": [
+      [
+        "hrly 30 Jun UTC (127th check, fresh DB): pmts 16988+16989 bookingId=STILL null xeroId=null EUR339.9 each. bk17856+17857 CONF conf=STILL false amtPaid=339.9 amtOpen=null. bc24630+24631 GE-AM-Plus Jun29-Jul10 fee=STILL null. Margherita+Francesca IN CLASS DAY 2 of 10. 4-STEP SQL STILL NOT RUN — 127 CHECKS. NEIL: RUN NOW."
+      ]
+    ]
+  },
+  {
+    "range": "J16:J16",
+    "values": [
+      [
+        "hrly 30 Jun UTC (34th check, fresh DB): sca255 STILL weekStart=Jan12 weekEnd=Jul03 classId=11. BC24925 AY-Afternoon Mar09-Sep11 active. EXPIRES THU 3 JUL = 3 DAYS FROM NOW. UPDATE NOT RUN. NEIL: run IMMEDIATELY — UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255."
+      ]
+    ]
+  },
+  {
+    "range": "J30:J30",
+    "values": [
+      [
+        "hrly 30 Jun UTC (34th check, fresh DB): sca255 STILL weekStart=Jan12 weekEnd=Jul03 classId=11. BC24925 AY-Afternoon Mar09-Sep11 active. EXPIRES THU 3 JUL = 3 DAYS FROM NOW. UPDATE NOT RUN. NEIL: run IMMEDIATELY — UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255."
+      ]
+    ]
+  },
+  {
+    "range": "J39:J39",
+    "values": [
+      [
+        "hrly 30 Jun UTC (21st check, fresh DB): accomm11352 Veronica bed83 Jul04-Jul11 STILL NOT REASSIGNED (updAt=Jun29). accomm11285 Jesus bed83 Jun21-Jul05 STILL active (updAt=Jun16=14d stale). BED 83 DOUBLE-BOOKED Jul04-Jul05 CONFIRMED. bk18156 CONF EUR573.20/573.20 amtOpen=0. NEIL: reassign accomm11352 to bed 174/175/176 BEFORE JUL 04 (4 days)."
+      ]
+    ]
+  },
+  {
+    "range": "J41:J41",
+    "values": [
+      [
+        "hrly 30 Jun UTC (fresh DB): bk17831 CONF 431.9/431.9 amtOpen=0 updAt=Jun26. accomm11358 bed180 Jul12-Aug2 HF active fee=900. pmt17180 EUR431.9 xeroId=STILL null hsId=null. Accomm starts Jul12=12d. Neil: reconcile pmt17180 in Xero for bk17831."
+      ]
+    ]
+  },
+  {
+    "range": "J43:J43",
+    "values": [
+      [
+        "hrly 30 Jun UTC (8th check, fresh DB): bk18180 CONF 2584.96/2584.96 amtOpen=0. ba11357 HF Aug02-Sep06 fee=1250 bedId=STILL null (updAt=Jun24=6d stale). 0 Capel records on bk18180. Student arrives Aug2=33d. 13 free HF beds available Aug2-Sep6. Neil: assign HF bed + add Capel Sep6-14 to bk18180."
+      ]
+    ]
+  }
+]

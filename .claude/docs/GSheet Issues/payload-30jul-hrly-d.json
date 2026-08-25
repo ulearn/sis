@@ -1,0 +1,68 @@
+[
+ {
+  "range": "H11:K11",
+  "values": [
+   [
+    "• 39th check Thu 30 Jul 2026 UTC — unchanged\n• Booking 97 (Morning General, 27 Apr–22 May 2026): EUR 1741/1741 paid, confirmed = false (anomaly)\n• No completion cert on booking 97 — only REVOKED invoice (doc 63) + ISSUED invoice (doc 64)\n• Booking course 107 (ended 22 May 2026): 69 days stale, active = true\n• Booking course 24793 (ended 5 Jun 2026): 55 days stale, active = true",
+    "Generate cert for booking 97; deactivate BCs 107+24793. See recipe: issue-10-addendum-30jul.md",
+    "39th check Thu 30 Jul UTC. UNCHANGED. BK97 no cert. BCs 107+24793 stale 69d/55d. Fix NOT RUN.",
+    "no cert; stale BCs; 69d"
+   ]
+  ]
+ },
+ {
+  "range": "H18:K18",
+  "values": [
+   [
+    "• 14th check Thu 30 Jul 2026 UTC — unchanged\n• Booking 1308 (Ana Jessica Rosa de Paula Santos): CANCELLED, confirmed = false — 53 days since cancellation (7 Jun 2026)\n• Amount paid = EUR 1,530 / 1,530 (fully paid despite CANCELLED status — anomaly)\n• Payment 17186 (EUR 1,280): Bank Transfer, 1 May 2026, xeroPaymentId = null — 90 days without Xero link\n• Payment 17050 (EUR 250): Bank Transfer, 17 Feb 2026, xeroPaymentId = null — 163 days without Xero link\n• Booking course 1350 (Academic Year Afternoon): active = true, end 13 Nov 2026 (future — orphaned; booking CANCELLED)",
+    "Reinstate booking 1308 or reconcile PMT17186+17050 in Xero; deactivate BC 1350. See recipe: issue-17-addendum-30jul.md",
+    "14th check Thu 30 Jul UTC. UNCHANGED. BK1308 CANCELLED EUR1530/1530 confirmed=false (53d). PMT17186 EUR1280 (90d) + PMT17050 EUR250 (163d) both xeroId=null. BC1350 active end Nov13. Fix NOT RUN.",
+    "pmts 90d/163d; BC stale"
+   ]
+  ]
+ },
+ {
+  "range": "H20:K20",
+  "values": [
+   [
+    "• Thu 30 Jul 2026 UTC — unchanged\n• Booking course 89 (Morning IELTS, ended 22 May 2026): active = still true — 69 days stale\n• Booking course 90 (Private Lessons, ended 22 May 2026): active = still true — 69 days stale\n• Booking 83: CONFIRMED, EUR 2,629.80 / 2,629.80 fully paid, amount open = 0",
+    "Deactivate BCs 89+90 (SET active = false WHERE id IN (89,90)). See recipe: issue-19-addendum-30jul.md",
+    "Thu 30 Jul UTC. UNCHANGED. BC89+BC90 still active 69d each (ended May 22). Cosmetic. Fix NOT RUN.",
+    "BC89+90 stale 69d"
+   ]
+  ]
+ },
+ {
+  "range": "H22:K22",
+  "values": [
+   [
+    "• 9th check Thu 30 Jul 2026 UTC — unchanged\n• Booking course 1604 (Morning General, booking 1461): active = true, ended 3 Jul 2026 — 27 days stale\n• No class assignment anomaly — cosmetic staleness only",
+    "Deactivate BC 1604 (SET active = false WHERE id = 1604). See recipe: issue-21-addendum-30jul.md",
+    "9th check Thu 30 Jul UTC. UNCHANGED. BC1604 ended Jul 3 2026, 27 days stale. Cosmetic. Fix NOT RUN.",
+    "bc stale 27d; cosmetic"
+   ]
+  ]
+ },
+ {
+  "range": "H27:K27",
+  "values": [
+   [
+    "• 44th check Thu 30 Jul 2026 UTC — unchanged\n• Booking course 23 (Intensive General 30, ended 22 May 2026, booking 22): active = true — 69 days stale\n• Booking course 24826 (2 wks Intensive General 30, ended 19 Jun 2026): active = true — 41 days stale\n• Booking 18034: EUR 250 open (paid EUR 845 / EUR 1,095), status = PARTIAL, confirmed = false (53 days stale)\n• Payment 17683 (EUR 845): Bank, 23 Apr 2026, xeroPaymentId = null — 98 days without Xero link\n• Booking 22 (student 18): CONFIRMED, EUR 1948/1948 fully paid — no issue",
+    "Deactivate BCs 23+24826; chase EUR 250 on BK18034 via HubSpot; link PMT17683 in Xero. See recipe: issue-26-addendum-30jul.md",
+    "44th check Thu 30 Jul UTC. UNCHANGED. BCs 23+24826 stale 69d/41d. BK18034 EUR250 open PARTIAL confirmed=false. PMT17683 xeroId null (98d). Fix NOT RUN.",
+    "2 BCs stale; EUR250 open; 69d"
+   ]
+  ]
+ },
+ {
+  "range": "H28:K28",
+  "values": [
+   [
+    "• 36th check Thu 30 Jul 2026 UTC — unchanged\n• Booking 17909 (Sofiia Korkishchenko, student 768): CANCELLED but confirmed = true (anomaly)\n• Last updated 17 Jun 2026 — 43 days stale\n• Amount open = EUR 727.50, amount paid = EUR 0 — no payments on this booking\n• Booking course 24693 (Renewal Academic Year PM, 25 May to 13 Nov 2026): still active = true\n• Related: Issue 7 (row 8) tracks payment anomaly on same booking (EUR 455.5 excess, null xeroIds)",
+    "Set confirmed = false on BK17909; deactivate BC 24693. See recipe: issue-27-addendum-30jul.md",
+    "36th check Thu 30 Jul UTC. UNCHANGED. BK17909 CANCELLED confirmed=STILL true (43d). EUR727.50/0. BC24693 active end Nov13. Fix NOT RUN.",
+    "void by Oct25; 43d stale"
+   ]
+  ]
+ }
+]

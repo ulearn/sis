@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 is CONFIRMED, paid 740 / 740 — active booking for Edite Nunes (student 1015, A1)\n• Booking courses 24933 and 24934 are DUPLICATES — both General English AM, Jun 15 – Jul 10 on booking 18158\n• Zero class assignments on both booking courses — student in school since Jun 15 (Day 3) with no class record\n• Bookings 18131 (EUR 1185, ghost) and 18133 (EUR 648, ghost) are CONFIRMED, not cancelled — 14 and 13 days stale respectively",
+        "(NOT RUN) 1) UPDATE bookings SET status='CANCELLED' WHERE id IN (18131, 18133); 2) void payments 17852 (EUR1185 HS=1245328690407) + 17730 (EUR648 HS=1242902318299) via HubSpot; 3) DELETE FROM booking_courses WHERE id=24934; 4) assign class 7 (A1-AM) to booking course 24933 week start = 2026-06-17, week end = 2026-07-10. See recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun17 hrly #4: bc24933+bc24934 BOTH 0 SCAs CONFIRMED (fresh DB). bk18158 CONF 740/740. bk18131 CONF 1185 stale Jun03=14d NOT cancelled. bk18133 CONF 648 stale Jun04=13d NOT cancelled. Student in school since Jun15 Day3. NEIL: execute 4-step recipe issue-22 URGENT.\nJun17 07:02 UTC: 0 SCAs still confirmed. Day3 in school. Recipe not run. Duplicate courses (bc24933+bc24934) still both present.",
+        "D3;urgent;0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• Booking course 24826 (2 weeks Intensive General 30, Jun 08 – Jun 19) has zero class assignments for entire course\n• Student Ernesto Pesoa Gil (ID 14532, level = null) has attended 10 school days with no SIS class record\n• Course ends Friday Jun 19 — only Thu Jun 18 and Fri Jun 19 remain\n• Booking 18034 is PARTIAL, paid 845 / 1095 (EUR 250 outstanding), confirmed = false — stale since Jun 07",
+        "(NOT RUN) 1) Get Ernesto level from teacher today; 2) INSERT 2 class assignments (AM + PM) for booking course 24826, week start = 2026-06-17, week end = 2026-06-19. Level pairs: A2=cls8+cls9, B1=cls5+cls11, B2-C1=cls4+cls6, C1=cls13+cls14. See recipe: issue-26-intensive-class-assign-once.md",
+        "Jun17 hrly #4: bc24826 0 SCAs CONFIRMED (fresh DB). s14532 Ernesto level=null. bk18034 PARTIAL 845/1095 conf=false stale Jun07. Thu Jun18+Fri Jun19 = 2 school days left. NEIL: LAST CHANCE today — get Ernesto level from teacher NOW, then INSERT AM+PM SCAs ws=2026-06-17 we=2026-06-19. See recipe issue-26.\nJun17 07:02 UTC: 0 SCAs still confirmed. 3 school days incl today (Wed17/Thu18/Fri19). SQL NOT RUN. NEIL: act before EOD Wed — after today only 2 days remain.",
+        "CRIT;3d;0SCA"
+      ]
+    ]
+  }
+]

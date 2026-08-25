@@ -49,6 +49,11 @@ export async function notifyChallenge(
   opts: NotifyOptions,
 ): Promise<boolean> {
   try {
+    // Kill switch (Neil 2026-07-14): the per-student challenge Slack threads are
+    // just noise now that the Challenger dashboard tracks all of this. Off unless
+    // CHALLENGE_SLACK_NOTIFY=on is explicitly set. Kills all call sites at once.
+    if (process.env.CHALLENGE_SLACK_NOTIFY !== 'on') return false;
+
     const kind = opts.cycleKind || 'WEEK';
     const cycleStart = cycleStartFor(kind);
 

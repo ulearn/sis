@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 120th check Tue 18 Aug 2026 UTC — no change from live DB\n• Booking 18180: CONFIRMED, fully paid EUR 2,584.96, amount open = EUR 0\n• Class Assignment 424: class 12, 17 Aug to 11 Sep — duplicate of Assignment 426 (class 12, 10 Aug to 11 Sep)\n• Booking Accommodation 11357: bed 178, ended 15 Aug 2026 — 3 days stale, active = true\n• Booking Accommodation 11396: bed 44, 15 Aug to 22 Aug — fee = null, check-out Sat 22 Aug (4 days)\n• Booking Accommodation 11397: bed 89, 22 Aug to 6 Sep — fee = null, check-in Sat 22 Aug (4 days)\n• Booking Accommodation 11392: bed 168, 6 Sep to 14 Sep — fee = EUR 415",
+        "Delete Assignment 424; set fees on Accommodations 11396 and 11397; deactivate Accommodation 11357. See recipe: issue-41-addendum-18aug.md",
+        "120th Tue 18 Aug UTC. SCA 424 dup active. Accommodation 11357 3d stale. URGENT: check-in/out Sat 22 Aug (4d); fees null on Accommodations 11396+11397.",
+        "SCA424 dup; Aug22 (4d)"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 221st check Tue 18 Aug 2026 UTC — no change from live DB\n• Booking 17980: CONFIRMED, fully paid EUR 5,331, amount open = EUR 0\n• Booking Accommodation 11311: bed 84, 28 Jun to 22 Aug — check-out Sat 22 Aug (4 days)\n• Booking Accommodation 11393: bed 88, 22 Aug to 13 Sep — fee = null, check-in Sat 22 Aug (4 days)\n• Booking Course 24772 (General English AM): ends Fri 21 Aug (3 days) — deactivate then\n• Payment 17733: EUR 5,331 Bank — Xero payment ID = null (77 days unreconciled)",
+        "Set fee on Accommodation 11393; reconcile Payment 17733 in Xero; deactivate Accommodation 11311 and BC 24772 on/after 22 Aug. See recipe: issue-36b-addendum-18aug.md",
+        "221st Tue 18 Aug UTC. No change. Check-out/in Sat Aug 22 (4d). Accommodation 11393 fee null. BC 24772 ends Fri 21 Aug (3d). Payment 17733 Xero null 77d.",
+        "fee null; check-in Aug22 (4d)"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 159th check Tue 18 Aug 2026 UTC — no change from live DB\n• Booking 18151: CONFIRMED, paid EUR 1,339.20, amount open = EUR 0\n• Booking Course 24925 (Academic Year Afternoon): active, 9 Mar to 2 Oct 2026\n• service_end = 2026-08-07 — 11 days expired (should be 2026-10-02)\n• Class Assignment 255: class 11, week ended 3 Jul 2026 — 46 days stale, no return assignment\n• Student returns Mon 24 Aug (6 days) — no class assignment from 24 Aug to 2 Oct",
+        "Update service_end to 2026-10-02; create return Class Assignment class 11 24 Aug to 2 Oct. See recipe: issue-15-saikhantes-class.md",
+        "159th Tue 18 Aug UTC. Returns Mon Aug 24 (6d). Holiday ends Fri Aug 21 (3d). No class assignment 24 Aug to 2 Oct.",
+        "URGENT: return Aug24 (6d)"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• 122nd check Tue 18 Aug 2026 UTC — no change since 121st check\n• Booking 18151: CONFIRMED, paid EUR 1,339.20, amount open = EUR 0\n• Booking Course 24925 (Academic Year Afternoon): active, 9 Mar to 2 Oct 2026\n• service_end = 2026-08-07 — 11 days expired (should be 2026-10-02)\n• Class Assignment 255: class 11, week ended 3 Jul 2026 — 46 days stale, no return assignment\n• Student returns Mon 24 Aug (6 days) — no class assignment from 24 Aug to 2 Oct",
+        "Extend service_end to Oct 2; create return Class Assignment class 11 24 Aug to 2 Oct. See recipe: issue-15-saikhantes-class.md",
+        "122nd Tue 18 Aug UTC. No change. Returns Aug 24 (6d). Assignment 255 ended Jul 3 (46d stale), no return assignment.",
+        "URGENT: return Aug24 (6d)"
+      ]
+    ]
+  },
+  {
+    "range": "H52:K52",
+    "values": [
+      [
+        "• 5th check Tue 18 Aug 2026 UTC — no change since 4th check\n• Booking Accommodation 27: bed 59, 1 Aug to 15 Aug, booking 17853 — 3 days stale, active = true\n• Booking Accommodation 11230: bed = null, 4 Jul to 15 Aug, booking 32 — 3 days stale, active = true, no bed assigned\n• Booking Accommodation 11357: bed 178, 2 Aug to 15 Aug, booking 18180 (Giampaolo Russo) — 3 days stale, active = true (also tracked in Issue 41)",
+        "Deactivate Accommodations 27, 11230, 11357; fix checkout window to current week. See recipe: issue-50-addendum-18aug.md",
+        "5th Tue 18 Aug UTC. No change. 3 prev-week accommodations still active (27, 11230, 11357). All ended Aug 15.",
+        "3 prev-week BAs; 3d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 187th check Tue 18 Aug 2026 UTC — no change since 186th check\n• Booking Course 25043 (General English PM): ended 14 Aug 2026 — 4 days stale, active = true\n• Student Eduardo Roche Diaz (booking 18265): 0 class assignments on this course\n• Root cause: no automated deactivation of ended booking courses",
+        "Deactivate Booking Course 25043. See recipe: issue-38-addendum-18aug.md",
+        "187th Tue 18 Aug UTC. Booking Course 25043 4d stale (ended Aug 14). 0 class assignments. Fix NOT RUN.",
+        "BC25043 4d stale"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Two payments are unlinked — they are real, not spurious:\n• Payment 16988 → Booking 17856 (Margherita)\n• Payment 16989 → Booking 17857 (Francesca)",
+        "UPDATE payments SET booking_id=17856 WHERE id=16988; UPDATE payments SET booking_id=17857 WHERE id=16989. see recipe: issue-1-orphan-payments.md",
+        "Jun15 hrly: pmt16988(EUR339.9)+pmt16989(EUR339.9) booking_id=null CONFIRMED UNCHANGED. bk17856+bk17857 stale amtPaid=339.9 (no linked pmts). SQL NOT RUN. Deadline Jun29=14d.",
+        "14d to Jun29"
+      ]
+    ]
+  },
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "• Booking 1308 is CANCELLED, confirmed = false\n• Paid = 1530 = total amount (fully paid)\n• Course 1350 (AY afternoon) May 25 – Nov 13 is ACTIVE\n• 0 class assignments (SCAs)",
+        "UPDATE bookings SET status=CONFIRMED,confirmed=true WHERE id=1308; then assign class. see recipe: issue-17-ana-jessica-accidental-cancel.md",
+        "Jun15 hrly: bk1308 CANCELLED confirmed=false UNCHANGED (updAt=Jun07, D22+). bc1350 AY-AFT May25-Nov13 ACTIVE. 0 SCAs. NEIL: confirm bk1308 reactivation?",
+        "D22 cancelled+paid"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 CONFIRMED + PAID (740/740 at 10:10 UTC Jun 15)\n• Booking courses 24933 + 24934 DUPLICATE General English AM Jun 15 – Jul 10 (both on bk18158)\n• Bookings 18131 (1185) + 18133 (648) NOT YET CANCELLED\n• 0 class assignments for student 1015 on new course (bc24933)",
+        "(NOT RUN) 1) CANCEL bk18131+bk18133; 2) void pmt17852+pmt17730 via HubSpot; 3) DELETE bc24934; 4) assign SCA cls7 bc24933. see recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun15 hrly: 0 SCAs s1015 bc24933 UNCHANGED. bk18131 CONF 1185 + bk18133 CONF 648 NOT cancelled. bc24934 DUP live. DAY 1 DONE, SCA OVERDUE. NEIL: assign SCA cls7 bc24933 Jun15-Jul10 NOW + cancel bk18131/18133 + delete bc24934.",
+        "DAY1 DONE;0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• Student 14532 (Ernesto Pesoa Gil) has 0 class assignments for the ENTIRE course\n• Booking course 24826 (INTENSIVE) Jun 08 - Jun 19 - Week 2 (Jun15-19), 4 school days remain Tue-Fri Jun16-19\n• Booking 18034 PARTIALLY paid 845 / 1095, confirmed = false",
+        "(NOT RUN) Get Ernesto level from teacher; INSERT 2 SCAs AM+PM bc24826 ws=Jun15 we=Jun19. see recipe: issue-26-intensive-class-assign-once.md",
+        "Jun15 hrly: s14532 0 SCAs ENTIRE COURSE UNCHANGED. bc24826 INTENSIVE WK2 DAY1 (Jun15-19). 4 days remain Tue-Fri Jun16-19. bk18034 845/1095 confirmed=false (updAt=Jun07). Level=null. NEIL: CRITICAL, get level + INSERT SCAs AM+PM bc24826 ws=Jun15 we=Jun19 TODAY.",
+        "WK2 D1;4d left"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Student 1001 has attendance = 0 for ALL TIME\n• Class assignment 255 (B1 PM class 11), booking course 24925, booking 18151, Jan 12 - Jul 03 (18 days left)\n• visa_status = null, nationality = Mongolia\n• IRP risk if attendance unverified",
+        "(1) Ask cls11/B1PM teacher if Saikhantes attends; (2) YES: backfill attendance; (3) NO: IRP escalation. see recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun15 hrly: att=0 ALL TIME s1001 CONFIRMED UNCHANGED (updAt=Jun08). sca255 B1PM cls11 Jan12-Jul03 (18d remain). visaStatus=null Mongolia. NEIL: ask B1PM teacher TODAY, IRP risk, course ends Jul03.",
+        "IRP 18d"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Milena Vinci removed from SIS database (original issue resolved)\n• Giulia (student 88) has 0 class assignments - course started Mon Jun 15 (Day 1)\n• Booking 18044 CONFIRMED (duplicate, amount 1106.5) - not yet cancelled\n• Booking course 104 Morning General Plus Jun 15 - Jun 26 is active (11 days remaining)",
+        "1) Get Giulia level from staff; 2) Assign class via SIS bk94/bc104; 3) Cancel bk18044 + delete pmt17607 (double-import, not a refund - both xeroId=null, same date Mar 13). see recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun15 hrly: s88 0 SCAs UNCHANGED. bc104 Morning Plus DAY1 Jun15-26 (11d remain). bk18044 DUP CONF 1106.5 NOT cancelled (updAt=Jun07). Level=null. NEIL: URGENT, get Giulia level + assign class bc104 TODAY + cancel bk18044.",
+        "0SCA;dup bk"
+      ]
+    ]
+  }
+]

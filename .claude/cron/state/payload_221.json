@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 134th check Wed 12 Aug 2026 UTC — unchanged since 133rd check\n• Booking Course 25043 (General English PM): 10-14 Aug 2026, student 14602 Eduardo Roche Diaz — 0 class assignments\n• 3 school days lost (Mon 10 + Tue 11 + Wed 12 Aug); 2 school days remain (Thu 13 + Fri 14 Aug)\n• Booking Course active = true, confirmed booking 18265\n• Pattern: prior weeks had SCAs 358, 359, 421 for same student + class 6; Aug 10-14 week was never inserted",
+        "INSERT class assignment BC 25043, class 6, Aug 10-14 for Eduardo. See recipe: issue-38-addendum-12aug-i.md",
+        "134th Wed 12 Aug UTC. BC 25043 STILL 0 SCAs. 3 days lost. 2 days left (Thu+Fri). Fix NOT RUN.",
+        "CRITICAL: ends Fri 14 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 167th check Wed 12 Aug 2026 UTC — unchanged since 166th check\n• Booking Accommodation 11393: bed 88, active = true, start 22 Aug, end 13 Sep 2026 — fee = null (unset, 71 days)\n• Booking Course 24772 (General English AM, Pietro Caccianiga student 14521): ends 21 Aug 2026 — 9 days remaining\n• Payment 17733: EUR 5,331, Xero Payment ID = null — created 3 Jun 2026 (71 days unreconciled)",
+        "Set Booking Accommodation 11393 fee; reconcile Payment 17733 in Xero. See recipe: issue-36b-addendum-12aug-e.md",
+        "167th Wed 12 Aug UTC. BA 11393 fee null unchanged. Payment 17733 Xero null 71d. BC 24772 ends Aug 21 (9d). Fix NOT RUN.",
+        "Xero pending; BC ends Aug 21"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• 26th check Wed 12 Aug 2026 UTC — unchanged since 25th check\n• Bed 83 current occupant: Booking Accommodation 11173 (Alessandro Signorotti, 9 Aug to 30 Aug 2026, EUR 1,080)\n• Booking Accommodation 11179 (Africa Mera Bachir): ended 9 Aug 2026 — 3 days stale, active = true\n• Booking Accommodation 11352 (Veronica Martin): ended 11 Jul 2026 — 32 days stale, active = true\n• Booking Accommodation 11285 (Jesus Manuel Ramirez Diaz): ended 5 Jul 2026 — 38 days stale, fee = null\n• Booking Accommodation 11168 (Diego Da Silva Saldanha): ended 20 Jun 2026 — 53 days stale\n• Booking Accommodation 11239 (Ivan Rodriguez Solares): ended 24 May 2026 — 80 days stale\n• Future: Booking Accommodation 25 (Rosa Maria Mollica, 30 Aug to 11 Oct 2026)",
+        "Confirm BA 11285 fee (null), then deactivate BAs 11239/11168/11285/11352/11179. See recipe: issue-37-addendum-12aug-c.md",
+        "26th Wed 12 Aug UTC. BA 11179 now 3d stale (ended Aug 9). 5 stale BAs total (max 80d). Fix NOT RUN.",
+        "5 stale BAs; bed occupied"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• 26th check Wed 12 Aug 2026 UTC — unchanged since 25th check\n• Same 5 stale Booking Accommodations on bed 83 as Issue 37 (row 39)\n• Stale: Booking Accommodation 11179 (3d), 11352 (32d), 11285 (38d, fee null), 11168 (53d), 11239 (80d)\n• Current occupant: Booking Accommodation 11173 (Alessandro Signorotti, 9 to 30 Aug 2026)\n• Future: Booking Accommodation 25 (Rosa Maria Mollica, 30 Aug to 11 Oct 2026)",
+        "Deactivate Booking Accommodations 11239/11168/11285/11352/11179 on bed 83. See recipe: issue-43-addendum-12aug-c.md",
+        "26th Wed 12 Aug UTC. 5 stale BAs remain (max 80d). BA 11285 fee=null. Fix NOT RUN.",
+        "5 stale BAs; 80d max; bed occupied"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 70th check Wed 12 Aug 2026 UTC — stale count unchanged (24,479)\n• Total active Booking Courses: 24,763; stale (end date before 2026-08-12): 24,479 (98.9%)\n• Currently live Booking Courses (end date today or later): 284\n• Mass deactivation fix not yet run",
+        "Mass-deactivate all active Booking Courses where end_date < today. See recipe: issue-45-addendum-12aug-b.md",
+        "70th Wed 12 Aug UTC. 24,479 stale unchanged. Fix NOT RUN.",
+        "24,479 stale; fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 101st check Wed 12 Aug 2026 UTC — unchanged since 100th check\n• Booking Course 1810 (Academic Year Renewal Morning, Telmuun Enkhsaikhan student 293): ends 1 Jan 2027, active = true — 0 class assignments (46 days since course start)\n• Booking 1624: status PARTIAL, confirmed = false — EUR 250 open balance (paid EUR 1,406 of EUR 1,656)",
+        "Assign Booking Course 1810 to AM class; clarify EUR 250 open balance. See recipe: issue-48-addendum-12aug-d.md",
+        "101st Wed 12 Aug UTC. Booking Course 1810: 0 class assignments (46 days). EUR 250 open unchanged. Fix NOT RUN.",
+        "payment gap; BC1810 46d"
+      ]
+    ]
+  }
+]

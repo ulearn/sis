@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 63rd hourly check Sat 25 Jul 2026 UTC (160th total)\n• Payment 16988 (EUR 339.90, Bank, 28 Apr 2026): booking ID null -- 88 days orphaned\n• Payment 16989 (EUR 339.90, Bank, 28 Apr 2026): booking ID null -- 88 days orphaned\n• Payment 17187 (EUR 6,151, TransferMate Escrow, 1 May 2026): booking ID null -- fideloPaymentId = 37587, transactionId = D2026226 -- 85 days orphaned\n• Payment 4781 (EUR 380, Flywire, Aug 2019): fideloPaymentId = 32056 -- permanently unresolvable\n• Stale booking courses (confirmed, past end date): 23,190 -- NOTE: was 24,436 in all prior reports, dropped by 1,246 this run -- verify if Neil ran cleanup\n• Stale booking accommodations with active beds: 43 -- unchanged",
+        "Link payments 16988 + 16989 to correct bookings; investigate fideloId=37587 on payment 17187. See recipe: issue-1-addendum-25jul.md",
+        "63rd hrly 160th check Sat 25 Jul UTC. Same 4 orphan pmts (88d/85d). staleBCs: 23,190 (was 24,436, -1246 -- verify). Stale BAs with beds: 43. Fix NOT RUN.",
+        "4 orphan pmts; 23,190 stale BCs"
+      ]
+    ]
+  },
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• 83rd hourly check Sat 25 Jul 2026 UTC (161st total)\n• Dolgormaa Bayaraa (student 1897): email saraa.tpb@gmail.com in phone field -- 8 days unchanged\n• Aki Miura (student 8567): email aki-hinaaki1116@ezudo.he.jp in phone field -- 106 days\n• Jieun Lee (student 1194): annotation 00821097366523 (home contry) in phone field -- 79 days\n• Lisa Li (student 5345): annotation 0864645297 (Husband) in phone field -- 106 days\n• Alessandra Saito de Araujo (student 10343): Unicode trailing chars in +353 (83) 885 9162 -- 88 days\n• EXPANDED FILTER: 15 additional phones flagged (international format with parenthetical area codes, e.g. +353 (83) 163 5745) -- likely valid, NOT errors\n• NEW (1 day): Student 14556 Theodore Bolt -- +1 (984) 389-3888 -- looks like valid US format, verify via HubSpot",
+        "Strip annotations on students 1194 and 5345; strip Unicode on 10343; get real numbers for 1897 and 8567 from HubSpot; verify student 14556. See recipe: issue-6-addendum-25jul.md",
+        "83rd hrly 161st check Sat 25 Jul UTC. Core 5 unchanged. Expanded filter finds 20 total but 15 are intl format with area codes (probably OK). New: student 14556 Theodore Bolt (1d, US format). Fix NOT RUN.",
+        "5 phones wrong; 15 ambiguous"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• 80th hourly check Sat 25 Jul 2026 UTC (161st total)\n• Booking course BC 24991 (General English AM, booking 18214, student 1015): STILL zero class assignments\n• Course ends Fri 7 Aug 2026 -- 9 effective school days remaining\n• School days remaining: Mon 27-Fri 31 Jul (5) + Tue 4-Fri 7 Aug (4) = 9 days (Aug 3 Bank Holiday pending Issue 38)\n• 10 school days already missed -- student attended zero assigned classes\n• Fix order: 1) Add Aug BH closure (Issue 38) -- 2) Assign BC 24991 to General English AM from Mon 27 Jul",
+        "Fix Issue 38 first (Aug BH closure), then assign BC 24991 to General English AM from Mon 27 Jul. See recipe: issue-22-addendum-25jul.md",
+        "80th hrly 161st check Sat 25 Jul UTC. 0 SCAs. 10d missed, 9d remain (ends Fri 7 Aug, Aug 3 BH). Depends on Issue 38. Fix NOT RUN.",
+        "CRITICAL; 10d missed; 9d remain"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 88th hourly check Sat 25 Jul 2026 UTC (161st total)\n• August Bank Holiday Mon 3 Aug 2026: STILL absent from school_closures -- NOW 9 calendar days away -- CRITICAL\n• October Bank Holiday Mon 26 Oct 2026: also absent from school_closures\n• Active booking courses spanning Aug 3: 204 (up from 203 yesterday, +1 new course)\n• Booking courses starting 2026-08-03: 17 (students would arrive on a closed school)\n• NEW: Giampaolo Russo (Issue 41) booking course BC 24956 starts Mon 3 Aug -- directly affected\n• Issue 22 (Edite Nunes, BC 24991 ends Fri 7 Aug) still depends on this fix first",
+        "Insert school closures: Aug BH 3 Aug 2026 (isPaidHoliday=true); Oct BH 26 Oct 2026. 204 courses affected; 17 start Aug 3. See recipe: issue-38-addendum-25jul.md",
+        "88th hrly 161st check Sat 25 Jul UTC. Aug BH now 9 days away. 204 courses span Aug 3 (was 203). Giampaolo BC24956 starts Aug 3. 17 courses start Aug 3. Fix NOT RUN.",
+        "Aug BH; 9d CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• 83rd hourly check Sat 25 Jul 2026 UTC (161st total)\n• Booking course BC 24609 (Morning General, booking 17831, student 14443): STILL zero class assignments\n• Course ends Fri 31 Jul 2026 -- FINAL WEEK starts Mon 27 Jul (2 days away) -- 5 SCHOOL DAYS LEFT\n• 10 school days already missed (weeks 13-18 Jul and 21-25 Jul)\n• Accommodation BA 11358 (Host Family, bed 180, 12 Jul - 2 Aug 2026): active = true -- unchanged\n• NOT blocked by Issue 38 -- course ends 31 Jul before Aug 3 Bank Holiday\n• Payment: fully settled EUR 1,396.90",
+        "Assign BC 24609 to Morning General B2 class from Mon 27 Jul -- URGENT (5 school days left). See recipe: issue-39-addendum-25jul.md",
+        "83rd hrly 161st check Sat 25 Jul UTC. 0 SCAs. Final week starts Mon 27 Jul = 2 days. Course ends Fri 31 Jul. NOT blocked by Issue 38. Fix NOT RUN.",
+        "CRITICAL; 5d left; Mon 27 Jul"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 83rd hourly check Sat 25 Jul 2026 UTC (161st total)\n• Booking 18180 (Giampaolo Russo, student 14571): confirmed = true, fully paid EUR 2,584.96\n• Accommodation BA 11357 (Host Family, Half Board, bed 178, 2 Aug - 6 Sep 2026): active = true -- check-in Sun 2 Aug = 8 days away\n• Booking course BC 24956 (General English AM, 3 Aug - 11 Sep 2026): starts Mon 3 Aug = August Bank Holiday (Issue 38 not yet fixed -- may need adjusting to Tue 4 Aug)\n• Capel Street apartment (6 Sep - 14 Sep 2026): NOT YET ADDED to booking 18180\n• Payment 17954 (EUR 2,584.96, Bank, 26 Jun 2026): xeroPaymentId = null -- 29 days unreconciled",
+        "Add Capel Street accomm to booking 18180 (6 Sep - 14 Sep); reconcile payment 17954 in Xero; check BC 24956 start vs Aug BH (Issue 38). See recipe: issue-41-addendum-25jul.md",
+        "83rd hrly 161st check Sat 25 Jul UTC. Check-in Aug 2 = 8 days (was 9). Capel still missing. BC24956 starts Aug 3 = Aug BH not yet fixed. Xero null 29d. Fix NOT RUN.",
+        "Xero null; Capel missing; 8d check-in"
+      ]
+    ]
+  }
+]

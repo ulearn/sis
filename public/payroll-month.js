@@ -294,6 +294,32 @@ window.MonthlyPayrollComponent = function({ data, selectedMonthlyPeriod, onDataR
 
     const filteredWeeks = data.weeks.filter(isWeekInPeriod);
 
+    // SSP reference window (Sick Leave Act 2022): a teacher's hours & pay over the
+    // 13 completed weeks immediately BEFORE `periodFrom` (YYYY-MM-DD). Returns the
+    // per-week hours too, so the caller can take a MEDIAN (robust to odd rows).
+    // NB: the SIS /api/payroll/data week object uses total_pay (not total_salary).
+    const sickPayLookback = (teacher, allWeeks, periodFrom, numWeeks) => {
+        const parseWeek = (ws) => {
+            const m = ws.match(/(\d{2})\/(\d{2})\/(\d{4})\s*–\s*(\d{2})\/(\d{2})\/(\d{4})/);
+            return m ? { start: `${m[3]}-${m[2]}-${m[1]}`, end: `${m[6]}-${m[5]}-${m[4]}` } : null;
+        };
+        const prior = allWeeks
+            .map(w => ({ w, d: parseWeek(w) }))
+            .filter(x => x.d && x.d.end < periodFrom)
+            .sort((a, b) => b.d.start.localeCompare(a.d.start))
+            .slice(0, numWeeks);
+        let hours = 0, pay = 0; const weeklyHours = [];
+        for (const { w } of prior) {
+            const wd = teacher.weeks[w];
+            if (!wd) continue;
+            const h = parseFloat(wd.total_hours) || 0;
+            const p = (wd.weekly_pay !== null && wd.weekly_pay !== undefined)
+                ? (parseFloat(wd.weekly_pay) || 0) : (parseFloat(wd.total_pay) || 0);
+            hours += h; pay += p; weeklyHours.push(h);
+        }
+        return { hours, pay, weeklyHours, weeksUsed: prior.length };
+    };
+
     // Calculate monthly totals per teacher
     const monthlyData = data.teachers.map(teacher => {
         let periodTotalHours = 0;
@@ -347,13 +373,35 @@ window.MonthlyPayrollComponent = function({ data, selectedMonthlyPeriod, onDataR
             ? 5  // Edge case: single week period (shouldn't normally happen)
             : 2 + ((numWeeks - 2) * 5) + 3;  // First(2) + Middle(5 each) + Last(3)
 
-        // Calculate average using ALL working days (sick days remain in denominator for "usual earnings")
-        const avgHoursPerDay = workingDaysInPeriod > 0 ? periodTotalHours / workingDaysInPeriod : 0;
-        const sickLeaveHours = sickDaysFromZoho * avgHoursPerDay;
+        // ── Statutory Sick Pay (SSP) — Sick Leave Act 2022 ─────────────────────
+        // Normal daily pay = hourly rate × normal hours/day, then 70%, capped €110/day.
+        //  · hourly rate : Σpay ÷ Σhours over the 13 weeks before this period (his rate
+        //                  does not change; Σpay/Σhours is robust to odd historical rows).
+        //  · hours/day   : MEDIAN weekly hours over those 13 weeks ÷ 5 — median (not mean)
+        //                  so a stray backfill/partial week cannot skew "a normal day".
+        // Sick days come from Zoho, already gated to 5/yr + 13-week service upstream.
+        const SSP_RATE = 0.70;
+        const SSP_DAILY_CAP = 110;
+        const _lb = sickPayLookback(teacher, data.weeks, selectedMonthlyPeriod.from, 13);
+        const _median = (arr) => {
+            const a = arr.filter(h => h > 0).sort((x, y) => x - y);
+            if (!a.length) return 0;
+            const mid = Math.floor(a.length / 2);
+            return a.length % 2 ? a[mid] : (a[mid - 1] + a[mid]) / 2;
+        };
+        const sspHourlyRate = _lb.hours > 0 ? _lb.pay / _lb.hours : (rateCount > 0 ? rateSum / rateCount : 0);
+        const sspDailyHours = _lb.weeklyHours.length
+            ? _median(_lb.weeklyHours) / 5
+            : (workingDaysInPeriod > sickDaysFromZoho ? periodTotalHours / (workingDaysInPeriod - sickDaysFromZoho) : 0);
+        const sspDailyPay = sspHourlyRate * sspDailyHours;
+        const sspPerDay = Math.min(SSP_DAILY_CAP, SSP_RATE * sspDailyPay);
+        const sickLeaveHours = sickDaysFromZoho * sspDailyHours;   // days × normal hours (display)
+        const sickLeaveEuro = sspPerDay * sickDaysFromZoho;        // CAPPED € — single source of truth
+        const avgHoursPerDay = sspDailyHours;                      // back-compat alias
 
         console.log(`[MONTH.JS] Leave found for ${teacher.email}: ${leaveFromZoho}h leave, ${sickDaysFromZoho} sick days`);
         console.log(`[MONTH.JS] Sick leave calculation: ${numWeeks} weeks = ${workingDaysInPeriod} working days in period`);
-        console.log(`[MONTH.JS] Average: ${periodTotalHours}h ÷ ${workingDaysInPeriod} days = ${avgHoursPerDay.toFixed(2)} h/day → Sick: ${sickDaysFromZoho} days × ${avgHoursPerDay.toFixed(2)} h/day × €rate × 0.70 = sick pay`);
+        console.log(`[MONTH.JS] SSP ${teacher.email}: €${sspHourlyRate.toFixed(2)}/h × ${sspDailyHours.toFixed(2)}h/day (13wk median) = €${sspDailyPay.toFixed(2)}/day × 70% (cap €110) = €${sspPerDay.toFixed(2)}/day × ${sickDaysFromZoho} sick = €${sickLeaveEuro.toFixed(2)}`);
 
         // teacher.teacher_name is already in "Surname, First Name" format
         // (matches teacher_payroll_entries.teacher_name and the adjustments key).
@@ -379,8 +427,13 @@ window.MonthlyPayrollComponent = function({ data, selectedMonthlyPeriod, onDataR
             total_pay: periodTotalPay,
             leave_taken: leaveFromZoho,
             sick_days_taken: sickDaysFromZoho,  // Store days for display
-            sick_leave_hours: sickLeaveHours,    // Store calculated hours for payment
-            avg_hours_per_day: avgHoursPerDay,   // Store for reference
+            sick_leave_hours: sickLeaveHours,    // days × normal hours (display only)
+            sick_leave_euro: sickLeaveEuro,      // CAPPED SSP € — single source of truth (do NOT re-derive)
+            ssp_hourly_rate: sspHourlyRate,      // 13-week avg hourly rate
+            ssp_daily_hours: sspDailyHours,      // 13-week median normal hours/day
+            ssp_daily_pay: sspDailyPay,          // normal daily pay (pre-70%)
+            ssp_per_day: sspPerDay,              // 70% of daily, capped €110/day
+            avg_hours_per_day: avgHoursPerDay,   // back-compat
             other: adjustments.other,
             impact_bonus: adjustments.impact_bonus,
             hasRecordsInPeriod: hasRecordsInPeriod
@@ -496,7 +549,7 @@ window.MonthlyPayrollComponent = function({ data, selectedMonthlyPeriod, onDataR
                 <tbody>
                     {monthlyData.map((teacher, idx) => {
                         const leaveEuro = teacher.average_rate * teacher.leave_taken;
-                        const sickLeaveEuro = teacher.average_rate * teacher.sick_leave_hours * 0.70; // 70% of standard rate
+                        const sickLeaveEuro = teacher.sick_leave_euro; // capped SSP: 13wk rate × median daily hours × 70%, ≤ €110/day
                         const finalTotalPay = teacher.total_pay + teacher.other + teacher.impact_bonus + leaveEuro + sickLeaveEuro;
                         return (
                             <tr key={idx}>

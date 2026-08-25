@@ -1,0 +1,35 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 52nd check Fri 7 Aug 2026 00:03 UTC — service_end EXPIRED 3 minutes ago\n• Booking 18151 service_end = 2026-08-07T00:00:00.000Z — passed midnight UTC today\n• Student (Saikhantes Shagdarsuren, ID 1001) portal access locked out NOW\n• Booking Course 24925 (AY Afternoon, 9 Mar to 2 Oct 2026): active, end date correct\n• Last class assignment: class 11 (B1 PM), week_end = 2026-07-03 — 35 days without new assignment\n• Student on holiday — returns Mon 24 Aug 2026\n• Fix NOT applied",
+        "UPDATE booking 18151 service_end to 2026-10-02 IMMEDIATELY; create SCA class 11 before 24 Aug. See recipe: issue-15-addendum-7aug-b.md",
+        "52nd hrly Fri 7 Aug 2026 00:03 UTC. EXPIRED confirmed (3 min past midnight). Booking 18151 service_end 2026-08-07T00:00:00Z. Student 1001 locked out. Fix NOT RUN.",
+        "CRITICAL: EXPIRED NOW"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 49th check Fri 7 Aug 2026 00:03 UTC — no change since 48th check\n• All 17 Booking Courses starting Mon 10 Aug 2026 still have 0 class assignments\n• 13 ready to assign (CONFIRMED + confirmed=true): BCs 108, 109, 1313, 1818, 24915, 24970, 25004, 25005, 25024, 25027, 25031, 25036, 25039\n• 4 blocked: BC 96 (confirmed=false), BC 833 (ESCROW), BC 25007 (PARTIAL), BC 25042 (PENDING)\n• Classes start Monday 10 Aug — assignments must be done by EOD today",
+        "Assign 13 ready BCs in SIS Admin before EOD TODAY. See recipe: issue-38-addendum-7aug-b.md",
+        "49th hrly Fri 7 Aug 2026 00:03 UTC. Still 0 SCAs for all 17 BCs. 13 ready, 4 blocked unchanged. Classes start Mon 10 Aug. Fix NOT RUN.",
+        "URGENT: deadline TODAY"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 19th check Fri 7 Aug 2026 UTC — no change since 18th check\n• Booking accommodation 11357 (Host Family, bed 178, Claremont Close, 2 Aug - 6 Sep 2026): active — student checked in 5 days ago (2 Aug)\n• Booking accommodation 11392 (City Centre Apartment, 6 Sep to 14 Sep 2026): bed_id = null — still unassigned, 30 days until check-in, fee EUR 415\n• Payment 17954: EUR 2,584.96, Bank, 26 Jun 2026, xero_payment_id = null — 42 days unreconciled",
+        "Assign bed to booking accommodation 11392 in SIS; reconcile payment 17954 in Xero. See: issue-41-addendum-7aug.md",
+        "19th hrly Fri 7 Aug UTC. Host family BA 11357 active (checked in 2 Aug, 5 days). Capel BA 11392 bed_id still null (Sep 6, 30 days). Payment 17954 xeroPaymentId null 42d. Fix NOT RUN.",
+        "Capel BA unassigned; Xero 42d"
+      ]
+    ]
+  }
+]

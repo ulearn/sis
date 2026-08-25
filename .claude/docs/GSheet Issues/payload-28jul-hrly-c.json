@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "• 49th check Tue 28 Jul 2026 UTC — unchanged\n• Document 171 (booking 1498): status = DRAFT, versionNo = 1\n• Created 5 Jun 2026 — 53 days old, never updated\n• Booking 1498 (Suvderdene Bayartsog): Confirmed, confirmed = true\n• No action taken — document remains in DRAFT state",
+        "Issue or delete document 171 via SIS admin. See recipe: issue-9-addendum-28jul.md",
+        "49th check Tue 28 Jul UTC. UNCHANGED. Doc171 STILL DRAFT (53d since Jun05, never updated). Fix NOT RUN.",
+        "53d; unissued"
+      ]
+    ]
+  },
+  {
+    "range": "H12:K12",
+    "values": [
+      [
+        "• 7th check Tue 28 Jul 2026 UTC — unchanged\n• Student 1063 (Valeriya Salauyova): hubspotContactId = null\n• Record updatedAt = today 09:38 UTC (same bulk touch as student 356) — contact ID still null after bulk update\n• Booking 17912: Confirmed, EUR 1,938 / 1,938 fully paid, confirmed = true (last updated 8 Jul 2026)\n• Fix: search HubSpot for Valeriya Salauyova and backfill hubspotContactId on student 1063",
+        "Backfill hubspotContactId for student 1063. See recipe: issue-11-addendum-28jul.md",
+        "7th check Tue 28 Jul UTC. Student 1063 hubspotContactId=STILL null. Record updatedAt=today 09:38 (bulk touch, did not fix contactId). BK17912 Confirmed EUR1938/1938. Fix NOT RUN.",
+        "hubspot link null; 49d"
+      ]
+    ]
+  },
+  {
+    "range": "H17:K17",
+    "values": [
+      [
+        "• 7th check Tue 28 Jul 2026 UTC — unchanged\n• Booking accommodation 11282 (bed 66, booking 17897, Melie Villard): active = still true\n• Date range: 15 May 2026 to 5 Jun 2026 — 53 days stale since term ended\n• Last DB update: 5 Jun 2026 — data hygiene only, no guest impact\n• Fix NOT RUN",
+        "Deactivate BA 11282 (active = false). See recipe: issue-16-addendum-28jul.md",
+        "7th check Tue 28 Jul UTC. BA11282 bed66 May15-Jun05 active=STILL true (53d stale). Cosmetic. Fix NOT RUN.",
+        "53d stale; cosmetic"
+      ]
+    ]
+  },
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "• 12th check Tue 28 Jul 2026 UTC — unchanged\n• Booking 1308 (Ana Jessica Rosa de Paula Santos): CANCELLED, confirmed = false — 51 days since cancellation (7 Jun 2026)\n• Amount paid = EUR 1,530 / 1,530 (fully paid despite CANCELLED status — anomaly)\n• Payment 17186 (EUR 1,280): type = null, xeroPaymentId = null — 84 days without Xero link\n• Payment 17050 (EUR 250): type = null, xeroPaymentId = null — 84 days without Xero link\n• Booking course 1350 (Academic Year Afternoon): active = true, end 13 Nov 2026 (future — orphaned; booking is CANCELLED)",
+        "Reinstate booking 1308 or reconcile payments 17186+17050 in Xero; deactivate BC 1350. See recipe: issue-17-addendum-28jul.md",
+        "12th check Tue 28 Jul UTC. UNCHANGED. BK1308 CANCELLED EUR1530/1530 confirmed=false (51d). PMT17186 EUR1280 + PMT17050 EUR250 both xeroPaymentId=null (84d). BC1350 active=true end Nov13 2026 future. Fix NOT RUN.",
+        "pmts 84d; BC stale (cancelled bk)"
+      ]
+    ]
+  },
+  {
+    "range": "H24:K24",
+    "values": [
+      [
+        "• Tue 28 Jul 2026 UTC — UNCHANGED\n• Booking course 828 (Academic Year Morning, booking 787): start 2 Mar 2026, end 27 Feb 2026 — backwards dates (DST legacy bug)\n• Booking course 826 (ended 28 Nov 2025): 242 days stale, active = true\n• Booking course 827 (ended 30 Jan 2026): 179 days stale, active = true\n• Booking course 829 (ended 5 Jun 2026): 53 days stale, active = true",
+        "Fix BC 828 end date; deactivate BCs 826, 827, 828, 829. See recipe: issue-23-addendum-28jul.md",
+        "Tue 28 Jul UTC — UNCHANGED. Backwards dates: BC828 start=Mar02 end=Feb27. BCs 826(242d)/827(179d)/828/829(53d) all stale active=true. Low-priority. Fix NOT RUN.",
+        "backwards dates; low-pri"
+      ]
+    ]
+  },
+  {
+    "range": "H34:K34",
+    "values": [
+      [
+        "• 11th check Tue 28 Jul 2026 UTC — unchanged\n• Student 356 (Shih-Wei Huang): gender = null\n• Record updatedAt = today 09:38 UTC (same bulk touch as student 1063) — gender STILL null after bulk update\n• Document 238 (exit letter, booking 560): ISSUED since 18 Jun 2026 — 40 days with wrong Ms./she/her pronouns\n• Code defect: src/scripts/documents.ts approx line 338 — null gender defaults to female salutation",
+        "Set student 356 gender=male; revoke and regenerate doc 238; fix null-gender default in documents.ts ~L338. See recipe: issue-33-addendum-28jul.md",
+        "11th check Tue 28 Jul UTC. UNCHANGED. Student 356 gender=null (bulk touch today 09:38, gender STILL null). Doc238 ISSUED v1 wrong Ms/she/her (40d since Jun18). Code defect documents.ts ~L338. Fix NOT RUN.",
+        "54d; doc238 wrong pronouns"
+      ]
+    ]
+  }
+]

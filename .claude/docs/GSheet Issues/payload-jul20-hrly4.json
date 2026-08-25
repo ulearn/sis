@@ -1,0 +1,46 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 73rd check Mon 20 Jul 2026 UTC (8th hourly)\n• Payment 16988 (EUR 339.90, HubSpot payment ID 1204827374829): booking ID null — 83 days since 28 Apr 2026\n• Payment 16989 (EUR 339.90, HubSpot payment ID 1204846469317): booking ID null — 83 days since 28 Apr 2026\n• Payment 17187 (EUR 6151, Fidelo payment 37587, transaction D2026226): booking ID null — 76 days since 5 May 2026\n• Payment 4781 (EUR 380, Fidelo payment 32056, transaction D20191404): booking ID null — 101 days since creation 10 Apr 2026 (payment date 2019)\n• Booking 17856 (Margherita Galbusera): status CONFIRMED, confirmed = false (anomaly), amount paid EUR 339.90 / total EUR 339.90\n• Booking 17857 (Francesca Fassina): status CONFIRMED, confirmed = false (anomaly), amount paid EUR 339.90 / total EUR 339.90\n• Stale booking courses: 24,436 with active = true and end date before 20 Jul 2026 — auto-deactivation still not running",
+        "Link payments to bookings; set confirmed=true on bks 17856+17857; run BC deactivation. See recipe: issue-1-orphan-payments.md",
+        "73rd check Mon 20 Jul (8th hrly). UNCHANGED. 4 orphan payments: 16988+16989 (EUR 339.90 ea), 17187 (EUR 6151), 4781 (EUR 380). Bk17856+17857 CONF confirmed=false. Stale BCs: 24,436. Fix NOT RUN.",
+        "4 orphan pmts; 24,436 stale BCs"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 85th check Mon 20 Jul 2026 UTC (8th hourly)\n• August Bank Holiday Mon 3 Aug 2026: STILL absent from school closures — 14 days away\n• October Bank Holiday Mon 26 Oct 2026: STILL absent — 98 days away\n• Only 1 school closure in second half 2026 confirmed in DB: Christmas 21 Dec 2026 to 3 Jan 2027 (id = 7) — no bank holidays\n• August Bank Holiday is the critical deadline: 14 days until first affected courses may be impacted",
+        "Add Aug BH (3 Aug) + Oct BH (26 Oct) to school_closures. See recipe: issue-38-addendum-20jul.md",
+        "85th check Mon 20 Jul (8th hrly). Aug Bank Holiday Mon 3 Aug 2026: STILL absent — 14 days. Oct Bank Holiday Mon 26 Oct 2026: STILL absent — 98 days. Only closure in H2 2026: Christmas Dec 21-Jan 3 (id=7). Fix NOT RUN.",
+        "Aug BH; 14d URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• 38th check Mon 20 Jul 2026 UTC (8th hourly)\n• Booking course 24609 (Xuezhen Huang, Morning General, 13 Jul to 31 Jul 2026): STILL 0 class assignments\n• Week 1 (13-17 Jul): permanently missed — 5 school days gone\n• Week 2 underway (day 1, Mon 20 Jul) — 2 weeks remain (ends 31 Jul)\n• Accommodation 11357 (bed 178, Host Family, 2 Aug to 6 Sep 2026): active = true — unaffected by this issue",
+        "Assign BC24609 to Morning General class now. See recipe: issue-39-addendum-20jul.md",
+        "38th check Mon 20 Jul (8th hrly). BC24609 Xuezhen Huang STILL 0 class assignments — DB confirmed. Week 2 day 1. 2 weeks remain (ends 31 Jul). Fix NOT RUN.",
+        "CRITICAL; assign NOW"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 39th check Mon 20 Jul 2026 UTC (8th hourly)\n• Mon 20 Jul starters — 7 confirmed booking courses STILL 0 class assignments on day 1\n• Booking course 1630 Saranzaya Khishigbayar (Academic Year Afternoon, ends 8 Jan 2027): 0 class assignments — started today\n• Booking course 24616 Mia Wehrli (General English AM Plus, ends 31 Jul 2026): 0 class assignments — started today\n• Booking course 24686 Alberto Squillace (Morning General, ends 18 Sep 2026): 0 class assignments — started today\n• Booking course 24942 Lorena Fernanda Pizarro Araya (Academic Year Morning, ends 22 Jan 2027): 0 class assignments — started today\n• Booking course 24966 Filippo Corazzini (General English AM Plus, ends 7 Aug 2026): 0 class assignments — started today\n• Booking course 24989 Marcos Abrego Tofe (General English AM, 1 week, ends 24 Jul 2026): CRITICAL — only 4 days left, 0 class assignments\n• Booking course 25000 Giorgio Sau (General English AM Plus, ends 21 Aug 2026): 0 class assignments — started today\n• Jul 13 actives — 9 booking courses STILL 0 class assignments (week 2 in progress): BC 1619 Munkhtsetseg, BC 1788 Pedro Campion, BC 1814 Wanqiong Hou, BC 24820 Italo Teixeira, BC 24988 Minjinsor Buyanbat, BC 24990 Samuele Stenico, BC 24998 Allison, BC 24609 Xuezhen Huang, BC 24991 Edith Nunes\n• Stale (ended 17 Jul, active = still true): BC 24946 Lunel Dubost, BC 24992 Luz Maria Sobrino, BC 24994 Petru Ous",
+        "Assign all confirmed active BCs to classes now; deactivate stale BCs. See recipe: issue-45-addendum-20jul.md",
+        "39th check Mon 20 Jul (8th hrly). All 7 Mon 20 Jul starters STILL 0 class assignments: BC1630/24616/24686/24942/24966/24989/25000. BC24989 Marcos ends 24 Jul — 4 DAYS. Jul13 BCs also 0 (BC1619/1788/1814/24820/24988/24990/24998/24609/24991). Stale: BC24946/24992/24994 active=true. Fix NOT RUN.",
+        "CRITICAL; assign NOW"
+      ]
+    ]
+  }
+]

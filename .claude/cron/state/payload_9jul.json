@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H37:K37",
+    "values": [
+      [
+        "• Homework section: renderSheetHtml() routes/attendance.ts lines 36–98 — no homework block present; awaiting Paul / Neil layout spec\n• Holiday display bug: getWeekAttendance (scripts/attendance.ts lines 31–184) does not fetch bookingHoliday records — students on holiday appear in the attendance grid with live checkboxes\n• getStudentAttendance (line 364) correctly fetches holidays via fetchStudentHolidays — only the weekly-grid path is missing it\n• Both bugs confirmed still present (20th code check 9 Jul 2026 UTC)",
+        "Homework: get Paul/Neil layout spec then add to renderSheetHtml. Holiday: add bookingHoliday fetch to getWeekAttendance (attendance.ts L31). See recipes: issue-36-attendance-homework-section.md + issue-36c-attendance-holiday-display.md",
+        "20th code check 9 Jul UTC. Code STILL unchanged. (1) renderSheetHtml() routes/attendance.ts L36-128 — no homework block. (2) getWeekAttendance L31-184 — no bookingHoliday fetch; holiday students appear with live checkboxes. False-positive sha: two rows share issue#36 in col A (seen.json key collision). Awaiting Paul/Neil homework spec.",
+        "code unchanged; open"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Gap 2 — Holiday weeks field: FIXED — calcHolEnd() / calcHolWeeks() present at admin.html lines 13832–13843\n• Gap 1 — Admin course start Monday snap: STILL OPEN — calcCourseEnd() at admin.html line 13801 does not snap start date to Monday; no BH_MONDAYS array found anywhere in admin.html\n• Gap 3 — Irish bank holiday Mondays: STILL OPEN — SchoolClosure table has 4 Christmas breaks + 5 Good Friday records (9 total); zero Irish public bank holiday Mondays (August, October, May, June)",
+        "Add snapAdminCourseStart() + BH_MONDAYS array to admin.html; wire to course startDate onchange. Add Irish bank holiday Mondays to SchoolClosure table. See recipe: issue-38-course-date-ux.md",
+        "1st check 9 Jul UTC. calcCourseEnd() admin.html L13801 STILL no Monday-snap; no BH_MONDAYS in file. SchoolClosure DB: 4 Christmas + 5 Good Friday = 9 records, zero Irish bank holiday Mondays. holWeeks (Gap 2) confirmed FIXED at admin.html L13832-13843. Gaps 1+3 remain open.",
+        "open; Gaps 1+3"
+      ]
+    ]
+  }
+]

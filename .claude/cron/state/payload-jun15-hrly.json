@@ -1,0 +1,34 @@
+[
+  {
+    "range": "J23",
+    "values": [
+      [
+        "Jun15 hrly(cron): COURSE DAY1. bk18158 PEND 0/740 UNCHANGED. bc24933(GE-AM)+bc24934(DUP) both active. bk18131 CONF 1185+bk18133 CONF 648 NOT cancelled. 0 SCAs s1015. NOT RUN. NEIL: (1)CANCEL bk18131+18133; (2)void pmt17852(HS=1245328690407)+pmt17730(HS=1242902318299) via HS; (3)DELETE bc24934; (4)after bk18158 paid assign s1015 cls7(A1) c24933."
+      ]
+    ]
+  },
+  {
+    "range": "J27",
+    "values": [
+      [
+        "Jun15 hrly(cron): WK2 DAY1. s14532 Ernesto level=null 0SCAs ALL COURSE. bc24826 INTENSIVE ends Jun19=4d. WK1 MISSED. bk18034 PARTIAL 845/1095 conf=false. SQL NOT RUN: INSERT INTO student_class_assignments(booking_course_id,class_id,week_start,week_end,student_id) VALUES(24826,AM_id,2026-06-15,2026-06-19,14532),(24826,PM_id,2026-06-15,2026-06-19,14532). Level pairs: A2=cls8/9,B1=cls5+12/11,B2-C1=cls4/6,C1=cls13/14. NEIL: get Ernesto level from teacher NOW."
+      ]
+    ]
+  },
+  {
+    "range": "J31",
+    "values": [
+      [
+        "Jun15 hrly(cron): DAY1. s88 Giulia JUNIOR level=null 0SCAs (DB confirmed). bk94 CONF 1151.5/1151.5 c104 ACTIVE. bk18044 DUP CONF 1106.5 NOT cancelled. bk18152 Milena PEND 0. pmt17607 EUR1151.5 vs total=1106.5(EUR44.5 excess=dbl-import Mar13). All 4 steps NOT RUN. NEIL: (1)get Giulia level; (2)assign s88 AM class bk94/c104; (3)cancel bk18044+DELETE pmt17607; (4)cancel bk18152+delete Milena s14557."
+      ]
+    ]
+  },
+  {
+    "range": "J32",
+    "values": [
+      [
+        "Jun15 hrly(cron): TZ ABSENT .env CONFIRMED. 43 SCAs week_end=null UNCHANGED. Att sheets broken. FIX1(NOT RUN): echo TZ=UTC >> .env; touch tmp/restart.txt. FIX2(NOT RUN): UPDATE student_class_assignments SET week_end=<date> WHERE week_end IS NULL (43 rows). NEIL: FIX1=10sec, apply NOW."
+      ]
+    ]
+  }
+]

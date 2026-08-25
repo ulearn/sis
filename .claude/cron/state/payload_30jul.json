@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Aug Bank Holiday 2026-08-03 not in school_closures — 10th check Thu 30 Jul 2026 UTC\n• 20 active booking courses start 2026-08-03 — students arrive Bank Holiday with no class\n• Booking course 25006 (Marina Larripa) ends Aug 3 — last teaching day at risk\n• Fix NOT RUN. DEADLINE TOMORROW Fri 31 Jul 2026",
+        "Run 3-step fix: insert school closure + shunt 20 booking courses to Aug 4 + push BC 25006 end to Aug 4. See recipe: issue-38-addendum-30jul-l.md",
+        "10th hrly check Thu 30 Jul UTC. DEADLINE TOMORROW. Unchanged from 30jul-k.",
+        "URGENT; BH unshunted"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• Booking 18180 (Giampaolo Russo, student 14571): CONFIRMED, fully paid EUR 2,584.96\n• Booking Accommodation 11357 (Host Family, Patty McSweeney): bed 178, Aug 2 to Sep 6 — present and correct\n• Capel Street apartment booking (Sep 6 to Sep 14): STILL ABSENT — no second BA record\n• Check-in Sunday Aug 2 — 3 days away. Awaiting Diego confirmation of Capel bed ID and fee",
+        "Diego to confirm Capel bed ID and fee; then insert booking_accommodations record. See recipe: issue-41-addendum-30jul-g.md",
+        "9th check Thu 30 Jul UTC. Capel available beds: 83,84,87,88,89,156,157,161,168,173. Awaiting Diego.",
+        "Capel missing; check-in Sun 2 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 49 stale active booking courses in Jul 3-24 range — 11 deactivated since earlier today (Thu 30 Jul)\n• Jul 3: 11 stale; Jul 10: 16 stale; Jul 17: 13 stale; Jul 24: 9 stale\n• 16 booking courses end tonight Jul 31 — will become stale by tomorrow\n• Fix NOT RUN",
+        "Deactivate 49 stale booking courses (Jul 3-24); then deactivate Jul 31 batch. See recipe: issue-45-addendum-30jul-i.md",
+        "6th check Thu 30 Jul UTC. 11 BCs fixed between runs today (partial manual cleanup). Jul 31 batch: 16 more BCs.",
+        "49 stale Jul3-24; fix not run"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• Fassina (student 14462, booking 17857): CONFIRMED but confirmed=false; booking course 24630 stale 20 days; 0 class assignments (Jun 29-Jul 10 unrecorded)\n• Galbusera (student 14461, booking 17856): CONFIRMED but confirmed=false; booking course 24631 stale 20 days; 0 class assignments; paid EUR 339.90\n• Saikhantes (student 1001): class assignment 255 last week Jul 3; holiday ends Aug 21; returns Aug 24; new assignment needed\n• Enshi (student 397): booking course 829 stale 55 days; attendance gap Jun 1-12\n• Uyanga/Ana Jessica/Ariunsarnai: duplicates of issues 25/17/20",
+        "Set confirmed=true for bookings 17857+17856; deactivate BCs 24630+24631; confirm Jun 29-Jul 10 class with staff; insert assignments. See recipe: issue-48-addendum-30jul-b.md",
+        "4th check Thu 30 Jul UTC. Fassina+Galbusera: unchanged 20 days. Saikhantes: on holiday until Aug 21.",
+        "6 items open; no SCAs Fassina/Galbusera"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student 1001 (Saikhantes Shagdarsuren): on holiday Jul 20-Aug 21, returns Mon 24 Aug\n• Class assignment 255 (class B1 PM, week end Jul 3): no replacement created — 27 days since expiry\n• Booking course 24925 (Academic Year Afternoon, Mar 9-Oct 2 2026): active, confirmed\n• Old booking course 1982 (ended Dec 19 2025): still active — cosmetic stale\n• New class assignment needed; recipe ready; not urgent until week of Aug 17",
+        "Insert SCA (BC 24925, class 11, Aug 24-Oct 2, student 1001); deactivate BC 1982. See recipe: issue-15-addendum-30jul-f.md",
+        "133rd check Thu 30 Jul UTC. On holiday until Aug 21. Action window: week of Aug 17-24.",
+        "new SCA needed; returns 24 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• Student 917 (Uyanga Tungalag): visaStatus=null, hubspotContactId=null\n• Booking 1467: CONFIRMED, confirmed=true, fully paid EUR 2,405, no amount open\n• Booking course 1613 (Academic Year Morning, Apr 27-Oct 30 2026): active, 0 class assignments — 94 days in course with no class ever assigned\n• Payment 17258: EUR 3,066 TransferMate Escrow (deal D2025502), xeroId=null — EUR 661 excess vs total (unreconciled)\n• Fix NOT RUN",
+        "Link HubSpot contact; set visa approved; create class assignment for BC 1613; reconcile EUR 661 overpayment with Xero. See recipe: issue-25-addendum-30jul-c.md",
+        "130th check Thu 30 Jul UTC. 94 days in course, 0 class assignments. EUR 661 unreconciled. HubSpot link null. Fix NOT RUN.",
+        "visa null; 0 SCAs; 94d+"
+      ]
+    ]
+  }
+]

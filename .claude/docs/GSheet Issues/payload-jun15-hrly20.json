@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Milena Vinci removed from SIS database (original issue resolved — step 4 done)\n• Giulia (student 88) has 0 class assignments — course started today (Monday Jun 15, Day 1)\n• Booking 18044 CONFIRMED (duplicate, amount 1106.5) — not yet cancelled\n• Booking course 104 Morning General Plus Jun 15 – Jun 26 is active (11 days remaining)",
+        "1) Get Giulia level from staff; 2) Assign class via SIS bk94/bc104; 3) Cancel bk18044 + delete pmt17607 (double-import, not a refund — both xeroId=null, same date Mar 13). see recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun15 hrly(this run): NEW — Milena Vinci NOT in DB (s14557 removed = original issue resolved). bk94 CONF 1151.5/1151.5 c104 Jun15-26 ACTIVE DAY1. bk18044 DUP CONF 1106.5/1106.5 NOT cancelled (pmt17607 EUR1151.5 xeroId=null=dbl-import Mar13, DELETE not refund). s88 0 SCAs ALL TIME (DB confirmed). K was wrongly set to FIXED — steps 1-3 still outstanding. NEIL: step1=get Giulia level from prev teacher; step2=assign s88 std AM class via SIS bk94/c104 ws=Jun15 we=Jun26; step3=cancel bk18044+DELETE pmt17607(dbl-import).",
+        "0SCA;dup bk"
+      ]
+    ]
+  }
+]

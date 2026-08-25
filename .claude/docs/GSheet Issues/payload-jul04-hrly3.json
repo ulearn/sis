@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• Email address in phone field — Dolgormaa Bayaraa (student 1897): saraa.tpb@gmail.com; unchanged since 28 Apr 2026 (67 days stale)\n• Email address in phone field — Aki Miura (student 8567): aki-hinaaki1116@ezudo.he.jp; unchanged since 10 Apr 2026 (85 days stale)\n• Annotation in phone field — Jieun Lee (student 1194): 00821097366523 (home contry); 58 days stale\n• Annotation in phone field — Lisa Li (student 5345): 0864645297 (Husband); 85 days stale\n• Invisible Unicode trailing characters — Alessandra Saito de Araujo (student 10343): +353 (83) 885 9162 + trailing U+202C characters; 67 days stale\n• All 5 unchanged since last check (4 Jul 2026 UTC, 85 days max stale)\n• Students 1194, 5345, 10343 can be fixed now by stripping annotation text or Unicode\n• Students 1897 and 8567 require a real phone number from HubSpot or staff",
+        "Clean per recipe; students 1194/5345/10343 fixable now (strip annotation/unicode); students 1897/8567 need real number from HubSpot/staff. See recipe: issue-5-mobile-numbers.md",
+        "4 Jul UTC (85d max stale, fresh DB): all 5 UNCHANGED. Dolgormaa s1897 phone=email (Apr28=67d). Aki s8567 phone=email (Apr10=85d). Jieun s1194 annotation (May07=58d). Lisa s5345 annotation (Apr10=85d). Alessandra s10343 unicode (Apr28=67d). Self-fixable: 1194/5345/10343. Need HubSpot/staff: 1897/8567.",
+        "info needed"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Class assignment 255 (Saikhantes Shagdasuren, student 1001, class 11 B1 Afternoon): week end = 3 Jul 2026 — expired yesterday (97th check, 4 Jul 2026 UTC)\n• No future class assignments for student 1001 — student is fully unassigned since yesterday\n• Active booking course 24925 (Academic Year Afternoon, 9 Mar to 2 Oct 2026): active = true, fee = EUR 1102.20\n• Booking 18151: Confirmed, confirmed = true, fully paid EUR 1339.20\n• Fix: extend class assignment 255 week end to 2 Oct 2026 (course end date)",
+        "(NOT RUN) Extend class assignment 255 week end to course end: UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255. See recipe: issue-15-saikhantes-course-dates.md",
+        "97th check 4 Jul UTC. Class assignment 255 (class 11, student 1001) expired Jul 3 (YESTERDAY). ZERO future class assignments for student 1001. Booking course 24925 Academic Year Afternoon Mar09-Oct02 active=true. Booking 18151 Confirmed EUR1339.20/1339.20. SQL NOT RUN 97 CHECKS. Student unassigned since yesterday. Neil: run SQL or extend via SIS admin TODAY.",
+        "SCA expired; unassigned"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• Student 983 (Flavia Nascimento Mariano): visa status = null — Prisma save error prevents UI update (19 days stale, last updated 15 Jun 2026)\n• Booking 1534: Confirmed, confirmed = true, fully paid EUR 1308\n• Booking course 1710 (Academic Year Afternoon, 1 Jun to 20 Nov 2026): active = true\n• Class assignment 265 (class 11 B1 PM, week end 20 Nov 2026): active — student attending normally\n• Null visa status passes the class assignment filter — no operational impact\n• Cosmetic fix pending: UPDATE students SET visa_status='Approved' WHERE id=983 (not yet run)",
+        "SQL (NOT RUN): UPDATE students SET visa_status='Approved' WHERE id=983. See recipe: issue-18-flavia-visa-save-error.md",
+        "4 Jul UTC (fresh DB): student 983 visaStatus=STILL null (updAt=Jun15=19d stale). Booking 1534 Confirmed confirmed=true EUR1308/1308. Booking course 1710 AY-AFT Jun01-Nov20 active=true. Class assignment 265 class 11 weekEnd=Nov20 ACTIVE. Student in class normally. Cosmetic SQL NOT RUN. UNCHANGED.",
+        "in class; visa cosmetic"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking course 1797 (Morning General, 6 Apr to 26 Jun 2026): ended 8 days ago — still active = true (24th check, 4 Jul 2026 UTC)\n• Booking course 24686 (Morning General, 20 Jul to 18 Sep 2026): starts in 16 days — fee = null (must be set before course start)\n• Payment 17124 (EUR 1280.12): Xero payment ID = null, HubSpot payment ID = null, type = null — not reconciled\n• Booking 1611 (Alberto Squillace): Confirmed, confirmed = true, fully paid EUR 1280.12",
+        "(NOT RUN) (1) UPDATE booking_courses SET active=false WHERE id=1797; (2) UPDATE booking_courses SET fee=<amount> WHERE id=24686; (3) Reconcile payment 17124 in Xero. See recipe: issue-24-alberto-fidelo-course-split.md",
+        "4 Jul UTC (24th check): Booking course 1797 ended Jun26=8d active=STILL true fee=1836. Booking course 24686 Jul20-Sep18 fee=STILL null (16d to start). Booking 1611 Confirmed EUR1280.12/1280.12. Payment 17124 EUR1280.12 xeroId=null hsId=null type=null. All 3 steps unrun. Neil: deadline Jul20=16d — set booking course 24686 fee NOW.",
+        "bc1797 ended+active; Jul20=16d"
+      ]
+    ]
+  },
+  {
+    "range": "H35:K35",
+    "values": [
+      [
+        "• Bug in public/admin.html — sendBulkEmail() reads bulkSelectedStudents (live set) not _bulkEmailRecipientIds (frozen snapshot)\n• _bulkEmailRecipientIds declared at line 1445 with explanatory comment — but never assigned in openBulkEmailModal()\n• openBulkEmailModal() at line ~1463: const ids = [...bulkSelectedStudents] — correct source but result not stored in _bulkEmailRecipientIds\n• sendBulkEmail() at line ~1619: const ids = [...bulkSelectedStudents] — reads live set at send time, not the frozen snapshot\n• Effect: report navigation between modal open and send clears bulkSelectedStudents and causes no-students error\n• Two-line fix in admin.html — no build needed",
+        "Add _bulkEmailRecipientIds=ids after openBulkEmailModal L~1463; change sendBulkEmail L~1619 to const ids=_bulkEmailRecipientIds. No build needed. See recipe: issue-33-khulan-reports-email-send.md",
+        "4 Jul UTC (6th code check, admin.html): Bug STILL PRESENT. openBulkEmailModal() L~1463 const ids=[...bulkSelectedStudents] — correct source but NOT stored in _bulkEmailRecipientIds. sendBulkEmail() L~1619 const ids=[...bulkSelectedStudents] — reads live set (BUG confirmed). Comment at L1445 documents intent but fix NOT applied. Two-line fix: (1) add _bulkEmailRecipientIds=ids; after L1463; (2) L1619 to const ids=_bulkEmailRecipientIds. Neil: edit admin.html, no build needed.",
+        "code fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Kayque Lopes Coelho (student 852) and Sophia Gallo Borim (student 853): Academic Year Renewal Afternoon started 29 Jun — 5 days in, zero class assignments (class assignments 26 and 23 expired 24 Apr, 70 days ago)\n• Tuguldurtugs Enkhtugs (student 858): Academic Year Renewal Morning starts Monday 6 Jul — class assignment 55 expired 1 May (63 days ago); booking 1601 EUR 1356.50 paid of EUR 1606.50 (EUR 250 outstanding)\n• Migration students starting 6 Jul with zero SIS class assignment history: Aitana Lopez (student 7), Pietro Colombo (student 72), Veronica Martin (student 278), Sarah Venturini Talizin (student 1055), Zeyad Alharbi (student 32)\n• New students starting 6 Jul with zero class assignments: Mario Roggi (student 14528), Sulaiman Alkulaib (student 7309), Hugo Lopez Tamayo (student 14572), Kiyoshi Fujino (student 14445), Yuxi Ke (student 14577)\n• Ettore Iovinella (student 14564): class assignment 281 expired 3 Jul — booking course 24968 starts 6 Jul\n• Gustavo Da Silva (student 14570): 2 active booking courses both starting 6 Jul (booking course 24955 and booking course 24967) — likely duplicate, one should be deactivated\n• Root cause: renewals excluded from arrivals list — is_renewal flag not set by webhook for RNW-* booking courses",
+        "(1) Assign Kayque (852) and Sophia (853) to AY Afternoon class TODAY — 5 days overdue. (2) Assign Tuguldurtugs (858) to AY Morning class before Monday. (3) Assign all other Jul 6 starters via SIS Classes > To Be Assigned. (4) Deactivate duplicate booking course for Gustavo (student 14570). (5) Chase EUR 250 on booking 1601. See recipe: issue-45-renewal-arrivals.md",
+        "4 Jul UTC (16th check): Kayque s852+Sophia s853 5d in AY-Aft Jun29 — class assignments 26+23 expired Apr24=70d, ZERO. Tuguldurtugs s858 starts Mon Jul6 — class assignment 55 expired May1=63d. Migration starters Jul6 (s7/72/278/1055/32) = 0 class assignments ever. New starters Jul6 (s14528/7309/14572/14445/14577) = 0. Gustavo s14570 2 active booking courses (24955+24967) Jul6 — anomaly. Ettore s14564 class assignment 281 expired Jul3. Booking 1601 EUR250 outstanding. Neil: assign ALL before Monday morning — URGENT.",
+        "0SCA; 14 students; Jul6=Mon"
+      ]
+    ]
+  }
+]

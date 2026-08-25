@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 + 16989 still unlinked — booking_id = null, xero_payment_id = null — 63 days since 28 Apr\n• Payment 16988 (HubSpot 1204827374829) → Booking 17856 Margherita Galbusera — EUR 339.90\n• Payment 16989 (HubSpot 1204846469317) → Booking 17857 Francesca Fassina — EUR 339.90\n• Both bookings: status = Confirmed, confirmed = false, amount paid = 339.90, amount open = null\n• Booking courses 24630 + 24631: General English AM Plus, 29 Jun to 10 Jul — fee = null\n• Students in class Day 2 of 10 (Tue 30 Jun) — 4-step SQL not run (135th check, 30 Jun UTC)",
+        "(NOT RUN) (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) UPDATE booking_courses SET fee=339.9 WHERE id IN (24630,24631); (4) UPDATE bookings SET confirmed=true WHERE id IN (17856,17857). See recipe: issue-1-orphan-payments.md",
+        "hrly 30 Jun UTC (135th check, fresh DB): pmts 16988+16989 bookingId=STILL null xeroId=null EUR339.9 each. bk17856+17857 CONF confirmed=STILL false amtPaid=339.9 amtOpen=null. bc24630+24631 GE-AM-Plus Jun29-Jul10 fee=STILL null. Students IN CLASS day 2/10 (8d left, ends Jul10). 4-STEP SQL NOT RUN 135 CHECKS. NEIL: RUN NOW. (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) UPDATE booking_courses SET fee=339.9 WHERE id IN (24630,24631); (4) UPDATE bookings SET confirmed=true WHERE id IN (17856,17857).",
+        "Day 2; 8d left; SQL UNRUN"
+      ]
+    ]
+  },
+  {
+    "range": "H11:K11",
+    "values": [
+      [
+        "• Booking 97 is CONFIRMED, paid EUR 1741 / 1741\n• Documents 63 and 64 are invoices (template 78), not certificates\n• Booking 97 has zero certificate documents\n• Booking course 107 (Morning General, 27 Apr to 22 May) ended 39 days ago — certificate not generated (14th check, 30 Jun UTC)",
+        "(NOT RUN) Generate cert for bk97 (Apr27-May22) via SIS student 91 bk97 Documents Generate Certificate. See recipe: issue-9-massimiliano-cert-split.md",
+        "hrly 30 Jun TUE UTC (14th check, fresh DB): bk97 CONF 1741/1741 conf=false. 0 cert docs (tmpl82). doc63 REVOKED + doc64 ISSUED both tmpl78 (invoices only). bc107 ended May22=39d ago active=STILL true. UNCHANGED 14 checks. Neil: SIS student 91 bk97 Documents Generate Certificate.",
+        "cert bk97; 39d"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Class assignment 255 (class 11, B1 PM): week_start = 12 Jan 2026 — wrong (booking course 24925 starts 9 Mar 2026)\n• Week end = 3 Jul 2026 — assignment expires Friday 3 Jul = 3 DAYS from today (30 Jun)\n• Correct week_start = 9 Mar 2026, correct week_end = 11 Sep 2026 (booking course 24925 end date)\n• Student Saikhantes Shagdarsuren (id 1001) will drop from class lists when assignment expires 3 Jul\n• SQL not yet run (41st check, 30 Jun UTC) — cross-ref: Issue 29 (row 30)",
+        "(NOT RUN) UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255. See recipe: issue-29-saikhantes-jan12-start-date.md",
+        "hrly 30 Jun UTC (41st check, fresh DB): sca255 STILL weekStart=Jan12 weekEnd=Jul03 classId=11. BC24925 AY-Afternoon Mar09-Sep11 active. EXPIRES FRI 3 JUL = 3 DAYS. UPDATE NOT RUN 41 CHECKS. NEIL: RUN TODAY — UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255; Without this Saikhantes drops from class lists on Friday.",
+        "CRITICAL; 3d=Jul03"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• Student 917 (Uyanga Tungalag): visa_status = null — blocks appearance in class to be assigned list\n• Booking 1467: Confirmed, confirmed = true, amount paid = 2405, amount total = 2405, amount open = 0 — fully paid\n• Booking course 1613: Academic Year Morning, 27 Apr to 16 Oct 2026 — 0 class assignments found in database\n• Student cannot be assigned to class until visa_status is set\n• SQL not yet run (57th check, 30 Jun UTC) — Day 65 of course with no class record",
+        "(NOT RUN) UPDATE students SET visa_status='Approved' WHERE id=917; then assign Uyanga to class via SIS admin. See recipe: issue-25-uyanga-visa-escrow.md",
+        "hrly 30 Jun UTC (57th check, fresh DB): s917 Uyanga visaStatus=STILL null. bk1467 CONF 2405/2405 amtOpen=0. bc1613 AY-Morning Apr27-Oct16 active Day65. SCAs=STILL 0. UNCHANGED 57 checks. NEIL: UPDATE students SET visa_status='Approved' WHERE id=917; THEN ASSIGN CLASS.",
+        "D65; 0SCA; CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Class assignment 255 (class 11, B1 PM): week_start = 12 Jan 2026 — wrong (booking course 24925 starts 9 Mar 2026)\n• Week end = 3 Jul 2026 — assignment expires Friday 3 Jul = 3 DAYS from today (30 Jun)\n• Correct week_start = 9 Mar 2026, correct week_end = 11 Sep 2026 (booking course 24925 end date)\n• Student Saikhantes Shagdarsuren (id 1001) will drop from class lists when assignment expires 3 Jul\n• SQL not yet run (41st check, 30 Jun UTC) — cross-ref: Issue 15 (row 16)",
+        "(NOT RUN) UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255. See recipe: issue-29-saikhantes-jan12-start-date.md",
+        "hrly 30 Jun UTC (41st check, fresh DB): sca255 STILL weekStart=Jan12 weekEnd=Jul03 classId=11. BC24925 AY-Afternoon Mar09-Sep11 active. EXPIRES FRI 3 JUL = 3 DAYS. UPDATE NOT RUN 41 CHECKS. NEIL: RUN TODAY — UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255; Without this Saikhantes drops from class lists on Friday.",
+        "CRITICAL; 3d=Jul03"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• Booking 18156 (Veronica Martin, student 278): Confirmed, EUR 573.20 fully paid, amount_open = 0\n• Accommodation 11352: bed 83, City Centre Apartment, 4 Jul to 11 Jul — active = true, NOT REASSIGNED (checked 30 Jun)\n• Accommodation 11285 (Jesus Manuel, booking 17825): also bed 83, 21 Jun to 5 Jul — overlap on 4 Jul\n• Conflict: bed 83 double-booked Jul 4-5 — Veronica check-in SAT 4 Jul = 4 DAYS FROM NOW\n• Beds 174 (A1/Room 1), 175 (A1/Room 2), 176 (A2/Room 1) confirmed free 4-11 Jul (27th check, 30 Jun UTC, 0 conflicts)",
+        "URGENT: reassign accommodation 11352 from bed 83 to bed 174, 175, or 176 in SIS (Student 278 Booking 18156). See recipe: issue-37-veronica-capel-accomm-allocation.md",
+        "hrly 30 Jun UTC (27th check, fresh DB): accomm11352 Veronica bed83 Jul04-Jul11 STILL NOT REASSIGNED (updAt=Jun29). accomm11285 Jesus bed83 Jun21-Jul05 STILL active (updAt=Jun16=14d). BED 83 CONFLICT Jul04-Jul05 CONFIRMED (2 active bookings). Beds 174+175+176 CONFIRMED FREE Jul04-Jul11 (0 conflicts). VERONICA CHECK-IN SAT 4 JUL = 4 DAYS. NEIL: reassign accomm11352 via SIS Student 278 Booking 18156 Accommodation, bed 83 to bed 174/175/176. Fallback SQL (NOT RUN): UPDATE booking_accommodations SET bed_id=174 WHERE id=11352;",
+        "URGENT; 4d=Jul04"
+      ]
+    ]
+  }
+]

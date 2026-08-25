@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 77th check Sat 8 Aug 2026 UTC — service_end expired yesterday (7 Aug)\n• Booking 18151 (Saikhantes Shagdarsuren, student 1001): CONFIRMED, confirmed = true, EUR 1,339.20 paid\n• service_end = 2026-08-07 — expired 1 day ago\n• Active Booking Course 24925 (Academic Year Afternoon): 9 Mar 2026 to 2 Oct 2026 — 55 days remaining\n• Mismatch: service_end expired but course continues 55 more days",
+        "UPDATE bookings SET service_end = 2026-10-02 WHERE id = 18151. See recipe: issue-15-addendum-8aug-k.md",
+        "77th hrly Sat 8 Aug UTC. service_end expired 1 day ago. BC 24925 runs to Oct 2. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H29:K29",
+    "values": [
+      [
+        "• 44th check Sat 8 Aug 2026 UTC — hash changed (B/F/G edited in sheet); re-diagnosed\n• Booking 17850 (Paola Sthefane Missias Moreira): CONFIRMED, confirmed = false — anomaly\n• Amount paid = null, amount open = EUR 321.35, amount total = EUR 321.35\n• Payment 17519: EUR 321.35, Bank, 7 May 2026 — linked to booking 17850; xero_payment_id = null\n• NEW: Booking Course 24624 (Morning General, 18 May to 5 Jun 2026): active = true — 64 days stale\n• Booking confirmed + amount_paid not updated despite payment being linked",
+        "Set booking 17850 confirmed=true, amount_paid=321.35, amount_open=0; deactivate BC 24624. See recipe: issue-28-addendum-8aug-b.md",
+        "44th hrly Sat 8 Aug UTC. Hash changed. BC 24624 stale 64d (new finding). Payment 17519 linked but booking not updated. Fix NOT RUN.",
+        "bk confirmed=false; 93d payment"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 78th check Sat 8 Aug 2026 UTC — CRITICAL: all 17 Mon 10 Aug starters still have 0 class assignments (fresh DB)\n• BC 96 Intensive General 30 Alessandro Signorotti (student 82)\n• BC 108 Intensive General 30 Lucia Borroni (student 92)\n• BC 109 Morning General Maicol Moretti (student 93)\n• BC 833 Academic Year Morning Settiyanee Duangjai (student 400) — booking ESCROW\n• BC 1313 Academic Year Afternoon Ana Luiza De Sousa (student 744)\n• BC 1818 Academic Year Morning Natanael Reis Lourenco de Sales (student 1071)\n• BC 24915 Academic Year Morning Toshimi Hanakawa (student 877)\n• BC 24970 Academic Year Afternoon Tsengelbayar Mendsaikhan (student 948)\n• BC 25004 General English AM Plus Vincenzo Contu (student 14597)\n• BC 25005 General English AM Claudia Mereu (student 14598)\n• BC 25007 Academic Year Morning Nominjin Amartsogt (student 759) — booking PARTIAL\n• BC 25024 General English PM Josimar Roberto (student 14612)\n• BC 25027 Academic Year Morning Jacqueline Olga Burgos (student 14614)\n• BC 25031 Academic Year Morning Brisia Garcia Roman (student 14617)\n• BC 25036 General English AM Jorge Perez Aldana (student 14619)\n• BC 25039 General English PM Plus Cristian Ravai (student 17)\n• BC 25042 General English AM Edith Nunes (student 1015) — booking PENDING\n• BC 25035 Rakan Alghamdi started 3 Aug also 0 SCAs — 5 days in\n• Legacy BCs (96, 108, 109, 833, 1313, 1818): check if student already placed from prior booking",
+        "Assign all 17 Mon starters + Rakan to classes by Sunday evening. See recipe: issue-38-addendum-8aug-l.md",
+        "78th hrly Sat 8 Aug UTC. ALL 17 BCs starting Mon 10 Aug have 0 SCAs — URGENT. BC 833 ESCROW, BC 25007 PARTIAL, BC 25042 PENDING need separate checks.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 26th check Sat 8 Aug 2026 UTC — unchanged from 25th check\n• Booking Accommodation 11357 host family, bed 178, 2 Aug to 6 Sep 2026: EUR 1,250 — provider 24 claimed, status = confirmed (OK)\n• Booking Accommodation 11392 City Centre Apartment, Premium, 6 Sep to 14 Sep 2026: bed_id = null — UNASSIGNED\n• 29 days until city centre check-in (6 Sep 2026); fee EUR 415\n• Student: Giampaolo Russo (14571), booking 18180, CONFIRMED",
+        "Assign City Centre Apt bed to BA 11392 before 30 Aug. See recipe: issue-41-addendum-8aug-d.md",
+        "26th hrly Sat 8 Aug UTC. BA 11392 still unassigned. 29 days to check-in 6 Sep.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 43rd check Sat 8 Aug 2026 UTC — unchanged from 42nd check\n• 24,479 stale booking courses (active = true, end date before today)\n• 14 booking courses ended during week 1 to 7 Aug (now included in total)\n• Saturday: no new course ends expected today\n• Bulk deactivation recipe ready but not run",
+        "Bulk deactivation recipe in main issue doc. See recipe: issue-45-addendum-8aug-f.md",
+        "43rd hrly Sat 8 Aug UTC. 24,479 stale BCs. 14 ended this week. Unchanged. NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 77th check Sat 8 Aug 2026 UTC — unchanged from 76th check\n• Telmuun Enkhsaikhan (student 293): 6 booking courses still active, all ended Mar 2025 to May 2026\n• BC 482 ended 14 Mar 2025 — 512 days stale; BC 483 ended 11 Jul 2025 — 393 days stale\n• BC 1609 ended 19 Dec 2025 — 232d, BC 1610 ended 9 Jan 2026 — 211d, BC 1611 ended 6 Mar 2026 — 155d, BC 1612 ended 1 May 2026 — 99d\n• Ana Jessica Rosa de Paula Santos (student 766): booking 1308 CANCELLED, confirmed = false\n• Booking 1308: amount_paid = EUR 1,530 — 2 payments (EUR 1,280 + EUR 250), both xero_payment_id = null",
+        "Deactivate BCs 482, 483, 1609, 1610, 1611, 1612 (Telmuun). Verify refund for Ana Jessica booking 1308 EUR 1,530. See recipe: issue-48-addendum-8aug-d.md",
+        "77th hrly Sat 8 Aug UTC. Unchanged. Telmuun 6 BCs 512d max. Ana Jessica EUR 1,530 on cancelled booking unreconciled. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  }
+]

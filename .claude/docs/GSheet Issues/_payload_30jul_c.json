@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Aug Bank Holiday 2026-08-03 NOT in school_closures (only Good Friday Apr 3 + Christmas Dec 21)\n• 19 active booking courses start 2026-08-03 — must shunt to 2026-08-04\n• Was 20 BCs; Booking Course 24970 (Tsengelbayar Mendsaikhan) gone since last check\n• See recipe: issue-38-addendum-30jul-h.md",
+        "Insert school_closures row for Aug 3; UPDATE 19 BCs start_date to Aug 4. Recipe: issue-38-addendum-30jul-h.md",
+        "Thu 30 Jul UTC 4th check. 19 BCs (was 20 — BC24970 deactivated). Fix NOT RUN. DEADLINE TOMORROW (31 Jul).",
+        "URGENT; BH unshunted"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• Booking 18180 (Giampaolo Russo, student 14571): CONFIRMED, fully paid EUR 2,584.96\n• BA11357: Host Family bed 178 (Edel McDonald), 2026-08-02 to 2026-09-06, active, fee EUR 1,250\n• Capel Street apartment BA still absent — no second booking accommodation record\n• Check-in Sunday 2 Aug 2026 — 2 days away\n• See recipe: issue-41-addendum-30jul-d.md",
+        "Diego to confirm Capel bed ID and fee; insert BA record. Recipe: issue-41-addendum-30jul-d.md",
+        "Thu 30 Jul UTC 4th check. Capel BA still absent. Check-in 2 days. Awaiting Diego confirmation.",
+        "Capel missing; check-in Sun 2 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• Booking 1605 (Ariunsarnai Batbayar, student 1047): PENDING, confirmed = false\n• Amount paid = EUR 0 of EUR 1,509 — zero payments ever received in DB\n• Booking Course 1791: AY Renewal Morning, 2026-04-13 to 2026-10-23, active\n• Day 108 from course start (Apr 13 to Jul 30) — confirmed = false blocks class assignment\n• See recipe: issue-20-addendum-30jul-c.md",
+        "Chase EUR 1,509 via HubSpot; if no payment coming, cancel booking 1605. Recipe: issue-20-addendum-30jul-c.md",
+        "Thu 30 Jul UTC. Day 108 from Apr 13. EUR 0 paid; EUR 1,509 open. No payments in DB. Fix NOT RUN.",
+        "Day 108; EUR 0 / 1,509"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• Student 917 (Uyanga Tungalag): visaStatus = null, hubspotContactId = null\n• Booking 1467: CONFIRMED confirmed=true, amountPaid = EUR 2,405, amountOpen = EUR 0\n• Booking Course 1613: AY Morning, 2026-04-27 to 2026-10-30, active — 0 class assignments\n• Payment 17258: EUR 3,066 TransferMate Escrow (D2025502) — xeroPaymentId = null\n• Discrepancy: payment EUR 3,066 > amountTotal EUR 2,405 (EUR 661 overpayment unresolved)\n• See recipe: issue-25-addendum-30jul-b.md",
+        "Link HubSpot contactId; set visaStatus; assign to Morning class; investigate EUR 661 overpayment. Recipe: issue-25-addendum-30jul-b.md",
+        "Thu 30 Jul UTC 129th check. UNCHANGED. 94d into AY; 0 SCAs; visaStatus null; hubspotContactId null. EUR 661 discrepancy; xeroId null. Fix NOT RUN.",
+        "visa null; 0 SCAs; 94d"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 60 active booking courses with end dates in Jul 2026 — all stale (fix not run)\n• Previous H reported 27 BCs — count grew by 33 (Jul 3 and Jul 10 batches now counted)\n• Batch Jul 24 (11): BC20, BC24989, BC81, BC24776, BC24828, BC25011, BC24620, BC1781, BC1792, BC37, BC24606\n• Batch Jul 17 (19 BCs) and Jul 10 (18 BCs) and Jul 3 (12 BCs) also all stale\n• Booking Course 25023 (Eduardo Roche Diaz) ends tomorrow 2026-07-31\n• See recipe: issue-45-addendum-30jul-f.md",
+        "UPDATE active=false on 60 BCs (end_date Jul 2026); BC25023 on/after Jul 31. Recipe: issue-45-addendum-30jul-f.md",
+        "Thu 30 Jul UTC 3rd check. All 60 unchanged. BC25023 ends tomorrow. Fix NOT RUN.",
+        "60 stale BCs; fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "• Booking 1308 (Ana Jessica Rosa de Paula Santos): CANCELLED, confirmed = false — 86 days since payments\n• Amount paid = EUR 1,530 / EUR 1,530 (fully paid before cancellation)\n• Booking Course 1350: ends 2026-11-13, active = true (stale — still active despite CANCELLED)\n• Payment 17186: EUR 1,280 Bank Transfer 2026-05-05, xeroPaymentId = null\n• Payment 17050: EUR 250 Bank Transfer 2026-05-05, xeroPaymentId = null\n• Both payments unreconciled in Xero\n• See recipe: issue-17-addendum-30jul-b.md",
+        "Reinstate booking 1308 or confirm cancellation; deactivate BC 1350; reconcile PMT17186+17050 in Xero. Recipe: issue-17-addendum-30jul-b.md",
+        "14th check Thu 30 Jul UTC. UNCHANGED. Bk1308 CANCELLED EUR 1,530/1,530 (86d since pmts). PMT17186 EUR 1,280 + PMT17050 EUR 250, both xeroId=null. BC1350 active end Nov 13. Fix NOT RUN.",
+        "pmts 86d unreconciled; BC stale"
+      ]
+    ]
+  }
+]

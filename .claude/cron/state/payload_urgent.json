@@ -1,0 +1,35 @@
+[
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 235th check Wed 19 Aug 2026 UTC — no change since 234th check\n• Booking 17980 (Pietro Caccianiga, student 14521): CONFIRMED, paid EUR 5,331, open EUR 0\n• Booking Course 24772 (General English AM): ends Fri 21 Aug 2026 — last class tomorrow (Thu 20); active — deactivate after class\n• Booking Accommodation 11311 (bed 84): 28 Jun to Sat 22 Aug, fee EUR 3,850, active — deactivate after checkout Sat 22\n• Booking Accommodation 11393 (bed 88): 22 Aug to 13 Sep 2026, fee = NULL — starts Sat 22 Aug (3 days); URGENT: set fee before move-in",
+        "Deactivate BC 24772 after Fri 21 class; deactivate BA 11311 after Sat 22 checkout; set fee on BA 11393 before Sat 22. See recipe: issue-36b-addendum-19aug-c.md",
+        "235th Wed 19 Aug UTC. BC 24772 last class tomorrow Thu 20. BA 11393 fee still null — Sat 22 move-in 3 days. Fix NOT RUN.",
+        "URGENT: fee null BA11393; Sat22 (3d)"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 133rd check Wed 19 Aug 2026 UTC — no change since 132nd check\n• Booking 18180 (Giampaolo Russo, student 14571): CONFIRMED, paid EUR 2,584.96, open EUR 0\n• Booking Accommodation 11357 (bed 178): ended Sat 15 Aug — 4 days stale, active — deactivate\n• Booking Accommodation 11396 (bed 44): 15 Aug to Sat 22 Aug, fee = NULL — 4 days into period, checkout Sat 22; URGENT: set fee now\n• Booking Accommodation 11397 (bed 89): 22 Aug to 6 Sep 2026, fee = NULL — URGENT: set fee before move-in\n• Booking Accommodation 11392 (bed 168): 6 Sep to 14 Sep, fee EUR 415 — OK",
+        "Deactivate BA 11357; set fee on BA 11396 + BA 11397 before Sat 22. See recipe: issue-41-addendum-19aug-c.md",
+        "133rd Wed 19 Aug UTC. BA 11396 now 4 days into period (started Aug 15) — fee still null. BA 11397 starts Sat 22. Sat 22 change-over 3 days. Fix NOT RUN.",
+        "URGENT: BA11396+11397 fees null; Sat22 (3d)"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• 133rd check Wed 19 Aug 2026 UTC — no change since 132nd check\n• Booking 18151 (Saikhantes Shagdarsuren, student 1001): CONFIRMED, paid EUR 1,339.20\n• Booking Course 24925 (Academic Year Afternoon): 9 Mar to 2 Oct 2026, active\n• No active class assignment — SCA 255 ended weekEnd 3 Jul 2026 (47 days ago); no new SCA for Aug 25 return\n• Student returns Mon 25 Aug 2026 (6 days) — must have SCA created before then",
+        "Create new SCA for BC 24925 (Afternoon, classId 11) from Mon 25 Aug. See recipe: issue-15-addendum-19aug-c.md",
+        "133rd Wed 19 Aug UTC. SCA 255 ended Jul 3, still no new SCA. Returns Mon 25 Aug (6 days). Fix NOT RUN.",
+        "URGENT: no SCA; return Mon25 (6d)"
+      ]
+    ]
+  }
+]

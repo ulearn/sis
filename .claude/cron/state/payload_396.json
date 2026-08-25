@@ -1,0 +1,35 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 173rd check Wed 19 Aug 2026 UTC — no change; new: Booking Course 1982 (2025 AY Morning) stale-active\n• Booking 18151 (Saikhantes Shagdarsuren, student 1001): CONFIRMED, paid EUR 1,339.20\n• Service end = 7 Aug 2026 — 12 days stale; student returns approx 25 Aug 2026 (6 days)\n• Booking Course 24925 (Academic Year Afternoon): 9 Mar to 2 Oct 2026, active\n• No active class assignment — SCA 255 ended week_end 3 Jul 2026 (47 days ago); no new SCA created\n• Booking Course 1982 (Academic Year Morning, 2025): ended 19 Dec 2025, active = true — 8 months stale; deactivate",
+        "Create new SCA for Booking Course 24925 (Afternoon, class_id 11) from approx Mon 25 Aug; deactivate Booking Course 1982. See recipe: issue-15-addendum-19aug-d.md",
+        "173rd Wed 19 Aug UTC. SCA 255 ended Jul 3, still no new SCA. Returns approx Aug 25 (6 days). New: Booking Course 1982 (2025 AY) stale-active. Fix NOT RUN.",
+        "URGENT: no SCA; return ~Aug25 (6d)"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• 136th check Wed 19 Aug 2026 UTC — no change; new: Booking Course 1982 (2025 AY Morning) stale-active\n• Booking 18151 (Saikhantes Shagdarsuren, student 1001): CONFIRMED, paid EUR 1,339.20\n• Booking Course 24925 (Academic Year Afternoon): 9 Mar to 2 Oct 2026, active\n• No active class assignment — SCA 255 ended week_end 3 Jul 2026 (47 days ago); no new SCA for Aug 25 return\n• Student returns approx 25 Aug 2026 (6 days) — must have SCA created before then\n• Booking Course 1982 (Academic Year Morning, 2025): ended 19 Dec 2025, active = true — 8 months stale; deactivate",
+        "Create new SCA for Booking Course 24925 (Afternoon, class_id 11) from approx Mon 25 Aug; deactivate Booking Course 1982. See recipe: issue-15-addendum-19aug-d.md",
+        "136th Wed 19 Aug UTC. SCA 255 ended Jul 3, still no new SCA. Returns approx Aug 25 (6 days). New: Booking Course 1982 (2025 AY) stale-active. Fix NOT RUN.",
+        "URGENT: no SCA; return ~Aug25 (6d)"
+      ]
+    ]
+  },
+  {
+    "range": "H52:K52",
+    "values": [
+      [
+        "• 11th check Wed 19 Aug 2026 UTC — count now 36 stale active Booking Accommodations (was 35)\n• New: Booking Accommodation 11286 (Vincenzo Pio Di Costanzo, student 14501, bed 87, ended 16 Aug, fee EUR 2,520) — 3 days stale\n• Booking Accommodation 11371 (Luana Salzano, student 14576, bed 157, ended 16 Aug, fee null) — already tracked in null-fee list\n• Group C (7, ended Jun 27 to Aug 15): Booking Accommodations 11278, 11354, 11362, 11276, 11174, 11347, 11230\n• 9 Booking Accommodations have fee = null: 11371, 11394, 11338, 11347, 11265, 11276, 11285, 11339, 11354\n• Checkout window bug unchanged in code — still re-sends prior-week checkouts",
+        "Deactivate all 36 stale Booking Accommodations (Groups A+B+C+new); fix checkout window code. See recipe: issue-50-addendum-19aug-e.md",
+        "11th Wed 19 Aug UTC. Count 35 -> 36: +Booking Accommodation 11286 (Vincenzo Di Costanzo, bed 87, Aug 16, fee 2520). Recipe updated. Fix NOT RUN.",
+        "36 stale BAs; fix pending"
+      ]
+    ]
+  }
+]

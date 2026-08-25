@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "• Document 171 is a DRAFT certificate (template 82) — last updated 05 Jun, now 27 days stale\n• Booking 1498 is CONFIRMED (status), but confirmed = false and amount paid = null\n• Booking course 1660 (ULearn Renewal Morning) ended 05 Jun — certificate never issued after course ended\n• Action needed: click Issue on the draft document via SIS UI (18th check, 2 Jul UTC)",
+        "(NOT RUN) SIS student 947 booking 1498 Documents Issue button. See recipe: issue-8-suvderdene-cert-dates.md",
+        "2 Jul UTC (18th check, fresh DB): doc171 STILL DRAFT (tmpl82, updAt=Jun05=27d stale). bk1498 s947 confirmed=false amtPaid=null. bc1660 ended Jun05. Neil: SIS s947 bk1498 Documents Issue.",
+        "cert DRAFT; 27d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "• Extra 96 (INSURANCE) has fee = null — type = INSURANCE, details = PEL and Health; active = true\n• Created 25 May — 38 days stale, no fee set (14th check, 2 Jul UTC)\n• Booking 17981 confirmed = false (minor anomaly) — paid EUR 1407.50 / 1407.50 (last updated 23 Jun)\n• Student 14522 (Lizbeth) insurance_from = null, insurance_until = null on student record\n• Student in class since 01 Jun — Day 32 uninsured; no health insurance arranged",
+        "(NOT RUN) Set fee for extra 96 via SIS bk17981 Extras INSURANCE; or UPDATE booking_extras SET fee=<amount> WHERE id=96 (NOT RUN). See recipe: issue-13-lizbeth-health-insurance.md",
+        "2 Jul UTC (14th check, fresh DB): extra96 INSURANCE fee=STILL NULL active=true created May25=38d stale. bk17981. s14522 ins_from=null ins_until=null. Day32 uninsured. Neil: set insurance fee on extra 96 in SIS.",
+        "ins; D32 uninsured"
+      ]
+    ]
+  },
+  {
+    "range": "H17:K17",
+    "values": [
+      [
+        "• Bed assignment 11282 (bed 66) ran May 15 to Jun 05 but active = true (stale flag — ended 27 days ago)\n• Historical issue — Melie term completed Jun 05\n• Overlap constraint from bed assignment 11158 (ended May 17) is also cleared",
+        "UPDATE booking_accommodations SET active=false WHERE id=11282 (low-priority cleanup). Re-issue doc148 only if student requests. See recipe: issue-16-melie-accomm-dates.md",
+        "2 Jul UTC (19th check, fresh DB): ba11282 bed66 May15-Jun05 active=STILL true (27d stale). Student left Jun05. Historical: UPDATE booking_accommodations SET active=false WHERE id=11282 (NOT RUN). Low priority.",
+        "historical"
+      ]
+    ]
+  },
+  {
+    "range": "H28:K28",
+    "values": [
+      [
+        "• Booking 17909 is CANCELLED but confirmed = true — database anomaly\n• Payments 17477 and 17478 were DELETED from the database on 17 Jun — amount paid is EUR 0 (sheet was showing stale pre-Jun 17 data, now corrected 2 Jul UTC)\n• HubSpot Commerce payments 1230788330738 (EUR 727.50) and 1230645766331 (EUR 728.00) are NOT voided — refund deadlines: 25 Oct and 11 Nov 2026\n• Student may have been double-charged EUR 1455.50 — Xero verification required before issuing refund\n• Fix 1 (NOT RUN): Xero check Sofiia Korkishchenko Apr to May 2026 — if 3 real payments found, void both HubSpot Commerce payments before 25 Oct\n• Fix 2 (NOT RUN, low priority): UPDATE bookings SET confirmed=false WHERE id=17909",
+        "(NOT RUN) (1) Xero check Sofiia Korkishchenko Apr-May 2026; if 3 real payments found, void HS Commerce pmts 1230788330738+1230645766331 before Oct25. (2) UPDATE bookings SET confirmed=false WHERE id=17909. See recipe: issue-27-sofiia-sca-cancelled-booking.md",
+        "2 Jul UTC (16th check, fresh DB): bk17909 CANCELLED confirmed=STILL TRUE amtPaid=0 (pmts17477+17478 DELETED Jun17 — prior H/J showed stale pre-Jun17 data, corrected). HS Commerce pmts EUR727.50(1230788330738)+EUR728(1230645766331) NOT voided (deadlines Oct25/Nov11). Xero check + void needed before Oct25. UPDATE confirmed=false NOT RUN.",
+        "void Oct25; confirmed=true"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Duplicate entry for Issue 15 (row 16) — same student Saikhantes Shagdarsuren (student 1001)\n• Class assignment 255 (class 11, B1 Afternoon): week end = 3 Jul 2026 — EXPIRES TOMORROW FRIDAY (2 Jul UTC)\n• See row 16 (Issue 15) for full diagnosis and SQL fix",
+        "Same as Issue 15 — run SQL on row 16. See recipe: issue-15-saikhantes-course-dates.md",
+        "2 Jul UTC: dup of row 16 (Issue 15). sca255 cls11 B1-PM weekEnd=Jul03=EXPIRES TOMORROW FRI. SQL (UPDATE student_class_assignments SET week_end=2026-09-11 WHERE id=255) NOT RUN. Neil: see row 16 and run IMMEDIATELY.",
+        "dup; URGENT see row 16"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Booking 18044 (duplicate Milena Vinci entry) no longer exists in the database — deleted (confirmed Jun 27)\n• Giulia Avallone (student 88) retains only booking 94 — Confirmed, EUR 1151.50 fully paid\n• Booking course 104 (Morning General Plus) ended Jun 26 — Giulia course completed naturally (6 days ago)\n• Milena Vinci no longer appears as a student in the database\n• Payment 17102 (EUR 1151.50, booking 94) has no Xero ID and no HubSpot payment ID — needs Xero reconciliation (17th check, 2 Jul UTC)\n• Outstanding: confirm HubSpot payment 1239529228498 was voided in HubSpot UI",
+        "Database part fixed (booking 18044 deleted). Confirm HubSpot payment 1239529228498 was voided in HubSpot UI. Reconcile payment 17102 in Xero. See recipe: issue-30-giulia-milena-parent-student.md",
+        "2 Jul UTC (17th check, fresh DB): pmt17102 EUR1151.5 xeroPaymentId=STILL null hsId=STILL null (created May05=58d stale). bk94 CONF 1151.5/1151.5. bc104 ended Jun26=6d. Neil: (1) confirm HS pmt 1239529228498 voided in HS UI; (2) reconcile pmt17102 in Xero.",
+        "course ended; HS void?"
+      ]
+    ]
+  }
+]

@@ -212,27 +212,60 @@ export function activitiesScripts(prisma: PrismaClient) {
     return { deleted: true };
   }
 
+  // Fire the "Attended Social — confirmed" challenge notification. Shared by
+  // markAttended (ticking an RSVP) and markPresent (adding a walk-in) so both
+  // paths unlock the badge + post the same Slack confirmation.
+  function fireAttendedNotify(studentId: number, activity: { title: string; date: Date | null }) {
+    void notifyChallenge(prisma, studentId, {
+      title: '🎉 Attended Social — confirmed',
+      body: [
+        `Activity: *${activity.title}*`,
+        `Date: ${activity.date?.toISOString().slice(0, 10) || '—'}`,
+        `Auto-verified by staff roll-call. Badge unlocked.`,
+      ].join('\n'),
+    });
+  }
+
   async function markAttended(attendeeId: number, attended: boolean) {
     const updated = await prisma.activityAttendee.update({
       where: { id: attendeeId },
       data: { attended, attendedAt: attended ? new Date() : null },
       include: { activity: { select: { title: true, date: true } } },
     });
-    // Only notify on the positive transition (Kelly marking present), not when
+    // Only notify on the positive transition (staff marking present), not when
     // un-ticking a mistake. The Slack thread is a confirmation that the
     // Attended Social badge has unlocked for this student.
     if (attended && updated.studentId && (updated as any).activity) {
-      const a: any = (updated as any).activity;
-      void notifyChallenge(prisma, updated.studentId, {
-        title: '🎉 Attended Social — confirmed',
-        body: [
-          `Activity: *${a.title}*`,
-          `Date: ${a.date?.toISOString().slice(0, 10) || '—'}`,
-          `Auto-verified by Kelly's roll-call. Badge unlocked.`,
-        ].join('\n'),
-      });
+      fireAttendedNotify(updated.studentId, (updated as any).activity);
     }
     return updated;
+  }
+
+  // Staff "mark present" for a walk-in who never RSVPed in the app. Upserts the
+  // attendee row straight to attended=true (the RSVP step is skipped entirely).
+  // This WILL happen a lot — students turn up to socials without tapping RSVP.
+  // Notifies the challenge only when this is a genuine new positive mark (row
+  // absent, or present-but-not-yet-attended) so re-adding someone doesn't
+  // double-fire the badge unlock.
+  async function markPresent(activityId: number, studentId: number) {
+    const prior = await prisma.activityAttendee.findUnique({
+      where: { activityId_studentId: { activityId, studentId } },
+      select: { attended: true },
+    });
+    const wasAttended = !!prior?.attended;
+    const row = await prisma.activityAttendee.upsert({
+      where: { activityId_studentId: { activityId, studentId } },
+      create: { activityId, studentId, attended: true, attendedAt: new Date() },
+      update: { attended: true, attendedAt: new Date() },
+      include: {
+        activity: { select: { title: true, date: true } },
+        student: { select: { id: true, firstName: true, lastName: true } },
+      },
+    });
+    if (!wasAttended && row.studentId && (row as any).activity) {
+      fireAttendedNotify(row.studentId, (row as any).activity);
+    }
+    return row;
   }
 
   // Student-facing list: upcoming + past 7 days, with the student's own RSVP state.
@@ -268,6 +301,6 @@ export function activitiesScripts(prisma: PrismaClient) {
   return {
     listForRange, listForMonth, getById,
     create, update, remove, publish,
-    rsvp, cancelRsvp, markAttended, studentFeed,
+    rsvp, cancelRsvp, markAttended, markPresent, studentFeed,
   };
 }

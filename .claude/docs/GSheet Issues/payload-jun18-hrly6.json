@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H6:K6",
+    "values": [
+      [
+        "• Bed assignment 11287 confirmed: bed 179 assigned Jun 16 18:14 UTC, active Jun 27 – Dec 12\n• Booking 17871 is ESCROW — EUR 300 paid of EUR 2313.62 total (EUR 2013 outstanding), confirmed = true\n• Student 14473 (Rakan) has ZERO document records in SIS — no LOA has ever been generated via SIS\n• The LOA mentioned in the issue was manually amended outside SIS — no SIS barcode was ever attached\n• Previous diagnosis incorrectly cited doc 204 (booking 17915 / student 14444 — different student)\n• Arrival Jun 27 = 9 days",
+        "Generate LOA via SIS → Rakan → booking 17871 → Documents → Generate. Bed and fee data now populated. See recipe: issue-4-rakan-loa-barcode.md",
+        "Jun18 hrly: s14473 still 0 doc records (fresh DB). bk17871 ESCROW 300/2313.62 conf=true. ba11287 bed179 Jun27-Dec12. Arrival Jun27=9d. LOA not yet generated.",
+        "gen LOA; 9d"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Booking 18151 (Afternoon Academic Year) is CONFIRMED, paid 1339.20 / 1339.20 — updated Jun 16 by Neil\n• Course 24925 correctly set to Mar 09 to Sep 11 (confirmed Jun 16)\n• Class assignment 255 (class 11, B1 PM) still has week start = Jan 12 and week end = Jul 03 — NOT updated yet",
+        "(NOT RUN) UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255. See recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun18 hrly: sca255 weekStart=2026-01-12 weekEnd=2026-07-03 STILL WRONG (fresh DB). bc24925 AFT Mar09-Sep11 (confirmed Jun16). SQL NOT RUN.",
+        "sca fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• Student 983 (Flavia Nascimento Mariano, B1) has visaStatus = null — never saved after original Prisma error\n• Student record was touched Jun 15 but visa_status was not updated\n• Booking 1534 is CONFIRMED, fully paid 1308 / 1308\n• In class via assignment 265 (class 11, B1 PM) Jun 15 – Nov 20 — attending fine\n• visaStatus null may block certificate or attendance letter generation",
+        "UPDATE students SET visa_status=APPROVED WHERE id=983 (NOT RUN) once visa confirmed. see recipe: issue-18-flavia-visa-save-error.md",
+        "Jun18 hrly: s983 visaStatus=null (updAt=Jun15=3d, fresh DB). sca265 cls11 B1-PM Jun15-Nov20 ACTIVE. bk1534 CONF 1308/1308. Visa null blocks cert/letter. SQL NOT RUN.",
+        "in class; visa null"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking 1611 is CONFIRMED, paid 1280.12 / 1280.12\n• Course 1797 (Morning General) ends June 26 — 7 school days remaining (Jun 18 – Jun 26)\n• Last class assignment (sca229, class 12 B1 AM2) expired April 26 — 53 days with no class record\n• Attendance count = 0 for all time — student on extended holiday since late April\n• Course 24686 (Morning General Jul 20 – Sep 18) is future; gap June 27 – July 19",
+        "Confirm if Alberto returning before Jun 26. If yes: assign SCA cls12 bc1797 ws=2026-06-18 we=2026-06-26 via SIS (NOT RUN). See recipe: issue-24-alberto-fidelo-course-split.md",
+        "Jun18 THU hrly: UNCHANGED (fresh DB). sca229 cls12 expired Apr26 (53d ago, 0 active SCAs). bc1797 Morning General Apr06-Jun26 (7 school days: Jun18-26). bk1611 CONF conf=true 1280.12/1280.12. NEIL: if returning, assign SCA cls12 bc1797 ws=2026-06-18 we=2026-06-26 via SIS. Course ends Jun26.",
+        "7 schl days;Jun26"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• Booking course 24826 (2 weeks Intensive General 30, Jun 08 – Jun 19) has zero class assignments — entire course unattended\n• Student Ernesto Pesoa Gil (id 14532) has currentLevel = null — level unknown in SIS\n• Booking 18034 is PARTIAL, paid 845 / 1095 (EUR 250 outstanding), confirmed = false\n• Course ends TOMORROW Fri Jun 19 — today Thu Jun 18 is the last full school day\n• 11 school days elapsed with zero class record — entire 2-week intensive course unattended",
+        "(NOT RUN) Ask teacher Ernesto level then INSERT 2 SCAs ws=2026-06-18 we=2026-06-19: VALUES(24826,AM_id,14532)+(24826,PM_id,14532). Pairs: A2=cls8/9, B1=cls5+12/11, B2-C1=cls4/6, C1=cls13/14. See recipe: issue-26-intensive-class-assign-once.md",
+        "Jun18 hrly FINAL: 0 SCAs entire course confirmed (fresh DB). bc24826 INTENSIVE ends TOMORROW Jun19. 11 school days = 100% unattended. currentLevel=null. INSERT AM+PM SCAs for ws=Jun18 NOT RUN. After Jun19 this becomes historical only.",
+        "CRIT;LAST DAY;0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H32:K32",
+    "values": [
+      [
+        "• Week calculation in src/routes/attendance.ts lines 213-214 uses local-time getDay() and setHours() on UTC-midnight dates — shows Sunday Jun 14 instead of Monday Jun 15\n• src/scripts/attendance.ts lines 36-37 already use UTC methods (confirmed fixed)\n• Bug causes attendance sheet print to show wrong week start day for all users",
+        "Change src/routes/attendance.ts lines 213-214 to use getUTCDate/getUTCDay/setUTCHours (matches fix already in src/scripts/attendance.ts). See recipe: issue-31-attendance-sheet-week-bug.md",
+        "Jun18 THU hrly: L213 getDate()/getDay() + L214 setHours() STILL local-time (13th check). Fix = getUTCDate()/getUTCDay()/setUTCHours(). 2-line change. scripts/attendance.ts L36-37 already UTC (OK). NEIL: fix or mark won-fix.",
+        "route fix pending"
+      ]
+    ]
+  }
+]

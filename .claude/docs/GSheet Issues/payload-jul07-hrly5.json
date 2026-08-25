@@ -1,0 +1,38 @@
+[
+  {
+    "range": "J2:K2",
+    "values": [
+      [
+        "6th check 7 Jul UTC. UNCHANGED (fresh DB). Pmts 16988+16989 booking_id=null xero_payment_id=null EUR 339.90 each. BKs 17856+17857 CONFIRMED confirmed=false amtTotal=339.9 amtPaid=339.9. BCs 24630+24631 GE-AM-Plus ends FRI JUL10=3 SCHOOL DAYS fee=null active=true. 4-STEP SQL NOT RUN. NEIL: RUN NOW — 3 SCHOOL DAYS LEFT.",
+        "URGENT; Fri Jul10"
+      ]
+    ]
+  },
+  {
+    "range": "J16:K16",
+    "values": [
+      [
+        "6th check 7 Jul UTC. UNCHANGED (fresh DB). SCA255 week_end=2026-07-03 EXPIRED (4 days ago, class_id=11 B1 Aft). BC24925 AY-Aft Mar09-Oct02 active=true fee=EUR1102.20. BK18151 CONFIRMED EUR1339.2/1339.2. Student 1001 missed Mon Jul6+Tue Jul7=2 school days. Day 3 tomorrow Wed Jul8. UPDATE not run. NEIL: run NOW — UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255",
+        "URGENT; Day 3 tomorrow"
+      ]
+    ]
+  },
+  {
+    "range": "J23:K23",
+    "values": [
+      [
+        "6th check 7 Jul UTC. UNCHANGED (fresh DB). BC24933 GE-AM Jun15-Jul10 active fee=380 0 SCAs. BC24934 GE-AM dup STILL active fee=360. BK18158 CONF EUR740/740. PMT17895 EUR740 xeroPaymentId=null booking_id=18158. Last SCA s1015: id146 weekEnd=May15 (expired). ENDS FRI JUL10=3 SCHOOL DAYS. NEIL: (1) deact bc24934; (2) assign s1015 class 7 A1-AM on bc24933 TODAY.",
+        "URGENT; Fri10; 0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "J41:K41",
+    "values": [
+      [
+        "6th check 7 Jul UTC. UNCHANGED (fresh DB). PMT17180 EUR431.9 type=null booking_id=17831 xeroPaymentId=STILL null payment_date=Apr27 (71d unreconciled). PMT17963 EUR965 type=null booking_id=17831 xeroPaymentId=STILL null hsId=1273784562922 payment_date=Jul1 (6d). BA11358 bed180 Jul12-Aug2 active=true claimStatus=null fee=EUR900. BK17831 CONFIRMED EUR1396.9/1396.9. CHECK-IN SUN JUL12=5 DAYS. NEIL: reconcile both pmts in Xero TODAY.",
+        "Xero pending; Sun Jul12"
+      ]
+    ]
+  }
+]

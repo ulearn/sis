@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H33:K33",
+    "values": [
+      [
+        "• Tue 4 Aug 2026 UTC — phantom row still present (~117 days since approx Apr 2026)\n• Only content is \"278\" in column F (the Area/SIS field — Verónica Martín's student ID)\n• Verónica Martín's accommodation issue resolved in Issue 37 (row 39)\n• Fix: right-click row 33 in ISSUE LOG → Delete row; no DB change needed",
+        "Delete row 33 in Google Sheets. See recipe: issue-32-phantom-row-1aug.md",
+        "Tue 4 Aug UTC (3d since last check Sat 1 Aug). ~117d. Awaiting Neil to delete manually.",
+        "phantom row; delete"
+      ]
+    ]
+  },
+  {
+    "range": "H34:K34",
+    "values": [
+      [
+        "• 16th check Tue 4 Aug 2026 UTC — unchanged from 15th (Mon 3 Aug)\n• Student 356 (Shih-Wei Huang): gender = null, HubSpot contact ID = 791708390643\n• Last student update: 28 Jul 2026 (bulk touch — gender field still null)\n• Document 238 (booking 560, v1): status = ISSUED with incorrect pronouns — 48 days old\n• Document 238 last updated 18 Jun 2026, not revised since flagged",
+        "Set gender on student 356 via HubSpot; revoke doc 238 and regenerate. See recipe: issue-33-addendum-3aug.md",
+        "16th hrly Tue 4 Aug UTC. Doc 238 ISSUED 48d (since Jun 17). Gender null. Fix NOT RUN.",
+        "48d; doc238 wrong pronouns"
+      ]
+    ]
+  }
+]

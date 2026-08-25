@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H8:K8",
+    "values": [
+      [
+        "• 51st check Sat 22 Aug 2026 UTC — no change since 50th (Fri 21 Aug)\n• Booking 17909: status = CANCELLED, confirmed = true (anomaly persists)\n• Amount paid = EUR 0, amount open = EUR 727.50 — 0 payments linked\n• Booking Course 24693 (Renewal – Academic Year PM): active = true, ends 13 Nov 2026\n• Booking last updated 17 Jun 2026\n• Fix NOT RUN",
+        "Set bk17909 confirmed = false; deactivate BC 24693. See recipe: issue-7-addendum-22aug.md",
+        "51st Sat 22 Aug UTC. Unchanged 66d. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• 190th check Sat 22 Aug 2026 UTC — no change since 189th (Fri 21 Aug)\n• Student Class Assignment 288: student 14444 (Rakan Alghamdi), bookingCourseId = 24697 (wrong course)\n• Booking Course 24697: active = true, ended 31 Jul 2026 — 22 days stale\n• Booking Course 25035 (correct): active = true, starts 3 Aug 2026, ends 8 Jan 2027 — 0 class assignments, 19 days elapsed\n• Fix NOT RUN",
+        "Move SCA 288 bookingCourseId to 25035; deactivate BC 24697. See recipe: issue-12-addendum-22aug.md",
+        "190th Sat 22 Aug UTC. SCA 288 on wrong BC 24697 (22d stale). BC 25035 0 SCAs. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• 72nd check Sat 22 Aug 2026 UTC — no change since 71st (Fri 21 Aug)\n• Booking Course 23 (Intensive General 30, booking 22): active = true, ended 22 May 2026 — 92 days stale\n• Booking Course 24826: active = true, ended 19 Jun 2026 — 64 days stale\n• Booking 18034: PARTIAL, confirmed = false, amount paid = EUR 845, amount open = EUR 250\n• Payment 17683: EUR 845, xeroPaymentId = null (unreconciled)\n• Fix NOT RUN",
+        "Deactivate BC 23 + 24826; reconcile PMT 17683; resolve EUR 250 open. See recipe: issue-26-addendum-22aug.md",
+        "72nd Sat 22 Aug UTC. BC23 92d, BC24826 64d stale. EUR 250 open. PMT 17683 Xero null. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H29:K29",
+    "values": [
+      [
+        "• 60th check Sat 22 Aug 2026 UTC — fresh DB data; BC 24624 newly tallied\n• Booking 17850 (Paola Sthefane Moreira): CONFIRMED, confirmed = false — anomaly persists\n• Amount paid = null, amount open = EUR 321.35\n• Payment 17519: EUR 321.35, paymentDate = 7 May 2026, xeroPaymentId = null — 107 days unreconciled\n• Booking Course 24624 (Morning General): active = true, ended 5 Jun 2026 — 78 days stale, 0 class assignments\n• Fix NOT RUN",
+        "Set bk17850 confirmed = true + amountPaid 321.35; deactivate BC 24624; reconcile PMT 17519 in Xero. See recipe: issue-28-addendum-22aug.md",
+        "60th Sat 22 Aug UTC. BC 24624 78d stale (newly counted). PMT 17519 107d Xero null. confirmed=false. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• 135th check Sat 22 Aug 2026 UTC — day counts updated\n• Booking Course 104 (Morning General Plus, booking 94): active = true, ended 26 Jun 2026 — 57 days stale\n• Payment 17102: EUR 1,151.50, booking 94, paymentDate = 13 Mar 2026, xeroPaymentId = null — 162 days unreconciled\n• Payment 945: EUR 4,231, booking 79, paymentDate = 30 Jan 2026, xeroPaymentId = null — 204 days unreconciled\n• Milena Vinci: not found in student table (searched lastName = Vinci) — verify or check alternate surname\n• Fix NOT RUN",
+        "Deactivate BC 104; reconcile PMT 17102 + 945 in Xero; verify Milena Vinci record. See recipe: issue-30-addendum-22aug.md",
+        "135th Sat 22 Aug UTC. BC104 57d stale. PMT 17102 162d, PMT 945 204d Xero null. Milena Vinci not in DB. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H54:K54",
+    "values": [
+      [
+        "• Check Sat 22 Aug 2026 UTC — no change since Fri 21 Aug\n• Booking Accommodation 11399: fee = null, starts 4 Oct 2026, ends 19 Dec 2026, active = true, booking 17843\n• Booking Accommodation 11267 (Fanny Scelles, student 14451): fee = EUR 3,840, 29 Aug to 4 Oct — arrives 29 Aug (7 days)\n• Admin comms To: field: no host email auto-populate for host booking templates\n• Fix NOT RUN",
+        "Set fee on BA 11399 before Oct 4; add host badge to admin.html comms To: field. See recipe: issue-52-addendum-22aug.md",
+        "Sat 22 Aug. BA 11399 fee null (Oct 4, 43d). Fanny arrives Aug 29 (7d). To: field no host option. Fix NOT applied.",
+        ""
+      ]
+    ]
+  }
+]

@@ -1,0 +1,56 @@
+[
+  {
+    "range": "J7:K7",
+    "values": [
+      [
+        "Jun16 hrly: All 5 UNCHANGED since Jun15. s1897(Dolgormaa)+s8567(Aki)=email in phone field. s1194(Jieun)+s5345(Lisa)=annotated number with extra text. s10343(Alessandra)=unicode chars. Awaiting correct numbers from HubSpot or staff.",
+        "info needed"
+      ]
+    ]
+  },
+  {
+    "range": "J11:K11",
+    "values": [
+      [
+        "Jun16 hrly: UNCHANGED. bk97 CONF confirmed=false 1741/1741. doc63(REVOKED)+doc64(ISSUED) both tmpl78=invoice. 0 cert(tmpl82) for bk97. bc107 Morning Apr27-May22 ended (25d ago). NEIL: generate tmpl82 cert via SIS->bk97->Docs.",
+        "cert bk97 pending"
+      ]
+    ]
+  },
+  {
+    "range": "J14:K14",
+    "values": [
+      [
+        "Jun16 hrly: extra96 INSURANCE fee=null UNCHANGED (updAt=May25, 22d stale). extra95 EXAM_FEE=220 active. bk17981 CONF (Lizbeth del Carmen). NEIL: enter insurance fee via SIS->bk17981->Extras.",
+        "ins fee needed"
+      ]
+    ]
+  },
+  {
+    "range": "J16:K16",
+    "values": [
+      [
+        "Jun16 hrly: bk18151 AFT CONF 1339.2/1339.2 + sca255 cls11 B1PM Jan12-Jul03 ACTIVE = OK. NOTE: bk1605 belongs to Ariunsarnai (s1047) NOT Saikhantes (see iss20). s1001 Saikhantes has no 2026 morning booking. AFT confirmed and assigned; morning renewal question remains open.",
+        "aft ok; no morn 2026"
+      ]
+    ]
+  },
+  {
+    "range": "J28:K28",
+    "values": [
+      [
+        "Jun16 hrly: bk17909 CANCELLED confirmed=true 1455.5/727.5 UNCHANGED (updAt=Jun15 15:46 UTC). pmt17477(EUR727.5 hs=1230788330738)+pmt17478(EUR728 hs=1230645766331) both xeroId=null UNCHANGED (created=May22). NEIL: Xero search Sofiia Korkishchenko May 2026.",
+        "Xero chk needed"
+      ]
+    ]
+  },
+  {
+    "range": "J29:K29",
+    "values": [
+      [
+        "Jun16 hrly D11(since Jun05 end): bk17850 PENDING confirmed=false amtTotal=321.35 amtPaid=null (updAt=Jun04). pmt17519 EUR321.35 linked xeroId=null hsId=1231805396201. bc24624 Morning ended Jun05 (11d ago). s14456 0 SCAs. Course finished; low priority.",
+        "historical; low-pri"
+      ]
+    ]
+  }
+]

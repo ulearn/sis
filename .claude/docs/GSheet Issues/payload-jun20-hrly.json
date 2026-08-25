@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "• Booking 1308 is CANCELLED, confirmed = false — student has fully paid EUR 1530 (amount paid = amount total)\n• Payment 17186 (EUR 1280) + Payment 17050 (EUR 250): both have Xero ID = null, unreconciled\n• Booking course 1350 (Academic Year Afternoon, May 25 – Nov 13) is ACTIVE — Day 26 of course, zero class assignments all time\n• Cancellation is accidental — no refund issued, course still running; student 766 is in limbo",
+        "(NOT RUN) UPDATE bookings SET status=CONFIRMED, confirmed=true WHERE id=1308; then assign AY-AFT class bc1350 via SIS. See recipe: issue-17-ana-jessica-accidental-cancel.md",
+        "Jun20 hrly: UNCHANGED (fresh DB). bk1308 STILL CANCELLED conf=false (updAt=Jun07=13d since accidental cancel). bc1350 AY-AFT May25-Nov13 ACTIVE Day26 0 SCAs. pmts 17186(EUR1280)+17050(EUR250) xeroId=null both. NEIL: UPDATE bookings SET status=CONFIRMED, confirmed=true WHERE id=1308 (NOT RUN) — then assign AY-AFT class bc1350 via SIS. Student in school 26 days, no class record.",
+        "D26;urgent;0SCA"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking 1611 is CONFIRMED, fully paid EUR 1280.12 — course ends this Friday Jun 26 (final week)\n• Booking course 1797 (Morning General, Apr 06 – Jun 26) is in its final week: Mon 22 to Fri 26\n• Class assignment 229 (class 12) expired Apr 26 — student has had no class assignment for 54 days\n• Zero attendance records all time — unknown if Alberto is still attending or on extended holiday\n• Future booking course 24686 (Morning General, Jul 20 – Sep 18) exists with no class assignments yet",
+        "(NOT RUN) Assign SCA bc1797 cls12 ws=Jun22 we=Jun26 via SIS if Alberto is returning Mon. See recipe: issue-24-alberto-fidelo-course-split.md",
+        "Jun20 hrly: FINAL WEEK. bc1797 MORN Apr06-Jun26 — 5 school days: Mon22 Tue23 Wed24 Thu25 Fri26. sca229 cls12 expired Apr26 (54d). att=0 ALL TIME (fresh DB). bk1611 CONF 1280.12 (updAt=Jun11). bc24686 Jul20-Sep18 future (0 SCAs). NEIL: Is Alberto returning Mon Jun22? If yes — INSERT INTO student_class_assignments(booking_course_id,class_id,week_start,week_end,student_id) VALUES(1797,12,'2026-06-22','2026-06-26',1052) (NOT RUN). After Fri Jun26 bc1797 expires — last window.",
+        "FINAL WEEK;Jun26"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• Student 917 (Uyanga Tungalag) has visa status = null and HubSpot contact ID = null (unchanged since May 21)\n• Booking 1467 is CONFIRMED, fully paid EUR 2405 / 2405 (updated Jun 11)\n• Booking course 1613 (Academic Year Morning, Apr 27 – Oct 16) is active — Day 54 calendar / approx 38 school days elapsed\n• Zero class assignments all time — student has been in school approx 38 school days with no class record\n• Cannot verify visa via HubSpot — no contact ID link on student record",
+        "Set student 917 visaStatus = Approved + hubspotContactId via SIS; then assign AY-MORN class (id 5 or 12). See recipe: issue-25-uyanga-visa-escrow.md",
+        "Jun20 hrly: UNCHANGED (fresh DB). s917 visaStatus=null hubspotContactId=null (updAt=May21=30d). bk1467 CONF 2405/2405 (updAt=Jun11). bc1613 AY-MORN Apr27-Oct16 Day54cal ~38 school days. 0 SCAs all time. CRITICAL: 38 school days with no class record. NEIL: confirm visa from IRP paperwork; UPDATE students SET visa_status='Approved', updated_at=NOW() WHERE id=917 (NOT RUN); then assign B1-MORN class id=5 or 12 via SIS.",
+        "D38schl;visa null;0SCA;CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H28:K28",
+    "values": [
+      [
+        "• Booking 17909 is CANCELLED but confirmed = true — database anomaly (last updated Jun 17, unchanged 3 days)\n• Database payments 17477 + 17478 were deleted Jun 17 — amount paid on booking 17909 now shows EUR 0\n• HubSpot payments 1230788330738 + 1230645766331 are still NOT voided (last confirmed Jun 19 via API)\n• Sofiia's active booking 17849 is CONFIRMED, fully paid EUR 1455.50 — correct\n• Class assignment 254 (class 6, Jun 08 – Nov 27) is active and correct\n• Note: sheet column D shows 1784 — Sofiia Korkishchenko is actually student 768",
+        "(NOT RUN) 1) Void HubSpot pmts 1230788330738 + 1230645766331 in HubSpot UI; 2) UPDATE bookings SET confirmed=false WHERE id=17909. See recipe: issue-27-sofiia-sca-cancelled-booking.md",
+        "Jun20 hrly: bk17909 CANCELLED confirmed=true (updAt=Jun17, 3d unchanged). DB pmts deleted Jun17 — amtPaid=0 confirmed. HubSpot pmts 1230788330738+1230645766331: no HS token this run — last confirmed NOT voided Jun19. sca254 cls6 Jun08-Nov27 ACTIVE correct. Student 768 (col D shows 1784 — wrong). Outstanding: void 2 HS pmts in HubSpot UI + UPDATE bookings SET confirmed=false WHERE id=17909.",
+        "void 2 HS pmts"
+      ]
+    ]
+  },
+  {
+    "range": "H29:K29",
+    "values": [
+      [
+        "• Booking 17850 is PENDING, confirmed = false — amount paid shows null despite payment 17519 (EUR 321.35) being linked\n• Payment 17519: EUR 321.35, HubSpot ID 1231805396201, Xero ID = null — unreconciled\n• Booking course 24624 (Morning General, May 18 – Jun 05) ended 15 days ago — historical data-integrity issue\n• Fix is low priority: course already complete, no live student impact",
+        "(NOT RUN) UPDATE bookings SET status=CONFIRMED, confirmed=true, amount_paid=321.35 WHERE id=17850. See recipe: issue-28-paola-pending-won-deal.md",
+        "Jun20 hrly: UNCHANGED (fresh DB). bk17850 PENDING conf=false amtPaid=null (updAt=Jun04=16d). pmt17519 EUR321.35 hsId=1231805396201 xeroId=null linked to bk17850. bc24624 ended Jun05 (15d ago). Historical data-hygiene — low priority, no live student impact.",
+        "historical; low-pri"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Class assignment 255 (class 11, B1 PM) has week start = Jan 12 and week end = Jul 03 — both wrong\n• Booking course 24925 (Afternoon Academic Year, Mar 09 – Sep 11) dates were corrected by Neil on Jun 16\n• Correct class assignment dates should match booking course: Mar 09 to Sep 11\n• Booking 18151 is CONFIRMED, fully paid EUR 1339.20 — student is attending normally\n• One SQL statement required to fix — not yet run",
+        "(NOT RUN) UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255. See recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun20 hrly: sca255 UNCHANGED — weekStart=Jan12 weekEnd=Jul03 classId=11 STILL WRONG (fresh DB). bc24925 Mar09-Sep11 correct (Neil fixed Jun16 per bk updAt). bk18151 CONF 1339.2/1339.2. Student attending B1-PM normally; SCA time window is wrong but not blocking. Fix NOT RUN: 1 line.",
+        "sca fix pending"
+      ]
+    ]
+  }
+]

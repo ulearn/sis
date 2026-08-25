@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H11:K11",
+    "values": [
+      [
+        "2 separate bookings. bk97 c107 Apr27-May22, bk18002 c24793 May25-Jun05.",
+        "bk18002 cert ISSUED Jun05. Generate cert for bk97(Apr27-May22). see recipe: issue-9-massimiliano-cert-split.md",
+        "Jun11 hrly D22: bk97 CONF conf=false paid=1741/1741. 0 docs. c107 Apr27-May22 ended 22d. NEIL: (1) SET confirmed=true WHERE id=97 (NOT RUN) (2) gen cert bk97 in SIS.",
+        "cert pending D22"
+      ]
+    ]
+  },
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "Student wasn't invoiced for Insurance",
+        "Engage WORLD2GO re HI+PEL. If agreed: add LIs to HS deal 503569276136, supp invoice, UPDATE booking_extras SET fee=150 WHERE id=96. see recipe: issue-13-lizbeth-health-insurance.md",
+        "Jun11 hrly D12: extra96 fee=null UNCHANGED. c24773 AY-Aft Jun1-Nov20 ACTIVE. bk17981 conf=false paid=1407.5. visaNull. NEIL: WORLD2GO HI+PEL then supp invoice.",
+        "insurance TBC D12"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "bk18151 Aft CONFIRMED c24925 Jan12-Jul03. bk1724 old Morn 2025 deal=null c1982 Jun30-Dec19. New morn deal 505658550489 still ENROLMENT; no webhook yet.",
+        "Mark deal 505658550489 WON->webhook creates 2026 morn bk. see recipe: issue-15-saikhantes-course-dates.md",
+        "Jun11 hrly: bk18151 CONF c24925 AY-Aft Jan12-Jul03(22d left). sca255 cls11 active. No 2026 morn bk. Deal 505658550489 ENROLMENT. NEIL: WON deal before Jul03 if Morn renewal needed.",
+        "aft done; morn pending"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "bk1605 PENDING 0/1509. HS deal 502951083215 stage=ENROLMENT not WON.",
+        "Contact student/agent re EUR 1509 outstanding. Once deal WON webhook auto-confirms. see recipe: issue-20-ariunsarnai-payment-due.md",
+        "Jun11 hrly D63: UNCHANGED. bk1605 PENDING 0/1509. 0pmts. c1791 AY-MORN Apr13-Oct02. email ariunsarnai0125@gmail.com. NEIL: contact student re EUR1509 or cancel.",
+        "PENDING D63 urgent"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "Last course c24668 ended May15. bk18131+bk18133 shell bookings no courses. Dup pmts: 970+17852(1185), 17027+17730(648), 17161+17728(482.4).",
+        "Del dups: pmt17728+17730+17852 (method=Bank, no txId). Verify HS before action. see recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun11 hrly: pmt17728(482.4 bk1567)+17730(648 bk18133)+17852(1185 bk18131) confirmed dups, no txId. Originals pmt17161/17027/970 have txIds. bk18131/18133 no courses. NEIL: verify HS 438072533213+471541671147 then DEL 17728+17730+17852.",
+        "dup pmts pending"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "bk1611 CONF paid=1280.12. c1797 MORN Apr6-Jun26. c24686 MORN Jul20-Sep18. 0 holidays. sca229(cls12) we=Apr26 ENDED(46d no class).",
+        "1)Confirm hol dates BEFORE Jun26. 2)Add holiday(est Apr27-Jul17). 3)Add SCA c24686 Jul20. see recipe: issue-24-alberto-fidelo-course-split.md",
+        "Jun11 hrly D15 URGENT: c1797 ends Jun26(15d). sca229 expired Apr26(46d gap). c24686 Jul20 0SCAs. 0 hols. NEIL: CONFIRM hol dates TODAY - window closing fast.",
+        "holiday/SCA urgent 15d"
+      ]
+    ]
+  }
+]

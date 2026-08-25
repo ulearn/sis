@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 3 booking courses all end TOMORROW Friday 17 July — zero class assignments as of 101st check, Thursday 16 July UTC\n• Booking course 1719 (María Magdalena Hermosilla Ogaz, student 992): Academic Year Afternoon, 26 Jan to 17 Jul 2026 — 0 class assignments; booking 1543 EUR 1356 paid of EUR 1500 (EUR 144 outstanding)\n• Booking course 24946 (Lunel Dubost, student 14566): General English AM, 13 to 17 Jul 2026 — 0 class assignments; booking 18171 EUR 206.13 / 206.13 fully paid\n• Booking course 24994 (Petru Ous, student 14591): General English AM, 13 to 17 Jul 2026 — 0 class assignments; booking 18217 EUR 202 / 202 fully paid",
+        "Assign classes for booking courses 1719 (Hermosilla), 24946 (Dubost), 24994 (Ous) via SIS Admin > Classes > To Be Assigned TODAY; see recipe issue-45-addendum-16jul.md",
+        "101st check Thu 16 Jul UTC (9th today). LAST DAY. BC1719/24946/24994 still 0 SCAs. All 3 confirmed, ends tomorrow Jul 17. Fix NOT RUN.",
+        "CRITICAL; LAST DAY TODAY"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Booking course 24609 (Xuezhen Huang, student 14443, Morning General, 13 to 31 July 2026): zero class assignments — Day 4, Thursday 16 July — 27th check\n• Booking 17831: Confirmed, EUR 1396.90 / EUR 1396.90 fully paid\n• Booking accommodation 11358 (bed 180, provider Mary Carver, 12 July to 2 August 2026): active = true, claim status = still null — 20 days stale (last updated 26 June 2026); host has not confirmed placement",
+        "Assign student 14443 to class for booking course 24609 via SIS Admin > Classes > To Be Assigned; confirm accommodation 11358 in SIS admin or call host Mary Carver; see recipe issue-39-addendum-16jul.md",
+        "27th check Thu 16 Jul UTC (7th today). BC24609 0-SCA Day 4 (Jul 13-31). BK17831 CONF EUR 1396.90/1396.90. BA11358 bed180 claimStatus=STILL null (20d stale, updAt=Jun26). Fix NOT RUN.",
+        "Day4; BA null"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• Payment 17954 (Giampaolo Russo, EUR 2584.96, Bank Transfer, payment date 26 June 2026): Xero payment ID = still null — 20 days unreconciled (41st check, Thursday 16 July UTC)\n• HubSpot payment 1268783973563 linked — payment received but not reconciled in Xero\n• Booking 18180: Confirmed, EUR 2584.96 / 2584.96 fully paid\n• Accommodation 11357 (Host Family, bed 178, 2 August to 6 September 2026): claim status = confirmed (6 July) — host assigned\n• Capel Street accommodation (6 to 14 September 2026): no record in SIS for student 14571 / booking 18180 — genuinely missing (booking 17980 belongs to Pietro Caccianiga, different student)\n• 17 days to host family check-in (2 August 2026)",
+        "Reconcile payment 17954 (EUR 2584.96, HubSpot 1268783973563) in Xero; add Capel Street accommodation (6-14 September) to booking 18180 in SIS admin. See recipe: issue-41-giampaolo-dual-accomm.md",
+        "41st check Thu 16 Jul UTC. PMT17954 EUR 2584.96 xeroId=STILL null (20d since paymentDate Jun26). BA11357 bed178 HF Aug2-Sep6 claimStatus=confirmed. Capel apt Sep6-14 NOT in SIS (bk18180 has 1 BA only; bk17980=Pietro, not Giampaolo). 17d to Aug 2. Fix NOT RUN.",
+        "Xero null; Capel apt missing"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• August Bank Holiday 2026 (Monday 3 August): still missing from school closures — 18 days away — 26th check, Thursday 16 July UTC\n• October Bank Holiday 2026 (Monday 26 October): still missing from school closures — 102 days away\n• Current school closures: 9 records — Good Friday 2026 to 2030 (5 records) and Christmas 2026 to 2029 (4 records)\n• Risk: any Academic Year booking end date landing on 3 August or 26 October will not be auto-shunted",
+        "Add school closure rows for August Bank Holiday (3 Aug 2026) and October Bank Holiday (26 Oct 2026) via SIS Admin > School Setup > Closures; see recipe issue-38-course-date-ux.md",
+        "26th check Thu 16 Jul UTC (6th today). UNCHANGED. No August BH (Mon 3 Aug) or October BH (Mon 26 Oct) in school_closures. 9 records: Good Friday 2026-2030 + Christmas 2026-2029. 18 days to Aug BH. Fix NOT RUN.",
+        "Aug BH missing; 18d"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• Booking 1605 (Ariunsarnai Batbayar, student 1047): status = PENDING — 94 calendar days without payment since course started 13 April 2026 (29th check, Thursday 16 July UTC)\n• Amount paid = EUR 0 — zero payments on file; course fee = EUR 1509 — no class assignments on booking course 1791 ever\n• Booking course 1791 (Academic Year Renewal Morning, 13 April to 23 October 2026): active = true, zero class assignments, zero payments\n• HubSpot deal 502951083215 — advance to Won or cancel booking 1605",
+        "Enrolment decision needed — advance HubSpot deal 502951083215 to Won or cancel booking 1605. See recipe: issue-20-ariunsarnai-payment-due.md",
+        "29th check Thu 16 Jul UTC. BK1605 STILL PENDING — Day 94 since Apr 13. EUR 0 paid of EUR 1509. Zero payments, zero SCAs. BC1791 AY-Renewal active ends Oct 23. Neil: contact student / agency or cancel. Fix NOT RUN.",
+        "Day94; ENROLMENT"
+      ]
+    ]
+  },
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "• Booking 1308 (Ana Jessica Rosa de Paula Santos): CANCELLED — accidental click 7 June 2026, confirmed flag = false; 39 days since cancellation\n• Amount paid = EUR 1530, amount total = EUR 1530 — balanced, no refund issued\n• Payment 17186 (EUR 1280, May 2026): Xero payment ID = null — 72 days unreconciled in Xero\n• Payment 17050 (EUR 250, February 2026): Xero payment ID = null — unreconciled (imported from Fidelo)\n• Booking course 1350 (Academic Year Afternoon, active = still true on cancelled booking since 7 June): stale — 39 days",
+        "Reconcile payments 17186 (EUR 1280) and 17050 (EUR 250) in Xero; deactivate booking course 1350. See recipe: issue-17-ana-jessica-accidental-cancel.md",
+        "Thu 16 Jul UTC. UNCHANGED. BK1308 CANCELLED EUR 1530/1530 (updAt=Jun07=39d). PMT17186 EUR 1280 xeroId=STILL null (72d). PMT17050 EUR 250 xeroId=STILL null (72d). BC1350 AY-Aft active=true on cancelled booking. Fix NOT RUN.",
+        "pmts unreconciled; BC stale"
+      ]
+    ]
+  }
+]

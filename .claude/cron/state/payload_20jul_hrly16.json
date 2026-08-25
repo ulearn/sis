@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 79th check Mon 20 Jul 2026 UTC (16th hourly)\n• Payment 16988 (EUR 339.90, HubSpot payment ID 1204827374829): booking ID null — 83 days since 28 Apr 2026\n• Payment 16989 (EUR 339.90, HubSpot payment ID 1204846469317): booking ID null — 83 days since 28 Apr 2026\n• Payment 17187 (EUR 6151, TransferMate Escrow): booking ID null — 80 days since 1 May 2026\n• Payment 4781 (EUR 380, Flywire): booking ID null — legacy record, payment date 2019, 103+ days in SIS\n• Stale booking courses: 24,436 with active = true and end date before 20 Jul 2026 — auto-deactivation still not running",
+        "Link payments to bookings; set confirmed=true on bookings 17856+17857; run booking course deactivation. See recipe: issue-1-orphan-payments.md",
+        "79th check Mon 20 Jul (16th hrly). UNCHANGED. 4 orphan payments: 16988+16989 (EUR 339.90 ea), 17187 (EUR 6151), 4781 (EUR 380). Stale BCs: 24,436. Fix NOT RUN.",
+        "4 orphan pmts; 24,436 stale BCs"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• 43rd check Mon 20 Jul 2026 UTC (16th hourly)\n• Booking course 24991 (Edith Nunes, General English AM, 13 Jul to 7 Aug 2026): STILL 0 class assignments — week 2 day 1, 5 school days missed (week 1), 13 remaining\n• Note: Aug 3 Bank Holiday absent from school_closures (Issue 38) — effective remaining is 12 once fixed\n• Booking course 24933 (General English AM, 15 Jun to 10 Jul 2026): STILL active = true — 10 days stale\n• Booking course 24934 (General English AM, 15 Jun to 10 Jul 2026): STILL active = true — 10 days stale",
+        "Assign BC24991 to GE AM class now; set active=false on BCs 24933+24934. See recipe: issue-22-addendum-20jul.md",
+        "43rd check Mon 20 Jul (16th hrly). BC24991 STILL 0 class assignments — week 2 day 1, 5 days missed (week 1), 13 remaining. BCs 24933+24934 still active (10d stale). Fix NOT RUN.",
+        "CRITICAL; assign NOW"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• 102nd check Mon 20 Jul 2026 UTC (17th hourly)\n• Booking course 24686 (Alberto Squillace, Morning General, booking 1611): fee = null — started TODAY 20 Jul 2026, ends 18 Sep 2026\n• Booking course 24616 (Mia Wehrli, General English AM Plus, booking 17842): fee = null — started TODAY 20 Jul 2026, ends 31 Jul 2026\n• Booking course 1797 (Alberto Squillace, Morning General, booking 1611): fee = EUR 1836, active = true — ended 26 Jun 2026, 24 days stale\n• Both students attending class today with no course fee recorded in SIS",
+        "Set fee on booking courses 24686 and 24616; deactivate booking course 1797 (ended Jun 26). See recipe: issue-24-addendum-20jul.md",
+        "102nd check Mon 20 Jul (17th hrly). BC24686 Alberto Morning General STARTED TODAY fee=STILL null. BC24616 Mia GE AM Plus STARTED TODAY fee=STILL null. BC1797 ended Jun26 active=STILL true (24d, fee=EUR 1836). Fix NOT RUN.",
+        "fee null; both started today"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 92nd check Mon 20 Jul 2026 UTC (16th hourly)\n• August Bank Holiday Mon 3 Aug 2026: STILL absent from school_closures — 14 days until it occurs\n• October Bank Holiday Mon 26 Oct 2026: STILL absent from school_closures — 98 days away\n• School closures present (9 total): Good Friday 2026 to 2030, Christmas 2026 to 2029 — no bank holidays",
+        "Add Aug Bank Holiday (3 Aug 2026) and Oct Bank Holiday (26 Oct 2026) to school_closures table. See recipe: issue-38-addendum-20jul.md",
+        "92nd check Mon 20 Jul (16th hrly). Aug BH Mon 3 Aug: STILL absent — 14 days. Oct BH Mon 26 Oct: STILL absent — 98 days. Fix NOT RUN.",
+        "Aug BH; 14d URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• 45th check Mon 20 Jul 2026 UTC (16th hourly)\n• Booking course 24609 (Xuezhen Huang, Morning General, 13 Jul to 31 Jul 2026): STILL 0 class assignments — week 2 day 1, 5 school days missed (week 1), 11 days remaining\n• Accommodation 11357 (bed 178, Host Family, 2 Aug to 6 Sep 2026): unaffected",
+        "Assign BC24609 to Morning General class now. See recipe: issue-39-addendum-20jul.md",
+        "45th check Mon 20 Jul (16th hrly). BC24609 STILL 0 class assignments — week 2 day 1, 5 days missed. 11 school days left (ends 31 Jul). Fix NOT RUN.",
+        "CRITICAL; assign NOW (week 2)"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 48th check Mon 20 Jul 2026 UTC (18th hourly)\n• Booking course 25011 (Eduardo Roche Diaz, booking 18233, General English PM, 20 Jul to 24 Jul 2026): STILL 0 class assignments — day 1 of final week, 4 school days remaining including today; ends FRIDAY\n• Booking course 24945 (Sarah Venturini Talizin, booking 18169, General English AM, 6 Jul to 31 Jul 2026): STILL 0 class assignments — 11 school days missed, 9 remaining\n• Booking course 24998 (Allison Guadalupe Ayala Vazquez, booking 18221, General English PM, 13 Jul to 31 Jul 2026): STILL 0 class assignments — 6 days missed, 9 remaining\n• Booking course 24990 (Samuele Stenico, booking 18213, General English AM, 13 Jul to 7 Aug 2026): STILL 0 class assignments — 6 days missed, 13 remaining (Aug 3 Bank Holiday not in school_closures)\n• Booking course 24991 (Edith Nunes, booking 18214, General English AM, 13 Jul to 7 Aug 2026): STILL 0 class assignments — tracked Issue 22\n• Booking course 24609 (Xuezhen Huang, booking 17831, Morning General, 13 Jul to 31 Jul 2026): STILL 0 class assignments — tracked Issue 39",
+        "Assign class: BC25011 Eduardo (ends Friday, do first); BC24945 Sarah (11d missed); BC24998 Allison; BC24990 Samuele. See recipe: issue-45-addendum-20jul-c.md",
+        "48th check Mon 20 Jul (18th hrly). BC25011 Eduardo GE PM ends FRIDAY — day 1, 4 days left. BC24945 Sarah 11 missed, 9 left. BC24998 Allison + BC24990 Samuele 6d missed. Fix NOT RUN.",
+        "CRITICAL; BC25011 ends Fri; BC24945 11d missed"
+      ]
+    ]
+  }
+]

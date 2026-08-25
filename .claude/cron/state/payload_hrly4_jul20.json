@@ -1,0 +1,29 @@
+[
+  {
+    "range": "J23:K23",
+    "values": [
+      [
+        "34th check Mon 20 Jul (4th hrly). BC24991 Edith Nunes STILL 0 class assignments — DB confirmed. Week 2 underway — 3 weeks remain (ends 7 Aug). BC24933+24934 (ended 10 Jul) still active = true — 10d stale. Fix NOT RUN.",
+        "CRITICAL; assign NOW"
+      ]
+    ]
+  },
+  {
+    "range": "J41:K41",
+    "values": [
+      [
+        "34th check Mon 20 Jul (4th hrly). BC24609 Xuezhen Huang STILL 0 class assignments — DB confirmed. Week 1 (13-17 Jul) permanently missed. Week 2 underway — 2 weeks remain (ends 31 Jul). Fix NOT RUN.",
+        "CRITICAL; assign NOW"
+      ]
+    ]
+  },
+  {
+    "range": "J47:K47",
+    "values": [
+      [
+        "35th check Mon 20 Jul (4th hrly). All 7 Mon 20 Jul starters STILL 0 SCAs: BC1630 Saranzaya, BC24616 Mia, BC24686 Alberto, BC24942 Lorena, BC24966 Filippo, BC24989 Marcos (1wk ends 24 Jul — 4 days!), BC25000 Giorgio. 9 ongoing BCs also STILL 0 SCAs (1619,1788,1814,24820,24988,24990,24998,24609,24991). Stale ended 17 Jul: BC24946,24992,24994 still active. Fix NOT RUN.",
+        "CRITICAL; assign NOW"
+      ]
+    ]
+  }
+]

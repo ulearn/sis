@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 37th check Sat 1 Aug 2026 UTC (10th today) — STILL NOT FIXED\n• August Bank Holiday 2026-08-03 absent from school_closures (only 9 entries: Good Fridays + Christmas)\n• 21 active booking courses still start on Aug 3 — confirmed by fresh query\n• Confirmed = true (15 courses): BCs 88, 1755, 1766, 24908, 24956, 24958, 24959, 24964, 24984, 25002, 25003, 25010, 25016, 25028, 25035\n• Confirmed = false / pending / partial (6 courses): BCs 97, 24627, 24999, 25029, 25030, 25033\n• Booking course 24956 is Giampaolo Russo (Issue 41) — arrives tomorrow, course starts on bank holiday\n• Booking course 25003 is duplicate of BC 25002 (Aleix Cervera Gonzalez, same dates) — deactivate after shunt",
+        "Insert August Bank Holiday closure 2026-08-03; shunt 21 booking courses to Aug 4; deactivate BC 25003. See recipe: issue-38-addendum-1aug-d.md",
+        "37th check Sat 1 Aug UTC (10th today). STILL NOT FIXED. Window closes tonight — fix must run before school opens Mon Aug 3.",
+        "URGENT; window closes tonight"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 32nd check Sat 1 Aug 2026 UTC (10th today) — student arrives TOMORROW (Sun Aug 2)\n• Booking 18180: CONFIRMED, confirmed = true, paid = EUR 2,584.96, open = EUR 0\n• Booking accommodation 11357 (host family, bed 178): Aug 2 to Sep 6 2026, active = true, fee = EUR 1,250 — READY for check-in\n• Booking course 24956 (General English AM, Aug 3 to Sep 11): starts on August Bank Holiday — needs Issue 38 shunt to Aug 4\n• Capel Street accommodation (Sep 6 to Sep 14): STILL ABSENT from DB — only 1 booking accommodation record on booking 18180\n• Payment 17954: EUR 2,584.96, Bank, date 2026-06-26, hubspot payment ID 1268783973563 — xero payment ID = null (36 days unreconciled)",
+        "Run Issue 38 shunt for BC 24956; add Capel Street accommodation Sep 6-14 (confirm with Diego); reconcile payment 17954 in Xero. See recipe: issue-41-addendum-1aug-d.md",
+        "32nd check Sat 1 Aug UTC (10th today). ARRIVES TOMORROW (Sun Aug 2). Host family bed 178 ready. Capel Sep 6-14 absent from DB. BC 24956 bank holiday shunt via Issue 38. Payment 17954 xero = null (36 days). Fix NOT RUN.",
+        "CHECK-IN TOMORROW"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 132nd check Sat 1 Aug 2026 UTC (3rd today) — unchanged\n• 46 stale booking accommodations: active = true, bed assigned, end date before today\n• Oldest: booking accommodation 11183 (ended 2026-03-06) — 148 days stale\n• Newest stale: ended 2026-07-26 — 6 days stale\n• Pietro Caccianiga payment 17733 (EUR 5,331, Bank Transfer, booking 17980): xero payment ID = null — 60 days unreconciled (from 2026-06-02)",
+        "Deactivate 46 stale booking accommodations; reconcile payment 17733 in Xero. See recipe: issue-36b-addendum-1aug.md",
+        "132nd hrly Sat 1 Aug UTC (3rd today). 46 stale booking accommodations (148 days max). Pietro payment 17733 Xero null 60 days. Unchanged. Fix NOT RUN.",
+        "46 stale BAs; Pietro Xero 60d"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 24th check Sat 1 Aug 2026 UTC (8th today) — unchanged\n• Booking 17856 (Margherita Galbusera): CONFIRMED, confirmed = false (anomaly), amount paid = EUR 339.90\n• Booking 17857 (Francesca Fassina): CONFIRMED, confirmed = false (anomaly), amount paid = EUR 339.90\n• Booking course 24631 (Galbusera, General English AM Plus, Jun 29 to Jul 10): active = true — 22 days stale\n• Booking course 24630 (Fassina, General English AM Plus, Jun 29 to Jul 10): active = true — 22 days stale\n• Zero payment records linked to bookings 17856 + 17857 — yet both show amount paid = EUR 339.90\n• Orphan payments 16988 + 16989 (Issue 1, EUR 339.90 Bank each, Apr 28 2026): hubspot payment IDs 1204827374829 + 1204846469317 — almost certainly belong to these bookings",
+        "Verify HubSpot payment IDs 1204827374829 + 1204846469317 against students; link payments 16988+16989 to bookings; set confirmed=true; deactivate booking courses 24630+24631. See recipe: issue-48-addendum-1aug-c.md",
+        "24th hrly Sat 1 Aug UTC (8th today). 0 payments linked to either booking despite amount_paid=339.90. Orphan payments 16988+16989 (Issue 1) confirmed match. AC returns Aug 24. Fix NOT RUN.",
+        "4 items open; return Aug 24"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 15th check Sat 1 Aug 2026 UTC (2nd today) — stale booking course count stable\n• 24,466 active booking courses ended before today (unchanged from 1st check today; +17 from Jul 31)\n• Named 27-item recipe subset: all still active = true\n• Bulk cleanup approach pending Neil decision (Option A: full bulk deactivate 24,466; Option B: 27-item subset first)",
+        "Bulk deactivate 24,466 stale booking courses (Option A) or 27-item subset first (Option B). See recipe: issue-45-addendum-1aug-a.md",
+        "15th check Sat 1 Aug UTC (2nd today). 24,466 stale booking courses (stable; +17 from Jul 31). Awaiting Neil decision on bulk vs subset approach. Fix NOT RUN.",
+        "24,466 stale; awaiting decision"
+      ]
+    ]
+  },
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 124th check Sat 1 Aug 2026 UTC (5th today) — 4 orphan payments unchanged\n• Payment 16988: EUR 339.90, Bank, hubspot payment ID 1204827374829, booking = null (96 days)\n• Payment 16989: EUR 339.90, Bank, hubspot payment ID 1204846469317, booking = null (96 days)\n• Payment 17187: EUR 6,151, TransferMate Escrow, fidelo transaction ID D2026226, booking = null (93 days)\n• Payment 4781: EUR 380, Flywire, fidelo transaction ID D20191404, booking = null (legacy approx 7 years)\n• Cross-reference confirmed: bookings 17856 + 17857 (Issue 48, Galbusera + Fassina) have 0 payment records — payments 16988 + 16989 are almost certainly the match",
+        "Verify HubSpot payment IDs 1204827374829 + 1204846469317 against Galbusera/Fassina; link confirmed payments to bookings 17856+17857. See recipe: issue-1-addendum-1aug-b.md",
+        "124th hrly Sat 1 Aug UTC (5th today). 4 orphan payments unchanged (96d/96d/93d/7yr). Issue 48 cross-reference confirmed: 0 payments on bookings 17856+17857. Fix NOT RUN.",
+        "4 orphan pmts; 96d+"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,18 @@
+[
+  {
+    "range": "J25",
+    "values": [
+      [
+        "Jun18 hrly (fresh DB): bk1611 CONF 1280.12/1280.12 (updAt=Jun11). sca229 cls12 B1-AM2 expired Apr26 (53d). bc1797 Morning General ends Jun26=7 school days incl today (Jun18,19,22,23,24,25,26). bc24686 Jul20-Sep18 future. NEIL URGENT: confirm Alberto returning — if yes assign SCA cls12 bc1797 ws=2026-06-18 we=2026-06-26 via SIS. Deadline: Fri Jun26."
+      ]
+    ]
+  },
+  {
+    "range": "J31",
+    "values": [
+      [
+        "Jun18 hrly (fresh DB): bk18044 STILL CONFIRMED conf=true amtPaid=1106.5/1106.5 (updAt=Jun07=11d stale). pmt17607 xeroId=null hsId=1239529228498 EUR1151.5. bk94 CONFIRMED 1151.5/1151.5 OK. sca270 cls12 Jun15-Jun26 ACTIVE — 6 school days remaining after today (Jun19,22,23,24,25,26). Steps NOT RUN: (1) cancel bk18044 via SIS UI; (2) void pmt17607 via HubSpot UI (hsId=1239529228498). Deadline: Fri Jun26."
+      ]
+    ]
+  }
+]

@@ -1,0 +1,74 @@
+[
+  {
+    "range": "J47:J47",
+    "values": [
+      [
+        "55th check 13 Jul UTC. UNCHANGED. All 11 students still 0 SCAs (fresh DB). MOST URGENT: Lunel Dubost (BC24946 GE-AM Jul13-17) ends FRIDAY 17 July — 4 school days remain (Tue-Fri), never assigned. Today Mon Jul13 is school day 1; Lunel missed morning class. Pietro Colombo (BC81 Jul6-Jul24) Day 8, 0 SCAs, 9 school days left. All 7 Jul13 starters (BC1619/1788/1814/24820/24946/24990/24991) missed Day 1 AM. Fix NOT RUN. Neil: assign Lunel to AM class FIRST — ends Friday."
+      ]
+    ]
+  },
+  {
+    "range": "J41:J41",
+    "values": [
+      [
+        "Day 2 accomm / Day 1 course 13 Jul Mon UTC. UNCHANGED. BA11358 claimStatus=STILL null — host Mary Carver (provider 146, +353 87 927 1130) NOT claimed. BC24609 Morning General Jul13-31 started today, 0 SCAs — Xuezhen missed Monday AM class. Fix NOT RUN. Neil: (1) call Mary Carver to claim via portal; (2) assign Xuezhen to AM class."
+      ]
+    ]
+  },
+  {
+    "range": "H16:H16",
+    "values": [
+      [
+        "• Student class assignment 255 (Saikhantes Shagdarsuren, student 1001, class 11 B1 PM): weekEnd = 3 July 2026 — expired 10 days ago (29th check, 13 July UTC)\n• No class assignment for weeks beginning 7 July or 14 July — 10 school days without a class\n• Booking course 24925 (Academic Year Afternoon, 9 March 2026 to 2 October 2026): active, fully paid EUR 1339.20\n• Root cause: SCA 255 was not extended or renewed when the period ended on 3 July"
+      ]
+    ]
+  },
+  {
+    "range": "J16:J16",
+    "values": [
+      [
+        "29th check 13 Jul UTC. UNCHANGED. SCA255 weekEnd=Jul3 STILL expired (10 calendar days). BC24925 AY Afternoon Mar9-Oct2 active, zero new SCAs. WB Jul7 (5 school days missed) + WB Jul14 starts today = 10 school days total untracked. CRITICAL. Fix NOT RUN. Neil: assign Saikhantes to B1 PM class from weekStart=2026-07-14."
+      ]
+    ]
+  },
+  {
+    "range": "H21:H21",
+    "values": [
+      [
+        "• Booking 1605 (Ariunsarnai Batbayar, student 1047): status = Pending — 91 calendar days without payment since course started 13 April 2026 (26th check, 13 Jul UTC)\n• Amount paid = EUR 0 — no payments recorded — no class assignments on booking course 1791\n• Booking course 1791 (Academic Year Renewal Morning, 13 April to 23 October 2026): active = true, zero class assignments ever\n• HubSpot deal 502951083215: enrolment decision needed — advance to Won or cancel booking"
+      ]
+    ]
+  },
+  {
+    "range": "J21:J21",
+    "values": [
+      [
+        "26th check 13 Jul UTC. UNCHANGED. BK1605 STILL PENDING — day 91 since Apr13. amountPaid=EUR0/EUR1509. Zero payments in DB. BC1791 AY-Renewal Morning Apr13-Oct23 active. Zero SCAs. Neil: ESCALATION — contact student or agency re EUR1509 outstanding. Fix NOT RUN."
+      ]
+    ]
+  },
+  {
+    "range": "J25:J25",
+    "values": [
+      [
+        "38th check 13 Jul UTC. UNCHANGED. BC24686 Morning General Jul20-Sep18 fee=STILL null (7 days to course start). BC1797 ended Jun26 active=true (17d stale). PMT17124 EUR1280.12 type=null xeroId=null. Fix NOT RUN. Neil: set fee on BC24686 BEFORE Jul20; deactivate BC1797; reconcile PMT17124 in Xero."
+      ]
+    ]
+  },
+  {
+    "range": "J43:J43",
+    "values": [
+      [
+        "35th check 13 Jul UTC. UNCHANGED. Payment 17954 EUR2584.96 xeroPaymentId=null, type=null (paid Jun29, 14d stale, HubSpot payment 1268783973563). BK18180 confirmed EUR2584.96/2584.96. BA11357 bed178 Aug2-Sep6 claimStatus=confirmed. BC24956 Aug3-Sep11 (20d to start). Only Xero reconciliation remains. Fix NOT RUN."
+      ]
+    ]
+  },
+  {
+    "range": "K43:K43",
+    "values": [
+      [
+        "Xero null; Aug2 20d; host confirmed"
+      ]
+    ]
+  }
+]

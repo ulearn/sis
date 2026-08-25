@@ -1,0 +1,58 @@
+[
+  {
+    "range": "J10",
+    "values": [
+      [
+        "Jun10 hrly: bk1498 CONFIRMED confirmed=false amtPaid=null. doc171 cert DRAFT issuedAt=null. c1660 ENDED Jun05(5d). UNCHANGED. NEIL: UPDATE bookings SET confirmed=true WHERE id=1498 (NOT RUN) then issue doc171 via SIS."
+      ]
+    ]
+  },
+  {
+    "range": "J18",
+    "values": [
+      [
+        "Jun10 hrly D8: bk1308 STILL CANCELLED confirmed=false. amtPaid=1530=amtTotal. pmts: 17186(1280 May01)+17050(250 Feb17). 0 SCAs. c1350 AY-Aft May25-Nov13 ACTIVE. RUN Step1 SQL NOW."
+      ]
+    ]
+  },
+  {
+    "range": "K18",
+    "values": [
+      [
+        "cancel D8 CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "J26",
+    "values": [
+      [
+        "Jun10 hrly: s917 visaStatus=null 0 SCAs D44. bk1467 CONFIRMED 2405=amtTotal. c1613 AY Morn Apr27-Oct16 ACTIVE. NEIL: check tba(null passes visa filter); if absent run visa SQL (NOT RUN) + assign AY Morn."
+      ]
+    ]
+  },
+  {
+    "range": "J27",
+    "values": [
+      [
+        "Jun10 hrly: Ernesto s14532 0 SCAs c24826 INTENSIVE Jun08-Jun19(9d). bk18034 PARTIAL 845/1095. Daniela s75 sca161 cls7 A1-AM only(no A1-PM). Fabrizio s14440 sca174 cls4 B2C1-AM only(cls6 avail). All 3 unchanged. NEIL: SIS->Classes->Students->Add PM."
+      ]
+    ]
+  },
+  {
+    "range": "J30",
+    "values": [
+      [
+        "Jun10 hrly: att=0 ALL TIME. cls11 occ starts Mar23(not Jan12). Mar23-Jun10: 58 occ, 315 att others, 0 for s1001. c24925 ends Jul03(23d). NEIL: B1-PM register today—present? If yes find alias ID."
+      ]
+    ]
+  },
+  {
+    "range": "J31",
+    "values": [
+      [
+        "Jun10 hrly: 0 SCAs STILL(5d CRITICAL Mon Jun15). bk94 CONF 1151.5. bk18044 CONF 1106.5 dup+pmt17607. ba11165 Jun13-28(ok). ba11323 May31-31(bogus). Milena s14557 PENDING 0-paid. NEIL: assign Giulia class TODAY."
+      ]
+    ]
+  }
+]

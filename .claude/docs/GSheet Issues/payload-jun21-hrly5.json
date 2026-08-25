@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Two payments are unlinked — booking_id = null and xeroPaymentId = null\n• Payment 16988 maps to Booking 17856 (Margherita Galbusera) — EUR 339.90\n• Payment 16989 maps to Booking 17857 (Francesca Fassina) — EUR 339.90\n• Both bookings are CONFIRMED, confirmed = false, amountPaid = 339.90 / 339.90\n• Bookings show amountPaid set correctly despite orphan payment records — payment audit trail is broken\n• Students arrive Jun 29 — 8 calendar days",
+        "UPDATE payments SET booking_id=17856 WHERE id=16988; UPDATE payments SET booking_id=17857 WHERE id=16989. See recipe: issue-1-orphan-payments.md",
+        "Jun21 hrly5: pmts 16988/16989 STILL booking_id=null xeroId=null (db confirmed). EUR 339.90 each. bk17856 (Margherita)+bk17857 (Francesca) CONFIRMED cf=false amtPaid=339.9/339.9 (updAt=Jun04=17d). bc24631+bc24630 start Jun29 = 8 DAYS. HubSpot pmt IDs: 16988=1204827374829, 16989=1204846469317. SQL NOT RUN. NEIL: URGENT — link pmts before Jun29 arrivals.",
+        "8d to Jun29"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking course 24934 (General English AM, Jun 15-Jul 10, fee=360) is a duplicate of booking course 24933 (fee=380) on booking 18158\n• Booking 18158 is CONFIRMED, paid 740/740 — correct booking\n• Ghost bookings 18131 and 18133 were deleted Jun 17 — no longer in database\n• Student 1015 (Edith Nunes) still has zero active class assignments — last assignment (class 7) expired May 15 on booking course 24668\n• Booking course 24934 (duplicate) confirmed still present as of Jun 21\n• Two steps still not run: (1) delete booking course 24934; (2) insert class assignment for booking course 24933, class 7, Jun 22-Jul 10",
+        "(NOT RUN) 1) DELETE booking course 24934 (duplicate); 2) INSERT class assignment: booking course 24933, class 7, week start 2026-06-22, week end 2026-07-10, student 1015. See recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun21 hrly5 (3rd check): bc24933+bc24934 DUP still both live on bk18158 CONFIRMED 740/740 (db confirmed). 0 active SCAs — last sca146 cls7 expired May15. bc24934 NOT deleted. TOMORROW MON JUN22 — minimum step: INSERT INTO student_class_assignments(booking_course_id,class_id,week_start,week_end,student_id) VALUES(24933,7,2026-06-22,2026-07-10,1015). Neil: last chance before class Mon 8am.",
+        "CRITICAL;SCA;Mon22"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking 1611: CONFIRMED, confirmed = true, fully paid EUR 1280.12 / 1280.12\n• Booking course 1797 (Morning General) runs Apr 06 - Jun 26 — FINAL WEEK is Mon Jun 22 - Fri Jun 26\n• Booking course 24686 (Morning General) runs Jul 20 - Sep 18 — second course after holiday period\n• Class assignment 229: class 12 (B1 AM 2), week start Apr 06, week end Apr 26 — expired 56 days ago, never renewed\n• Zero attendance records for student 1052 (Alberto) all time — likely on extended holiday since late April\n• Mon Jun 22 is the absolute last chance to assign a class before booking course 1797 expires Fri Jun 26",
+        "(NOT RUN) If Alberto returning Mon Jun 22: INSERT INTO student_class_assignments(booking_course_id,class_id,week_start,week_end,student_id) VALUES(1797,12,2026-06-22,2026-06-26,1052). See recipe: issue-24-alberto-fidelo-course-split.md",
+        "Jun21 hrly5 (3rd check): bc1797 Morning General Apr06-Jun26 ACTIVE (db confirmed). ENDS THIS FRIDAY JUN26. sca229 cls12-B1AM2 expired Apr26 (56d ago). att=0 ALL TIME for s1052. bc24686 Jul20-Sep18 exists (future). FINAL WINDOW — if Alberto returning Mon22, run: INSERT INTO student_class_assignments(booking_course_id,class_id,week_start,week_end,student_id) VALUES(1797,12,2026-06-22,2026-06-26,1052). After Fri Jun26 bc1797 expires. Neil: decide tonight.",
+        "URGENT;final wk Mon22"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Booking 18044 (duplicate): CONFIRMED, amount paid = EUR 1106.50 — not yet cancelled (last updated Jun 07, 14 days stale)\n• Payment 17607 (EUR 1151.50, HubSpot payment ID 1239529228498): linked to booking 18044 — must be voided via HubSpot UI, do NOT delete raw from database\n• Booking 94 (correct booking, Giulia Avallone): CONFIRMED, paid EUR 1151.50 / 1151.50 — Fidelo import, no HubSpot payment ID\n• Class assignment 270 (class 12, B1 AM 2, Jun 15-26) is active on booking course 104 (correct booking 94) — Giulia is in class correctly\n• Milena Vinci (parent) is NOT in SIS — parent-as-student issue was resolved Jun 15\n• Booking course 24836 on duplicate booking 18044 ends Jun 26 — 5 days — must cancel before course closes",
+        "(NOT RUN) (1) Cancel booking 18044 via SIS UI; (2) VOID payment 17607 via HubSpot UI (HubSpot payment ID 1239529228498 — do NOT delete raw from database). See recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun21 hrly5 (fresh DB): bk18044 STILL CONFIRMED amtPaid=1106.5/1106.5 (updAt=Jun07=14d). bc24836 ends Jun26=5 DAYS. sca=NONE on duplicate bc24836 (Giulia NOT wrongly assigned to dup). pmt17607 EUR1151.5 xeroId=null hsId=1239529228498. Giulia correctly in class via sca270/bk94/bc104. Neil: (1) cancel bk18044 via SIS; (2) void HubSpot pmt 1239529228498. Before Jun26.",
+        "bk18044 dup;Jun26=5d"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• Student 356 (Shih-Wei Huang) has gender = null — never set in personal details (last updated Jun 03, 18 days stale)\n• Exit letter (document 238, template 4, booking 560) is STILL ISSUED since Jun 18 08:53 UTC — wrong Ms./she/her pronouns\n• Document encoding: gender null to isMale=false to salutation=Ms, pronoun=she/her — no null guard in code\n• Code fix needed in documents.ts for null-gender handling (all null-gender docs will silently use Ms./she/her)",
+        "1) Set gender=Male on student 356 via SIS personal details; 2) revoke document 238; 3) regenerate exit letter for booking 560. See recipe: issue-32-shih-wei-gender-default.md",
+        "Jun21 hrly5: doc238 STILL ISSUED (created Jun17, updAt=Jun18 08:53UTC, 4d stale, db confirmed). s356 gender=null (updAt=Jun03=18d stale). Wrong Ms./she/her exit letter still live. NEIL: SIS student 356 set gender=Male; revoke doc238; regenerate exit letter for bk560.",
+        "urgent; revoke doc238"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Bug in sendBulkEmail() (admin.html line 1494) reads live bulkSelectedStudents instead of frozen snapshot\n• showStudentsInSchoolReport() clears bulkSelectedStudents on every reload (line 2219) — including while modal is open\n• openBulkEmailModal() (line 1367) captures ids=[...bulkSelectedStudents] into local var but never stores into _bulkEmailRecipientIds\n• _bulkEmailRecipientIds declared at line 1349 as the intended frozen snapshot — but is never populated",
+        "Set _bulkEmailRecipientIds=ids in openBulkEmailModal + read it in sendBulkEmail. See recipe: issue-33-khulan-reports-email-send.md",
+        "Jun21 hrly5: bug STILL PRESENT (fresh code check). L1349 _bulkEmailRecipientIds=[] declared but never assigned in openBulkEmailModal. L1367 captures local ids=[...bulkSelectedStudents] only. L1494 sendBulkEmail re-reads live Set (cleared L2219 on every report render). Fix: 2-line admin.html change, no build/restart needed. NOT YET APPLIED. See recipe: issue-33-khulan-reports-email-send.md",
+        "code fix pending"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 82nd check Sun 9 Aug 2026 UTC — data confirmed by fresh DB query this run\n• Booking 18151 (Saikhantes Shagdarsuren): Confirmed, confirmed = true, EUR 1,339.20 paid, EUR 0 open\n• service_end = 2026-08-07 — expired 2 days ago; fix still NOT RUN\n• Booking Course 24925 (Academic Year Afternoon, 2026-03-09 to 2026-10-02): active = true\n• Payment 17872: EUR 1,339.20, Bank Transfer, 2025-12-19, xero_payment_id = null — unreconciled",
+        "UPDATE bookings SET service_end = 2026-10-02 WHERE id = 18151. See recipe: issue-15-addendum-9aug-c.md",
+        "82nd hrly Sun 9 Aug UTC. Confirmed fresh query. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• 64th check Sun 9 Aug 2026 UTC — data confirmed via Issue 15 fresh query this run\n• Booking 18151 (Saikhantes Shagdarsuren): Confirmed, confirmed = true, EUR 1,339.20 fully paid\n• service_end = 2026-08-07 — expired 2 days ago\n• Booking Course 24925 (Academic Year Afternoon): ends 2026-10-02, active = true\n• Jan 12 start date: Fidelo migration artefact — SIS restart 2026-03-09 is correct\n• Fix: UPDATE bookings SET service_end = 2026-10-02 WHERE id = 18151 (see Issue 15)",
+        "Same fix as Issue 15: UPDATE bookings SET service_end = 2026-10-02 WHERE id = 18151. See recipe: issue-29-addendum-9aug-c.md",
+        "64th hrly Sun 9 Aug UTC. Confirmed fresh query. Fix NOT RUN. See Issue 15 row 16.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 84th check Sun 9 Aug 2026 UTC — CRITICAL: classes start TOMORROW Mon 10 Aug — all 17 Booking Courses at 0 class assignments\n• 13 Booking Courses confirmed-ready: BCs 108, 109, 1313, 1818, 24915, 24970, 25004, 25005, 25024, 25027, 25031, 25036, 25039\n• Booking 88 (Alessandro Signorotti, BC 96 Intensive 30): Confirmed, confirmed = false, EUR 1,845 / EUR 2,095 — set confirmed = true then assign\n• Booking 790 (Settiyanee Duangjai, BC 833 Academic Year Morning): ESCROW, EUR 4,847.50 fully paid — release Escrow then assign\n• 2 not yet ready: Booking 18229 (Nominjin Amartsogt, Partial, EUR 980), Booking 18262 (Edith Nunes, Pending, EUR 0)\n• Unchanged from 83rd check — fix NOT RUN",
+        "Assign 13 ready Booking Courses; set Booking 88 confirmed = true; release Booking 790 from Escrow. See recipe: issue-38-addendum-9aug-d.md",
+        "84th hrly Sun 9 Aug UTC. CRITICAL — classes Mon 10 Aug. All 17 Booking Courses at 0 class assignments. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 31st check Sun 9 Aug 2026 UTC — bed still unassigned, 28 days to check-in\n• Booking Accommodation 11392 (Giampaolo Russo, City Centre Apartment, Premium): bed_id = null\n• Check-in 2026-09-06, check-out 2026-09-14, fee = EUR 415\n• Booking 18180: Confirmed, confirmed = true, EUR 2,584.96 paid, EUR 0 open\n• Booking Accommodation 11357 (Host Family): bed_id = 178, Aug 2-Sep 6 — correctly assigned\n• Available Premium beds for Sep 6-14: beds 168, 174, 175, 176 (property A1/A2), 194 (Arasain)",
+        "Assign available Premium bed (168, 174, 175, 176, or 194) to Booking Accommodation 11392. See recipe: issue-41-addendum-9aug-c.md",
+        "31st hrly Sun 9 Aug UTC. Bed still null. 28 days to check-in. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 47th check Sun 9 Aug 2026 UTC — 24,479 stale booking courses confirmed by fresh query this run\n• Hash changed: issue description updated in sheet since last check; data unchanged\n• Total active booking courses: 24,762; stale (ended before 9 Aug): 24,479 (99%)\n• 13 Booking Courses ended Aug 7-8: absorbed into stale total since 46th check\n• Stale active courses prevent renewal students from appearing on arrivals list",
+        "Bulk UPDATE booking_courses SET active = false WHERE active = true AND end_date before 2026-08-09 (off-hours). See recipe: issue-45-addendum-9aug-c.md",
+        "47th hrly Sun 9 Aug UTC. 24,479 stale BCs confirmed fresh. Hash changed. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 80th check Sun 9 Aug 2026 UTC — hash changed (B/F/G updated in sheet); data confirmed fresh\n• Telmuun Enkhsaikhan (student 293): 6 stale Booking Courses confirmed active (BCs 482, 483, 1609, 1610, 1611, 1612, max 513 days stale)\n• Booking Course 1810 (Academic Year Renewal Morning, 2026-06-29 to 2027-01-01): active = true — current course, do NOT deactivate\n• Ana Jessica Rosa de Paula Santos (student 766): Booking 1308 Cancelled, EUR 1,530 fully paid — payments 17186 (EUR 1,280) + 17050 (EUR 250), both xero_payment_id = null",
+        "Deactivate Booking Courses 482, 483, 1609-1612 (Telmuun); decide refund/reallocate EUR 1,530 Ana Jessica. See recipe: issue-48-addendum-9aug-c.md",
+        "80th hrly Sun 9 Aug UTC. Hash changed. BC 1810 active through Jan 2027 — keep. Fix NOT RUN.",
+        ""
+      ]
+    ]
+  }
+]

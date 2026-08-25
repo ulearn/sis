@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• Email address in phone field — Dolgormaa Bayaraa (student 1897): saraa.tpb@gmail.com — record touched 17 July 2026, phone field unchanged (82 days since creation)\n• Email address in phone field — Aki Miura (student 8567): aki-hinaaki1116@ezudo.he.jp — 100 days unchanged\n• Annotation in phone field — Jieun Lee (student 1194): 00821097366523 (home contry) — 73 days unchanged\n• Annotation in phone field — Lisa Li (student 5345): 0864645297 (Husband) — 100 days unchanged\n• Unicode trailing characters in phone field — Alessandra Saito de Araujo (student 10343): +353 (83) 885 9162 with trailing Unicode right-to-left marks — 82 days unchanged\n• All 5 records confirmed unchanged — fresh query 19 July 2026",
+        "Strip annotations on students 1194 + 5345; strip Unicode on 10343; get real numbers for 1897 + 8567 from HubSpot. See recipe: issue-5-mobile-numbers.md",
+        "71st check Sun 19 Jul UTC. All 5 phones STILL wrong (fresh DB). s1897 Dolgormaa email in phone (updAt=Jul17, 82d since creation). s8567 Aki email in phone (100d). s1194 Jieun annotation (73d). s5345 Lisa annotation (100d). s10343 Alessandra Unicode trailing (82d). Fix NOT RUN.",
+        "5 phones wrong; 100d"
+      ]
+    ]
+  },
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• Booking accommodation 11162 (Massimiliano Cameran, booking 97, bed 179, 21 Apr–23 May 2026): active = true — 57 days since end (89 days since start)\n• Booking accommodation 11314 (Massimiliano Cameran, booking 18002, bed 179, 23 May–6 Jun 2026): active = true — 43 days since end\n• Booking accommodation 11319 (booking 18034, no bed assigned, 31 May–31 May 2026): active = true — 49 days since end; zero-day record, no bed ever assigned\n• Booking accommodation 11287 (Rakan Alghamdi, bed 190, 4 Jul–19 Dec 2026): active = true — correct ongoing stay, do not touch\n• 4th check, Sunday 19 July 2026 UTC",
+        "Set active = false on booking accommodations 11162, 11314, 11319. Do not touch 11287 (Rakan active stay). See recipe: issue-12-accomm-dates-mismatch.md",
+        "4th check Sun 19 Jul UTC (fresh DB). CONFIRMED UNCHANGED. BA11162 Massimiliano bed179 Apr21-May23 active=STILL true (57d since end). BA11314 Massimiliano bed179 May23-Jun6 active=STILL true (43d since end). BA11319 no-bed May31-May31 active=STILL true (49d since end). BA11287 Rakan bed190 ongoing correct. Fix NOT RUN.",
+        "3 stale BAs; 89d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student 1001 (Saikhantes Shagdarsuren): class assignment 255 (class 11) covered week start 12 Jan to week end 3 July 2026\n• Weeks 6–10 July 2026 and 13–17 July 2026: both permanently missed — irrecoverable\n• School holiday 20 July to 21 August 2026: student now on holiday — no class assignment needed until Mon 24 Aug\n• Booking course 24925 (Academic Year Afternoon, 9 March–2 October 2026): active; resumes after holiday 24 Aug\n• Booking course 1982 (Academic Year Morning, ended 19 December 2025): still active = true — 212 days stale",
+        "Assign student 1001 to class 11 (BC24925) before 09:00 Mon 24 Aug 2026. Deactivate booking course 1982. See recipe: issue-15-addendum-17jul.md",
+        "82nd check Sun 19 Jul UTC. Student NOW ON HOLIDAY (Jul20-Aug21). 2 missed weeks (Jul6-10, Jul13-17) irrecoverable. NEXT: assign BC24925 to class before 09:00 Mon 24 Aug. BC1982 STILL active=true (212d stale, ended Dec19 2025). Fix NOT RUN.",
+        "2 wks missed; assign Mon 24 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• Student 983 (Flávia Nascimento Mariano): visa status = null — Prisma enum mismatch prevents UI save\n• HubSpot contact ID = 783659478249 — linked 14 July 2026 (was null until Jul 14)\n• Booking 1534: Confirmed, confirmed flag = true, EUR 1308 fully paid (updated 8 July 2026)\n• Student attending normally — visa null is cosmetic only\n• 4th check, Sunday 19 July 2026 UTC",
+        "UPDATE Student SET visa_status = Approved WHERE id = 983 (confirm approval in HubSpot first). See recipe: issue-18-flavia-visa-save-error.md",
+        "4th check Sun 19 Jul UTC (fresh DB). s983 Flavia visaStatus=STILL null. hubspotContactId=783659478249 (linked Jul14). BK1534 CONF confirmed=true EUR1308/1308 (updAt=Jul08). Attending normally. Cosmetic. Fix NOT RUN.",
+        "visa null; cosmetic"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking course 24686 (Alberto Squillace, Morning General, 20 Jul to 18 Sep 2026): fee = STILL null — booking 1611 CONFIRMED EUR 1280.12/1280.12 — starts TOMORROW Mon 20 Jul\n• Booking course 24616 (Mia Wehrli, General English AM Plus, 20 Jul to 31 Jul 2026): fee = STILL null — booking 17842 CONFIRMED EUR 1149.90/1149.90 — starts TOMORROW Mon 20 Jul\n• Booking course 1797 (Alberto Squillace, Morning General, ended 26 Jun 2026): active = true — 23 days stale\n• 95th check, Sunday 19 July 2026 UTC",
+        "Set fee on BC24686 (Alberto, booking 1611) and BC24616 (Mia, booking 17842) before Mon 20 Jul. See recipe: issue-24-addendum-19jul.md",
+        "28th check today, 95th overall. BC24686 Alberto fee=STILL null — STARTS TOMORROW Mon 20 Jul. BC24616 Mia fee=STILL null — STARTS TOMORROW. BC1797 stale 23d (ended Jun26 active=true). Both bookings CONFIRMED fully paid. Fix NOT RUN.",
+        "fee null; STARTS TOMORROW"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Monday 20 Jul starters — 7 confirmed, all STILL 0 class assignments, assign before 09:00 Mon 20 Jul: BC1630 Saranzaya EUR 1770, BC24942 Lorena EUR 2041.87, BC24966 Filippo EUR 1429, BC24989 Marcos EUR 747, BC25000 Giorgio EUR 1039.50, BC24616 Mia EUR 1149.90, BC24686 Alberto EUR 1280.12\n• Jul 13 actives — 9 STILL 0 class assignments, week 1 (Jul13-17) permanently missed: BC1619 Munkhtsetseg EUR 3350, BC1788 Pedro EUR 2408, BC1814 Wanqiong EUR 3098, BC24820 Italo EUR 1479.36, BC24988 Minjinsor EUR 1560, BC24990 Samuele EUR 608, BC24998 Allison EUR 360, BC24609 Xuezhen EUR 570 (see Issue 39), BC24991 Edith EUR 608 (see Issue 22)\n• Permanently closed (ended 17 Jul): BC24946 Lunel, BC24994 Petru, BC24992 Luz Maria — irrecoverable\n• 162nd check, Sunday 19 July 2026 UTC",
+        "Assign 7 confirmed Mon 20 Jul starters + 9 Jul 13 actives to classes before 09:00 Mon 20 Jul.",
+        "28th check today, 162nd overall. ALL 16 BCs confirmed 0 SCAs (fresh DB). Mon starters + Jul 13 actives all unassigned. Fix NOT RUN.",
+        "CRITICAL; assign before 09:00 Mon 20 Jul"
+      ]
+    ]
+  }
+]

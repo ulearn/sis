@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 152nd check Thu 13 Aug 2026 UTC — LAST DAY: course ends tomorrow Fri 14 Aug 2026\n• Booking Course 25043 (General English PM, Eduardo Roche Diaz): still 0 class assignments\n• Booking 18265: CONFIRMED, confirmed = true, EUR 126 paid, EUR 0 open\n• Mon 10 – Thu 13 Aug — 4 school days permanently lost\n• Fri 14 Aug is the ABSOLUTE LAST CHANCE — assign before school starts Friday morning",
+        "Assign BC 25043 to Class 6 (B2/C1 PM 13:45–17:00) before Fri 14 Aug morning — FINAL CHANCE. See recipe: issue-38-addendum-13aug-i.md",
+        "152nd hrly Thu 13 Aug UTC. Course ends tomorrow. Still 0 SCAs. 4 school days lost. URGENT — act before Fri morning.",
+        "CRITICAL: ends Fri 14 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 180th check Thu 13 Aug 2026 UTC — no change since 179th check\n• Booking Accommodation 11393: bed 88, Aug 22–Sep 13 2026, fee = null, active = true — 9 days to check-in\n• Payment 17733: EUR 5,331, xeroPaymentId = null — 72 days unreconciled in Xero",
+        "Set fee on BA 11393 (confirm with Diego); reconcile Payment 17733 in Xero. See recipe: issue-36b-addendum-13aug.md",
+        "180th Thu 13 Aug UTC. No change. Fee null BA 11393 (9d to check-in Aug 22). Xero null PMT 17733. Fix NOT RUN.",
+        "fee null; check-in Aug 22"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 64th check Thu 13 Aug 2026 UTC — no change since 63rd check\n• Booking Accommodation 11392 (apartment, Sep 6–14 2026): bed_id = null, fee = EUR 415, active = true\n• Booking Accommodation 11357 (host family, Aug 2–Sep 6): bed 178, fee = EUR 1,250 — correct\n• Beds 168 (A1/Room 1) and 194 (Arasain-1) both verified available Sep 6–14\n• 24 days to Sep 6 check-in",
+        "Assign bed 168 (A1) or 194 (Arasain) to BA 11392 before Sep 6 check-in. See recipe: issue-41-addendum-13aug-e.md",
+        "64th Thu 13 Aug UTC. No change. Bed null BA 11392. Beds 168+194 available. Sep 6 check-in (24d). Fix NOT RUN.",
+        "bed null; Sep 6 check-in"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• 75th check Thu 13 Aug 2026 UTC — no change since 74th check\n• Booking Course 24686 (Morning General, Alberto Squillace): 20 Jul–18 Sep 2026, active = true, 0 class assignments\n• 24 calendar days since course start — approximately 18–19 school days without a class\n• Course ends 18 Sep 2026 (36 days remaining — still actionable)",
+        "Add class assignment to BC 24686. See recipe: issue-24-addendum-13aug-b.md",
+        "75th Thu 13 Aug UTC. No change. BC 24686 still 0 SCAs — ~18-19 school days lost. Course ends Sep 18 (36d). Fix NOT RUN.",
+        "BC24686 24d; 0 SCAs; ends Sep 18"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• 160th check Thu 13 Aug 2026 UTC — no change since 159th check\n• Student 917 (Uyanga Tungalag): visa_status = null, HubSpot contact ID = null; last updated 28 Jul 2026 (16 days ago)\n• Booking 1467: CONFIRMED, confirmed = true, EUR 2,405 paid, EUR 0 open, service_end 30 Oct 2026\n• Booking Course 1613 (Academic Year Morning, 27 Apr to 30 Oct 2026): active = true — 0 class assignments — 108 days attendance unrecorded",
+        "Set visa_status = approved on student 917; assign BC 1613 to AM class; link HubSpot contact. See recipe: issue-25-addendum-13aug.md",
+        "160th check Thu 13 Aug UTC. No change. Day 108. visaStatus = null, HS null. BC 1613 0 SCAs. Fix NOT RUN.",
+        "visa null; 0 SCAs; day 108"
+      ]
+    ]
+  },
+  {
+    "range": "H50:K50",
+    "values": [
+      [
+        "• 111th check Thu 13 Aug 2026 UTC — no change since 110th check\n• Booking Course 1810 (Academic Year Renewal Morning, Telmuun Enkhsaikhan): 29 Jun 2026–1 Jan 2027, active = true, 0 class assignments (45 days since start)\n• Booking 1624: PARTIAL, confirmed = false, amountPaid = EUR 1,406, amountOpen = EUR 250; updated 5 Aug 2026\n• Payment 17956: xeroPaymentId = null, paymentDate 31 Mar 2026, dataSource = HUBSPOT — unreconciled in Xero",
+        "Assign BC 1810 to AM class; reconcile payment 17956 in Xero; confirm booking once EUR 250 settled. See recipe: issue-48-addendum-13aug-e.md",
+        "111th Thu 13 Aug UTC. No change. BC 1810 0 SCAs (45d). Bk1624 PARTIAL EUR 250 open. Pmt 17956 Xero null. Fix NOT RUN.",
+        "payment gap; BC1810 45d"
+      ]
+    ]
+  }
+]

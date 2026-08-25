@@ -1,0 +1,24 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "Pmts unlinked(not spurious): pmt16988->bk17856 Margherita, pmt16989->bk17857 Francesca",
+        "UPDATE payments SET booking_id=17856 WHERE id=16988; +17857/16989. see recipe: issue-1-orphan-payments.md",
+        "Jun14-UTC hrly(cron): pmt16988+pmt16989 EUR339.9 bookingId=null UNCHANGED(Apr28). bk17856(Margherita s14461 CONF)+bk17857(Francesca s14462 CONF) amtPaid=339.9/339.9(no linked pmts). 15d to arrival Jun29. UPDATE not run.",
+        "15d to arrival"
+      ]
+    ]
+  },
+  {
+    "range": "H6:K6",
+    "values": [
+      [
+        "ba11287 bedId=null(updAt=Jun05) active Jun27-Dec12. doc204 LOA v1 ISSUED Jun08(manually fixed). Accom block absent; bed still unassigned.",
+        "Assign bed to ba11287 in SIS Accom module before Jun27 arrival. see recipe: issue-4-rakan-loa-barcode.md",
+        "Jun14-UTC hrly(cron): ba11287 bedId=null UNCHANGED(updAt=Jun05). bookingId=17915. doc204 documentType=letter_of_acceptance status=ISSUED Jun08. 5 docs total(57SUPERSEDED,129REVOKED,112REVOKED,187REVOKED,204ISSUED). LOA accom block absent(bedId=null). 13d to arrival Jun27.",
+        "bed 13d"
+      ]
+    ]
+  }
+]

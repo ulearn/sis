@@ -1,0 +1,56 @@
+[
+  {
+    "range": "J20:K20",
+    "values": [
+      [
+        "Jun18 hrly: bk83 CONF conf=true amtPaid=2629.8 (updAt=May21=28d). bk2606 CONF 2135/2135 (updAt=Apr09). bc89 IELTS+bc90 Private ended May22 (27d). All historical — no action.",
+        "no fix needed"
+      ]
+    ]
+  },
+  {
+    "range": "J24:K24",
+    "values": [
+      [
+        "Jun18 hrly: bc828 STILL BACKWARDS start=Mar02 end=Feb27 (updAt=May11=38d stale). Low-priority cosmetic bug — no active students affected. Fix NOT RUN.",
+        "ended;date bug"
+      ]
+    ]
+  },
+  {
+    "range": "J27:K27",
+    "values": [
+      [
+        "Jun18 hrly FINAL DAY: bc24826 INTENSIVE Jun08-Jun19 ends TOMORROW Fri Jun19. 0 SCAs entire 2-week course — never assigned. bk18034 PARTIAL EUR845/1095 (EUR250 outstanding). HISTORICAL after Jun19. NEIL: chase EUR 250 via HubSpot/Xero.",
+        "historical"
+      ]
+    ]
+  },
+  {
+    "range": "J30:K30",
+    "values": [
+      [
+        "Jun18 hrly: sca255 weekStart=2026-01-12 weekEnd=2026-07-03 classId=11 STILL WRONG (bc24925 confirmed Mar09-Sep11 Jun16). bk18151 CONF 1339.2/1339.2 (updAt=Jun16). SCA fix NOT RUN.",
+        "sca fix pending"
+      ]
+    ]
+  },
+  {
+    "range": "J39:K39",
+    "values": [
+      [
+        "Jun18 hrly: phantom row still present — F=278 only, no other content (38d total). NEIL: delete row 39 or fill in issue#, student, description.",
+        "del or fill"
+      ]
+    ]
+  },
+  {
+    "range": "J40:K40",
+    "values": [
+      [
+        "Jun18 hrly: s356 gender=null (fresh DB). doc238 ISSUED Jun18 08:53 UTC with Ms/she/her — not yet revoked (10h+). NEIL URGENT: SIS s356 Personal Details set Gender=Male, then revoke doc238, then regenerate exit letter.",
+        "urgent; set gender"
+      ]
+    ]
+  }
+]

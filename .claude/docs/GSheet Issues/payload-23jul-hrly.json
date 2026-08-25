@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H9:K9",
+    "values": [
+      [
+        "• 7th check Thu 23 Jul 2026 UTC — unchanged\n• Certificate issue (Diego, Aurora, Pedro): RESOLVED Jun 2026\n• 8 booking courses still active = true past end date:\n  BC 1482, 1485, 1602 — ended 19 Dec 2025 (216 days stale)\n  BC 1483, 1486 — ended 13 Feb 2026 (160 days stale)\n  BC 1484, 1487, 1603 — ended 5 Jun 2026 (48 days stale)\n• Fix NOT RUN",
+        "Deactivate BCs 1482-1487, 1602, 1603. See recipe: issue-8-addendum-23jul.md",
+        "7th check Thu 23 Jul 2026 UTC — UNCHANGED. 8 BCs stale: oldest 216d. Fix NOT RUN.",
+        "cert resolved; 8 stale BCs 216d"
+      ]
+    ]
+  },
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "• 33rd check Thu 23 Jul 2026 UTC — unchanged\n• Booking extra 96 (Lizbeth del Carmen Sierra Martinez, booking 17981): details = PEL;Health, fee = null — 59 days unpriced since 25 May 2026\n• Booking 17981: Confirmed, EUR 1407.50 / 1407.50 fully paid — confirmed flag = false\n• Student attending since 1 Jun 2026 — 52 school days with insurance unpriced\n• Fix NOT RUN",
+        "Price booking extra 96 (confirm fee with finance); set booking 17981 confirmed = true. See recipe: issue-13-addendum-23jul.md",
+        "33rd check Thu 23 Jul UTC — UNCHANGED. Fee null 59d. Booking confirmed=false despite full payment. Fix NOT RUN.",
+        "insurance fee null; 59d"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Check Thu 23 Jul 2026 UTC\n• Student 1001 (Saikhantes Shagdarsuren): SCA 255 (class 11 B1 PM) expired week ending 3 Jul 2026\n• Holiday 2500: 20 Jul – 21 Aug 2026 (5 weeks, 25 weekdays pushed) — student away now\n• Permanently missed: weeks of 6–10 Jul and 13–17 Jul 2026 (irrecoverable)\n• Booking course 24925 (Academic Year Afternoon, 9 Mar – 2 Oct 2026): active = true\n• Action: create new SCA on BC 24925 for class 11 (B1 PM) from Mon 24 Aug 2026 (return)\n• Fix NOT RUN",
+        "Create SCA on BC 24925 for class 11 (B1 PM) from Mon 24 Aug. See recipe: issue-15-addendum-23jul-b.md",
+        "Thu 23 Jul UTC. SCA255 expired 3 Jul. Holiday 20 Jul-21 Aug confirmed. 2 weeks missed irrecoverable. Assign on return Mon 24 Aug. Fix NOT RUN.",
+        "2 wks missed; assign Mon 24 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• 2nd check Thu 23 Jul 2026 UTC — unchanged\n• Student 983 (Flavia Nascimento Mariano): visa status = null — last updated 14 Jul 2026 (9 days ago)\n• HubSpot contact ID 783659478249 linked (can cross-check visa status)\n• Null visa status blocks student from class-to-be-assigned view\n• Original Prisma save error code fixed; field never backfilled\n• Fix NOT RUN",
+        "Set visaStatus on student 983 (confirm status via HubSpot or student first). See recipe: issue-18-addendum-23jul.md",
+        "2nd check Thu 23 Jul UTC — UNCHANGED. Visa null 9 days. Blocks assignment view. Fix NOT RUN.",
+        "visa null; blocks assignment"
+      ]
+    ]
+  },
+  {
+    "range": "H22:K22",
+    "values": [
+      [
+        "• 3rd check Thu 23 Jul 2026 UTC — unchanged\n• Original double-class issue (A1 AM + A2 AM): RESOLVED Jun 2026\n• BC 1604 (Morning General, 5 Jan – 3 Jul 2026): active = still true — 20 days stale\n• SCA 156 (class 8, week ending 2 Jul 2026): expired 21 days ago (historical)\n• Booking 1461: Confirmed, EUR 1509.60 / 1509.60 fully paid — student term complete\n• Fix NOT RUN",
+        "Deactivate BC 1604 (set active = false). SCA 156 historical/harmless. See recipe: issue-21-addendum-23jul.md",
+        "3rd check Thu 23 Jul UTC — UNCHANGED. BC 1604 stale 20 days. Cosmetic. Fix NOT RUN.",
+        "bc stale 20d; cosmetic"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• 39th hourly check Thu 23 Jul 2026 UTC — unchanged\n• BC 104 (Morning General Plus, ended 26 Jun 2026): active = still true — 27 days stale\n• Payment 17102 (EUR 1151.50, booking 94, Giulia Avallone): Xero payment ID = null, type = null — created 5 May 2026\n• Unreconciled in Xero — 79 days outstanding\n• Fix NOT RUN",
+        "Deactivate BC 104; reconcile payment 17102 in Xero (booking 94, EUR 1151.50, ~5 May). See recipe: issue-30-addendum-23jul.md",
+        "39th hrly Thu 23 Jul UTC — UNCHANGED. BC 104 27d stale. Pmt 17102 Xero null 79 days. Fix NOT RUN.",
+        "bc104 stale 27d; xero null"
+      ]
+    ]
+  }
+]

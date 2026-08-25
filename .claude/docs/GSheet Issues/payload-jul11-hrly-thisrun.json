@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Booking accommodation 11358 (bed 180, Xuezhen Huang, student 14443, Host Family Mary Carver): check-in TOMORROW Sunday 12 July 2026 — claimed at = still null — claim status = null — host family not yet notified (this run, 11 Jul SAT UTC)\n• Booking 17831: Confirmed, confirmed = true, amount paid = EUR 1396.90 — fully paid (confirmed 7 July)\n• 4 payments, all Xero payment ID = null: payment 17180 (EUR 431.90, Fidelo Escrow, 27 April), payment 17963 (EUR 965, Bank, 1 July, HubSpot 1273784562922), payment 17987 (EUR 131.90, Bank, 25 June, HubSpot 1277724782804), payment 17988 (EUR 300, Bank, 12 June, HubSpot 1277795367133)\n• Payments 17987 + 17988 sum to EUR 431.90 = payment 17180 amount — likely Fidelo installment pair, verify before reconciling all 4 separately in Xero",
+        "Contact Mary Carver TODAY (+353 87 927 1130 / mary.carver28@gmail.com); submit host family claim for accommodation 11358 via SIS admin; reconcile payments in Xero. See recipe: issue-39-xuezhen-huang-accomm-missing.md",
+        "This run 11 Jul SAT UTC. BA11358 bed180 HF Jul12-Aug2 claimedAt=STILL null claimStatus=null fee=EUR900. BK17831 CONF EUR1396.90/1396.90 (updatedAt=Jul8). 4 pmts ALL xeroPaymentId=null: pmt17180(EUR431.90 Fidelo Apr27), pmt17963(EUR965 Jul1 HS1273784562922), pmt17987(EUR131.90 Jun25 HS1277724782804), pmt17988(EUR300 Jun12 HS1277795367133). pmt17987+17988=EUR431.90=pmt17180 Fidelo pair verify first. CHECK-IN TOMORROW SUN JUL12. HOST NOT NOTIFIED. NEIL: ACTION TONIGHT.",
+        "CRITICAL; checkin TOMORROW"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Pietro Colombo (student 72, booking course 81, Morning General Plus, 6 to 24 July 2026): zero class assignments ever — 6 school days missed 6 to 11 July — 13 days remaining — assign before Monday 13 July (this run, 11 Jul SAT UTC)\n• Kayque Alves Marques (student 852, booking course 1821, Academic Year Renewal Afternoon, 29 June to 18 December 2026): zero class assignments for current course — started 12 days ago, still unassigned\n• Tuguldurtugs Enkhtuguldur (student 858, booking course 1786, Academic Year Renewal Morning, 6 July to 25 December 2026): zero class assignments — 6 school days missed — booking 1601: EUR 1356.50 paid of EUR 1606.50 (EUR 250 outstanding)\n• Monday 13 July = 2 school days away — all 3 students unassigned",
+        "Assign Pietro (student 72, booking course 81), Kayque (student 852, booking course 1821), Tuguldurtugs (student 858, booking course 1786) to classes via SIS admin before Monday 13 July. See recipe: issue-45-renewal-arrivals.md",
+        "This run 11 Jul SAT UTC (fresh DB). BC81 (Pietro s72) ZERO SCAs — 6 days missed — ends Jul24 (13d). BC1821 (Kayque s852) ZERO SCAs for current course (started Jun29=12d). BC1786 (Tuguldurtugs s858) ZERO SCAs — 6 days missed — BK1601 EUR1356.50/1606.50 EUR250 outstanding. MON13=2d. NEIL: assign all 3 before Monday.",
+        "CRITICAL; Mon13 2d; 3 unassigned"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student 1001 (Saikhantes Shagdasuren): class assignment 255 (class 11) week end = 3 July 2026 — expired 8 days ago — 5 school days missed (6, 7, 8, 9, 10 July) (this run, 11 Jul SAT UTC)\n• Booking course 24925 (Academic Year Afternoon, 9 March to 2 October 2026): active = true — correct course, runs to October\n• Booking course 1982 (Academic Year Morning, ended December 2025): still active = true — 204 days stale since end date\n• Monday 13 July = 2 days away — student will miss a second consecutive week if fix not run before Monday",
+        "Extend class assignment 255 week end to 2026-10-02 via SIS admin (student 1001 > booking 18151 > course 24925 > class assignments); deactivate booking course 1982. See recipe: issue-15-saikhantes-course-dates.md",
+        "This run 11 Jul SAT UTC (fresh DB). SCA255 cls11 weekEnd=2026-07-03 STILL EXPIRED (8 days). 5 school days missed Jul6-10. BC24925 AY-Aft Mar9-Oct2 active=true. BC1982 ended Dec2025 STILL active=true (204d stale). Mon Jul13=2d — second consecutive week starts without fix. NEIL: extend SCA255 + deactivate BC1982 before Mon13.",
+        "Mon13 2d; SCA expired 8d"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Duplicate of issue 15 (row 16): student 1001 Saikhantes Shagdasuren — class assignment 255 (class 11) week end = 3 July 2026 — expired 8 days ago (this run, 11 Jul SAT UTC)\n• 5 school days missed 6 to 10 July — Monday 13 July = 2 days away (second consecutive missed week begins)\n• Fix: extend class assignment 255 week end to 2026-10-02; also deactivate booking course 1982 (ended December 2025, still active = true)",
+        "Extend class assignment 255 week end to 2026-10-02; deactivate booking course 1982. See recipe: issue-15-saikhantes-course-dates.md",
+        "This run 11 Jul SAT UTC. SCA255 expired 8d weekEnd=Jul3. 5 school days missed Jul6-10. Mon13=2d. Same as issue 15 (row 16). NEIL: fix before Monday.",
+        "Mon13 2d; SCA 8d exp"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• Booking 1605 (Ariunsarnai Batbayar, student 1047): status = Pending — 89 days without payment since course started 13 April 2026 (this run, 11 Jul SAT UTC)\n• Amount paid = EUR 0 — no payments recorded — no class assignments on booking course 1791\n• Booking course 1791 (Academic Year Renewal Morning, 13 April to 23 October 2026): active = true — student cannot be assigned to class while booking is pending\n• Last booking update: 23 June 2026 — no change in 18 days",
+        "Enrolment decision needed — advance HubSpot deal 502951083215 to Won or cancel booking 1605. See recipe: issue-20-ariunsarnai-payment-due.md",
+        "This run 11 Jul SAT UTC (fresh DB). BK1605 STILL PENDING (89 days, amtPaid=EUR0, confirmed=false, updAt=Jun23). BC1791 AY-Renewal-Morning Apr13-Oct23 active=true. Zero SCAs. NEIL: advance deal or cancel booking.",
+        "Day89; ENROLMENT"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• Payment 17954 (EUR 2584.96, booking 18180): type = null and Xero payment ID = null — payment not reconciled in Xero (this run, 11 Jul SAT UTC)\n• Booking 18180 (Giampaolo Russo, student 14571): Confirmed, confirmed = true, amount paid = EUR 2584.96 — fully paid, HubSpot payment ID 1268783973563\n• Host Family accommodation 11357 (bed 178, 2 August to 6 September 2026): claimed 1 July 2026, claim status = confirmed — host notified — 22 days to check-in\n• Capel Street accommodation (6 to 14 September 2026) covered by accommodation 11311 (booking 17980) — no additional record needed\n• No change since last check — Xero reconciliation still pending",
+        "Set payment type on payment 17954 and reconcile EUR 2584.96 in Xero before 2 August check-in. See recipe: issue-41-giampaolo-dual-accomm.md",
+        "This run 11 Jul SAT UTC (fresh DB). PMT17954 EUR2584.96 bookingId=18180 xeroPaymentId=STILL null type=STILL null hubspotPaymentId=1268783973563. BA11357 bed178 HF Aug2-Sep6 claimedAt=Jul1 claimStatus=confirmed. BK18180 CONF EUR2584.96/2584.96. Aug2=22d. UNCHANGED.",
+        "Xero pmt null; Aug2 22d"
+      ]
+    ]
+  }
+]

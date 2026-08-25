@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• 75th check Mon 20 Jul 2026 UTC (11th hourly)\n• Payment 16988 (EUR 339.90, HubSpot payment ID 1204827374829): booking ID null — 83 days since 28 Apr 2026\n• Payment 16989 (EUR 339.90, HubSpot payment ID 1204846469317): booking ID null — 83 days since 28 Apr 2026\n• Payment 17187 (EUR 6151, Fidelo payment, transaction D2026226): booking ID null — 76 days since 5 May 2026\n• Payment 4781 (EUR 380, Fidelo payment, transaction D20191404): booking ID null — 101 days since creation 10 Apr 2026 (payment date 2019)\n• Booking 17856 (Margherita Galbusera): status CONFIRMED, confirmed = false (anomaly), amount paid EUR 339.90 / total EUR 339.90\n• Booking 17857 (Francesca Fassina): status CONFIRMED, confirmed = false (anomaly), amount paid EUR 339.90 / total EUR 339.90\n• Stale booking courses: 24,436 with active = true and end date before 20 Jul 2026 — auto-deactivation still not running",
+        "Link payments to bookings; set confirmed=true on bks 17856+17857; run BC deactivation. See recipe: issue-1-orphan-payments.md",
+        "75th check Mon 20 Jul (11th hrly). UNCHANGED. 4 orphan payments: 16988+16989 (EUR 339.90 ea), 17187 (EUR 6151), 4781 (EUR 380). Bk17856+17857 CONF confirmed=false. Stale BCs: 24,436. Fix NOT RUN.",
+        "4 orphan pmts; 24,436 stale BCs"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• 40th check Mon 20 Jul 2026 UTC (11th hourly)\n• Booking course 24991 (Edith Nunes, General English AM, 13 Jul to 7 Aug 2026): STILL 0 class assignments — week 2 day 1, must assign today\n• Week 1 (13–17 Jul): permanently missed — 5 school days lost\n• Booking courses 24933 and 24934 (General English AM, ended 10 Jul 2026): STILL active = true — 10 days stale\n• Booking 1567 / booking course 24991 / student 1015 (Edith Nunes) — booking course confirmed fresh DB",
+        "Assign BC24991 to GE AM class now; set active=false on BCs 24933+24934. See recipe: issue-22-addendum-20jul.md",
+        "40th check Mon 20 Jul (11th hrly). BC24991 STILL 0 classAssignments — week 2 day 1 (ends 7 Aug). BCs 24933+24934 active=still true (10d stale). Fix NOT RUN.",
+        "CRITICAL; assign NOW"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 33rd check Mon 20 Jul 2026 UTC (11th hourly) — all 6 UNCHANGED\n• Booking accommodation 11265 (Kanna Hasegawa, bed 157): ended 19 Jul 2026 — 1 day post-checkout. Deactivate today.\n• Booking accommodation 11175 (Juan Carlos Guerra Núñez, bed null): ended 29 Mar 2026 — 113 days stale\n• Booking accommodation 11156 (Hugo Tavernier, bed null): ended 2 May 2026 — 79 days stale\n• Booking accommodation 11271 (Salvatore Cumia, bed null): ended 7 May 2026 — 74 days stale\n• Booking accommodation 11264 (Léandre Le Coz-Brühmüller, bed 156): ended 9 May 2026 — 72 days stale\n• Booking accommodation 11270 (Neil Mc Mahon, bed 38): ended 23 May 2026 — 58 days stale\n• Booking accommodation 11311 (Pietro Caccianiga, bed 84, Jun 28–Sep 13): valid in-stay, day 23 — do not touch",
+        "Set active = false on booking accommodations 11265, 11156, 11175, 11264, 11270, 11271. See recipe: issue-36b-addendum-20jul.md",
+        "33rd check Mon 20 Jul (11th hrly). All 6 STILL active. BA11265 (Kanna bed157 ended Jul19): 1d post-checkout still not deactivated. Others 58d–113d stale. Fix NOT RUN: UPDATE booking_accommodation SET active=false WHERE id IN (11265,11156,11175,11264,11270,11271).",
+        "6 stale BAs; 113d max"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 88th check Mon 20 Jul 2026 UTC (11th hourly)\n• August Bank Holiday Mon 3 Aug 2026: STILL absent from school_closures — 14 days away\n• October Bank Holiday Mon 26 Oct 2026: STILL absent — 97 days away\n• Only 1 school closure in second half 2026: Christmas 21 Dec 2026 to 3 Jan 2027 (id = 7) — no bank holidays present\n• August Bank Holiday is critical: must be added before 3 Aug or AY course end dates will be calculated incorrectly",
+        "Add Aug BH (3 Aug) + Oct BH (26 Oct) to school_closures. See recipe: issue-38-addendum-20jul.md",
+        "88th check Mon 20 Jul (11th hrly). Aug BH Mon 3 Aug: STILL absent — 14 days. Oct BH Mon 26 Oct: STILL absent. Only Christmas in H2 2026. Fix NOT RUN.",
+        "Aug BH; 14d URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• 41st check Mon 20 Jul 2026 UTC (11th hourly)\n• Booking course 24609 (Xuezhen Huang, Morning General, 13 Jul to 31 Jul 2026): STILL 0 class assignments\n• Week 1 (13–17 Jul): permanently missed — 5 school days lost\n• Week 2 day 1 (Mon 20 Jul): assign immediately — 2 weeks remain (ends 31 Jul)\n• Accommodation 11357 (bed 178, Host Family, 2 Aug to 6 Sep 2026): active = true, valid future stay — unaffected",
+        "Assign BC24609 to Morning General class now. See recipe: issue-39-addendum-20jul.md",
+        "41st check Mon 20 Jul (11th hrly). BC24609 STILL 0 classAssignments — week 2 day 1. Only 2 weeks left (ends Jul 31). Fix NOT RUN.",
+        "CRITICAL; assign NOW"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 71st check Mon 20 Jul 2026 UTC (11th hourly)\n• Payment 17954 (Giampaolo Russo, EUR 2584.96, Bank Transfer, created 29 Jun 2026): Xero payment ID = STILL null — 21 days unreconciled; type = null\n• Booking 18180: CONFIRMED, EUR 2584.96 fully paid\n• Booking accommodation 11357 (bed 178, Host Family, 2 Aug to 6 Sep 2026): active = true — check-in 13 days away (2 Aug)\n• Capel accommodation (6 Sep to 14 Sep 2026): STILL absent from booking 18180 — only 1 booking accommodation on this booking\n• Both fixes still needed before 2 Aug check-in and 6 Sep Capel arrival",
+        "Add Capel accommodation Sep 6-14 to bk18180; reconcile pmt17954 in Xero. See recipe: issue-41-giampaolo-dual-accomm.md",
+        "71st check Mon 20 Jul (11th hrly). PMT17954 EUR2584.96 xeroId=STILL null (21d since Jun29). Capel Sep6-14 STILL absent from BK18180. Check-in Aug2=13 days. Fix NOT RUN.",
+        "Xero null; Capel missing; 21d"
+      ]
+    ]
+  }
+]

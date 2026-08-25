@@ -1,0 +1,57 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 (HubSpot 1204827374829) and 16989 (HubSpot 1204846469317): EUR 339.90 each — booking ID = null, Xero payment ID = null — still unlinked\n• Booking 17856 (Margherita Galbusera, student 14461): Confirmed, confirmed = false — booking course 24631 (General English AM Plus, Jun 29 to Jul 10, fee = null)\n• Booking 17857 (Francesca Fassina, student 14462): Confirmed, confirmed = false — booking course 24630 (General English AM Plus, Jun 29 to Jul 10, fee = null)\n• Root cause: webhook missed setting booking ID at payment creation 28 Apr 2026\n• Courses end Jul 10 — 6 days remaining — 4-step SQL not run after 201+ hourly checks",
+        "(NOT RUN) (1) UPDATE payments SET booking_id = 17856 WHERE id = 16988; (2) UPDATE payments SET booking_id = 17857 WHERE id = 16989; (3) UPDATE booking_courses SET fee = 339.9 WHERE id IN (24630, 24631); (4) UPDATE bookings SET confirmed = true WHERE id IN (17856, 17857). See recipe: issue-1-orphan-payments.md",
+        "4 Jul UTC (201+ checks): pmts 16988+16989 booking_id = STILL null, xeroId = null. bk17856 CONFIRMED confirmed = false amtPaid = EUR339.90 = total. bk17857 CONFIRMED confirmed = false amtPaid = EUR339.90 = total. BC24630 + BC24631 fee = STILL null, active = true, end = Jul10 = 6 days. Fix UNRUN. NEIL: RUN STEPS 1–4 NOW.",
+        "Jul10=6d; UNRUN"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 (Edite Nunes, student 1015): Confirmed, confirmed = true, fully paid EUR 740\n• Booking course 24933 (General English AM, Jun 15 to Jul 10, fee = EUR 380): active — the valid course\n• Booking course 24934 (General English AM, Jun 15 to Jul 10, fee = EUR 360): duplicate — same date range, STILL active (54th check, 4 Jul 2026 UTC)\n• No class assignment since SCA 146 (class 7, booking course 24668) expired May 15 — 50 days overdue\n• Course ends Jul 10 — 6 days remaining",
+        "(NOT RUN) (1) UPDATE booking_courses SET active = false WHERE id = 24934; (2) Assign student 1015 to class 7 (A1 AM) via SIS for booking course 24933 before Jul 10. See recipe: issue-22-edith-nunes-payment-dups.md",
+        "4 Jul UTC (54th check): BC24933 EUR380 GE-AM Jun15–Jul10 active. BC24934 EUR360 GE-AM Jun15–Jul10 STILL active (duplicate). Last SCA id146 class 7 bc24668 week_end May15 = 50 days. Jul10 = 6 days. Steps unrun. NEIL: (1) deactivate BC24934 in SIS; (2) assign student 1015 to class 7 A1-AM for BC24933.",
+        "dup active; Jul10=6d"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking course 1797 (Morning General, 6 Apr to 26 Jun 2026): ended 8 days ago — still active = true (26th check, 4 Jul 2026 UTC)\n• Booking course 24686 (Morning General, 20 Jul to 18 Sep 2026): starts in 16 days — fee = null (must be set before course start)\n• Payment 17124 (EUR 1280.12): Xero payment ID = null, HubSpot payment ID = null, type = null — not reconciled\n• Booking 1611 (Alberto Squillace): Confirmed, confirmed = true, amount open = EUR 0 (fully paid)",
+        "(NOT RUN) (1) UPDATE booking_courses SET active=false WHERE id=1797; (2) UPDATE booking_courses SET fee=<amount> WHERE id=24686; (3) Reconcile payment 17124 in Xero. See recipe: issue-24-alberto-fidelo-course-split.md",
+        "4 Jul UTC (26th check): BC1797 ended Jun26 = 8 days, STILL active = true. BC24686 Morning-General Jul20–Sep18 fee = STILL null (16 days to start). bk1611 CONFIRMED amount_open = EUR0 (fully paid). pmt17124 EUR1280.12 xeroId = null, hsId = null, type = null. Steps unrun. NEIL: (1) deactivate BC1797 via SIS; (2) set BC24686 fee before Jul20; (3) reconcile pmt17124 in Xero.",
+        "bc1797 ended+active; Jul20=16d"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Booking 17831 (Xuezhen Huang, student 14443): PARTIAL, confirmed = false — EUR 965 paid of EUR 1396.90 total (EUR 431.90 outstanding)\n• Payment 17180 (EUR 431.90, TransferMate Escrow, May 5 2026): Xero payment ID = null, HubSpot payment ID = null — not counted in amount paid\n• Payment 17963 (EUR 965.00, Jul 1 2026, HubSpot 1273784562922): Xero payment ID = null — counted in amount paid but not reconciled in Xero\n• Both payments together = EUR 1396.90 = booking total — fully covered pending Xero reconciliation\n• Accommodation 11358 (bed 180, Host Family, Jul 12 to Aug 2): starts in 8 days\n• Booking course 24609 (Morning General, Jul 13 to Jul 31): starts in 9 days",
+        "(1) Reconcile payment 17180 (EUR 431.90 TransferMate Escrow May 5) in Xero to assign xero_payment_id. (2) Reconcile payment 17963 (EUR 965 Jul 1) in Xero. (3) Then confirm booking 17831 via SIS. Urgent: accommodation starts Jul 12. See recipe: issue-39-xuezhen-huang-accomm-missing.md",
+        "4 Jul UTC (20th check): bk17831 PARTIAL confirmed = false, EUR965/1396.90 (EUR431.90 open). pmt17180 May5 EUR431.90 xeroId = null, hsId = null, type = null. pmt17963 Jul1 EUR965 hsId = 1273784562922, xeroId = STILL null. ba11358 active Jul12–Aug2 = 8 days. BC24609 starts Jul13 = 9 days. Xero reconciliation urgent. NEIL: reconcile pmt17963 + pmt17180 in Xero NOW.",
+        "PARTIAL; Jul12=8d"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Kayque Lopes Coelho (student 852, booking course 1821): Academic Year Renewal Afternoon Jun 29 to Dec 18 — 5 days in, last class assignment id 26 expired Apr 24 (70 days ago), zero class assignments\n• Sophia Gallo Borim (student 853, booking course 1820): Academic Year Renewal Afternoon Jun 29 to Dec 18 — 5 days in, last class assignment id 23 expired Apr 24 (70 days ago), zero class assignments\n• Tuguldurtugs Enkhtugs (student 858, booking course 1786): Academic Year Renewal Morning Jul 6 to Dec 25 — starts Monday, last class assignment id 55 expired May 1; booking 1601 confirmed = true, EUR 1356.50/1606.50 (EUR 250 outstanding)\n• Ettore Iovinella (student 14564): booking course 24941 (AM Plus Jun 29–Jul 3) ended yesterday, still active = true — needs deactivation; booking course 24968 (AM Plus Jul 6–Jul 13) starts Monday, last class assignment id 281 expired Jul 3, no new assignment\n• Gustavo Da Silva (student 14570): booking course 24955 (AM Plus Jul 6–Aug 7, EUR 996.84) and booking course 24967 (AM Jul 6–Aug 7, EUR 137.60) both active on booking 18179 — duplicate; zero class assignments; deactivate 24967 then assign to AM Plus 24955\n• 10 migration and new starters, all Jul 6, zero class assignments: Aitana López (student 7, booking course 7, Morning General Jul 6–17, EUR 380); Pietro Colombo (student 72, booking course 81, Morning General Plus Jul 6–24, EUR 705); Verónica Martín (student 278, booking course 24931, General English AM Jul 6–10, EUR 148.20); Sarah Venturini Talizin (student 1055, booking course 24945, General English AM Jul 6–31, EUR 561); Zeyad Alharbi (student 32, booking course 38, Morning General Plus Jul 6–Sep 11, EUR 2070); Sulaiman Alkulaib (student 7309, booking course 24930, Intensive General English Jul 6–Aug 28, EUR 1584); Kiyoshi Fujino (student 14445, booking course 24907, General English AM Jul 6–10, EUR 152); Mario Roggi (student 14528, booking course 24776, General English AM Jul 6–24, EUR 427.50); Hugo Lopez Tamayo (student 14572, booking course 24960, General English AM Jul 6–17, EUR 296.40); Yuxi Ke (student 14577, booking course 24965, General English PM Jul 6–Aug 21, EUR 742.56)\n• Root cause: renewal students excluded from arrivals list — is_renewal flag not set by webhook for RNW-* booking courses; migration students excluded because globally-earliest course date is Oct 2025",
+        "(1) Assign Kayque (student 852, booking course 1821) to AY Afternoon class TODAY — 5 days overdue. (2) Assign Sophia (student 853, booking course 1820) to AY Afternoon class TODAY — 5 days overdue. (3) Assign Tuguldurtugs (student 858, booking course 1786) to AY Morning class before Monday. (4) Deactivate booking course 24967 for Gustavo (student 14570), then assign to AM Plus booking course 24955. (5) Deactivate ended booking course 24941 for Ettore (student 14564), then assign to booking course 24968. (6) Assign all 10 new/migration starters via SIS Classes > To Be Assigned before Monday Jul 6. (7) Chase EUR 250 outstanding on booking 1601. See recipe: issue-45-renewal-arrivals.md",
+        "4 Jul SAT UTC (20th check, fresh DB): UNCHANGED. Kayque s852 SCA26 Apr24=70d (AY-Aft bc1821 Jun29=5d in, 0SCA). Sophia s853 SCA23 Apr24=70d (AY-Aft bc1820 Jun29=5d in, 0SCA). Tuguldurtugs s858 SCA55 May1=63d (AY-Morn bc1786 Jul6=MONDAY, bk1601 CONF EUR1356.5/1606.5 EUR250 open). Ettore s14564 SCA281 Jul3=YESTERDAY (bc24941 ended Jul3 STILL active=true; bc24968 AM-Plus Jul6-13 MONDAY 0SCA). Gustavo s14570 0SCAs; BC24967 AM EUR137.6 STILL active dup (BC24955 AM-Plus EUR996.84, both Jul6-Aug7). 10 migration+new starters 0SCAs confirmed. bk1601 EUR1356.5/1606.5 EUR250 open. 20 checks no action. NEIL: ASSIGN ALL 15 BEFORE MONDAY JUL 6.",
+        "Mon=2d; 15 unassigned"
+      ]
+    ]
+  }
+]

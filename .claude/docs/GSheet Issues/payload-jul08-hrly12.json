@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 + 16989 (EUR 339.90 each, HubSpot 1204827374829 / 1204846469317): booking ID = STILL null, Xero payment ID = STILL null — orphaned 72 days (28 April 2026)\n• Bookings 17856 (Margherita Galbusera) + 17857 (Francesca Fassina): Confirmed, confirmed = STILL false — payment records not linked in database\n• Bookings 17856 + 17857 were updated in database today (8 Jul 10:21 UTC) — possibly touched via SIS admin but payment linkage STILL not resolved\n• Booking courses 24630 + 24631 (General English AM Plus, 29 Jun to 10 Jul 2026): fee = STILL null, active = true — course ends THIS FRIDAY 10 Jul 2026\n• Fix SQL not run in 72 days — LAST CHANCE before course ends Friday",
+        "Run link SQL TODAY — course ends Fri 10 Jul; recipe issue-1-orphan-payments.md",
+        "8 Jul UTC (hrly12). bks 17856+17857 TOUCHED TODAY 10:21UTC confirmed=STILL false. pmts 16988+16989 bookingId=STILL null xeroId=STILL null EUR339.90 (72d). bcs 24630+24631 fee=STILL null ENDS FRI JUL10. SQL NOT RUN 72 DAYS.",
+        "LAST CHANCE; Fri Jul10"
+      ]
+    ]
+  },
+  {
+    "range": "H9:K9",
+    "values": [
+      [
+        "• Diego Alves da Silva Molina (student 840): booking course 24959 (Academic Year Morning, 3 Aug to 5 Feb 2027) — ILEP code = STILL null\n• Aurora Madril Oliveira Molina (student 841): booking course 24958 (Academic Year Morning, same dates) — ILEP code = 0318/0010 — Resolved\n• Pedro De Pauli Pastre (student 911): last booking course 1603 ended 5 Jun 2026 — no new booking yet in database\n• Diego booking 18183: Partial, confirmed = false, EUR 1485 / 1735 (EUR 250 outstanding)\n• Course starts 3 August 2026 — 26 days remaining to set ILEP code (12th check, 8 Jul 2026 UTC)\n• ILEP edit available via admin UI: student 840 > booking 18183 > booking course 24959",
+        "Set ILEP code on booking course 24959 (Diego) via admin UI; see recipe issue-7-ilep-codes.md",
+        "12th check 8 Jul UTC. Diego s840 bc24959 ilepCode=STILL null. Aurora bc24958 DONE (0318/0010). Pedro bc1603 ended Jun5 no new BC. Diego bk18183 PARTIAL EUR250 outstanding. Aug3=26 days.",
+        "Diego ilep null; Aug3; 26 days"
+      ]
+    ]
+  },
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "• Document 171 is a DRAFT certificate — created 5 June 2026, 33 days old, never issued (34th check, 8 Jul 2026 UTC)\n• Booking 1498: status = Confirmed, confirmed = false, amount paid = null\n• Booking course 1660 (ULearn Renewal Morning): ended 5 June 2026, still active = true (33 days stale)\n• Certificate content confirmed complete — student name, dates, ILEP code correct\n• Fix: issue document 171 via SIS admin — student 947 > booking 1498 > Documents > Issue button",
+        "",
+        "34th check 8 Jul UTC. UNCHANGED. Doc171 DRAFT created Jun05 issuedAt=null (33 days). BK1498 CONF confirmed=false amtPaid=null. BC1660 ULearn-Renewal-Morn ended Jun05 STILL active=true (33d stale). NEIL: SIS student 947 > booking 1498 > Documents > Issue.",
+        "34 days; unissued"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 (Edith Nunes, student 1015): Confirmed, confirmed = true, EUR 740 / 740 fully paid\n• Booking course 24933 (General English AM, 15 Jun to 10 Jul 2026): active = true, fee = EUR 380 — ends TOMORROW Fri 10 Jul\n• Booking course 24934 (duplicate General English AM, same dates): active = STILL true, fee = EUR 360 — not deactivated (53+ days)\n• Last class assignment for student 1015: booking course 24668, expired 15 May 2026 — no class for 53 days\n• Payment 17895: Xero payment ID = STILL null, type = null — not reconciled in Xero\n• LAST CHANCE: course ends TOMORROW Fri 10 Jul — student has had no class since 15 May (53 days ago)",
+        "Deactivate booking course 24934 (duplicate); assign student 1015 to class TODAY — course ends TOMORROW; recipe issue-22-edith-nunes-payment-dups.md",
+        "29th check 8 Jul UTC. bc24934 DUP STILL active fee=360. s1015 last SCA id146 bc24668 exp May15 (53d). bk18158 CONF 740/740. pmt17895 xeroId=STILL null. bc24933 ENDS TOMORROW FRI JUL10. NEIL: assign Edith to class TODAY.",
+        "LAST CHANCE; Fri Jul10"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• Booking 17980 (Pietro Caccianiga, student 14521): Confirmed, confirmed = true, EUR 5331 / 5331 fully paid\n• Accommodation 11311: bed 84, 28 Jun to 13 Sep 2026, active = true, claim status = null — correct current record (Pietro in-stay)\n• 4 stale bed 84 records still active for past dates: id 9917 (booking 1274, 10–16 May 2026), id 11157 (booking 100, 2–10 May 2026), id 11159 (booking 100, 17–30 May 2026), id 11180 (booking 81, 6–20 Jun 2026)\n• Sheet B/F/G hash changed again today — someone edited the row; database data unchanged from prior checks\n• Low priority: past-dated stale records do not block Pietro current in-stay",
+        "(NOT RUN low-priority) Deactivate 4 stale bed 84 records: UPDATE booking_accommodations SET active=false WHERE id IN (9917,11157,11159,11180); recipe issue-36b-pietro-accomm-dates.md",
+        "8 Jul UTC (hrly12). Hash changed again (sheet edited). ba11311 bed84 Jun28-Sep13 active=true (in-stay OK). Stale: ba9917 bk1274 May10-16, ba11157 bk100 May2-10, ba11159 bk100 May17-30, ba11180 bk81 Jun6-20 — all active=true past dates.",
+        "low-pri; stale bed84"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Veronica Martin (student 278, booking course 24931 General English AM, 6–10 Jul 2026): ZERO class assignments ever — course ENDS TOMORROW Fri 10 Jul (LAST CHANCE)\n• Ettore Iovinella (student 14564, booking course 24968 General English AM Plus, 6–13 Jul 2026): last class assignment was for booking course 24941 (expired 3 Jul) — 5 days missed, wrong booking course\n• Pietro Colombo (student 72, booking course 81 Morning General Plus, 6–24 Jul 2026): ZERO class assignments ever — 2 school days missed\n• Tuguldurtugs Enkhtugs (student 858, booking course 1786 Academic Year Renewal Morning, 6 Jul to 25 Dec 2026): last class assignment for old booking course 1521 (expired 1 May 2026) — 67 days missed, not assigned to new course\n• Fresh database check 8 Jul 2026 UTC confirms all four still unassigned",
+        "Assign Veronica (student 278) to class TODAY — course ends TOMORROW Fri 10 Jul; then assign students 14564/72/858; recipe issue-45-renewal-arrivals.md",
+        "26th check 8 Jul UTC. s278/bc24931 ZERO SCAs ENDS TOMORROW. s14564/bc24968 last SCA bc24941 exp Jul3 (5d wrong BC). s72/bc81 ZERO SCAs 2d missed. s858/bc1786 last SCA bc1521 exp May1 (67d). NEIL: Veronica TODAY.",
+        "LAST CHANCE; Veronica TODAY"
+      ]
+    ]
+  }
+]

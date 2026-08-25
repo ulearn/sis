@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• 81st check Fri 24 Jul 2026 UTC (151st total) — all 5 phones still wrong\n• Dolgormaa Bayaraa (student 1897): email saraa.tpb@gmail.com in phone field — last touched 17 Jul 2026, 7 days unchanged\n• Aki Miura (student 8567): email aki-hinaaki1116@ezudo.he.jp in phone field — 105 days\n• Jieun Lee (student 1194): annotation 00821097366523 (home contry) in phone field — 78 days\n• Lisa Li (student 5345): annotation 0864645297 (Husband) in phone field — 105 days\n• Alessandra Saito de Araujo (student 10343): Unicode trailing chars in +353 (83) 885 9162 — 87 days",
+        "Strip annotations on students 1194 and 5345; strip Unicode on 10343; get real numbers for 1897 and 8567 from HubSpot. See recipe: issue-6-addendum-24jul.md",
+        "81st check 151st hrly Fri 24 Jul UTC. UNCHANGED. Same 5 phones wrong: 1897 (email 7d), 8567 (email 105d), 1194 (annotation 78d), 5345 (annotation 105d), 10343 (Unicode 87d). Fix NOT RUN.",
+        "5 phones wrong; 105d+"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• 71st hourly check Fri 24 Jul 2026 UTC (151st total)\n• Booking course 24991 (Edite Nunes, General English AM, booking 18214): active = true — STILL zero class assignments\n• Booking 18214: CONFIRMED, EUR 608 / 608 fully paid, confirmed = true — no payment blocker\n• School days missed: Mon 13 Jul – Fri 24 Jul 2026 = 10 school days\n• School days remaining: Mon 27 Jul – Fri 7 Aug 2026 = 9 school days (excluding August Bank Holiday on 3 Aug)\n• August Bank Holiday Mon 3 Aug 2026: STILL absent from school_closures (Issue 38) — fix Bank Holiday first, then assign\n• Fix NOT RUN — window closing fast",
+        "Assign BC 24991 to a General English AM class. See recipe: issue-22-addendum-24jul-c.md",
+        "71st hrly Fri 24 Jul UTC. UNCHANGED. 10 days missed, 9 remaining (excl Aug BH 3 Aug). Assign before Mon 27 Jul. Fix NOT RUN.",
+        "CRITICAL; 10d missed; assign NOW"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• 55th hourly check Fri 24 Jul 2026 UTC (151st total)\n• Booking course 24686 (Alberto Squillace, Morning General, booking 1611): active = true — STILL zero class assignments\n• Booking course 24686: fee = STILL null — course running but unpriced\n• School days missed: Mon 20 Jul – Fri 24 Jul 2026 = 5 school days (first full week complete)\n• Approximately 38 school days remaining through 18 Sep 2026\n• Fix NOT RUN",
+        "Assign BC 24686 to Morning General class; set course fee. See recipe: issue-24-addendum-24jul.md",
+        "55th hrly Fri 24 Jul UTC. UNCHANGED. 5 days missed (first full week). Fix NOT RUN.",
+        "fee null; 0 SCAs; Day 5"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 78th hourly check Fri 24 Jul 2026 UTC (151st total)\n• August Bank Holiday Mon 3 Aug 2026: STILL absent from school_closures — 9 calendar days away — CRITICAL\n• October Bank Holiday Mon 26 Oct 2026: STILL absent from school_closures\n• Database confirmed: 9 closures only — Good Fridays 2026-2030 and Christmas 2026-2029\n• Booking course 24956 (Giampaolo Russo, Issue 41): starts Mon 3 Aug 2026 — the Bank Holiday date itself\n• Edite Nunes (Issue 22, BC 24991, ends 7 Aug): 3 Aug Bank Holiday falls within her course — extend if BH added\n• Fix NOT RUN",
+        "INSERT school_closures: Aug BH 3 Aug 2026 (isPaidHoliday=true); Oct BH 26 Oct 2026 (isPaidHoliday=true). See recipe: issue-38-addendum-24jul-c.md",
+        "78th hrly Fri 24 Jul UTC. UNCHANGED. Aug BH 9 calendar days away. BC24956 (Giampaolo) starts ON Aug BH. Fix NOT RUN.",
+        "Aug BH; 9d CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• 73rd hourly check Fri 24 Jul 2026 UTC (151st total)\n• Booking course 24609 (Xuezhen Huang, Morning General, booking 17831, student 14443): active = true — STILL zero class assignments\n• Booking accommodation 11358 (bed 180, booking 17831): 12 Jul – 2 Aug 2026, EUR 900, active = true — CORRECTION: previous check noted BA 11357; correct ID is 11358\n• School days missed: Mon 13 Jul – Fri 24 Jul = 10 school days\n• School days remaining: Mon 27 Jul – Fri 31 Jul = 5 school days\n• Course ends Fri 31 Jul 2026 — final week starts Mon 27 Jul — THIS IS THE LAST CHANCE\n• Fix NOT RUN",
+        "Assign BC 24609 to a Morning General class — 5 school days left, course ends Fri 31 Jul. See recipe: issue-39-addendum-24jul-d.md",
+        "73rd hrly Fri 24 Jul UTC. BA ID correction: 11358 (not 11357 as prev noted). 10 days missed. 5 days left — final week. Fix NOT RUN.",
+        "CRITICAL; 5 school days left"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 73rd hourly check Fri 24 Jul 2026 UTC (151st total)\n• Booking 18180 (Giampaolo Russo, student 14571): CONFIRMED, fully paid EUR 2,584.96\n• Payment 17954 (EUR 2,584.96, Bank, 26 Jun 2026): Xero payment ID = STILL null — 28 days unreconciled (HubSpot payment ID 1268783973563)\n• Booking accommodation 11357 (bed 178, Host Family, 2 Aug – 6 Sep 2026, EUR 1,250): active = true — CORRECT\n• Capel Street accommodation (6 Sep – 14 Sep 2026, 1 week + 1 night): STILL missing from SIS — only 1 accommodation on booking 18180\n• Booking course 24956 (General English AM): starts Mon 3 Aug 2026 = August Bank Holiday — fix Issue 38 first\n• Check-in: 2 Aug 2026 — 9 calendar days away\n• Fix NOT RUN",
+        "Add Capel Street booking accommodation to booking 18180 (6 Sep – 14 Sep 2026); reconcile payment 17954 in Xero. See recipe: issue-41-addendum-24jul-c.md",
+        "73rd hrly Fri 24 Jul UTC. UNCHANGED. Payment 17954 Xero null 28 days. Capel still missing. Check-in 2 Aug (9 days). BC24956 starts Aug BH. Fix NOT RUN.",
+        "Xero null; Capel missing; 9d to check-in"
+      ]
+    ]
+  }
+]

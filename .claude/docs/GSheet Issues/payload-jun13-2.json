@@ -1,0 +1,57 @@
+[
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "ALL 5 STEPS NOT RUN. bk18158 PEND 0/740. c24933(fee=380)+c24934(DUP fee=360) Jun15-Jul10. bk18131 CONF 1185+bk18133 CONF 648 NOT cancelled. s1015 0 new SCAs.",
+        "5 steps NOT RUN. see recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun13 hrly2: UNCHANGED. c24933+c24934 both linked to bk18158. bk18131 CONF 1185. bk18133 CONF 648. pmt17730(648->bk18133)+17852(1185->bk18131) live. NOTE: pmt17728 links to bk1567 NOT bk18131/18133 - verify SQL step1 before running. s1015 0 SCAs. Jun15 <35h. NEIL: TONIGHT.",
+        "CRITICAL Mon Jun15"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "Ernesto s14532 currentLevel=null 0SCAs ALL TIME. WK1(Jun08-12) MISSED. bc24826 INTENSIVE ends Jun19. bk18034 PARTIAL 845/1095 conf=false.",
+        "Get Ernesto level Mon AM, insert AM+PM SCAs WK2 only. see recipe: issue-26-intensive-class-assign-once.md",
+        "Jun13 hrly: CONFIRMED 0 SCAs ALL TIME s14532. bc24826 INTENSIVE Jun8-19 active. WK2=Jun15-19 FINAL WEEK. currentLevel=null. NEIL: Mon 1st thing get level from teacher, then run SQL(2 inserts). Pairs: A2=cls8/9,B1=cls5+12/11,B2-C1=cls4/6,C1=cls13/14.",
+        "WK2 Mon CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "s1001 att=0 ALL TIME(155d enrolled). sca255 B1PM Jan12-Jul03(19d left). visaStatus=null. IRP compliance risk.",
+        "Ask B1PM(cls11) teacher if physically present. If absent: IRP compliance escalation. see recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun13 hrly: CONFIRMED att=0(DB: 0 rows student_id=1001). sca255 B1PM week_end=Jul03(19d left). bk18151 CONF 1339.2/1339.2. 155d enrolled 0 att. NEIL: Mon AM ask B1PM(cls11) teacher if Saikhantes EVER attended. If not: IRP escalation immediately.",
+        "0att URGENT 19d"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "s88 0SCAs currentLevel=null JUNIOR. bk94 CONF c104 Jun15-26. bk18044 CONF DUP c24836 NOT cancelled. pmt17607 EUR1151.5 dbl-import. bk18152 Milena PEND NOT cancelled.",
+        "4 steps NOT RUN. see recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun13 hrly2: UNCHANGED. s88 level=null 0SCAs. bk94 CONF 1151.5 c104 Jun15-26. bk18044 CONF DUP 1106.5 c24836 Jun15-26. pmt17607(1151.5->bk18044 DUP). bk18152 Milena(s14557) PEND. ALL 4 STEPS NOT RUN. NEIL: TONIGHT before Mon 08:00.",
+        "CRITICAL Mon Jun15"
+      ]
+    ]
+  },
+  {
+    "range": "H32:K32",
+    "values": [
+      [
+        "BST bug attendance.ts:34+routes/attendance.ts:214 setHours->local midnight. TZ=UTC NOT in .env. 9 stale SCAs week_end=null(courses ended).",
+        "FIX1: echo TZ=UTC>>.env+touch tmp/restart.txt(no build). FIX2 SQL: UPDATE student_class_assignments SET week_end=(SELECT end_date FROM booking_courses WHERE id=booking_course_id) WHERE id IN(39,40,65,66,74,75,81,87,100). see recipe: issue-31-attendance-sheet-week-bug.md",
+        "Jun13 hrly2: BOTH FIXES NOT RUN. TZ=UTC NOT in .env(confirmed). 9 SCAs week_end=null(ended May15-Jun12). Mon att sheet WILL show Sun Jun14+9 stale students. <19h to deadline. NEIL: TONIGHT (1)echo TZ=UTC>>.env && touch tmp/restart.txt; (2)FIX2 SQL for 9 SCAs.",
+        "URGENT <19h Mon 07:00"
+      ]
+    ]
+  }
+]

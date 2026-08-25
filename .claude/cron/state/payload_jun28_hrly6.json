@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 + 16989 still unlinked — booking_id = null, xero_payment_id = null — 61 days since 28 Apr\n• Payment 16988 (HubSpot 1204827374829) → Booking 17856 Margherita Galbusera — EUR 339.90\n• Payment 16989 (HubSpot 1204846469317) → Booking 17857 Francesca Fassina — EUR 339.90\n• Both bookings: status = Confirmed, confirmed = false — students blocked from class assignment lists\n• Booking courses 24630 + 24631: General English AM Plus, 29 Jun to 10 Jul — fee = null\n• Classes start TOMORROW Mon 29 Jun 09:00 IST — 4-step SQL NOT RUN (101st hourly check, Jun 28 UTC)",
+        "(NOT RUN) (1) UPDATE payments SET booking_id=17856 WHERE id=16988; (2) UPDATE payments SET booking_id=17857 WHERE id=16989; (3) UPDATE booking_courses SET fee=339.9 WHERE id IN (24630,24631); (4) UPDATE bookings SET confirmed=true WHERE id IN (17856,17857). See recipe: issue-1-orphan-payments.md",
+        "hrly Jun28 UTC (101st check, fresh DB): pmt16988 bookingId=STILL null xeroId=null EUR339.90. pmt16989 STILL null EUR339.90. bk17856 CONF confirmed=STILL false 339.9/339.9. bk17857 CONF confirmed=STILL false 339.9/339.9. bc24630+bc24631 GE-AM-Plus startDate=Jun29 fee=STILL null. CLASSES START TOMORROW Mon 29 Jun 09:00 IST. 4-step SQL STILL NOT RUN — 101 CHECKS. NEIL: RUN SQL NOW OR STUDENTS MISS FIRST CLASS.",
+        "SQL UNRUN; Jun29 <24h"
+      ]
+    ]
+  },
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "• Document 171 is a DRAFT certificate (template 82) — last updated Jun 05, now 23 days stale\n• Booking 1498 is CONFIRMED (status), but confirmed = false and amount paid = null\n• Booking course 1660 (ULearn Renewal Morning) ended Jun 05 — certificate never issued after course ended\n• Action needed: click Issue on the draft document via SIS UI",
+        "(NOT RUN) SIS student 947 booking 1498 Documents Issue button. See recipe: issue-8-suvderdene-cert-dates.md",
+        "hrly Jun28 UTC (12th check, fresh DB): doc171 STILL DRAFT (tmpl82, Jun05=23d stale). bk1498 CONF conf=false amtPaid=null. bc1660 ended Jun05=23d ago active=true stale. UNCHANGED. Neil: SIS student 947 -> bk1498 -> Documents -> Issue button.",
+        "cert DRAFT; 23d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Class assignment 255 (class 11, B1 PM) has week_start = 12 Jan 2026 (wrong — booking course 24925 starts 9 Mar 2026)\n• Week end = 3 Jul 2026 — assignment expires in 5 days (URGENT: student loses class access Thu Jul 03)\n• Correct week_start = 9 Mar 2026, correct week_end = 11 Sep 2026 (booking course 24925 end date)\n• One-line SQL fix not yet applied (8th check, Jun 28 UTC)",
+        "(NOT RUN) UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255. See Issue 29 recipe: issue-29-saikhantes-jan12-start-date.md",
+        "hrly Jun28 UTC (re-check #8, fresh DB): sca255 weekStart=STILL 2026-01-12 weekEnd=STILL 2026-07-03 (5 days to expire Thu Jul03). bc24925 AY-AFT Mar09-Sep11 active=true UNCHANGED. SQL NOT RUN. Neil: run UPDATE immediately — student falls off class roster Jul03.",
+        "sca255; Jul03=5d; URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H26:K26",
+    "values": [
+      [
+        "• Student 917 (Uyanga Tungalag) visa status = null — blocks appearance in class to be assigned list\n• Booking 1467 is Confirmed, confirmed = true, fully paid EUR 2405 (amount open = 0)\n• Booking course 1613 (Academic Year Morning, 27 Apr to 16 Oct) — active, student in course\n• Zero class assignments — student cannot be placed in class until visa_status set\n• Fix: single SQL UPDATE, no financial impact (28th check, Jun 28 UTC)",
+        "(NOT RUN) UPDATE students SET visa_status='Approved' WHERE id=917; then assign Uyanga to class via SIS admin. See recipe: issue-25-uyanga-visa-escrow.md",
+        "hrly Jun28 UTC (28th check, fresh DB): s917 visaStatus=STILL null. bk1467 CONF conf=true 2405/2405 fully paid. scas=STILL 0. UNCHANGED 28 checks. Neil: UPDATE students SET visa_status='Approved' WHERE id=917; then assign to class.",
+        "D62; 0SCA; CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Class assignment 255 (class 11, B1 PM) has week_start = 12 Jan 2026 (wrong — booking course 24925 starts 9 Mar 2026)\n• Week end = 3 Jul 2026 — assignment expires in 5 days (URGENT: student loses class access Thu Jul 03)\n• Correct week_start = 9 Mar 2026, correct week_end = 11 Sep 2026 (booking course 24925 end date)\n• One-line SQL fix not yet applied (8th check, Jun 28 UTC)",
+        "(NOT RUN) UPDATE student_class_assignments SET week_start='2026-03-09', week_end='2026-09-11' WHERE id=255. See Issue 29 recipe: issue-29-saikhantes-jan12-start-date.md",
+        "hrly Jun28 UTC (re-check #8, fresh DB): sca255 weekStart=STILL 2026-01-12 weekEnd=STILL 2026-07-03 (5 days to expire Thu Jul03). bc24925 AY-AFT Mar09-Sep11 active=true UNCHANGED. SQL NOT RUN. Neil: run UPDATE immediately — student falls off class roster Jul03.",
+        "sca255; Jul03=5d; URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• Accommodation 11352 exists (City Centre Apartment, 4 Jul to 11 Jul, 1 week, fee EUR 360)\n• Bed not yet assigned — bed_id = null\n• Booking 18156 (Verónica Martín, student 278) is Pending, confirmed = false, amount paid = EUR 0 of EUR 645\n• Zero payments on record — student not yet confirmed or paid (last booking update 17 Jun, 11 days stale)\n• Accommodation check-in 4 Jul = 6 days away — bed allocation and payment urgently needed",
+        "(NOT RUN) Assign a bed to accommodation 11352 in SIS. Chase payment for booking 18156 (EUR 645 total, EUR 360 accommodation). See recipe: issue-37-veronica-capel-accomm-allocation.md",
+        "hrly Jun28 UTC (6th check, fresh DB): accomm11352 bedId=STILL null (Jul04-Jul11 City Centre Apt EUR360). bk18156 STILL PENDING confirmed=false EUR 0/645 (updAt=Jun17=11d stale). STILL 0 payments. Jul04 checkin = 6 days away. NEIL: URGENT — assign bed to accomm11352 + confirm booking + chase payment before Jul04.",
+        "await bed+pmt; Jul4=6d"
+      ]
+    ]
+  }
+]

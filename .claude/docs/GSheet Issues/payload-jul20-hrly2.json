@@ -1,0 +1,56 @@
+[
+  {
+    "range": "J23:K23",
+    "values": [
+      [
+        "32nd check Mon 20 Jul. BC24991 (Edith Nunes) STILL 0 class assignments — fresh DB Mon 20 Jul. Week 2 underway NOW — 3 weeks remain (ends 7 Aug). BC24933+24934 (ended 10 Jul) still active = true — 10d stale.",
+        "CRITICAL; assign NOW"
+      ]
+    ]
+  },
+  {
+    "range": "J21:K21",
+    "values": [
+      [
+        "35th check Mon 20 Jul. Booking 1605 (Ariunsarnai) STILL PENDING — Day 98 (started 13 Apr 2026). EUR 0 / 1509. Last updated 23 Jun (27d ago). No action taken.",
+        "Day98; PENDING"
+      ]
+    ]
+  },
+  {
+    "range": "J25:K25",
+    "values": [
+      [
+        "100th check Mon 20 Jul. BC24686 (Alberto Squillace, Morning General) fee = STILL null — STARTED TODAY. BC24616 (Mia Wehrli, GE AM Plus) fee = STILL null — STARTED TODAY. BC1797 (ended 26 Jun) still active = true — 24d stale.",
+        "fee null; started"
+      ]
+    ]
+  },
+  {
+    "range": "J40:K40",
+    "values": [
+      [
+        "80th check Mon 20 Jul. August Bank Holiday Mon 3 Aug 2026: STILL absent from school_closures — 13 days away. October Bank Holiday Mon 26 Oct 2026: STILL absent. 9 closures in DB (Good Fridays 2026-2030, Christmas 2026-2029) — no bank holidays.",
+        "Aug BH; 13d URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "J41:K41",
+    "values": [
+      [
+        "32nd check Mon 20 Jul. BC24609 (Xuezhen Huang, Morning General, 13-31 Jul) STILL 0 class assignments — fresh DB Mon 20 Jul. Week 1 (13-17 Jul) permanently missed. Week 2 underway NOW — 2 weeks remain (ends 31 Jul).",
+        "CRITICAL; assign NOW"
+      ]
+    ]
+  },
+  {
+    "range": "J47:K47",
+    "values": [
+      [
+        "33rd check Mon 20 Jul. ALL 7 Mon 20 Jul starters STILL 0 class assignments — fresh DB. BCs: 1630 Saranzaya, 24616 Mia, 24686 Alberto, 24942 Lorena, 24966 Filippo, 24989 Marcos (1wk), 25000 Giorgio. 9 Jul-13 actives also STILL 0 SCAs (BCs 1619,1788,1814,24820,24988,24990,24998,24609,24991). Stale ended 17 Jul: BC24946,24992,24994 — deactivate.",
+        "CRITICAL; assign NOW"
+      ]
+    ]
+  }
+]

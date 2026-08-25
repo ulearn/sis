@@ -1,0 +1,50 @@
+[
+  {
+    "range": "J2",
+    "values": [
+      [
+        "4 Jul SAT UTC (202nd check, fresh DB): pmts 16988+16989 bookingId=STILL null xeroId=null. bk17856 CONFIRMED confirmed=false EUR339.90=total. bk17857 CONFIRMED confirmed=false EUR339.90=total. bc24630+bc24631 fee=STILL null active=true endDate=Jul10=6d. Fix UNRUN 200+ hours. NEIL: RUN STEPS 1–4 NOW — Jul10 is 6 days away."
+      ]
+    ]
+  },
+  {
+    "range": "J16",
+    "values": [
+      [
+        "4 Jul SAT UTC (100th check, fresh DB): SCA255 weekEnd=Jul3=EXPIRED. Student 1001 ZERO current class assignment. bc24925 AY-Afternoon Mar09-Oct02 active=true fee=EUR1102.20. bk18151 CONF confirmed=true EUR1339.20. SQL NOT RUN across 100 checks: UPDATE student_class_assignments SET week_end='2026-10-02' WHERE id=255. Mon Jul6=2d. NEIL: RUN URGENTLY — student unassigned since 3 Jul."
+      ]
+    ]
+  },
+  {
+    "range": "J23",
+    "values": [
+      [
+        "4 Jul SAT UTC (55th check, fresh DB): BC24933 GE-AM Jun15-Jul10 EUR380 active=true. BC24934 GE-AM Jun15-Jul10 EUR360 STILL active (duplicate). Student 1015 last SCA id146 weekEnd=May15=50d stale classId=7. Jul10=6d. Fix UNRUN. NEIL: (1) UPDATE booking_courses SET active=false WHERE id=24934; (2) Assign student 1015 to class 7 AM before Jul10."
+      ]
+    ]
+  },
+  {
+    "range": "J30",
+    "values": [
+      [
+        "4 Jul SAT UTC (100th check): Duplicate of Issue 15 (row 16). SCA255 weekEnd=Jul3=EXPIRED YESTERDAY. Student 1001 (Saikhantes) unassigned since 3 Jul. Mon Jul6=2d. See row 16 for fix recipe."
+      ]
+    ]
+  },
+  {
+    "range": "J41",
+    "values": [
+      [
+        "4 Jul SAT UTC (21st check, fresh DB): bk17831 STILL PARTIAL confirmed=false EUR965/1396.90 (EUR431.90 open). pmt17180 May5 EUR431.90 type=null xeroId=null hsId=null (60d). pmt17963 Jul2 EUR965 type=null xeroId=null hsId=1273784562922. ba11358 bed180 Jul12-Aug2 active=true (8d). bc24609 MorningGeneral Jul13-31 (9d). Booking unconfirmed — accommodation blocked. NEIL: reconcile both payments in Xero, then confirm booking before Jul12."
+      ]
+    ]
+  },
+  {
+    "range": "J47",
+    "values": [
+      [
+        "4 Jul SAT UTC (21st check, fresh DB): UNCHANGED. Tuguldurtugs s858 SCA55 May1=63d (bc1786 AY-Morn Jul6=MON=2d, 0SCA). Kayque s852 SCA26 Apr24=70d (bc1821 AY-Aft Jun29=5d in, 0SCA). Sophia s853 SCA23 Apr24=70d (bc1820 Jun29=5d in, 0SCA). bk1601 EUR1356.5/1606.5 (EUR250 open). 15 students total unassigned. NEIL: ASSIGN ALL 15 BEFORE MON JUL6 — LAST SATURDAY BEFORE MONDAY CLASSES."
+      ]
+    ]
+  }
+]

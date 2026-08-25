@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payment 16988 (EUR 339.90): booking ID still null — not linked to booking 17856 — xeroPaymentId = null (10th pass, 11 Jul UTC)\n• Payment 16989 (EUR 339.90): booking ID still null — not linked to booking 17857 — xeroPaymentId = null\n• Booking 17856 (EUR 339.90 paid, student 14461): status = CONFIRMED but confirmed = false (anomaly) — last updated 8 July 2026\n• Booking 17857 (EUR 339.90 paid, student 14462): status = CONFIRMED but confirmed = false (anomaly) — last updated 8 July 2026\n• Booking courses 24630 and 24631 (General English AM Plus): ended 10 July 2026 — still active = true (2 days stale)",
+        "Link payment 16988 → booking 17856 and payment 16989 → booking 17857; set confirmed = true on both bookings; deactivate booking courses 24630 and 24631. See recipe: issue-1-orphan-payments.md",
+        "11 Jul SAT UTC 10th pass (fresh DB). PMT16988 EUR339.90 bookingId=STILL null xeroId=null. PMT16989 EUR339.90 bookingId=STILL null xeroId=null. BK17856 status=CONFIRMED confirmed=false updAt=Jul8. BK17857 status=CONFIRMED confirmed=false updAt=Jul8. BC24630+24631 ended Jul10 STILL active=true (2d stale). NEIL: link pmts + set confirmed=true + deactivate BCs.",
+        "unlinked; overdue"
+      ]
+    ]
+  },
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "• Extra 96 (booking 17981, Lizbeth del Carmen Sierra Martinez, student 14522): type Insurance, fee = STILL null — health insurance fee never set, 47 days since extra created (25 May), 40 days since course started (1 June 2026)\n• Booking 17981: Confirmed, confirmed = false, fully paid EUR 1407.50 — Academic Year Afternoon 1 June 2026 to 29 January 2027\n• Student in class without health insurance fee set — standard World2Go rate is EUR 150 (reference: extra 218 on booking 18149)\n• Arrange PEL + health insurance retro June 2026; raise supplemental invoice via HubSpot deal 503569276136",
+        "Set extra 96 fee = EUR 150; arrange PEL + health insurance retro June 2026; raise supplemental invoice on HubSpot deal 503569276136. See recipe: issue-13-lizbeth-health-insurance.md",
+        "11 Jul SAT UTC 21st check (fresh DB). Extra96 INSURANCE fee=STILL null details=PEL;Health active=true. BK17981 CONF confirmed=false EUR1407.5/1407.5. BC24773 AY Aft Jun1-Jan29-2027 active=true. 40 calendar days since course start (approx 30 school days uninsured). NEIL: set extra96.fee=150 + raise supplemental invoice HS deal 503569276136.",
+        "21st check Jul11; fee=null"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student 1001 (Saikhantes Shagdasuren): class assignment 255 (class 11) week end = 3 July 2026 — expired 8 days ago — attendance not tracked (17th check, 11 Jul UTC)\n• Booking course 24925 (Academic Year Afternoon, 9 March to 2 October 2026): active = true, ilepCode = 0318/0003, EUR 1339.20 fully paid\n• Booking course 1982 (Academic Year Morning, 30 June to 19 December 2025): still active = true — 204 days stale since course ended December 2025 (last updated 3 May 2026) — anomaly\n• Monday 13 July 2026 = week 2 with no valid class assignment — 2 days remaining",
+        "Extend class assignment 255 week_end to 2 October 2026 via SIS admin or SQL; deactivate booking course 1982. See recipe: issue-15-saikhantes-course-dates.md",
+        "11 Jul SAT UTC (17th check, fresh DB). SCA255 classId=11 weekEnd=2026-07-03 STILL EXPIRED (8d). BC24925 AY Aft Mar9-Oct2 active=true EUR1339.20/1339.20. BC1982 ended Dec2025 STILL active=true (204d stale, updAt=May03 bk1724 CONF). Mon13=2d. NEIL: extend SCA255 to Oct02 + deactivate BC1982.",
+        "Mon13 deadline; 2d"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Duplicate of issue 15 (row 16): student 1001 Saikhantes Shagdasuren, class assignment 255 (class 11) week end = 3 July 2026 — expired 8 days ago\n• 5 school days missed: Monday 6 July through Friday 10 July 2026 — second missed week starts Monday 13 July 2026 (2 days)\n• Booking course 1982 (Academic Year Morning, June to December 2025): still active = true (204 days stale) — newly confirmed anomaly\n• Fix SQL not yet run — see recipe: issue-15-saikhantes-course-dates.md",
+        "Extend class assignment 255 week_end to 2 October 2026; deactivate booking course 1982. See recipe: issue-15-saikhantes-course-dates.md",
+        "11 Jul SAT UTC (16th check, fresh DB). Duplicate of issue 15 row 16. SCA255 expired (8d). 5 school days missed Jul6-Jul10. Mon Jul13=2d. BC1982 ended Dec2025 STILL active=true (204d stale). NOT RUN.",
+        "Mon13 deadline; 2d"
+      ]
+    ]
+  },
+  {
+    "range": "H41:K41",
+    "values": [
+      [
+        "• Accommodation 11358 (Xuezhen Huang, student 14443): bed 180 Room 1, Host Family — check-in TOMORROW Sunday 12 July 2026 — claimedAt = null — host has NOT been notified (12th pass, 11 Jul UTC)\n• Host: Mary Carver, mary.carver28@gmail.com, +353 87 927 1130 — must be notified TODAY\n• Booking 17831: confirmed = true, EUR 1396.90 fully paid (last updated 8 July 2026)\n• 4 payments all xeroPaymentId = null: payment 17180 (EUR 431.90, Fidelo Escrow, 27 Apr), payment 17963 (EUR 965.00, Bank, 1 Jul), payment 17987 (EUR 131.90, Bank, 25 Jun), payment 17988 (EUR 300.00, Bank, 12 Jun)\n• Payments 17987 + 17988 = EUR 431.90 = payment 17180 amount — likely Fidelo installment pair, verify before reconciling all 4 separately",
+        "Submit host family claim for accommodation 11358 via SIS today; notify Mary Carver (mary.carver28@gmail.com, +353 87 927 1130); reconcile payments 17963 + 17180 in Xero. See recipe: issue-39-xuezhen-huang-accomm-missing.md",
+        "11 Jul SAT UTC (12th pass, fresh DB). BA11358 bed180 HF Jul12-Aug2 claimedAt=STILL null. Host Mary Carver mary.carver28@gmail.com +353 87 927 1130 NOT NOTIFIED. BK17831 CONFIRMED EUR1396.90/1396.90 (updAt=Jul8). 4 pmts ALL xeroId=null: pmt17180(EUR431.90 Fidelo Apr27)+pmt17963(EUR965 Jul1 HS1273784562922)+pmt17987(EUR131.90 Jun25)+pmt17988(EUR300 Jun12). pmts17987+17988=EUR431.90=pmt17180 (verify Fidelo pair). CHECK-IN TOMORROW SUN JUL12.",
+        "CRITICAL; checkin tomorrow"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• Pietro Colombo (student 72, booking course 81, Morning General Plus, 6 to 24 July 2026): zero class assignments confirmed — week 2 starts Monday 13 July 2026 — 2 days remaining (11th pass, 11 Jul UTC)\n• Booking 78: confirmed = true, EUR 1880 / 1880 fully paid\n• Booking course 24968 (General English AM Plus, booking 18191, student 14564 Ettore Iovinella): ended 10 July 2026 — still active = true (2 days stale)\n• Pietro not tracked in any class attendance — week 1 attendance (6 to 10 July) is unrecorded",
+        "Assign Pietro Colombo (student 72) to a class via SIS admin before Monday 13 July 09:00; deactivate booking course 24968 (ended 10 July). See recipe: issue-45-renewal-arrivals.md",
+        "11 Jul SAT UTC (11th pass, fresh DB). s72 Pietro Colombo bc81 Morning Gen Plus Jul6-Jul24 STILL ZERO SCAs. BK78 CONF EUR1880/1880. BC24968 ended Jul10 STILL active=true (2d stale, bk18191 CONF EUR190.63). Mon13=week2=2 days. Week1 attendance (Jul6-10) completely untracked. NEIL: assign Pietro to class NOW via SIS student 72 > Classes > Add.",
+        "CRITICAL; Mon13 2d"
+      ]
+    ]
+  }
+]

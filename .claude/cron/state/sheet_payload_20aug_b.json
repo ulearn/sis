@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 241st check Thu 20 Aug 2026 UTC — ESCALATING: Booking Accommodation 11393 (bed 88) starts Sat 22 Aug (2 days), fee still null\n• Booking Course 24772 (General English AM): ends TOMORROW Fri 21 Aug, active — deactivate after last class\n• Booking Accommodation 11393 (bed 88): 22 Aug to 13 Sep, fee = null — student moves in Sat 22; fee MUST be set today\n• Booking Accommodation 11311 (bed 84): ends Sat 22 Aug, fee EUR 3,850, active — deactivate after checkout Sat 22\n• Fix NOT RUN — 7 days since URGENT first flagged; action needed today",
+        "Set fee on BA 11393 (bed 88) TODAY; deactivate BC 24772 after Fri 21; deactivate BA 11311 after Sat 22. See recipe: issue-36b-addendum-20aug.md",
+        "241st Thu 20 Aug UTC. BA 11393 fee null; starts Sat 22 (2d). BC 24772 ends Fri 21 (1d). ESCALATING — fee must be set today.",
+        "URGENT: fee null Sat 22"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 138th check Thu 20 Aug 2026 UTC — ESCALATING: Sat 22 Aug (2 days); bed 89 conflict and 3 null fees unresolved\n• Booking Accommodation 11357 (bed 178): ended 15 Aug, fee EUR 1,250, active — 5 days stale; deactivate\n• Booking Accommodation 11394 (bed 89): ended 9 Aug, fee = null, active — 11 days stale; MUST deactivate before Booking Accommodation 11397 starts Sat 22 (bed conflict)\n• Booking Accommodation 11396 (bed 44): 15 Aug to 22 Aug, fee = null — student in occupancy; checkout Sat 22 (2 days); set fee urgently\n• Booking Accommodation 11397 (bed 89): 22 Aug to 6 Sep, fee = null — starts Sat 22 (2 days); set fee before move-in\n• Fix NOT RUN — action needed today",
+        "Deactivate BA 11394 (bed 89 conflict); set fee on BA 11396 + BA 11397; deactivate BA 11357. See recipe: issue-41-addendum-20aug.md",
+        "138th Thu 20 Aug UTC. Bed 89 conflict + 3 null fees. Sat 22 = 2 days. ESCALATING — action needed today.",
+        "URGENT: bed89 conflict Sat22"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 176th check Thu 20 Aug 2026 UTC — URGENT: Student returns Mon 25 Aug (5 days), still no class assignment\n• Booking 18151 (Saikhantes Shagdarsuren, student 1001): CONFIRMED, confirmed = true, paid EUR 1,339.20, open EUR 0\n• Booking Course 24925 (Academic Year Afternoon): 9 Mar to 2 Oct 2026, active\n• Only class assignment: Student Class Assignment 255, class 11, week ending 3 Jul 2026 — 48 days with no new assignment\n• Booking Course 1982 (Academic Year Morning, 2025): ended 19 Dec 2025, active = true — 244 days stale; deactivate\n• Class assignment must be created for week starting 24 Aug before student returns",
+        "Create class assignment on Booking Course 24925 for week 24 Aug; deactivate Booking Course 1982. See recipe: issue-15-addendum-20aug.md",
+        "176th Thu 20 Aug UTC. BC 24925 active. SCA 255 last week 3 Jul. Returns Mon 25 Aug (5d). URGENT.",
+        "URGENT: no SCA; returns 25 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• 139th check Thu 20 Aug 2026 UTC — URGENT: Student returns Mon 25 Aug (5 days), still no class assignment (duplicate of Issue 15)\n• Booking 18151 (Saikhantes Shagdarsuren, student 1001): CONFIRMED, paid EUR 1,339.20, open EUR 0\n• Booking Course 24925 (Academic Year Afternoon): 9 Mar to 2 Oct 2026, active\n• Only class assignment: Student Class Assignment 255, class 11, week ending 3 Jul 2026 — 48 days with no new assignment\n• Booking Course 1982 (Academic Year Morning, 2025): ended 19 Dec 2025, active = true — 244 days stale\n• See Issue 15 (row 16) for full recipe",
+        "Create class assignment on Booking Course 24925 for week 24 Aug; deactivate Booking Course 1982. See recipe: issue-15-addendum-20aug.md",
+        "139th Thu 20 Aug UTC. Duplicate of Issue 15. Returns Mon 25 Aug (5d). URGENT.",
+        "URGENT: no SCA; returns 25 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• 51st check Thu 20 Aug 2026 UTC — no change since 50th check (Wed 19 Aug)\n• Current occupant Booking Accommodation 11173 (booking 88): 9 Aug to 30 Aug, fee EUR 1,080 — active, legitimate\n• Next occupant Booking Accommodation 25 (booking 17844): starts 30 Aug (10 days), fee EUR 2,100, active\n• 5 stale Booking Accommodations on bed 83 still active:\n  Booking Accommodation 11239 (ended 24 May, 88 days stale, fee EUR 1,050)\n  Booking Accommodation 11168 (ended 20 Jun, 61 days stale, fee EUR 700)\n  Booking Accommodation 11285 (ended 5 Jul, 46 days stale, fee null — confirm before deactivating)\n  Booking Accommodation 11352 (ended 11 Jul, 40 days stale, fee EUR 360)\n  Booking Accommodation 11179 (ended 9 Aug, 11 days stale, fee EUR 1,360)\n• Must deactivate all 5 stale Booking Accommodations before 30 Aug to avoid bed conflict",
+        "Deactivate 5 stale Booking Accommodations on bed 83; confirm fee on BA 11285 before deactivating. See recipe: issue-37-addendum-19aug.md",
+        "51st Thu 20 Aug UTC. No change. 5 stale BAs still active. Aug 30 now 10 days.",
+        "5 stale BAs; Aug 30 = 10d"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• 50th check Thu 20 Aug 2026 UTC — no change since 49th check (Wed 19 Aug) (duplicate of Issue 37)\n• Current occupant Booking Accommodation 11173 (booking 88): 9 Aug to 30 Aug, fee EUR 1,080 — active\n• Next occupant Booking Accommodation 25 (booking 17844): starts 30 Aug, fee EUR 2,100 — 10 days\n• 5 stale Booking Accommodations on bed 83 all still active — see Issue 37 (row 39) for full list\n• Booking Accommodation 11285 fee null — confirm before deactivating\n• Aug 30 now 10 days",
+        "Deactivate 5 stale Booking Accommodations on bed 83. See recipe: issue-37-addendum-19aug.md",
+        "50th Thu 20 Aug UTC. Duplicate of Issue 37. 5 stale BAs unchanged. Aug 30 = 10d.",
+        "5 stale BAs; Aug 30 = 10d"
+      ]
+    ]
+  }
+]

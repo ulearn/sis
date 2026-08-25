@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payments 16988 (HubSpot 1204827374829) and 16989 (HubSpot 1204846469317): EUR 339.90 each — booking ID = null, Xero payment ID = null — unlinked since 28 April 2026 (235th check, 6 Jul 2026 UTC)\n• Booking 17856 (Margherita Galbusera, student 14461): Confirmed, confirmed field = false — booking course 24631 (General English AM Plus, 29 Jun to 10 Jul 2026, fee = null)\n• Booking 17857 (Francesca Fassina, student 14462): Confirmed, confirmed field = false — booking course 24630 (General English AM Plus, 29 Jun to 10 Jul 2026, fee = null)\n• Both booking courses active — course ends Friday 10 July 2026 (4 school days remaining: 7, 8, 9, 10 Jul)\n• Students in school today with no attendance tracking; course fees still null\n• Root cause: webhook missed setting booking ID at payment creation on 28 April 2026",
+        "Link payments 16988 to booking 17856 and 16989 to booking 17857; set booking course fees to EUR 339.90; set confirmed = true on both bookings. See recipe: issue-1-orphan-payments.md",
+        "235th check 6 Jul UTC. UNCHANGED. Payments 16988+16989 bookingId=STILL null xeroPaymentId=STILL null EUR339.90. Bookings 17856+17857 CONFIRMED confirmed=STILL false amtPaid=339.9. Booking courses 24630+24631 GE-AM-Plus Jun29-Jul10 fee=STILL null active=true. COURSE ENDS FRIDAY JUL10 = 4 days. 235 checks, SQL NOT RUN. NEIL: run 4-step SQL recipe TODAY.",
+        "URGENT; Fri Jul10"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Class assignment 255 (student 1001 Saikhantes Shagdarsuren, class 11 B1 Afternoon): week end = 3 July 2026 — EXPIRED; student missing class since Monday 6 July 2026 (123rd check, 6 Jul 2026 UTC)\n• Booking course 24925 (Academic Year Afternoon, booking 18151): active, 9 March to 2 October 2026\n• Fix: extend class assignment 255 week end to 2026-10-02 (matches booking course end date)",
+        "Extend class assignment 255 week_end to 2026-10-02 (matches booking course 24925 end date). See recipe: issue-15-saikhantes-course-dates.md",
+        "123rd check 6 Jul UTC. UNCHANGED. Class assignment 255 weekEnd=2026-07-03 STILL EXPIRED (3 days ago). Booking course 24925 AY-Afternoon Mar09-Oct02 active=true. Student 1001 missing class today — day 1 of absence. NEIL: extend class assignment 255 week_end to Oct02 NOW.",
+        "URGENT; Day1 missing"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 (Edith Nunes, student 1015): Confirmed, confirmed = true, fully paid EUR 740 (88th check, 6 Jul 2026 UTC)\n• Two duplicate booking courses both still active with zero class assignments: booking course 24933 (General English AM, fee EUR 380, 15 Jun to 10 Jul) and booking course 24934 (General English AM, fee EUR 360, 15 Jun to 10 Jul)\n• Student has zero class assignments since last assignment expired 15 May 2026 — unassigned 22 days\n• Both booking courses end Friday 10 July 2026 — 4 school days remaining",
+        "Deactivate booking course 24934 (EUR 360, lower fee); assign student 1015 to class. See recipe: issue-22-edith-nunes-payment-dups.md",
+        "88th check 6 Jul UTC. UNCHANGED. Booking 18158 CONFIRMED EUR740/740. Booking course 24933 (GE-AM EUR380) + booking course 24934 (GE-AM EUR360) both active=true 0 class assignments. Last class assignment expired May15 (52 days ago). Courses end Fri Jul10. NEIL: deactivate booking course 24934, assign student to class URGENTLY.",
+        "Day22; 0SCA; Fri10"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Duplicate entry for Issue 15 (row 16) — same student Saikhantes Shagdarsuren (student 1001)\n• Class assignment 255 (class 11, B1 Afternoon): week end = 3 July 2026 — EXPIRED 3 days ago (6 Jul 2026 UTC)\n• Student missing class today Monday 6 July — day 1 of absence\n• Booking course 24925 (Academic Year Afternoon) active to 2 October 2026 — class assignment should match\n• See row 16 (Issue 15) for full diagnosis and fix recipe",
+        "See Issue 15 (row 16). Extend class assignment 255 week_end to 2026-10-02. See recipe: issue-15-saikhantes-course-dates.md",
+        "6 Jul UTC update — class assignment 255 week_end=Jul3 STILL EXPIRED. Student 1001 missing class Mon Jul6 (day 1 of absence). See Issue 15 (row 16) for fix.",
+        "EXPIRED; SEE ROW16"
+      ]
+    ]
+  },
+  {
+    "range": "H45:K45",
+    "values": [
+      [
+        "• Accommodation 11285 (Jesús Manuel Ramírez Díaz, bed 83, booking 17825): stored dates 21 Jun to 5 Jul — requested 20 Jun to 4 Jul — 1-day discrepancy on both ends\n• Student checked out 5 July 2026 (yesterday) — no guest impact; date correction is now purely cosmetic\n• Optional low-priority cleanup if desired: UPDATE booking_accommodations SET start_date='2026-06-20', end_date='2026-07-04' WHERE id=11285",
+        "Optional cosmetic only (NOT urgent): UPDATE booking_accommodations SET start_date='2026-06-20', end_date='2026-07-04' WHERE id=11285. See recipe: issue-43-jesus-accomm-dates.md",
+        "52nd check 6 Jul UTC. Student checked out 5 Jul as scheduled. Date discrepancy is cosmetic history only — no operational impact. Issue self-resolved.",
+        "checked out; cosmetic"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 11 confirmed booking courses started Monday 6 July 2026 — all have zero valid class assignments (57th check, 6 Jul 2026 UTC)\n• 9 students with zero class assignments ever: Aitana López (s7/bc7), Pietro Colombo (s72/bc81), Kiyoshi Fujino (s14445/bc24907 ends Fri), Mario Roggi (s14528/bc24776), Hugo Lopez Tamayo (s14572/bc24960), Sarah Venturini Talizin (s1055/bc24945), Verónica Martín (s278/bc24931 ends Fri), Yuxi Ke (s14577/bc24965), Ettore Iovinella (s14564/bc24968)\n• 2 students with expired assignments: Tuguldurtugs Enkhtugs (s858/bc1786 AY Renewal Morning, last expired May 1); Rakan Alghamdi (s14444/bc24697 AY Morning, last expired Jul 3)\n• 4 pending bookings need HubSpot Won first: Zeyad s32/bc38, Shih-Wei s356/bc24913, Sulaiman s7309/bc24930, Gustavo s14570/bc24955 (plus duplicate booking course 24967 to deactivate)\n• Booking course 24967 (Gustavo duplicate) and booking course 24941 (Ettore old course ended 3 Jul) both still active",
+        "Assign all 11 confirmed students to classes NOW — Day 1 passed. Deactivate booking courses 24967 and 24941. Advance 4 pending HubSpot deals to Won. See recipe: issue-45-renewal-arrivals.md",
+        "57th check 6 Jul UTC. UNCHANGED. All 11 CONFIRMED booking courses starting Jul6 still have 0 valid class assignments (fresh DB). 9 students with zero SCAs ever; Tuguldurtugs expired May1; Rakan expired Jul3. 4 PENDING need HubSpot Won. Booking courses 24967+24941 STILL active. bk1601 EUR1356.5/1606.5 (EUR250 outstanding). NEIL: assign all 11 NOW.",
+        "Day1; 0SCA; URGENT"
+      ]
+    ]
+  }
+]

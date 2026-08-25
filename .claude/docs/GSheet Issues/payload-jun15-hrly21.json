@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H18:K18",
+    "values": [
+      [
+        "• Booking 1308 is CANCELLED, confirmed = false\n• Paid = 1530 = total amount (fully paid)\n• Course 1350 (Academic Year Afternoon) May 25 – Nov 13 is ACTIVE\n• 0 class assignments (SCAs)",
+        "UPDATE bookings SET status='CONFIRMED',confirmed=true WHERE id=1308; then assign class. see recipe: issue-17-ana-jessica-accidental-cancel.md",
+        "Jun15 hrly+1: bk1308 CANCELLED confirmed=false 1530/1530 UNCHANGED (updAt=Jun07, 8d stale). bc1350 AY-AFT May25-Nov13 ACTIVE. 0 SCAs. D30+ since cancellation; course running with student blocked. NEIL: confirm reactivation — UPDATE bk1308 status=CONFIRMED (NOT RUN).",
+        "D30+ cancelled+paid"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking 18158 CONFIRMED + PAID (740/740 at 10:10 UTC Jun 15)\n• Booking courses 24933 + 24934 DUPLICATE General English AM Jun 15 – Jul 10 (both on bk18158)\n• Bookings 18131 (1185) + 18133 (648) NOT YET CANCELLED\n• 0 class assignments for student 1015 on new course (bc24933)",
+        "(NOT RUN) 1) CANCEL bk18131+bk18133; 2) void pmt17852+pmt17730 via HubSpot; 3) DELETE bc24934; 4) assign SCA cls7 bc24933. see recipe: issue-22-edith-nunes-payment-dups.md",
+        "Jun15 hrly+1: bk18158 CONF 740/740 (paid 10:10UTC Jun15). 0 SCAs bc24933 UNCHANGED. bc24934 DUP (fee=360) still live. bk18131 CONF 1185+bk18133 CONF 648 NOT cancelled (updAt Jun05/Jun04). 4 steps NOT RUN. NEIL: URGENT — student in class Day1 with no assignment. Execute steps 1-4 NOW.",
+        "D1;0SCA;4steps open"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking 1611 is CONFIRMED, 1280.12 / 1280.12\n• Course 1797 (morning) Apr 06 – Jun 26 (11 days left)\n• Class assignment 229 (class 12) expired Apr 26 (50 days ago)\n• Attendance = 0 for student 1052 all time\n• Course 24686 (morning Jul 20 – Sep 18) also has 0 class assignments",
+        "Assign SCA cls12 bc1797 ws=Jun15 we=Jun26 if Alberto returned (NOT RUN). see recipe: issue-24-alberto-fidelo-course-split.md",
+        "Jun15 hrly+1: sca229 covers Apr06-Apr26 ONLY (expired 50d ago). Apr27-Jun26 (11d left) has 0 SCA. bc24686 Jul20-Sep18 also 0 SCA. att=0 ALL TIME s1052. bk1611 CONF 1280.12/1280.12. bc1797 ends Jun26. NEIL: confirm Alberto returned from bereavement; if yes assign SCA cls12 bc1797 start Jun15 (NOT RUN). 11d remain.",
+        "0att;0SCA Apr27+;11d"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• Student 14532 (Ernesto Pesoa Gil) has 0 class assignments for the ENTIRE course\n• Booking course 24826 (Intensive) Jun 08 – Jun 19 — Week 2 (Jun 15–19), 4 school days remain Tue–Fri Jun 16–19\n• Booking 18034 PARTIALLY paid 845 / 1095, confirmed = false\n• Week 1 (Jun 08–12) entirely missed — no class assignments created\n• Attendance = 0 all time",
+        "(NOT RUN) Get Ernesto level from teacher; INSERT 2 SCAs AM+PM bc24826 ws=Jun15 we=Jun19. see recipe: issue-26-intensive-class-assign-once.md",
+        "Jun15 hrly+1: s14532 Ernesto 0 SCAs bc24826 CONFIRMED (entire course, DB). WK1(Jun08-12) ENTIRELY MISSED. WK2(Jun15-19) Day 1 — 4 school days Tue-Fri Jun16-19. bk18034 PARTIAL 845/1095 conf=false (updAt=Jun07 unchanged). att=0 all time. Level=null DB+HS(id=3344151). SQL NOT RUN. NEIL: CRITICAL — get level from teacher TODAY. Course ends Fri Jun19.",
+        "CRIT D1;4d left"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "• Student 1001 has attendance = 0 for ALL TIME\n• Class assignment 255 (B1 PM class 11), booking course 24925, booking 18151, Jan 12 – Jul 03 (18 days left)\n• Visa status = null, nationality = Mongolia\n• IRP risk if attendance unverified",
+        "(1) Ask cls11 / B1 PM teacher if Saikhantes attends; (2) YES: backfill attendance; (3) NO: IRP escalation. see recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun15 hrly+1: att=0 ALL TIME s1001 CONFIRMED unchanged. sca255 B1PM cls11 bc24925 Jan12-Jul03 (18d remain). visaStatus=null Mongolia. bk18151 CONF 1339.2/1339.2. bk1724 CONF 2171.87/2171.87. NEIL: ask B1PM teacher if Saikhantes attends TODAY — IRP risk, course ends Jul03 in 18d.",
+        "IRP 18d;att=0"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "• Milena Vinci removed from SIS database (original issue resolved)\n• Giulia (student 88) has 0 class assignments — course started Mon Jun 15 (Day 1)\n• Booking 18044 CONFIRMED (duplicate, 1106.5 / 1106.5) not yet cancelled\n• Booking course 104 Morning General Plus Jun 15 – Jun 26 active (11 days remaining)",
+        "Milena deleted (done). Cancel bk18044 + DELETE pmt17607 (double-import Mar 13, xeroId=null); assign s88 std AM class via SIS->bk94->bc104. see recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun15 hrly+1: s88 Giulia 0 SCAs all time (DB confirmed). bk18044 DUP CONF 1106.5/1106.5 c24836 Jun15-26 NOT cancelled (pmt17607 EUR1151.5 xeroId=null = double-import Mar13, DELETE not refund). Milena s14557 NOT in DB (deleted — original issue resolved). K=fixed was premature. NEIL: (1) get Giulia level from prev teacher; (2) assign s88 std AM class via SIS->bk94->bc104; (3) cancel bk18044 + DELETE pmt17607. Steps 1-3 NOT RUN.",
+        "D1;0SCA;dup bk18044"
+      ]
+    ]
+  }
+]

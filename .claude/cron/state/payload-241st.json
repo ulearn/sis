@@ -1,0 +1,35 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 150th check Thu 13 Aug 2026 UTC — VERIFIED LIVE: still 0 class assignments\n• Booking Course 25043 (General English PM, Eduardo Roche Diaz): 10–14 Aug 2026, active = true, 0 class assignments\n• Mon 10, Tue 11, Wed 12, Thu 13 Aug permanently lost (4 teaching days)\n• Fri 14 Aug is the last recoverable day — fix must run before morning class Fri 14\n• Student 14602, Booking 18265: CONFIRMED, EUR 126 paid, EUR 0 open\n• See recipe: issue-38-addendum-13aug-g.md",
+        "Add student class assignment to BC 25043 (class 6 B2/C1 PM, confirm level first). See recipe: issue-38-addendum-13aug-g.md",
+        "150th hrly Thu 13 Aug UTC. VERIFIED LIVE: still 0 SCAs. LAST CHANCE — FRI 14 AUG. Fix before morning class.",
+        "CRITICAL: ends Fri 14 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H43:K43",
+    "values": [
+      [
+        "• 62nd check Thu 13 Aug 2026 UTC — bed still unassigned; 24 days to Sep 6 check-in\n• Booking Accommodation 11392 (apartment, Sep 6–14 2026): bed_id = null, fee = EUR 415, active = true\n• Booking Accommodation 11357 (host family, Aug 2–Sep 6 2026): bed 178, fee = EUR 1,250, active = true — correct\n• Beds 168 (A1 / Room 1) and 194 (Arasain-1) both confirmed available Sep 6–14 (0 conflicts, verified live)\n• Booking 18180 (Giampaolo Russo): CONFIRMED, confirmed = true\n• See recipe: issue-41-addendum-13aug-e.md",
+        "Assign bed 168 (A1) or 194 (Arasain) to Booking Accommodation 11392 before Sep 6 check-in. See recipe: issue-41-addendum-13aug-e.md",
+        "62nd Thu 13 Aug UTC. Beds 168+194 confirmed available Sep 6-14 (verified live). Assign bed to BA 11392 before Sep 6.",
+        "bed null; Sep 6 check-in"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• 178th check Thu 13 Aug 2026 UTC — check-in 9 days away (22 Aug)\n• Booking Accommodation 11393: bed 88, Aug 22–Sep 13 2026, fee = null, active = true — 9 days until check-in\n• Booking Accommodation 11311: bed 84, Jun 28–Aug 22 2026, fee = EUR 3,850, active = true — first stay correct\n• Booking 17980 (Pietro Caccianiga): CONFIRMED, EUR 5,331 paid, EUR 0 open\n• Payment 17733: EUR 5,331, Bank Transfer, Jun 2 2026 — xero_payment_id = null (72 days unreconciled)\n• See recipe: issue-36b-addendum-13aug.md",
+        "Set fee on Booking Accommodation 11393 (confirm rate with Diego); reconcile Payment 17733 in Xero. See recipe: issue-36b-addendum-13aug.md",
+        "178th Thu 13 Aug UTC. Fee null BA 11393 (72d). Xero null PMT 17733 (72d). Check-in Aug 22 (9d). Fix NOT RUN.",
+        "fee null; check-in Aug 22"
+      ]
+    ]
+  }
+]

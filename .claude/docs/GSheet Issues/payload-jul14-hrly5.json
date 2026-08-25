@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H2:K2",
+    "values": [
+      [
+        "• Payment 16988 (EUR 339.90, HubSpot 1204827374829): bookingId = null — still unlinked (48th check, Tue 14 Jul UTC)\n• Payment 16989 (EUR 339.90, HubSpot 1204846469317): bookingId = null — still unlinked\n• Booking 17856 (Margherita Galbusera, student 14461): Confirmed, confirmed = false, fully paid EUR 339.90\n• Booking 17857 (Francesca Fassina, student 14462): Confirmed, confirmed = false, fully paid EUR 339.90\n• Booking courses 24630 and 24631 (General English AM Plus, ended 10 July 2026): active = still true — 4 days stale",
+        "Link payment 16988 to booking 17856, payment 16989 to booking 17857; set active = false on booking courses 24630 and 24631. See recipe: issue-1-orphan-payments.md",
+        "48th check Tue 14 Jul UTC. UNCHANGED. Payments 16988 + 16989 bookingId = null. Booking courses 24630 + 24631 ended 10 Jul active = still true (4 days stale). Fix NOT RUN.",
+        "unlinked; 4d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• Student class assignment 255 (Saikhantes Shagdarsuren, student 1001, B1 PM class 11, booking course 24925): week end = 3 July 2026 — expired 11 days ago — still the only class assignment on record (38th check, Tue 14 Jul UTC)\n• No class assignment for weeks ending 11 July or 18 July — 7 school days unassigned (Mon 7 Jul through Tue 14 Jul)\n• Booking course 24925: Academic Year Afternoon, active, ends October 2026",
+        "Assign Saikhantes (student 1001) to B1 PM class for week ending 17 July (and retroactively for WB 11 July if needed). See recipe: issue-15-saikhantes-class.md",
+        "38th check Tue 14 Jul UTC. SCA255 B1 PM (class 11) weekEnd=3 Jul — still only record (11 days expired). BC24925 AY Afternoon active ends Oct 2026. 7 school days unassigned Mon 7 Jul to Tue 14 Jul. Fix NOT RUN.",
+        "CRITICAL; 11d expired; 7d unassigned"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "• Booking courses 24933 and 24934 (Edith Nunes, student 1015, General English AM, 15 June to 10 July 2026): both ended 4 days ago, both still active = true — confirmed 14 Jul UTC (19th check)\n• Both on booking 18158 (fees EUR 380 + EUR 360 = EUR 740 total) — likely Fidelo webhook duplicate\n• Payment 17895 (EUR 740, HubSpot payment 1254474444002, booking 18158): Xero payment ID = null — not reconciled\n• Zero documents on booking 18158 — no completion certificate generated\n• Booking course 24991 (General English AM, 13 July to 7 August 2026, booking 18214): active, Day 3 (Tue 14 Jul), zero class assignments",
+        "Deactivate booking courses 24933 and 24934; generate completion certificate for booking 18158; reconcile payment 17895 in Xero; assign class for booking course 24991. See recipe: issue-22-edith-nunes-payment-dups.md",
+        "19th check Tue 14 Jul UTC. BC24933+24934 ended Jul10 active=STILL true (4d). BC24991 Day3 (14 Jul) 0 SCAs STILL. PMT17895 EUR740 xeroPaymentId=null. No cert on bk18158. Fix NOT RUN.",
+        "cert+Xero+class Day3"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "• Booking course 24686 (Alberto Squillace, Morning General, 20 July to 18 September 2026): fee = still null — 6 days to course start (Monday 20 July) — confirmed 14 Jul UTC (41st check)\n• Booking course 1797 (Morning General, 6 April to 26 June 2026): still active = true — 18 days stale\n• Payment 17124 (EUR 1280.12): type = null, Xero payment ID = null — 110+ days unreconciled",
+        "Set fee on booking course 24686 BEFORE Monday 20 July; deactivate booking course 1797; reconcile payment 17124 in Xero. See recipe: issue-24-alberto-fidelo-course-split.md",
+        "41st check Tue 14 Jul UTC. BC24686 MG Jul20-Sep18 fee=STILL null (6d to Monday start). BC1797 Apr6-Jun26 STILL active=true (18d stale). PMT17124 EUR1280.12 xeroPaymentId=null (110d). NEIL: set fee BEFORE MONDAY. Fix NOT RUN.",
+        "fee null; 6d to Monday"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• August Bank Holiday 2026 (Monday 3 August) is MISSING from school_closures — 20 days away (7th check, Tue 14 Jul UTC)\n• October Bank Holiday 2026 (Monday 26 October) is also MISSING — 104 days away\n• School closures database has 9 records total: Good Friday (2026 to 2030) and Christmas (2026 to 2030) only — zero Irish public bank holiday Mondays\n• HIGH RISK: Booking courses 97 (Gustavo Ferreira) and 24970 (Tsengelbayar Mendsaikhan) both start 3 August 2026 — shunt will not apply without the bank holiday record; course starts on a bank holiday\n• Monday-snap and bank holiday list remain unimplemented; holiday weeks field was fixed July 2026",
+        "Add August Bank Holiday (3 Aug 2026) plus October Bank Holiday (26 Oct 2026) to school_closures. See recipe: issue-38-course-date-ux.md",
+        "7th check Tue 14 Jul UTC. Aug BH Mon 3 Aug STILL missing. Oct BH Mon 26 Oct STILL missing. 9 closures: Christmas + Good Friday only. BC97+BC24970 both start Aug 3 — shunt risk. 20 days to Aug 3. Fix NOT RUN.",
+        "Aug BH missing; 20d URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H47:K47",
+    "values": [
+      [
+        "• 8 booking courses ending Friday 17 July 2026 still have zero class assignments — confirmed Tue 14 Jul UTC (70th check)\n• Confirmed enrolled, 0 SCAs: booking course 1719 (Maria Magdalena Hermosilla Ogaz, student 992, AY Afternoon) and booking course 24946 (Lunel Dubost, student 14566, General English AM)\n• Pending: booking courses 26 (Kritchana Ratcha-Anan, AY Morning), 95 (Florian Baury, Morning General Plus), 24985 (Silvia Maza, GE PM), 24986 (Gladis Maza, GE PM), 24992 (Luz Sobrino, GE AM), 24994 (Petru Ous, GE AM)\n• 3 calendar days to Friday 17 July deadline",
+        "Assign all 8 students via SIS Admin > Classes > To Be Assigned; prioritise BC1719 (Maria Magdalena) + BC24946 (Lunel) — both Confirmed. See recipe: issue-45-renewal-no-class.md",
+        "70th check Tue 14 Jul UTC. UNCHANGED. 8 still unassigned (11 of 19 BCs assigned). 3 days to Fri 17 Jul. Fix NOT RUN.",
+        "CRITICAL; 3d to Fri"
+      ]
+    ]
+  }
+]

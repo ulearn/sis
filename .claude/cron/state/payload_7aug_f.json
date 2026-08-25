@@ -1,0 +1,46 @@
+[
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 60th check Fri 7 Aug 2026 UTC — service_end still expired, portal still locked\n• Booking 18151 (student 1001, Saikhantes Shagdarsuren): CONFIRMED, confirmed = true, fully paid EUR 1,339.20\n• service_end = 2026-08-07 — EXPIRED midnight today; booking last updated 2026-07-08\n• Booking Course 24925 (Academic Year Afternoon, Mar 9 to Oct 2 2026): active, correct\n• Student on holiday Jul 20 to Aug 21 — returns Mon 24 Aug 2026\n• Last class assignment 255: class 11 (B1 PM), week ending 2026-07-03\n• No class assignment for return week of 24 Aug yet",
+        "Update booking 18151 service_end to 2026-10-02 IMMEDIATELY. See recipe: issue-15-addendum-7aug-e.md",
+        "60th hrly Fri 7 Aug 2026 UTC. service_end still expired (not fixed). Student on holiday to Aug 24. Fix in recipe 7aug-e.",
+        "service_end expired today"
+      ]
+    ]
+  },
+  {
+    "range": "H37:K37",
+    "values": [
+      [
+        "• Fri 7 Aug 2026 UTC (code check 32) — no changes since check 31\n• Bug A — Homework block: still absent from renderSheetHtml() in src/routes/attendance.ts (lines 36-178)\n• Bug B — Holiday filter: still absent from renderSheetHtml() — students on holiday appear on sheet\n• Holiday-aware logic exists in src/scripts/attendance.ts (lines 346-401) for percentage calc only, not for sheet rendering\n• Both bugs confirmed open; Bug B can proceed without spec",
+        "Fix booking holiday filter (Bug B, no spec needed); add homework block after spec. See: issue-36-addendum-7aug.md",
+        "Fri 7 Aug UTC (code check 32). Both bugs open unchanged. Awaiting spec for Bug A (homework format).",
+        "code open; awaiting spec"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "• 17th check Fri 7 Aug 2026 UTC — unchanged from 16th check\n• Booking accommodation 11285 (booking 17825, Jesus Ramirez Diaz): ended 5 Jul 2026, bed 83, active = true — 33 days stale, fee = null\n• Booking accommodation 11352 (Veronica Martin, booking 18156): ended 11 Jul 2026, bed 83, active = true — 27 days stale, fee EUR 360\n• Both accommodations use bed 83 — blocking reallocation while still active",
+        "Set active = false on booking accommodations 11285 + 11352. See recipe: issue-37-addendum-7aug.md",
+        "17th hrly Fri 7 Aug UTC. Booking accommodations 11285 + 11352 now 33d + 27d stale. Both bed 83 — blocking reallocation. Cosmetic. Fix NOT RUN.",
+        "BA stale 33d+27d; cosmetic"
+      ]
+    ]
+  },
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 56th check Fri 7 Aug 2026 UTC — STILL 0 class assignments, Mon 10 Aug in 3 days\n• All 17 Booking Courses starting Mon 10 Aug 2026: 0 class assignments — no change\n• 13 ready (CONFIRMED + confirmed = true): Booking Courses 108 (Borroni), 109 (Moretti), 1313 (De Sousa), 1818 (Reis), 24915 (Hanakawa), 24970 (Mendsaikhan), 25004 (Contu), 25005 (Mereu), 25024 (Roberto), 25027 (Burgos), 25031 (Garcia Roman), 25036 (Perez Aldana), 25039 (Ravai)\n• Booking Course 96 (Alessandro Signorotti): CONFIRMED but confirmed = false — EUR 250 open of EUR 2,095\n• Booking Course 833 (Settiyanee Duangjai): ESCROW — EUR 4,847.50 in escrow\n• Booking Course 25007 (Nominjin Amartsogt): PARTIAL — EUR 370 open of EUR 1,350\n• Booking Course 25042 (Edith Nunes): PENDING — EUR 456 fully unpaid",
+        "Assign 13 ready students to classes via SIS Admin TODAY (EOD Fri 7 Aug); clear 4 blocked bookings. See recipe: issue-38-addendum-7aug-f.md",
+        "56th hrly Fri 7 Aug UTC. STILL 0 assignments. 3 days to Mon 10 Aug. Roster in recipe -f. EOD TODAY is deadline.",
+        "URGENT: assign TODAY"
+      ]
+    ]
+  }
+]

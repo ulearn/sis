@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H13:K13",
+    "values": [
+      [
+        "• Booking accommodation 11162 (Massimiliano Cameran, booking 97, bed 179, 21 Apr–23 May 2026): active = true — 88 days stale\n• Booking accommodation 11314 (Massimiliano Cameran, booking 18002, bed 179, 23 May–6 Jun 2026): active = true — 42 days stale\n• Booking accommodation 11319 (booking 18034, no bed assigned, 31 May–31 May 2026): active = true — 48 days stale; zero-day record, no bed ever assigned\n• Booking accommodation 11287 (Rakan Alghamdi, bed 190, 4 Jul–19 Dec 2026): active = true — correct ongoing stay, do not touch\n• 3rd check, Saturday 18 July 2026 UTC",
+        "Set active = false on booking accommodations 11162, 11314, 11319. Do not touch 11287 (Rakan active stay). See recipe: issue-12-accomm-dates-mismatch.md",
+        "Sat 18 Jul UTC (fresh DB). CONFIRMED UNCHANGED. BA11162 Massimiliano bed179 Apr21-May23 active=STILL true (88d stale). BA11314 Massimiliano bed179 May23-Jun6 active=STILL true (42d stale). BA11319 no-bed May31-May31 active=STILL true (48d stale). BA11287 Rakan bed190 Jul4-Dec19 correct. Fix NOT RUN.",
+        "3 stale BAs; 88d worst"
+      ]
+    ]
+  },
+  {
+    "range": "H20:K20",
+    "values": [
+      [
+        "• Booking course 89 (Morning IELTS, ended 22 May 2026): active = still true — 57 days stale\n• Booking course 90 (Private Lessons, ended 22 May 2026): active = still true — 57 days stale\n• Student 77 (Mai Lan Chu): no current or future booking — both courses are historical\n• Private Lessons is one-on-one tuition — no class slot was ever required\n• Data hygiene only — UNCHANGED, verified 18 July 2026 UTC",
+        "Set active = false on booking courses 89 and 90. See recipe: issue-19-mailan-class-assign.md",
+        "Sat 18 Jul UTC (fresh DB). CONFIRMED UNCHANGED. BC89 Morning IELTS ended May22 active=STILL true (57d stale). BC90 Private Lessons ended May22 active=STILL true (57d stale). Student 77 no current booking. Fix NOT RUN.",
+        "BC89+90 stale 57d"
+      ]
+    ]
+  },
+  {
+    "range": "H22:K22",
+    "values": [
+      [
+        "• Original display issue (student 912 Maurivan Kuhl in A1 and A2 AM): resolved June 2026 (erroneous class assignment 132 deleted)\n• Housekeeping: booking course 1604 (Morning General, 5 January to 3 July 2026): ended 3 July — active = still true, 15 days stale\n• Student class assignment 156 (A2 AM, class 8): week ending 2 July 2026 — expired 16 days ago\n• Booking 1461: Confirmed, EUR 1509.60 / 1509.60 fully paid",
+        "Set active = false on booking course 1604. See recipe: issue-21-maurivan-double-class.md",
+        "Sat 18 Jul UTC (fresh DB). CONFIRMED UNCHANGED. BC1604 Morning General Jan05-Jul03 active=STILL true (15d stale). SCA156 class8 weekEnd=Jul02 (16d expired). BK1461 CONF EUR1509.60 fully paid. Housekeeping fix NOT RUN.",
+        "bc stale 15d; housekeeping"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "• Booking course 23 (Ivan Rodriguez Solares, Intensive General 30, ended 22 May 2026): active = still true — 57 days stale\n• Booking course 24826 (Ernesto Pesoa Gil, Intensive General 30, ended 19 June 2026): active = still true — 29 days stale\n• Booking 18034 (Ernesto Pesoa Gil): Partial, EUR 845 paid of EUR 1095 total — EUR 250 outstanding (last updated 7 June 2026, 41 days ago)\n• Payment 17683 (EUR 845, HubSpot payment 1241215836360): Xero payment ID = null, type = null — not reconciled in Xero\n• Note: column B shows Ivan Rodriguez — EUR 250 debt belongs to Ernesto Pesoa Gil (student 14532, booking 18034)\n• All UNCHANGED — verified 18 July 2026 UTC",
+        "Set active = false on booking courses 23 and 24826; chase EUR 250 from Ernesto Pesoa (booking 18034); reconcile payment 17683 in Xero. See recipe: issue-26-intensive-class-assign-once.md",
+        "36th check Sat 18 Jul UTC (fresh DB). CONFIRMED UNCHANGED. BC23 (Ivan Rodriguez, Intensive G30, ended May22): active=STILL true — 57d stale. BC24826 (Ernesto Pesoa, 2-wk Intensive G30, ended Jun19): active=STILL true — 29d stale. BK18034 PARTIAL EUR845/1095 EUR250 open (updAt=Jun07, 41d). PMT17683 xeroId=null type=null. Fix NOT RUN.",
+        "2 BCs stale; EUR250 open"
+      ]
+    ]
+  },
+  {
+    "range": "H29:K29",
+    "values": [
+      [
+        "• Booking 17850 (Paola Moreira, student 14456): status changed to Confirmed on 8 July 2026 — confirmed flag = still false\n• Amount paid = null — payment type = null blocking the calculation, amount total = EUR 321.35\n• Payment 17519 (EUR 321.35, HubSpot payment 1231805396201): Xero payment ID = null, type = null — not reconciled\n• Booking course 24624 (Morning General, 18 May to 5 June 2026): still active = true — 43 days past end date\n• Historical case — student has left; all items are low-priority cleanup",
+        "Set payment 17519 type; reconcile in Xero; set confirmed=true on booking 17850; deactivate booking course 24624. See recipe: issue-28-paola-pending-won-deal.md",
+        "22nd check Sat 18 Jul UTC. UNCHANGED. BK17850 CONFIRMED confirmed=STILL false amtPaid=STILL null (updAt=Jul08, 10d). PMT17519 EUR321.35 type=STILL null xeroPaymentId=STILL null. BC24624 Morning May18-Jun05 active=STILL true (43d stale). Historical — student left. Fix NOT RUN.",
+        "bk confirmed=false; low-pri"
+      ]
+    ]
+  },
+  {
+    "range": "H38:K38",
+    "values": [
+      [
+        "• Booking accommodation 11311 (Pietro Caccianiga, bed 84, June 28–September 13 2026): active = true — valid in-stay, day 20\n• 7 total stale booking accommodation records to deactivate (6 already stale + 1 checking out tomorrow):\n• BA 11156 (Hugo Tavernier, booking 100, bed unset, ended 2 May 2026): 77 days stale\n• BA 11157 (Hugo Tavernier, booking 100, bed 84, ended 10 May 2026): 69 days stale\n• BA 11158 (Hugo Tavernier, booking 100, bed 66, ended 17 May 2026): 62 days stale\n• BA 9917 (Kanna Hasegawa, booking 1274, bed 84, ended 16 May 2026): 63 days stale\n• BA 11159 (Hugo Tavernier, booking 100, bed 84, ended 30 May 2026): 49 days stale\n• BA 11180 (Daniela Perozo Gil, booking 81, bed 84, ended 20 June 2026): 28 days stale\n• BA 11265 (Kanna Hasegawa, booking 1274, bed 157, ends 19 July 2026): checkout tomorrow — deactivate Monday 20 July\n• 15th check, Saturday 18 July 2026 UTC",
+        "Set active = false on accommodations 9917, 11156, 11157, 11158, 11159, 11180 now; add 11265 to batch on Monday 20 July after checkout. See recipe: issue-36b-pietro-accomm-dates.md",
+        "15th check Sat 18 Jul UTC. DB CONFIRMED UNCHANGED. Pietro BA11311 bed84 Jun28-Sep13 active=true (day20). 6 stale BAs: 11156 (Hugo bedNull May2 77d), 11157 (Hugo bed84 May10 69d), 11158 (Hugo bed66 May17 62d), 9917 (Kanna bed84 May16 63d), 11159 (Hugo bed84 May30 49d), 11180 (Daniela bed84 Jun20 28d). BA11265 (Kanna bed157 ends Jul19 tomorrow) — add to batch Monday 20 Jul. Fix NOT RUN: UPDATE booking_accommodations SET active=false WHERE id IN (9917,11156,11157,11158,11159,11180).",
+        "low-pri; 7 stale BAs Mon"
+      ]
+    ]
+  }
+]

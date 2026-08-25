@@ -1,0 +1,13 @@
+[
+  {
+    "range": "H29:K29",
+    "values": [
+      [
+        "• Booking 17850 is PENDING, confirmed = false\n• Amount paid = null despite payment 17519 (EUR 321.35) being linked (bookingId = 17850)\n• Course 24624 (Morning General) ended Jun 05 — this is now a historical data-integrity cleanup",
+        "(NOT RUN) UPDATE bookings SET status=CONFIRMED, confirmed=true, amount_paid=321.35 WHERE id=17850. See recipe: issue-28-paola-pending-won-deal.md",
+        "Jun18 hrly: bk17850 UNCHANGED (PENDING conf=false amtPaid=null, updatedAt=Jun04, 14d stale). pmt17519 EUR321.35 hsId=1231805396201 xeroId=null. bc24624 ended Jun05 (13d ago). Historical cleanup only.",
+        "historical; low-pri"
+      ]
+    ]
+  }
+]

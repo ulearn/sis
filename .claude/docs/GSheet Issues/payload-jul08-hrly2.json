@@ -1,0 +1,56 @@
+[
+  {
+    "range": "J2:K2",
+    "values": [
+      [
+        "16th check 8 Jul UTC (4th today). UNCHANGED. Payments 16988+16989 bookingId=STILL null xeroPaymentId=null EUR 339.90 each. Bookings 17856+17857 CONFIRMED confirmed=false EUR 339.90/339.90. Booking courses 24630+24631 General English AM Plus Jun29-Jul10 fee=STILL null active=true. COURSE ENDS FRIDAY 10 JULY — 2 school days left (Thu9+Fri10). SQL NOT RUN. NEIL: LAST CHANCE — run all 4 SQL steps before EOD today.",
+        "CRITICAL; Fri Jul10; last chance"
+      ]
+    ]
+  },
+  {
+    "range": "J16:K16",
+    "values": [
+      [
+        "16th check 8 Jul UTC (4th today). UNCHANGED. Class assignment 255 weekEnd=2026-07-03 STILL EXPIRED (5 days). Booking course 24925 Academic Year Afternoon active endDate=Oct2. Booking 18151 CONFIRMED EUR 1339.20/1339.20 fully paid confirmed=true. School days missed: Fri Jul4 + Mon Jul7 + Tue Jul8 = 3. NEIL: extend SCA 255 weekEnd to 2026-10-02 via SIS admin student 1001 > Classes.",
+        "3 school days missed"
+      ]
+    ]
+  },
+  {
+    "range": "J23:K23",
+    "values": [
+      [
+        "16th check 8 Jul UTC (4th today). UNCHANGED. Booking 18158 CONFIRMED EUR 740/740 confirmed=true. Booking course 24933 General English AM Jun15-Jul10 active fee=EUR 380: 0 SCAs. Booking course 24934 DUPLICATE General English AM Jun15-Jul10 active fee=EUR 360: 0 SCAs. COURSE ENDS FRIDAY 10 JULY — 2 school days left (Thu9+Fri10). NEIL: (1) assign Edith s1015 to a class on bc24933 TODAY; (2) deactivate bc24934.",
+        "CRITICAL; Fri Jul10; 2 days left"
+      ]
+    ]
+  },
+  {
+    "range": "J41:K41",
+    "values": [
+      [
+        "3rd check 8 Jul UTC (fresh DB). UNCHANGED. Accommodation 11358 bed 180 Host Family Xuezhen Huang Jul12-Aug2 active=true claimStatus=STILL null fee=EUR 900. Payment 17180 EUR 431.90 xeroPaymentId=STILL null type=null (bookingId=17831). Payment 17963 EUR 965.00 xeroPaymentId=STILL null type=null (bookingId=17831). Check-in THIS SUNDAY 12 July = 4 days. Booking 17831 CONFIRMED EUR 1396.90/1396.90. NEIL: reconcile payments 17180+17963 in Xero before Sunday.",
+        "Xero; Sun Jul12; 4 days"
+      ]
+    ]
+  },
+  {
+    "range": "J46:K46",
+    "values": [
+      [
+        "8 Jul UTC (fresh DB). Bug fixed 3 Jul — 35-week ceiling removed from addHoliday. Gretel bk18159 CONFIRMED EUR 1294 paid. Holiday Jul20-24 STILL NOT ADDED — DB has only school holidays (Dec2026+Dec2027). UI should now work. 12 days to go. NEIL: add student holiday via SIS > student 1010 > booking 18159 > Add Holiday (Jul20-24, 1 week).",
+        "Jul20-24; not added"
+      ]
+    ]
+  },
+  {
+    "range": "J47:K47",
+    "values": [
+      [
+        "16th check 8 Jul UTC (4th today). UNCHANGED — zero SCAs on all 6 students. Veronica s278/bc24931 GE AM Jul6-Jul10: 0 SCAs, ends Fri Jul10 (2 days, 3 days missed). Pietro s72/bc81 Morning Gen Plus Jul6-Jul24: 0 SCAs (3 days missed). Tuguldurtugs s858/bc1786 AY Renewal Jul6-Dec25: 0 SCAs (3 days missed, EUR 250 outstanding bk1601). Sarah s1055/bc24945 GE AM Jul6-Jul31: 0 SCAs (3 days missed). Yuxi s14577/bc24965 GE PM Jul6-Aug21: 0 SCAs (3 days missed). Ettore s14564/bc24968 GE AM Plus Jul6-Jul13: 0 SCAs (3 days missed, ends Mon Jul13 = 5 days). BC24941 still active=true. NEIL: ASSIGN VERONICA + ETTORE TODAY.",
+        "CRITICAL; Veronica+Ettore"
+      ]
+    ]
+  }
+]

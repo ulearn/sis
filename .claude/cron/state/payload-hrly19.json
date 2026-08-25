@@ -1,0 +1,66 @@
+[
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• Email address in phone field — Dolgormaa Bayaraa (student 1897): saraa.tpb@gmail.com; unchanged since 28 April 2026 (72 days)\n• Email address in phone field — Aki Miura (student 8567): aki-hinaaki1116@ezudo.he.jp; unchanged since 10 April 2026 (90 days)\n• Annotation in phone field — Jieun Lee (student 1194): 00821097366523 (home country); unchanged since 7 May 2026 (63 days)\n• Annotation in phone field — Lisa Li (student 5345): 0864645297 (Husband); unchanged since 10 April 2026 (90 days)\n• Unicode trailing characters in phone field — Alessandra Saito de Araujo (student 10343): +353 (83) 885 9162 with trailing Unicode chars; unchanged since 28 April 2026 (72 days)\n• All 5 records confirmed unchanged in fresh DB query, 9 Jul 2026 UTC\n• Students 1194, 5345, 10343: can be corrected by stripping annotation text or Unicode now\n• Students 1897 and 8567: require a real phone number from HubSpot or staff before correcting",
+        "",
+        "9 Jul UTC (hrly19). UNCHANGED (fresh DB). s1897 Dolgormaa phone=email saraa.tpb@gmail.com (Apr28=72d). s8567 Aki phone=email aki-hinaaki1116@ezudo.he.jp (Apr10=90d). s1194 Jieun annotation (May7=63d). s5345 Lisa annotation (Apr10=90d). s10343 Alessandra unicode trailing (Apr28=72d). Fixable now: s1194/5345/10343. Need real number: s1897/s8567.",
+        "5 phones wrong"
+      ]
+    ]
+  },
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "• Document 171 is a DRAFT certificate — created 5 June 2026, 34 days old, never issued (35th check, 9 Jul 2026 UTC)\n• Booking 1498: status = Confirmed, confirmed = false, amount paid = null\n• Booking course 1660 (ULearn Renewal Morning): ended 5 June 2026, still active = true (34 days stale)\n• Certificate content confirmed complete — student name, dates, ILEP code correct\n• Fix: issue document 171 via SIS admin — student 947 > booking 1498 > Documents > Issue button",
+        "",
+        "35th check 9 Jul UTC (hrly19). UNCHANGED (fresh DB). Doc171 DRAFT created Jun05 issuedAt=null (34 days). BK1498 CONF confirmed=false amtPaid=null updAt=May21. BC1660 ULearn-Renewal-Morn ended Jun05 STILL active=true (34d stale). NEIL: SIS student 947 > booking 1498 > Documents > Issue.",
+        "35 days; unissued"
+      ]
+    ]
+  },
+  {
+    "range": "H21:K21",
+    "values": [
+      [
+        "• 21st check, 9 Jul 2026 UTC — booking still pending; 87 calendar days since course start with zero class assignments\n• Booking 1605 (Ariunsarnai Batbayar, student 1047): status = Pending, confirmed = false, EUR 0 paid of EUR 1509 total; last updated 23 Jun 2026 (16 days stale)\n• Booking course 1791 (Academic Year Renewal Morning, 13 April to 23 October 2026): active = true, ILEP code = 0318/0011\n• Zero class assignments for student 1047 ever recorded\n• HubSpot deal 502951083215: stage = ENROLMENT (probability 0.8, stage ID 109570243) — last modified 8 Jul 2026 at 14:42 UTC\n• Action: advance HS deal to Won stage (104175589) to trigger SIS confirmation webhook",
+        "Advance HubSpot deal 502951083215 to Won in B2B pipeline stage 104175589; see recipe: issue-20-ariunsarnai-payment-due.md",
+        "21st check 9 Jul UTC (hrly19). UNCHANGED (fresh DB). BK1605 STILL PENDING confirmed=false EUR0/1509 (updAt=Jun23=16d stale). BC1791 AY-Ren-AM Apr13-Oct23 active. 0 SCAs all time. Day87. HS deal 502951083215 API check: ENROLMENT stage 109570243 (prob 0.8) NOT Won(104175589). Last modified 8 Jul 14:42 UTC (someone touched deal yesterday). NEIL: check Jul8 activity + advance HS deal 502951083215 to Won(104175589).",
+        "Day87; ENROLMENT stage"
+      ]
+    ]
+  },
+  {
+    "range": "J28:K28",
+    "values": [
+      [
+        "21st check 9 Jul UTC (hrly19). UNCHANGED (fresh DB). bk17909 CANCELLED confirmed=STILL true amtPaid=0 (db pmts 17477+17478 deleted Jun17; updAt=Jun17=22d stale). bc24693 Renewal-AY-PM May25-Nov13 STILL active=true (anomaly on cancelled booking). HS Commerce pmts 1230788330738(EUR727.5)+1230645766331(EUR728): NOT voided — deadlines Oct25/Nov11. NEIL: Xero check Sofiia Apr-May 2026 + void HS pmts before Oct25 + UPDATE bk17909 confirmed=false.",
+        "void before Oct25"
+      ]
+    ]
+  },
+  {
+    "range": "H37:K37",
+    "values": [
+      [
+        "• Homework section: renderSheetHtml() in src/routes/attendance.ts (lines 36-128) — no homework block implemented; awaiting Paul / Neil layout spec\n• Holiday display bug: getWeekAttendance (src/scripts/attendance.ts lines 31-184) does NOT fetch bookingHoliday records — students on holiday appear in the attendance grid with live checkboxes\n• getStudentAttendance (src/scripts/attendance.ts lines 350+) DOES fetch holidays correctly via fetchStudentHolidays — only the weekly-grid path is missing it\n• Both bugs confirmed still present (18th code check 9 Jul 2026 UTC, lines 31-184 re-read)",
+        "Homework: get Paul/Neil layout spec then add to renderSheetHtml. Holiday: add bookingHoliday fetch to getWeekAttendance (attendance.ts L31). See recipes: issue-36-attendance-homework-section.md + issue-36c-attendance-holiday-display.md",
+        "18th code check 9 Jul UTC (hrly19). Code unchanged: (1) getWeekAttendance src/scripts/attendance.ts L31-184 confirmed — no bookingHoliday fetch (lines 31-184 re-read today); (2) renderSheetHtml src/routes/attendance.ts — no homework block. Awaiting Paul/Neil spec for homework layout.",
+        "code unchanged; open"
+      ]
+    ]
+  },
+  {
+    "range": "H46:K46",
+    "values": [
+      [
+        "• Student 1010 (Gretel Merlina Nuñez): two confirmed bookings — 17917 (Academic Year Morning, booking course 24699) and 18159 (Life Pass Morning, booking course 24935)\n• CORRECTION: holiday Jul 20–24 IS in the database — holiday record 2504 on booking 17917 (type = student, weekdays pushed = 5, created 3 Jul 2026 after code fix)\n• Booking 18159 (Life Pass Morning) has NO Jul 20–24 holiday — only school closures Dec 2026 and Dec 2027\n• Prior bot checks looked at booking 18159 only and incorrectly reported the holiday as missing — error now corrected (9 Jul 2026)\n• Both bookings confirmed and fully paid: booking 17917 EUR 997, booking 18159 EUR 1294; both updated 8 Jul 2026\n• Question: should Jul 20–24 holiday also be added to booking 18159 (Life Pass Morning)? Neil to verify which booking is operative",
+        "Verify bk18159 also needs Jul20-24 holiday; see recipe: issue-44-gretel-holiday.md",
+        "9 Jul UTC CORRECTION (8th check, hrly19). Holiday HOL 2504 found on bk17917 (Jul20-24 type=student weekdaysPushed=5 created Jul3). Prior checks looked at bk18159 only — missed it. bk18159 has NO Jul20-24 holiday. bk17917 AY-Morning BC24699 Mar9,2026-Mar17,2028 active EUR997/997. bk18159 Life-Pass BC24935 Mar9,2026-Apr11,2028 active EUR1294/1294. Both updAt=Jul8. NEIL: confirm bk18159 also needs Jul20-24 holiday.",
+        "bk17917 done; check bk18159"
+      ]
+    ]
+  }
+]

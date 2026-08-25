@@ -1,0 +1,43 @@
+/**
+ * Step 1 of Yin Zheng onboarding: patch Agency.primaryContactId so the
+ * contract renderer can fetch his HubSpot contact, then render the
+ * preview PDF to /tmp for visual review. Does NOT create the SisUser
+ * yet — that's the separate create-partner-yin.ts step.
+ */
+import dotenv from 'dotenv';
+dotenv.config();
+import fs from 'fs';
+import { gatherContractData, renderTemplateFilled } from './partner-contract';
+
+const AGENCY_ID = 608;
+const HUBSPOT_CONTACT_ID = '764378660062';
+
+async function main() {
+  const { Pool } = await import('pg');
+  const { PrismaPg } = await import('@prisma/adapter-pg');
+  const { PrismaClient } = await import('../generated/prisma/client');
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const adapter = new PrismaPg(pool as any);
+  const prisma = new PrismaClient({ adapter } as any);
+  try {
+    await prisma.agency.update({
+      where: { id: AGENCY_ID },
+      data: { primaryContactId: HUBSPOT_CONTACT_ID, primaryEntityType: 'company' },
+    });
+    console.log(`[prep] Patched Agency #${AGENCY_ID}.primaryContactId`);
+
+    const data = await gatherContractData(prisma, AGENCY_ID);
+    console.log('[prep] data:', JSON.stringify(data, null, 2));
+
+    const { pdfDoc, version } = await renderTemplateFilled(data);
+    console.log(`[prep] Template chosen: ${version}`);
+    const bytes = await pdfDoc.save();
+    const out = `/tmp/yin-contract-preview.pdf`;
+    fs.writeFileSync(out, bytes);
+    console.log(`[prep] Preview PDF → ${out}`);
+  } finally {
+    await prisma.$disconnect();
+    await pool.end();
+  }
+}
+main().catch(e => { console.error(e); process.exit(1); });

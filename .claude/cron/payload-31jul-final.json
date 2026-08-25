@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H40:K40",
+    "values": [
+      [
+        "• 22nd check Fri 31 Jul 2026 UTC (4th check today) — fix still NOT RUN\n• August Bank Holiday (Mon Aug 3 2026) absent from school_closures — confirmed live query\n• 21 active booking courses start Aug 3; 14 confirmed (confirmed = true) need shunting to Aug 4\n• IDs to shunt: 88, 1755, 1766, 24908, 24956, 24958, 24959, 24964, 24984, 25002, 25010, 25016, 25028, 25035\n• Booking course 25003 (Aleix Cervera Gonzalez, booking 18225): duplicate of BC 25002, 0 SCAs linked — delete\n• Booking course 24627 (Angelica Guerin, confirmed = false): check before shunting\n• Booking course 25006 (Marina Larripa): ends Aug 3, last teaching day was Fri Jul 31 (cosmetic)\n• School reopens Mon Aug 4 — fix window closes tonight",
+        "Insert Aug Bank Holiday closure (Aug 3); shunt 14 BCs to Aug 4; delete BC 25003. See recipe: issue-38-addendum-31jul-j.md",
+        "22nd hrly Fri 31 Jul UTC. 4TH CHECK TODAY — STILL NOT FIXED. Aug BH absent. 21 BCs start Aug 3: 14 to shunt, 1 delete, 1 check. FIX MUST RUN TONIGHT before Mon.",
+        "URGENT; fix TODAY"
+      ]
+    ]
+  },
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "• 40th check Fri 31 Jul 2026 UTC — unchanged\n• Student 14522 (Lizbeth del Carmen Sierra Martinez): insurance_from = null, insurance_until = null\n• Booking 17981: CONFIRMED status, confirmed = false, amount paid = EUR 1407.50\n• Course: Academic Year Afternoon, Jun 1 2026 to Jan 29 2027\n• Insurance dates null for 67 days since course start",
+        "Set insurance_from = 2026-06-01, insurance_until = 2027-01-29 on student 14522. See recipe: issue-13-addendum-31jul.md",
+        "40th hrly Fri 31 Jul UTC. Unchanged. Insurance null 67d (since Jun 1). Booking 17981 confirmed=false. Fix NOT RUN.",
+        "insurance dates null; 67d"
+      ]
+    ]
+  },
+  {
+    "range": "H16:K16",
+    "values": [
+      [
+        "• 2nd check Fri 31 Jul 2026 UTC — unchanged from 1st check today\n• Student 1001 (Saikhantes Shagdarsuren): on holiday (holiday 2500, Jul 20 to Aug 21 2026, 5 weeks)\n• Last SCA 255 (B1 PM): week_start Jan 12 to week_end Jul 3 2026 — 2-week gap before holiday\n• No SCA for Jul 6 to Jul 18, or for week of Aug 24 (return date)\n• Booking course 24925 (Academic Year Afternoon): active, Mar 9 to Oct 2 2026\n• New SCA needed: assign student to class from week Aug 24 (24 days away)",
+        "Create SCA for student 1001 from Aug 24; check Jul 6-Jul 18 gap. See recipe: issue-15-addendum-31jul-b.md",
+        "2nd hrly Fri 31 Jul UTC. Holiday 2500 Jul 20-Aug 21. Returns Aug 24 (24d away). No SCA after Jul 3. Fix NOT RUN.",
+        "new SCA needed; returns 24 Aug"
+      ]
+    ]
+  },
+  {
+    "range": "H17:K17",
+    "values": [
+      [
+        "• 10th check Fri 31 Jul 2026 UTC — unchanged\n• Booking accommodation 11282 (Melie Villard, student 14498, bed 66): active = true\n• Date range: May 15 to Jun 5 2026 — ended 56 days ago",
+        "Deactivate BA 11282 (SET active = false WHERE id = 11282). See recipe: issue-16-addendum-31jul.md",
+        "10th hrly Fri 31 Jul UTC. BA 11282 bed 66 May 15-Jun 5 still active (56d stale). Cosmetic. Fix NOT RUN.",
+        "56d stale; cosmetic"
+      ]
+    ]
+  },
+  {
+    "range": "H20:K20",
+    "values": [
+      [
+        "• Fri 31 Jul 2026 UTC — unchanged\n• Booking course 89 (Morning IELTS, booking 83, ended May 22 2026): active = true — 70 days stale\n• Booking course 90 (Private Lessons, booking 83, ended May 22 2026): active = true — 70 days stale",
+        "Deactivate BCs 89+90 (SET active = false WHERE id IN (89,90)). See recipe: issue-19-addendum-31jul.md",
+        "Fri 31 Jul UTC. UNCHANGED. BC 89+90 still active, 70d stale (ended May 22). Cosmetic. Fix NOT RUN.",
+        "BC89+90 stale 70d"
+      ]
+    ]
+  },
+  {
+    "range": "H22:K22",
+    "values": [
+      [
+        "• 10th check Fri 31 Jul 2026 UTC — unchanged\n• Booking course 1604 (Morning General, booking 1461, student 912 Maurivan Kuhl): active = true, ended Jul 3 2026 — 28 days stale\n• No class assignment anomaly — cosmetic staleness only",
+        "Deactivate BC 1604 (SET active = false WHERE id = 1604). See recipe: issue-21-addendum-31jul.md",
+        "10th hrly Fri 31 Jul UTC. UNCHANGED. BC 1604 ended Jul 3, 28d stale. Cosmetic. Fix NOT RUN.",
+        "bc stale 28d; cosmetic"
+      ]
+    ]
+  }
+]

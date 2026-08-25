@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H32:K32",
+    "values": [
+      [
+        "BST bug attendance.ts:34+routes/attendance.ts:214 setHours->local midnight. TZ=UTC NOT in .env. 9 stale SCAs week_end=null(courses ended).",
+        "FIX1: echo TZ=UTC>>.env+touch tmp/restart.txt(no build). FIX2 SQL: UPDATE student_class_assignments SET week_end=(SELECT end_date FROM booking_courses WHERE id=booking_course_id) WHERE id IN(39,40,65,66,74,75,81,87,100). see recipe: issue-31-attendance-sheet-week-bug.md",
+        "Jun13 SAT#5: CONFIRMED UNCHANGED. TZ not in .env. 9 stale SCAs(IDs:39,40,65,66,74,75,81,87,100;all ended<=Jun12). Mon att sheet WILL show Sun Jun14+9 ghosts. NEIL: BOTH FIXES TONIGHT before Mon 07:00.",
+        "URGENT <Mon 07:00"
+      ]
+    ]
+  },
+  {
+    "range": "H31:K31",
+    "values": [
+      [
+        "s88 0SCAs currentLevel=null JUNIOR. bk94 CONF c104 Jun15-26. bk18044 CONF DUP c24836 NOT cancelled(pmt17607 EUR1151.5 dbl-import xeroId=null). bk18152 Milena PEND NOT cancelled.",
+        "4 steps NOT RUN. see recipe: issue-30-giulia-milena-parent-student.md",
+        "Jun13 SAT#5: CONFIRMED UNCHANGED. s88 Giulia 0SCAs level=null(STARTS MON 15!). bk94 CONF 1151.5/1151.5 c104 Jun15-26. bk18044 CONF DUP 1106.5/c24836 Jun15-26(pmt17607 EUR1151.5 xeroId=null dbl-import Mar13 DELETE not refund). bk18152 Milena(s14557) PEND 0/1151.5. ALL 4 STEPS NOT RUN. NEIL: act TONIGHT before Mon 08:00.",
+        "CRITICAL Mon Jun15"
+      ]
+    ]
+  },
+  {
+    "range": "H23:K23",
+    "values": [
+      [
+        "ALL 5 STEPS NOT RUN. bk18158 PEND 0/740. c24933(fee=380)+c24934(DUP fee=360) Jun15-Jul10 GE-AM.",
+        "SQL(NOT RUN): (1)DELETE pmts 17728,17730,17852; (2)CANCEL bk18131,18133; (3)DELETE bc24934; (4)HS 505836060909+assign s1015 cls7(A1) c24933 Jun15. recipe:issue-22-edith-nunes-payment-dups.md",
+        "Jun13 SAT#5: CONFIRMED UNCHANGED. bk18158 PEND 0/740 updAt=Jun11. c24933(GE-AM fee=380)+c24934(DUP fee=360) Jun15-Jul10. bk18131 CONF 1185+bk18133 CONF 648 NOT cancelled. pmt17728/17730/17852 xeroId=null. s1015 0 active SCAs. COURSE STARTS MON JUN15. ALL 5 STEPS NOT RUN.",
+        "CRITICAL Mon Jun15"
+      ]
+    ]
+  },
+  {
+    "range": "H27:K27",
+    "values": [
+      [
+        "Ernesto s14532 currentLevel=null 0SCAs ALL TIME. WK1(Jun08-12) MISSED. bc24826 INTENSIVE ends Jun19. bk18034 PARTIAL 845/1095 conf=false.",
+        "Get Ernesto level Mon AM, insert AM+PM SCAs WK2 only. see recipe: issue-26-intensive-class-assign-once.md",
+        "Jun13 SAT#5: CONFIRMED UNCHANGED. s14532 Ernesto 0SCAs level=null. WK2(Jun15-19)=FINAL WEEK starts Mon 08:00. WK1 ENTIRELY MISSED. NEIL: ask teacher for level FIRST THING Mon 08:00, then insert AM+PM SCAs Jun15-19 only. Pairs:A2=cls8/9,B1=cls5+12/11,B2-C1=cls4/6,C1=cls13/14.",
+        "WK2 Mon CRITICAL"
+      ]
+    ]
+  },
+  {
+    "range": "H30:K30",
+    "values": [
+      [
+        "s1001 att=0 ALL TIME(165d enrolled). sca255 B1PM Jan12-Jul03(20d left). visaStatus=null. IRP compliance risk.",
+        "Ask B1PM(cls11) teacher if physically present. If absent: IRP compliance escalation. see recipe: issue-29-saikhantes-jan12-start-date.md",
+        "Jun13 SAT#5: CONFIRMED UNCHANGED. att=0(0 rows, student_id=1001). sca255 cls11 B1PM week_end=Jul03(20d left). visaStatus=null updAt=Jun08. NEIL: Mon AM ask cls11 teacher if Saikhantes EVER attended. If absent: IRP escalation. 20d to Jul03.",
+        "0att URGENT 20d"
+      ]
+    ]
+  },
+  {
+    "range": "H28:K28",
+    "values": [
+      [
+        "Step1 DONE sca254 Jun08-Nov27. pmt17477+17478 EUR1455.5 orphaned on bk17909 CANCELLED. amtPaid=1455.5 > amtTotal=727.5 = double-charge evidence.",
+        "Step2: verify Xero for Sofiia before refund/delete. If no Xero entries: DELETE FROM payments WHERE id IN(17477,17478). see recipe: issue-27-sofiia-sca-cancelled-booking.md",
+        "Jun13 SAT#5: CONFIRMED UNCHANGED. pmt17477(727.5)+pmt17478(728) xeroId=null BOTH on CANC bk17909. xeroId=null on both = likely not Xero-reconciled. NEIL: Xero search Sofiia Korkishchenko Apr-May 2026. If only EUR1455.5 found: DELETE pmts 17477+17478. If 3 real payments: refund EUR1455.5.",
+        "refund TBC check Xero"
+      ]
+    ]
+  }
+]

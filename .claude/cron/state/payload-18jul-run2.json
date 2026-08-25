@@ -1,0 +1,68 @@
+[
+ {
+  "range": "H23:K23",
+  "values": [
+   [
+    "65th check Saturday 18 July 2026 UTC\n• Booking course 24991 (Edith Nunes, student 1015, General English AM, 13 July to 7 August 2026): STILL zero class assignments (fresh database Sat 18 Jul)\n• Full week 1 (Monday 13 July to Friday 17 July): ended with zero class assignments — attendance permanently missed\n• Week 2 (Monday 20 to Friday 24 July): starts Monday — assign before 09:00\n• Booking courses 24933 and 24934 (General English AM, ended 10 July 2026): active = still true — 8 days stale\n• Booking 18214: Confirmed, EUR 608 fully paid",
+    "Assign student 1015 (Edith Nunes) to General English AM class on booking course 24991 before Monday 20 July 09:00. See recipe: issue-22-addendum-17jul.md",
+    "65th check Sat 18 Jul UTC. BC24991 (Edith Nunes student1015, Gen English AM Jul13-Aug7): STILL 0 SCAs (fresh DB). Wk1 Jul13-17 PERMANENTLY MISSED. Wk2 Jul20-24 starts Mon — assign before 09:00. BC24933+BC24934 ended Jul10 active=STILL true (8d stale). Fix NOT RUN.",
+    "assign Mon AM; wk1 missed"
+   ]
+  ]
+ },
+ {
+  "range": "H25:K25",
+  "values": [
+   [
+    "76th check Saturday 18 July 2026 UTC\n• Booking course 24686 (Alberto Squillace, Morning General, 20 July to 18 September 2026): fee = null — course starts Monday 20 July\n• Booking 1611: Confirmed, confirmed = true, EUR 1280.12 fully paid\n• Booking course 1797 (Morning General, ended 26 June 2026): active = still true — 22 days stale\n• Class assignment also required before Monday (see Issue 45 starter list)",
+    "Set fee on booking course 24686 (check HubSpot deal); assign Morning General class before Monday 20 July; deactivate booking course 1797. See recipe: issue-24-alberto-fidelo-course-split.md",
+    "76th check Sat 18 Jul UTC. BC24686 fee=STILL null (fresh DB). Starts Mon 20 Jul. BC1797 (ended Jun26): active=STILL true (22d stale). SCA also 0 — see Issue 45. Fix NOT RUN.",
+    "fee null; starts Mon"
+   ]
+  ]
+ },
+ {
+  "range": "H40:K40",
+  "values": [
+   [
+    "52nd check Saturday 18 July 2026 UTC (2nd check today)\n• August Bank Holiday 2026 (Monday 3 August): STILL missing from school_closures — 16 days away\n• October Bank Holiday 2026 (Monday 26 October): STILL missing from school_closures — 100 days away\n• Database has 9 school closure records: Good Fridays 2026–2030 (IDs 1, 11, 12, 13, 14) and Christmas breaks 2026–2029 (IDs 7, 8, 9, 10) — zero bank holiday records\n• Risk: booking course end dates landing on 3 August will not be shunted to the next school day",
+    "Insert August Bank Holiday (3 Aug 2026) and October Bank Holiday (26 Oct 2026) into school_closures. See recipe: issue-38-course-date-ux.md",
+    "52nd check Sat 18 Jul UTC (2nd today). 9 school_closures: Good Fri 2026-30 + Xmas 2026-29. Aug BH Mon 3 Aug: STILL absent — 16d away. Oct BH Mon 26 Oct: STILL absent — 100d. Fix NOT RUN.",
+    "Aug BH missing; 16d URGENT"
+   ]
+  ]
+ },
+ {
+  "range": "H41:K41",
+  "values": [
+   [
+    "54th check Saturday 18 July 2026 UTC (2nd check today)\n• Booking course 24609 (Xuezhen Huang, student 14443, Morning General, 13 July to 31 July 2026): STILL zero class assignments (fresh database Sat 18 Jul)\n• Full week 1 (Monday 13 July to Friday 17 July): ended with zero assignments — attendance permanently missed\n• Week 2 (Monday 20 to Friday 24 July): starts Monday — assign before 09:00\n• Booking accommodation 11358 (bed 180, host Mary Carver, 12 July to 2 August 2026, EUR 900): active = true, correct",
+    "Assign Xuezhen Huang (student 14443) to Morning General class on booking course 24609 before Monday 20 July 09:00. See recipe: issue-39-addendum-18jul.md",
+    "54th check Sat 18 Jul UTC (2nd today). BC24609 STILL 0 SCAs (fresh DB). Wk1 Jul13-17 PERMANENTLY MISSED. Wk2 Jul20-24 starts Mon — assign before 09:00. BA11358 bed180 Mary Carver Jul12-Aug2 EUR900 correct. Fix NOT RUN.",
+    "CRITICAL; assign Mon 20 Jul"
+   ]
+  ]
+ },
+ {
+  "range": "H43:K43",
+  "values": [
+   [
+    "55th check Saturday 18 July 2026 UTC (2nd check today)\n• Payment 17954 (Giampaolo Russo, EUR 2584.96, Bank Transfer, 26 June 2026): Xero payment ID = null — 22 days unreconciled\n• HubSpot payment ID 1268783973563 linked\n• Booking 18180 has one accommodation only: booking accommodation 11357 (bed 178, host family, 2 August to 6 September 2026, active = true, claim status = confirmed)\n• Capel Street accommodation (6 September to 14 September 2026): STILL missing from booking 18180 (confirmed fresh database Sat 18 Jul)\n• Host family check-in 2 August: 15 days away",
+    "Reconcile payment 17954 (EUR 2584.96, HubSpot 1268783973563) in Xero; add Capel accommodation 6-14 September to booking 18180. See recipe: issue-41-giampaolo-dual-accomm.md",
+    "55th check Sat 18 Jul UTC (2nd today). PMT17954 EUR2584.96 Bank Jun26 HS1268783973563: xeroId=STILL null — 22d unreconciled. BA11357 bed178 HF Aug2-Sep6 confirmed (15d to check-in Aug2). Capel Sep6-14: STILL missing from bk18180. Fix NOT RUN.",
+    "Xero null; Capel missing; 22d"
+   ]
+  ]
+ },
+ {
+  "range": "H47:K47",
+  "values": [
+   [
+    "135th check Saturday 18 July 2026 UTC (2nd check today)\n• 7 Monday 20 July starters STILL zero class assignments (fresh database Sat 18 Jul)\n• Saranzaya Khishigbayar (booking course 1630, Academic Year Afternoon, EUR 2620): 0 class assignments\n• Mia Wehrli (booking course 24616, General English AM Plus, fee null — booking 17842 EUR 1149.90 paid): 0 class assignments\n• Alberto Squillace (booking course 24686, Morning General, fee null): 0 class assignments\n• Lorena Pizarro Araya (booking course 24942, Academic Year Morning, EUR 2362.50): 0 class assignments\n• Filippo Corazzini (booking course 24966, General English AM Plus, EUR 549.90): 0 class assignments\n• Marcos Abrego Tofe (booking course 24989, General English AM, EUR 152, 1 week only): 0 class assignments\n• Giorgio Sau (booking course 25000, General English AM Plus, EUR 940): 0 class assignments\n• Gustavo Da Silva (booking course 24967, General English AM, 6 July to 7 August, fee EUR 137.60): STILL zero class assignments — 12 days into course, 20 days remain\n• Classes start Monday 20 July — URGENT, assign before 09:00",
+    "Assign 7 Monday starters + Gustavo (booking course 24967) before classes Monday 20 July. See recipe: issue-45-addendum-18jul.md",
+    "135th check Sat 18 Jul UTC (2nd today). All 7 Mon20Jul starters STILL 0 SCAs: BC1630 Saranzaya AY Aft EUR2620 | BC24616 Mia GE AM+ fee=null | BC24686 Alberto Morning Gen fee=null | BC24942 Lorena AY Morning EUR2362.50 | BC24966 Filippo GE AM+ EUR549.90 | BC24989 Marcos GE AM EUR152 (1wk) | BC25000 Giorgio GE AM+ EUR940. BC24967 Gustavo STILL 0 SCAs — 12d in, 20d remain. 2d to Mon classes. Fix NOT RUN.",
+    "CRITICAL; assign Mon 20 Jul"
+   ]
+  ]
+ }
+]

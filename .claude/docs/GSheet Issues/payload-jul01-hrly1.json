@@ -1,0 +1,68 @@
+[
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "• 5 students have bad mobile-number data — all 5 UNCHANGED (max 82 days stale, 1 Jul UTC)\n• Email in phone field — Dolgormaa (1897): saraa.tpb@gmail.com; Aki (8567): aki-hinaaki1116@ezudo.he.jp\n• Annotation in phone field — Jieun Lee (1194): 00821097366523 (home contry); Lisa Li (5345): 0864645297 (Husband)\n• Invisible unicode trailing chars — Alessandra Saito de Araujo (10343): +353 (83) 885 9162 + U+202C chars\n• Max stale 82 days (Aki and Lisa: since 10 Apr); Dolgormaa / Alessandra since 28 Apr = 64 days; Jieun since 7 May = 55 days",
+        "Clean per recipe; 1194/5345/10343 fixable now (strip annotation/unicode); 1897/8567 need real# from HubSpot/staff. See recipe: issue-5-mobile-numbers.md",
+        "hrly 1 Jul UTC (fresh DB): all 5 UNCHANGED. s1897 Dolgormaa phone=saraa.tpb@gmail.com (Apr28=64d). s8567 Aki phone=aki-hinaaki1116@ezudo.he.jp (Apr10=82d). s1194 Jieun phone=00821097366523 (home contry) (May07=55d). s5345 Lisa phone=0864645297 (Husband) (Apr10=82d). s10343 Alessandra unicode U+202C trailing (Apr28=64d). Max stale 82d. 3 self-fixable (1194/5345/10343); 2 blocked (need real# from HubSpot: 1897/8567). Await Neil.",
+        "info needed"
+      ]
+    ]
+  },
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "• Document 171 is a DRAFT certificate (template 82) — last updated 05 Jun, now 26 days stale\n• Booking 1498 is CONFIRMED (status), but confirmed = false and amount paid = null\n• Booking course 1660 (ULearn Renewal Morning) ended 05 Jun — certificate never issued after course ended\n• Action needed: click Issue on the draft document via SIS UI (17th check, 1 Jul UTC)",
+        "(NOT RUN) SIS student 947 booking 1498 Documents Issue button. See recipe: issue-8-suvderdene-cert-dates.md",
+        "hrly 1 Jul UTC (17th check, fresh DB): doc171 STILL DRAFT (tmpl82, Jun05=26d stale). bk1498 CONF conf=false amtPaid=null (updAt=May21=41d stale). bc1660 MORN ended Jun05=26d ago active=STILL true. 26d post-course cert UNISSUED. UNCHANGED 17 checks. Neil: SIS student 947 -> bk1498 -> Documents -> Issue cert.",
+        "cert DRAFT; 26d stale"
+      ]
+    ]
+  },
+  {
+    "range": "H11:K11",
+    "values": [
+      [
+        "• Booking 97 is CONFIRMED, paid EUR 1741 / 1741\n• Documents 63 and 64 are invoices (template 78), not certificates\n• Booking 97 has zero certificate documents\n• Booking course 107 (Morning General, 27 Apr to 22 May) ended 40 days ago — certificate not generated (15th check, 1 Jul UTC)",
+        "(NOT RUN) Generate cert for bk97 (Apr27-May22) via SIS student 91 bk97 Documents Generate Certificate. See recipe: issue-9-massimiliano-cert-split.md",
+        "hrly 1 Jul UTC (15th check, fresh DB): bk97 CONF 1741/1741 conf=false. 0 cert docs (tmpl82). doc63 REVOKED + doc64 ISSUED both tmpl78 (invoices only). bc107 ended May22=40d ago active=STILL true. UNCHANGED 15 checks. Neil: SIS student 91 bk97 Documents Generate Certificate.",
+        "cert bk97; 40d"
+      ]
+    ]
+  },
+  {
+    "range": "H14:K14",
+    "values": [
+      [
+        "• Extra 96 (INSURANCE) has fee = null — type = INSURANCE, details = PEL and Health; active = true\n• Created 25 May — 37 days stale, no fee set (13th check, 1 Jul UTC)\n• Booking 17981 confirmed = false (minor anomaly) — paid EUR 1407.50 / 1407.50 (last updated 23 Jun)\n• Student 14522 (Lizbeth) insurance_from = null, insurance_until = null on student record\n• Student in class since 01 Jun — Day 31 uninsured; no health insurance arranged",
+        "(NOT RUN) Set fee for extra 96 via SIS bk17981 Extras INSURANCE; or UPDATE booking_extras SET fee=<amount> WHERE id=96 (NOT RUN). See recipe: issue-13-lizbeth-health-insurance.md",
+        "hrly 1 Jul UTC (13th check): extra96 INSURANCE fee=STILL NULL active=true (created May25=37d). s14522 Lizbeth insuranceFrom=null insuranceUntil=null (updAt=Jun09=22d stale). bk17981 CONF conf=false 1407.5/1407.5 (updAt=Jun23=8d). Day 31 uninsured. UNCHANGED 13 checks. Neil: (1) arrange PEL+Health; (2) set extra96 fee in SIS bk17981 Extras; (3) set s14522 insurance dates.",
+        "ins; D31 uninsured"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "• Student 983 (Flávia Nascimento Mariano) visa status = null — Prisma save error prevents updating via the UI\n• Booking 1534 is Confirmed, confirmed = true, fully paid EUR 1308\n• Booking course 1710 (Academic Year Afternoon Jun 01 to Nov 20) is active\n• Class assignment 265 (class 11 B1 PM, Jun 15 to Nov 20) is active — student attending normally\n• Null visa status passes the class assignment filter — no operational impact\n• Cosmetic fix pending: UPDATE students SET visa_status=Approved WHERE id=983 (NOT RUN) (fresh check, 1 Jul UTC)",
+        "SQL (NOT RUN): UPDATE students SET visa_status=Approved WHERE id=983. See recipe: issue-18-flavia-visa-save-error.md",
+        "hrly 1 Jul UTC (fresh DB): s983 visaStatus=STILL null (updAt=Jun15=16d stale). bk1534 CONF confirmed=true 1308/1308. bc1710 AY-AFT Jun01-Nov20 active=true. sca265 cls11 weekStart=Jun15 weekEnd=Nov20 ACTIVE. Student in class normally. Cosmetic SQL NOT RUN. UNCHANGED.",
+        "in class; visa cosmetic"
+      ]
+    ]
+  },
+  {
+    "range": "H24:K24",
+    "values": [
+      [
+        "• Booking course 828 (Academic Year Morning, booking 787) has end date 27 Feb 2026 — 3 days before its start date 02 Mar 2026 (backwards date)\n• Legacy DST off-by-one bug from Issue 2 — one of 56 rows not auto-corrected in the batch fix\n• All four booking courses on booking 787 show active = true despite courses ending in Nov 2025, Jan 2026, and Jun 2026 (stale active flags)\n• Student Enshi Lu (397) fully paid EUR 2147.50 — last course (bc829) completed 05 Jun 2026\n• Data-hygiene fix only — no operational impact (5th check, 1 Jul UTC)",
+        "SQL (NOT RUN): UPDATE booking_courses SET end_date=2026-03-20 WHERE id=828 — cosmetic, course completed. See recipe: issue-23-enshi-lu-backwards-course.md",
+        "hrly 1 Jul UTC (5th check, fresh DB): bc828 STILL backwards (startDate=2026-03-02 endDate=2026-02-27). bk787 CONF 2147.5/2147.5 confirmed=true. All 4 BCs active=true (stale). bc829 ended Jun05=26d ago. bc828 last updated May11=51d stale. Fix NOT RUN: UPDATE booking_courses SET end_date=2026-03-20 WHERE id=828.",
+        "ended;date bug"
+      ]
+    ]
+  }
+]

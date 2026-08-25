@@ -28,7 +28,7 @@
       "deleted_at": ""
     },
     {
-      "id": "ARP",
+      "id": "APR",
       "name": "City Centre Apartment",
       "description": "Premium Room, Off Peak (Sept - May)",
       "roomType": "Premium",
@@ -42,7 +42,7 @@
       "deleted_at": ""
     },
     {
-      "id": "ARP-P",
+      "id": "APR-P",
       "name": "City Centre Apartment",
       "description": "Premium Room, On Peak (Jun - Aug)",
       "roomType": "Premium",
