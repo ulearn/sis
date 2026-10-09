@@ -10,7 +10,10 @@ import { applyChristmasClosures } from '../scripts/christmas-shunt';
 import { syncArrivalFromFlight } from '../lib/transport-sync';
 import { reconcileBookingCredit } from '../scripts/partner-credit-sync';
 import { sendStudentEmail } from './email';
+import { emailTemplateWhere } from '../scripts/email-templates';
+import { alertMissingStudentContact } from '../scripts/alerts/emails';
 import { clearanceScripts } from '../scripts/clearance';
+import { notifyDosOf121 } from '../scripts/notify-121';
 
 const HS_TOKEN = process.env.ACCESS_TOKEN!;
 
@@ -101,7 +104,11 @@ async function resolveWonStage(pipeline: string): Promise<string | null> {
 // register + sit the level test, so keep nudging until an active student SisUser
 // exists for their email — then stop. A 24h guard absorbs webhook retries and
 // same-day double-payments so one event never double-fires. Non-fatal.
-const WELCOME_ABOARD_SLUG = 'Welcome-Aboard';
+// Resolved via emailTemplateWhere() → keyed by ID (from the central registry) so
+// renaming the template's name/slug never breaks this automation (Neil renamed it
+// "Welcome Aboard" → "Welcome Onboard" 2026-09-27). Slug is the self-healing
+// fallback should a re-seed ever change the id.
+const WELCOME_ABOARD_SLUG = 'Welcome-Onboard';
 function isRealStudentEmail(email?: string | null): boolean {
   if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return false;
   const domain = email.split('@')[1].toLowerCase();
@@ -115,7 +122,7 @@ async function sendWelcomeAboardIfNew(prisma: PrismaClient, booking: any): Promi
     if (student.clearance) { console.log(`[Welcome] skip student ${student.id} — Seat Clearance placeholder`); return; }
     if (!isRealStudentEmail(student.email)) { console.log(`[Welcome] skip student ${student.id} — no/placeholder email (${student.email || 'none'})`); return; }
     const tpl = await prisma.documentTemplate.findFirst({
-      where: { slug: WELCOME_ABOARD_SLUG, templateType: 'email' },
+      where: emailTemplateWhere(WELCOME_ABOARD_SLUG, { templateType: 'email' }),
       select: { id: true, subject: true, htmlTemplate: true },
     });
     if (!tpl?.htmlTemplate) { console.warn(`[Welcome] template '${WELCOME_ABOARD_SLUG}' missing — skip`); return; }
@@ -277,15 +284,19 @@ const LPS_INVOICE_MARKER = 'LifePass subscription — internal accounting record
 // Used for both the idempotency loop and the entry guard. One API hop.
 async function invoiceIsOurLifePassSub(invoiceId: string): Promise<boolean> {
   try {
-    const inv = await hsGet(`/crm/v3/objects/invoices/${invoiceId}?properties=hs_comments`);
+    const inv = await hsGet(`/crm/v3/objects/invoices/${invoiceId}?properties=hs_comments,hs_invoice_status`);
     const comments = String(inv?.properties?.hs_comments || '');
-    return comments.includes(LPS_INVOICE_MARKER);
+    const status = String(inv?.properties?.hs_invoice_status || '').toLowerCase();
+    // A VOIDED prior -Sub must NOT count as "already exists" — otherwise a
+    // mistakenly-voided subscription invoice can never be recreated (the
+    // idempotency guard would bail forever). Only a LIVE marker invoice blocks.
+    return comments.includes(LPS_INVOICE_MARKER) && status !== 'voided';
   } catch {
     return false;  // err on the side of "no" — caller decides what to do
   }
 }
 
-async function createLifePassSubscriptionInvoice(dealId: string, bookingTag: string, prismaClient: PrismaClient): Promise<void> {
+export async function createLifePassSubscriptionInvoice(dealId: string, bookingTag: string, prismaClient: PrismaClient): Promise<void> {
   try {
     console.log(`[LifePass Invoice] checking deal ${dealId} for existing LifePass invoice (${bookingTag})`);
 
@@ -537,6 +548,89 @@ async function seedLifePassInstalments(input: {
     skipDuplicates: true, // idempotent on (booking_id, sequence)
   });
   console.log(`[LifePass Instalments] seeded ${result.count}/${LPS_QTY} drawdowns for booking ${booking.id} (deal ${input.dealId}, ${input.subNumber})`);
+
+  // LifePass = a PROGRAMME of 3 sequential Academic Year courses in one booking.
+  // The invoice line items only ever carry ONE year of the programme, so nest
+  // years 2 & 3 here — 3 courses + 3 exam fees + 3 insurances (this path only
+  // fires for confirmed LifePass deals). Idempotent.
+  try {
+    await ensureLifePassNesting(booking.id, input.prismaClient);
+  } catch (e: any) {
+    console.error(`[LifePass Nesting] FAILED for booking ${booking.id}: ${e.message}`);
+  }
+}
+
+const LP_YEAR_OFFSETS = [0, 245, 490];   // day offsets of each programme year from course 1
+const lpAddDays = (d: Date, n: number) => { const x = new Date(d); x.setUTCDate(x.getUTCDate() + n); return x; };
+const lpSameDay = (a: Date, b: Date) => a.toISOString().slice(0, 10) === b.toISOString().slice(0, 10);
+
+// Ensure a LifePass booking carries its full 3-year programme: 3 nested Academic
+// Year courses (35-week spans stacked 245/490 days from course 1, each with its
+// own 10-week holiday allowance) PLUS one Exam Fee and one Insurance per year —
+// the subscription commits the student to all three. Idempotent: adopts the
+// booking-creation's undated exam/insurance onto year 1, dates the rest to each
+// year's start, and no-ops once every year is covered. Mirrors the one-off
+// tmp/lifepass-*-backfill.js scripts used for pre-existing students.
+async function ensureLifePassNesting(bookingId: number, prismaClient: PrismaClient): Promise<void> {
+  const courses = await prismaClient.bookingCourse.findMany({
+    where: { bookingId },
+    select: { name: true, category: true, level: true, startDate: true },
+    orderBy: { startDate: 'asc' },
+  });
+  const ay = courses.filter(c => /academic year|life pass|renewal/i.test(c.name || '') && c.startDate);
+  if (!ay.length) return;
+  const c1 = ay[0];
+  const c1Start = new Date(c1.startDate!);
+  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  const yearStarts = LP_YEAR_OFFSETS.map(o => lpAddDays(c1Start, o));
+
+  // ── Courses: stack years 2 & 3 when fewer than 3 AY courses exist ──────────
+  if (ay.length < 3) {
+    const existingStarts = new Set(courses.map(c => c.startDate ? iso(new Date(c.startDate)) : null));
+    for (const yr of [1, 2]) {
+      const start = yearStarts[yr];
+      if (existingStarts.has(iso(start))) continue;
+      const end = lpAddDays(start, 244);   // 35-week span
+      await prismaClient.bookingCourse.create({
+        data: { bookingId, name: c1.name, category: c1.category, level: c1.level ?? null, weeks: 35, holidayWks: 10, startDate: start, endDate: end, active: true } as any,
+      });
+      console.log(`[LifePass Nesting] booking ${bookingId}: nested course year-${yr + 1} "${c1.name}" ${iso(start)}→${iso(end)}`);
+    }
+  }
+
+  // ── Extras: exactly one EXAM_FEE + one INSURANCE per programme year ─────────
+  // Adopt any undated existing row onto the earliest uncovered year (stamping
+  // scheduledAt = that year's start), then create whatever years remain.
+  for (const extraType of ['EXAM_FEE', 'INSURANCE']) {
+    const existing = await prismaClient.bookingExtra.findMany({
+      where: { bookingId, extraType, active: true },
+      orderBy: { id: 'asc' },
+    });
+    const covered = new Set<number>();
+    for (const ex of existing) {
+      if (!ex.scheduledAt) continue;
+      const idx = yearStarts.findIndex(ys => lpSameDay(ys, ex.scheduledAt as Date));
+      if (idx >= 0) covered.add(idx);
+    }
+    const defaultDetails = extraType === 'INSURANCE' ? 'PEL;Health' : null;
+    for (const ex of existing.filter(e => !e.scheduledAt)) {
+      const idx = [0, 1, 2].find(i => !covered.has(i));
+      if (idx == null) break;   // already 3+ dated rows — leave extras alone
+      await prismaClient.bookingExtra.update({
+        where: { id: ex.id },
+        data: { scheduledAt: yearStarts[idx], details: ex.details || defaultDetails },
+      });
+      covered.add(idx);
+    }
+    for (let i = 0; i < 3; i++) {
+      if (covered.has(i)) continue;
+      await prismaClient.bookingExtra.create({
+        data: { bookingId, extraType, scheduledAt: yearStarts[i], details: defaultDetails, active: true } as any,
+      });
+      covered.add(i);
+      console.log(`[LifePass Nesting] booking ${bookingId}: nested ${extraType} year-${i + 1} @ ${iso(yearStarts[i])}`);
+    }
+  }
 }
 
 // Create the Xero side of the LifePass -Sub invoice. Idempotent by
@@ -702,9 +796,13 @@ function isRenewalSku(sku: string): boolean {
 // even when HubSpot sends a marketing-flavoured name or no name at all.
 function cleanCourseName(hubspotName: string, category: string, sku?: string): string {
   const s = (sku || '').toUpperCase();
-  // LifePass SKUs (LPMORN / LPAFT) → canonical "Life Pass Morning/Afternoon"
+  // LifePass is a PROGRAMME (3 sequential Academic Year courses), NOT a course.
+  // In SIS the booking course is a plain Academic Year — LifePass never appears in
+  // the Course section (Neil 2026-09-16). The quote still shows "LifePass" (the
+  // product they buy); the academic reality recorded here is Academic Year AM/PM,
+  // so the 35-week visa window + LOA naming apply exactly as for any AY student.
   if (s.startsWith('LP')) {
-    return s.includes('AFT') ? 'Life Pass Afternoon' : 'Life Pass Morning';
+    return s.includes('AFT') ? 'Academic Year Afternoon' : 'Academic Year Morning';
   }
   // AY renewal SKUs (RNW-AM / RNW-PM) collapse to the canonical AY name —
   // the course itself is the same product, only the price differs.
@@ -1098,6 +1196,10 @@ export async function resyncBookingLogistics(
             hoursPerWeek: dc.hoursPerWeek, fee: dc.fee, active: true, isRenewal: dc.isRenewal,
           } as any,
         });
+        // 1-to-1 (PRIVATE) courses need a specially-rostered teacher — alert the DOS once.
+        if (created.category === 'PRIVATE') {
+          notifyDosOf121(prisma, created.id).catch(e => console.error('[121-alert]', e?.message || e));
+        }
         changes.push(`course+${created.id}(${dc.category})`);
       }
     }
@@ -1192,6 +1294,43 @@ export async function resyncBookingLogistics(
   if (authoritative) {
     try { await hsPatch(`/crm/v3/objects/deals/${dealId}`, { properties: { resync: '' } }); changes.push('resync-flag-cleared'); }
     catch (e: any) { console.warn(`[resync] failed to clear resync flag on deal ${dealId}: ${e.message}`); }
+  }
+
+  // AUTHORITATIVE ReSync → reconcile Xero for any invoice WE own. HubSpot's Xero
+  // DataSync is deactivated for invoices carrying a global (order-level) discount
+  // — Xero can't represent a global discount, so our builder owns those and is the
+  // only channel keeping them level with HubSpot. On a deliberate ReSync we re-run
+  // that builder for each of the deal's invoices so a HubSpot financial edit
+  // (which fires no invoice webhook) propagates to Xero as well as SIS. Runs even
+  // when no invoiceId was passed (the webhook/cron pass null → logistics-only SIS
+  // reconcile below is skipped, but Xero must still be reconciled). The builder
+  // self-gates: it SKIPS DataSync-owned standard invoices (no order-level
+  // discount) and anything already paid in Xero, and no-ops ('unchanged') when the
+  // Xero total already matches — so a pure date resync writes nothing to Xero.
+  if (authoritative) {
+    try {
+      const invAssoc = await hsGet(`/crm/v3/objects/deals/${dealId}/associations/invoices`);
+      const invIds = (invAssoc.results || []).map((r: any) => r.toObjectId || r.id).filter(Boolean);
+      for (const invId of invIds) {
+        try {
+          const meta = await hsGet(`/crm/v3/objects/invoices/${invId}?properties=hs_invoice_status,hs_number`);
+          const st = (meta.properties?.hs_invoice_status || '').toLowerCase();
+          if (st === 'voided' || st === 'deleted') continue;
+          if (/-Sub$/i.test(meta.properties?.hs_number || '')) continue;
+          const r = await createXeroInvoiceFromHubSpot({ hubspotInvoiceId: String(invId), hubspotDealId: dealId });
+          const num = meta.properties?.hs_number || invId;
+          if (r?.status === 'created' || r?.status === 'duplicate-fell-through-to-update') {
+            changes.push(`xero-reconciled:${num}`);
+          } else if (r?.status && r.status !== 'unchanged' && r.status !== 'skipped') {
+            changes.push(`xero-${r.status}:${num}`);
+          }
+        } catch (e: any) {
+          console.warn(`[resync] Xero reconcile failed for invoice ${invId} on deal ${dealId}: ${e.message}`);
+        }
+      }
+    } catch (e: any) {
+      console.warn(`[resync] Xero reconcile: deal ${dealId} invoice lookup failed: ${e.message}`);
+    }
   }
 
   // Steps 7-8 (financial + extras force-sync) require a REAL invoice as the source of truth.
@@ -1584,6 +1723,14 @@ export function webhookRoutes(prisma: PrismaClient) {
         resolvedContactId = String(contactAssocs[0].toObjectId);
       } else if (contactAssocs.length > 1) {
         let candidates = contactAssocs.slice();
+        // A contact carrying the "Partner" association label (or an *Employee*
+        // contact type) is the agency side and must NEVER be resolved as the
+        // student — even when it ALSO carries a Student-B2B/B2C label. That dual
+        // labelling is exactly how a partner-employee got picked as the student
+        // (Antonio Zoppo / LanguageCourse.net, Neil 2026-09-24). The Partner
+        // label disqualifies; a co-present student label does not override it.
+        const labelsOf = (a: any) => (a.associationTypes || []).map((t: any) => String(t.label || '').toLowerCase());
+        const isPartnerContact = (a: any) => labelsOf(a).includes('partner');
 
         try {
           const ids = contactAssocs.map(a => ({ id: String(a.toObjectId) }));
@@ -1597,14 +1744,18 @@ export function webhookRoutes(prisma: PrismaClient) {
             typeById.set(String(c.id), String(c.properties?.[HS_CONTACT_TYPE_PROPERTY] || '').toLowerCase());
             emailById.set(String(c.id), String(c.properties?.email || '').toLowerCase().trim());
           }
-          // Substring match — covers "Employee", "Agent Employee", any future "*-employee" variant.
-          const employees = candidates.filter(a => /employee/.test(typeById.get(String(a.toObjectId)) || ''));
-          const nonEmployees = candidates.filter(a => !/employee/.test(typeById.get(String(a.toObjectId)) || ''));
-          // Remember the first employee — this becomes the sole-trader agent if no
-          // Company is associated to the deal.
-          if (employees.length > 0) agentContactId = String(employees[0].toObjectId);
-          if (nonEmployees.length > 0) candidates = nonEmployees;
-          else console.warn(`[Invoice Created] deal ${resolvedDealId}: all ${contactAssocs.length} contacts tagged as employee — skipping exclusion`);
+          // Exclude the agency side: an *Employee* contact type OR a "Partner"
+          // association label. Both mark the partner, never the student — and a
+          // co-present Student-B2B/B2C label does NOT rescue a Partner-labelled
+          // contact (the Antonio Zoppo / LanguageCourse.net case).
+          const isAgencySide = (a: any) => /employee/.test(typeById.get(String(a.toObjectId)) || '') || isPartnerContact(a);
+          const agencySide = candidates.filter(isAgencySide);
+          const studentSide = candidates.filter(a => !isAgencySide(a));
+          // Remember the first agency contact — becomes the sole-trader agent if
+          // no Company is associated to the deal.
+          if (agencySide.length > 0) agentContactId = String(agencySide[0].toObjectId);
+          if (studentSide.length > 0) candidates = studentSide;
+          else console.warn(`[Invoice Created] deal ${resolvedDealId}: all ${contactAssocs.length} contacts are agency-side (Employee type / Partner label) — no student candidate`);
 
           // Defensive agency-domain filter. When a contact's HubSpot `type` is
           // wrong (e.g. an agent contact mis-tagged Student-B2B), employee
@@ -1638,30 +1789,45 @@ export function webhookRoutes(prisma: PrismaClient) {
           console.warn(`[Invoice Created] contact type fetch failed for deal ${resolvedDealId}: ${e.message}`);
         }
 
-        // Fallback: Student-B2B / Student-B2C association label
+        // Fallback: Student-B2B / Student-B2C association label — but a contact
+        // that is ALSO Partner-labelled is the agency side, so skip it.
         if (!resolvedContactId) {
           for (const a of candidates) {
-            const labels = (a.associationTypes || []).map((t: any) => (t.label || '').toLowerCase());
-            if (labels.includes('student-b2b') || labels.includes('student-b2c')) {
+            const labels = labelsOf(a);
+            if ((labels.includes('student-b2b') || labels.includes('student-b2c')) && !isPartnerContact(a)) {
               resolvedContactId = String(a.toObjectId);
               break;
             }
           }
         }
 
-        // Last-resort fallback
+        // Last-resort fallback — never a Partner. If every remaining candidate is
+        // Partner-labelled, leave it unresolved so the guard below alerts the team
+        // rather than silently onboarding the agency contact as the student.
         if (!resolvedContactId) {
-          resolvedContactId = String(candidates[0].toObjectId);
-          console.warn(`[Invoice Created] deal ${resolvedDealId}: no employee exclusion / student tag / label match worked — falling back to ${resolvedContactId}`);
+          const safe = candidates.filter(a => !isPartnerContact(a));
+          if (safe.length > 0) {
+            resolvedContactId = String(safe[0].toObjectId);
+            console.warn(`[Invoice Created] deal ${resolvedDealId}: no student tag / label match — falling back to first non-partner contact ${resolvedContactId}`);
+          }
         }
       }
 
       if (!resolvedContactId) {
-        return res.status(404).json({ error: 'No contact found on deal' });
+        // No silent failure: WON deal with no resolvable student contact.
+        await alertMissingStudentContact(resolvedDealId, deal?.properties?.dealname || null, resolvedCompanyName, 'no student contact on the deal — only partner / agency contacts (or every student contact is also Partner-labelled)').catch(() => {});
+        return res.status(404).json({ error: 'No student contact found on deal' });
       }
 
       const contact = await hsGet(`/crm/v3/objects/contacts/${resolvedContactId}?properties=firstname,lastname,email,phone,mobilephone,country,date_of_birth,nationality,level,quiz_score,hs_additional_emails,clearance`);
       const cp = contact.properties || {};
+
+      // No silent failure: resolved a student but they have no usable email — we
+      // can still create the booking, but cannot onboard them. Alert the team to
+      // chase the partner for the address (or fix the Portal). (Neil 2026-09-24)
+      if (!isRealStudentEmail(cp.email)) {
+        await alertMissingStudentContact(resolvedDealId, deal?.properties?.dealname || null, resolvedCompanyName, `resolved student contact ${resolvedContactId} (${(cp.firstname || '').trim()} ${(cp.lastname || '').trim()}) has no usable email`).catch(() => {});
+      }
 
       // Get line items
       const liAssoc = await hsGet(`/crm/v3/objects/deals/${resolvedDealId}/associations/line_items`);
@@ -1698,6 +1864,9 @@ export function webhookRoutes(prisma: PrismaClient) {
       // Mirror the raw string so a returning student who re-books under a different
       // address still resolves to the same SIS record. SIS `email` stays the primary.
       const additionalEmails = (cp.hs_additional_emails || '').trim() || null;
+      // Mother tongue derived from nationality via the langmap (fill on creation).
+      const { languageForNationality } = await import('../lib/nationality-language');
+      const derivedLanguage = languageForNationality(nationality);
 
       if (!student) {
         student = await prisma.student.create({
@@ -1708,6 +1877,7 @@ export function webhookRoutes(prisma: PrismaClient) {
             phone: cp.phone || null,
             phoneMobile: cp.mobilephone || null,
             nationality,
+            language: derivedLanguage,
             // First booking (a brand-new student is always on their first):
             // seed the level from the HubSpot quiz `level`, else default A2 so
             // the LoA never generates blank. Feeds the Learning/LMS side too.
@@ -1734,6 +1904,10 @@ export function webhookRoutes(prisma: PrismaClient) {
           updateData.additionalEmails = additionalEmails;
         }
         if (nationality && !student.nationality) updateData.nationality = nationality;
+        // Fill Mother Tongue if we can derive it and the student has none (fill-only).
+        if (!(student as any).language && (derivedLanguage || languageForNationality(student.nationality))) {
+          updateData.language = derivedLanguage || languageForNationality(student.nationality);
+        }
         if (level && !student.currentLevel) updateData.currentLevel = level;
         if (quizScore !== null && !student.quizScore) {
           updateData.quizScore = quizScore;
@@ -1804,8 +1978,9 @@ export function webhookRoutes(prisma: PrismaClient) {
 
         const courseCategory = skuToCourseCategory(sku);
         if (courseCategory) {
+          const cName = cleanCourseName(p.name || '', courseCategory, sku);
           courses.push({
-            name: cleanCourseName(p.name || '', courseCategory, sku),
+            name: cName,
             category: courseCategory,
             startDate: courseStart,
             endDate: courseEnd || courseStart,
@@ -1813,6 +1988,11 @@ export function webhookRoutes(prisma: PrismaClient) {
             hoursPerWeek: getHoursPerWeek(courseCategory),
             fee: amount,
             active: true,
+            // Academic-Year courses carry a 10-week personal holiday entitlement
+            // (a LifePass programme nests three, each its own 10); short courses
+            // none. "life pass" is a legacy safety net — cleanCourseName already
+            // canonicalises those to "Academic Year …".
+            holidayWks: /academic year|renewal|life pass/i.test(cName) ? 10 : null,
             isRenewal: isRenewalSku(sku),
             // First booking only: mirror the student level (quiz or A2 default)
             // so the LoA's {booking.course_level} token isn't blank. Subsequent
@@ -2042,33 +2222,76 @@ export function webhookRoutes(prisma: PrismaClient) {
         });
       }
 
-      const booking = await prisma.booking.create({
-        data: {
-          studentId: student.id,
-          agencyId: agencyId || undefined,
-          hubspotDealId: resolvedDealId,
-          hubspotInvoiceId: invoiceId || null,
-          status: 'PENDING',
-          confirmed: false,
-          serviceStart: courseStart,
-          serviceEnd: courseEnd,
-          currency: 'EUR',
-          amountTotal: hsAmount,
-          amountPaid: 0,
-          amountOpen: hsAmount,
-          regFee:       regFeeTotal       > 0 ? regFeeTotal       : null,
-          placementFee: placementFeeTotal > 0 ? placementFeeTotal : null,
-          dataSource: 'HUBSPOT',
-          hubspotChallenge: dp.challenge || null, // null if deal doesn't have challenge set
-          note: `HubSpot Deal: ${dp.dealname || resolvedDealId}`,
-          courses: courses.length > 0 ? { create: courses } : undefined,
-          accommodations: accommodations.length > 0 ? { create: accommodations } : undefined,
-          extras: extras.length > 0 ? { create: extras } : undefined,
-          // No statusHistory entry on initial creation — there's no genuine "from" state.
-          // History is appended on subsequent transitions (e.g. PENDING → PARTIAL → COMPLETE).
-        } as any,
-        include: { student: true, courses: true, accommodations: true, extras: true },
-      });
+      let booking: any;
+      try {
+        booking = await prisma.booking.create({
+          data: {
+            studentId: student.id,
+            agencyId: agencyId || undefined,
+            hubspotDealId: resolvedDealId,
+            hubspotInvoiceId: invoiceId || null,
+            status: 'PENDING',
+            confirmed: false,
+            serviceStart: courseStart,
+            serviceEnd: courseEnd,
+            currency: 'EUR',
+            amountTotal: hsAmount,
+            amountPaid: 0,
+            amountOpen: hsAmount,
+            regFee:       regFeeTotal       > 0 ? regFeeTotal       : null,
+            placementFee: placementFeeTotal > 0 ? placementFeeTotal : null,
+            dataSource: 'HUBSPOT',
+            hubspotChallenge: dp.challenge || null, // null if deal doesn't have challenge set
+            note: `HubSpot Deal: ${dp.dealname || resolvedDealId}`,
+            courses: courses.length > 0 ? { create: courses } : undefined,
+            accommodations: accommodations.length > 0 ? { create: accommodations } : undefined,
+            extras: extras.length > 0 ? { create: extras } : undefined,
+            // No statusHistory entry on initial creation — there's no genuine "from" state.
+            // History is appended on subsequent transitions (e.g. PENDING → PARTIAL → COMPLETE).
+          } as any,
+          include: { student: true, courses: true, accommodations: true, extras: true },
+        });
+      } catch (createErr: any) {
+        // SELF-HEAL a create-vs-update mis-branch. The existing-booking lookup near
+        // the top of this handler can MISS when the invoice-created webhook RACES the
+        // invoice→contact association: `invoiceContactId` comes back null (the link
+        // hasn't attached yet), so the deal+student dedup match is skipped and we fall
+        // through to create — colliding here because `hubspotDealId` is @unique (one
+        // booking per deal). Recover by doing exactly what the dedup path would have:
+        // find the deal's existing booking, repoint it to the NEW invoice, and reconcile
+        // its total off that invoice. Without this the whole webhook 500s and the booking
+        // silently keeps its stale total (real case: Fayez Alanazi / INV-1485, 25 Aug 2026
+        // — booking stuck at €5,386.20 vs the re-quoted €2,344.44).
+        if (createErr?.code === 'P2002' && String(createErr?.meta?.target ?? '').includes('hubspot_deal_id')) {
+          const existing = await prisma.booking.findFirst({ where: { hubspotDealId: resolvedDealId } as any });
+          if (existing) {
+            if (invoiceId && existing.hubspotInvoiceId !== invoiceId) {
+              await prisma.booking.update({ where: { id: existing.id }, data: { hubspotInvoiceId: invoiceId } as any });
+              console.log(`[Invoice Created] (create-collision self-heal) booking #${existing.id} hubspotInvoiceId ${existing.hubspotInvoiceId || '(null)'} → ${invoiceId}`);
+            }
+            try {
+              const synced = await resyncBookingLogistics(prisma, existing.id, resolvedDealId, invoiceId || null);
+              if (synced.length) console.log(`[Invoice Created] (create-collision self-heal) re-synced booking #${existing.id}: ${synced.join('; ')}`);
+            } catch (re: any) {
+              console.error(`[Invoice Created] (create-collision self-heal) re-sync failed for booking ${existing.id}: ${re.message}`);
+            }
+            res.json({ status: 'already_exists', bookingId: existing.id, selfHealed: true });
+            captureReceiptLinks(prisma, existing.id, invoiceId || null, resolvedDealId).catch(() => {});
+            if (invoiceId) {
+              (async () => {
+                try {
+                  const result = await createXeroInvoiceWithRetry({ hubspotInvoiceId: invoiceId, hubspotDealId: resolvedDealId });
+                  console.log(`[Xero Invoice] (create-collision self-heal) ${result.status}:`, JSON.stringify(result));
+                } catch (xe: any) {
+                  console.error(`[Xero Invoice] (create-collision self-heal) FAILED for invoice ${invoiceId}: ${xe.message}`);
+                }
+              })();
+            }
+            return;
+          }
+        }
+        throw createErr; // not our case — let the outer handler log + 500
+      }
 
       // Auto-apply the school's Christmas closure(s) to AY-visa bookings: shunt
       // the course end forward + record a type='school' holiday (the new-system
@@ -2109,7 +2332,17 @@ export function webhookRoutes(prisma: PrismaClient) {
       });
 
       // ────────────────────────────────────────────────────────────
-      // Fire-and-forget: create the Xero invoice directly (B2B only).
+      // Fire-and-forget: create the Xero invoice directly for ANY channel.
+      //
+      // The builder SELF-GATES on hs_order_level_discounts_total>0, so it only
+      // owns invoices DataSync can't represent (global/order-level discounts) and
+      // returns 'skipped' for standard invoices (DataSync owns those). That means
+      // it must run for B2C too: a B2C **LifePass onboarding** invoice carries an
+      // order-level discount (e.g. €997 billed vs €3,570 subtotal) and DataSync
+      // rejects it — but the old `resolvedChannel === 'B2B'` gate here NEVER fired
+      // the builder for B2C, so those invoices silently never reached Xero (real
+      // case: Martín Caceres INV-1508, Sep 2026 — order-level discount €2,573,
+      // built manually after the fact). Gate on invoiceId only; let the builder decide.
       //
       // DataSync's HubSpot→Xero sync of B2B invoices has proven unreliable —
       // sometimes syncs at gross (stripping the quote-level commission discount),
@@ -2129,10 +2362,10 @@ export function webhookRoutes(prisma: PrismaClient) {
       // already exists (re-fire), the helper detects it and only adds the
       // commission line if missing.
       // ────────────────────────────────────────────────────────────
-      if (resolvedChannel === 'B2B' && invoiceId) {
+      if (invoiceId) {
         (async () => {
           try {
-            console.log(`[Xero Invoice] starting for hubspotInvoiceId=${invoiceId}, dealId=${resolvedDealId}, agency=${agencyDisplayName || '(none)'}`);
+            console.log(`[Xero Invoice] starting for hubspotInvoiceId=${invoiceId}, dealId=${resolvedDealId}, channel=${resolvedChannel}, agency=${agencyDisplayName || '(none)'}`);
             const result = await createXeroInvoiceWithRetry({
               hubspotInvoiceId: invoiceId,
               hubspotDealId: resolvedDealId,
@@ -2510,18 +2743,28 @@ export function webhookRoutes(prisma: PrismaClient) {
       // never hardcode 'closedwon' (that belongs to Direct/B2C and would drag a
       // B2B deal into the wrong pipeline). Mirrors escrow.js markWon.
       if (totalPaid > 0) {
-        const deal = await hsGet(`/crm/v3/objects/deals/${resolvedDealId}?properties=pipeline,dealstage`);
+        const deal = await hsGet(`/crm/v3/objects/deals/${resolvedDealId}?properties=pipeline,dealstage,escrow`);
         const pipeline = deal?.properties?.pipeline;
         const wonStage = pipeline ? await resolveWonStage(pipeline) : null;
-        if (!wonStage) {
+        // Escrow RELEASE (visa approved). Real settlement money landing (totalPaid>0
+        // comes from HubSpot invoices; the TM escrow shadow payment is SIS-only, so a
+        // held deal reads €0 until release) on an escrow-held deal means the escrow was
+        // released. Flip escrow "Yes" → "No" (= released, no longer in escrow; the "No"
+        // is the audit trail that it was once held) in the SAME move to WON. This wires
+        // the hub's escrow.js handleEscrowRelease, which existed but was never triggered.
+        const releaseEscrow = deal?.properties?.escrow === 'Yes';
+        const props: Record<string, string> = {};
+        if (wonStage && deal.properties.dealstage !== wonStage) props.dealstage = wonStage;
+        if (releaseEscrow) props.escrow = 'No';
+        if (!wonStage && !releaseEscrow) {
           console.warn(`[Payment Webhook] No won stage resolved for deal ${resolvedDealId} (pipeline ${pipeline}) — leaving stage unchanged`);
-        } else if (deal.properties.dealstage === wonStage) {
+        } else if (Object.keys(props).length === 0) {
           console.log(`[Payment Webhook] Deal ${resolvedDealId} already WON (${wonStage}) — no-op`);
         } else {
           const result = await hsPatch(`/crm/v3/objects/deals/${resolvedDealId}`, {
-            properties: { dealstage: wonStage },
+            properties: props,
           });
-          console.log(`[Payment Webhook] Deal ${resolvedDealId} → WON (pipeline ${pipeline}, stage ${wonStage}, ${result.status})`);
+          console.log(`[Payment Webhook] Deal ${resolvedDealId} → WON (pipeline ${pipeline}, stage ${wonStage}, ${result.status})${releaseEscrow ? ' + escrow RELEASED (Yes→No)' : ''}`);
         }
       }
 

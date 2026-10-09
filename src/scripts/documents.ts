@@ -25,10 +25,11 @@ const DOC_SIGNATURE_HTML = fs.existsSync(DOC_SIGNATURE_PATH) ? fs.readFileSync(D
 // Generated on demand each call; nothing is stored. Used by BOTH the SIS route
 // (/documents/net-to-gross) and the agency-scoped partner endpoint.
 export async function buildGrossReceiptHtml(
-  prisma: PrismaClient, bookingId: number,
+  prisma: PrismaClient, bookingId: number, opts: { requirePayment?: boolean } = {},
 ): Promise<{ ok: true; html: string; number: string; gross: number } | { ok: false; code: number; error: string }> {
   const booking = await prisma.booking.findUnique({
-    where: { id: bookingId }, include: { student: true, agency: true },
+    where: { id: bookingId },
+    include: { student: true, agency: true, payments: { select: { amount: true, type: true, method: true } } },
   });
   if (!booking) return { ok: false, code: 404, error: 'Booking not found' };
   if (!booking.hubspotInvoiceId) return { ok: false, code: 400, error: 'No HubSpot invoice on this booking — the gross receipt is generated from the invoice.' };
@@ -42,8 +43,45 @@ export async function buildGrossReceiptHtml(
   const inv: any = await fetch(`${base}/crm/v3/objects/invoices/${booking.hubspotInvoiceId}?properties=hs_number,hs_subtotal,hs_amount_billed,hs_balance_due,hs_invoice_status,hs_invoice_date,hs_payment_date`, { headers: H }).then(r => r.json());
   const ip = inv?.properties;
   if (!ip) return { ok: false, code: 404, error: 'HubSpot invoice not found' };
-  if (parseFloat(ip.hs_balance_due || '0') > 0.01) return { ok: false, code: 400, error: 'Receipt is only available once the invoice is paid in full.' };
   const gross = parseFloat(ip.hs_subtotal || '0');
+
+  // Receipt gate = ANY money received (settled OR held in escrow). A receipt is
+  // meaningful the moment funds arrive: a deposit, a partial payment, or a
+  // visa-required (VBD) student's full fee paid into TransferMate escrow (held
+  // until the immigration decision — which is why HubSpot still shows a balance
+  // due but the student HAS paid and needs the receipt for the embassy). Escrow
+  // funds count as received-into-escrow. Only a genuinely unpaid invoice (€0
+  // received) has no receipt to produce. Finer role/permission granularity is a
+  // later concern (Neil, 2026-08-26).
+  const settled = Number(booking.amountPaid || 0);
+  const escrowHeld = (booking.payments || [])
+    .filter(p => p.type === 'Escrow' || /escrow/i.test(p.method || ''))
+    .reduce((sum, p) => sum + Number(p.amount || 0), 0);
+  const received = settled + escrowHeld;
+  // Staff-ISSUED receipt (opts.requirePayment) keeps the payment gate — an issued,
+  // sendable receipt document implies money was received. The partner DISPLAY doc
+  // (default, un-gated) renders the pre-payment invoice too.
+  if (opts.requirePayment && received <= 0.01) {
+    return { ok: false, code: 400, error: 'No payment received on this booking yet — there is nothing to receipt.' };
+  }
+  // NO payment gate for the display doc (Neil, 2026-08-31): this is ONE living document that mirrors
+  // HubSpot — a GROSS INVOICE the partner can show the student BEFORE they pay,
+  // which then gets a "PAID" stamp and becomes the receipt once payment is
+  // assigned. So it renders at every state: unpaid gross invoice (Balance Due =
+  // gross); part-paid; escrow-held; paid-in-full = PAID receipt.
+  //
+  // "Paid in full" is read from the INVOICE'S OWN settlement (HubSpot status /
+  // balance-due), NOT from received-vs-gross: an agency booking is billed NET
+  // (after commission), so the student can fully settle the invoice while the
+  // GROSS retail figure shown here is higher — received would never reach gross.
+  const invStatus = String(ip.hs_invoice_status || '').toLowerCase();
+  const hsBalanceDue = ip.hs_balance_due != null ? parseFloat(ip.hs_balance_due) : NaN;
+  const invoicePaid = invStatus === 'paid' || (!isNaN(hsBalanceDue) && hsBalanceDue <= 0.01 && received > 0.01);
+  const unpaid = !invoicePaid && received <= 0.01 && escrowHeld <= 0.01;
+  // Internal consistency: reference the amount SHOWN as Total (gross) so
+  // Received + Balance always reconcile on the face of the document.
+  const fullyCovered = invoicePaid || (gross > 0 && received >= gross - 1.00);
+  const balance = Math.max(0, Math.round((gross - received) * 100) / 100);
 
   const la: any = await fetch(`${base}/crm/v4/objects/invoices/${booking.hubspotInvoiceId}/associations/line_items`, { headers: H }).then(r => r.json());
   const liIds: string[] = (la.results || []).map((r: any) => String(r.toObjectId));
@@ -61,6 +99,39 @@ export async function buildGrossReceiptHtml(
     return `<tr><td style="padding:8px 0;border-bottom:1px solid #e5e4e0">${esc(p.name)}${qty > 1 ? ` <span style="color:#6b7280">× ${qty}</span>` : ''}</td><td style="padding:8px 0;border-bottom:1px solid #e5e4e0;text-align:right;white-space:nowrap">${eur(parseFloat(p.amount || '0'))}</td></tr>`;
   }).join('') || `<tr><td style="padding:8px 0;border-bottom:1px solid #e5e4e0">Course fees</td><td style="padding:8px 0;border-bottom:1px solid #e5e4e0;text-align:right">${eur(gross)}</td></tr>`;
 
+  // Status badge + settlement rows are computed here (not hard-coded in the
+  // template) so the document tells the truth for every state. This receipt
+  // channel exists ONLY for escrow (HubSpot handles standard paid invoices), so
+  // the escrow case gets the exact split: what's actually SETTLED (a card/bank
+  // deposit received by the school — non-refundable) vs what's HELD in escrow
+  // pending the visa decision.
+  const greenBadge = '<span style="background:#d1fae5;color:#065f46;padding:2px 10px;border-radius:999px;font-weight:700;font-size:11px;letter-spacing:.04em">PAID</span>';
+  const amberBadge = '<span style="background:#fef3c7;color:#92600a;padding:2px 10px;border-radius:999px;font-weight:700;font-size:11px;letter-spacing:.04em">PART&#8209;PAID</span>';
+  const dueBadge   = '<span style="background:#fee2e2;color:#991b1b;padding:2px 10px;border-radius:999px;font-weight:700;font-size:11px;letter-spacing:.04em">DUE</span>';
+  const GREEN = '#065f46', GREY = '#6b7280';
+  const row = (label: string, amt: string, color: string) =>
+    `<tr><td style="padding:2px 0;color:${color};font-size:12px">${label}</td><td style="padding:2px 0;text-align:right;color:${color};font-weight:600">${amt}</td></tr>`;
+  let settlementRows: string;
+  let statusBadge: string;
+  if (unpaid) {
+    // Gross invoice, not yet paid — what the partner shows the student to pay.
+    statusBadge = dueBadge;
+    settlementRows = row('Balance Due', eur(gross), GREY);
+  } else if (escrowHeld > 0.01) {
+    statusBadge = fullyCovered ? greenBadge : amberBadge;
+    let r = '';
+    if (settled > 0.01) r += row('Deposit Paid', eur(settled), GREEN);
+    if (!fullyCovered) r += row('Balance Due', eur(balance), GREY);
+    r += `<tr><td colspan="2" style="padding:6px 0 0;color:#9a6a00;font-size:11px;line-height:1.4">${eur(escrowHeld)} held in TransferMate Escrow. Visa application pending.</td></tr>`;
+    settlementRows = r;
+  } else if (fullyCovered) {
+    statusBadge = greenBadge;
+    settlementRows = row('Paid in full', eur(gross), GREEN);
+  } else {
+    statusBadge = amberBadge;
+    settlementRows = row('Amount Received', eur(received), GREEN) + row('Balance Due', eur(balance), GREY);
+  }
+
   // A receipt is dated at PAYMENT, not invoice issue. Fall back to the invoice
   // date only if HubSpot has no payment date recorded.
   const invDate = new Date(ip.hs_payment_date || ip.hs_invoice_date || Date.now());
@@ -69,19 +140,32 @@ export async function buildGrossReceiptHtml(
     'student.last_name': booking.student.lastName || '',
     'student.nationality': (booking.student as any).nationality || '',
     'agency.name': (booking as any).agency?.name || '',
+    // We always bill the STUDENT — even when an agency is involved (Neil). So
+    // "Billed to" resolves to the student name, never the agency.
+    'invoice.billed_to': `${booking.student.firstName || ''} ${booking.student.lastName || ''}`.trim(),
     'invoice.number': ip.hs_number || '',
     'invoice.date': invDate.toLocaleDateString('en-IE', { day: '2-digit', month: 'long', year: 'numeric' }),
     'invoice.gross': eur(gross),
     'invoice.line_items': rowsHtml,
+    'invoice.status_badge': statusBadge,
+    'invoice.settlement_rows': settlementRows,
   };
-  const tpl = await prisma.documentTemplate.findUnique({ where: { slug: 'Net-to-Gross-Invoice' } });
-  if (!tpl) return { ok: false, code: 500, error: 'Net-to-Gross template not found — restart to seed' };
-  const html = tpl.htmlTemplate.replace(/\{\{([^}]+)\}\}/g, (_m: string, key: string) => {
+  const tpl = await prisma.documentTemplate.findUnique({ where: { slug: 'ULearn-Receipt' } });
+  if (!tpl) return { ok: false, code: 500, error: 'Receipt template not found — restart to seed' };
+  let html = tpl.htmlTemplate.replace(/\{\{([^}]+)\}\}/g, (_m: string, key: string) => {
     const k = key.trim();
     if (k === 'document.number') return tokens['invoice.number'];
     if (k === 'document.issue_date') return tokens['invoice.date'];
     return tokens[k] ?? '';
   });
+  // Mirror HubSpot's one-doc lifecycle: it reads INVOICE while unpaid (the copy
+  // the partner shows the student to pay), flips to RECEIPT once any money is
+  // received, and gets a big diagonal PAID stamp when settled in full.
+  if (unpaid) html = html.replace('letter-spacing:.02em">RECEIPT', 'letter-spacing:.02em">INVOICE');
+  if (fullyCovered) {
+    const stamp = '<div style="position:absolute;top:40%;left:0;right:0;text-align:center;transform:rotate(-22deg);font-size:110px;font-weight:900;color:rgba(6,95,70,.12);letter-spacing:.10em;pointer-events:none">PAID</div>';
+    html = `<div style="position:relative">${stamp}<div style="position:relative;z-index:1">${html}</div></div>`;
+  }
   return { ok: true, html, number: ip.hs_number || '', gross };
 }
 
@@ -143,7 +227,10 @@ const AY_STAY_WEEKS = 35;
 
 function isAcademicYearCourse(name: string | null | undefined): boolean {
   const n = (name || '').toLowerCase();
-  return n.includes('academic year') || n.includes('renewal');
+  // LifePass is a programme of Academic Year courses — treat any legacy "Life Pass"
+  // name as AY too (35-week visa window), belt-and-braces alongside the ingestion
+  // canonicalisation that now names these courses "Academic Year …".
+  return n.includes('academic year') || n.includes('renewal') || n.includes('life pass') || n.includes('lifepass');
 }
 
 function addWeeks(d: Date, weeks: number): Date {
@@ -391,7 +478,7 @@ export function documentScripts(prisma: PrismaClient) {
     return bestBk?.id ?? [...bookings].sort((a, b) => b.id - a.id)[0].id;
   }
 
-  async function resolveTokens(studentId: number, bookingId?: number | null, opts: { certAggregate?: boolean } = {}) {
+  async function resolveTokens(studentId: number, bookingId?: number | null, opts: { certAggregate?: boolean; slug?: string | null } = {}) {
     const student = await prisma.student.findUnique({ where: { id: studentId } });
     if (!student) throw new Error('Student not found');
 
@@ -430,7 +517,7 @@ export function documentScripts(prisma: PrismaClient) {
       const tb = b.startDate ? new Date(b.startDate).getTime() : Infinity;
       return ta - tb;
     });
-    const course = ordered[0] || booking?.courses?.[0];
+    let course = ordered[0] || booking?.courses?.[0];
 
     // Booking-level aggregates across all real courses. Many historical
     // bookings have multiple booking_courses split around Christmas (an old
@@ -476,6 +563,39 @@ export function documentScripts(prisma: PrismaClient) {
           const d = c.endDate ? new Date(c.endDate) : null;
           return d && (!l || d > l) ? d : l;
         }, null);
+      }
+    }
+
+    // LifePass / nested multi-year programmes: the booking holds several FULL
+    // academic-year courses (each ~25–35 taught weeks, with month-long gaps
+    // between years) rather than Christmas-split segments of ONE year. A single
+    // academic year is at most ~35 taught weeks, so when the real courses sum to
+    // MORE than that (>36) the booking spans multiple years. For a "currently
+    // enrolled" letter the student is in ONE academic year right now — reporting
+    // the summed span (e.g. 95 weeks over 2026→2028) is wrong and alarming for
+    // immigration. So collapse the headline course + booking dates/weeks onto the
+    // CURRENT course (active today → else next upcoming → else most recent). This
+    // is skipped for the whole-stay FINAL documents (the attendance certificate /
+    // exit letter), which legitimately report the entire programme: certAggregate
+    // sums across all bookings, and any slug carrying "final"/"exit"/"absence"
+    // keeps the per-booking span computed above. Single-year bookings (incl.
+    // legacy Christmas splits, which sum to ≤35) are untouched.
+    const _isFinalWholeStay = !!opts.certAggregate || /(?:^|[-_ ])(final|exit|absence)/i.test(String(opts.slug || ''));
+    if (!_isFinalWholeStay && realCourses.length > 1) {
+      const totalRealWeeks = realCourses.reduce((s, c) => s + Number(c.weeks || 0), 0);
+      if (totalRealWeeks > 36) {
+        const nowMs = Date.now();
+        const dated = realCourses.filter(c => c.startDate && c.endDate);
+        const active = dated.find(c => +new Date(c.startDate!) <= nowMs && nowMs <= +new Date(c.endDate!) + 86400000);
+        const upcoming = dated.filter(c => +new Date(c.startDate!) > nowMs).sort((a, b) => +new Date(a.startDate!) - +new Date(b.startDate!))[0];
+        const recent = [...dated].sort((a, b) => +new Date(b.endDate!) - +new Date(a.endDate!))[0];
+        const currentCourse = active || upcoming || recent;
+        if (currentCourse) {
+          course = currentCourse;
+          bookingStartDate = currentCourse.startDate ? new Date(currentCourse.startDate) : bookingStartDate;
+          bookingEndDate = currentCourse.endDate ? new Date(currentCourse.endDate) : bookingEndDate;
+          bookingTotalWeeks = Number(currentCourse.weeks || 0) || bookingTotalWeeks;
+        }
       }
     }
 
@@ -534,10 +654,9 @@ export function documentScripts(prisma: PrismaClient) {
       OTHER: 'Other',
     };
     let attendanceRateStr = '';
-    let attendanceRateProjectedStr = '';
     let absencesListHtml = '';
     try {
-      const { fetchStudentHolidays, filterOutHolidayDates, legacyAttendanceCounts } = await import('./attendance-pct');
+      const { fetchStudentHolidays, filterOutHolidayDates, legacyAttendanceCounts, courseTuitionRate, presentCredit } = await import('./attendance-pct');
       const attRowsAll = await prisma.attendance.findMany({
         where: { studentId },
         select: { status: true, occurrence: { select: { date: true } } },
@@ -547,8 +666,44 @@ export function documentScripts(prisma: PrismaClient) {
       // percentage down). Same row set then drives the absences list below.
       const studentHolidays = await fetchStudentHolidays(prisma, studentId);
       const attRows = filterOutHolidayDates(attRowsAll, studentHolidays);
-      const total = attRows.length;
-      const presentLike = attRows.filter(r => r.status === 'PRESENT' || r.status === 'LATE').length;
+
+      // Compliance course: the AY course the letter is about — the one running
+      // today, else the operable `course`. An AY (LifePass) booking nests 3
+      // sequential 35-week courses; the rate must be scoped to ONE course's
+      // 25-tuition-week window, not blended across all three. Non-AY courses
+      // (no holidayWks) keep the lifetime all-rows figure below.
+      const _nowMs = Date.now();
+      const complianceCourse = (realCourses.find(c =>
+        c.startDate && c.endDate && +new Date(c.startDate) <= _nowMs && _nowMs <= +new Date(c.endDate) + 86400000
+      ) || course) as any;
+      let total: number;
+      let presentLike: number;
+      if (complianceCourse?.holidayWks != null && complianceCourse?.startDate) {
+        const hRanges = studentHolidays.map(h => {
+          const s = new Date(h.startDate); s.setHours(0, 0, 0, 0);
+          const e = new Date(h.endDate); e.setHours(0, 0, 0, 0);
+          return [s.getTime(), e.getTime()] as const;
+        });
+        const isHoliday = (d: Date | null) => {
+          if (!d) return false;
+          const x = new Date(d); x.setHours(0, 0, 0, 0);
+          const t = x.getTime();
+          return hRanges.some(([s, e]) => t >= s && t <= e);
+        };
+        const cr = courseTuitionRate(
+          attRowsAll,
+          new Date(complianceCourse.startDate).toISOString().slice(0, 10),
+          complianceCourse.endDate ? new Date(complianceCourse.endDate).toISOString().slice(0, 10) : null,
+          complianceCourse.holidayWks,
+          isHoliday,
+          studentId,
+        );
+        total = cr.total;
+        presentLike = cr.present;
+      } else {
+        total = attRows.length;
+        presentLike = presentCredit(attRows, studentId);   // LATE = 0.5 (retroactive; #913 grandfathered)
+      }
       // Fold in the pre-migration Fidelo figure carried on this booking
       // (weighted by its pre-04/05 weeks), so the letter cites the student's
       // TRUE overall attendance — not just the short SIS-tracked window since
@@ -562,25 +717,6 @@ export function documentScripts(prisma: PrismaClient) {
       if (combTotal > 0) {
         const pct = Math.round((combPresent / combTotal) * 100);
         attendanceRateStr = `${pct}%`;
-
-        // Projected attendance rate — used by the ILEP Attendance Letter
-        // (template id=83) to show "if you attend every remaining lesson
-        // you will finish with X%". Estimate uses ULearn's GE convention
-        // of 5 lessons/week (15h ÷ 3h), counted from today to the
-        // booking's serviceEnd. Imprecise (doesn't subtract scheduled
-        // holidays) but good enough for the letter's "best-case if you
-        // show up every day" framing. When the course is already over
-        // or has no end on file, projected just mirrors the current rate.
-        const courseEnd = booking?.serviceEnd ? new Date(booking.serviceEnd) : null;
-        const now = new Date();
-        if (courseEnd && courseEnd > now) {
-          const weeksRemaining = Math.max(0, Math.round((courseEnd.getTime() - now.getTime()) / (7 * 24 * 60 * 60 * 1000)));
-          const lessonsRemaining = weeksRemaining * 5;
-          const projectedPct = Math.round(((combPresent + lessonsRemaining) / (combTotal + lessonsRemaining)) * 100);
-          attendanceRateProjectedStr = `${projectedPct}%`;
-        } else {
-          attendanceRateProjectedStr = attendanceRateStr;
-        }
 
         if (pct < 85) {
           // Pull absences with any reason+cert metadata. Order chronologically
@@ -669,12 +805,25 @@ export function documentScripts(prisma: PrismaClient) {
       'student.gender': isMale ? 'Male' : 'Female',
       'student.allergies': student.allergies || '',
       'student.address': [student.address, student.addressAddon, student.city, student.zip].filter(Boolean).join(', '),
+      // Irish (in-Ireland) address — where the student lives while studying here.
+      // Distinct from student.address (native/home-country). Used by the Attendance
+      // Letter (template 83) and any doc that must show the Irish residence.
+      'student.irish_address': [student.irishAddress, student.irishAddressAddon, student.irishCity, student.irishZip].filter(Boolean).join(', '),
+      // Residence in Ireland for ISD/immigration docs: the student's own Irish
+      // address if on file, else fall back to their placement address — host
+      // family OR one of our apartments (e.g. 32 Capel Street). Empty only when
+      // neither is known. accommodation.host_address already covers all placement
+      // types (the "host" name is legacy; apartment providers carry a full address).
+      'student.address_ireland': (() => {
+        const irish = [student.irishAddress, student.irishAddressAddon, student.irishCity, student.irishZip].filter(Boolean).join(', ');
+        const accom = accommProvider ? [accommProvider.address, accommProvider.addressAddon, accommProvider.city, accommProvider.zip].filter(Boolean).join(', ') : '';
+        return irish || accom;
+      })(),
       'student.phone': student.phoneMobile || student.phone || '',
       'student.emergency_phone': student.emergencyPhone || '',
       'student.age': student.birthday ? String(Math.floor((Date.now() - new Date(student.birthday).getTime()) / (365.25 * 24 * 60 * 60 * 1000))) : '',
       'student.language': (student as any).language || (student as any).contactLanguage || '',
       'student.attendance_rate': attendanceRateStr,
-      'student.attendance_rate_projected': attendanceRateProjectedStr,
       'absences_list': absencesListHtml, // populated only when attendance < 85% — drives {if absences_list}
 
       // Gender pronouns (replaces Fidelo {if gender} blocks)
@@ -818,8 +967,14 @@ export function documentScripts(prisma: PrismaClient) {
       'booking.visa_start_date': fmtDate(_visaWindow.start),
       'booking.visa_end_date':   fmtDate(_visaWindow.end),
       'booking.visa_weeks':      _visaWindow.weeks != null ? String(_visaWindow.weeks) : (bookingTotalWeeks > 0 ? String(bookingTotalWeeks) : ''),
-      'booking.ilep_code': (course as any)?.ilepCode || '',
-      'ilep_course_code': (course as any)?.ilepCode || '',  // legacy Fidelo placeholder name
+      // Manual/stored code wins; otherwise derive it. Before a placement test sets
+      // a level, an Academic Year booking has none — default the derivation level to
+      // A2 (the same default the booking's start level takes) so the ILEP code is
+      // present and the LoA isn't blocked. Re-derived every render off the CURRENT
+      // course level, so it self-corrects once the test lands (no frozen A2 on a
+      // later letter). Non-AY / EU resolve to '' (deriveIlepCode returns null).
+      'booking.ilep_code': (course as any)?.ilepCode || deriveIlepCode((course as any)?.name || null, ((course as any)?.level || 'A2'), (student as any)?.nationality || null) || '',
+      'ilep_course_code': (course as any)?.ilepCode || deriveIlepCode((course as any)?.name || null, ((course as any)?.level || 'A2'), (student as any)?.nationality || null) || '',  // legacy Fidelo placeholder name
 
       // Exam / IRP sentences used in academic letters. Both render empty
       // when the underlying data is missing, so {{token}} is safe to drop
@@ -975,18 +1130,29 @@ export function documentScripts(prisma: PrismaClient) {
       select: {
         amountPaid: true, amountTotal: true, amountOpen: true, status: true,
         student: { select: { visaStatus: true } },
+        payments: { select: { amount: true, type: true, method: true } },
       },
     });
-    // ESCROW or visa-pending — funds (if any) are in TM escrow, not BoI; or
-    // the embassy hasn't decided. Don't issue an LoA on the back of money
-    // that hasn't actually settled, or for a student who may be refused.
-    // The gate clears when status flips out of ESCROW AND visa is resolved
-    // (Approved/Rejected/null), at which point the payment-balance gate
-    // below evaluates normally.
+    // ESCROW is the GREEN LIGHT for a visa-required (VBD) LoA, not a block: the
+    // student needs the LoA to lodge their embassy application, and TM escrow
+    // secures the fees (refunded if the visa is refused). So once the escrow-held
+    // funds (plus any settled payment) cover the full course fee, issue the LoA.
+    // We only block when the booking is in ESCROW but the fees aren't fully
+    // secured yet — that's a genuinely unfunded booking. (Bypassing here also
+    // skips the visa-status + balance checks below, which is correct: at LoA-
+    // issue time the visa is inherently still pending, and escrow funds don't
+    // land in amountPaid.)
     if (booking?.status === 'ESCROW') {
+      const escrowTotal = Number(booking?.amountTotal || 0);
+      const escrowHeld = (booking?.payments || [])
+        .filter(p => p.type === 'Escrow' || /escrow/i.test(p.method || ''))
+        .reduce((sum, p) => sum + Number(p.amount || 0), 0);
+      const secured = Number(booking?.amountPaid || 0) + escrowHeld;
+      if (escrowTotal > 0 && secured >= escrowTotal - 1.00) return; // fees fully secured in escrow → allow
       throw new Error(
-        `Document blocked: booking is in ESCROW (visa pending — funds are in TransferMate, ` +
-        `not yet in BoI). Wait for visa decision before issuing. Admin override available.`
+        `Document blocked: booking is in ESCROW but the fees aren't fully secured yet ` +
+        `(secured €${secured.toFixed(2)} of €${escrowTotal.toFixed(2)} — escrow €${escrowHeld.toFixed(2)} + settled €${Number(booking?.amountPaid || 0).toFixed(2)}). ` +
+        `Admin override available.`
       );
     }
     const visa = booking?.student?.visaStatus;
@@ -1046,7 +1212,7 @@ export function documentScripts(prisma: PrismaClient) {
       return { record, missing: [], tokens: {} };
     }
 
-    const { tokens } = await resolveTokens(studentId, bookingId, { certAggregate: template.slug === 'Certificate' });
+    const { tokens } = await resolveTokens(studentId, bookingId, { certAggregate: template.slug === 'Attendance-Final', slug: template.slug });
     const rendered = renderTemplate(template.htmlTemplate, tokens);
 
     // Find missing tokens (exclude custom blocks and document.* tokens resolved at issue time)
@@ -1078,16 +1244,26 @@ export function documentScripts(prisma: PrismaClient) {
     // Surface booking payment state on the doc payload so the UI can render
     // the LoA payment gate (red warning + disabled Issue button for non-admin)
     // without an extra round-trip. Cheap join — single Booking row.
-    let bookingPayment: { amountPaid: number; amountTotal: number; balance: number } | null = null;
+    let bookingPayment: { amountPaid: number; amountTotal: number; balance: number; escrowSecured: boolean } | null = null;
     if (doc.bookingId) {
       const b = await prisma.booking.findUnique({
         where: { id: doc.bookingId },
-        select: { amountPaid: true, amountTotal: true },
+        select: {
+          amountPaid: true, amountTotal: true, status: true,
+          payments: { select: { amount: true, type: true, method: true } },
+        },
       });
       if (b) {
         const paid  = Number(b.amountPaid  || 0);
         const total = Number(b.amountTotal || 0);
-        bookingPayment = { amountPaid: paid, amountTotal: total, balance: Math.max(0, total - paid) };
+        // Escrow-secured: booking in ESCROW with escrow-held funds (+ settled)
+        // covering the full fee. The LoA gate treats this as paid — a VBD student
+        // needs the LoA to lodge the visa, and the fees are secured in escrow.
+        const escrowHeld = (b.payments || [])
+          .filter(p => p.type === 'Escrow' || /escrow/i.test(p.method || ''))
+          .reduce((sum, p) => sum + Number(p.amount || 0), 0);
+        const escrowSecured = b.status === 'ESCROW' && total > 0 && (paid + escrowHeld) >= total - 1.00;
+        bookingPayment = { amountPaid: paid, amountTotal: total, balance: Math.max(0, total - paid), escrowSecured };
       }
     }
     return { ...doc, bookingPayment };
@@ -1181,7 +1357,7 @@ export function documentScripts(prisma: PrismaClient) {
     if (!tpl?.htmlTemplate || (tpl as any).staticPdfPath) {
       throw new Error('This document is a static/uploaded PDF — there is no template to re-render from source.');
     }
-    const { tokens } = await resolveTokens(doc.studentId, doc.bookingId, { certAggregate: tpl.slug === 'Certificate' });
+    const { tokens } = await resolveTokens(doc.studentId, doc.bookingId, { certAggregate: tpl.slug === 'Attendance-Final', slug: tpl.slug });
     // Freeze document.issue_date to the doc's ACTUAL issue date. resolveTokens is
     // doc-agnostic and returns "today" for issue_date, so without this override
     // every re-render (this repair path AND booking auto-sync) would silently
@@ -1335,7 +1511,7 @@ export function documentScripts(prisma: PrismaClient) {
     const oldTokens: Record<string, any> = (() => {
       try { return JSON.parse(doc.sourceJson || '{}') || {}; } catch { return {}; }
     })();
-    const { tokens: newTokens } = await resolveTokens(doc.studentId, doc.bookingId, { certAggregate: tpl.slug === 'Certificate' });
+    const { tokens: newTokens } = await resolveTokens(doc.studentId, doc.bookingId, { certAggregate: tpl.slug === 'Attendance-Final', slug: tpl.slug });
 
     let html = doc.contentHtml || '';
     const changed: { field: string; from: string; to: string }[] = [];
@@ -1460,6 +1636,39 @@ export function documentScripts(prisma: PrismaClient) {
         photoAssetUsed: student?.profilePicture || null,
       },
     });
+  }
+
+  // Mint the gross receipt as a FIRST-CLASS document record so it rides the
+  // exact same pipeline as the LoA: it lands in the student's document list,
+  // surfaces in the portal + app, and supports Send / Notify with zero new
+  // plumbing. The hard part — pulling the itemised figures live from the linked
+  // HubSpot invoice (SIS only holds top-level totals) — is done by
+  // buildGrossReceiptHtml, which already renders the escrow / partial / paid-in-
+  // full states correctly. We just persist its output and issue it.
+  async function generateReceiptDocument(bookingId: number, issuedBy: string) {
+    // An ISSUED receipt requires a payment (unlike the on-demand partner display doc).
+    const r = await buildGrossReceiptHtml(prisma, bookingId, { requirePayment: true });
+    if (!r.ok) throw new Error(r.error);
+    const booking = await prisma.booking.findUnique({ where: { id: bookingId }, select: { studentId: true } });
+    if (!booking) throw new Error('Booking not found');
+    const tpl = await prisma.documentTemplate.findUnique({ where: { slug: 'ULearn-Receipt' } });
+    if (!tpl) throw new Error('Receipt template not found — restart to seed');
+    const draft = await prisma.documentRecord.create({
+      data: {
+        studentId: booking.studentId,
+        bookingId,
+        templateId: tpl.id,
+        documentType: tpl.documentType,
+        sourceJson: JSON.stringify({ invoiceNumber: r.number, gross: r.gross }),
+        contentHtml: r.html,          // fully rendered — tokens already resolved
+        templateVersion: tpl.version,
+        status: 'DRAFT',
+      },
+    });
+    // Issue immediately — the content is final and the receipt template is not
+    // payment-gated (assertLoaPaymentGate no-ops for it). 'admin' role keeps the
+    // issue path clean regardless of caller.
+    return issueDocument(draft.id, issuedBy, 'admin');
   }
 
   async function createNewVersion(originalId: number) {
@@ -1872,7 +2081,7 @@ export function documentScripts(prisma: PrismaClient) {
     const template = await prisma.documentTemplate.findUnique({ where: { id: templateId } });
     if (!template) throw new Error('Template not found');
 
-    const { tokens, student, course } = await resolveTokens(studentId, bookingId ?? null, { certAggregate: template.slug === 'Certificate' });
+    const { tokens, student, course } = await resolveTokens(studentId, bookingId ?? null, { certAggregate: template.slug === 'Attendance-Final', slug: template.slug });
 
     // Resolve {if ...} conditionals FIRST so tokens that live inside a block
     // which drops out for this student (e.g. the whole accommodation table when
@@ -1944,7 +2153,7 @@ export function documentScripts(prisma: PrismaClient) {
   return {
     listTemplates, getTemplate, createTemplate, updateTemplate, deleteTemplate,
     resolveTokens, renderTemplate,
-    generateDraft, getDocument, listDocuments, updateDraft,
+    generateDraft, generateReceiptDocument, getDocument, listDocuments, updateDraft,
     issueDocument, createNewVersion, revokeDocument, liveEditDocument, refreshDocumentFromSource, resetDocumentFromSource, renderIssuedDocInPlace, syncLoaToBooking, attachExternalPdf, fileInsurancePolicy, saveInsurancePolicy,
     verify,
     generatePdf, getDocumentPdf,
@@ -1964,7 +2173,9 @@ const TOKEN_FIELD_HINTS: Record<string, string> = {
   'student.email':            'Email (Student → Personal)',
   'student.dob':              'Date of Birth (Student → Personal)',
   'student.nationality':      'Nationality (Student → Personal)',
-  'student.address':          'Address (Student → Address)',
+  'student.address':          'Native Address (Student → Address → Home Country)',
+  'student.irish_address':    'Irish Address (Student → Address → Ireland)',
+  'student.address_ireland':  'Irish Address — falls back to placement (host/apartment) address if unset',
   'student.phone':            'Phone (Student → Personal)',
   'student.emergency_phone':  'Emergency Phone (Student → Personal)',
   'student.current_level':    'Level (Student → Overview → Learning)',
@@ -1972,7 +2183,6 @@ const TOKEN_FIELD_HINTS: Record<string, string> = {
   'student.allergies':        'Allergies (Student → Other)',
   'student.gender':           'Gender (Student → Personal)',
   'student.attendance_rate':  'Attendance records — none on file yet for this student',
-  'student.attendance_rate_projected': 'Projected attendance rate — assumes student attends every remaining lesson up to course end (5 lessons/week ULearn convention). Falls back to current rate when course has ended.',
   'student.flight_number':    'Inbound Flight Number (Student → Visa & Flight)',
   'student.flight_date':      'Inbound Flight Date (Student → Visa & Flight)',
   'student.flight_time':      'Inbound Flight Time (Student → Visa & Flight)',

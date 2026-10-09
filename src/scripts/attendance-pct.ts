@@ -46,15 +46,54 @@ export function filterOutHolidayDates<T extends AttendanceRowMin>(
   });
 }
 
+// ── LATE = 50% attendance (retroactive to ALL lates) ────────────────────────
+// Policy (Neil, 2026-09-16): arriving >15 min late = half a day's attendance.
+// Backfilled retroactively (Neil, 2026-09-18): EVERY late now counts 0.5
+// regardless of date — the original non-retrospective grandfather was dropped so
+// all historical lates are corrected in one go. The calc is live (nothing is
+// stored), so flipping the rule here IS the backfill — no per-row job needed.
+//   Exception: LATE_GRANDFATHERED_STUDENTS keep the ORIGINAL cutoff rule (a
+//   pre-activation late = full present) so a figure hand-agreed before the
+//   backfill is not moved. Anchored to the occurrence DATE, not when it was keyed.
+export const LATE_HALF_FROM = '2026-09-16';                        // grandfather cutoff — exception students only
+export const LATE_GRANDFATHERED_STUDENTS = new Set<number>([913]); // Itgel Munkhzaya #913 (hand-set 86.40%)
+
+function occIso(r: AttendanceRowMin): string | null {
+  return r.occurrence?.date ? new Date(r.occurrence.date).toISOString().slice(0, 10) : null;
+}
+/**
+ * Weight a single LATE row. Default: 0.5 for ALL lates (retroactive policy). A
+ * grandfathered student keeps the original cutoff (0.5 only on/after the
+ * activation date, else 1) so their pre-backfill figure is frozen.
+ */
+export function lateWeight(dateIso: string | null, studentId?: number | null): number {
+  if (studentId != null && LATE_GRANDFATHERED_STUDENTS.has(studentId)) {
+    return dateIso && dateIso >= LATE_HALF_FROM ? 0.5 : 1;
+  }
+  return 0.5;
+}
+/**
+ * "Present-like" credit for a set of rows: PRESENT = 1, LATE per lateWeight()
+ * (0.5, or grandfathered for an exception student), everything else 0. Pass the
+ * studentId so the grandfather exception can apply. May be fractional.
+ */
+export function presentCredit(rows: AttendanceRowMin[], studentId?: number | null): number {
+  let credit = 0;
+  for (const r of rows) {
+    if (r.status === 'PRESENT') credit += 1;
+    else if (r.status === 'LATE') credit += lateWeight(occIso(r), studentId);
+  }
+  return credit;
+}
+
 /**
  * Compute attendance percentage for a window of rows. Returns null when the
  * filtered window is empty (no class days happened, or all of them were
- * holidays).
+ * holidays). LATE is credited per the activation-date policy above.
  */
-export function pctFromRows(rows: AttendanceRowMin[]): number | null {
+export function pctFromRows(rows: AttendanceRowMin[], studentId?: number | null): number | null {
   if (!rows.length) return null;
-  const present = rows.filter(r => r.status === 'PRESENT' || r.status === 'LATE').length;
-  return Math.round((present / rows.length) * 100);
+  return Math.round((presentCredit(rows, studentId) / rows.length) * 100);
 }
 
 // ── Legacy (pre-migration Fidelo) attendance blend ──────────────────────────
@@ -95,13 +134,43 @@ export function blendedAttendancePct(
   rows: AttendanceRowMin[],
   legacyPct: number | null | undefined,
   serviceStart: Date | string | null | undefined,
+  studentId?: number | null,
 ): number | null {
   const sisTotal = rows.length;
-  const sisPresent = rows.filter(r => r.status === 'PRESENT' || r.status === 'LATE').length;
+  const sisPresent = presentCredit(rows, studentId);
   const leg = legacyAttendanceCounts(legacyPct, serviceStart);
   const total = sisTotal + leg.total;
   if (total === 0) return null;
   return Math.round(((sisPresent + leg.present) / total) * 100);
+}
+
+// ── Per-course tuition-capped rate (Academic Year / LifePass) ───────────────
+// Server mirror of admin.html `_courseAtt`. An AY course's LoA/compliance window
+// is 35 concrete weeks but only 25 are TUITION — the other `holidayWks` (10) are
+// a floating personal-holiday allowance. Dated holidays inside the window are
+// excluded; the denominator is then the FIRST (35 − holidayWks) weeks of
+// non-holiday class days (the tuition weeks), so the tail allowance never drags
+// the %. Capping (not a date cut) keeps it correct mid-course and on shorter
+// spans. `holidayWks` null/0 ⇒ no cap (non-AY course = plain windowed rate).
+const AY_STAY_WEEKS_PCT = 35;
+export function courseTuitionRate(
+  rows: AttendanceRowMin[],
+  startIso: string | null,
+  endIso: string | null,
+  holidayWks: number | null | undefined,
+  isHoliday: (date: Date | null) => boolean,
+  studentId?: number | null,
+): { rate: number | null; present: number; total: number; usedWks: number; remainingWks: number; entitlement: number } {
+  const isoOf = (r: AttendanceRowMin) => r.occurrence?.date ? new Date(r.occurrence.date).toISOString().slice(0, 10) : null;
+  const inWin = rows.filter(r => { const dt = isoOf(r); return !!dt && (!startIso || dt >= startIso) && (!endIso || dt <= endIso); });
+  const usedWks = Math.round((inWin.filter(r => isHoliday(r.occurrence?.date || null)).length / 5) * 10) / 10;
+  const hw = (holidayWks == null) ? 0 : Number(holidayWks);
+  const remainingWks = Math.max(0, hw - usedWks);
+  const nonHol = inWin.filter(r => !isHoliday(r.occurrence?.date || null)).sort((a, b) => (isoOf(a) || '').localeCompare(isoOf(b) || ''));
+  const tuitionDays = hw > 0 ? Math.max(0, AY_STAY_WEEKS_PCT - hw) * 5 : Infinity;
+  const counted = nonHol.slice(0, tuitionDays);
+  const present = presentCredit(counted, studentId);
+  return { rate: counted.length ? Math.round((present / counted.length) * 100) : null, present, total: counted.length, usedWks, remainingWks, entitlement: hw };
 }
 
 /**

@@ -15,7 +15,7 @@ import { documentScripts } from '../scripts/documents';
 import { messageScripts } from '../scripts/messages';
 import { CONTRACT_VERSION, renderPreviewBytes, buildPreviewHtmlDoc, signContract } from '../scripts/student-contract';
 import { compressUploads } from '../lib/compress';
-import { parsePassport } from '../scripts/passport-parser';
+import { parsePassport, fillBirthdayIfEmpty } from '../scripts/passport-parser';
 import os from 'os';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
@@ -129,6 +129,13 @@ export function studentRoutesPortal(prisma: PrismaClient) {
       const sig = s?.contractSignedAt
         ? await prisma.studentSignature.findFirst({ where: { studentId }, orderBy: { id: 'desc' }, select: { signerName: true, pdfPath: true } })
         : null;
+      // LifePass students also get the LifePass Programme Terms & Conditions in
+      // their Agreement section (the appendix in the Student Agreement points here).
+      // Identified by an active instalment ledger — the reliable LifePass signal.
+      const lp: any[] = await prisma.$queryRawUnsafe(
+        `SELECT 1 FROM payment_instalments pi JOIN bookings b ON b.id = pi.booking_id
+          WHERE b.student_id = $1 AND pi.cancelled_at IS NULL LIMIT 1`, studentId);
+      const isLifePass = Array.isArray(lp) && lp.length > 0;
       res.json({
         signed: !!s?.contractSignedAt,
         signedAt: s?.contractSignedAt ?? null,
@@ -136,6 +143,8 @@ export function studentRoutesPortal(prisma: PrismaClient) {
         signerName: sig?.signerName ?? [s?.firstName, s?.lastName].filter(Boolean).join(' '),
         previewPdfUrl: '/sis/student/api/contract/preview.pdf',
         signedPdfUrl: sig?.pdfPath ? '/sis/student/api/contract/signed.pdf' : null,
+        isLifePass,
+        lifePassTermsUrl: isLifePass ? '/sis/student/api/contract/lifepass-terms.pdf' : null,
       });
     } catch (e: any) { res.status(500).json({ error: String(e?.message || e) }); }
   });
@@ -154,6 +163,20 @@ export function studentRoutesPortal(prisma: PrismaClient) {
   router.get('/contract/preview.html', (_req, res) => {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.send(buildPreviewHtmlDoc());
+  });
+
+  // LifePass Programme Terms & Conditions — a static hosted PDF (update the file
+  // to update the terms for everyone). Served to any authenticated student; the
+  // app only surfaces the link for LifePass students.
+  router.get('/contract/lifepass-terms.pdf', async (req, res) => {
+    try {
+      if (!req.session.studentId) return res.status(401).send('No student session');
+      const p = path.join(__dirname, '..', '..', 'data', 'contracts', 'lifepass-terms.pdf');
+      if (!fs.existsSync(p)) return res.status(404).send('LifePass Terms not available');
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'inline; filename="ULearn-LifePass-Terms.pdf"');
+      fs.createReadStream(p).pipe(res);
+    } catch (e) { res.status(500).send(String(e)); }
   });
 
   router.get('/contract/signed.pdf', async (req, res) => {
@@ -225,19 +248,27 @@ export function studentRoutesPortal(prisma: PrismaClient) {
     try {
       const studentId = req.session.studentId;
       if (!studentId) return res.status(401).json({ error: 'No student session' });
-      const [me, unreadMessages, gate, accomCount, groupBookings] = await Promise.all([
+      const [me, unreadMessages, gate, accomCount, groupBookings, lifePassCount, challengeCount] = await Promise.all([
         scripts.me(studentId),
         msgs.unreadCount(studentId),
         prisma.student.findUnique({ where: { id: studentId }, select: { contractSignedAt: true, cardOnFile: true, email: true, birthday: true } }),
         prisma.bookingAccommodation.count({ where: { booking: { studentId }, active: true } }),
         prisma.booking.count({ where: { studentId, groupId: { not: null } } }),
+        // LifePass enrolment — the reliable marker is the INSTALMENT payment schedule
+        // (`payment_instalments`), which every LifePass booking carries. The course
+        // NAME is unreliable (LifePass often outputs as "Academic Year"). Card-on-file
+        // now applies to these too.
+        prisma.booking.count({ where: { studentId, paymentInstalments: { some: {} } } }),
+        // Challenge enrolment — any booking carrying the mirrored HubSpot Deal.challenge tag.
+        prisma.booking.count({ where: { studentId, hubspotChallenge: { not: null } } }),
       ]);
       // Only REAL student sessions are gated; staff previewing the portal never
       // see it, and the whole gate is inert until STUDENT_CONTRACT_GATE=on.
       const contractSigned = (process.env.STUDENT_CONTRACT_GATE !== 'on' || req.session?.userType !== 'student') ? true : !!gate?.contractSignedAt;
-      // Card-on-file onboarding step — only a REAL student with an ACTIVE
-      // accommodation booking who doesn't yet have a card must complete the €1
-      // CardOnFile checkout (the accommodation breakage guarantee).
+      // Card-on-file onboarding step — a REAL student who doesn't yet have a card
+      // and is in a card-required cohort must complete the €1 CardOnFile checkout.
+      // Cohort = an ACTIVE accommodation booking (breakage guarantee) OR a LifePass
+      // OR a Challenge enrolment (Neil, 2026-08-31). Group + under-16 exemptions still apply.
       const isStudent = req.session?.userType === 'student';
       const cardOnFile = !!gate?.cardOnFile;
       // EXEMPT from the €1 card step (Neil 2026-08-21): students in a group (agency-
@@ -253,7 +284,7 @@ export function studentRoutesPortal(prisma: PrismaClient) {
         if (m < 0 || (m === 0 && now.getUTCDate() < dob.getUTCDate())) age--;
       }
       const isUnder16 = age !== null && age < 16;
-      const needsCardOnFile = isStudent && accomCount > 0 && !cardOnFile && !inGroup && !isUnder16;
+      const needsCardOnFile = isStudent && (accomCount > 0 || lifePassCount > 0 || challengeCount > 0) && !cardOnFile && !inGroup && !isUnder16;
       // Only real student sessions get the welcome video — suppress it for staff
       // previewing a portal, so a preview can't "use up" the student's one-shot.
       if ((me as any)?.student && !isStudent) (me as any).student.welcomeVideoSeenAt = 'preview';
@@ -464,7 +495,8 @@ export function studentRoutesPortal(prisma: PrismaClient) {
       const filePath = path.join(stuDocDir, String(studentId), doc.filename);
       if (!fs.existsSync(filePath)) return res.status(404).json({ success: false, error: 'File missing' });
       const pp = await parsePassport(filePath, doc.mimeType);
-      res.json({ success: true, supported: pp.supported, extracted: pp.extracted, parseError: pp.error || null });
+      const birthdaySet = await fillBirthdayIfEmpty(prisma, studentId, pp.extracted);
+      res.json({ success: true, supported: pp.supported, extracted: pp.extracted, parseError: pp.error || null, birthdaySet });
     } catch (e: any) { res.status(500).json({ success: false, error: String(e?.message || e) }); }
   });
 
@@ -483,6 +515,123 @@ export function studentRoutesPortal(prisma: PrismaClient) {
       if (Object.keys(data).length) await prisma.student.update({ where: { id: studentId }, data });
       res.json({ success: true });
     } catch (e: any) { res.status(500).json({ error: String(e?.message || e) }); }
+  });
+
+  // ── Self-service address edit (student → own native + Irish address) ──────
+  // Lets the student keep their own address current so address-bearing documents
+  // (Confirmation with Address) can be self-issued without emailing the office.
+  // Whitelisted fields only; scoped to the session's own student. Mirrors /passport.
+  router.post('/address', async (req, res) => {
+    try {
+      const studentId = req.session.studentId;
+      if (!studentId) return res.status(401).json({ error: 'No student session' });
+      const ALLOWED = [
+        'address', 'addressAddon', 'zip', 'city', 'state', 'countryIso',
+        'irishAddress', 'irishAddressAddon', 'irishZip', 'irishCity', 'irishState', 'irishCountryIso',
+      ];
+      const body = req.body || {};
+      const data: any = {};
+      for (const k of ALLOWED) {
+        if (k in body) {
+          const v = body[k];
+          data[k] = (typeof v === 'string' && v.trim()) ? v.trim() : null;
+        }
+      }
+      if (Object.keys(data).length) await prisma.student.update({ where: { id: studentId }, data });
+      res.json({ success: true });
+    } catch (e: any) { res.status(500).json({ error: String(e?.message || e) }); }
+  });
+
+  // ── Self-service document generation (student → own whitelisted docs) ──────
+  // Students self-issue a FIXED set of their OWN documents instead of emailing the
+  // office. Hard whitelist by slug — LoA is deliberately excluded (stays office-
+  // issued; assertLoaPaymentGate blocks it regardless of caller). The with-address
+  // confirmation is gated on the Irish address being filled. Reuses the exact admin
+  // generate→issue pipeline, scoped to the session's own studentId.
+  const SELF_SERVE_DOC_SLUGS = new Set([
+    'Attendance-Current', 'Attendance-Final', 'Student-Letter',
+    'Holiday-Letter', 'Confirm-General', 'Confirm-ISD',
+  ]);
+  router.post('/documents/issue', async (req, res) => {
+    try {
+      const studentId = req.session.studentId;
+      if (!studentId) return res.status(401).json({ error: 'No student session' });
+      const slug = String(req.body?.slug || '');
+      if (!SELF_SERVE_DOC_SLUGS.has(slug)) return res.status(400).json({ error: 'This document is not available to self-issue' });
+      const template = await prisma.documentTemplate.findFirst({ where: { slug, active: true }, select: { id: true } });
+      if (!template) return res.status(404).json({ error: 'Template not found' });
+      // Address gate: the with-address confirmation needs an Irish address on file.
+      if (slug === 'Confirm-ISD') {
+        const s = await prisma.student.findUnique({ where: { id: studentId }, select: { irishAddress: true } });
+        if (!s?.irishAddress || !String(s.irishAddress).trim()) return res.status(400).json({ error: 'irish_address_required' });
+      }
+      // Course-end gate: the FINAL attendance letter is an end-of-course document —
+      // it must only surface AFTER the student's last day of class. "Last day" =
+      // the latest end date across all their non-cancelled real-category courses
+      // (same aggregate the Final doc prints), so multi-/split-booking students are
+      // gated on their true final day. Future last day → block with friendly copy.
+      if (slug === 'Attendance-Final') {
+        const REAL_COURSE_CATS = new Set(['MORNING', 'MORNING_PLUS', 'AFTERNOON', 'AFTERNOON_PLUS', 'INTENSIVE', 'PRIVATE']);
+        const bks = await prisma.booking.findMany({
+          where: { studentId },
+          select: { status: true, courses: { select: { category: true, endDate: true } } },
+        });
+        let lastDay: Date | null = null;
+        for (const b of bks) {
+          // Skip only explicitly cancelled bookings — a null status is a live
+          // booking here, and `NOT status='CANCELLED'` in SQL would wrongly drop nulls.
+          if (String(b.status) === 'CANCELLED') continue;
+          for (const c of b.courses) {
+            if (!REAL_COURSE_CATS.has(String(c.category)) || !c.endDate) continue;
+            const d = new Date(c.endDate);
+            if (!lastDay || d > lastDay) lastDay = d;
+          }
+        }
+        if (!lastDay) return res.status(400).json({ error: 'Your course dates aren’t set yet — please message the office.' });
+        const cutoff = new Date(lastDay); cutoff.setHours(23, 59, 59, 999);
+        if (Date.now() <= cutoff.getTime()) {
+          return res.status(400).json({ error: 'Your Final Attendance letter will be available after your last day of class.' });
+        }
+      }
+      // Single-instance guard: a student holds at most ONE issued copy of each
+      // self-serve document. A repeat request must explicitly overwrite (the app
+      // confirms "Doc already exists. Update with new version?"); without the flag
+      // we refuse with `exists` so we never silently stack duplicates.
+      const overwrite = req.body?.overwrite === true || String(req.body?.overwrite) === 'true';
+      const existingIssued = await prisma.documentRecord.findMany({
+        where: { studentId, templateId: template.id, status: 'ISSUED' },
+        orderBy: { versionNo: 'desc' },
+        select: { id: true, versionNo: true },
+      });
+      if (existingIssued.length && !overwrite) return res.status(409).json({ error: 'exists' });
+      // Issue against the student's in-view booking (the one the app shows) so the
+      // course dates and the LoA-style payment gate (the confirmations are flagged
+      // requiresFullPayment) evaluate correctly instead of erroring on a null booking.
+      // Multi-booking students always default to the current/latest booking — there
+      // is no picker; previous-booking docs go through the office.
+      const meData: any = await scripts.me(studentId);
+      const bookingId = meData?.booking?.id ?? null;
+      try {
+        const draft = await docs.generateDraft(template.id, studentId, bookingId, 'student');
+        const issued = await docs.issueDocument(draft.record.id, 'Student (self-service)', 'student');
+        // Overwrite → supersede the prior issued copies and carry the version chain
+        // forward, so the old versions drop out of the student's list (status filter
+        // is ISSUED) but stay on record for audit. Done only after the new copy
+        // issues cleanly, so a failed regenerate never destroys the existing one.
+        if (existingIssued.length) {
+          const prev = existingIssued[0];
+          await prisma.documentRecord.updateMany({ where: { id: { in: existingIssued.map(e => e.id) } }, data: { status: 'SUPERSEDED' } });
+          await prisma.documentRecord.update({ where: { id: issued.id }, data: { versionNo: prev.versionNo + 1, supersedesId: prev.id } });
+        }
+        res.json({ success: true, documentId: issued.id });
+      } catch (gen: any) {
+        // Payment/visa gate (confirmations only) → student-friendly guidance.
+        const msg = String(gen?.message || gen);
+        if (/visa/i.test(msg)) return res.status(400).json({ error: 'This letter is available after your visa decision — message the office if it’s urgent.' });
+        if (/escrow|balance|not linked|paid|payment|full/i.test(msg)) return res.status(400).json({ error: 'This letter is available once your fees are paid in full — message the office if it’s urgent.' });
+        throw gen;
+      }
+    } catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }
   });
 
   // ── "Message us" support email (student → success@) ──────
@@ -707,6 +856,36 @@ export function studentRoutesPortal(prisma: PrismaClient) {
     } catch (e: any) { res.status(500).json({ error: String(e?.message || e) }); }
   });
 
+  // Student holiday requests — the list, and a self-service create (writes the
+  // BookingHoliday directly + notifies success@; staff veto in SIS).
+  router.get('/holidays', async (req, res) => {
+    try {
+      const studentId = req.session.studentId;
+      if (!studentId) return res.status(401).json({ error: 'No student session' });
+      res.json(await scripts.holidaysList(studentId));
+    } catch (e: any) { res.status(500).json({ error: String(e?.message || e) }); }
+  });
+
+  router.post('/holiday-request', async (req, res) => {
+    try {
+      const studentId = req.session.studentId;
+      if (!studentId) return res.status(401).json({ error: 'No student session' });
+      const out = await scripts.requestHoliday(studentId, req.body || {});
+      if (!out.success) return res.status(400).json({ error: out.error });
+      res.json(out);
+    } catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }
+  });
+
+  router.delete('/holidays/:id', async (req, res) => {
+    try {
+      const studentId = req.session.studentId;
+      if (!studentId) return res.status(401).json({ error: 'No student session' });
+      const out = await scripts.cancelHoliday(studentId, req.params.id);
+      if (!out.success) return res.status(400).json({ error: out.error });
+      res.json(out);
+    } catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }
+  });
+
   router.post('/absence-reason', async (req, res) => {
     try {
       const studentId = req.session.studentId;
@@ -900,14 +1079,18 @@ export function studentRoutesPortal(prisma: PrismaClient) {
       const year = parseInt(String(req.query.year || new Date().getFullYear()), 10);
       const month = parseInt(String(req.query.month || (new Date().getMonth() + 1)), 10) - 1;
       const data = await acts.listForMonth(year, month);
+      // App-hidden activities are suppressed from the student month browse too
+      // (same flag as the main feed). The shared listForMonth helper also feeds
+      // the public website, so we filter HERE rather than in the helper.
+      const visible = (data.items || []).filter((a: any) => a.appVisible !== false);
       // Annotate items with this student's RSVP state so the cell can render
       // the "going" pip without a second round-trip per chip.
       const myRsvps: any[] = await prisma.activityAttendee.findMany({
-        where: { studentId, activityId: { in: (data.items || []).map((a: any) => a.id) } },
+        where: { studentId, activityId: { in: visible.map((a: any) => a.id) } },
         select: { activityId: true, attended: true },
       });
       const rsvpMap = new Map(myRsvps.map(r => [r.activityId, r]));
-      const items = (data.items || []).map((a: any) => ({
+      const items = visible.map((a: any) => ({
         id: a.id, date: a.date, startTime: a.startTime, endTime: a.endTime,
         title: a.title, description: a.description, cost: a.cost,
         location: a.location, imageFilename: a.imageFilename,
@@ -1198,9 +1381,12 @@ export function studentRoutesPortal(prisma: PrismaClient) {
       if (!studentId) return res.status(401).json({ error: 'No student session' });
 
       // Eligible = activities the student attended (attendance-confirmed by Kelly)
-      // and the activity has happened. Dismissed-without-rating rows are
-      // filtered out so the student isn't pestered after they swipe away.
-      // Rated rows stay so they can update their rating from history.
+      // and the activity has happened. A dismissed row is cleared from the stack
+      // whether or not it was rated — the × / swipe is a true "clear" so the
+      // student isn't left staring at an edit card once they're done (Neil,
+      // 2026-10-09). A rated row that has NOT been dismissed still stays, so it
+      // remains editable from history until the student deliberately swipes it
+      // away; the saved stars persist in the DB for admin reporting regardless.
       const rows: any[] = await prisma.$queryRawUnsafe(
         `SELECT a.id AS activity_id, to_char(a.date, 'YYYY-MM-DD') AS date,
                 a.title, a.location, a.image_filename,
@@ -1213,7 +1399,7 @@ export function studentRoutesPortal(prisma: PrismaClient) {
           WHERE aa.student_id = $1
             AND aa.attended = true
             AND a.date <= CURRENT_DATE
-            AND NOT (f.dismissed_at IS NOT NULL AND f.stars IS NULL)
+            AND f.dismissed_at IS NULL
           ORDER BY a.date DESC, a.id DESC`,
         studentId,
       );

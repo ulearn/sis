@@ -19,6 +19,7 @@
  */
 import dotenv from 'dotenv';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { emailTemplateWhere } from './email-templates';
 import { PrismaClient } from '../generated/prisma/client';
 import { sendStudentEmail } from '../routes/email';
 import { messageScripts } from '../scripts/messages';
@@ -44,7 +45,7 @@ async function main() {
 
   try {
     const tpl = await prisma.documentTemplate.findFirst({
-      where: { slug: TEMPLATE_SLUG, templateType: 'email' },
+      where: emailTemplateWhere(TEMPLATE_SLUG, { templateType: 'email' }),
       select: { id: true, subject: true, htmlTemplate: true },
     });
     if (!tpl?.htmlTemplate) { console.log(`  '${TEMPLATE_SLUG}' template missing — aborting`); return; }

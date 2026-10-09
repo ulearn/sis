@@ -64,10 +64,15 @@ export function clearanceScripts(prisma: PrismaClient) {
       const used = taken[o.id] || 0;
       return {
         id: o.id, title: o.title, subtitle: o.subtitle, category: o.category, session: o.session,
+        model: (o as any).model || 'RESERVE',
         retailPrice: Number(o.retailPrice), clearancePrice: Number(o.clearancePrice), priceUnit: o.priceUnit,
         depositPerSeat: Number(o.depositPerSeat), seatsTotal: o.seatsTotal,
         seatsTaken: Math.min(used, o.seatsTotal),
         seatsLeft: Math.max(0, o.seatsTotal - used),
+        // ALLOCATION: soft global cap (how many claimed across ALL agencies) — drives the
+        // vague "limited availability" scarcity line, never a per-agency number.
+        cap: (o as any).cap ?? null,
+        claimedGlobal: used,
       };
     });
     const myReservations = agencyId ? await prisma.clearanceReservation.findMany({
@@ -275,5 +280,79 @@ export function clearanceScripts(prisma: PrismaClient) {
     return { paid: true, count: r.count };
   }
 
-  return { currentSale, saleState, forAgency, reserve, markPaidByInvoice, confirmCheckout, fulfilReservation };
+  // V2 ALLOCATION opt-in — the €0, qty-less "Claim This Rate". Records that the
+  // agency has taken up the time-limited clearance rate for the live sale window;
+  // NO deposit, NO per-agency seat number (they sell as many as they like at the
+  // rate before the window closes). Idempotent: one live CLAIMED reservation per
+  // (agency, offer). Fulfilment happens later when they enrol a real student.
+  async function claim(agencyId: number, sisUserId: number | null, offerId: number) {
+    const agency = await prisma.agency.findUnique({ where: { id: agencyId }, select: { clearanceEligible: true } });
+    if (!agency?.clearanceEligible) throw new Error('Not eligible for the seat clearance sale.');
+    const sale = await currentSale();
+    if (!sale) throw new Error('No active sale.');
+    if (saleState(sale) !== 'live') throw new Error('The sale is not currently live.');
+    const offer = sale.offers.find(o => o.id === offerId);
+    if (!offer) throw new Error('Offer not found.');
+    if ((offer as any).model !== 'ALLOCATION') throw new Error('This offer is not an allocation offer.');
+    const existing = await prisma.clearanceReservation.findFirst({
+      where: { saleId: sale.id, offerId, agencyId, status: { in: ['CLAIMED', 'RESERVED', 'ASSIGNED'] } },
+      orderBy: { id: 'asc' },
+    });
+    // The Claim IS the confirmation — the partner has opted into clearance pricing.
+    // Flip the SIS-authoritative flag + mirror it OUTBOUND to HubSpot (autoQuote
+    // reads clearance_confirmed off the Company to price the AY course down).
+    if (existing) { await setClearanceConfirmed(agencyId, true); return { ok: true, alreadyClaimed: true, reservationId: existing.id, claimedUntil: sale.endsAt }; }
+    const r = await prisma.clearanceReservation.create({
+      data: { saleId: sale.id, offerId, agencyId, sisUserId, depositAmount: 0, status: 'CLAIMED' },
+    });
+    await setClearanceConfirmed(agencyId, true);
+    return { ok: true, alreadyClaimed: false, reservationId: r.id, claimedUntil: sale.endsAt };
+  }
+
+  // ── Confirmation flag: SIS is authoritative; mirror EVERY set/unset to the
+  // HubSpot Company `clearance_confirmed` so the CRM (and autoQuote) stay in
+  // lockstep. Symmetric to `clearance_eligible`, which flows the other way
+  // (HubSpot → SIS via the /clearance-eligible webhook). ──────────────────────
+  async function syncClearanceConfirmedToHubSpot(agencyId: number) {
+    const a = await prisma.agency.findUnique({ where: { id: agencyId }, select: { hubspotCompanyId: true, clearanceConfirmed: true } });
+    if (!a?.hubspotCompanyId || !TOKEN()) return;
+    try {
+      await fetch(`${HS}/crm/v3/objects/companies/${a.hubspotCompanyId}`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${TOKEN()}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ properties: { clearance_confirmed: a.clearanceConfirmed ? 'true' : 'false' } }),
+      });
+    } catch (e: any) { console.error(`[clearance] confirmed-mirror failed for agency ${agencyId}: ${e?.message || e}`); }
+  }
+
+  async function setClearanceConfirmed(agencyId: number, value: boolean) {
+    const cur = await prisma.agency.findUnique({ where: { id: agencyId }, select: { clearanceConfirmed: true } });
+    if (cur?.clearanceConfirmed === value) { await syncClearanceConfirmedToHubSpot(agencyId); return; } // self-heal HS even if unchanged
+    await prisma.agency.update({ where: { id: agencyId }, data: { clearanceConfirmed: value } });
+    await syncClearanceConfirmedToHubSpot(agencyId);
+  }
+
+  // Reset confirmations when there's no live sale (the sale ended or was pulled).
+  // Idempotent + self-healing; safe to run daily. Mirrors each reset to HubSpot.
+  async function reconcileClearanceConfirmations() {
+    const sale = await currentSale();
+    if (saleState(sale as any) === 'live') return { live: true, reset: 0 };
+    const confirmed = await prisma.agency.findMany({ where: { clearanceConfirmed: true }, select: { id: true } });
+    for (const a of confirmed) await setClearanceConfirmed(a.id, false);
+    return { live: false, reset: confirmed.length };
+  }
+
+  // Live clearance rates — SINGLE SOURCE OF TRUTH for the hub autoQuote. Global
+  // (not per-agency); confirmation is read separately off the Company flag. AM/PM
+  // keyed off the offer TITLE (session col is unreliable — PM offer is 'ANY').
+  async function clearanceRates() {
+    const sale = await currentSale();
+    const live = saleState(sale as any) === 'live';
+    if (!sale) return { live: false, am: null as number | null, pm: null as number | null, endsAt: null as Date | null };
+    const am = sale.offers.find(o => /morning/i.test(o.title));
+    const pm = sale.offers.find(o => /afternoon/i.test(o.title));
+    return { live, am: am ? Number(am.clearancePrice) : null, pm: pm ? Number(pm.clearancePrice) : null, endsAt: sale.endsAt };
+  }
+
+  return { currentSale, saleState, forAgency, reserve, claim, markPaidByInvoice, confirmCheckout, fulfilReservation, setClearanceConfirmed, reconcileClearanceConfirmations, clearanceRates };
 }

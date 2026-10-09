@@ -289,7 +289,10 @@ class ZohoLeaveSync {
                     fullRecordId: employee.recordId,
                     firstName: employee['First Name'],
                     lastName: employee['Last Name'],
-                    email: employee['Email ID']
+                    email: employee['Email ID'],
+                    // Pull PPS straight off the P_EmployeeView record (field is "PPS")
+                    // so a matched Zoho employee back-fills the SIS payroll PPS.
+                    pps: employee.PPS || employee.pps || null
                 };
             }
             return null;
@@ -459,9 +462,12 @@ class ZohoLeaveSync {
 
                 // Format date for Zoho
                 const dateObj = new Date(updateDate);
-                const formattedDate = dateObj.toLocaleDateString('en-GB', {
-                    day: '2-digit', month: 'short', year: 'numeric'
-                });
+                // Build dd-MMM-yyyy with a fixed 3-letter month — 'en-GB'
+                // {month:'short'} yields "Sept" (4) for September, which Zoho
+                // rejects (error 7205). Dash + 3-letter also satisfies the
+                // "already formatted" passthrough in updateEmployeeLeaveBalance.
+                const _mmm = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                const formattedDate = `${String(dateObj.getDate()).padStart(2,'0')}-${_mmm[dateObj.getMonth()]}-${dateObj.getFullYear()}`;
 
                 const updateSuccess = await this.zohoAPI.updateEmployeeLeaveBalance(
                     employee.fullRecordId || employee.employeeId,
@@ -528,7 +534,8 @@ class ZohoLeaveSync {
                     teacherName: teacher.teacherName,
                     leaveTaken: leaveData.leaveTaken,
                     sickDaysTaken: leaveData.sickDaysTaken,
-                    leaveBalance: leaveData.leaveBalance
+                    leaveBalance: leaveData.leaveBalance,
+                    ppsNumber: employee.pps || null
                 });
                 successCount++;
 

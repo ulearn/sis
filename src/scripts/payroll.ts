@@ -24,16 +24,19 @@ export function payrollScripts(prisma: PrismaClient) {
     return dt;
   }
 
-  // Format week label like Fidelo: "Week 08, 16/02/2026 – 22/02/2026"
-  function weekLabel(weekFrom: Date): string {
-    const jan1 = new Date(weekFrom.getFullYear(), 0, 1);
-    const weekNum = Math.ceil(((weekFrom.getTime() - jan1.getTime()) / 86400000 + jan1.getDay() + 1) / 7);
+  // Format week label like Fidelo: "Week 08, 16/02/2026 – 22/02/2026".
+  // The date range shows the ACTUAL included days, not the full Mon–Sun span:
+  // for a boundary week clipped at the period cutoff, showing the whole calendar
+  // week when only part of it is paid is misleading. The week NUMBER stays the
+  // true calendar week (derived from the Monday) so both halves of a split week
+  // read as the same "Week NN".
+  function weekLabel(weekFrom: Date, weekTo: Date): string {
+    const monday = getMonday(weekFrom);
+    const jan1 = new Date(monday.getFullYear(), 0, 1);
+    const weekNum = Math.ceil(((monday.getTime() - jan1.getTime()) / 86400000 + jan1.getDay() + 1) / 7);
     const pad = (n: number) => String(n).padStart(2, '0');
-    const from = `${pad(weekFrom.getDate())}/${pad(weekFrom.getMonth() + 1)}/${weekFrom.getFullYear()}`;
-    const to = new Date(weekFrom);
-    to.setDate(to.getDate() + 6);
-    const toStr = `${pad(to.getDate())}/${pad(to.getMonth() + 1)}/${to.getFullYear()}`;
-    return `Week ${pad(weekNum)}, ${from} – ${toStr}`;
+    const fmt = (d: Date) => `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+    return `Week ${pad(weekNum)}, ${fmt(weekFrom)} – ${fmt(weekTo)}`;
   }
 
   // Compute hours from time strings like "09:00:00" and "12:15:00",
@@ -222,15 +225,23 @@ export function payrollScripts(prisma: PrismaClient) {
         const name = `${teacher.lastName}, ${teacher.firstName}`;
 
         if (!entries[key]) {
+          // Clip the week to the period window. Payroll periods run last-Thursday
+          // → last-Wednesday, so a Mon–Sun week straddles two periods at every
+          // month boundary. Without clipping, both periods key the shared week to
+          // the same Monday and overwrite each other. Clipping makes the closing
+          // month's bucket end on its cutoff-Wed and the next month's bucket start
+          // on the Thursday — two distinct rows, each holding only its own days.
+          const clipFrom = monday < fromDate ? fromDate : monday;
+          const clipTo   = sunday > toDate   ? toDate   : sunday;
           entries[key] = {
             teacherId: teacher.id,
             teacherName: name,
             email: teacher.email || '',
             classId: cls.id,
             className: cls.name,
-            weekFrom: monday,
-            weekTo: sunday,
-            weekLabel: weekLabel(monday),
+            weekFrom: clipFrom,
+            weekTo: clipTo,
+            weekLabel: weekLabel(clipFrom, clipTo),
             hours: 0,
             studentCount: studentCountByClass[cls.id] || 0,
             hourlyRate: Number(teacher.hourlyRate || 0),
@@ -261,18 +272,22 @@ export function payrollScripts(prisma: PrismaClient) {
 
     const calculated = await calculateWeeklyHours(from, to);
 
-    // Delete entries that overlap the refreshed range and are no longer produced by
-    // the fresh calculation. Use *overlap* semantics (weekFrom <= to AND weekTo >= from)
-    // so straddling weeks at the period boundaries (e.g. WK 13 starts before the period,
-    // WK 18 ends after it) are checked too — otherwise old rows from a prior schedule
-    // sit forever and inflate the dashboard.
+    // Delete entries this period OWNS that are no longer produced by the fresh
+    // calculation (e.g. a class was deactivated, a cover removed, or an old
+    // unclipped boundary row left behind by a pre-clip refresh). Candidate set:
+    // rows that END within [from, to] (weekTo in range). That captures this
+    // period's interior weeks AND any leading-boundary orphan (whose weekFrom
+    // pre-clip sat before `from`), while never touching:
+    //   • the next month's leading boundary (weekFrom > to), or
+    //   • this period's own trailing boundary (weekTo > to) — which is in
+    //     expectedKeys and gets re-clipped by the upsert below.
     const expectedKeys = new Set(
       calculated.map(e => `${e.teacherId}-${e.classId}-${e.weekFrom.toISOString().split('T')[0]}`)
     );
     const existing = await prisma.teacherPayrollEntry.findMany({
       where: {
         weekFrom: { lte: new Date(to) },
-        weekTo:   { gte: new Date(from) },
+        weekTo:   { gte: new Date(from), lte: new Date(to) },
       },
       select: { compositeKey: true },
     });
@@ -301,6 +316,13 @@ export function payrollScripts(prisma: PrismaClient) {
           hourlyRate: entry.hourlyRate,
           className: entry.className,
           email: entry.email,
+          // Re-apply the clipped week bounds — a row first written under the old
+          // unclipped logic (or before the period cutoff moved) keeps its stale
+          // weekTo otherwise, and the trailing boundary week never lands in the
+          // monthly total.
+          weekFrom: entry.weekFrom,
+          weekTo: entry.weekTo,
+          weekLabel: entry.weekLabel,
         },
         create: {
           teacherId: entry.teacherId,
@@ -320,6 +342,18 @@ export function payrollScripts(prisma: PrismaClient) {
         },
       });
       upserted++;
+    }
+
+    // PPS is a permanent per-teacher ID held on Teacher.pps (the durable field).
+    // Source it onto this period's entries on every refresh so payroll always
+    // shows the right PPS without manual maintenance. Only where the teacher HAS
+    // a PPS — never blanks an existing entry value.
+    const teachersWithPps = await prisma.teacher.findMany({ where: { pps: { not: null } }, select: { id: true, pps: true } });
+    for (const t of teachersWithPps) {
+      await prisma.teacherPayrollEntry.updateMany({
+        where: { teacherId: t.id, weekTo: { gte: new Date(from), lte: new Date(to) } },
+        data: { ppsNumber: t.pps },
+      });
     }
 
     return {

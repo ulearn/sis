@@ -55,7 +55,9 @@ export function resolveTerritory(territory: string): string | null {
   return null; // Unsupported Territory — don't send
 }
 
-export const TERRITORY_MAP: Record<string, string> = {"Afghanistan":"Unsupported Territory","Albania":"Non-EU (VBD)","Algeria":"Non-EU (VBD)","Andorra":"EU","Argentina":"Non-EU (No Visa)","Armenia":"Non-EU (VBD)","Australia":"Non-EU (VBD)","Austria":"EU","Azerbaijan":"Non-EU (VBD)","Belarus":"Non-EU (VBD)","Belgium":"EU","Bolivia":"Non-EU (No Visa)","Bosnia and Herzegovina":"Non-EU (VBD)","Brazil":"Non-EU (No Visa)","Brunei":"Non-EU (VBD)","Bulgaria":"EU","Cameroon":"Non-EU (VBD)","Canada":"Non-EU (VBD)","Chile":"Non-EU (No Visa)","China":"Non-EU (VBD)","Colombia":"Non-EU (VBD)","Costa Rica":"Non-EU (No Visa)","Croatia":"EU","Cyprus":"EU","Czech Republic":"EU","Denmark":"EU","Ecuador":"Non-EU (VBD)","Egypt":"Non-EU (VBD)","El Salvador":"Non-EU (No Visa)","Estonia":"EU","Fiji":"Non-EU (VBD)","Finland":"EU","France":"EU","Georgia":"Non-EU (VBD)","Germany":"EU","Gibraltar":"EU","Greece":"EU","Guatemala":"Non-EU (No Visa)","Honduras":"Non-EU (No Visa)","Hong Kong":"Non-EU (No Visa)","Hungary":"EU","Iceland":"EU","Indonesia":"Non-EU (VBD)","Ireland":"EU","Israel":"EU","Italy":"EU","Japan":"Non-EU (No Visa)","Jordan":"Non-EU (VBD)","Kazakhstan":"Non-EU (VBD)","Kuwait":"Non-EU (VBD)","Latvia":"EU","Liechtenstein":"EU","Lithuania":"EU","Luxembourg":"EU","Malaysia":"Non-EU (No Visa)","Malta":"EU","Mexico":"Non-EU (No Visa)","Moldova":"Non-EU (VBD)","Monaco":"EU","Mongolia":"Non-EU (VBD)","Montenegro":"Non-EU (VBD)","Morocco":"Non-EU (VBD)","Netherlands":"EU","New Zealand":"Non-EU (VBD)","Nicaragua":"Non-EU (No Visa)","Norway":"EU","Oman":"Non-EU (VBD)","Panama":"Non-EU (No Visa)","Paraguay":"Non-EU (No Visa)","Peru":"Non-EU (VBD)","Poland":"EU","Portugal":"EU","Qatar":"Non-EU (No Visa)","Romania":"EU","Russia":"Non-EU (VBD)","San Marino":"EU","Saudi Arabia":"Non-EU (VBD)","Serbia":"Non-EU (VBD)","Singapore":"Non-EU (VBD)","Slovakia":"EU","Slovenia":"EU","South Korea":"Non-EU (No Visa)","Spain":"EU","Sweden":"EU","Switzerland":"EU","Taiwan":"Non-EU (No Visa)","Turkey":"Non-EU (VBD)","Ukraine":"Non-EU (VBD)","United Arab Emirates":"Non-EU (VBD)","United Kingdom":"EU","United States":"Non-EU (VBD)","Uruguay":"Non-EU (No Visa)","Uzbekistan":"Non-EU (VBD)","Vatican City":"EU"};
+// Country → territory now comes from the ONE estate map (hub facts/territories.json) — see ./territories.ts.
+import { TERRITORY_MAP } from "./territories";
+export { TERRITORY_MAP };
 
 // Build the shared deal properties (course / territory / dates / accommodation
 // / extras / notes) from a booking form payload. Returns a plain object the
@@ -129,7 +131,15 @@ export function buildBaseDealProps(data: any): Record<string, any> {
   // valid deal. exam_type is intentionally left null — filled once the student sits
   // the level test.
   const isBundled = data.courseType === 'lifepass' || data.courseType === 'academic_year';
-  if (isBundled) {
+  if (isBundled && data.allowUnbundle) {
+    // Partner granted the "Unpack AY?" permission (server-decided, never trusted
+    // from the client) chose which bundled extras to actually buy from us. PEL is
+    // mandatory regardless of the form; Exam + Health follow their ticks.
+    props.exam_fee = extras.includes('exam_fee') ? 'true' : 'false';
+    const parts = ['PEL'];
+    if (extras.includes('insurance_health')) parts.push('Health');
+    props.insurance = parts.join(';');
+  } else if (isBundled) {
     props.exam_fee = 'true';
     props.insurance = 'PEL;Health';
   } else {

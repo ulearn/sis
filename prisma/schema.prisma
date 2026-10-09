@@ -306,6 +306,12 @@ model Activity {
   igPostUrl      String?  @map("ig_post_url")
   fbPostUrl      String?  @map("fb_post_url")
 
+  // Student-app visibility. Default ON. Untick to pull the activity from the
+  // student app / profile feed (e.g. a winter session with no demand) while it
+  // STAYS on the public website — the website feed (social-calendar/month) and
+  // the shared listForRange helper deliberately ignore this flag.
+  appVisible     Boolean  @default(true) @map("app_visible")
+
   createdBy      String?  @map("created_by")
 
   attendees      ActivityAttendee[]
@@ -545,18 +551,44 @@ model StudentGroup {
   company       String?                                  // sending school / company / agent
   agencyId      Int?      @map("agency_id")
   contactName   String?   @map("contact_name")
-  contactEmail  String?   @map("contact_email")
+  contactEmail  String?   @map("contact_email")           // nominated recipient(s) for group comms; may be a comma/;-list
+  contactPhone  String?   @map("contact_phone")           // leader phone(s), pulled from HubSpot alongside the emails
+  contactUserId Int?      @map("contact_user_id")          // → SisUser: the partner-portal contact pulled down for this group
   pax           Int?
-  leaders       String?                                  // group-leader names / notes
+  leaders       String?                                  // group-leader names (chaperones), comma-joined
+  leaderContacts String?  @map("leader_contacts")        // JSON [{name,email,phone}] of leader=true HubSpot contacts
   groupType     String?   @map("group_type")             // Junior Group (Closed) | (Mixed) | Adult Group
   courseName    String?   @map("course_name")
   courseStart   DateTime? @map("course_start") @db.Date
   courseEnd     DateTime? @map("course_end")   @db.Date
   accomType     String?   @map("accom_type")
+  accomAddress  String?   @map("accom_address")  // external/independent accommodation (e.g. a hotel we didn't book) — group-level, one source of truth. NOT a provider/bed.
   accomStart    DateTime? @map("accom_start")  @db.Date
   accomEnd      DateTime? @map("accom_end")    @db.Date
   notes         String?
-  bookings      Booking[]
+
+  // Company/school link — mirrors the deal's associated HubSpot Company.
+  hubspotCompanyId String? @map("hubspot_company_id")
+  // The group is the APEX entity for the deal→quote→invoice hierarchy (customer
+  // share links, captured on Refresh) — members carry no financials.
+  hubspotQuoteUrl      String? @map("hubspot_quote_url")
+  hubspotInvoiceUrl    String? @map("hubspot_invoice_url")
+  hubspotInvoiceNumber String? @map("hubspot_invoice_number")
+  // Activities pack — "Culture" (5 weekday events) | "Active" (adds weekend excursion).
+  activitiesPack   String? @map("activities_pack")
+  // Global (group-level) transport — the whole group moves together on one transfer.
+  // Individual student transport stays blank; exceptions are handled per-student.
+  transferType      String?   @map("transfer_type")          // e.g. "Group airport transfer"
+  arrivalFlight     String?   @map("arrival_flight")
+  arrivalAt         DateTime? @map("arrival_at")
+  arrivalTerminal   String?   @map("arrival_terminal")
+  departureFlight   String?   @map("departure_flight")
+  departureAt       DateTime? @map("departure_at")
+  departureTerminal String?   @map("departure_terminal")
+  departurePickupAt DateTime? @map("departure_pickup_at")    // group leaves accommodation
+
+  bookings       Booking[]
+  transportExtras BookingExtra[]   // group-level airport transfers (one coach)
 
   @@map("student_groups")
 }
@@ -725,6 +757,10 @@ model Agency {
   // Seat Clearance Sale eligibility — flagged (Model-B "package") partners see the
   // live clearance tab as their first portal tab. See project_occupancy_seat_clearance.
   clearanceEligible Boolean @default(false) @map("clearance_eligible")
+  // Confirmation (the Claim click) — SIS-authoritative, mirrored OUTBOUND to the
+  // HubSpot Company `clearance_confirmed` on every set/unset. Drives autoQuote
+  // clearance pricing together with eligibility. Reset when no sale is live.
+  clearanceConfirmed Boolean @default(false) @map("clearance_confirmed")
 
   @@map("agencies")
 }
@@ -757,8 +793,14 @@ model ClearanceOffer {
   retailPrice    Decimal  @map("retail_price") @db.Decimal(10, 2)     // struck-through
   clearancePrice Decimal  @map("clearance_price") @db.Decimal(10, 2)
   priceUnit      String   @default("total") @map("price_unit")        // total | week
-  depositPerSeat Decimal  @map("deposit_per_seat") @db.Decimal(10, 2) // 250 / 50
-  seatsTotal     Int      @default(0) @map("seats_total")             // curated scarcity count
+  depositPerSeat Decimal  @map("deposit_per_seat") @db.Decimal(10, 2) // 250 / 50 (RESERVE only)
+  seatsTotal     Int      @default(0) @map("seats_total")             // RESERVE: curated per-offer scarcity count
+  // V2: RESERVE = the original €250-deposit "auction" (seat tiles + Stripe).
+  // ALLOCATION = free, time-limited opt-in — no €250, NO per-agency seat number
+  // (agencies sell as many as they like at the clearance rate before the sale
+  // window closes); scarcity is a SOFT GLOBAL cap, never shown per-agency.
+  model          String   @default("RESERVE") // RESERVE | ALLOCATION
+  cap            Int?                          // ALLOCATION: soft global internal cap (monitoring/outreach only, not enforced per-agency)
   sortOrder      Int      @default(0) @map("sort_order")
   reservations   ClearanceReservation[]
   @@map("clearance_offers")
@@ -886,6 +928,12 @@ model BookingCourse {
   endDate           DateTime?          @map("end_date") @db.Date
   weeks             Int
   hoursPerWeek      Decimal?           @map("hours_per_week") @db.Decimal(4,1)
+  // Personal holiday entitlement (weeks) for this academic year. Default 10 for
+  // Academic-Year / LifePass courses (each nested LifePass year gets its own 10),
+  // null/0 for short courses. The remaining balance (holidayWks − dated holidays
+  // in this course's window) counts as holiday at the tail of the course, so the
+  // attendance denominator is the tuition weeks (span − 10), not the full span.
+  holidayWks        Int?               @map("holiday_wks")
   active            Boolean            @default(true)
   flexibleAllocation Boolean           @default(false) @map("flexible_allocation")
   note              String?
@@ -903,6 +951,10 @@ model BookingCourse {
   // first-year AY — same level, class, teachers — but renewing students get
   // a discounted line item. Surfaced as a "Renewal" badge in the SIS UI.
   isRenewal         Boolean            @default(false) @map("is_renewal")
+
+  // When a 1-to-1 (PRIVATE) course triggered the DOS "roster a teacher" alert.
+  // Stamped once so re-syncs never re-fire. Null on non-PRIVATE courses.
+  dosNotifiedAt     DateTime?          @map("dos_notified_at")
 
   // External IDs
   fideloCourseId    Int?               @unique @map("fidelo_course_id")
@@ -925,7 +977,9 @@ model StudentDocument {
   size         Int                   // bytes
   category     String @default("visa") // "visa", "passport", "other"
   uploadedBy   String? @map("uploaded_by")
+  refundId     Int?    @map("refund_id")  // links a doc to a RefundRequest (attached to the TM notify email)
 
+  @@index([refundId])
   @@map("student_documents")
 }
 
@@ -1457,6 +1511,18 @@ model AccommodationRoom {
   availableFrom DateTime? @map("available_from") @db.Date
   availableTo   DateTime? @map("available_to")   @db.Date
 
+  // Provisional room (Neil, 2026-10-09): an apartment room an owner has OFFERED
+  // (interest expressed) but NOT yet leased/paid — and the student hasn't paid us
+  // either. Held against a particular student via the eCom support desk. A
+  // structured place to park it; matching treatment (colour/placement) TBD.
+  provisional   Boolean   @default(false)
+
+  // Weekly cost for THIS room (€). Apartments price per-room (every short-let is
+  // different) — this is the structured per-room rate the availability-checker /
+  // eCom desk writes and sales quotes from. Host-family pricing stays provider-
+  // level (AccommodationProvider.weeklyRate). (Neil, 2026-10-09)
+  weeklyRate    Decimal?  @map("weekly_rate") @db.Decimal(10,2)
+
   beds       AccommodationBed[]
 
   @@map("accommodation_rooms")
@@ -1532,6 +1598,10 @@ model BookingAccommodation {
   // out of the cleaning queue view.
   cleanCancelledAt  DateTime? @map("clean_cancelled_at")
   cleanCancelledBy  String?   @map("clean_cancelled_by")
+  // Stamped when this turnover has been billed to the cleaner's Xero bill, so a
+  // turnover can NEVER be billed twice — even if it is un-marked and re-marked
+  // after its week's bill has already been closed (issue #50 belt-and-braces).
+  cleanBilledAt     DateTime? @map("clean_billed_at")
 
   feedback          AccommodationFeedback[]
 
@@ -1669,8 +1739,13 @@ model BookingExtra {
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
-  bookingId  Int      @map("booking_id")
-  booking    Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  // Either a booking (individual transfer) OR a group (one coach for the whole
+  // group) owns the row — exactly one is set. Group transfers are first-class:
+  // no member booking is singled out.
+  bookingId  Int?     @map("booking_id")
+  booking    Booking? @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  groupId    Int?     @map("group_id")
+  group      StudentGroup? @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
   extraType  String   @map("extra_type")    // 'AIRPORT_PICKUP' | 'AIRPORT_DROPOFF' | 'EXAM_FEE'
   scheduledAt DateTime? @map("scheduled_at") // airport: arrival/departure datetime
@@ -2187,6 +2262,7 @@ model EmailLog {
   bookingId      Int?     @map("booking_id")
   providerId     Int?     @map("provider_id")  // accommodation provider context
   teacherId      Int?     @map("teacher_id")
+  groupId        Int?     @map("group_id")     // student-group context (group comms)
   fromEmail      String   @map("from_email")
   toEmail        String   @map("to_email")
   subject        String
@@ -2478,14 +2554,35 @@ model RefundRequest {
   // we keep a pointer here for the review page.
   visaRefusalDocId   Int?     @map("visa_refusal_doc_id")
 
+  // ── V1 legacy-tracker fields — folded in from the manual REFUNDS sheet + Aug-2026 triage.
+  //    Most predate the intake form, so these carry the accounts@/agent-tracked reality.
+  //    Balance is NOT stored — derived as amountRequested − (feeDeductionEur + amountRefunded).
+  lastContactAt   DateTime? @map("last_contact_at")           // "Latest contact"
+  escrowHeld      Boolean?  @map("escrow_held")               // funds held in TM/escrow ("In TM report?"); false ⇒ repay from our bank
+  tmRef           String?   @map("tm_ref")                    // TransferMate proforma ref (ULEARNP…)
+  tmAmount        Decimal?  @map("tm_amount") @db.Decimal(10,2)
+  tmStatus        String?   @map("tm_status")                 // TM-side status (Pending / Paid)
+  amountRefunded  Decimal   @default(0) @map("amount_refunded") @db.Decimal(10,2)  // already refunded
+  notes           String?   @db.Text                          // free-text tracking notes
+
   // Approval lifecycle.
-  status            String    @default("pending_review")   // pending_review | approved | sent_to_tm | rejected
+  status            String    @default("pending_review")   // pending_review | approved | sent_to_tm | sent_to_xero | rejected
   feeDeductionEur   Decimal   @default(300.00) @map("fee_deduction_eur") @db.Decimal(10,2)
   feeBreakdown      String    @default("€250 visa processing + €50 non-refundable registration fee") @map("fee_breakdown")
+  // Admin-approved refund amount (defaults to amountRequested; editable before dispatch).
+  // This is the figure that goes on the Xero refund Bill — the student's requested
+  // amount is never trusted blindly (a €1000 ask on a €100 entitlement gets corrected).
+  approvedAmountEur Decimal?  @map("approved_amount_eur") @db.Decimal(10,2)
   approvedById      Int?      @map("approved_by_id")
   approvedBy        SisUser?  @relation(fields: [approvedById], references: [id])
   approvedAt        DateTime? @map("approved_at")
   sentToTmAt        DateTime? @map("sent_to_tm_at")
+  sentToXeroAt      DateTime? @map("sent_to_xero_at")
+  xeroBillId        String?   @map("xero_bill_id")   // the ACCPAY refund Bill created on the Xero lane (Xero internal GUID)
+  xeroBillNumber    String?   @map("xero_bill_number") // the human Bill code on that Xero Bill (RFV-/RFC-/RFA-####)
+  xeroBillAmount    Decimal?  @map("xero_bill_amount") @db.Decimal(10,2) // amount on the latest Xero Bill (for update/void reversal)
+  xeroBillStatus    String?   @map("xero_bill_status")  // 'submitted' (sent, UNPAID) | 'paid' | 'voided' — only 'paid' counts toward Refunded
+  xeroBillPaidAt    DateTime? @map("xero_bill_paid_at") @db.Timestamp(3)
   rejectedAt        DateTime? @map("rejected_at")
   rejectReason      String?   @map("reject_reason") @db.Text
 

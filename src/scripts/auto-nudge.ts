@@ -19,6 +19,7 @@
  */
 import type { PrismaClient } from '../generated/prisma/client';
 import { sendEmail } from './email';
+import { emailTemplateWhere } from './email-templates';
 import fs from 'fs';
 import path from 'path';
 
@@ -200,7 +201,7 @@ export function autoNudgeScripts(prisma: PrismaClient) {
     const hosts = (await fetchSendableHosts()).filter(h => h.portalToken?.token);
     const matched = applyMatch(wave, inTier(wave, hosts), pool);
     const slug = TPL_SLUG[wave.template];
-    const tpl = await prisma.documentTemplate.findUnique({ where: { slug } });
+    const tpl = await prisma.documentTemplate.findFirst({ where: emailTemplateWhere(slug) });
     if (!tpl || tpl.templateType !== 'email') throw new Error(`template "${slug}" (email) not found`);
     const since = new Date(); since.setDate(since.getDate() - 6);
 

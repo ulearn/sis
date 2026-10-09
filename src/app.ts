@@ -14,6 +14,7 @@ import { PrismaClient } from './generated/prisma/client';
 import { setupLogger } from './scripts/logger';
 import { withBookingAudit } from './lib/prisma-audit';
 import { runWithAuditContext } from './lib/audit-context';
+import { isContractExempt } from './lib/contract-exempt';
 
 dotenv.config();
 setupLogger();
@@ -109,7 +110,7 @@ const ROLE_PERMISSIONS: Record<string, { deny: string[]; viewOnly: string[] }> =
   // forward guard (no such /sis/api route exists today). Template HTML writes
   // stay admin/accounts-only via the hard-coded check below — a service key
   // can read templates but never edit them.
-  service: { deny: ['users', 'sis-users'], viewOnly: [] },
+  service: { deny: ['users', 'sis-users', 'refunds'], viewOnly: [] },
   // Refunds are admin/accounts-only by directive (money-out flow). Add the
   // 'refunds' section to every non-finance role's deny list.
   // Bookings are NOT blanket view-only for ops roles. The financial component
@@ -612,7 +613,18 @@ app.get('/sis/verify/:token', async (req, res) => {
       );
     }
 
-    // Not an account token → treat as a document verification token.
+    // Not a LIVE account token. Two shapes reach here:
+    //   • 64-hex  → a student account-confirmation token that's already been used
+    //     (activation nulls it) or is otherwise gone. Land on a friendly
+    //     "already confirmed → log in" page, NOT the document-not-found 404.
+    //   • 22-char base64url → a document verification token (QR on issued LoAs).
+    if (/^[a-f0-9]{64}$/i.test(token)) {
+      return renderPage(
+        'Already confirmed',
+        'This confirmation link has already been used or expired. If you\'ve already confirmed your account, just log in with your email and password.',
+        { href: '/sis/login', label: 'Log in' },
+      );
+    }
     const docResult = await docScripts.verify(token);
     res.set('Cache-Control', 'no-store');
     return res.status(docResult ? 200 : 404).send(verificationPage(docResult));
@@ -819,6 +831,7 @@ function requirePartnerAuth(req: express.Request, res: express.Response, next: e
 const CONTRACT_GATE_ALLOWLIST = ['/me', '/contract', '/contract/preview.pdf', '/contract/preview.html', '/contract/signed.pdf', '/contract/sign'];
 async function requireSignedContract(req: express.Request, res: express.Response, next: express.NextFunction) {
   if (CONTRACT_GATE_ALLOWLIST.some(p => req.path === p)) return next();
+  if (isContractExempt(req.session.agencyId)) return next();   // non-commercial schools
   try {
     const agency = await prisma.agency.findUnique({
       where: { id: req.session.agencyId! },
@@ -929,11 +942,22 @@ app.get('/sis/api/clearance-public', async (_req, res) => {
       sale: d.sale ? { name: d.sale.name, endsAt: d.sale.endsAt, assignBy: (d.sale as any).assignBy } : null,
       offers: (d.offers || []).map((o: any) => ({
         id: o.id, title: o.title, subtitle: o.subtitle, category: o.category, session: o.session,
+        model: o.model, cap: o.cap,
         retailPrice: o.retailPrice, clearancePrice: o.clearancePrice, priceUnit: o.priceUnit,
         depositPerSeat: o.depositPerSeat, seatsTotal: o.seatsTotal, seatsTaken: o.seatsTaken, seatsLeft: o.seatsLeft,
       })),
     });
   } catch (e: any) { res.status(500).json({ error: e.message }); }
+});
+
+// ── Live clearance rates — single source of truth for the hub autoQuote. ──────
+// autoQuote reads Company `clearance_confirmed` (per-partner) off HubSpot, then
+// calls this (global, cached hub-side) for the AM/PM course-only net + whether a
+// sale is live. No live sale → autoQuote quotes normal AY price. Auth-exempt
+// (added to publicPaths) so the hub can read it without a session.
+app.get('/sis/api/clearance-rates', async (_req, res) => {
+  try { res.json(await clearanceScripts(prisma).clearanceRates()); }
+  catch (e: any) { res.status(500).json({ error: e.message }); }
 });
 
 // ── Public "Become a Host Family" application form ─────────────────────────
@@ -1141,7 +1165,7 @@ app.get('/sis/api/social-calendar/month', async (req, res) => {
 
 // ── Auth middleware ────────────────────────────
 // Public routes that skip auth:
-const publicPaths = ['/sis/login', '/sis/forgot', '/sis/reset', '/sis/auth/', '/sis/health', '/sis/verify/', '/sis/api/webhooks', '/sis/api/email/quiz-result', '/sis/api/tests/public/', '/sis/api/activities/image/', '/sis/api/social-calendar/', '/sis/api/clearance-public', '/sis/embed/', '/sis/host-apply', '/sis/api/host-application', '/sis/public/favicon.ico', '/sis/public/launch/', '/sis/partners/login', '/sis/partners/auth/', '/sis/partners/public/', '/sis/student/public/', '/sis/teachers/login', '/sis/teachers/auth/'];
+const publicPaths = ['/sis/login', '/sis/forgot', '/sis/reset', '/sis/auth/', '/sis/health', '/sis/verify/', '/sis/api/webhooks', '/sis/api/email/quiz-result', '/sis/api/tests/public/', '/sis/api/activities/image/', '/sis/api/social-calendar/', '/sis/api/clearance-public', '/sis/api/clearance-rates', '/sis/embed/', '/sis/host-apply', '/sis/api/host-application', '/sis/public/favicon.ico', '/sis/public/launch/', '/sis/partners/login', '/sis/partners/auth/', '/sis/partners/public/', '/sis/student/public/', '/sis/teachers/login', '/sis/teachers/auth/'];
 
 // Service-key auth: a Bearer token (SIS_SERVICE_KEY) lets an off-server caller
 // (e.g. a dashboard driving the cognitive layer) authenticate as a MACHINE,
@@ -1244,6 +1268,14 @@ function pathToSection(p: string): string {
 }
 
 app.use('/sis/api', (req, res, next) => {
+  // Public, token-authenticated endpoints (placement-test submit/draft/writing/
+  // lookup) are mounted under /sis/api but must NOT be role-gated. Now that the
+  // test runs same-origin (post-LMS-migration, 2026-09), a logged-in student
+  // posting their OWN placement result carries a student session cookie, so
+  // role='student' hits the 'tests' deny-list below and gets 403'd — silently
+  // losing every in-app result. requireAuth already bypasses these paths; mirror
+  // that here. (req.path is stripped of the /sis/api mount, so it's /tests/public/…)
+  if (req.path.startsWith('/tests/public/')) return next();
   const role = req.session.role || 'staff';
   const perms = ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.sales;
   const section = pathToSection(req.path);
@@ -1295,13 +1327,11 @@ app.get('/sis/payroll', (_req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'payroll.html'));
 });
 
-// Refund-request queue + review pages (auth via the global requireAuth).
-app.get('/sis/refunds', (_req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'public', 'refunds', 'queue.html'));
-});
-app.get('/sis/refunds/:id', (_req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'public', 'refunds', 'review.html'));
-});
+// Refund queue + review now live INSIDE the admin SPA (navigate('refunds') /
+// 'refund-detail') so they carry the standard sidebar/topbar frame like every other
+// page. Redirect the old standalone URLs (bookmarks / emailed links) into the SPA.
+app.get('/sis/refunds', (_req, res) => res.redirect('/sis/admin?view=refunds'));
+app.get('/sis/refunds/:id', (_req, res) => res.redirect('/sis/admin?view=refunds'));
 
 // Static reference data — ILEP programme codes (read-only, served from JSON file)
 app.get('/sis/api/ilep-codes', (_req, res) => {
@@ -1324,11 +1354,19 @@ app.use('/sis/api/tests/public', testRoutesPublic(prisma));     // LMS posts res
 app.use('/sis/api/tests', testRoutesStaff(prisma));              // staff-auth token issuance
 app.use('/sis/api/attendance', attendanceRoutes(prisma));
 app.use('/sis/api/transport', transportRoutes(prisma));
-// Refund requests — public webhook from Drupal (shared-secret auth inside
-// the route) + authenticated CRUD/approve/reject. Same router on both
-// mounts; the /webhook sub-route handles secret auth itself. Public path
-// is already covered by the '/sis/api/webhooks' entry in publicPaths.
-app.use('/sis/api/webhooks/refund-request', refundRoutes(prisma));
+// Refund requests. Two mounts:
+//  • /sis/api/webhooks/refund-request — PUBLIC (in publicPaths → bypasses auth).
+//    This path exists ONLY for the Drupal intake webhook (POST /webhook, guarded
+//    by the X-Refund-Secret shared secret inside the handler). The guard below
+//    hard-restricts this mount to exactly that one route — WITHOUT it, mounting
+//    the full router here exposed the entire refund CRUD (list/detail/refusal
+//    letters/bank details/create/patch) UNAUTHENTICATED, because the role gate
+//    sees the section as "webhooks", not "refunds". (Security fix — Neil, 2026-09-21)
+//  • /sis/api/refunds — authenticated + role-gated (admin/accounts) CRUD/approve.
+app.use('/sis/api/webhooks/refund-request', (req, res, next) => {
+  if (req.method === 'POST' && req.path === '/webhook') return next();
+  return res.status(404).json({ success: false, error: 'Not found' });
+}, refundRoutes(prisma));
 app.use('/sis/api/refunds', refundRoutes(prisma));
 app.use('/sis/api/documents', documentRoutes(prisma));
 app.use('/sis/api/email', emailRoutes(prisma));

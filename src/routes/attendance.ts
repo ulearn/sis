@@ -264,7 +264,8 @@ export function attendanceRoutes(prisma: PrismaClient) {
   // Mark attendance for a single student
   router.post('/mark', async (req, res) => {
     try {
-      const result = await scripts.markAttendance(req.body);
+      const who = req.body.recordedBy || (req.session as any)?.user || (req.session as any)?.displayName || null;
+      const result = await scripts.markAttendance({ ...req.body, recordedBy: who });
       res.json(result);
     } catch (e) { res.status(400).json({ error: String(e) }); }
   });
@@ -272,7 +273,8 @@ export function attendanceRoutes(prisma: PrismaClient) {
   // Bulk mark attendance
   router.post('/bulk', async (req, res) => {
     try {
-      const results = await scripts.bulkMarkAttendance(req.body.records);
+      const who = (req.session as any)?.user || (req.session as any)?.displayName || null;
+      const results = await scripts.bulkMarkAttendance(req.body.records, who);
       res.json({ updated: results.length });
     } catch (e) { res.status(400).json({ error: String(e) }); }
   });
@@ -290,6 +292,26 @@ export function attendanceRoutes(prisma: PrismaClient) {
     try {
       const result = await scripts.studentSummary(parseInt(req.params.studentId));
       res.json(result);
+    } catch (e) { res.status(500).json({ error: String(e) }); }
+  });
+
+  // ---- Monitoring dashboard ----
+  router.get('/monitor', async (req, res) => {
+    try {
+      const classId = req.query.classId ? parseInt(req.query.classId as string) : null;
+      const from = (req.query.from as string) || null;
+      const to = (req.query.to as string) || null;
+      res.json(await scripts.monitor({ classId, from, to }));
+    } catch (e) { res.status(500).json({ error: String(e) }); }
+  });
+
+  router.post('/send-warning', async (req, res) => {
+    try {
+      const ids = Array.isArray(req.body?.studentIds)
+        ? req.body.studentIds.map((x: any) => parseInt(x)).filter((n: number) => !!n) : [];
+      if (!ids.length) return res.status(400).json({ error: 'No students selected' });
+      const who = (req.session as any)?.user || (req.session as any)?.displayName || null;
+      res.json(await scripts.sendWarnings(ids, who));
     } catch (e) { res.status(500).json({ error: String(e) }); }
   });
 

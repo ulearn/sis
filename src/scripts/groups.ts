@@ -19,9 +19,26 @@ export function groupScripts(prisma: PrismaClient) {
   const arrivalOf = (g: { accomStart: Date | null; courseStart: Date | null }) =>
     g.accomStart ?? g.courseStart ?? null;
 
+  // Age for display: from a real birthday if we have one, else the raw age we
+  // stashed in `note` at group import ("Age at intake: N") when only an age was
+  // given — we keep birthday null in that case so the passport reader can still
+  // fill the exact DOB later.
+  function ageFromStudent(birthday: Date | null, note: string | null): number | null {
+    if (birthday) {
+      const d = new Date(birthday);
+      let a = new Date().getUTCFullYear() - d.getUTCFullYear();
+      const m = new Date().getUTCMonth() - d.getUTCMonth();
+      if (m < 0 || (m === 0 && new Date().getUTCDate() < d.getUTCDate())) a--;
+      return a >= 0 && a < 120 ? a : null;
+    }
+    const m = (note || '').match(/age at intake:\s*(\d{1,3})/i);
+    return m ? parseInt(m[1], 10) : null;
+  }
+
   /** Overview list — one row per group, member count only (no student detail — perf). */
-  async function listGroups(opts: { upcomingOnly?: boolean } = {}) {
+  async function listGroups(opts: { upcomingOnly?: boolean; agencyId?: number } = {}) {
     const groups = await prisma.studentGroup.findMany({
+      where: opts.agencyId ? { agencyId: opts.agencyId } : undefined,
       include: { _count: { select: { bookings: true } } },
     });
     const now = new Date();
@@ -35,6 +52,7 @@ export function groupScripts(prisma: PrismaClient) {
       membersLoaded: g._count.bookings,
       leaders: g.leaders,
       groupType: g.groupType,
+      activitiesPack: g.activitiesPack,
       courseName: g.courseName,
       courseStart: g.courseStart,
       courseEnd: g.courseEnd,
@@ -42,6 +60,11 @@ export function groupScripts(prisma: PrismaClient) {
       accomStart: g.accomStart,
       accomEnd: g.accomEnd,
       hubspotDealId: g.hubspotDealId,
+      agencyId: g.agencyId,
+      // Status mirrors the invoice: an invoice number means it's been billed;
+      // otherwise it's still a skeletal group created off the deal.
+      hubspotInvoiceNumber: g.hubspotInvoiceNumber,
+      status: g.hubspotInvoiceNumber ? 'Invoiced' : 'Pending',
       arrival: arrivalOf(g),
     }));
     // Sort by nearest arrival (accom start, else course start); nulls last.
@@ -67,7 +90,7 @@ export function groupScripts(prisma: PrismaClient) {
       where: { groupId: id },
       select: {
         id: true, status: true, serviceStart: true, serviceEnd: true,
-        student: { select: { id: true, firstName: true, lastName: true, birthday: true, currentLevel: true, nationality: true, email: true, hubspotContactId: true } },
+        student: { select: { id: true, firstName: true, lastName: true, birthday: true, currentLevel: true, nationality: true, email: true, phone: true, gender: true, note: true, hubspotContactId: true } },
         courses: { select: { name: true, category: true }, take: 1 },
       },
       orderBy: { id: 'asc' },
@@ -80,9 +103,12 @@ export function groupScripts(prisma: PrismaClient) {
         studentId: b.student?.id,
         name: `${b.student?.firstName || ''} ${b.student?.lastName || ''}`.trim(),
         dob: b.student?.birthday || null,
+        age: ageFromStudent(b.student?.birthday || null, b.student?.note || null),
+        gender: b.student?.gender === 1 ? 'male' : b.student?.gender === 2 ? 'female' : null,
+        phone: b.student?.phone || null,
         level: b.student?.currentLevel || null,
         nationality: b.student?.nationality || null,
-        email: b.student?.email || null,
+        email: (b.student?.email || '').includes('@grp-') ? null : (b.student?.email || null),
         hubspotContactId: b.student?.hubspotContactId || null,
         course: b.courses?.[0]?.name || null,
       })),
@@ -109,7 +135,7 @@ export function groupScripts(prisma: PrismaClient) {
    */
   async function commitGroupStudents(
     groupId: number,
-    students: Array<{ fullName?: string; firstName?: string; lastName?: string; dob?: string | null; levelCEFR?: string | null; gender?: string | null; nationality?: string | null }>,
+    students: Array<{ fullName?: string; firstName?: string; lastName?: string; dob?: string | null; age?: number | string | null; levelCEFR?: string | null; gender?: string | null; nationality?: string | null; email?: string | null; phone?: string | null }>,
     opts: { createdBy?: string | null } = {},
   ) {
     const g = await prisma.studentGroup.findUnique({ where: { id: groupId } });
@@ -127,13 +153,23 @@ export function groupScripts(prisma: PrismaClient) {
     for (const s of students) {
       const first = (s.firstName || (s.fullName || '').split(/\s+/)[0] || 'Student').trim();
       const last = (s.lastName || (s.fullName || '').split(/\s+/).slice(1).join(' ') || '').trim();
-      const email = synthEmail(first, last, g.hubspotDealId, used);
+      // Use a provided email as-is (juniors may legitimately share a parent's
+      // address — email isn't unique in SIS). Only synth a placeholder when none
+      // was given, so the record still has a stable key.
+      const provided = (s.email || '').trim();
+      const email = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(provided) ? provided : synthEmail(first, last, g.hubspotDealId, used);
       const level = s.levelCEFR || null;
+      // Age handling: a real DOB wins. If only an age was given, stash it in `note`
+      // and leave birthday null so the passport reader can fill the exact DOB later.
+      const ageNum = (s.age != null && String(s.age).trim() !== '') ? parseInt(String(s.age), 10) : NaN;
+      const note = (!s.dob && !isNaN(ageNum)) ? `Age at intake: ${ageNum} (group import)` : null;
       const student = await prisma.student.create({
         data: {
           firstName: first, lastName: last || null, email,
+          phone: (s.phone || '').trim() || null,
           gender: s.gender === 'male' ? 1 : s.gender === 'female' ? 2 : null,
           birthday: s.dob ? new Date(s.dob + 'T00:00:00.000Z') : null,
+          note,
           nationality: s.nationality || null,
           currentLevel: level,                       // Learning-section starting level (provisional)
           studentType: isJunior ? ('JUNIOR' as any) : ('ADULT' as any),

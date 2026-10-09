@@ -3,6 +3,7 @@ import { PrismaClient } from '../generated/prisma/client';
 import { documentScripts, buildGrossReceiptHtml } from '../scripts/documents';
 import { sendEmail } from '../scripts/email';
 import { sendStudentEmail } from './email';
+import { emailTemplateWhere } from '../scripts/email-templates';
 import multer from 'multer';
 import { compressUploads } from '../lib/compress';
 import { translateTemplateContent, TARGET_LANGUAGES } from '../scripts/translate-template';
@@ -409,7 +410,7 @@ export function documentRoutes(prisma: PrismaClient) {
 
       // ── Student ──
       if (notifyStudent) {
-        const tpl = await prisma.documentTemplate.findFirst({ where: { slug: 'policy-student', templateType: 'email' } });
+        const tpl = await prisma.documentTemplate.findFirst({ where: emailTemplateWhere('policy-student', { templateType: 'email' }) });
         if (!tpl) results.student = { status: 'failed', reason: 'policy-student template missing' };
         else if (!validEmail(student.email)) results.student = { status: 'skipped', to: student.email, reason: 'no valid student email' };
         else {
@@ -426,7 +427,7 @@ export function documentRoutes(prisma: PrismaClient) {
 
       // ── Agent (agency on the booking) ──
       if (notifyAgent) {
-        const tpl = await prisma.documentTemplate.findFirst({ where: { slug: 'policy-agent', templateType: 'email' } });
+        const tpl = await prisma.documentTemplate.findFirst({ where: emailTemplateWhere('policy-agent', { templateType: 'email' }) });
         const agentEmail = tokens['agency.email'];
         if (!tpl) results.agent = { status: 'failed', reason: 'policy-agent template missing' };
         else if (!validEmail(agentEmail)) results.agent = { status: 'skipped', to: agentEmail || null, reason: 'no valid agency email' };
@@ -468,27 +469,43 @@ export function documentRoutes(prisma: PrismaClient) {
 
       const student = await prisma.student.findUnique({ where: { id: doc.studentId }, select: { email: true } });
       const { tokens } = await scripts.resolveTokens(doc.studentId, doc.bookingId ?? null);
+      (tokens as any)['document.name'] = (doc as any).template?.name || (doc as any).documentType || 'document';
       const results: Record<string, { status: string; to?: string | null; reason?: string }> = {};
+
+      // Pick the notify email per document type. A Receipt drives the student to
+      // log in with its own wording (Receipt-Notify-Student) and is student-only
+      // — receipts are billed to the student, so there's no agent notify. Every
+      // other doc (LoA etc.) keeps the dual student+agent LoA notify.
+      const isReceipt = (doc as any).documentType === 'accounts' || (doc as any).template?.slug === 'ULearn-Receipt';
+      const isLoA = /visa/i.test((doc as any).documentType || '') || /^lo?a[-_]/i.test((doc as any).template?.slug || '');
+      // Receipt keeps its own; LoA keeps the dual student+agent LoA notify; every OTHER success doc
+      // (Student Letter, Attendance, Exit, Certificate, Holiday, Insurance…) uses the generic student notify.
+      const studentSlug = isReceipt ? 'Receipt-Notify-Student' : (isLoA ? 'LoA-Attach-Student' : 'Doc-Notify-Student');
 
       // ── Student ──
       if (notifyStudent) {
-        const tpl = await prisma.documentTemplate.findFirst({ where: { slug: 'LoA-Attach-Student', templateType: 'email' } });
-        if (!tpl) results.student = { status: 'failed', reason: 'LoA-Attach-Student template missing' };
+        const tpl = await prisma.documentTemplate.findFirst({ where: emailTemplateWhere(studentSlug, { templateType: 'email' }) });
+        if (!tpl) results.student = { status: 'failed', reason: `${studentSlug} template missing` };
         else if (!validEmail(student?.email)) results.student = { status: 'skipped', to: student?.email, reason: 'no valid student email' };
         else {
           await scripts.sendDocument({
             docId, to: student!.email!, from: 'success@ulearnschool.com', fromName: 'ULearn',
             subject: scripts.renderTemplate(tpl.subject || tpl.name, tokens),
             body: scripts.renderTemplate(tpl.htmlTemplate, tokens), sentBy,
-            attach: false,   // notify-only — the LoA lives in their ULearn account
+            // LoA is notify-only (lives in the ULearn account). The Receipt is a
+            // deliberate exception: an escrow/visa customer is at arm's length —
+            // not yet a student, funds not with us — so we ATTACH the PDF so they
+            // can get on with the embassy application, while still keeping the
+            // account-creation instructions in the body.
+            attach: isReceipt,
           });
           results.student = { status: 'sent', to: student!.email };
         }
       }
 
-      // ── Agent (agency on the booking) ──
-      if (notifyAgent) {
-        const tpl = await prisma.documentTemplate.findFirst({ where: { slug: 'LoA-Attach-Agent', templateType: 'email' } });
+      // ── Agent (agency on the booking) — LoA only, never for receipts ──
+      if (notifyAgent && isLoA) {
+        const tpl = await prisma.documentTemplate.findFirst({ where: emailTemplateWhere('LoA-Attach-Agent', { templateType: 'email' }) });
         const agentEmail = tokens['agency.email'];
         if (!tpl) results.agent = { status: 'failed', reason: 'LoA-Attach-Agent template missing' };
         else if (!validEmail(agentEmail)) results.agent = { status: 'skipped', to: agentEmail || null, reason: 'no valid agency email' };
@@ -623,6 +640,19 @@ export function documentRoutes(prisma: PrismaClient) {
   // SIS would only create drift). It's the same invoice an agent was billed NET
   // for, re-presented at GROSS — i.e. the commission is LEFT IN (the order-level
   // discount line is simply not shown). Receipt → paid invoices only.
+  // Produce the gross receipt as a first-class document record (issued), so it
+  // rides the LoA pipeline: appears in the student's list, portal + app, and can
+  // be Sent / Notified. Reuses buildGrossReceiptHtml (HubSpot-invoice pull).
+  router.post('/receipt', async (req, res) => {
+    try {
+      const bookingId = parseInt(String(req.body?.bookingId), 10);
+      if (!Number.isFinite(bookingId)) return res.status(400).json({ error: 'bookingId required' });
+      const issuedBy = (req as any).session?.user || 'admin';
+      const doc = await scripts.generateReceiptDocument(bookingId, issuedBy);
+      res.json({ success: true, document: { id: doc.id, status: doc.status } });
+    } catch (e: any) { res.status(400).json({ error: String(e?.message ?? e) }); }
+  });
+
   router.get('/net-to-gross/:bookingId', async (req, res) => {
     try {
       const bookingId = parseInt(req.params.bookingId as string);

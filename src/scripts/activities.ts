@@ -94,6 +94,8 @@ export function activitiesScripts(prisma: PrismaClient) {
       cost: data.cost != null && data.cost !== '' ? parseFloat(data.cost) : null,
       location: data.location || null,
       imageFilename: data.imageFilename || null,
+      // Defaults ON; only an explicit false hides it from the student app.
+      appVisible: data.appVisible !== false,
       createdBy: byUser,
     };
     if (!payload.title) throw new Error('Title required');
@@ -111,7 +113,20 @@ export function activitiesScripts(prisma: PrismaClient) {
     if ('cost' in data) patch.cost = data.cost != null && data.cost !== '' ? parseFloat(data.cost) : null;
     if ('location' in data) patch.location = data.location || null;
     if ('imageFilename' in data) patch.imageFilename = data.imageFilename || null;
+    if ('appVisible' in data) patch.appVisible = data.appVisible !== false;
     return prisma.activity.update({ where: { id }, data: patch });
+  }
+
+  // Bulk app-visibility toggle (admin month table multiselect). One write for
+  // many activities — used to pull/restore a batch from the student app feed.
+  async function setAppVisibility(ids: number[], visible: boolean) {
+    const clean = (ids || []).map(n => Number(n)).filter(n => Number.isInteger(n));
+    if (!clean.length) return { updated: 0 };
+    const r = await prisma.activity.updateMany({
+      where: { id: { in: clean } },
+      data: { appVisible: !!visible },
+    });
+    return { updated: r.count };
   }
 
   async function remove(id: number) {
@@ -275,7 +290,9 @@ export function activitiesScripts(prisma: PrismaClient) {
     const fwd60 = new Date(today); fwd60.setDate(fwd60.getDate() + 60);
 
     const activities = await prisma.activity.findMany({
-      where: { date: { gte: back7, lte: fwd60 } },
+      // appVisible gate — the student app shows only in-app activities; the
+      // public website feed is separate and unaffected.
+      where: { date: { gte: back7, lte: fwd60 }, appVisible: true },
       orderBy: { date: 'asc' },
       include: {
         attendees: {
@@ -300,7 +317,7 @@ export function activitiesScripts(prisma: PrismaClient) {
 
   return {
     listForRange, listForMonth, getById,
-    create, update, remove, publish,
+    create, update, remove, publish, setAppVisibility,
     rsvp, cancelRsvp, markAttended, markPresent, studentFeed,
   };
 }

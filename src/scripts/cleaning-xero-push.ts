@@ -18,6 +18,7 @@
 
 import { PrismaClient } from '../generated/prisma/client';
 import { getAuthedXero } from './xero';
+import { accommodationScripts } from './accommodation';
 
 const CHECKIN_DESC = 'Check In/Out';
 const CHECKIN_ACCT = 'B129';
@@ -61,24 +62,32 @@ export async function pushCleaningToXero(
   if (!provider) throw new Error('Provider not found');
   if (!provider.cleaningEnabled) throw new Error('Cleaning not enabled on this provider');
 
-  // Window must match getCleaningQueue: last week's Monday → +28 days.
-  // Anything marked Done that's visible in Kelly's list should be pushed.
-  // (Previous version used strict this-week-Mon→Sun and dropped weekend
-  // turnovers cleaned the prior Sat/Sun — they were on screen but not in
-  // the count.)
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  const thisMonday = mondayOf(today);
-  const monday = new Date(thisMonday); monday.setDate(monday.getDate() - 7);
-  const horizon = new Date(today.getTime() + 28 * 86400000);
+  // Source the count from getCleaningQueue so the Xero quantity matches the
+  // grouped, PER-ROOM view (Option B) — a couple sharing a 2-bed room is one
+  // turnover, not two; only genuinely shared rooms (Twin/Shared) bill per bed.
+  const { items } = await accommodationScripts(prisma).getCleaningQueue(providerId);
 
-  const count = await prisma.bookingAccommodation.count({
-    where: {
-      cleanedAt: { not: null },
-      endDate: { gte: monday, lte: horizon },
-      cleanCancelledAt: null,
-      bed: { is: { room: { is: { property: { is: { providerId } } } } } },
-    },
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const thisMonday = mondayOf(today); // current ISO-week Monday — labels weekOf AND scopes billing
+
+  // Bill ONLY this week's turnovers. The queue window is deliberately wide
+  // (last-Monday → +28d) so Kelly can verify last weekend's cleans on a Monday,
+  // but a checkout CLEANED in a prior week was already billed on that week's
+  // bill — re-counting it here double-pays Natia (issue #50: "old entities
+  // polluting the current week output"). Scope to cleanedAt in the current ISO
+  // week so each turnover is billed exactly once, in the week it was cleaned.
+  //
+  // Belt-and-braces (issue #50): a turnover is stamped `cleanBilledAt` once it's
+  // billed. We EXCLUDE any turnover already billed on a PRIOR week's (closed)
+  // bill — that's the only way a re-mark could otherwise double-pay. A turnover
+  // billed THIS week (billedAt >= thisMonday) stays in the set so the SET-based
+  // quantity remains idempotent across repeated pushes in the same week.
+  const billable = items.filter((i: any) => {
+    if (!i.cleanedAt || new Date(i.cleanedAt) < thisMonday) return false;     // this week's cleans only
+    if (i.billedAt && new Date(i.billedAt) < thisMonday) return false;        // already billed on a prior bill → never again
+    return true;
   });
+  const count = billable.length;
 
   if (count === 0) {
     throw new Error('Nothing marked Done this week yet — nothing to push');
@@ -156,6 +165,19 @@ export async function pushCleaningToXero(
   });
 
   const after = updated.body.invoices?.[0] || bill;
+
+  // Stamp every bed-placement of the billed turnovers so none can be billed
+  // again — AFTER the Xero write succeeds. If the write throws we never reach
+  // here, so nothing is stamped and a re-push simply re-SETs the same quantity
+  // (SET semantics ⇒ no double-count). The stamp only ever prevents billing;
+  // it never causes it, so any failure errs to UNDER-billing, never a duplicate.
+  const billedIds = billable.flatMap((i: any) => (i.ids && i.ids.length ? i.ids : [i.id]));
+  if (billedIds.length) {
+    await prisma.bookingAccommodation.updateMany({
+      where: { id: { in: billedIds } },
+      data: { cleanBilledAt: new Date() },
+    });
+  }
 
   return {
     count,

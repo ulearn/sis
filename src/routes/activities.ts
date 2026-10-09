@@ -100,6 +100,16 @@ export function activitiesRoutes(prisma: PrismaClient) {
     } catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }
   });
 
+  // Bulk app-visibility toggle for the admin month table multiselect.
+  // Body: { ids: number[], visible: boolean }. Registered before PATCH /:id is
+  // irrelevant (distinct POST path), but kept here next to the single PATCH.
+  router.post('/app-visibility', async (req, res) => {
+    try {
+      const { ids, visible } = req.body || {};
+      res.json(await scripts.setAppVisibility(Array.isArray(ids) ? ids : [], visible !== false));
+    } catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }
+  });
+
   router.patch('/:id', async (req, res) => {
     try { res.json(await scripts.update(parseInt(req.params.id, 10), req.body || {})); }
     catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }

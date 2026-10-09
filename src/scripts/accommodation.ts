@@ -182,6 +182,7 @@ export function accommodationScripts(prisma: PrismaClient) {
 
   async function addRoom(propertyId: number, data: Record<string, any>) {
     if (data.capacity) data.capacity = parseInt(data.capacity);
+    if (data.weeklyRate != null && data.weeklyRate !== '') data.weeklyRate = parseFloat(data.weeklyRate);
     for (const k of Object.keys(data)) { if (data[k] === '') data[k] = null; }
     coerceRoomDates(data);
     const room = await prisma.accommodationRoom.create({ data: { propertyId, ...data } as any });
@@ -194,6 +195,7 @@ export function accommodationScripts(prisma: PrismaClient) {
 
   async function updateRoom(id: number, data: Record<string, any>) {
     if (data.capacity) data.capacity = parseInt(data.capacity);
+    if (data.weeklyRate != null && data.weeklyRate !== '') data.weeklyRate = parseFloat(data.weeklyRate);
     for (const k of Object.keys(data)) { if (data[k] === '') data[k] = null; }
     coerceRoomDates(data);
     return prisma.accommodationRoom.update({ where: { id }, data: data as any });
@@ -743,9 +745,12 @@ export function accommodationScripts(prisma: PrismaClient) {
     const adjacent = siblings.find(s => {
       const sStart = new Date(s.startDate).getTime();
       const sEnd = new Date(s.endDate).getTime();
-      // sibling ends just before this starts, or sibling starts just after this ends
-      return (sEnd + DAY >= thisStart && sEnd < thisStart)
-          || (sStart - DAY <= thisEnd && sStart > thisEnd)
+      // sibling ends just before/on this start, or sibling starts just after/on this end.
+      // Uses <= / >= (not < / >) so segments that SHARE a boundary date — one checks
+      // out the same day the next checks in (e.g. 27 Sep / 27 Sep) — count as adjacent
+      // and rejoin. Strict < / > wrongly refused same-day-boundary rejoins (issue #59).
+      return (sEnd + DAY >= thisStart && sEnd <= thisStart)
+          || (sStart - DAY <= thisEnd && sStart >= thisEnd)
           || (sStart === thisStart + DAY || sEnd === thisStart - DAY)
           || (sEnd + DAY === thisStart || sStart - DAY === thisEnd);
     });
@@ -793,6 +798,37 @@ export function accommodationScripts(prisma: PrismaClient) {
     return [propName, r, bedName].filter(Boolean).join(' / ');
   }
 
+  // Room types that turn over PER BED rather than per room. Only genuinely
+  // shared rooms (multiple unrelated guests, independent check-in/out) belong
+  // here — e.g. Capel St A1/Room 4 (`Twin/Shared`). Every other type (couple
+  // doubles, singles) is one clean per room. Keyed off the existing
+  // room_type so no schema change is needed (Neil, Option B, 2026-08-26).
+  const PER_BED_ROOM_TYPES = new Set(['Twin/Shared']);
+
+  // Resolve a placement to every bed-placement that shares its clean job.
+  // For a per-room clean that's all beds in the same room checking out the
+  // same day; for a shared (per-bed) room it's just the placement itself.
+  // Used so mark/unmark/cancel/checkout-at cascade to the whole room without
+  // the caller ever needing to know the grouping rule.
+  async function roomMateIds(placementId: number): Promise<number[]> {
+    const p = await prisma.bookingAccommodation.findUnique({
+      where: { id: placementId },
+      include: { bed: { include: { room: { select: { id: true, roomType: true } } } } },
+    });
+    if (!p || !p.bed?.room) return [placementId];
+    if (PER_BED_ROOM_TYPES.has(p.bed.room.roomType || '')) return [placementId];
+    const mates = await prisma.bookingAccommodation.findMany({
+      where: {
+        endDate: p.endDate,
+        cleanCancelledAt: null,
+        bed: { is: { roomId: p.bed.room.id } },
+      },
+      select: { id: true },
+    });
+    const ids = mates.map((m) => m.id);
+    return ids.includes(placementId) ? ids : [...ids, placementId];
+  }
+
   async function getCleaningQueue(providerId: number) {
     const provider = await prisma.accommodationProvider.findUnique({
       where: { id: providerId },
@@ -811,12 +847,18 @@ export function accommodationScripts(prisma: PrismaClient) {
     //
     // Forward horizon stays at 4 weeks so we naturally cover ~4 turnovers
     // per bed without the list growing unbounded.
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    const thisMonday = new Date(today);
-    thisMonday.setDate(thisMonday.getDate() + (thisMonday.getDay() === 0 ? -6 : 1 - thisMonday.getDay()));
-    thisMonday.setHours(0, 0, 0, 0);
-    const monday = new Date(thisMonday); monday.setDate(monday.getDate() - 7);
-    const horizon = new Date(today.getTime() + 28 * 86400000);
+    // endDate is @db.Date (date-only). Prisma extracts the DATE from a JS Date
+    // in UTC, and Dublin runs AHEAD of UTC — so a local-midnight boundary lands
+    // at 23:00 UTC the PREVIOUS day and its extracted date is a day early,
+    // pulling the prior Sunday's checkouts into the window (the week-of-10th
+    // rows Kelly still saw). Build the boundaries as UTC-midnight of the intended
+    // local date so the @db.Date comparison is exact.
+    const t = new Date();
+    const dow = t.getDay(); // local day-of-week: 0=Sun..6=Sat
+    // This week's Monday, then roll back 7 days, as UTC-midnight dates.
+    const thisMonday = new Date(Date.UTC(t.getFullYear(), t.getMonth(), t.getDate() + (dow === 0 ? -6 : 1 - dow)));
+    const monday = new Date(thisMonday); monday.setUTCDate(monday.getUTCDate() - 7);
+    const horizon = new Date(Date.UTC(t.getFullYear(), t.getMonth(), t.getDate() + 28));
 
     const placements = await prisma.bookingAccommodation.findMany({
       where: {
@@ -832,7 +874,14 @@ export function accommodationScripts(prisma: PrismaClient) {
       orderBy: { endDate: 'asc' },
     });
 
-    const items = [] as any[];
+    // Enrich each bed-placement, then group.
+    //
+    // Option B (Neil, 2026-08-26): the queue counts one clean PER ROOM, not
+    // per bed — a couple checking out of a 2-bed room on the same day is a
+    // SINGLE clean, not two. The sole exception is a genuinely shared room
+    // (`room_type = 'Twin/Shared'`, e.g. Capel St A1/Room 4), where each bed
+    // turns over independently and must stay per-bed. See PER_BED_ROOM_TYPES.
+    const recs = [] as any[];
     for (const p of placements) {
       const checkoutAt = p.cleanCheckoutAt ?? noonOf(p.endDate);
       const next = await prisma.bookingAccommodation.findFirst({
@@ -841,28 +890,87 @@ export function accommodationScripts(prisma: PrismaClient) {
         include: { booking: { include: { student: { select: { firstName: true, lastName: true } } } } },
       });
       const nextCheckinAt = next ? twoOf(next.startDate) : null;
+      recs.push({
+        p,
+        roomId: p.bed?.room.id ?? null,
+        roomType: p.bed?.room.roomType || '',
+        propName: p.bed?.room.property.name || '',
+        roomName: p.bed?.room.name || '',
+        bedName: p.bed?.name || '',
+        checkoutAt,
+        nextCheckinAt,
+        student: p.booking?.student ? `${p.booking.student.firstName} ${p.booking.student.lastName}` : null,
+        nextStudent: next?.booking?.student ? `${next.booking.student.firstName} ${next.booking.student.lastName}` : null,
+      });
+    }
+
+    // Group non-shared rooms by roomId + checkout date; shared rooms stay solo.
+    const groups = new Map<string, any[]>();
+    for (const r of recs) {
+      const dayKey = r.checkoutAt.toISOString().slice(0, 10);
+      const key = (PER_BED_ROOM_TYPES.has(r.roomType) || r.roomId == null)
+        ? `bed:${r.p.id}`
+        : `room:${r.roomId}:${dayKey}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(r);
+    }
+
+    const items = [] as any[];
+    for (const g of groups.values()) {
+      const primary = g[0];
+      const ids = g.map((r) => r.p.id);
+      const checkoutAt = primary.checkoutAt; // same room+day → identical
+      // Most-urgent next check-in across the beds in this room.
+      const nextCheckins = g.map((r) => r.nextCheckinAt).filter(Boolean) as Date[];
+      const nextCheckinAt = nextCheckins.length
+        ? new Date(Math.min(...nextCheckins.map((d) => d.getTime())))
+        : null;
       const urgencyHours = nextCheckinAt
         ? Math.round((nextCheckinAt.getTime() - checkoutAt.getTime()) / 36e5)
         : null;
-      const propName = p.bed?.room.property.name || '';
-      const roomName = p.bed?.room.name || '';
-      const bedName = p.bed?.name || '';
-      const apartmentRoom = joinPropRoomBed(propName, roomName, bedName);
-      const student = p.booking?.student ? `${p.booking.student.firstName} ${p.booking.student.lastName}` : null;
-      const nextStudent = next?.booking?.student ? `${next.booking.student.firstName} ${next.booking.student.lastName}` : null;
+      // One row per room: drop the bed suffix unless it's a per-bed shared room.
+      const perBed = g.length === 1 && (PER_BED_ROOM_TYPES.has(primary.roomType) || primary.roomId == null);
+      const apartmentRoom = perBed
+        ? joinPropRoomBed(primary.propName, primary.roomName, primary.bedName)
+        : joinPropRoomBed(primary.propName, primary.roomName, '');
+      const uniq = (xs: (string | null)[]) => Array.from(new Set(xs.filter(Boolean))) as string[];
+      const students = uniq(g.map((r) => r.student));
+      const nextStudents = uniq(g.map((r) => r.nextStudent));
+      // A REGULAR room (strangers can't share it — single or double bed, any
+      // occupancy) is ONE clean per turnover: one room, one set of sheets. So it
+      // reads as cleaned once ANY of its placements is marked — marking one
+      // cascades to the rest via roomMateIds, and a legacy half-marked pair (one
+      // bed marked before the cascade existed) still counts as the single clean
+      // it was. Only Twin/Shared (A1/R4) — where strangers sleep together — is
+      // per-bed (single-member groups here), so each bed turns over on its own.
+      const cleanedAtVals = g.map((r) => r.p.cleanedAt).filter(Boolean) as Date[];
+      const cleanedAt = cleanedAtVals.length
+        ? new Date(Math.max(...cleanedAtVals.map((d) => d.getTime())))
+        : null;
+      const cleanedBy = g.find((r) => r.p.cleanedBy)?.p.cleanedBy ?? null;
+      // Billed state for the room = the latest billed stamp across its beds (any
+      // bed billed ⇒ the turnover was billed). Drives the "bill once, ever" guard.
+      const billedAtVals = g.map((r) => (r.p as any).cleanBilledAt).filter(Boolean) as Date[];
+      const billedAt = billedAtVals.length
+        ? new Date(Math.max(...billedAtVals.map((d) => d.getTime())))
+        : null;
       items.push({
-        id: p.id,
+        id: primary.p.id,
+        ids,
         apartmentRoom,
-        student,
+        student: students.join(', ') || null,
         checkoutAt: checkoutAt.toISOString(),
-        checkoutOverride: !!p.cleanCheckoutAt,
+        checkoutOverride: g.some((r) => !!r.p.cleanCheckoutAt),
         nextCheckinAt: nextCheckinAt?.toISOString() ?? null,
-        nextStudent,
+        nextStudent: nextStudents.join(', ') || null,
         urgencyHours,
-        cleanedAt: p.cleanedAt?.toISOString() ?? null,
-        cleanedBy: p.cleanedBy ?? null,
+        cleanedAt: cleanedAt?.toISOString() ?? null,
+        cleanedBy,
+        billedAt: billedAt?.toISOString() ?? null,
       });
     }
+    // Preserve endDate-ascending order (groups built from an ordered scan).
+    items.sort((a, b) => a.checkoutAt.localeCompare(b.checkoutAt));
 
     return { provider, items };
   }
@@ -913,22 +1021,25 @@ export function accommodationScripts(prisma: PrismaClient) {
   }
 
   async function setCleanCheckoutAt(placementId: number, iso: string | null) {
-    return prisma.bookingAccommodation.update({
-      where: { id: placementId },
+    const ids = await roomMateIds(placementId);
+    return prisma.bookingAccommodation.updateMany({
+      where: { id: { in: ids } },
       data: { cleanCheckoutAt: iso ? new Date(iso) : null },
     });
   }
 
   async function markCleaned(placementId: number, by: string | null) {
-    return prisma.bookingAccommodation.update({
-      where: { id: placementId },
+    const ids = await roomMateIds(placementId);
+    return prisma.bookingAccommodation.updateMany({
+      where: { id: { in: ids } },
       data: { cleanedAt: new Date(), cleanedBy: by || null },
     });
   }
 
   async function unmarkCleaned(placementId: number) {
-    return prisma.bookingAccommodation.update({
-      where: { id: placementId },
+    const ids = await roomMateIds(placementId);
+    return prisma.bookingAccommodation.updateMany({
+      where: { id: { in: ids } },
       data: { cleanedAt: null, cleanedBy: null },
     });
   }
@@ -938,13 +1049,188 @@ export function accommodationScripts(prisma: PrismaClient) {
   // Kelly's queue. Caller must surface a confirm dialog upstream because
   // this is functionally a soft-delete of the queue row.
   async function cancelClean(placementId: number, by: string | null) {
-    return prisma.bookingAccommodation.update({
-      where: { id: placementId },
+    const ids = await roomMateIds(placementId);
+    return prisma.bookingAccommodation.updateMany({
+      where: { id: { in: ids } },
       data: { cleanCancelledAt: new Date(), cleanCancelledBy: by || null },
     });
   }
 
+  // ── Soft availability check (Capel Street) ──────────────────────────────
+  // Deterministic "do we have a room of type X free for [from,to]?" used by the
+  // matching-screen overlay AND by the inbox AI agents (which hit
+  // GET /sis/api/accommodation/availability with the SIS_SERVICE_KEY bearer —
+  // app.ts requireAuth already scopes that key to /sis/api/*). Read-only.
+  //
+  // SOFT cap: beyond our own stock we can source host families / other providers,
+  // so a miss returns alternatives + "check external providers", never a hard no.
+  //
+  // A bed is FREE for the window ⟺ no active, non-cancelled placement overlaps it,
+  // using STRICT overlap (start < to && end > from) so a same-day checkout/checkin
+  // turnover is not a false conflict — matches placeStudent() and the grid.
+  //
+  // Gender: multi-bed rooms (Premium = 2 beds, Twin/Shared = 3) can only hold
+  // same-gender guests. A free bed in a room that already holds an overlapping
+  // guest is offered only to that guest's gender; an unknown requester gender or
+  // any shared room on the table raises a "check gender" reminder.
+  const SOFT_AVAILABILITY_PROVIDER_IDS = [15]; // Capel Street (#15). Extend as more owned/leased stock opts in.
+
+  function _normRoomType(input?: string | null): string | null {
+    const s = String(input || '').trim().toLowerCase();
+    if (!s) return null;
+    if (/prem/.test(s)) return 'Premium';
+    if (/super/.test(s)) return 'Superior';
+    if (/stand/.test(s)) return 'Standard';
+    if (/twin|shared|share/.test(s)) return 'Twin/Shared';
+    if (/indiv/.test(s)) return 'Individual';
+    if (/single/.test(s)) return 'Single';
+    return String(input).trim(); // unknown label → pass through verbatim
+  }
+
+  async function accommodationAvailability(opts: {
+    from: string; to: string;
+    roomType?: string | null; enSuite?: boolean | null;
+    gender?: number | null;            // 1 = male, 2 = female, null/undefined = unknown
+    providerIds?: number[];
+  }) {
+    const from = new Date(String(opts.from).slice(0, 10) + 'T00:00:00.000Z');
+    const to   = new Date(String(opts.to).slice(0, 10) + 'T00:00:00.000Z');
+    if (isNaN(+from) || isNaN(+to) || +to <= +from) {
+      throw new Error('Invalid date range — need from < to (YYYY-MM-DD).');
+    }
+    const wantType = _normRoomType(opts.roomType);
+    const wantEnsuite = opts.enSuite === true;
+    const g = (opts.gender === 1 || opts.gender === 2) ? opts.gender : null;
+    const providerIds = opts.providerIds?.length ? opts.providerIds : SOFT_AVAILABILITY_PROVIDER_IDS;
+
+    const providers = await prisma.accommodationProvider.findMany({
+      where: { id: { in: providerIds }, active: true },
+      select: {
+        id: true, name: true,
+        properties: {
+          orderBy: { id: 'asc' },
+          select: {
+            id: true, name: true,
+            rooms: {
+              orderBy: { id: 'asc' },
+              select: {
+                id: true, name: true, roomType: true, enSuite: true,
+                beds: {
+                  orderBy: { id: 'asc' },
+                  select: {
+                    id: true, name: true,
+                    placements: {
+                      where: {
+                        active: true,
+                        booking: { status: { not: 'CANCELLED' } },
+                        startDate: { lt: to },   // STRICT overlap — same-day turnover is not a conflict
+                        endDate: { gt: from },
+                      },
+                      select: {
+                        booking: { select: { student: { select: { gender: true } } } },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const propertyName = providers.map(p => p.name).join(', ') || 'Capel Street';
+
+    type FreeBed = { bedId: number; roomId: number; room: string; roomType: string; enSuite: boolean; shared: boolean };
+    const freeByType: Record<string, FreeBed[]> = {};
+    let sharedOffered = false;
+
+    for (const prov of providers) {
+      for (const prop of prov.properties) {
+        for (const room of prop.rooms) {
+          const shared = room.beds.length > 1;
+          // Gender already committed in this room across the window (any bed).
+          const roomGenders = new Set<number>();
+          for (const bed of room.beds) {
+            for (const pl of bed.placements) {
+              const gg = pl.booking?.student?.gender;
+              if (gg === 1 || gg === 2) roomGenders.add(gg);
+            }
+          }
+          for (const bed of room.beds) {
+            if (bed.placements.length > 0) continue; // occupied over the window
+            // A known-gender requester can't take a bed in a shared room already
+            // holding the other gender.
+            if (shared && roomGenders.size > 0 && g && !roomGenders.has(g)) continue;
+            // room.name usually already carries the apartment prefix ("A1 / Room 2");
+            // only prepend the property when it doesn't.
+            const rn = room.name || '';
+            const pn = prop.name || '';
+            const roomLabel = rn.includes(pn) ? rn : `${pn} / ${rn}`.replace(/^ \/ /, '');
+            const fb: FreeBed = {
+              bedId: bed.id, roomId: room.id,
+              room: roomLabel,
+              roomType: String(room.roomType || '—'),
+              enSuite: !!room.enSuite, shared,
+            };
+            (freeByType[fb.roomType] ||= []).push(fb);
+            if (shared) sharedOffered = true;
+          }
+        }
+      }
+    }
+
+    const matches = wantType
+      ? (freeByType[wantType] || []).filter(b => !wantEnsuite || b.enSuite)
+      : Object.values(freeByType).flat();
+
+    const alternatives = Object.entries(freeByType)
+      .filter(([t]) => !wantType || t !== wantType)
+      .map(([t, beds]) => ({
+        roomType: t,
+        enSuite: beds.some(b => b.enSuite),
+        freeBeds: beds.length,
+        rooms: [...new Set(beds.map(b => b.room))],
+      }))
+      .sort((a, b) => b.freeBeds - a.freeBeds);
+
+    const anyAvailable = Object.values(freeByType).some(a => a.length > 0);
+    const available = wantType ? matches.length > 0 : anyAvailable;
+    const genderReminder = sharedOffered;
+
+    const fmt = (d: Date) => d.toISOString().slice(0, 10);
+    const win = `${fmt(from)} → ${fmt(to)}`;
+    const altStr = alternatives.filter(a => a.freeBeds > 0).map(a => `${a.roomType} (${a.freeBeds})`).join(', ');
+    let summary: string;
+    if (wantType && matches.length > 0) {
+      const roomsList = [...new Set(matches.map(m => m.room))].join(', ');
+      summary = `Yes — ${matches.length} ${wantType} bed${matches.length > 1 ? 's' : ''} free at ${propertyName} for ${win} (${roomsList}).`;
+    } else if (wantType && anyAvailable) {
+      summary = `No ${wantType} free at ${propertyName} for ${win}. Alternatives: ${altStr}.`;
+    } else if (!wantType && anyAvailable) {
+      summary = `Free at ${propertyName} for ${win}: ${altStr}.`;
+    } else {
+      summary = `No rooms free at ${propertyName} for ${win} — check alternative providers.`;
+    }
+    if (genderReminder && anyAvailable) {
+      summary += ` Shared room involved — check the student's gender first (no mixed-gender rooms).`;
+    }
+
+    return {
+      property: propertyName,
+      from: fmt(from), to: fmt(to),
+      requested: { roomType: wantType, enSuite: wantEnsuite || undefined, gender: g },
+      available,
+      anyAvailable,
+      matches,
+      alternatives,
+      genderReminder,
+      summary,
+    };
+  }
+
   return {
+    accommodationAvailability,
     listProviders, getProviderById, createProvider, updateProvider, deleteProvider,
     addProperty, updateProperty, deleteProperty,
     addRoom, updateRoom, deleteRoom,

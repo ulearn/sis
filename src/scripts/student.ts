@@ -13,11 +13,37 @@ import { computeImpact } from '../lib/impact-score';
 // KickStart prize: each Progress Post has a 14-day measurement window from the
 // moment it's linked. After that it exits the window (algos sink with age).
 const POST_WINDOW_DAYS = 14;
-import { fetchStudentHolidays, filterOutHolidayDates, pctFromRows, blendedAttendancePct } from './attendance-pct';
+import { fetchStudentHolidays, filterOutHolidayDates, pctFromRows, blendedAttendancePct, courseTuitionRate, legacyAttendanceCounts, presentCredit } from './attendance-pct';
 import { kellyMention } from '../lib/slack';
 import { notifyChallenge } from '../lib/challenge-notify';
 import { mapCourseType, buildBaseDealProps } from './booking-deal';
 import { sendStudentEmail } from '../routes/email';
+import { bookingScripts } from './bookings';
+import { checkIlepAllowance } from '../lib/ilep-holiday';
+
+const iso = (d: any) => d ? new Date(d).toISOString().slice(0, 10) : null;
+
+// EU/EEA/Swiss nationalities can't take work-study holidays (no visa window).
+const EU_EEA_CH = new Set(['austria','belgium','bulgaria','croatia','cyprus','czechia','czech republic','denmark','estonia','finland','france','germany','greece','hungary','ireland','italy','latvia','lithuania','luxembourg','malta','netherlands','poland','portugal','romania','slovakia','slovenia','spain','sweden','iceland','liechtenstein','norway','switzerland']);
+
+// Earliest Monday a student may start a holiday, enforcing the notice rule:
+// a holiday must be requested by 17:00 the Friday before it starts. So the
+// earliest eligible Monday is the soonest one whose preceding Friday 17:00 is
+// still in the future — request after Fri 5pm and the coming Monday rolls to the
+// Monday after. Server (Dublin) local time; the app re-uses this as the picker's
+// hard minimum.
+function earliestHolidayStartMonday(now: Date = new Date()): Date {
+  // UTC date arithmetic so the returned calendar date never drifts a day under
+  // Dublin DST (see reference_utc_date_math). The cutoff instant is the holiday
+  // Monday's preceding Friday at 16:00 UTC (≈17:00 Dublin in term time).
+  const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const dow = d.getUTCDay();                                   // 0=Sun..1=Mon..6=Sat
+  let add = (8 - dow) % 7; if (add === 0) add = 7;             // always a future Monday
+  const monday = new Date(d); monday.setUTCDate(d.getUTCDate() + add);
+  const precedingFridayMs = (m: Date) => { const f = new Date(m); f.setUTCDate(m.getUTCDate() - 3); f.setUTCHours(16, 0, 0, 0); return f.getTime(); };
+  while (precedingFridayMs(monday) < now.getTime()) monday.setUTCDate(monday.getUTCDate() + 7);
+  return monday;
+}
 
 export function studentScripts(prisma: PrismaClient) {
 
@@ -135,6 +161,12 @@ export function studentScripts(prisma: PrismaClient) {
         nationality: true, birthday: true, phoneMobile: true, phone: true,
         currentLevel: true, profilePicture: true, language: true, beta: true,
         passportValidUntil: true,
+        // Address pair surfaced + editable in the Personal section (student.html):
+        // native/home address and the Irish (in-country) address. The Irish address
+        // is required for ISD/address-bearing documents (Confirmation with Address),
+        // so the self-service document picker gates on it being filled.
+        address: true, addressAddon: true, zip: true, city: true, state: true, countryIso: true,
+        irishAddress: true, irishAddressAddon: true, irishZip: true, irishCity: true, irishState: true, irishCountryIso: true,
         // Surfaced in the Overview "Personal" section (student.html) — same
         // column the Challenges Social card edits. Without it the row shows "—"
         // even when a handle is set.
@@ -184,7 +216,18 @@ export function studentScripts(prisma: PrismaClient) {
     const upcomingCount = futureSorted.filter(b => b.id !== current?.id).length;
     const pastCount = pastSorted.filter(b => b.id !== current?.id).length;
 
-    const course = current?.courses?.[0] || null;
+    // The course to headline is the one running TODAY — not courses[0], which is
+    // the latest by the query's desc order (a LifePass booking nests 3, so [0]
+    // was showing year-3 dates). Pick: the course containing today → else the
+    // most-recent one already started (mid-gap between nested courses) → else the
+    // earliest upcoming → else null. Mirrors the attendance compliance course.
+    const _nowMs = now.getTime();
+    const _cc = (current?.courses || []).filter((c: any) => c.startDate);
+    const course =
+      _cc.find((c: any) => +new Date(c.startDate) <= _nowMs && c.endDate && _nowMs <= +new Date(c.endDate) + 86400000)
+      || [..._cc].sort((a: any, b: any) => +new Date(b.startDate) - +new Date(a.startDate)).find((c: any) => +new Date(c.startDate) <= _nowMs)
+      || [..._cc].sort((a: any, b: any) => +new Date(a.startDate) - +new Date(b.startDate))[0]
+      || current?.courses?.[0] || null;
     const accom = current?.accommodations?.[0] || null;
     const accommodationObj = buildAccom(accom);
 
@@ -198,13 +241,84 @@ export function studentScripts(prisma: PrismaClient) {
     const holidays = await fetchStudentHolidays(prisma, studentId);
     const attRows = filterOutHolidayDates(attRowsAll, holidays);
     const total = attRows.length;
-    // Overall folds in the pre-migration Fidelo figure (if any) carried on the
-    // current booking, weighted with the SIS-tracked days since 04/05.
-    const overallPct = blendedAttendancePct(
-      attRows,
-      current?.legacyAttendancePct != null ? Number(current.legacyAttendancePct) : null,
-      current?.serviceStart || null,
-    );
+    // Overall attendance headline. For Academic-Year / LifePass bookings we show
+    // the SAME per-course, tuition-capped figure the school tracks in admin (so
+    // staff and student never disagree): scoped to the compliance course — the AY
+    // course running today, else the most-recent started, else the earliest — and
+    // capped at its 25 tuition weeks. Legacy pre-migration figures are NOT blended
+    // in (per-course = SIS-only, by design). Everyone else keeps the lifetime
+    // blended figure (folds in the pre-migration Fidelo % weighted with SIS days).
+    const ayCourses = (current?.courses || [])
+      .filter((c: any) => c.holidayWks != null && c.startDate)
+      .sort((a: any, b: any) => +new Date(a.startDate) - +new Date(b.startDate));
+    const iso = (d: any) => d ? new Date(d).toISOString().slice(0, 10) : null;
+    let overallPct: number | null;
+    // Academic-Year compliance block — the hard 85% picture the app now shows
+    // beside the absences (max absences, used so far, holiday allowance left).
+    // Null for non-AY bookings (those keep the plain overall %).
+    let academicYear: any = null;
+    if (ayCourses.length) {
+      const ranges = holidays.map(h => { const s = new Date(h.startDate); s.setHours(0,0,0,0); const e = new Date(h.endDate); e.setHours(0,0,0,0); return [s.getTime(), e.getTime()] as const; });
+      const isHoliday = (d: Date | null) => { if (!d) return false; const x = new Date(d); x.setHours(0,0,0,0); const t = x.getTime(); return ranges.some(([s, e]) => t >= s && t <= e); };
+      const nowMs = Date.now();
+      const compliance =
+        ayCourses.find((c: any) => +new Date(c.startDate) <= nowMs && c.endDate && nowMs <= +new Date(c.endDate) + 86400000)
+        || [...ayCourses].reverse().find((c: any) => +new Date(c.startDate) <= nowMs)
+        || ayCourses[ayCourses.length - 1];
+      const cr = courseTuitionRate(attRowsAll, iso(compliance.startDate), iso(compliance.endDate), compliance.holidayWks, isHoliday, studentId);
+      // Headline = the OFFICIAL blended figure everyone now sees (Neil, 2026-09-16)
+      // — the same number as the admin "Life" column and the LoA: SIS-tracked days
+      // blended with the pre-migration Fidelo figure when the booking carries one
+      // (no legacy → just the SIS lifetime figure). Removes the app-vs-official gap
+      // that started the whole attendance dispute. LATE is credited per policy.
+      const legPct = current?.legacyAttendancePct != null ? Number(current.legacyAttendancePct) : null;
+      const leg = legPct != null ? legacyAttendanceCounts(legPct, current?.serviceStart || null) : { present: 0, total: 0 };
+      const daysPresent = presentCredit(attRows, studentId) + leg.present;
+      const daysCounted = attRows.length + leg.total;
+      overallPct = daysCounted ? Math.round((daysPresent / daysCounted) * 100) : cr.rate;
+
+      // Hard absence limit: over the 25 tuition weeks (125 days) an 85% floor
+      // permits at most floor(125 × 15%) = 18 days absent. Show absences-so-far
+      // against that ceiling — a limit, never a target.
+      const entitlement = Number(compliance.holidayWks ?? 10);
+      const tuitionDays = Math.max(0, 35 - entitlement) * 5;
+      const maxAbsences = Math.floor(tuitionDays * 0.15);
+      const absencesUsed = Math.max(0, Math.round((daysCounted - daysPresent) * 10) / 10);
+      // Holiday weeks already taken within THIS course window (from the holiday
+      // records — the source of truth, robust to future-dated holidays).
+      const hRows = current ? await prisma.bookingHoliday.findMany({ where: { bookingId: current.id }, select: { startDate: true, endDate: true, weeks: true } }) : [];
+      const cs = compliance.startDate ? +new Date(compliance.startDate) : -Infinity, ce = compliance.endDate ? +new Date(compliance.endDate) : Infinity;
+      const holidayWeeksTaken = hRows.filter(h => +new Date(h.startDate) <= ce && +new Date(h.endDate) >= cs).reduce((s, h) => s + (h.weeks || 0), 0);
+      // Straddles migration: the course started before SIS attendance tracking
+      // began (2026-05-04), so its pre-migration days exist only as a cumulative
+      // Fidelo % — never as daily records. The blended OVERALL % is accurate, but
+      // the absolute counts (attended X of Y, "X of 18 days absent") can't be made
+      // exact for the pre-migration slice, so the app hides them for these and
+      // shows the % only (Neil, 2026-09-21).
+      const preMigration = !!(compliance.startDate && iso(compliance.startDate)! < '2026-05-04');
+      academicYear = {
+        courseName: compliance.name,
+        courseStart: iso(compliance.startDate),
+        courseEnd: iso(compliance.endDate),
+        preMigration,
+        maxAbsences,
+        absencesUsed,
+        daysPresent: Math.round(daysPresent * 10) / 10,   // attended, blended (SIS + legacy)
+        daysCounted,                                        // blended total (SIS + legacy est.)
+        tuitionDays,
+        holidayAllowanceWeeks: entitlement,
+        holidayWeeksTaken,
+        holidayRemainingWeeks: Math.max(0, entitlement - holidayWeeksTaken),
+        earliestHolidayStart: iso(earliestHolidayStartMonday()),
+      };
+    } else {
+      overallPct = blendedAttendancePct(
+        attRows,
+        current?.legacyAttendancePct != null ? Number(current.legacyAttendancePct) : null,
+        current?.serviceStart || null,
+        studentId,
+      );
+    }
 
     // "This week" = Monday-of-this-week to today
     const monday = new Date(today);
@@ -212,7 +326,7 @@ export function studentScripts(prisma: PrismaClient) {
     monday.setDate(monday.getDate() - dow);
     monday.setHours(0, 0, 0, 0);
     const wkRows = attRows.filter(r => r.occurrence?.date && r.occurrence.date >= monday);
-    const weekPct = pctFromRows(wkRows);
+    const weekPct = pctFromRows(wkRows, studentId);
 
     // Class timetable footnote — pulled from the student's current
     // StudentClassAssignment so we can show "Mon-Fri · 09:00-12:20 · Room 1
@@ -305,6 +419,13 @@ export function studentScripts(prisma: PrismaClient) {
         instagramHandle: student.instagramHandle,
         // Null → the app shows the welcome video once, then stamps it seen.
         welcomeVideoSeenAt: student.welcomeVideoSeenAt,
+        // Address pair — editable in the Personal section's tap-to-reveal
+        // fieldsets, and the Irish address gates the self-service documents
+        // that print it. Must be on the returned object, not just the select.
+        address: student.address, addressAddon: student.addressAddon, zip: student.zip,
+        city: student.city, state: student.state, countryIso: student.countryIso,
+        irishAddress: student.irishAddress, irishAddressAddon: student.irishAddressAddon, irishZip: student.irishZip,
+        irishCity: student.irishCity, irishState: student.irishState, irishCountryIso: student.irishCountryIso,
       },
       booking: current ? {
         id: current.id,
@@ -336,6 +457,7 @@ export function studentScripts(prisma: PrismaClient) {
         overallPct,
         weekPct,
         totalRecords: total,
+        academicYear,
       },
       documents,
     };
@@ -629,7 +751,7 @@ export function studentScripts(prisma: PrismaClient) {
     // accumulated any attendance rows yet (otherwise the card reads
     // "No attendance yet" even though the student clearly has historical
     // data showing on the Profile tab).
-    const overallPct = pctFromRows(attRows);
+    const overallPct = pctFromRows(attRows, studentId);
     const courseAttendedDone = periodPct !== null && periodPct === 100;
 
     // Auto-notify Kelly the first time a student hits 100 % in the cycle.
@@ -820,7 +942,7 @@ export function studentScripts(prisma: PrismaClient) {
       const b = byStudent.get(studentId);
       const s = await prisma.student.findUnique({
         where: { id: studentId },
-        select: { id: true, firstName: true, lastName: true, nickname: true, nationality: true, currentLevel: true, email: true },
+        select: { id: true, firstName: true, lastName: true, nickname: true, nationality: true, currentLevel: true, email: true, cardOnFile: true, cardOnFileAt: true },
       });
       if (!s) continue;
       if ((s as any).email) emailByStudent.set(studentId, (s as any).email);
@@ -842,6 +964,8 @@ export function studentScripts(prisma: PrismaClient) {
         leadImpact: null as number | null,
         leadPost: null as any,
         has_account: false,
+        cardOnFile: !!(s as any).cardOnFile,
+        cardOnFileAt: (s as any).cardOnFileAt || null,
       });
     }
 
@@ -1405,8 +1529,199 @@ export function studentScripts(prisma: PrismaClient) {
     }
   }
 
+  // ── Student holiday request (self-service, direct write + notify) ───────────
+  // The student picks a Monday start + a number of weeks. It writes straight to
+  // the database (creates the BookingHoliday, which shunts the course end) and
+  // emails success@ so staff are notified and can veto/adjust in SIS. Guards:
+  // AY/LifePass + non-EU only; hard notice-period minimum (Fri-5pm-for-Monday);
+  // and the remaining holiday allowance for the current course (10 wks).
+  async function requestHoliday(studentId: number | undefined, data: any) {
+    if (!studentId) return { success: false, error: 'No student session' };
+    const startIso = String(data?.startDate || '').slice(0, 10);
+    const weeks = parseInt(String(data?.weeks), 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(startIso)) return { success: false, error: 'Pick a start date.' };
+    if (!Number.isInteger(weeks) || weeks < 1) return { success: false, error: 'Choose how many weeks.' };
+
+    const student = await prisma.student.findUnique({
+      where: { id: studentId },
+      select: { id: true, firstName: true, lastName: true, email: true, nationality: true },
+    });
+    if (!student) return { success: false, error: 'Student not found' };
+    if (student.nationality && EU_EEA_CH.has(student.nationality.trim().toLowerCase())) {
+      return { success: false, error: 'Work-study holidays apply only to non-EU visa students.' };
+    }
+
+    // Hard notice-period floor. Build in UTC so @db.Date + iso() never drift a
+    // day under Dublin DST (see reference_utc_date_math).
+    const start = new Date(startIso + 'T00:00:00Z');
+    if (start.getUTCDay() !== 1) return { success: false, error: 'Holidays start on a Monday.' };
+    const earliest = earliestHolidayStartMonday();
+    if (start < earliest) {
+      return { success: false, error: `Too soon — the earliest holiday you can start is Monday ${iso(earliest)} (requests must be in by 5pm the Friday before).` };
+    }
+
+    // Resolve the Academic-Year booking + the course this holiday lands in.
+    const bookings = await prisma.booking.findMany({
+      where: { studentId, status: { not: 'CANCELLED' } },
+      select: { id: true, courses: { select: { name: true, startDate: true, endDate: true, holidayWks: true, isRenewal: true } } },
+      orderBy: { serviceStart: 'desc' },
+    });
+    const isAY = (c: any) => c.holidayWks != null || /academic year|life ?pass|renewal/i.test(c.name || '') || c.isRenewal;
+    let booking: typeof bookings[number] | undefined;
+    let course: any;
+    for (const b of bookings) {
+      const hit = b.courses.filter(isAY).find(c => c.startDate && c.endDate && +new Date(c.startDate) <= +start && +start <= +new Date(c.endDate) + 86400000);
+      if (hit) { booking = b; course = hit; break; }
+    }
+    if (!booking) {
+      // No course covers the chosen Monday — fall back to the current/most-recent AY booking so staff still get the request, but flag it.
+      const withAy = bookings.find(b => b.courses.some(isAY));
+      if (!withAy) return { success: false, error: 'No Academic Year course on file — holidays apply to work-study students only.' };
+      booking = withAy;
+      course = withAy.courses.filter(isAY).sort((a, b2) => +new Date(b2.startDate!) - +new Date(a.startDate!))[0];
+    }
+
+    // Remaining allowance for THIS course (10 weeks less what's already taken in
+    // its window) — a hard cap from the student's side.
+    const entitlement = Number(course.holidayWks ?? 10);
+    const cs = course.startDate ? +new Date(course.startDate) : -Infinity;
+    const ce = course.endDate ? +new Date(course.endDate) : Infinity;
+    const taken = await prisma.bookingHoliday.findMany({ where: { bookingId: booking.id }, select: { startDate: true, endDate: true, weeks: true } });
+    const takenWeeks = taken.filter(h => +new Date(h.startDate) <= ce && +new Date(h.endDate) >= cs).reduce((s, h) => s + (h.weeks || 0), 0);
+    const remaining = Math.max(0, entitlement - takenWeeks);
+    if (weeks > remaining) {
+      return { success: false, error: remaining === 0
+        ? `You've used your full ${entitlement}-week holiday allowance for this year.`
+        : `That's ${weeks} weeks but you only have ${remaining} week${remaining === 1 ? '' : 's'} of holiday left this year.` };
+    }
+
+    // ILEP timing rules (hard): none in weeks 1–2; ≤6 weeks in the tuition block
+    // (weeks 3–25); ≤4 in the tail (weeks 26–35). Measured from the course start.
+    if (course.startDate) {
+      const inCourse = taken.filter(h => +new Date(h.startDate) <= ce && +new Date(h.endDate) >= cs);
+      const ilep = checkIlepAllowance(new Date(course.startDate), inCourse, start, weeks);
+      if (!ilep.ok) return { success: false, error: ilep.error };
+    }
+
+    // End = Friday of the final week (Mon + (weeks-1)*7 + 4 days).
+    const end = new Date(start); end.setUTCDate(start.getUTCDate() + (weeks - 1) * 7 + 4);
+    // Overlap guard — reject a collision with an existing holiday.
+    const clash = taken.find(h => +new Date(h.startDate) <= +end && +new Date(h.endDate) >= +start);
+    if (clash) return { success: false, error: 'That overlaps a holiday you already have. Pick different dates.' };
+    // Write via addHoliday so the holiday SHUNTS the course end forward — the
+    // student keeps all 25 tuition weeks (a mid-course holiday is a break from
+    // class, not lost class). force:true — eligibility + the per-course 10-week
+    // allowance are already validated above.
+    let result: any;
+    try {
+      result = await bookingScripts(prisma).addHoliday(booking.id, { startDate: iso(start), endDate: iso(end), type: 'student', force: true });
+    } catch (e: any) {
+      return { success: false, error: String(e?.message || e).replace(/^⚠\s*/, '') };
+    }
+
+    // Notify success@ (staff can veto/adjust in SIS). Never fail the request on email.
+    const name = [student.firstName, student.lastName].filter(Boolean).join(' ');
+    const esc = (s: any) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const SIS = 'https://sis.ulearnschool.com/sis/admin';
+    const studentUrl = `${SIS}?view=student-detail&id=${student.id}`;
+    const bookingUrl = `${SIS}?view=booking-detail&id=${booking.id}`;
+    const lnk = 'color:#2563eb;text-decoration:none;font-weight:600';
+    try {
+      await sendStudentEmail(prisma, {
+        from: 'app@ulearnschool.com',
+        fromName: 'ULearn Student App',
+        to: 'success@ulearnschool.com',
+        subject: `[Holiday Request] ${name} (#${student.id}) — ${weeks} wk from ${iso(start)}`,
+        html:
+          `<p style="font-size:15px;line-height:1.6"><a href="${studentUrl}" style="${lnk}">${esc(name)}</a> has requested a holiday through the Student App.</p>` +
+          `<p style="font-size:15px;line-height:1.8;margin:0 0 4px">` +
+          `<strong>Booking:</strong> <a href="${bookingUrl}" style="${lnk}">#${booking.id} · ${esc(course?.name || '—')}</a><br>` +
+          `<strong>Dates:</strong> ${iso(start)} → ${iso(end)} (${weeks} week${weeks === 1 ? '' : 's'})<br>` +
+          `<strong>Allowance:</strong> ${takenWeeks + weeks} of ${entitlement} weeks used this year (${remaining - weeks} left)</p>` +
+          `<hr style="border:none;border-top:1px solid #e2e8f0;margin:16px 0">` +
+          `<p style="font-size:13px;color:#555;line-height:1.6">Holiday recorded in SIS. If you need to veto it for any reason you can do so. Otherwise it will proceed as indicated by the Student Request.</p>`,
+        replyTo: student.email || undefined,
+        studentId: student.id,
+        sentBy: 'student-app',
+      });
+    } catch { /* email is a nicety — the holiday is already saved */ }
+
+    return { success: true, startDate: iso(start), endDate: iso(end), weeks, remaining: remaining - weeks, shunted: result?.weekdaysPushed || 0 };
+  }
+
+  // Cancel a holiday the student previously booked — only one that hasn't started
+  // yet. Rolls back the course shunt (removeHoliday) and notifies success@.
+  async function cancelHoliday(studentId: number | undefined, holidayId: any) {
+    if (!studentId) return { success: false, error: 'No student session' };
+    const hid = parseInt(String(holidayId), 10);
+    if (!Number.isInteger(hid)) return { success: false, error: 'Bad holiday id' };
+    const hol = await prisma.bookingHoliday.findUnique({
+      where: { id: hid },
+      select: { id: true, startDate: true, endDate: true, weeks: true, bookingId: true, booking: { select: { studentId: true, courses: { select: { name: true }, take: 1 } } } },
+    });
+    if (!hol || hol.booking?.studentId !== studentId) return { success: false, error: 'Holiday not found' };
+    const today = new Date(); today.setUTCHours(0, 0, 0, 0);
+    if (+new Date(hol.startDate) <= +today) {
+      return { success: false, error: 'This holiday has already started — please contact the school to change it.' };
+    }
+
+    const student = await prisma.student.findUnique({ where: { id: studentId }, select: { firstName: true, lastName: true, email: true } });
+    try {
+      await bookingScripts(prisma).removeHoliday(hid);
+    } catch (e: any) {
+      return { success: false, error: String(e?.message || e) };
+    }
+
+    // Notify success@ (never fail the cancellation on email).
+    const name = [student?.firstName, student?.lastName].filter(Boolean).join(' ');
+    const esc = (s: any) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const SIS = 'https://sis.ulearnschool.com/sis/admin';
+    const lnk = 'color:#2563eb;text-decoration:none;font-weight:600';
+    try {
+      await sendStudentEmail(prisma, {
+        from: 'app@ulearnschool.com',
+        fromName: 'ULearn Student App',
+        to: 'success@ulearnschool.com',
+        subject: `[Holiday Cancelled] ${name} (#${studentId}) — was ${iso(hol.startDate)}`,
+        html:
+          `<p style="font-size:15px;line-height:1.6"><a href="${SIS}?view=student-detail&id=${studentId}" style="${lnk}">${esc(name)}</a> has <strong>cancelled</strong> a holiday in the Student App.</p>` +
+          `<p style="font-size:15px;line-height:1.8;margin:0 0 4px">` +
+          `<strong>Booking:</strong> <a href="${SIS}?view=booking-detail&id=${hol.bookingId}" style="${lnk}">#${hol.bookingId} · ${esc(hol.booking?.courses?.[0]?.name || '—')}</a><br>` +
+          `<strong>Was:</strong> ${iso(hol.startDate)} → ${iso(hol.endDate)} (${hol.weeks || ''} week${hol.weeks === 1 ? '' : 's'})</p>` +
+          `<hr style="border:none;border-top:1px solid #e2e8f0;margin:16px 0">` +
+          `<p style="font-size:13px;color:#555;line-height:1.6">The holiday has been removed and the course end date rolled back. Their allowance is freed up again.</p>`,
+        replyTo: student?.email || undefined,
+        studentId,
+        sentBy: 'student-app',
+      });
+    } catch { /* email is a nicety — the cancellation is already done */ }
+
+    return { success: true };
+  }
+
+  // Student's own holidays (requested/granted) — chronological, for the app list.
+  async function holidaysList(studentId: number | undefined) {
+    if (!studentId) return [];
+    const rows = await prisma.bookingHoliday.findMany({
+      where: { booking: { studentId } },
+      orderBy: { startDate: 'desc' },
+      select: { id: true, startDate: true, endDate: true, weeks: true, type: true, createdAt: true },
+    });
+    const today = new Date(); today.setUTCHours(0, 0, 0, 0);
+    return rows.map(h => ({
+      id: h.id,
+      startDate: iso(h.startDate),
+      endDate: iso(h.endDate),
+      weeks: h.weeks,
+      type: h.type,
+      createdAt: h.createdAt,
+      cancellable: +new Date(h.startDate) > +today,   // only a holiday that hasn't started
+    }));
+  }
+
   return {
     me, bookingsList, absences, planned, book, support,
+    requestHoliday, holidaysList, cancelHoliday,
     recordAbsenceReason, clearAbsenceReason,
     attachAbsenceCert, removeAbsenceCertFile, getAbsenceCertFile,
     challenges, challengesReport, learning,

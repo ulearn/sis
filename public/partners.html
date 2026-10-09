@@ -1228,7 +1228,7 @@ tr:hover td { background: #fafaf8; }
   </div>
   <button class="nav-tab cta" data-tab="enroll">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    Add New
+    Add Student
   </button>
 </div>
 
@@ -1367,8 +1367,12 @@ tr:hover td { background: #fafaf8; }
   <!-- ── Students ── -->
   <div class="section" id="sec-students">
     <div class="card">
-      <div class="search-bar">
-        <input class="search-input" id="studentSearch" placeholder="Search students..." type="text">
+      <div class="search-bar" style="display:flex;gap:10px;align-items:center">
+        <input class="search-input" id="studentSearch" placeholder="Search students..." type="text" style="flex:1">
+        <div style="display:inline-flex;gap:2px;padding:3px;background:var(--bg);border:1px solid var(--line,#e3e3e3);border-radius:9px;flex:none">
+          <button type="button" id="stuModeInd" onclick="setStudentMode('individuals')" style="border:none;cursor:pointer;padding:6px 14px;border-radius:7px;font-size:13px;font-weight:600;background:var(--green);color:#fff">Individuals</button>
+          <button type="button" id="stuModeGrp" onclick="setStudentMode('groups')" style="border:none;cursor:pointer;padding:6px 14px;border-radius:7px;font-size:13px;font-weight:600;background:transparent;color:var(--muted)">Groups</button>
+        </div>
       </div>
       <div class="table-wrap">
         <table>
@@ -1470,11 +1474,11 @@ tr:hover td { background: #fafaf8; }
                   <div class="field full">
                     <label>Course Type <span class="req">*</span></label>
                     <div class="chip-row" id="courseTypeChips">
+                      <input type="radio" name="courseType" id="ct-academic" value="academic_year"><label for="ct-academic" title="Work Study">Academic Year</label>
+                      <input type="radio" name="courseType" id="ct-lifepass" value="lifepass"><label for="ct-lifepass">LifePass</label>
                       <input type="radio" name="courseType" id="ct-group" value="group"><label for="ct-group">General English</label>
                       <input type="radio" name="courseType" id="ct-exam" value="exam"><label for="ct-exam">Exam Prep</label>
                       <input type="radio" name="courseType" id="ct-private" value="private"><label for="ct-private">Private</label>
-                      <input type="radio" name="courseType" id="ct-lifepass" value="lifepass"><label for="ct-lifepass">LifePass</label>
-                      <input type="radio" name="courseType" id="ct-academic" value="academic_year"><label for="ct-academic">Academic Year</label>
                       <input type="radio" name="courseType" id="ct-junior" value="junior"><label for="ct-junior">Junior</label>
                     </div>
                   </div>
@@ -1768,6 +1772,7 @@ tr:hover td { background: #fafaf8; }
   // ── Init ──
   // ── Accelerator programme (non-blocking opt-in) ──────────────────
   async function maybeShowAccelerator(suppressPopup) {
+    if (me && me.contractExempt) return;   // non-commercial schools: no commission/Accelerator
     let st;
     try { st = await fetch('/sis/partners/api/accelerator/status').then(r => r.json()); } catch { return; }
     if (!st || st.signed || !st.eligible) return;
@@ -2039,11 +2044,9 @@ tr:hover td { background: #fafaf8; }
       if (d && d.suggestedName) nameInput.value = d.suggestedName;
       if (d && d.suggestedTitle && !titleInput.value) titleInput.value = d.suggestedTitle;
 
-      // Commercial gate — no wholesale discount set → not signable.
-      if (d && d.commissionSet === false) {
-        gateBox.style.display = 'block';
-        signFlow.style.display = 'none';
-      }
+      // No commercial gate — every partner defaults to the Accelerator Programme, so the
+      // agreement is always signable (a missing wholesale discount = Accelerator, not a blocker).
+      // (Legacy `commissionSet` gate removed 2026-09-03.)
 
       const x = (d && d.details) || {};
       if (cd.etoName) cd.etoName.value = x.etoName || '';
@@ -2415,16 +2418,28 @@ tr:hover td { background: #fafaf8; }
             if (wk) { wk.value = '25'; wk.dispatchEvent(new Event('change')); }
           }
         }
-        // Hide bundled extras (Exam Fee + Insurance) for AY / LifePass — they're auto-applied server-side
+        // AY / LifePass bundle: always SURFACE the 3 bundled extras (Exam, PEL,
+        // Health) pre-ticked, above the "bundled — automatically included" note.
+        // PEL is always locked (mandatory). Exam + Health unlock ONLY for partners
+        // granted the HubSpot "Unpack AY?" permission (me.unpackAY, e.g. World2Go),
+        // who may untick what they'll sell themselves — everyone else sees them
+        // ticked + greyed (we await their contact before granting). Ticks post to
+        // the deal on submit. Non-bundled courses reset these to normal optional.
         const bundled = inp.value === 'lifepass' || inp.value === 'academic_year';
+        const unpack = bundled && !!(typeof me !== 'undefined' && me && me.unpackAY);
         ['ex-exam','ex-pel','ex-health'].forEach(id => {
           const cb = document.getElementById(id);
           const lbl = document.getElementById('lbl-' + id);
-          if (cb) { if (bundled) cb.checked = false; cb.style.display = bundled ? 'none' : ''; }
-          if (lbl) lbl.style.display = bundled ? 'none' : '';
+          if (bundled) {
+            if (cb) { cb.style.display = ''; cb.checked = true; cb.disabled = (id === 'ex-pel') ? true : !unpack; }
+            if (lbl) lbl.style.display = '';
+          } else {
+            if (cb) { cb.checked = false; cb.disabled = false; cb.style.display = ''; }
+            if (lbl) lbl.style.display = '';
+          }
         });
         const note = document.getElementById('bundledNote');
-        if (note) note.style.display = bundled ? '' : 'none';
+        if (note) note.style.display = bundled ? '' : 'none';   // original text kept, always shown for AY/LifePass
         // Hide the "Exam Type" sub-options when bundled — exam type is set later from level test
         const examSub = document.querySelector('[data-extra-sub="exam_fee"]');
         if (examSub && bundled) examSub.classList.remove('show');
@@ -2458,6 +2473,14 @@ tr:hover td { background: #fafaf8; }
         if (c.checked) c.checked = false;
       }
     });
+    // Default to the FIRST visible chip — now Academic Year for non-EU — so
+    // partners start on the right course type instead of defaulting to General
+    // English (the "25 weeks of General English" mistake). Only auto-selects when
+    // nothing is checked (i.e. first open, or the prior pick was just hidden).
+    if (!document.querySelector('#courseTypeChips input[type="radio"]:checked')) {
+      const first = Array.from(chips).find(c => allowed.includes(c.value));
+      if (first) { first.checked = true; first.dispatchEvent(new Event('change')); }
+    }
   }
 
   // Is there a live challenge this month? (set by loadChallenge; gates the card's visibility)
@@ -2619,15 +2642,28 @@ tr:hover td { background: #fafaf8; }
         document.removeEventListener('keydown', onKey);
         resolve(result);
       };
-      const onOverlayClick = (e) => { if (e.target === overlay) cleanup(false); };
+      // A custom action set resolves with its own value; a backdrop/Esc dismiss
+      // resolves with opts.dismissValue (so an accidental dismiss can be a safe
+      // no-op rather than silently picking a side). Enter picks the primary action.
+      const dismissVal = ('dismissValue' in opts) ? opts.dismissValue : false;
+      const primaryAct = (opts.actions || []).find(a => a.primary);
+      const onOverlayClick = (e) => { if (e.target === overlay) cleanup(dismissVal); };
       const onKey = (e) => {
-        if (e.key === 'Escape') cleanup(false);
-        if (e.key === 'Enter') cleanup(true);
+        if (e.key === 'Escape') cleanup(dismissVal);
+        if (e.key === 'Enter') cleanup(opts.actions ? (primaryAct ? primaryAct.value : dismissVal) : true);
       };
       overlay.addEventListener('click', onOverlayClick);
       document.addEventListener('keydown', onKey);
 
-      if (opts.isAlert) {
+      if (Array.isArray(opts.actions) && opts.actions.length) {
+        opts.actions.forEach(a => {
+          const b = document.createElement('button');
+          b.className = 'modal-btn' + (a.primary ? ' primary' : a.warn ? ' warn' : '');
+          b.textContent = a.label;
+          b.onclick = () => cleanup(a.value);
+          actions.appendChild(b);
+        });
+      } else if (opts.isAlert) {
         const ok = document.createElement('button');
         ok.className = 'modal-btn primary';
         ok.textContent = opts.confirmLabel || 'OK';
@@ -3199,7 +3235,7 @@ tr:hover td { background: #fafaf8; }
             ${inv.invoiceUrl ? `<a href="${esc(inv.invoiceUrl)}" target="_blank" style="color:var(--green);text-decoration:none;font-weight:600;font-size:12px">View</a>` : (inv.pdfUrl ? '' : '<span style="color:#d1d5db">—</span>')}
           </div>
           <div style="text-align:right;white-space:nowrap">
-            ${(inv.status === 'paid' && inv.bookingId) ? `<a href="/sis/partners/api/gross-receipt/${inv.bookingId}?format=pdf" title="Download" aria-label="Download" style="color:#dc2626;text-decoration:none;display:inline-flex;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg></a> <span style="color:#d1d5db">|</span> <a href="#" onclick="openGrossDoc(${inv.bookingId});return false;" style="color:var(--green);text-decoration:none;font-weight:600;font-size:12px" title="Gross receipt — generated on demand">View</a>` : '<span style="color:#d1d5db">—</span>'}
+            ${(inv.bookingId && inv.status !== 'voided') ? `<a href="/sis/partners/api/gross-receipt/${inv.bookingId}?format=pdf" title="Download gross document" aria-label="Download" style="color:#dc2626;text-decoration:none;display:inline-flex;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg></a> <span style="color:#d1d5db">|</span> <a href="#" onclick="openGrossDoc(${inv.bookingId});return false;" style="color:var(--green);text-decoration:none;font-weight:600;font-size:12px" title="Gross document — invoice before payment, PAID receipt after; generated on demand">View</a>` : '<span style="color:#d1d5db">—</span>'}
           </div>
         </div>`;
       }
@@ -3230,6 +3266,7 @@ tr:hover td { background: #fafaf8; }
   }
 
   window.stuSort = function(col) {
+    if (_studentMode === 'groups') return;   // group view doesn't use these sort keys
     if (studentSort.col === col) studentSort.dir = (studentSort.dir === 'asc' ? 'desc' : 'asc');
     else studentSort = { col, dir: (col === 'date' ? 'desc' : 'asc') };  // dates default newest-first
     renderStudents();
@@ -3281,6 +3318,190 @@ tr:hover td { background: #fafaf8; }
     } catch (e) { console.error(e); _studentRows = []; renderStudents(); }
   }
 
+  // ── Groups (Individuals | Groups toggle) ──
+  // A group, unlike an individual, is surfaced before any invoice exists — it's
+  // created our side off the deal, then the partner populates its members here.
+  let _studentMode = 'individuals';
+  let _groupRows = [];
+  window.setStudentMode = function(mode) {
+    _studentMode = mode;
+    const ind = document.getElementById('stuModeInd'), grp = document.getElementById('stuModeGrp');
+    const on = (el, active) => { el.style.background = active ? 'var(--green)' : 'transparent'; el.style.color = active ? '#fff' : 'var(--muted)'; };
+    on(ind, mode === 'individuals'); on(grp, mode === 'groups');
+    document.getElementById('studentSearch').placeholder = mode === 'groups' ? 'Search groups...' : 'Search students...';
+    if (mode === 'groups') loadGroups(); else loadStudents(document.getElementById('studentSearch').value);
+  };
+
+  async function loadGroups() {
+    const tbody = document.getElementById('studentRows');
+    tbody.innerHTML = '<tr><td colspan="6" class="loading">Loading groups...</td></tr>';
+    try {
+      const res = await fetch('/sis/partners/api/groups');
+      _groupRows = res.ok ? await res.json() : [];
+      renderGroups();
+    } catch (e) { console.error(e); _groupRows = []; renderGroups(); }
+  }
+
+  function renderGroups(search) {
+    const tbody = document.getElementById('studentRows');
+    let list = _groupRows;
+    const q = (search || document.getElementById('studentSearch').value || '').trim().toLowerCase();
+    if (q) list = list.filter(g => ((g.name || '') + ' ' + (g.company || '')).toLowerCase().includes(q));
+    if (!list.length) { tbody.innerHTML = '<tr><td colspan="6" class="loading">No groups found</td></tr>'; return; }
+    ['name','nationality','level','course','date','status'].forEach(c => { const el = document.getElementById('stuArr-' + c); if (el) el.textContent = ''; });
+    tbody.innerHTML = list.map(g => {
+      const loaded = g.membersLoaded || 0;
+      const pax = g.pax != null ? g.pax : '';
+      const memberTag = `<span style="color:var(--muted);font-size:11px">${loaded}${pax!==''?'/'+pax:''} loaded</span>`;
+      const stPill = g.status === 'Invoiced'
+        ? '<span style="background:var(--green);color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">Invoiced</span>'
+        : '<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">Pending</span>';
+      const dates = (g.courseStart || g.courseEnd) ? (fmtDate(g.courseStart) + ' — ' + fmtDate(g.courseEnd)) : '-';
+      return `<tr onclick="openGroupModal(${g.id})" style="cursor:pointer">
+          <td><strong>${esc(g.name || 'Group')}</strong> ${memberTag}${g.company?`<br><span style="color:var(--muted);font-size:11px">${esc(g.company)}</span>`:''}</td>
+          <td>-</td>
+          <td>-</td>
+          <td>${esc(g.courseName || 'General English')}</td>
+          <td>${dates}</td>
+          <td>${stPill}</td>
+        </tr>`;
+    }).join('');
+    document.querySelector('#sec-students table')?.classList.add('students-table');
+  }
+
+  // ── Group member popup (pop-up table, not the right drawer) ──
+  let _gmRows = [];      // editable member rows: {name, age, gender, email, phone}
+  let _gmGroupId = null;
+  window.openGroupModal = async function(id) {
+    _gmGroupId = id; _gmRows = [];
+    document.getElementById('groupModalHost')?.remove();
+    document.body.insertAdjacentHTML('beforeend',
+      `<div id="groupModalHost" style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.45);display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto" onclick="if(event.target===this)closeGroupModal()">
+        <div style="background:var(--card,#fff);color:var(--ink);width:100%;max-width:860px;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.25)">
+          <div id="gmBody" style="padding:22px"><div class="loading">Loading…</div></div>
+        </div>
+      </div>`);
+    try {
+      const res = await fetch('/sis/partners/api/groups/' + id);
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || 'Failed to load');
+      renderGroupModal(d);
+    } catch (e) { document.getElementById('gmBody').innerHTML = `<div style="color:#dc2626">${esc(String(e.message||e))}</div><div style="margin-top:14px"><button onclick="closeGroupModal()" style="padding:8px 16px;border:1px solid var(--line,#ddd);background:transparent;border-radius:8px;cursor:pointer">Close</button></div>`; }
+  };
+  window.closeGroupModal = function() { document.getElementById('groupModalHost')?.remove(); };
+
+  function renderGroupModal(d) {
+    const g = d.group || {}; const roster = d.roster || [];
+    const head = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+        <div>
+          <div style="font-size:18px;font-weight:700">${esc(g.name || 'Group')}</div>
+          <div style="color:var(--muted);font-size:13px;margin-top:2px">${esc(g.company || '')}${g.courseName?' • '+esc(g.courseName):''}${(g.courseStart||g.courseEnd)?' • '+fmtDate(g.courseStart)+' — '+fmtDate(g.courseEnd):''}</div>
+        </div>
+        <button onclick="closeGroupModal()" style="border:none;background:transparent;font-size:22px;line-height:1;cursor:pointer;color:var(--muted)">&times;</button>
+      </div>`;
+    const body = document.getElementById('gmBody');
+    if (roster.length) {
+      // Members already loaded — show them (read-only; re-import is a staff action).
+      const rows = roster.map(m => `<tr>
+          <td style="padding:7px 8px">${esc(m.name || '-')}</td>
+          <td style="padding:7px 8px">${m.age != null ? m.age : '-'}</td>
+          <td style="padding:7px 8px">${m.gender ? (m.gender[0].toUpperCase()+m.gender.slice(1)) : '-'}</td>
+          <td style="padding:7px 8px">${esc(m.email || '-')}</td>
+          <td style="padding:7px 8px">${esc(m.phone || '-')}</td>
+        </tr>`).join('');
+      body.innerHTML = head + `
+        <div style="margin-top:16px;border:1px solid var(--line,#eee);border-radius:10px;overflow:hidden">
+          <table style="width:100%;border-collapse:collapse;font-size:13px">
+            <thead style="background:var(--bg)"><tr>
+              <th style="text-align:left;padding:8px">Name</th><th style="text-align:left;padding:8px">Age</th><th style="text-align:left;padding:8px">Gender</th><th style="text-align:left;padding:8px">Email</th><th style="text-align:left;padding:8px">Phone</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+        <div style="margin-top:12px;color:var(--muted);font-size:12px">${roster.length} member${roster.length===1?'':'s'} loaded. Need to change the list? Contact us and we'll update it.</div>
+        <div style="margin-top:16px;text-align:right"><button onclick="closeGroupModal()" style="padding:8px 18px;border:1px solid var(--line,#ddd);background:transparent;border-radius:8px;cursor:pointer">Close</button></div>`;
+      return;
+    }
+    // No members yet — the import UI (paste → review → Save).
+    if (!_gmRows.length) _gmRows = [ {name:'',age:'',gender:'',email:'',phone:''} ];
+    body.innerHTML = head + `
+      <div style="margin-top:16px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:6px">Paste your list</div>
+        <textarea id="gmPaste" placeholder="Paste names, ages, genders, emails — any format…" style="width:100%;min-height:72px;font-family:monospace;font-size:12px;padding:8px;border:1px solid var(--line,#ddd);border-radius:8px"></textarea>
+        <div style="margin-top:8px"><button onclick="gmParse()" id="gmParseBtn" style="padding:7px 14px;border:none;background:var(--ink,#111);color:#fff;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px">Read list →</button></div>
+      </div>
+      <div style="margin-top:18px;overflow:auto;border:1px solid var(--line,#eee);border-radius:10px">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead style="background:var(--bg)"><tr>
+            <th style="text-align:left;padding:8px">Name <span style="color:#dc2626">*</span></th>
+            <th style="text-align:left;padding:8px">Age <span style="color:#dc2626">*</span></th>
+            <th style="text-align:left;padding:8px">Gender <span style="color:#dc2626">*</span></th>
+            <th style="text-align:left;padding:8px">Email</th>
+            <th style="text-align:left;padding:8px">Phone</th>
+            <th style="padding:8px"></th>
+          </tr></thead>
+          <tbody id="gmTbody"></tbody>
+        </table>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+        <button onclick="gmAddRow()" style="padding:6px 12px;border:1px dashed var(--line,#ccc);background:transparent;border-radius:8px;cursor:pointer;font-size:13px">+ Add student</button>
+        <div style="color:var(--muted);font-size:12px">For juniors with no email, a parent's email is fine — it's just for the placement test.</div>
+      </div>
+      <div style="margin-top:18px;display:flex;justify-content:flex-end;gap:10px">
+        <button onclick="closeGroupModal()" style="padding:9px 18px;border:1px solid var(--line,#ddd);background:transparent;border-radius:8px;cursor:pointer">Cancel</button>
+        <button onclick="gmSave()" id="gmSaveBtn" style="padding:9px 22px;border:none;background:var(--green);color:#fff;border-radius:8px;cursor:pointer;font-weight:700">Save members</button>
+      </div>`;
+    gmRenderRows();
+  }
+
+  function gmRenderRows() {
+    const tb = document.getElementById('gmTbody'); if (!tb) return;
+    const inp = 'width:100%;padding:5px 7px;border:1px solid var(--line,#ddd);border-radius:6px;font-size:13px;box-sizing:border-box';
+    tb.innerHTML = _gmRows.map((r, i) => `<tr>
+        <td style="padding:5px 6px"><input value="${esc(r.name)}" oninput="gmSet(${i},'name',this.value)" style="${inp}"></td>
+        <td style="padding:5px 6px;width:70px"><input value="${esc(String(r.age??''))}" oninput="gmSet(${i},'age',this.value)" inputmode="numeric" style="${inp}"></td>
+        <td style="padding:5px 6px;width:110px"><select onchange="gmSet(${i},'gender',this.value)" style="${inp}"><option value=""${!r.gender?' selected':''}>—</option><option value="male"${r.gender==='male'?' selected':''}>Male</option><option value="female"${r.gender==='female'?' selected':''}>Female</option></select></td>
+        <td style="padding:5px 6px"><input value="${esc(r.email)}" oninput="gmSet(${i},'email',this.value)" style="${inp}"></td>
+        <td style="padding:5px 6px;width:130px"><input value="${esc(r.phone)}" oninput="gmSet(${i},'phone',this.value)" style="${inp}"></td>
+        <td style="padding:5px 6px;width:30px;text-align:center"><span onclick="gmDelRow(${i})" title="Remove" style="cursor:pointer;color:var(--muted)">✕</span></td>
+      </tr>`).join('');
+  }
+  window.gmSet = function(i, k, v) { if (_gmRows[i]) _gmRows[i][k] = v; };
+  window.gmAddRow = function() { _gmRows.push({name:'',age:'',gender:'',email:'',phone:''}); gmRenderRows(); };
+  window.gmDelRow = function(i) { _gmRows.splice(i, 1); if (!_gmRows.length) _gmRows.push({name:'',age:'',gender:'',email:'',phone:''}); gmRenderRows(); };
+
+  window.gmParse = async function() {
+    const txt = (document.getElementById('gmPaste')?.value || '').trim();
+    if (!txt) return;
+    const btn = document.getElementById('gmParseBtn'); if (btn) { btn.disabled = true; btn.textContent = 'Reading…'; }
+    try {
+      const res = await fetch('/sis/partners/api/groups/' + _gmGroupId + '/parse', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ rawText: txt }) });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || 'Could not read the list');
+      const parsed = (d.students || []).map(s => ({ name: s.fullName || [s.firstName,s.lastName].filter(Boolean).join(' '), age: s.age ?? '', gender: s.gender || '', email: '', phone: '', _dob: s.dob || null, _level: s.levelCEFR || null, _nat: s.nationality || null }));
+      if (parsed.length) _gmRows = parsed;
+      gmRenderRows();
+    } catch (e) { alert(String(e.message || e)); }
+    finally { if (btn) { btn.disabled = false; btn.textContent = 'Read list →'; } }
+  };
+
+  window.gmSave = async function() {
+    const rows = _gmRows.filter(r => (r.name||'').trim() || (r.email||'').trim());
+    const bad = rows.filter(r => !(r.name||'').trim() || String(r.age||'').trim()==='' || !(r.gender||'').trim());
+    if (!rows.length) return alert('Add at least one student.');
+    if (bad.length) return alert(bad.length + ' student' + (bad.length===1?'':'s') + ' missing a required field (name, age or gender).');
+    const payload = { students: rows.map(r => ({ fullName: r.name.trim(), age: String(r.age).trim(), gender: r.gender || null, email: (r.email||'').trim() || null, phone: (r.phone||'').trim() || null, dob: r._dob || null, levelCEFR: r._level || null, nationality: r._nat || null })) };
+    const btn = document.getElementById('gmSaveBtn'); if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+    try {
+      const res = await fetch('/sis/partners/api/groups/' + _gmGroupId + '/commit', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || 'Save failed');
+      closeGroupModal();
+      loadGroups();
+    } catch (e) { alert(String(e.message || e)); if (btn) { btn.disabled = false; btn.textContent = 'Save members'; } }
+  };
+
   // ── Student detail drawer ──
   window.openStudentDrawer = async function(studentId) {
     const overlay = document.getElementById('studentDrawerOverlay');
@@ -3314,11 +3535,15 @@ tr:hover td { background: #fafaf8; }
             ${s.currentLevel ? `<span class="drawer-chip" style="background:#dbeafe;color:#1e40af">${esc(s.currentLevel)}</span>` : ''}
             ${s.studentType === 'JUNIOR' ? '<span class="drawer-chip" style="background:#fef3c7;color:#92400e">Junior</span>' : ''}
           </div>
-          ${(s.email || phone || s.birthday) ? `<div class="drawer-kv" style="grid-template-columns:48px 1fr;gap:3px 10px;margin-top:10px;font-size:12px">
-            ${s.email ? `<div class="k">Email</div><div class="v" style="word-break:break-all">${esc(s.email)}</div>` : ''}
+          <div class="drawer-kv" style="grid-template-columns:48px 1fr;gap:6px 10px;margin-top:10px;font-size:12px;align-items:center">
+            <div class="k">Email</div>
+            <div class="v"><div style="display:flex;gap:6px;align-items:center">
+              <input id="emlInp" value="${esc(s.email || '')}" placeholder="student@email.com" style="flex:1;min-width:0;padding:5px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:12px">
+              <button class="pp-save" onclick="saveEmail(${s.id})" style="padding:5px 10px;white-space:nowrap">Save</button>
+            </div></div>
             ${phone ? `<div class="k">Phone</div><div class="v">${esc(phone)}</div>` : ''}
             ${s.birthday ? `<div class="k">DOB</div><div class="v">${dob}</div>` : ''}
-          </div>` : ''}
+          </div>
         </div>
         <button class="drawer-close" id="drawerCloseBtn" aria-label="Close" style="flex:0 0 auto">✕</button>
       </div>`;
@@ -3458,6 +3683,17 @@ tr:hover td { background: #fafaf8; }
       const btn = document.getElementById('flSaveBtn'); if(btn){const t=btn.textContent;btn.textContent='✓ Saved';btn.disabled=true;setTimeout(()=>{btn.textContent=t;btn.disabled=false;},1500);}
     }catch(e){ alert(e.message||e); }
   };
+  window.saveEmail = async function(id){
+    const inp = document.getElementById('emlInp');
+    const email = (inp?.value || '').trim();
+    const btn = inp ? inp.nextElementSibling : null;
+    try{
+      const r = await fetch('/sis/partners/api/students/'+id+'/email',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+      const d = await r.json(); if(!d.success) throw new Error(d.error||'Save failed');
+      const row = _studentRows.find(x=>x.id===id); if(row) row.email = d.email || email;   // keep list in sync
+      if(btn){const t=btn.textContent;btn.textContent='✓ Saved';btn.disabled=true;setTimeout(()=>{btn.textContent=t;btn.disabled=false;},1500);}
+    }catch(e){ alert(e.message||e); }
+  };
   window.uploadStudentDoc = async function(id,file){
     if(!file) return;
     const drop = document.querySelector('#otherDrop span'); const orig = drop?drop.textContent:'';
@@ -3585,13 +3821,40 @@ tr:hover td { background: #fafaf8; }
 
   document.getElementById('studentSearch').addEventListener('input', (e) => {
     clearTimeout(studentSearchTimer);
-    studentSearchTimer = setTimeout(() => loadStudents(e.target.value), 300);
+    studentSearchTimer = setTimeout(() => {
+      if (_studentMode === 'groups') renderGroups(e.target.value);   // client-side filter on loaded groups
+      else loadStudents(e.target.value);
+    }, 300);
   });
 
   // ── Finance ──
 
   // ═══ Enrollment form submission → HubSpot ═══
   function setupEnrollForm() {
+    // Flip a General-English pick over to Academic Year in place — carries the
+    // session across, lands on 25 weeks + the AY bundle (via the chip's own change
+    // handler), then opens the Course section so the partner reviews and submits.
+    function switchToAcademicYear() {
+      const ay = document.getElementById('ct-academic');
+      if (!ay) return;
+      ay.checked = true;
+      ay.dispatchEvent(new Event('change', { bubbles: true }));
+      const geSlot = document.querySelector('input[name="courseSlot"]:checked');
+      if (geSlot) {
+        const target = document.getElementById(geSlot.value === 'afternoon' ? 'ay-pm' : 'ay-am');
+        if (target) target.checked = true;
+      }
+      const wk = document.getElementById('courseWeeks');
+      if (wk && wk.value !== '25') { wk.value = '25'; wk.dispatchEvent(new Event('change')); }
+      const courseAcc = document.querySelector('.enroll-acc[data-acc="course"]');
+      if (courseAcc) {
+        if (!courseAcc.classList.contains('open')) openAccSection(courseAcc);
+        courseAcc.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      const st = document.getElementById('enrollStatus');
+      if (st) st.textContent = 'Switched to Academic Year — review and submit.';
+    }
+
     const form = document.getElementById('enrollForm');
     // Instagram becomes required when the Challenge is opted into (Progress Posts
     // need a social handle). Show/hide the red * as the checkbox toggles.
@@ -3602,6 +3865,32 @@ tr:hover td { background: #fafaf8; }
     _syncIgReq();
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      // ── Work-study guard: a Non-EU student + General English + 25+ weeks is
+      //    almost always a work-study booking that must be Academic Year (there is
+      //    no 25-week General English product). GE stays a valid chip for visa
+      //    students because SHORT GE is legitimate — only this combination is the
+      //    mistake — so we confirm here at submit rather than hide the chip.
+      {
+        const _fd = new FormData(form);
+        const _terr = TERRITORY_MAP[_fd.get('nationality')];
+        const _wk = parseInt(_fd.get('courseWeeks') || '0', 10);
+        if (_fd.get('courseType') === 'group' && _terr && _terr !== 'EU' && _wk >= 25) {
+          const choice = await showModal({
+            variant: 'success', icon: 'info',
+            title: 'Are you sure?',
+            body: 'Non-EU student, 25 weeks. Work-study visa = Academic Year, not General English.',
+            actions: [
+              { label: 'Keep General English', value: 'ge' },
+              { label: 'Use Academic Year', value: 'ay', primary: true },
+            ],
+            dismissValue: 'dismiss',
+          });
+          if (choice === 'ay') { switchToAcademicYear(); return; }
+          if (choice !== 'ge') return;   // backdrop / Esc → abort, change nothing
+        }
+      }
+
       const btn = document.getElementById('enrollSubmit');
       const statusEl = document.getElementById('enrollStatus');
       const errEl = document.getElementById('enrollError');

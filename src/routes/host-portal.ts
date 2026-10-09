@@ -627,8 +627,10 @@ function buildPortalBody(
     ${sectionVetting}
     <p class="muted" style="margin-top:30px;text-align:center;font-size:11px">
       Bookmark this page — your link doesn't expire.<br>
-      Questions: <a href="mailto:accomm@ulearnschool.com" style="color:#6FB42C">accomm@ulearnschool.com</a>
+      Questions: <a id="hpContactLink" style="color:#6FB42C;cursor:pointer">contact us</a>
     </p>
+    <!-- Email assembled client-side so the static HTML carries no harvestable address / mailto: -->
+    <script>(function(){try{var a=document.getElementById('hpContactLink');if(a){var e=['accomm','ulearnschool.com'].join(String.fromCharCode(64));a.href='mailto:'+e;a.textContent=e;}}catch(_){}})();</script>
     <script>${clientSideScript()}</script>
   `;
 }

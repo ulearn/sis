@@ -364,6 +364,10 @@ export function partnerScripts(prisma: PrismaClient) {
   const HS = 'https://api.hubapi.com';
   const B2B_PIPELINE = '35765201';
   const ENROLMENT_STAGE = '109570243';
+  // All partner-portal enrolments are owned by Partners (partners@ulearnschool.com).
+  // Set on the deal at creation — HubSpot leaves new API-created deals unowned
+  // otherwise, which drops them out of the Partners team's views/automation.
+  const PARTNERS_OWNER = '514760653';
 
   async function hsRequest(method: string, path: string, body?: any): Promise<any> {
     const opts: any = {
@@ -759,6 +763,7 @@ export function partnerScripts(prisma: PrismaClient) {
       dealname: `${data.firstName} ${data.lastName} | ${data.nationality} | ${agencyName}`,
       pipeline: B2B_PIPELINE,
       dealstage: ENROLMENT_STAGE,
+      hubspot_owner_id: PARTNERS_OWNER,
       ...buildBaseDealProps(data),
     };
 
@@ -847,6 +852,15 @@ export function partnerScripts(prisma: PrismaClient) {
       ];
       const html = `<strong>New Enrollment from ${E(agencyName)}</strong><br>${rows.join('<br>')}`
         + `<br><br><a href="${dealUrl}">Open the deal in HubSpot &rarr;</a>`;
+      // Reply-To = the submitting partner's own email, so a staff reply (or the AI
+      // responder) goes to the PARTNER, not back into the info@/partners@ inbox.
+      // Without this, replying to our own notification never reaches the agent —
+      // the reply just loops to ourselves. (Neil 2026-09-24)
+      let partnerReplyTo: string | undefined;
+      if (partnerHubspotContactId) {
+        const p = await prisma.sisUser.findFirst({ where: { hubspotContactId: partnerHubspotContactId }, select: { email: true } });
+        partnerReplyTo = p?.email || undefined;
+      }
       sendEmail({
         // From info@ (not partners@): the notify lands in the partners@ TEAM inbox,
         // and HubSpot treats partners@→partners@ self-sends as spam, so enrolment
@@ -854,6 +868,7 @@ export function partnerScripts(prisma: PrismaClient) {
         // normally in the shared inbox (Neil, 2026-07-24).
         from: 'info@ulearnschool.com',
         to: process.env.PARTNER_ENROLL_NOTIFY || 'partners@ulearnschool.com',
+        replyTo: partnerReplyTo,
         subject: `New Enrollment from ${agencyName} — ${data.firstName} ${data.lastName}`,
         html,
         houseStyle: false,
@@ -868,6 +883,18 @@ export function partnerScripts(prisma: PrismaClient) {
           [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 214 }]);
       }
     } catch (e) { console.error('[enroll notify] failed:', (e as any)?.message || e); }
+
+    // Trigger AutoQuote after a 60s settle window — lets the deal fully land and
+    // any other HubSpot workflows / enrichment run first, so autoQuote drafts off
+    // a COMPLETE deal rather than racing them (Neil, 2026-09-30). Deal field
+    // `autoquote='true'` (label "Yes") fires the HubSpot workflow → hub autoQuote.js.
+    // Fire-and-forget: we've already returned to the partner; a server restart
+    // inside the window would skip it (rare, and staff still see the deal to quote).
+    setTimeout(() => {
+      hsRequest('PATCH', `/crm/v3/objects/deals/${dealId}`, { properties: { autoquote: 'true' } })
+        .then(() => console.log(`[enroll] AutoQuote triggered on deal ${dealId} (60s after enrolment)`))
+        .catch(e => console.error(`[enroll] AutoQuote trigger FAILED on deal ${dealId}:`, e?.message || e));
+    }, 60000);
 
     return { success: true, dealId, contactId };
   }
@@ -1302,6 +1329,8 @@ export function partnerScripts(prisma: PrismaClient) {
           // alerts (Neil, 2026-07-24).
           from: 'info@ulearnschool.com',
           to: process.env.PARTNER_REGISTER_NOTIFY || 'partners@ulearnschool.com',
+          // Reply-To = the new partner's own email so a reply reaches them, not us.
+          replyTo: email || undefined,
           subject: `New Partner Registration — ${displayName || username} (${agency?.name || 'agency #' + agencyId})`,
           html,
           houseStyle: false,
@@ -1373,6 +1402,33 @@ export function partnerScripts(prisma: PrismaClient) {
       outboundFlightTime: t(data.outboundFlightTime),
     } as any });
     return { success: true };
+  }
+
+  // ── Student email (partner-editable) — the key unblock for group juniors, who
+  //    are created with a synthetic placeholder (…@grp-<deal>.ulearnstudent.com)
+  //    and can't create an account / sit the level test until the organiser puts
+  //    the real address in. Updates SIS + the HubSpot contact.
+  async function updateStudentEmail(agencyId: number, studentId: number, data: any) {
+    if (!(await assertStudentInAgency(agencyId, studentId))) return { success: false, error: 'Student not found' };
+    const email = (typeof data.email === 'string' ? data.email.trim().toLowerCase() : '');
+    if (!email) return { success: false, error: 'Email is required' };
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return { success: false, error: 'Enter a valid email address' };
+    const clash = await prisma.student.findFirst({ where: { email, id: { not: studentId } }, select: { id: true } });
+    if (clash) return { success: false, error: 'That email is already used by another student' };
+    await prisma.student.update({ where: { id: studentId }, data: { email } });
+    // Mirror to the HubSpot contact (best-effort, non-fatal).
+    try {
+      const s = await prisma.student.findUnique({ where: { id: studentId }, select: { hubspotContactId: true } });
+      const tok = process.env.ACCESS_TOKEN;
+      if (s?.hubspotContactId && tok) {
+        await fetch(`https://api.hubapi.com/crm/v3/objects/contacts/${s.hubspotContactId}`, {
+          method: 'PATCH',
+          headers: { Authorization: `Bearer ${tok}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ properties: { email } }),
+        });
+      }
+    } catch (e: any) { console.warn('[updateStudentEmail] HubSpot push failed:', e?.message || e); }
+    return { success: true, email };
   }
 
   // ── "Other uploads" — partner-uploaded general docs (category 'other').
@@ -1532,5 +1588,5 @@ export function partnerScripts(prisma: PrismaClient) {
 
   return { dashboard, students, studentDetail, bookings, finance, enroll, currentChallenge, getChallengeOptIn, setChallengeOptIn, agencyLifePassEligible, liveFinance, recordQuoteAction, registerPartner, documents,
     updateStudentPassport, addPassportUpload, getPassportUpload, getStudentUpload, deletePassportUpload, assertIssuedDoc,
-    updateStudentFlights, addStudentDoc, deleteStudentDoc, attachInsurance, listCredits, addCredit, useCredit };
+    updateStudentFlights, updateStudentEmail, addStudentDoc, deleteStudentDoc, attachInsurance, listCredits, addCredit, useCredit };
 }

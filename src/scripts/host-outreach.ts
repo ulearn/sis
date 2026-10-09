@@ -13,6 +13,7 @@
  */
 import type { PrismaClient } from '../generated/prisma/client';
 import { sendEmail } from './email';
+import { emailTemplateWhere } from './email-templates';
 
 const FROM = 'accomm@ulearnschool.com';
 const FROM_NAME = 'ULearn Accommodation';
@@ -55,7 +56,7 @@ export async function runHostOutreach(
   const pool = await prisma.bookingAccommodation.count({ where: poolWhere });
   log(`${pool} unmatched Host-Family student(s) in the pool.`);
 
-  const tpl = await prisma.documentTemplate.findUnique({ where: { slug: opts.templateSlug } });
+  const tpl = await prisma.documentTemplate.findFirst({ where: emailTemplateWhere(opts.templateSlug) });
   if (!tpl || tpl.templateType !== 'email') {
     throw new Error(`template "${opts.templateSlug}" (email) not found`);
   }

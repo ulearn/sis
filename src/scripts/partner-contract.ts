@@ -320,9 +320,10 @@ export async function signContract(prisma: PrismaClient, input: SignInput): Prom
   }
 
   const d = await gatherContractData(prisma, input.agencyId);
-  if (!d.commissionSet) {
-    throw new Error('Commercial terms not finalised — the wholesale discount is not set in HubSpot. Contact partners@ulearnschool.com.');
-  }
+  // No fixed wholesale discount set → this partner DEFAULTS to the Accelerator Programme
+  // (Neil, 2026-09-03: everybody new defaults to Accelerator unless a fixed rate is agreed).
+  // We no longer block signing on a missing commission — the agreement renders the Accelerator
+  // basis (Schedule 2) and we auto-enrol on the ladder after signing (below).
 
   const signedAt = new Date();
   const html = buildAgreementHtml({
@@ -365,5 +366,69 @@ export async function signContract(prisma: PrismaClient, input: SignInput): Prom
     data: { contractSignedAt: signedAt, contractSignedById: input.signedByUserId },
   });
 
+  // Auto-enrol on the Accelerator ladder when no fixed wholesale discount was agreed, so
+  // the partner's quotes resolve at the 22% base and escalate as they fund enrolments —
+  // no manual commission-setting per partner. Fixed-rate (legacy/negotiated) partners keep
+  // their stated rate and are left untouched. NB we set the accel_* props but deliberately
+  // NOT `commission` — leaving it null keeps commissionSet=false, so the agreement (and any
+  // re-render) correctly shows the Accelerator Programme rather than a fixed %.
+  if (!d.commissionSet) await autoEnrolAccelerator(d, signedAt);
+
   return { signatureId: sig.id, pdfPath, alreadySigned: false };
+}
+
+/**
+ * Re-issue an existing signed agreement PDF against the CURRENT template + the partner's
+ * CURRENT commercial basis (e.g. moving a partner who signed on a static rate onto the
+ * Accelerator Programme), preserving the original signature, signer details and signed date.
+ * Writes a fresh re-issued PDF, repoints the signature row to it (old file kept on disk for
+ * audit) and bumps its contract_version. Owner-directed re-issue only.
+ */
+export async function reissueSignedContract(prisma: PrismaClient, signatureId: number): Promise<{ pdfPath: string; contractVersion: string; agencyId: number }> {
+  const sig = await prisma.agencySignature.findUnique({ where: { id: signatureId } });
+  if (!sig) throw new Error(`Signature ${signatureId} not found`);
+  const d = await gatherContractData(prisma, sig.agencyId);
+  const html = buildAgreementHtml({
+    ...d.fields,
+    effectiveDate: sig.signedAt,
+    signerName: sig.signerName,
+    signerPosition: sig.signerTitle,
+    signaturePngB64: sig.signaturePngB64,
+    signedDate: sig.signedAt,
+  });
+  const pdf = await appendAnnex(await documentScripts(prisma).generatePdf(html));
+  if (!fs.existsSync(SIGNED_DIR)) fs.mkdirSync(SIGNED_DIR, { recursive: true });
+  const ts = new Date().toISOString().replace(/[:.]/g, '-');
+  const pdfPath = path.join(SIGNED_DIR, `agency-${sig.agencyId}-${ts}-reissued-${CONTRACT_VERSION}.pdf`);
+  fs.writeFileSync(pdfPath, pdf);
+  await prisma.agencySignature.update({
+    where: { id: signatureId },
+    data: { pdfPath, contractVersion: CONTRACT_VERSION },
+  });
+  return { pdfPath, contractVersion: CONTRACT_VERSION, agencyId: sig.agencyId };
+}
+
+/**
+ * Stamp the Accelerator enrolment props onto the partner's primary HubSpot entity
+ * (company, else sole-trader contact). Mirrors ladder.js tierRate(1) = 22% entry rate.
+ * Cycle = the calendar year of signing (matches the hub's calendar-year cycle convention).
+ * Does NOT write `commission` — Accelerator partners are identified by accel_agree_date +
+ * a null commission; a non-null commission means a fixed negotiated rate.
+ */
+async function autoEnrolAccelerator(d: ContractData, when: Date): Promise<void> {
+  const y = when.getUTCFullYear();
+  const props: Record<string, string> = {
+    accel_agree_date: when.toISOString().slice(0, 10),
+    accel_cycle_start: `${y}-01-01`,
+    accel_cycle_end: `${y}-12-31`,
+    accel_cmsn: '0.22',      // Accelerator entry rate (ladder.js tierRate(1)); recomputed live by the quoter
+    accel_won_count: '0',
+  };
+  try {
+    if (d.hasCompany && d.hubspotCompanyId) await hsPatch('companies', d.hubspotCompanyId, props);
+    else if (d.hubspotContactId) await hsPatch('contacts', d.hubspotContactId, props);
+    console.log(`[accel] auto-enrolled agency ${d.agencyId} on the Accelerator (${d.hasCompany ? 'company ' + d.hubspotCompanyId : 'contact ' + d.hubspotContactId})`);
+  } catch (e: any) {
+    console.error(`[accel] auto-enrol failed for agency ${d.agencyId} (non-fatal): ${e?.message || e}`);
+  }
 }

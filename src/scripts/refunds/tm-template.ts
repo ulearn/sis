@@ -1,6 +1,9 @@
 interface TmEmailInput {
-  student: { firstName: string; lastName: string; id: number | null };
-  tmTransactionId: string;
+  student: { firstName: string; lastName: string; id: number | null; email?: string | null };
+  // Optional: a GENUINE TransferMate reference. Left blank when we don't hold one
+  // (our stored transactionId is a Fidelo/internal ref, NOT TM's) — TM locates the
+  // escrow by student name + email + amount. Never put our own ref here. (Neil 2026-10-09)
+  tmTransactionId?: string | null;
   originalAmount: string;
   feeDeductionEur: string;
   feeBreakdown: string;
@@ -10,6 +13,8 @@ interface TmEmailInput {
 export function buildTmEmail(d: TmEmailInput) {
   const fullName = `${d.student.firstName} ${d.student.lastName}`.trim();
   const studentIdLine = d.student.id ? `ULearn Student ID:   ${d.student.id}` : 'ULearn Student ID:   (not yet linked)';
+  const studentEmail = (d.student.email || '').trim() || '(not on file)';
+  const tmRef = (d.tmTransactionId || '').trim();
 
   const text = [
     'Hi TransferMate,',
@@ -18,7 +23,8 @@ export function buildTmEmail(d: TmEmailInput) {
     '',
     `Student Name:        ${fullName}`,
     studentIdLine,
-    `TM Transaction ID:   ${d.tmTransactionId}`,
+    `Student Email:       ${studentEmail}`,
+    ...(tmRef ? [`TM Reference:        ${tmRef}`] : []),
     `Original Amount:     €${d.originalAmount}`,
     `Fee Deduction:       €${d.feeDeductionEur} (${d.feeBreakdown})`,
     `Refund Amount:       €${d.refundAmount}`,
@@ -35,7 +41,8 @@ export function buildTmEmail(d: TmEmailInput) {
 <table cellpadding="6" style="border-collapse:collapse;font-family:Arial,sans-serif;">
   <tr><td><strong>Student Name</strong></td><td>${escape(fullName)}</td></tr>
   <tr><td><strong>ULearn Student ID</strong></td><td>${d.student.id ?? '(not yet linked)'}</td></tr>
-  <tr><td><strong>TM Transaction ID</strong></td><td>${escape(d.tmTransactionId)}</td></tr>
+  <tr><td><strong>Student Email</strong></td><td>${escape(studentEmail)}</td></tr>
+  ${tmRef ? `<tr><td><strong>TM Reference</strong></td><td>${escape(tmRef)}</td></tr>` : ''}
   <tr><td><strong>Original Amount</strong></td><td>€${escape(d.originalAmount)}</td></tr>
   <tr><td><strong>Fee Deduction</strong></td><td>€${escape(d.feeDeductionEur)} <em>(${escape(d.feeBreakdown)})</em></td></tr>
   <tr><td><strong>Refund Amount</strong></td><td><strong>€${escape(d.refundAmount)}</strong></td></tr>

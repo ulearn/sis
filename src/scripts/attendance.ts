@@ -1,4 +1,5 @@
 import { PrismaClient } from '../generated/prisma/client';
+import { emailTemplateWhere } from './email-templates';
 
 export function attendanceScripts(prisma: PrismaClient) {
 
@@ -179,6 +180,19 @@ export function attendanceScripts(prisma: PrismaClient) {
       weekStart: monday.toISOString().split('T')[0],
       days: days.map(d => d.toISOString().split('T')[0]),
       cancellations: occurrences.map((o, i) => ({ date: days[i].toISOString().split('T')[0], cancelled: o.cancelled })),
+      // Per-day confirmation footer: who last recorded this day + when. Only days
+      // that have at least one recorded record with a recordedBy stamp show a
+      // name — future days (no records) stay blank. Renders as "NM · 25 Sep".
+      confirmations: occurrences.map((o, i) => {
+        const dayRecs = records.filter(r => r.occurrenceId === o.id && (r as any).recordedBy);
+        if (!dayRecs.length) return { date: days[i].toISOString().split('T')[0], by: null, at: null };
+        const latest = dayRecs.reduce((a, b) => ((a as any).updatedAt > (b as any).updatedAt ? a : b));
+        return {
+          date: days[i].toISOString().split('T')[0],
+          by: (latest as any).recordedBy || null,
+          at: (latest as any).updatedAt ? (latest as any).updatedAt.toISOString() : null,
+        };
+      }),
       students,
     };
   }
@@ -324,10 +338,13 @@ export function attendanceScripts(prisma: PrismaClient) {
     occurrenceId: number;
     status: string;
     note?: string;
-  }>) {
+    recordedBy?: string | null;
+  }>, recordedBy?: string | null) {
     const results = [];
     for (const r of records) {
-      results.push(await markAttendance(r));
+      // Stamp WHO saved each row so a bulk save is always attributable (the
+      // 21-25 Sep false-absent week had recordedBy=null — no way to trace it).
+      results.push(await markAttendance({ ...r, recordedBy: (r.recordedBy ?? recordedBy) || undefined }));
     }
     return results;
   }
@@ -348,7 +365,7 @@ export function attendanceScripts(prisma: PrismaClient) {
   // The full record list is still returned (with onHoliday flag) so the UI
   // can display them with a 🏖️ badge.
   async function studentSummary(studentId: number) {
-    const { fetchStudentHolidays, filterOutHolidayDates, legacyAttendanceCounts } = await import('./attendance-pct');
+    const { fetchStudentHolidays, filterOutHolidayDates, legacyAttendanceCounts, courseTuitionRate, presentCredit } = await import('./attendance-pct');
     const records = await prisma.attendance.findMany({
       where: { studentId },
       include: {
@@ -399,7 +416,7 @@ export function attendanceScripts(prisma: PrismaClient) {
     const counted = filterOutHolidayDates(records, holidays);
 
     const total = counted.length;
-    const present = counted.filter(r => r.status === 'PRESENT' || r.status === 'LATE').length;
+    const present = presentCredit(counted, studentId);   // LATE = 0.5 (retroactive; #913 grandfathered)
     const absent = counted.filter(r => r.status === 'ABSENT_UNCERTIFIED').length;
     const absentCertified = counted.filter(r => r.status === 'ABSENT_CERTIFIED').length;
     const excused = counted.filter(r => r.status === 'EXCUSED').length;
@@ -430,7 +447,7 @@ export function attendanceScripts(prisma: PrismaClient) {
     const bookingsForWin = await prisma.booking.findMany({
       where: { studentId, status: { not: 'CANCELLED' } },
       select: { id: true, serviceStart: true, serviceEnd: true,
-        courses: { select: { name: true, startDate: true, endDate: true } } },
+        courses: { select: { name: true, startDate: true, endDate: true, holidayWks: true } } },
     });
     const toWindow = (b: typeof bookingsForWin[number]) => {
       const starts = b.courses.map(c => c.startDate).filter(Boolean).map(d => +new Date(d!));
@@ -448,7 +465,7 @@ export function attendanceScripts(prisma: PrismaClient) {
         return d != null && d >= +s && d <= +e;
       });
       const t = win.length;
-      const p = win.filter(r => r.status === 'PRESENT' || r.status === 'LATE').length;
+      const p = presentCredit(win, studentId);   // LATE = 0.5 (retroactive; #913 grandfathered)
       return {
         total: t, present: p,
         absent: win.filter(r => r.status === 'ABSENT_UNCERTIFIED').length,
@@ -467,16 +484,188 @@ export function attendanceScripts(prisma: PrismaClient) {
         ...rateInWindow(w.start, w.end),
       };
     });
-    // Current = the booking window containing today; else the latest-ending one.
-    const nowMs = Date.now();
-    let current = perBooking.find(pb => pb.start && pb.end && +new Date(pb.start) <= nowMs && nowMs <= +new Date(pb.end) + 24 * 60 * 60 * 1000) || null;
-    if (!current) current = perBooking.filter(pb => pb.end).sort((a, b) => +new Date(b.end!) - +new Date(a.end!))[0] || null;
+    // ── Per-COURSE breakdown (Academic Year / LifePass) ────────────────────
+    // A LifePass booking nests 3 sequential AY courses in one booking window, so
+    // the per-booking rate above blends all three. Compliance (ILEP 85%) is
+    // measured PER COURSE with its own 25-tuition-week cap — mirror the admin
+    // badge's `_courseAtt` via the shared server helper. Only AY courses (those
+    // carrying a `holidayWks` entitlement) produce a per-course row; a plain
+    // single-course booking's course row equals its per-booking figure.
+    const perCourse = bookingsForWin.flatMap(b =>
+      b.courses
+        .filter(c => c.holidayWks != null && c.startDate)
+        .map(c => {
+          const startIso = c.startDate ? new Date(c.startDate).toISOString().slice(0, 10) : null;
+          const endIso = c.endDate ? new Date(c.endDate).toISOString().slice(0, 10) : null;
+          const r = courseTuitionRate(records, startIso, endIso, c.holidayWks, onHolidayDate, studentId);
+          return { bookingId: b.id, label: c.name || 'Course', start: startIso, end: endIso, holidayWks: c.holidayWks, ...r };
+        }),
+    );
 
-    return { total, present, absent, absentCertified, excused, onHoliday: onHolidayCount, rate, legacy: leg.total > 0 ? { pct: Number(legBooking!.legacyAttendancePct), estDays: leg.total } : null, perBooking, current, records: flagged };
+    // Current = the booking window containing today; else the latest-ending one.
+    // When the student is on AY courses, the compliance headline should track the
+    // CURRENT course (its 25-week tuition window), not the blended booking span —
+    // so prefer the per-course row containing today, then the latest-ending one.
+    const nowMs = Date.now();
+    let current: any = perBooking.find(pb => pb.start && pb.end && +new Date(pb.start) <= nowMs && nowMs <= +new Date(pb.end) + 24 * 60 * 60 * 1000) || null;
+    if (!current) current = perBooking.filter(pb => pb.end).sort((a, b) => +new Date(b.end!) - +new Date(a.end!))[0] || null;
+    if (perCourse.length) {
+      // Prefer the course running today; else — e.g. in a summer gap between two
+      // nested AY courses — the most-recent course that has already STARTED (so
+      // we headline the just-finished course's rate, not an empty future one);
+      // else the latest-ending course as a last resort.
+      const curCourse = perCourse.find(pc => pc.start && pc.end && +new Date(pc.start) <= nowMs && nowMs <= +new Date(pc.end) + 24 * 60 * 60 * 1000)
+        || perCourse.filter(pc => pc.start && +new Date(pc.start) <= nowMs).sort((a, b) => +new Date(b.start!) - +new Date(a.start!))[0]
+        || perCourse.filter(pc => pc.end).sort((a, b) => +new Date(b.end!) - +new Date(a.end!))[0] || null;
+      if (curCourse) current = curCourse;
+    }
+
+    return { total, present, absent, absentCertified, excused, onHoliday: onHolidayCount, rate, legacy: leg.total > 0 ? { pct: Number(legBooking!.legacyAttendancePct), estDays: leg.total } : null, perBooking, perCourse, current, records: flagged };
+  }
+
+  // ── Monitoring dashboard ────────────────────────────────────────────────
+  // One row per in-school Academic-Year / ILEP student with their attendance %
+  // to date. The % + counts come straight from studentSummary() — the SAME
+  // tally used everywhere else. We NEVER recompute the blend here: this is a
+  // reader onto the one tally, not a second window onto it. The date range is
+  // used ONLY to surface who was absent in it (the weekly co-pilot signal); it
+  // does not change the headline %.
+  async function monitor(opts?: { classId?: number | null; from?: string | null; to?: string | null }) {
+    // Everyone currently placed in a class (the real gate, enforced below). Each
+    // is flagged is_ay = does their active course make them Academic Year / ILEP
+    // (name = Academic Year / Academic Year Renewal / LifePass, or holiday_wks
+    // set). The AY pill keys off this — only AY students are subject to the ILEP
+    // 85% rule / warnings; short-stay & general-course students are not.
+    const cohort: any[] = await prisma.$queryRawUnsafe(
+      `SELECT s.id, s.first_name, s.last_name,
+              COALESCE(s.placement_test_level, s.current_level) AS level,
+              BOOL_OR(bc.holiday_wks IS NOT NULL OR bc.name ~* 'academic year|renewal|life ?pass') AS is_ay
+         FROM students s
+         JOIN bookings b ON b.student_id = s.id
+              -- Class placement is the gate: a placed, attending student can sit
+              -- on a PARTIAL booking (staff allow a small balance for placement),
+              -- so we only drop ESCROW / CANCELLED here.
+              AND (b.status IS NULL OR b.status NOT IN ('ESCROW','CANCELLED')) AND b.amount_total > 0
+         JOIN booking_courses bc ON bc.booking_id = b.id AND bc.active = true
+              AND CURRENT_DATE BETWEEN bc.start_date AND bc.end_date
+        GROUP BY s.id, s.first_name, s.last_name, level
+        ORDER BY s.first_name`);
+    const ids = cohort.map(c => Number(c.id));
+    if (!ids.length) return { students: [], classes: [] };
+
+    // Current class per student (latest assignment covering today).
+    const today = new Date();
+    const asgs = await prisma.studentClassAssignment.findMany({
+      where: {
+        studentId: { in: ids },
+        weekStart: { lte: today },
+        OR: [{ weekEnd: null }, { weekEnd: { gte: today } }],
+      },
+      select: { studentId: true, classId: true, weekStart: true, class_: { select: { name: true, session: true } } },
+      orderBy: { weekStart: 'desc' },
+    });
+    const clsBy = new Map<number, { classId: number; label: string }>();
+    for (const a of asgs) {
+      if (a.studentId == null || clsBy.has(a.studentId) || !a.class_) continue;
+      // The class name already carries its session (e.g. "A2 AM", "B2&C1 PM").
+      clsBy.set(a.studentId, { classId: a.classId, label: a.class_.name });
+    }
+
+    // Recent-absence surface (NOT a tally): ABSENT_UNCERTIFIED count in [from,to].
+    const absInRange = new Map<number, number>();
+    if (opts?.from && opts?.to) {
+      const rows: any[] = await prisma.$queryRawUnsafe(
+        `SELECT a.student_id AS sid, COUNT(*)::int AS n
+           FROM attendance a JOIN class_occurrences o ON o.id = a.occurrence_id
+          WHERE a.student_id = ANY($1::int[]) AND a.status = 'ABSENT_UNCERTIFIED'
+            AND o.date BETWEEN $2::date AND $3::date
+          GROUP BY a.student_id`, ids, opts.from, opts.to);
+      for (const r of rows) absInRange.set(Number(r.sid), Number(r.n));
+    }
+
+    const students: any[] = [];
+    for (const c of cohort) {
+      const sid = Number(c.id);
+      const cls = clsBy.get(sid);
+      if (!cls) continue;   // only students currently placed in a class belong here
+      if (opts?.classId && cls.classId !== opts.classId) continue;
+      let pct: number | null = null, present = 0, total = 0, absent = 0;
+      try {
+        const sum: any = await studentSummary(sid);   // ← the single source of truth
+        present = Number(sum?.present ?? 0);
+        total = Number(sum?.total ?? 0);
+        absent = Math.max(0, Math.round((total - present) * 10) / 10);
+        // No recorded days → "no data" (null), not 0% — so newly-arrived / un-
+        // entered students sink to the bottom instead of falsely topping the list.
+        pct = total > 0 ? (sum?.rate ?? null) : null;
+      } catch { /* leave nulls — a bad row shouldn't sink the dashboard */ }
+      students.push({
+        studentId: sid,
+        name: `${c.first_name} ${c.last_name || ''}`.trim(),
+        level: c.level || null,
+        classId: cls?.classId ?? null,
+        className: cls?.label || null,
+        isAY: !!c.is_ay,
+        pct, daysCounted: total, absences: absent,
+        absentInRange: absInRange.get(sid) || 0,
+      });
+    }
+    // Worst attendance first (nulls to the bottom).
+    students.sort((a, b) => (a.pct ?? 999) - (b.pct ?? 999));
+
+    // Distinct class list for the filter dropdown (from the cohort's assignments).
+    const classes = [...new Map(students.filter(s => s.classId != null)
+      .map(s => [s.classId as number, { id: s.classId as number, name: s.className as string }])).values()]
+      .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+    return { students, classes };
+  }
+
+  // Send the general attendance warning to hand-picked students (co-piloted —
+  // a human chooses who and clicks send). Reuses the 'Attendance-Absence' DB
+  // template and the same sendStudentEmail + in-app path as the daily cron.
+  // Deliberately no exact percentages in the copy.
+  async function sendWarnings(studentIds: number[], sentBy?: string | null) {
+    const { sendStudentEmail } = await import('../routes/email');
+    const { messageScripts } = await import('./messages');
+    const FROM_EMAIL = 'success@ulearnschool.com';
+    const FROM_NAME = 'ULearn Team';
+    const FALLBACK_SUBJECT = 'ULearn — Attendance Notice';
+    const tpl = await prisma.documentTemplate.findFirst({
+      where: emailTemplateWhere('Attendance-Absence', { templateType: 'email' }),
+      select: { id: true, subject: true, htmlTemplate: true },
+    });
+    if (!tpl?.htmlTemplate) return { sent: 0, results: [], error: "'Attendance-Absence' template missing" };
+    const render = (s: string, first: string) =>
+      (s || '').replace(/\{\{\s*student\.first_name\s*\}\}/g, first || 'there')
+               .replace(/\{\{\s*first_name\s*\}\}/g, first || 'there');
+    const results: any[] = [];
+    for (const id of studentIds) {
+      const s = await prisma.student.findUnique({ where: { id }, select: { id: true, firstName: true, email: true } });
+      if (!s?.email) { results.push({ id, ok: false, error: 'no email' }); continue; }
+      const subject = render(tpl.subject || FALLBACK_SUBJECT, s.firstName || '');
+      const html = render(tpl.htmlTemplate!, s.firstName || '');
+      try {
+        const res: any = await sendStudentEmail(prisma, {
+          from: FROM_EMAIL, fromName: FROM_NAME, to: s.email,
+          subject, html, studentId: s.id, templateId: tpl.id,
+        });
+        try {
+          await messageScripts(prisma).postToApp({
+            studentId: s.id, subject, bodyHtml: html,
+            sentBy: sentBy || FROM_EMAIL, emailLogId: res?.emailLogId ?? null,
+          });
+        } catch { /* in-app mirror is best-effort */ }
+        results.push({ id, ok: true });
+      } catch (e: any) {
+        results.push({ id, ok: false, error: e?.message || String(e) });
+      }
+    }
+    return { sent: results.filter(r => r.ok).length, results };
   }
 
   return {
     getWeekAttendance, getClassAttendance, markAttendance, bulkMarkAttendance,
-    toggleCancelled, studentSummary,
+    toggleCancelled, studentSummary, monitor, sendWarnings,
   };
 }

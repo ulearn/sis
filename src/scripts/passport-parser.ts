@@ -128,3 +128,21 @@ export async function parsePassport(
     return { supported: true, extracted: null, error: String(e?.message || e) };
   }
 }
+
+// Fill-only DOB write: set Student.birthday from a parsed passport ONLY when the
+// student has none yet (Neil, 2026-08-27). Never overwrites an existing birthday
+// — every other passport field still waits for human confirm. Returns true if it
+// wrote. UTC-midnight construction keeps the @db.Date column off the Dublin-summer
+// one-day-early skew. Takes prisma as an arg so this module stays dependency-free.
+export async function fillBirthdayIfEmpty(
+  prisma: any,
+  studentId: number,
+  extracted: ParsedPassport | null,
+): Promise<boolean> {
+  const dob = extracted?.dateOfBirth;
+  if (!studentId || !dob || !/^\d{4}-\d{2}-\d{2}$/.test(dob)) return false;
+  const cur = await prisma.student.findUnique({ where: { id: studentId }, select: { birthday: true } });
+  if (!cur || cur.birthday) return false;
+  await prisma.student.update({ where: { id: studentId }, data: { birthday: new Date(dob + 'T00:00:00Z') } });
+  return true;
+}

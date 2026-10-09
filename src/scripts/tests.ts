@@ -11,6 +11,7 @@
  */
 import crypto from 'crypto';
 import type { PrismaClient } from '../generated/prisma/client';
+import { emailTemplateWhere } from './email-templates';
 import { sendEmail } from './email';
 
 // Public branded wrapper URLs (Drupal pages on ulearnschool.com that iframe the
@@ -96,6 +97,35 @@ ${emailNotice}
   return { subject, html };
 }
 
+// Level-test onboarding email. The copy now lives in the editable DB template
+// 'Level-Test' (Communications module) so a human and the automated Send-Test
+// flow view / edit / send the exact same email. Renders the same {{token}} /
+// {if} grammar the Communications composer uses, keyed on the standard
+// student.* tokens so it renders identically from either path. Falls back to
+// the inline buildEmail() above if the template row is ever missing. (Neil 2026-09-24)
+const LEVEL_TEST_SLUG = 'Level-Test';
+async function renderLevelTestEmail(prisma: PrismaClient, firstName: string, testType: TestType, studentEmail?: string): Promise<{ subject: string; html: string }> {
+  try {
+    const tpl = await prisma.documentTemplate.findFirst({
+      where: emailTemplateWhere(LEVEL_TEST_SLUG, { templateType: 'email', active: true }),
+      select: { subject: true, htmlTemplate: true },
+    });
+    if (tpl?.htmlTemplate) {
+      const tokens: Record<string, string> = {
+        'student.first_name': firstName || 'there',
+        'student.email': studentEmail || '',
+      };
+      const render = (s: string) => String(s || '')
+        .replace(/\{if\s+([a-z0-9_.]+)\}([\s\S]*?)\{\/if\}/gi, (_m, k, c) => tokens[String(k).trim()] ? c : '')
+        .replace(/\{\{([^}]+)\}\}/g, (_m, k) => { const v = tokens[String(k).trim()]; return v != null ? String(v) : ''; });
+      return { subject: render(tpl.subject || 'Action Needed: Your ULearn Level Test'), html: render(tpl.htmlTemplate) };
+    }
+  } catch (e: any) {
+    console.warn('[tests] Level-Test template render failed — using inline fallback:', e?.message || e);
+  }
+  return buildEmail(firstName, testType, '', studentEmail);
+}
+
 export function testScripts(prisma: PrismaClient) {
 
   /**
@@ -143,7 +173,7 @@ export function testScripts(prisma: PrismaClient) {
     const url = lmsUrlFor(testType, token, opts.direct === true);
 
     if (opts.send !== false) {
-      const { subject, html } = buildEmail(student.firstName || '', testType, url, student.email || undefined);
+      const { subject, html } = await renderLevelTestEmail(prisma, student.firstName || '', testType, student.email || undefined);
       try {
         const sent: any = await sendEmail({
           from: FROM_EMAIL,

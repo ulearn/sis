@@ -160,6 +160,7 @@ export async function sendStudentEmail(prisma: PrismaClient, opts: {
   bookingId?: number | null;
   providerId?: number | null;
   teacherId?: number | null;
+  groupId?: number | null;
   templateId?: number | null;
   sentBy?: string;
   // Set false for fully-designed branded templates (e.g. the birthday email) that
@@ -207,6 +208,7 @@ export async function sendStudentEmail(prisma: PrismaClient, opts: {
       bookingId:  opts.bookingId  ?? null,
       providerId: opts.providerId ?? null,
       teacherId:  opts.teacherId  ?? null,
+      groupId:    opts.groupId    ?? null,
       fromEmail: opts.from,
       toEmail: opts.to,
       subject: opts.subject,
@@ -287,7 +289,7 @@ export function emailRoutes(prisma: PrismaClient) {
   // App delivery needs a studentId to target; email needs `to`.
   router.post('/send', async (req, res) => {
     try {
-      const { from, fromName, to, subject, html, replyTo, studentId, bookingId, providerId, teacherId, templateId, documentId } = req.body;
+      const { from, fromName, to, subject, html, replyTo, studentId, bookingId, providerId, teacherId, groupId, templateId, documentId } = req.body;
       const channelEmail = req.body.sendEmail !== false;   // opt-out
       const channelApp   = req.body.sendApp === true;      // opt-in
       const sid = studentId ? parseInt(studentId) : null;
@@ -363,6 +365,7 @@ export function emailRoutes(prisma: PrismaClient) {
           bookingId:  bookingId  ? parseInt(bookingId)  : null,
           providerId: providerId ? parseInt(providerId) : null,
           teacherId:  teacherId  ? parseInt(teacherId)  : null,
+          groupId:    groupId    ? parseInt(groupId)    : null,
           templateId: templateId ? parseInt(templateId) : null,
           sentBy: from,
           attachments,
@@ -579,7 +582,8 @@ export function emailRoutes(prisma: PrismaClient) {
       const where: any =
         req.params.type === 'student'  ? { studentId:  id } :
         req.params.type === 'provider' ? { providerId: id } :
-        req.params.type === 'teacher'  ? { teacherId:  id } : null;
+        req.params.type === 'teacher'  ? { teacherId:  id } :
+        req.params.type === 'group'    ? { groupId:    id } : null;
       if (!where) return res.status(400).json({ error: 'Invalid context type' });
       const logs = await prisma.emailLog.findMany({ where, orderBy: { createdAt: 'desc' }, take: 50 });
       res.json(logs);

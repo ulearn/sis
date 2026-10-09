@@ -17,6 +17,7 @@ import fs from 'fs';
 import { PrismaClient } from '../generated/prisma/client';
 import { renderPreviewBytes, signContract } from '../scripts/teacher-contract';
 import { sendEmail } from '../scripts/email';
+import { renderEmailTemplate } from '../scripts/render-template';
 
 const EXPIRY_DAYS = 14;
 const BASE_URL = process.env.SIS_BASE_URL || 'https://sis.ulearnschool.com';
@@ -145,18 +146,25 @@ export function teacherContractAdminRoutes(prisma: PrismaClient): Router {
       if (!t.email) return res.status(400).json({ error: 'This teacher has no email address.' });
       const tok = await mintTeacherToken(prisma, id);
       const url = `${BASE_URL}/teacher-contract/${tok.token}`;
-      const html = `
+      // Copy lives in the editable DB template 'Teacher-Contract-Send'
+      // (Communications). Inline builder below is the fallback if it's missing.
+      const inlineHtml = `
         <p>Hi ${esc(t.firstName)},</p>
         <p>Welcome to the ULearn team. Your employment contract is ready to review and sign online — no printing or scanning needed.</p>
         <p style="margin:24px 0;"><a href="${esc(url)}" style="background:#2f6b4f;color:#fff;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">Review &amp; sign your contract →</a></p>
         <p>The link is personal to you and stays active for ${EXPIRY_DAYS} days. If you have any questions, just reply to this email.</p>
         <p>Best regards,<br>Paul Gill<br>Director of Studies, ULearn School Dublin</p>`;
+      const rendered = await renderEmailTemplate(prisma, 'Teacher-Contract-Send', {
+        'teacher.first_name': esc(t.firstName || ''),
+        contract_url: esc(url),
+        expiry_days: String(EXPIRY_DAYS),
+      });
       await sendEmail({
         from: 'dos@ulearnschool.com',
         fromName: 'Paul Gill — ULearn',
         to: t.email,
-        subject: 'Your ULearn employment contract — ready to sign',
-        html,
+        subject: rendered?.subject || 'Your ULearn employment contract — ready to sign',
+        html: rendered?.html || inlineHtml,
       });
       res.json({ success: true, sentTo: t.email });
     } catch (e: any) { res.status(500).json({ error: e?.message || String(e) }); }

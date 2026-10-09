@@ -151,14 +151,22 @@ export function hostPaymentScripts(prisma: PrismaClient) {
     // AGAIN on the next Run Calculation — duplicate Xero bills. Voided bills
     // are excluded so a voided period becomes billable again.
     const billedUpToMap: Record<number, Date> = {};
+    // Also track the EARLIEST billed period per placement — used by the continuation
+    // guard below to tell whether a continuation record's billing track reaches back
+    // over the seam (so it truly covers the earlier record) or starts after it (leaving
+    // an unbilled gap the earlier record must still settle).
+    const billedFromMap: Record<number, Date> = {};
     const billedBills = await prisma.hostPaymentLineItem.findMany({
       where: { xeroBillId: { not: null }, NOT: { xeroStatus: 'voided' } },
-      select: { bookingAccommodationId: true, periodTo: true },
+      select: { bookingAccommodationId: true, periodTo: true, periodFrom: true },
       orderBy: { periodTo: 'desc' },
     });
     for (const li of billedBills) {
       if (!billedUpToMap[li.bookingAccommodationId] || li.periodTo > billedUpToMap[li.bookingAccommodationId]) {
         billedUpToMap[li.bookingAccommodationId] = li.periodTo;
+      }
+      if (!billedFromMap[li.bookingAccommodationId] || li.periodFrom < billedFromMap[li.bookingAccommodationId]) {
+        billedFromMap[li.bookingAccommodationId] = li.periodFrom;
       }
     }
 
@@ -197,6 +205,38 @@ export function hostPaymentScripts(prisma: PrismaClient) {
 
       const studentName = `${student.firstName} ${student.lastName}`;
       const providerName = provider.name;
+
+      // Continuation guard: a placement RECORD can end (a booking split /
+      // renewal) while the student stays on in the same host — same student,
+      // same provider, the next record starting at (or before) this end date and
+      // running past it. That's NOT a checkout — the CONTINUATION record carries
+      // all the billing (its own fortnightly track spans the seam), so this
+      // ended record must generate NOTHING. Skipping it (rather than treating it
+      // as "still here") avoids both the stray checkout pro-rata that double-pays
+      // the seam day AND an over-bill from the ongoing branch. E.g. Edel /
+      // Mohammed: 11338 ends 08-02 but 11385 (08-02→08-30, id 154 fortnightly
+      // 08-01→08-15) already covers it — the stray €31.43 was a pure duplicate.
+      const continuation = hostPlacements.find(q =>
+        q.id !== p.id &&
+        q.booking?.student?.id === student.id &&
+        q.bed?.room?.property?.provider?.id === provider.id &&
+        new Date(q.startDate) <= endDate &&
+        new Date(q.endDate) > endDate,
+      );
+      if (continuation) {
+        // Skip THIS record ONLY when the continuation's billing track already covers its
+        // unbilled tail — i.e. the continuation's EARLIEST billed period (or its start date,
+        // if it hasn't billed yet) begins at or before unpaidFrom. That's the genuine
+        // "the continuation carries the whole seam" case the guard was built for (it stops
+        // the seam-day double-bill, e.g. the old €31.43 stray). But when the continuation
+        // begins billing AFTER unpaidFrom, this record still owns the gap [unpaidFrom,
+        // endDate] and MUST fall through to settle it — else that fortnight is silently
+        // dropped (Mohammed/Edel: 11385's Aug 15-30 vanished when 11386 began Aug 30).
+        const contCovStart = billedFromMap[continuation.id]
+          ? new Date(billedFromMap[continuation.id])
+          : new Date(continuation.startDate);
+        if (contCovStart.getTime() <= unpaidFrom.getTime()) continue;
+      }
 
       // Has the student left? (end date is before run date)
       const hasLeft = endDate < now;

@@ -587,6 +587,20 @@ export function classScripts(prisma: PrismaClient) {
         }
         return stuAssigns.length === 0;
       }
+      // ── Conversation +5 pool ──────────────────────────────────────────────
+      // The 20-hour (Plus) students must surface HERE so staff can roster them
+      // into the +5 class. Their base morning/afternoon assignment does NOT cover
+      // the +5 — only an actual PLUS_FIVE assignment does. (Previously coverSessionsFor
+      // mapped MORNING_PLUS→['MORNING'], so the base class hid them and Paul couldn't
+      // add them to Conversation +5 — DM 2026-09-04, fixed 2026-09-04.) A "Plus"
+      // course is either a *_PLUS category OR a Plus-named course (AY Plus lands in the
+      // MORNING category but its name carries "(Plus)", e.g. Rakan). Non-Plus courses
+      // don't belong in +5 and are dropped from this pool.
+      if (session === 'PLUS_FIVE') {
+        const isPlus = bc.category === 'MORNING_PLUS' || bc.category === 'AFTERNOON_PLUS' || /plus/i.test(bc.name || '');
+        if (!isPlus) return false;
+        return !stuAssigns.some(a => a.class_?.session === 'PLUS_FIVE');
+      }
       const coverSessions = coverSessionsFor(bc.category);
       if (coverSessions) return !stuAssigns.some(a => coverSessions.includes(a.class_?.session));
       // PRIVATE / OTHER — no session mapping; use this course's own assignment.

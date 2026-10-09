@@ -17,7 +17,7 @@ import path from 'path';
 import type { PrismaClient } from '../generated/prisma/client';
 import { documentScripts } from './documents';
 
-export const CONTRACT_VERSION = '2026-07-v1';
+export const CONTRACT_VERSION = '2026-09-v1';   // 2026-09: + LifePass Programme Terms appendix
 
 const SIGNED_DIR = path.join(__dirname, '..', '..', 'data', 'contracts', 'student');
 
@@ -118,6 +118,10 @@ const SECTIONS: Array<{ n?: number; title: string; body: string }> = [
     <p>ULearn is committed to providing:</p>
     <ul><li>A safe learning environment</li><li>Qualified teachers</li><li>Professional student support</li><li>Fair and respectful treatment</li><li>Equal opportunities for all students</li><li>Transparent complaints procedures</li><li>Respect for student privacy</li></ul>
     <p>We ask every student to contribute positively to our school community and help maintain a welcoming environment for everyone.</p>` },
+  { title: 'Appendix — LifePass Programme Terms', body: `
+    <p>If you are enrolled on the ULearn <strong>LifePass Programme</strong>, you additionally agree to be bound by the specific Terms &amp; Conditions of that Programme, which form part of this Agreement.</p>
+    <p>The full LifePass Programme Terms &amp; Conditions are available for viewing at any time in your ULearn Student App. By signing this Agreement, LifePass students confirm they have had the opportunity to review those terms and agree to comply with them, including the Programme's payment, subscription and continuation conditions.</p>
+    <p>If you are not enrolled on the LifePass Programme, this Appendix does not apply to you.</p>` },
 ];
 
 // The signed declaration block. When signaturePngB64 is present we stamp the
@@ -142,6 +146,7 @@ function declarationBlock(opts: { signerName?: string | null; signaturePngB64?: 
       <li>I agree to comply with the policies and expectations outlined above.</li>
       <li>I understand that serious or repeated breaches may result in disciplinary action, including suspension or expulsion.</li>
       <li>I acknowledge that this Agreement operates alongside ULearn's published Terms &amp; Conditions, Refund Policy and any applicable Irish legal or immigration requirements.</li>
+      <li>If I am enrolled on the LifePass Programme, I also agree to be bound by the LifePass Programme Terms &amp; Conditions, available for viewing in my ULearn Student App (see Appendix).</li>
     </ul>
     <table style="width:100%;border-collapse:collapse;margin-top:10px">
       <tr>

@@ -17,6 +17,7 @@ import path from 'path';
 import { PrismaClient } from '../generated/prisma/client';
 import { postSlackMessage } from '../lib/slack';
 import { sendEmail } from '../scripts/email';
+import { renderEmailTemplate } from '../scripts/render-template';
 import { combineFlightDateTime, isUnsetSchedule } from '../lib/transport-sync';
 
 const ALLOWED_KINDS = ['AIRPORT_PICKUP', 'AIRPORT_DROPOFF'] as const;
@@ -26,6 +27,37 @@ const ALLOWED_KINDS = ['AIRPORT_PICKUP', 'AIRPORT_DROPOFF'] as const;
 const DROPOFF_LEAD_MINUTES = 240;
 type TransferKind = typeof ALLOWED_KINDS[number];
 
+// Wire a group's group-level transport (studentGroup arrival/departure) into the
+// Transport UI as real BookingExtra jobs — one PICKUP + one DROPOFF for the whole
+// coach, hung on a representative member booking (the group moves together, so
+// it's ONE job, not N). The group's flights are written onto that rep student so
+// the transport UI can show the flight + derive the terminal (it reads flight
+// only from the student record). Idempotent: re-run updates the same two jobs.
+export async function syncGroupTransportJobs(prisma: PrismaClient, groupId: number) {
+  const g = await prisma.studentGroup.findUnique({ where: { id: groupId } });
+  if (!g) throw new Error('Group not found');
+
+  // GROUP-OWNED transfers: one PICKUP + one DROPOFF for the whole coach, attached
+  // to the GROUP (groupId), never a member booking — nobody is singled out. The
+  // flight number lives in `details`, the datetime in `scheduledAt`, terminal in
+  // `terminalOverride`. Idempotent (upsert by groupId+extraType). A side with no
+  // datetime is removed (so clearing a flight clears its job).
+  const upsert = async (extraType: string, scheduledAt: Date | null, terminal: string | null, flight: string | null) => {
+    const existing = await prisma.bookingExtra.findFirst({ where: { groupId, extraType } });
+    if (!scheduledAt) {
+      if (existing) await prisma.bookingExtra.delete({ where: { id: existing.id } });
+      return false;
+    }
+    const data: any = { scheduledAt, active: true, details: flight || null, terminalOverride: (terminal === 'T1' || terminal === 'T2') ? terminal : null };
+    if (existing) await prisma.bookingExtra.update({ where: { id: existing.id }, data });
+    else await prisma.bookingExtra.create({ data: { groupId, extraType, ...data } });
+    return true;
+  };
+  const pickup  = await upsert('AIRPORT_PICKUP',  g.arrivalAt,   g.arrivalTerminal,   g.arrivalFlight);
+  const dropoff = await upsert('AIRPORT_DROPOFF', g.departureAt, g.departureTerminal, g.departureFlight);
+  return { groupId, pickup, dropoff };
+}
+
 export function transportRoutes(prisma: PrismaClient) {
   const router = Router();
 
@@ -34,6 +66,12 @@ export function transportRoutes(prisma: PrismaClient) {
   // pattern — gives the previous-week's last weekend a few days of
   // visibility). Caller can pass `from` / `to` ISO dates to navigate
   // historically. `to` is inclusive.
+  // Sync a group's group-level transport into Transport jobs (idempotent).
+  router.post('/sync-group/:groupId', async (req, res) => {
+    try { res.json(await syncGroupTransportJobs(prisma, parseInt(req.params.groupId, 10))); }
+    catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }
+  });
+
   router.get('/upcoming', async (req, res) => {
     try {
       const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -65,14 +103,20 @@ export function transportRoutes(prisma: PrismaClient) {
           //   - partial    → surfaced + tagged so UI paints orange + locks
           //                  the Book-Taxi action for non-admin/DOS
           //   - paid       → surfaced normally
-          booking: {
-            amountPaid: { gt: 0 },
-            status: { notIn: ['ESCROW', 'CANCELLED'] },
-            student: { is: { OR: [
-              { visaStatus: null },
-              { visaStatus: { notIn: ['Pending', 'Appeal'] } },
-            ]}},
-          },
+          OR: [
+            // Individual transfer — attached to a paid booking (same payment/visa gate as before).
+            { booking: {
+              amountPaid: { gt: 0 },
+              status: { notIn: ['ESCROW', 'CANCELLED'] },
+              student: { is: { OR: [
+                { visaStatus: null },
+                { visaStatus: { notIn: ['Pending', 'Appeal'] } },
+              ]}},
+            }},
+            // Group transfer — one coach for the whole group, group-owned (no member
+            // booking). The group invoice is paid at group level, so it always surfaces.
+            { groupId: { not: null } },
+          ],
         },
         orderBy: { scheduledAt: 'asc' },
         select: extraSelect(),
@@ -253,7 +297,7 @@ export function transportRoutes(prisma: PrismaClient) {
 
       // Use the admin's edited subject/body if the Send dialog sent them back;
       // otherwise fall back to the freshly-built structured email.
-      const built = buildTransportEmail(s, req.session?.displayName);
+      const built = await buildTransportEmail(prisma, s, req.session?.displayName);
       const subject = (typeof req.body?.subject === 'string' && req.body.subject.trim())
         ? req.body.subject.trim() : built.subject;
       const html = (typeof req.body?.html === 'string' && req.body.html.trim())
@@ -263,17 +307,25 @@ export function transportRoutes(prisma: PrismaClient) {
       const sentBy = req.session?.user || senderName;
       const results: Record<string, { status: string; to?: string | null; reason?: string }> = {};
 
-      // ── Student — also publishes to the app on success ──
+      // ── Primary recipient — the student for an individual, or the GROUP's
+      // nominated portal contact(s) for a coach (no student on a group job).
+      // A group's contactEmail may hold a comma/;-separated list. Individual
+      // sends also publish the transfer to the student app on success.
       if (notifyStudent) {
-        if (!validEmail(s.studentEmail)) {
-          results.student = { status: 'skipped', to: s.studentEmail, reason: 'no valid student email' };
+        const recipients = s.groupId
+          ? String(s.groupContactEmail || '').split(/[,;]+/).map(e => e.trim()).filter(validEmail)
+          : (validEmail(s.studentEmail) ? [s.studentEmail!] : []);
+        if (!recipients.length) {
+          results.student = { status: 'skipped', to: s.groupId ? s.groupContactEmail : s.studentEmail, reason: s.groupId ? 'no group contact email — set one on the group' : 'no valid student email' };
         } else {
-          await sendEmail({
-            from: process.env.SUCCESS_FROM_EMAIL || 'success@ulearnschool.com',
-            fromName: 'ULearn Success Team',
-            to: s.studentEmail!, subject, html, attachments,
-          });
-          results.student = { status: 'sent', to: s.studentEmail };
+          for (const to of recipients) {
+            await sendEmail({
+              from: process.env.SUCCESS_FROM_EMAIL || 'success@ulearnschool.com',
+              fromName: 'ULearn Success Team',
+              to, subject, html, attachments,
+            });
+          }
+          results.student = { status: 'sent', to: recipients.join(', ') };
         }
       }
 
@@ -296,7 +348,8 @@ export function transportRoutes(prisma: PrismaClient) {
       const studentSent = results.student?.status === 'sent';
       const data: any = {};
       if (anySent) { data.emailSentAt = new Date(); data.emailSentBy = sentBy; }
-      if (studentSent && !s.publishedAt) { data.publishedAt = new Date(); data.publishedBy = sentBy; }
+      // Publish to the student app only for individual jobs — a group coach has no student app.
+      if (studentSent && !s.groupId && !s.publishedAt) { data.publishedAt = new Date(); data.publishedBy = sentBy; }
       const updated = Object.keys(data).length
         ? await prisma.bookingExtra.update({ where: { id }, data, select: extraSelect() })
         : extra;
@@ -315,9 +368,9 @@ export function transportRoutes(prisma: PrismaClient) {
       const extra = await prisma.bookingExtra.findUnique({ where: { id }, select: extraSelect() });
       if (!extra) return res.status(404).send('Not found');
       const s = serialise(extra);
-      const { subject, html } = buildTransportEmail(s, req.session?.displayName);
+      const { subject, html } = await buildTransportEmail(prisma, s, req.session?.displayName);
       // Return the job too so the Send dialog can render its verify-checklist.
-      res.json({ success: true, subject, html, to: s.studentEmail, job: s });
+      res.json({ success: true, subject, html, to: s.groupId ? s.groupContactEmail : s.studentEmail, job: s });
     } catch (e) {
       res.status(500).json({ success: false, error: String(e) });
     }
@@ -431,13 +484,28 @@ function extraSelect() {
     publishedAt: true, publishedBy: true,
     taxiBookedAt: true, taxiBookedBy: true, terminalOverride: true,
     arrivalReminderSentAt: true, arrivalReminderCount: true,
+    groupId: true,
+    group: { select: { name: true, pax: true, contactName: true, contactEmail: true, contactPhone: true, leaderContacts: true, accomAddress: true,
+      // Group flight schedule — the authoritative flight time for a group coach.
+      // The BookingExtra.scheduledAt holds the CAR/collection time, so the flight
+      // must be read from here, never derived back off scheduledAt.
+      arrivalAt: true, arrivalFlight: true, arrivalTerminal: true, departureAt: true, departureFlight: true, departureTerminal: true } },   // group-owned transfer (no member booking)
     booking: {
       select: {
         id: true, amountPaid: true, amountTotal: true, status: true,
+        // Group link — a group transfer is one job for the whole coach; the UI
+        // badges it with the group name + pax so it's not mistaken for a single.
+        groupId: true,
+        group: { select: { name: true, pax: true, contactName: true, contactEmail: true, contactPhone: true, leaderContacts: true, accomAddress: true,
+          arrivalAt: true, arrivalFlight: true, arrivalTerminal: true, departureAt: true, departureFlight: true, departureTerminal: true } },
         student: {
           select: {
             id: true, firstName: true, lastName: true, email: true, phone: true, phoneMobile: true,
             nationality: true,
+            // Irish (in-Ireland) address — the FALLBACK transfer destination for a
+            // student who booked a transfer but no accommodation with us. Flagged
+            // loudly in the UI (an Irish address may be temporary/IRP-only).
+            irishAddress: true, irishAddressAddon: true, irishCity: true, irishZip: true,
             // Inbound flight (used for AIRPORT_PICKUP rows)
             flightNumber: true, flightDate: true, flightTime: true,
             // Outbound flight (used for AIRPORT_DROPOFF rows)
@@ -472,22 +540,28 @@ function earliestServiceStart(booking: any): Date | null {
 }
 
 function serialise(r: any) {
-  const st = r.booking.student;
+  const isGroup = !!r.groupId;                       // group-owned transfer (one coach)
+  const st = r.booking?.student ?? null;
   const isPickup = r.extraType === 'AIRPORT_PICKUP';
-  // Wire in the right flight side based on the transfer type.
-  // Pickup → use inbound; dropoff → use outbound. Falls back to the legacy
-  // BookingExtra.details field if the structured student-record flight
-  // hasn't been entered yet.
-  const sideFlightNumber = isPickup ? st?.flightNumber : st?.outboundFlightNumber;
-  const sideFlightDate   = isPickup ? st?.flightDate   : st?.outboundFlightDate;
-  const sideFlightTime   = isPickup ? st?.flightTime   : st?.outboundFlightTime;
+  const hm = (d: any) => { const x = new Date(d); return `${String(x.getHours()).padStart(2, '0')}:${String(x.getMinutes()).padStart(2, '0')}`; };
+  // Flight source. Individual → the student's inbound/outbound record. Group →
+  // the GROUP ENTITY's arrival/departure flight (arrivalAt/departureAt), NOT the
+  // row's scheduledAt: on a group coach scheduledAt is the CAR/collection time, so
+  // reading the flight off it and then adding the +35 pickup lead double-counts —
+  // the arrival gets shown as the pickup and the pickup lands 35 min too late.
+  const grp = isGroup ? (r.group ?? r.booking?.group ?? null) : null;
+  const grpFlightAt = isGroup ? (isPickup ? (grp?.arrivalAt ?? null) : (grp?.departureAt ?? null)) : null;
+  const sideFlightNumber = isGroup ? ((isPickup ? grp?.arrivalFlight : grp?.departureFlight) ?? r.details ?? null) : (isPickup ? st?.flightNumber : st?.outboundFlightNumber);
+  const sideFlightDate   = isGroup ? grpFlightAt : (isPickup ? st?.flightDate : st?.outboundFlightDate);
+  const sideFlightTime   = isGroup ? (grpFlightAt ? hm(grpFlightAt) : null) : (isPickup ? st?.flightTime : st?.outboundFlightTime);
 
   // Payment-tier tagging — same shape as accommodation getUnplacedStudents
   // and classes unassignedStudents. Don't lean on amountOpen (lags in Fidelo
-  // import). EPS = €0.01 wiggle for currency rounding.
+  // import). EPS = €0.01 wiggle for currency rounding. Group transfers have no
+  // member booking (paid at group level) → always 'paid'.
   const EPS = 0.01;
-  const paid  = Number(r.booking.amountPaid  || 0);
-  const total = Number(r.booking.amountTotal || 0);
+  const paid  = Number(r.booking?.amountPaid  || 0);
+  const total = Number(r.booking?.amountTotal || 0);
   let paymentStatus: 'paid' | 'partial' = 'paid';
   let paymentBalance = 0;
   if (total > 0 && (total - paid) > EPS) {
@@ -508,7 +582,10 @@ function serialise(r: any) {
   // Never apply the +35 to a dropoff — that would order the car after take-off.
   // Built as a full Date (not a clock string) so a pre-04:00 departure lands on
   // the PREVIOUS day instead of wrapping the clock onto the wrong date.
-  const flightAt = combineFlightDateTime(sideFlightDate, sideFlightTime);
+  // For a group the flight is already a precise instant (arrivalAt/departureAt),
+  // so use it directly — combining a UTC date with a local clock can slip a day
+  // near midnight. Individuals keep the @db.Date + clock-string combine.
+  const flightAt = isGroup ? (grpFlightAt ?? null) : combineFlightDateTime(sideFlightDate, sideFlightTime);
   const transferAt = flightAt
     ? new Date(flightAt.getTime() + (isPickup ? 35 : -DROPOFF_LEAD_MINUTES) * 60_000)
     : null;
@@ -546,34 +623,70 @@ function serialise(r: any) {
     transferAt,
     collectionAt,
     structuredReady,
-    bookingId: r.booking.id,
-    student: st ? `${st.firstName ?? ''} ${st.lastName ?? ''}`.trim() : null,
+    bookingId: r.booking?.id ?? null,
+    groupId: r.groupId ?? r.booking?.groupId ?? null,
+    groupName: r.group?.name ?? r.booking?.group?.name ?? null,
+    groupPax: r.group?.pax ?? r.booking?.group?.pax ?? null,
+    // Group's nominated recipient (the partner-portal contact pulled onto the
+    // group) — a group coach has no student, so comms go here instead.
+    groupContactName: r.group?.contactName ?? r.booking?.group?.contactName ?? null,
+    groupContactEmail: r.group?.contactEmail ?? r.booking?.group?.contactEmail ?? null,
+    // Name column: the student for an individual, the group name for a coach.
+    student: st ? `${st.firstName ?? ''} ${st.lastName ?? ''}`.trim() : (isGroup ? (r.group?.name ?? 'Group') : null),
     studentFirstName: st?.firstName ?? null,
     studentEmail: st?.email ?? null,
-    studentPhone: st?.phoneMobile || st?.phone || null,
+    // Phone for the transfer: the student for an individual; for a group coach
+    // (no student) fall back to the group's lead-contact phone, else the first
+    // leader/chaperone with a phone — so the driver has someone to reach.
+    studentPhone: st?.phoneMobile || st?.phone || (isGroup ? (() => {
+      const grp = r.group ?? r.booking?.group;
+      if (grp?.contactPhone) return grp.contactPhone;
+      try {
+        const ls = JSON.parse(grp?.leaderContacts || '[]');
+        const withPhone = (ls as any[]).find(l => l && l.phone);
+        return withPhone?.phone || null;
+      } catch { return null; }
+    })() : null),
     studentId: st?.id ?? null,
     nationality: st?.nationality ?? null,
     flightNumber: sideFlightNumber ?? null,
     flightDate: sideFlightDate ?? null,
     flightTime: sideFlightTime ?? null,
-    agency: r.booking.agency?.name ?? null,
-    agencyEmail: r.booking.agency?.email ?? null,
-    hasAgency: !!r.booking.agency?.id,
+    agency: r.booking?.agency?.name ?? null,
+    agencyEmail: r.booking?.agency?.email ?? null,
+    hasAgency: !!r.booking?.agency?.id,
     // Real street address for the taxi — the household address lives on the
     // provider (address + addon + city), NOT the property name ("Main House").
     // Fall back to property.address only if the provider has no address.
-    accomAddress: (() => {
-      const prop = r.booking.accommodations[0]?.bed?.room?.property;
+    ...(() => {
+      // Transfer destination / meeting point, in priority order:
+      //   1. a MATCHED accommodation bed (a host/apartment we placed) — 'accommodation'
+      //   2. the GROUP's meeting-point / independently-booked address       — 'group'
+      //   3. the student's IRISH ADDRESS (fallback — may be temporary/IRP)   — 'irish' ⚠
+      const prop = r.booking?.accommodations?.[0]?.bed?.room?.property;
       const prov = prop?.provider;
-      const joined = [prov?.address, prov?.addressAddon, prov?.city].filter(Boolean).join(', ')
-        .replace(/\s+/g, ' ').replace(/(\s*,\s*)+/g, ', ').replace(/^,\s*|[,\s]+$/g, '').trim();
-      return joined || prop?.address || null;
+      const bedAddr = ([prov?.address, prov?.addressAddon, prov?.city].filter(Boolean).join(', ')
+        .replace(/\s+/g, ' ').replace(/(\s*,\s*)+/g, ', ').replace(/^,\s*|[,\s]+$/g, '').trim()) || prop?.address || null;
+      const groupAddr = r.group?.accomAddress || r.booking?.group?.accomAddress || null;
+      const st = r.booking?.student;
+      const irishAddr = st ? ([st.irishAddress, st.irishAddressAddon, st.irishCity, st.irishZip].filter(Boolean).join(', ') || null) : null;
+      let accomAddress: string | null = null, accomSource: string | null = null;
+      if (bedAddr) { accomAddress = bedAddr; accomSource = 'accommodation'; }
+      else if (groupAddr) { accomAddress = groupAddr; accomSource = 'group'; }
+      else if (irishAddr) { accomAddress = irishAddr; accomSource = 'irish'; }
+      // Capel Street is the one placement with a bespoke pickup block in the email.
+      const accomIsCapel = /capel\s*st/i.test(String(prop?.address || '') + ' ' + String(prop?.name || ''));
+      return {
+        accomAddress,
+        accomSource,                 // 'accommodation' | 'group' | 'irish' | null
+        accomIsCapel,
+        accomName: prop?.name ?? null,
+      };
     })(),
-    accomName: r.booking.accommodations[0]?.bed?.room?.property?.name ?? null,
-    accomRoom: r.booking.accommodations[0]?.bed?.room?.name ?? null,
+    accomRoom: r.booking?.accommodations?.[0]?.bed?.room?.name ?? null,
     paymentStatus,
     paymentBalance,
-    bookingStatus: r.booking.status ?? null,
+    bookingStatus: r.booking?.status ?? null,
     reminderCount: r.arrivalReminderCount ?? 0,
     reminderSentAt: r.arrivalReminderSentAt ?? null,
   };
@@ -606,13 +719,13 @@ function fmtTime(iso: string | Date | null): string {
   return d.toLocaleString('en-IE', { hour: '2-digit', minute: '2-digit', hour12: false });
 }
 
-// Sign-off — just a name. The success@ mailbox appends the full ULearn
-// signature (logo/contact) itself, so we don't duplicate it here.
-function signOffHtml(senderName?: string | null): string {
-  const name = (senderName || '').trim().split(/\s+/)[0] || 'Antonella';
+// Sign-off — the team name, not the individual admin. The success@ mailbox
+// appends the full ULearn signature (logo/contact) itself, so we don't
+// duplicate it here.
+function signOffHtml(_senderName?: string | null): string {
   return `
   <p style="margin-top:24px;margin-bottom:0">Kind Regards,</p>
-  <p style="margin:16px 0 0"><strong>${escHtml(name)}</strong></p>`;
+  <p style="margin:16px 0 0"><strong>Success Team</strong></p>`;
 }
 
 // Flight date (@db.Date) → "Sat 4 Jul 2026". UTC methods — @db.Date is stored
@@ -634,7 +747,13 @@ function emailRow(label: string, value: string | null): string {
   </tr>`;
 }
 
-function buildTransportEmail(s: any, senderName?: string | null): { subject: string; html: string; attachments?: any[] } {
+// Copy for both journeys now lives in editable DB templates 'Transport-Pickup'
+// and 'Transport-Dropoff' (Communications). The data-driven fragments (details
+// table, Capel pickup block, inline CID map, "not set" warnings, per-sender
+// signature) are computed here and passed in as tokens, and the current inline
+// HTML is kept verbatim as the fallback if a template row is ever missing.
+// (Neil 2026-09-24)
+async function buildTransportEmail(prisma: any, s: any, senderName?: string | null): Promise<{ subject: string; html: string; attachments?: any[] }> {
   const isPickup = s.kind === 'AIRPORT_PICKUP';
   const firstName = s.studentFirstName || s.student || 'there';
   const SIGNATURE_HTML = signOffHtml(senderName);
@@ -649,21 +768,33 @@ function buildTransportEmail(s: any, senderName?: string | null): { subject: str
         ${emailRow('Arrival Time', s.flightTime)}
         ${emailRow('Terminal', s.terminal)}
         ${emailRow('Pickup Time', s.pickupTime)}
-        ${emailRow('Your Phone', s.studentPhone)}
+        ${emailRow(s.groupId ? 'Group Phone' : 'Your Phone', s.studentPhone)}
       </table>`;
+    const terminalSuffix = s.terminal ? ' ' + escHtml(s.terminal) : '';
+    const destination = s.accomAddress ? escHtml(s.accomAddress) : '<span style="color:#b91c1c">not set — please confirm with the school</span>';
+    const meetingPoint = escHtml(s.meetingPoint || 'Dublin Airport — your driver will call you on arrival.');
     const html = `
       <div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;font-size:14px;line-height:1.55;color:#1f2937">
         <p style="margin:0 0 16px">Dear ${escHtml(firstName)},</p>
         <p style="margin:0 0 16px">Your airport pickup is booked. A Lynk taxi driver will meet you after you land:</p>
+        <div style="margin:0 0 16px;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;background:#f9fafb;font-size:14px">
+          <div><strong>Pickup:</strong> Dublin Airport${terminalSuffix}</div>
+          <div style="margin-top:3px"><strong>Destination:</strong> ${destination}</div>
+        </div>
         ${detailsTable}
         <p style="margin:16px 0 6px"><strong>Where to meet your driver:</strong></p>
-        <div style="margin:0 0 16px;padding:12px 14px;border:2px solid #10b981;border-radius:8px;background:#f0fdf4;color:#065f46;font-weight:600">${escHtml(s.meetingPoint || 'Dublin Airport — your driver will call you on arrival.')}</div>
+        <div style="margin:0 0 16px;padding:12px 14px;border:2px solid #10b981;border-radius:8px;background:#f0fdf4;color:#065f46;font-weight:600">${meetingPoint}</div>
         <p style="margin:0 0 16px">Your pickup time is <strong>35 minutes after landing</strong> to allow for baggage &amp; passport control. The driver has your number and <strong>will call you</strong> when they arrive — please make your way to the meeting point above.</p>
         <p style="margin:0 0 16px">If any of the details above look wrong, reply to this email straight away.</p>
         <p style="margin:0 0 16px">Have a safe trip — we look forward to welcoming you to Dublin.</p>
         ${SIGNATURE_HTML}
       </div>`;
-    return { subject, html };
+    const tpl = await renderEmailTemplate(prisma, 'Transport-Pickup', {
+      first_name: escHtml(firstName), terminal_suffix: terminalSuffix, destination,
+      details_table: detailsTable, meeting_point: meetingPoint, signature: SIGNATURE_HTML,
+      flight_date: fmtFlightDate(s.flightDate),
+    }, subject);
+    return { subject: tpl?.subject || subject, html: tpl?.html || html };
   }
 
   // DROPOFF — long version with Capel St pickup location instructions + map
@@ -675,39 +806,59 @@ function buildTransportEmail(s: any, senderName?: string | null): { subject: str
 
   // Capel Street pickup-location map — embedded as inline CID attachment so
   // it renders directly in the email body (rather than as a downloadable file).
-  const mapPath = path.join(__dirname, '..', '..', '.claude', 'docs', 'transport', 'capel-staycity.png');
+  // Capel Street has a bespoke pickup block (StayCity map + pedestrian note). Any
+  // other location — host family, group meeting point, or Irish-address fallback —
+  // uses the plain address so we never tell a non-Capel guest to wait at StayCity.
   const attachments: any[] = [];
+  let capelBlockHtml = '';
   let mapImgHtml = '';
-  try {
-    if (fs.existsSync(mapPath)) {
-      attachments.push({
-        filename: 'capel-staycity-pickup-location.png',
-        content: fs.readFileSync(mapPath),
-        contentType: 'image/png',
-      });
-      mapImgHtml = `<p><img src="cid:capel-staycity-pickup-location.png" alt="Pickup location at StayCity ApartHotel, Little Mary Street" style="max-width:520px;width:100%;border:1px solid #e5e7eb;border-radius:6px"></p>`;
-    }
-  } catch { /* image absent — render text-only fallback */ }
+  if (s.accomIsCapel) {
+    const mapPath = path.join(__dirname, '..', '..', '.claude', 'docs', 'transport', 'capel-staycity.png');
+    try {
+      if (fs.existsSync(mapPath)) {
+        attachments.push({ filename: 'capel-staycity-pickup-location.png', content: fs.readFileSync(mapPath), contentType: 'image/png' });
+        mapImgHtml = `<p><img src="cid:capel-staycity-pickup-location.png" alt="Pickup location at StayCity ApartHotel, Little Mary Street" style="max-width:520px;width:100%;border:1px solid #e5e7eb;border-radius:6px"></p>`;
+      }
+    } catch { /* image absent — text-only */ }
+    capelBlockHtml = `<li>Capel Street is pedestrian after 11am and your pickup location is <strong>outside StayCity ApartHotel on Little Mary Street</strong> (60 seconds walk from 32 Capel Street)</li>`;
+  } else if (s.accomAddress) {
+    capelBlockHtml = `<li>Your pickup location is <strong>${escHtml(s.accomAddress)}</strong></li>`;
+  }
+  const makeWayTo = s.accomIsCapel ? 'that location' : (s.accomAddress ? 'your pickup location' : 'the pickup point');
+  const terminalSuffix = s.terminal ? ' ' + escHtml(s.terminal) : '';
+  const departTerminalSuffix = s.terminal ? ` from <strong>Dublin Airport ${escHtml(s.terminal)}</strong>` : '';
+  const pickupLocation = s.accomIsCapel ? 'StayCity ApartHotel, Little Mary Street (beside 32 Capel Street)' : (s.accomAddress ? escHtml(s.accomAddress) : '<span style="color:#b91c1c">not set — please confirm with the school</span>');
+  const driverTime = escHtml(s.collectionAt ? fmtDateTime(s.collectionAt) : 'TBC');
 
   const html = `
     <div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;font-size:14px;line-height:1.55;color:#1f2937">
       <p>Dear ${escHtml(firstName)},</p>
       <p>Please see your Airport Transfer details below.</p>
+      <div style="margin:0 0 14px;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;background:#f9fafb;font-size:14px">
+        <div><strong>Pickup:</strong> ${pickupLocation}</div>
+        <div style="margin-top:3px"><strong>Destination:</strong> Dublin Airport${terminalSuffix}</div>
+      </div>
       <ul style="padding-left:18px">
-        <li>Your driver will arrive on <strong>${escHtml(s.collectionAt ? fmtDateTime(s.collectionAt) : 'TBC')}</strong></li>
+        <li>Your driver will arrive on <strong>${driverTime}</strong></li>
         <li>Please be ready for your taxi</li>
         <li>You will get a telephone call when your car arrives — your driver <strong>will not knock on your door</strong></li>
         <li>Please go out onto the street at the appointed time</li>
-        <li>Capel Street is pedestrian after 11am and your pickup location is <strong>outside StayCity ApartHotel on Little Mary Street</strong> (60 seconds walk from 32 Capel Street)</li>
+        ${capelBlockHtml}
       </ul>
       ${mapImgHtml}
-      <p>Please make your way to that location for the pickup time — your driver has your number &amp; will call on arrival.</p>
+      <p>Please make your way to ${makeWayTo} for the pickup time — your driver has your number &amp; will call on arrival.</p>
       <p>The journey time to Dublin Airport is approx <strong>35–45 minutes</strong>.</p>
-      <p>Your flight <strong>${escHtml(flightNo)}</strong> departs at <strong>${escHtml(departTime)}</strong>${s.terminal ? ` from <strong>Dublin Airport ${escHtml(s.terminal)}</strong>` : ''}.</p>
+      <p>Your flight <strong>${escHtml(flightNo)}</strong> departs at <strong>${escHtml(departTime)}</strong>${departTerminalSuffix}.</p>
       <p>Have a safe trip.</p>
       ${SIGNATURE_HTML}
     </div>`;
-  return { subject, html, attachments };
+  const tpl = await renderEmailTemplate(prisma, 'Transport-Dropoff', {
+    first_name: escHtml(firstName), pickup_location: pickupLocation, terminal_suffix: terminalSuffix,
+    driver_time: driverTime, capel_block: capelBlockHtml, map_img: mapImgHtml, make_way_to: makeWayTo,
+    flight_no: escHtml(flightNo), depart_time: escHtml(departTime), depart_terminal_suffix: departTerminalSuffix,
+    signature: SIGNATURE_HTML, depart_datetime: fmtDateTime(s.scheduledAt),
+  }, subject);
+  return { subject: tpl?.subject || subject, html: tpl?.html || html, attachments };
 }
 
 async function notifySlack(extra: any) {

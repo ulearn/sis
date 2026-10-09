@@ -103,7 +103,7 @@ function weekLabel(iso: string | Date): string {
   return `${pad(monday.getDate())}/${pad(monday.getMonth() + 1)}-${pad(sunday.getDate())}/${pad(sunday.getMonth() + 1)}/${sunday.getFullYear()}`;
 }
 
-export async function syncCleaningSheet(prisma: PrismaClient, providerId: number): Promise<{ pushed: number; markedDone: number; tab: string }> {
+export async function syncCleaningSheet(prisma: PrismaClient, providerId: number): Promise<{ pushed: number; thisWeekCleaned: number; markedDone: number; tab: string }> {
   const provider = await prisma.accommodationProvider.findUnique({
     where: { id: providerId },
     select: { id: true, name: true, cleaningEnabled: true, cleaningSheetId: true, cleaningSheetGid: true },
@@ -322,7 +322,15 @@ export async function syncCleaningSheet(prisma: PrismaClient, providerId: number
     await callSheets(token, 'POST', `/${provider.cleaningSheetId}:batchUpdate`, { requests });
   }
 
-  return { pushed: dataIdxs.length, markedDone, tab: tabName };
+  // `pushed` = every row written to the sheet (the wide window, kept so Kelly
+  // can verify last weekend's cleans). `thisWeekCleaned` = the billable count:
+  // turnovers CLEANED in the current ISO week — the same basis the Xero push
+  // uses. Surfacing both stops the toast reading "6 sent" when only 4 are this
+  // week's work (issue #50).
+  const _mon = new Date(); _mon.setHours(0, 0, 0, 0);
+  _mon.setDate(_mon.getDate() + (_mon.getDay() === 0 ? -6 : 1 - _mon.getDay()));
+  const thisWeekCleaned = items.filter((r: any) => r.cleanedAt && new Date(r.cleanedAt) >= _mon).length;
+  return { pushed: dataIdxs.length, thisWeekCleaned, markedDone, tab: tabName };
 }
 
 function countWeek(items: any[], wkKey: string): number {

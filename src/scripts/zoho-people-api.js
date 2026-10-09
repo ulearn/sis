@@ -446,14 +446,16 @@ class ZohoPeopleAPI {
                     // Parse date string and format properly
                     const dateObj = new Date(date);
                     const day = String(dateObj.getDate()).padStart(2, '0');
-                    const month = dateObj.toLocaleDateString('en-GB', { month: 'short' });
+                    // Fixed 3-letter month — 'en-GB' {month:'short'} returns "Sept" (4)
+                    // for September under modern ICU, which Zoho rejects (error 7205).
+                    const month = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][dateObj.getMonth()];
                     const year = dateObj.getFullYear();
                     updateDate = `${day}-${month}-${year}`;
                 }
             } else {
                 const now = new Date();
                 const day = String(now.getDate()).padStart(2, '0');
-                const month = now.toLocaleDateString('en-GB', { month: 'short' });
+                const month = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][now.getMonth()];
                 const year = now.getFullYear();
                 updateDate = `${day}-${month}-${year}`;
             }
@@ -524,7 +526,7 @@ class ZohoPeopleAPI {
             // Convert YYYY-MM-DD to dd-MMM-yyyy format for Zoho API
             const dateObj = new Date(asOfDate);
             const day = String(dateObj.getDate()).padStart(2, '0');
-            const month = dateObj.toLocaleDateString('en-GB', { month: 'short' });
+            const month = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][dateObj.getMonth()];
             const year = dateObj.getFullYear();
             const formattedDate = `${day}-${month}-${year}`;
 

@@ -5,9 +5,10 @@ import multer from 'multer';
 import { PrismaClient } from '../generated/prisma/client';
 import { studentScripts } from '../scripts/students';
 import { studentScripts as portalScripts } from '../scripts/student';
+import { challengerNudgeScripts } from '../scripts/challenger-nudge';
 import { compressUploads } from '../lib/compress';
 import { syncArrivalFromFlight } from '../lib/transport-sync';
-import { parsePassport } from '../scripts/passport-parser';
+import { parsePassport, fillBirthdayIfEmpty } from '../scripts/passport-parser';
 
 const uploadDir = path.join(__dirname, '..', '..', 'uploads', 'students');
 const storage = multer.diskStorage({
@@ -31,6 +32,7 @@ export function studentRoutes(prisma: PrismaClient) {
   const router = Router();
   const scripts = studentScripts(prisma);
   const portal = portalScripts(prisma);
+  const nudge = challengerNudgeScripts(prisma);
 
   router.get('/', async (req, res) => {
     try {
@@ -68,7 +70,13 @@ export function studentRoutes(prisma: PrismaClient) {
       // a single round-trip. Excludes CANCELLED bookings so a phantom early
       // booking that was later cancelled doesn't mask a real first-arrival.
       const rows = await prisma.$queryRaw<Array<any>>`
-        WITH first_bc AS (
+        WITH win_bc AS (
+          -- Per student, the earliest ACTIVE course whose start falls in the
+          -- window. Filtering to the window BEFORE the DISTINCT ON is what lets
+          -- returning / renewal students surface: a stale still-active old
+          -- course (a Fidelo import that was never deactivated) has an earlier
+          -- start, so it used to win the DISTINCT ON, look like a past arrival,
+          -- and drop the student out of the window entirely. (#45)
           SELECT DISTINCT ON (b.student_id)
                  b.student_id,
                  bc.id            AS bc_id,
@@ -77,20 +85,42 @@ export function studentRoutes(prisma: PrismaClient) {
                  bc.start_date    AS course_start,
                  bc.end_date      AS course_end,
                  bc.weeks         AS course_weeks,
-                 bc.category      AS course_category
+                 bc.category      AS course_category,
+                 bc.is_renewal    AS is_renewal,
+                 bc.ilep_code     AS ilep_code
           FROM bookings b
           JOIN booking_courses bc ON bc.booking_id = b.id
           WHERE b.status != 'CANCELLED'
             AND bc.active = true
+            AND bc.start_date BETWEEN ${fromIso}::date AND ${toIso}::date
           ORDER BY b.student_id, bc.start_date ASC, bc.id ASC
         ),
         with_totals AS (
-          SELECT fb.*,
+          SELECT wb.*,
                  ( SELECT COALESCE(SUM(bc2.weeks), 0)::int
                    FROM booking_courses bc2
-                   WHERE bc2.booking_id = fb.booking_id ) AS booking_total_weeks
-          FROM first_bc fb
-          WHERE fb.course_start BETWEEN ${fromIso}::date AND ${toIso}::date
+                   WHERE bc2.booking_id = wb.booking_id ) AS booking_total_weeks,
+                 -- New / Continuing / Renewal (#45). First ULearn course → new
+                 -- (even an Academic Year — a first-timer isn't renewing a visa).
+                 -- Otherwise an academic-year / ILEP course → renewal (visa-
+                 -- relevant, warrants a proper look); any shorter re-up that
+                 -- isn't visa-length → continuing.
+                 CASE
+                   WHEN NOT EXISTS (
+                     SELECT 1 FROM bookings pb
+                     JOIN booking_courses pbc ON pbc.booking_id = pb.id
+                     WHERE pb.student_id = wb.student_id
+                       AND pb.status != 'CANCELLED'
+                       AND pbc.start_date < wb.course_start
+                   ) THEN 'new'
+                   WHEN wb.ilep_code IS NOT NULL OR wb.is_renewal
+                     OR wb.course_name ILIKE '%renewal%'
+                     OR wb.course_name ILIKE '%academic year%'
+                     OR wb.course_name ILIKE '%life pass%'
+                     THEN 'renewal'
+                   ELSE 'continuing'
+                 END AS enrol_type
+          FROM win_bc wb
         )
         SELECT s.id                AS student_id,
                s.first_name, s.last_name, s.email, s.nationality, s.birthday, s.gender,
@@ -99,7 +129,7 @@ export function studentRoutes(prisma: PrismaClient) {
                EXISTS (SELECT 1 FROM device_tokens dt WHERE dt.student_id = s.id) AS has_app_logon,
                EXISTS (SELECT 1 FROM sis_users su WHERE lower(su.email) = lower(s.email) AND su.user_type = 'student' AND su.active) AS has_account,
                wt.bc_id, wt.booking_id, wt.course_name, wt.course_start, wt.course_end,
-               wt.course_weeks, wt.course_category, wt.booking_total_weeks,
+               wt.course_weeks, wt.course_category, wt.booking_total_weeks, wt.enrol_type,
                b.status AS booking_status, b.group_id,
                ag.name AS agency_name,
                (
@@ -121,6 +151,32 @@ export function studentRoutes(prisma: PrismaClient) {
         LEFT JOIN agencies ag ON ag.id = b.agency_id
         ORDER BY wt.course_start ASC, s.last_name, s.first_name
       `;
+
+      // Attach any 1-to-1 (PRIVATE) component on each row's booking. The query
+      // above keeps only the earliest-starting course, so a mixed booking's 121
+      // (which needs a specially-rostered teacher) would otherwise be invisible
+      // in Arrivals — Paul Gill's report, 2026-08-31. Looked up independent of the
+      // arrivals window so a 121 with different dates is still surfaced.
+      const bookingIds = [...new Set(rows.map((r: any) => r.booking_id).filter(Boolean))] as number[];
+      if (bookingIds.length) {
+        const privs = await prisma.bookingCourse.findMany({
+          where: { bookingId: { in: bookingIds }, category: 'PRIVATE', active: true },
+          select: { bookingId: true, name: true, startDate: true, endDate: true, hoursPerWeek: true, weeks: true },
+          orderBy: { startDate: 'asc' },
+        });
+        const byBooking = new Map<number, any>();
+        for (const p of privs) if (!byBooking.has(p.bookingId)) byBooking.set(p.bookingId, p);
+        for (const r of rows as any[]) {
+          const p = byBooking.get(r.booking_id);
+          r.private121 = p ? {
+            name: p.name,
+            start: p.startDate ? p.startDate.toISOString().slice(0, 10) : null,
+            end: p.endDate ? p.endDate.toISOString().slice(0, 10) : null,
+            hours_per_week: p.hoursPerWeek != null ? Number(p.hoursPerWeek) : null,
+            weeks: p.weeks,
+          } : null;
+        }
+      }
 
       res.json({
         from: fromIso, to: toIso,
@@ -456,6 +512,42 @@ export function studentRoutes(prisma: PrismaClient) {
     catch (e: any) { res.status(500).json({ error: String(e?.message || e) }); }
   });
 
+  // ── KickStart Challenger nudge (reminder drip) ──────────────────────────
+  // Status for the Nudge tab + the suppress set the Challengers table reads.
+  router.get('/challenger-nudge', async (_req, res) => {
+    try {
+      const [status, templates] = await Promise.all([
+        nudge.getStatus(),
+        prisma.documentTemplate.findMany({
+          where: { slug: { in: ['challenger-nudge-1', 'challenger-nudge-2', 'challenger-nudge-3'] } },
+          select: { id: true, slug: true, name: true, subject: true, htmlTemplate: true },
+          orderBy: { slug: 'asc' },
+        }),
+      ]);
+      res.json({ ...status, templates });
+    } catch (e: any) { res.status(500).json({ error: String(e?.message || e) }); }
+  });
+
+  // Master arm switch.
+  router.post('/challenger-nudge/arm', async (req, res) => {
+    try { res.json({ armed: nudge.setArmed(!!req.body?.armed) }); }
+    catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }
+  });
+
+  // Per-student Nudge toggle = the suppress list. body { studentId, nudge:bool }:
+  // nudge=true → remove from suppress (will be nudged); nudge=false → add (suppressed).
+  router.post('/challenger-nudge/suppress', async (req, res) => {
+    try {
+      const studentId = parseInt(String(req.body?.studentId), 10);
+      if (!Number.isInteger(studentId)) return res.status(400).json({ error: 'bad studentId' });
+      const on = req.body?.nudge !== false;   // default true (nudge on)
+      const cur = new Set(nudge.loadConfig().suppress || []);
+      if (on) cur.delete(studentId); else cur.add(studentId);
+      const suppress = nudge.setSuppress([...cur]);
+      res.json({ studentId, nudge: on, suppress });
+    } catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }
+  });
+
   // LifePass payments report — one row per LifePass booking: the onboard invoice
   // (booking.amountTotal/Paid) + its 25 sub drawdowns (paymentInstalments; allocated
   // = paid, past-due-unpaid = overdue) + TOTAL / PAID / BALANCE across both.
@@ -612,6 +704,52 @@ export function studentRoutes(prisma: PrismaClient) {
     } catch (e) { res.status(500).json({ error: String(e) }); }
   });
 
+  // ── Card on File (accommodation €1 card-guarantee) status + admin switch ──
+  // The Accomm-section switch mirrors the Overview Agreement reset. GET is open
+  // (everyone sees the state); POST is Accounts/Admin only.
+  router.get('/:id/card-on-file', async (req, res) => {
+    try {
+      const s = await prisma.student.findUnique({
+        where: { id: parseInt(req.params.id) },
+        select: { cardOnFile: true, cardOnFileAt: true },
+      });
+      if (!s) return res.status(404).json({ error: 'Student not found' });
+      res.json({ cardOnFile: !!s.cardOnFile, cardOnFileAt: s.cardOnFileAt });
+    } catch (e) { res.status(500).json({ error: String(e) }); }
+  });
+
+  // Flip card-on-file. Writes BOTH sides: SIS Student.cardOnFile AND HubSpot
+  // accommodation_card_guarantee (Yes/No) — otherwise /card-on-file/status
+  // re-mirrors HubSpot and a reset self-heals straight back on.
+  router.post('/:id/card-on-file', async (req, res) => {
+    try {
+      const role = (req.session as any)?.role || 'staff';
+      if (role !== 'admin' && role !== 'accounts') return res.status(403).json({ error: 'Accounts / Admin only' });
+      const id = parseInt(req.params.id);
+      const on = req.body?.on === true || String(req.body?.on) === 'true';
+      const student = await prisma.student.findUnique({ where: { id }, select: { hubspotContactId: true } });
+      if (!student) return res.status(404).json({ error: 'Student not found' });
+
+      await prisma.student.update({
+        where: { id },
+        data: on ? { cardOnFile: true, cardOnFileAt: new Date() } : { cardOnFile: false, cardOnFileAt: null },
+      });
+
+      let hubspot = 'no-contact';
+      if (student.hubspotContactId) {
+        try {
+          const r = await fetch(`https://api.hubapi.com/crm/v3/objects/contacts/${student.hubspotContactId}`, {
+            method: 'PATCH',
+            headers: { Authorization: 'Bearer ' + process.env.ACCESS_TOKEN, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ properties: { accommodation_card_guarantee: on ? 'Yes' : 'No' } }),
+          });
+          hubspot = r.ok ? 'updated' : `failed:${r.status}`;
+        } catch (e: any) { hubspot = `error:${e?.message || e}`; }
+      }
+      res.json({ success: true, cardOnFile: on, hubspot });
+    } catch (e) { res.status(500).json({ error: String(e) }); }
+  });
+
   // Serve the signed PDF for staff review.
   router.get('/:id/contract/signed.pdf', async (req, res) => {
     try {
@@ -648,8 +786,32 @@ export function studentRoutes(prisma: PrismaClient) {
       const category = String(req.body.category || 'visa');
       const uploadedBy = (req as any).session?.user || null;
 
+      // Optional refundId — lets the same student-doc upload (the one the Operator
+      // already uses for passports) ALSO lodge a visa-refusal letter onto a
+      // RefundRequest. The refunds section is role-gated (service role can't hit
+      // /refunds/:id/refusal-letter), so this reuses the allowed /students path.
+      // When set we mirror each file into the refund's visa subfolder
+      // (uploads/students/<id>/visa/) — which is where the refund's gate, file
+      // viewer and TransferMate attach all read from — and link it to the refund.
+      const refundId = req.body.refundId != null && String(req.body.refundId).trim() !== ''
+        ? parseInt(String(req.body.refundId), 10) : null;
+      let refund: { id: number; studentId: number | null; visaRefusalDocId: number | null } | null = null;
+      if (refundId != null) {
+        refund = await prisma.refundRequest.findUnique({ where: { id: refundId }, select: { id: true, studentId: true, visaRefusalDocId: true } });
+        if (!refund) return res.status(404).json({ error: 'Refund not found' });
+        if (refund.studentId != null && refund.studentId !== studentId) {
+          return res.status(400).json({ error: 'Refund belongs to a different student' });
+        }
+      }
+
       const docs = [];
       for (const f of files) {
+        if (refund) {
+          // Mirror into the refund's visa folder (same filename) so refundScripts finds it.
+          const visaDir = path.join(uploadDir, String(studentId), 'visa');
+          fs.mkdirSync(visaDir, { recursive: true });
+          try { fs.copyFileSync(f.path, path.join(visaDir, f.filename)); } catch { /* best-effort — the flat copy still exists */ }
+        }
         const doc = await prisma.studentDocument.create({
           data: {
             studentId,
@@ -659,10 +821,21 @@ export function studentRoutes(prisma: PrismaClient) {
             size: f.size,
             category,
             uploadedBy,
-          },
+            ...(refund ? { refundId: refund.id } : {}),
+          } as any,
         });
         docs.push(doc);
       }
+
+      // Link the refund: set its primary visa-refusal letter if none yet, and
+      // backfill its studentId if it wasn't linked to a student.
+      if (refund && docs.length) {
+        const data: any = {};
+        if (!refund.visaRefusalDocId) data.visaRefusalDocId = docs[0].id;
+        if (refund.studentId == null) data.studentId = studentId;
+        if (Object.keys(data).length) await prisma.refundRequest.update({ where: { id: refund.id }, data });
+      }
+
       res.status(201).json(docs);
     } catch (e) { res.status(400).json({ error: String(e) }); }
   });
@@ -716,7 +889,8 @@ export function studentRoutes(prisma: PrismaClient) {
         if (sub) return res.json(insuranceResult(sub, text));
       }
       const pp = await parsePassport(filePath, doc.mimeType);
-      res.json({ success: true, supported: pp.supported, extracted: pp.extracted, parseError: pp.error || null });
+      const birthdaySet = await fillBirthdayIfEmpty(prisma, doc.studentId, pp.extracted);
+      res.json({ success: true, supported: pp.supported, extracted: pp.extracted, parseError: pp.error || null, birthdaySet });
     } catch (e) { res.status(500).json({ success: false, error: String(e) }); }
   });
 

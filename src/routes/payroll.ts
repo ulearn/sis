@@ -467,12 +467,18 @@ export function payrollRoutes(prisma: PrismaClient) {
         if (r.success && r.email) {
           await prisma.teacherPayrollEntry.updateMany({
             where: { email: r.email },
-            data: {
-              leaveTaken: r.leaveTaken || 0,
-              sickDays: r.sickDaysTaken || 0,
-              leaveBalance: r.leaveBalance || 0,
-            },
+            data: { leaveTaken: r.leaveTaken || 0, sickDays: r.sickDaysTaken || 0, leaveBalance: r.leaveBalance || 0 },
           });
+          // PPS is a permanent per-teacher ID: pull it from Zoho ONCE onto the
+          // durable Teacher.pps (never overwrite an existing value), and mirror
+          // it to this period's entries so it shows immediately.
+          if (r.ppsNumber) {
+            await prisma.teacher.updateMany({
+              where: { email: { equals: r.email, mode: 'insensitive' }, OR: [{ pps: null }, { pps: '' }] },
+              data: { pps: r.ppsNumber },
+            });
+            await prisma.teacherPayrollEntry.updateMany({ where: { email: r.email }, data: { ppsNumber: r.ppsNumber } });
+          }
         }
       }
 

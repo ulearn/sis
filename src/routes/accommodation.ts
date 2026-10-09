@@ -281,6 +281,28 @@ export function accommodationRoutes(prisma: PrismaClient) {
     } catch (e) { res.status(500).json({ error: String(e) }); }
   });
 
+  // Soft availability check (Capel Street by default). Read-only. Reachable by
+  // the admin matching screen AND by the inbox AI agents via the SIS_SERVICE_KEY
+  // bearer (requireAuth in app.ts scopes that key to /sis/api/*). Returns a
+  // yes/no + free beds + alternatives + an agent-friendly `summary` sentence.
+  router.get('/matching/availability', async (req, res) => {
+    try {
+      const from = req.query.from as string;
+      const to = req.query.to as string;
+      if (!from || !to) return res.status(400).json({ error: 'from and to (YYYY-MM-DD) are required' });
+      const roomType = (req.query.roomType as string) || null;
+      const enSuite = req.query.enSuite === 'true' || req.query.enSuite === '1';
+      const gr = String(req.query.gender || '');
+      const gender = (gr === '1' || /^m/i.test(gr)) ? 1 : (gr === '2' || /^f/i.test(gr)) ? 2 : null;
+      const providerIds = String(req.query.providerIds || '')
+        .split(',').map(n => parseInt(n, 10)).filter(n => !isNaN(n));
+      res.json(await scripts.accommodationAvailability({
+        from, to, roomType, enSuite, gender,
+        providerIds: providerIds.length ? providerIds : undefined,
+      }));
+    } catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }
+  });
+
   // Place student. asHold=true is the 48-hour hold path for zero-paid bookings —
   // the sales/admin/accomm user surfaces them via /matching/holds-search and
   // we stamp hold_placed_at + hold_placed_by for the audit tooltip.

@@ -18,7 +18,7 @@
 import fs from 'fs';
 import path from 'path';
 
-export const CONTRACT_VERSION = '2026-07-eto-v1';
+export const CONTRACT_VERSION = '2026-09-eto-v2';
 
 // Neil's countersignature, baked into every rendered copy when present.
 // Drop a transparent PNG at data/contracts/template/neil-signature.png to
@@ -58,7 +58,7 @@ const CLAUSES: Array<{ n: number; title: string; subs: string[] }> = [
     'Nothing in this Agreement prevents ULearn from advertising or promoting its programmes generally.',
   ] },
   { n: 3, title: 'Wholesale Prices and ETO Resale Prices', subs: [
-    'ULearn will invoice the ETO at the published gross tuition price less the wholesale discount specified in Schedule 1, or at another net price agreed in writing for a particular booking.',
+    'ULearn will invoice the ETO at the published gross tuition price less the applicable wholesale discount determined in accordance with Schedule 1 and, where the Accelerator Programme applies, Schedule 2, or at another net price agreed in writing for a particular booking.',
     'Unless expressly agreed otherwise, the wholesale discount applies only to tuition fees and excludes registration or booking fees, accommodation, accommodation placement fees, insurance, examinations, books, transfers, banking charges and other third-party or ancillary services.',
     'The ETO is free to determine the retail price charged to its clients and may combine the programme with accommodation, insurance, flights, transfers, advisory services or other products.',
     'The ETO must not misrepresent ULearn’s published prices, create a false ULearn discount, or state that an ETO-funded discount is funded or authorised by ULearn unless ULearn has confirmed this in writing.',
@@ -209,7 +209,7 @@ function scheduleTable(f: AgreementFields): string {
   const eff = f.effectiveDate ? formatDDMonYYYY(f.effectiveDate) : null;
   const disc = f.wholesaleDiscount != null && String(f.wholesaleDiscount).trim() !== ''
     ? `${esc(f.wholesaleDiscount)}% of gross tuition fees`
-    : `<span style="display:inline-block;min-width:22%;border-bottom:1px solid #1a1d23">&nbsp;</span>% of gross tuition fees`;
+    : `The Accelerator Programme (see Schedule 2)`;
   const rows: Array<[string, string]> = [
     ['ETO Name', fill(f.etoName, '70%')],
     ['Registered Address', fill(f.registeredAddress, '70%')],
@@ -227,6 +227,44 @@ function scheduleTable(f: AgreementFields): string {
       <td style="border:1px solid #cbd5e1;padding:6px 8px;vertical-align:top">${v}</td>
     </tr>`).join('')}
   </table>`;
+}
+
+// Schedule 2 — The Accelerator Programme. The tier ladder MIRRORS the hub's single
+// source of truth (hubapp/scripts/accelerator/ladder.js). If that ladder is retuned,
+// update this table to match so the signed agreement and the quoting engine never drift.
+const ACCEL_LADDER: Array<[string, string]> = [
+  ['1 – 3', '22%'],
+  ['4 – 6', '23.5%'],
+  ['7 – 9', '25%'],
+  ['10 – 15', '27%'],
+  ['16 – 22', '30%'],
+  ['23 – 35', '35%'],
+  ['36 – 60', '44%'],
+  ['61 or more', 'By separate written agreement'],
+];
+
+function scheduleTwo(): string {
+  const ladderRows = ACCEL_LADDER.map(([band, rate]) => `<tr>
+      <td style="width:50%;border:1px solid #cbd5e1;padding:5px 8px;vertical-align:top">${band}</td>
+      <td style="border:1px solid #cbd5e1;padding:5px 8px;vertical-align:top;font-weight:700">${rate}</td>
+    </tr>`).join('');
+  const sub = (n: string, t: string) => `<p style="margin:0 0 8px"><strong>${n}</strong>&nbsp; ${t}</p>`;
+  return `<div style="page-break-inside:avoid;margin-top:18px">
+    <h1 style="font-size:17px;margin:14px 0 8px;color:#2f5233;border-bottom:2px solid #2f5233;padding-bottom:4px">Schedule 2 &mdash; The Accelerator Programme</h1>
+    ${sub('S2.1', "The Accelerator Programme is ULearn’s standard commercial basis for determining the ETO’s wholesale discount. Unless Schedule 1 expressly records a fixed wholesale discount, the Accelerator Programme applies.")}
+    ${sub('S2.2', 'Under the Accelerator Programme the wholesale discount is earned progressively by reference to the number of funded student enrolments the ETO completes with ULearn during each annual cycle, as set out in the table below.')}
+    <table style="width:100%;border-collapse:collapse;margin:6px 0 10px;font-size:12px">
+      <tr>
+        <td style="width:50%;border:1px solid #cbd5e1;background:#eef2e6;padding:6px 8px;font-weight:700">Funded enrolments in cycle</td>
+        <td style="border:1px solid #cbd5e1;background:#eef2e6;padding:6px 8px;font-weight:700">Wholesale discount</td>
+      </tr>
+      ${ladderRows}
+    </table>
+    ${sub('S2.3', 'The wholesale discount applied to each enrolment is the higher of (a) the entry rate of 22% and (b) the rate for the band into which that enrolment falls, measured by the ETO’s cumulative funded enrolments in the then-current cycle.')}
+    ${sub('S2.4', 'A “funded enrolment” means a booking that has been confirmed and paid in accordance with Clause 6. The cycle is a twelve-month period aligned to the calendar year unless otherwise agreed in writing, and the count resets at the start of each cycle.')}
+    ${sub('S2.5', 'Enrolments beyond 60 in a cycle are handled under a separate written agreement and are not automatically rated under this Schedule.')}
+    ${sub('S2.6', 'The Accelerator Programme discount applies to gross course tuition prices only, on the same basis and with the same exclusions as the Wholesale Discount Scope set out in Schedule 1.')}
+  </div>`;
 }
 
 function signatureBlock(f: AgreementFields): string {
@@ -304,6 +342,8 @@ export function buildAgreementHtml(f: AgreementFields = {}): string {
       <h2 style="font-size:13px;margin:14px 0 4px">Wholesale Discount Scope</h2>
       <p style="margin:0 0 8px">The discount applies to gross course tuition prices only. It excludes registration and booking fees, accommodation, accommodation placement fees, health or travel insurance, examination fees, books or materials, transfers, bank charges and other extras, unless expressly stated above.</p>
     </div>
+
+    ${scheduleTwo()}
 
     <div style="page-break-inside:avoid;margin-top:18px">
       <h1 style="font-size:17px;margin:14px 0 8px;color:#2f5233;border-bottom:2px solid #2f5233;padding-bottom:4px">Signatures</h1>

@@ -39,16 +39,22 @@ export function bookingRoutes(prisma: PrismaClient) {
   };
   router.use((req: any, res, next) => {
     const role = req.session?.role || '';
-    if (FINANCE_ROLES.has(role)) return next();   // full access
-    if (req.method === 'GET') return next();        // reads always allowed
 
-    // Holidays carry NO financial impact — they only shunt the COURSE
-    // schedule (end-date push), the same class of change ops roles are
-    // already trusted with on course dates. Student holiday requests are
-    // handled by accomm/sales/dos, and the UI exposes +Add Holiday to them,
-    // so the holiday endpoints are exempt from the finance lock.
-    //   POST /:bookingId/holidays   DELETE /holidays/:id
-    if (/^\/\d+\/holidays$/.test(req.path) || /^\/holidays\/\d+$/.test(req.path)) return next();
+    // ── Holidays: students self-serve, staff get VETO only ──────────────────
+    // Holiday CREATE is now booked by the student in their app (the student
+    // route calls addHoliday in-process, bypassing this router). Staff no longer
+    // hand-enter holidays — that was redundant data-entry — but ANY staff role
+    // can VETO (delete) a holiday, and admin keeps create as an override.
+    const isHolidayCreate = req.method === 'POST' && /^\/\d+\/holidays$/.test(req.path);
+    const isHolidayDelete = req.method === 'DELETE' && /^\/holidays\/\d+$/.test(req.path);
+    if (isHolidayDelete) return next();                       // veto — any staff
+    if (isHolidayCreate) {
+      if (role === 'admin') return next();                   // admin override
+      return res.status(403).json({ success: false, error: 'Holidays are booked by the student in their app. Staff can veto (remove) a holiday but no longer create one.' });
+    }
+
+    if (FINANCE_ROLES.has(role)) return next();   // full access to other sub-entities
+    if (req.method === 'GET') return next();        // reads always allowed
 
     const m = req.path.match(/^\/(courses|accommodations|extras)\/\d+$/);
     if (req.method === 'PATCH' && m) {
@@ -155,6 +161,13 @@ export function bookingRoutes(prisma: PrismaClient) {
       res.setHeader('Content-Disposition', `attachment; filename="bookings-${today}.csv"`);
       // UTF-8 BOM so Excel auto-detects encoding for accented names.
       res.send('﻿' + rows.join('\r\n'));
+    } catch (e) { res.status(500).json({ error: String(e) }); }
+  });
+
+  // LifePass report — MUST precede '/:id' so "lifepass" isn't matched as an id.
+  router.get('/lifepass', async (_req, res) => {
+    try {
+      res.json({ students: await scripts.lifePassReport() });
     } catch (e) { res.status(500).json({ error: String(e) }); }
   });
 

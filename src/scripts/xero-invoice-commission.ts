@@ -43,6 +43,7 @@ function hsPost(path: string, body: any): Promise<any> {
 
 type Result =
   | { status: 'skipped'; reason: string }
+  | { status: 'unchanged'; invoiceNumber: string }
   | { status: 'no-contact'; email: string }
   | { status: 'created'; invoiceNumber: string; xeroInvoiceID: string; total: number }
   | { status: 'duplicate-fell-through-to-update'; invoiceNumber: string; commissionAdded: boolean }
@@ -265,15 +266,28 @@ export async function createXeroInvoiceFromHubSpot(input: {
   //    later if needed.
   const xeroLines: any[] = lineItems.map((li: any) => {
     const p = li.properties || {};
+    const qty = parseFloat(p.quantity || '1');
+    const price = parseFloat(p.price || '0');
     const lineItem: any = {
       description: p.name || '',
-      quantity: parseFloat(p.quantity || '1'),
-      unitAmount: parseFloat(p.price || '0'),
+      quantity: qty,
+      unitAmount: price,
       accountCode: '100',
       taxType: 'NONE',
     };
-    const disc = parseFloat(p.hs_discount_percentage || '0');
-    if (disc > 0) lineItem.discountRate = disc;
+    // Derive the line discount from HubSpot's authoritative NET amount rather
+    // than trusting hs_discount_percentage — a LINE-ITEM discount may be stored
+    // as a fixed euro amount (`discount`/`hs_total_discount`, hs_discount_percentage
+    // null) OR a percentage, and both surface identically in `amount` (net of the
+    // line discount). Reconstructing the rate from gross-vs-net captures either
+    // representation, so Xero's recomputed line total matches hs_amount_billed to
+    // the cent. Without this, a fixed line discount was silently dropped and the
+    // Xero total came out OVER by the discount (e.g. INV-1463: €2570 vs billed €1970).
+    const net = parseFloat(p.amount || '0');
+    const gross = price * qty;
+    if (gross > 0 && net >= 0 && net < gross) {
+      lineItem.discountRate = Math.round(((1 - net / gross) * 100) * 1e4) / 1e4; // ≤4dp (Xero max)
+    }
     return lineItem;
   });
   xeroLines.push({
@@ -317,14 +331,34 @@ export async function createXeroInvoiceFromHubSpot(input: {
   const invoiceDate = ip.hs_invoice_date ? new Date(ip.hs_invoice_date).toISOString().split('T')[0] : today;
   const dueDate     = ip.hs_due_date     ? new Date(ip.hs_due_date).toISOString().split('T')[0]     : today;
 
-  // Dry-run: return the computed payload + total without touching Xero.
   // Xero totals a line as unitAmount × quantity × (1 − discountRate/100).
+  const computedTotal = Math.round(xeroLines.reduce((s, l) => {
+    const gross = (l.unitAmount || 0) * (l.quantity || 1);
+    return s + (l.discountRate ? gross * (1 - l.discountRate / 100) : gross);
+  }, 0) * 100) / 100;
+
+  // Dry-run: return the computed payload + total without touching Xero.
   if (input.dryRun) {
-    const computedTotal = Math.round(xeroLines.reduce((s, l) => {
-      const gross = (l.unitAmount || 0) * (l.quantity || 1);
-      return s + (l.discountRate ? gross * (1 - l.discountRate / 100) : gross);
-    }, 0) * 100) / 100;
     return { status: 'dry-run', invoiceNumber, computedTotal, feesTotal, lines: xeroLines };
+  }
+
+  // No-op guard: if the existing Xero invoice already totals what HubSpot now
+  // says, don't re-author it. This lets a callers that reconcile unconditionally
+  // (e.g. an authoritative ReSync that may only be a date change with zero
+  // financial impact) invoke the builder freely — it writes to Xero ONLY when
+  // the money actually moved. Total is a faithful proxy for "financials changed"
+  // here because every line (incl. the commission and any line/global discount)
+  // feeds it.
+  //    Contact is part of "changed" too: an authoritative ReSync may repoint the
+  //    invoice to a corrected recipient (student email fixed, or a B2C↔agency
+  //    switch) with zero change to the money. If the resolved Xero contact no
+  //    longer matches the invoice's current contact, fall through and update even
+  //    when the total is identical.
+  const contactMismatch = !!(existing && xeroContact?.contactID
+    && existing.contact?.contactID
+    && existing.contact.contactID !== xeroContact.contactID);
+  if (existing && Math.abs(Number(existing.total || 0) - computedTotal) < 0.01 && !contactMismatch) {
+    return { status: 'unchanged', invoiceNumber };
   }
 
   try {
@@ -334,6 +368,10 @@ export async function createXeroInvoiceFromHubSpot(input: {
       const updated = await xero.accountingApi.updateInvoice(tenantId, existing.invoiceID!, {
         invoices: [{
           invoiceID: existing.invoiceID,
+          // Repoint the recipient to the currently-resolved contact so a ReSync
+          // corrects a wrong/changed billing party (guarded above: never runs on
+          // an invoice that already has payment in Xero).
+          contact: { contactID: xeroContact.contactID } as any,
           date: invoiceDate as any,
           dueDate: dueDate as any,
           reference: agencyName || undefined,

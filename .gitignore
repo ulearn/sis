@@ -1,9 +1,27 @@
 # Dependencies
 node_modules/
 
-# Environment & secrets
+# ─── Environment & secrets (NEVER commit) ───
 .env
+.env.*
+!.env.example
+*-tokens.json
+zoho-tokens.json
 xero-tokens.json
+key-being-*.json
+.secrets/
+secrets/
+*.pem
+*.p12
+*.p8
+*.key
+*.keystore
+*.jks
+service-account*.json
+*service-account*.json
+client_secret*.json
+google-services.json
+GoogleService-Info.plist
 
 # Compiled output
 dist/
@@ -14,11 +32,25 @@ src/generated/
 # Logs
 *.log
 sis.log
+logs/
+
+# ─── Uploaded user content / PII (do not version-control) ───
+uploads/
+storage/
+data/contracts/
 
 # OS files
 .DS_Store
 Thumbs.db
 
-# Temp
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Temp / scratch
 tmp/
-key-being-*.json
+*.tmp
+*_tmp.json
+*_tmp.js
+sheet_payload*.json

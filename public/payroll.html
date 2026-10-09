@@ -12,7 +12,7 @@
     <script src="/sis/public/vendor/payroll/react.production.min.js"></script>
     <script src="/sis/public/vendor/payroll/react-dom.production.min.js"></script>
     <script src="/sis/public/vendor/payroll/babel.min.js"></script>
-    <script type="text/babel" src="/sis/public/payroll-month.js?v=20260730ssp"></script>
+    <script type="text/babel" src="/sis/public/payroll-month.js?v=20260925pps"></script>
     <style>
         * {
             margin: 0;
@@ -454,6 +454,9 @@
         const formatCurrency = (amount) => {
             return '€' + parseFloat(amount).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
         };
+
+        // Display teacher names as "First Last" (stored as "Last, First").
+        const flipName = (n) => { if (!n) return ''; const i = n.indexOf(','); return i < 0 ? n : (n.slice(i + 1).trim() + ' ' + n.slice(0, i).trim()); };
 
         function TeacherPayrollDashboard() {
             const [data, setData] = useState(null);
@@ -1039,7 +1042,7 @@
 
                                         return (
                                         <tr key={idx} className={hasNoEmail ? 'no-email' : ''}>
-                                            <td>{teacher.teacher_name}</td>
+                                            <td>{flipName(teacher.teacher_name)}</td>
                                             <td onClick={() => setEditingEmail(idx)} style={{cursor: 'pointer'}}>
                                                 {editingEmail === idx ? (
                                                     <input
@@ -1153,7 +1156,7 @@
                                             return (
                                             <div key={idx} className="teacher-row">
                                                 <div className="teacher-name">
-                                                    {teacher.teacher_name} - Total: {periodTotalHours.toFixed(2)}h @ {formatCurrency(periodAvgRate)}/h = {formatCurrency(periodTotalPay)} | Leave Accrued: {leaveAccrued}h
+                                                    {flipName(teacher.teacher_name)} - Total: {periodTotalHours.toFixed(2)}h @ {formatCurrency(periodAvgRate)}/h = {formatCurrency(periodTotalPay)} | Leave Accrued: {leaveAccrued}h
                                                 </div>
                                                 <div className="weeks-grid">
                                                     {filteredWeeks.map(week => {

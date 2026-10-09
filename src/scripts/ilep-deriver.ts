@@ -10,29 +10,37 @@
  *   - booking-course add/update hook (when a new AY course is enrolled)
  */
 
-const MORNING_AY_NAMES = new Set([
-  'academic year morning',
-  'academic year renewal morning',
-  'ulearn renewal morn',
-]);
-const AFTERNOON_AY_NAMES = new Set([
-  'academic year afternoon',
-  'academic year renewal afternoon',
-  'ulearn renewal aft',
-]);
+// Any course whose title carries "Academic Year" (or the "ULearn Renewal" AY
+// aliases) is an ILEP Academic Year programme — regardless of hours (AY 15/20h,
+// Intensive 30h all count) (Neil, 2026-08-27). Session is read from the title
+// (Afternoon/PM → PM); everything else — Morning, Intensive, or unspecified —
+// defaults to the Morning series.
+function ayInfo(courseName: string | null): { isAy: boolean; session: 'AM' | 'PM' } {
+  const n = (courseName || '').toLowerCase();
+  // LifePass IS an Academic Year programme (3 AYs back-to-back), so it takes an
+  // ILEP code too — and its course NAME may read "Life Pass Morning/Afternoon"
+  // rather than "Academic Year" (Neil, 2026-08-31).
+  const isAy = n.includes('academic year') || n.includes('ulearn renewal')
+    || n.includes('life pass') || n.includes('lifepass');
+  const isPm = /afternoon|\bpm\b|\baft\b/.test(n);
+  return { isAy, session: isPm ? 'PM' : 'AM' };
+}
 
-const ILEP_AM: Record<string, string> = { A2: '0318/0020', B1: '0318/0010', B2: '0318/0011', C1: '0318/0013' };
-const ILEP_PM: Record<string, string> = { A2: '0318/0021', B1: '0318/0003', B2: '0318/0004', C1: '0318/0006' };
+// A2 uses the TIE/ACELS "Academic Year Morning/Afternoon A2" codes (0009 / 0002) so
+// A2 sits in the same award progression as B1→C1 (TIE→PET→FCE→CAE), not the odd
+// KEY/Cambridge "A2 AM/PM" codes (0020 / 0021). This is also the default the LOA
+// falls back to before a placement test sets a real level (Neil, 2026-08-27).
+const ILEP_AM: Record<string, string> = { A2: '0318/0009', B1: '0318/0010', B2: '0318/0011', C1: '0318/0013' };
+const ILEP_PM: Record<string, string> = { A2: '0318/0002', B1: '0318/0003', B2: '0318/0004', C1: '0318/0006' };
 
 const NON_VISA_NATIONALITIES = new Set([
   'IE','GB','DE','FR','ES','IT','PT','PL','CZ','NL','BE','AT','SE','DK','FI','NO',
   'RO','HU','BG','GR','SK','SI','EE','LV','LT','IS','LU','CH','MT','CY','HR',
 ]);
 
-/** True when the course name is an ILEP-listed Academic Year programme (AM or PM). */
+/** True when the course title marks it an Academic Year programme (any hours/session). */
 export function isAyIlepCourse(courseName: string | null): boolean {
-  const n = (courseName || '').toLowerCase().trim();
-  return MORNING_AY_NAMES.has(n) || AFTERNOON_AY_NAMES.has(n);
+  return ayInfo(courseName).isAy;
 }
 
 /** True for EU/UK/Swiss nationals — they never receive visa letters, so an ILEP code is not required. */
@@ -42,12 +50,14 @@ export function isNonVisaNationality(nationality: string | null): boolean {
 
 export function deriveIlepCode(courseName: string | null, level: string | null, nationality: string | null): string | null {
   if (nationality && NON_VISA_NATIONALITIES.has(nationality.toUpperCase())) return null;
-  const n = (courseName || '').toLowerCase().trim();
-  const lvl = (level || '').toUpperCase().trim();
-  if (!lvl) return null;
-  if (MORNING_AY_NAMES.has(n))   return ILEP_AM[lvl] || null;
-  if (AFTERNOON_AY_NAMES.has(n)) return ILEP_PM[lvl] || null;
-  return null;
+  const { isAy, session } = ayInfo(courseName);
+  if (!isAy) return null;
+  // No placement test yet → default to A2 (the same default the start level takes),
+  // so an AY booking always has a code and the LoA isn't blocked. An unmapped level
+  // also falls back to A2.
+  const lvl = (level || 'A2').toUpperCase().trim() || 'A2';
+  const map = session === 'PM' ? ILEP_PM : ILEP_AM;
+  return map[lvl] || map['A2'];
 }
 
 /**

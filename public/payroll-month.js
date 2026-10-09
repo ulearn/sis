@@ -6,6 +6,8 @@ const formatCurrency = (amount) => {
     return '€' + parseFloat(amount).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 };
 
+// Display teacher names as "First Last" (stored as "Last, First").
+const flipName = (n) => { if (!n) return ''; const i = n.indexOf(','); return i < 0 ? n : (n.slice(i + 1).trim() + ' ' + n.slice(0, i).trim()); };
 window.MonthlyPayrollComponent = function({ data, selectedMonthlyPeriod, onDataRefresh }) {
     const [leaveData, setLeaveData] = React.useState(null);
     const [ppsData, setPpsData] = React.useState(null);
@@ -553,7 +555,7 @@ window.MonthlyPayrollComponent = function({ data, selectedMonthlyPeriod, onDataR
                         const finalTotalPay = teacher.total_pay + teacher.other + teacher.impact_bonus + leaveEuro + sickLeaveEuro;
                         return (
                             <tr key={idx}>
-                                <td>{teacher.teacher_name}</td>
+                                <td>{flipName(teacher.teacher_name)}</td>
                                 <td
                                     onClick={() => {
                                         console.log('[MONTH.JS] PPS cell clicked for:', teacher.teacher_name, 'Current PPS:', teacher.pps_number, 'Setting editingPPS to:', idx);

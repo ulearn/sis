@@ -168,6 +168,35 @@
     loadClearance();
   }
 
+  // ── V2 ALLOCATION model — €0 time-limited "Claim This Rate" (no seats, no cart) ──
+  function _clrClaimedSet() {
+    const s = new Set();
+    (_clrData.myReservations || []).forEach(r => {
+      if (['CLAIMED', 'RESERVED', 'ASSIGNED'].indexOf(r.status) >= 0) s.add(r.offerId);
+    });
+    return s;
+  }
+  async function _clrClaim(offerId, btn) {
+    // Public tease → the claim "business end" needs login; carry the offer through.
+    if (!IS_PORTAL) {
+      const next = encodeURIComponent('/sis/partners?tab=clearance&clrclaim=' + offerId);
+      window.open('/sis/partners?next=' + next, '_blank');
+      return;
+    }
+    if (btn) { btn.disabled = true; btn.textContent = 'Claiming…'; }
+    try {
+      const r = await fetch('/sis/partners/api/clearance/claim', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ offerId }),
+      }).then(x => x.json());
+      if (!r.ok) throw new Error(r.error || 'Could not claim');
+      loadClearance();   // re-render → shows the claimed state
+    } catch (e) {
+      alert('Could not claim: ' + e.message);
+      if (btn) { btn.disabled = false; btn.textContent = 'Claim This Rate'; }
+    }
+  }
+
   function _clrStartCountdown(endsAtIso) {
     if (_clrTimer) { clearInterval(_clrTimer); _clrTimer = null; }
     const end = new Date(endsAtIso).getTime();
@@ -192,6 +221,83 @@
     if (!d || !d.sale || d.state === 'none') { body.innerHTML = '<div style="padding:48px;text-align:center;color:#6b7280">No clearance sale is scheduled right now — we’ll be in touch when the next one opens.</div>'; return; }
     if (d.state === 'upcoming') { body.innerHTML = `<div style="padding:48px;text-align:center;color:#1a1a2e"><div style="font-size:22px;font-weight:800;margin-bottom:8px">${_clrEsc(d.sale.name)}</div><div style="color:#6b7280">Opens ${new Date(d.sale.startsAt).toLocaleString('en-IE')}</div></div>`; return; }
     if (d.state === 'ended') { body.innerHTML = `<div style="padding:48px;text-align:center;color:#1a1a2e"><div style="font-size:22px;font-weight:800;margin-bottom:8px">This clearance sale has ended</div><div style="color:#6b7280">Watch this space — the next release lands in the last week of next month.</div></div>`; return; }
+
+    // ── V2 ALLOCATION layout — a pure time-limited-rate sale: no seat tiles, no
+    // cart, no per-agency number. One "Claim This Rate" per offer; sell as many as
+    // you like at the rate before the window closes. Scarcity is soft/global. ──
+    const _offers = d.offers || [];
+    if (_offers.length && _offers.every(o => o.model === 'ALLOCATION')) {
+      const claimed = _clrClaimedSet();
+      const deadline = new Date(d.sale.endsAt).toLocaleDateString('en-IE', { timeZone: 'UTC' });
+      const startBy = '30/06/2027';
+      const allocCard = (o) => {
+        const pu = o.priceUnit === 'week' ? '/wk' : '';
+        const isClaimed = claimed.has(o.id);
+        const cta = isClaimed
+          ? `<div style="width:100%;background:#eef7e3;border:1.5px solid #2e9e00;border-radius:10px;padding:10px 13px;display:flex;align-items:center;gap:9px">
+               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2e9e00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><polyline points="20 6 9 17 4 12"/></svg>
+               <div style="font-size:12.5px;font-weight:800;color:#1a6600;line-height:1.25">Rate Claimed — enrol students at ${_clrEur(o.clearancePrice)}${pu} until ${deadline}</div>
+             </div>`
+          : `<button onclick="_clrClaim(${o.id},this)" style="width:100%;background:#1a6600;color:#fff;border:0;border-radius:10px;padding:12px;font-weight:800;font-size:15px;cursor:pointer">${IS_PORTAL ? 'Claim This Rate' : 'Log In to Claim'}</button>`;
+        return `
+          <div style="border:1px solid #e5e7eb;border-radius:10px;padding:11px 13px;margin-bottom:8px;background:#fff">
+            <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:9px">
+              <div style="flex:1;min-width:180px">
+                <div style="font-size:15px;font-weight:800;color:#1a1a2e;line-height:1.2">${_clrEsc(o.title)}</div>
+                ${o.subtitle ? `<div style="font-size:11.5px;color:#6b7280">${_clrEsc(o.subtitle)}</div>` : ''}
+              </div>
+              <div style="text-align:right;white-space:nowrap;flex:0 0 auto">
+                <span class="clr-num" style="text-decoration:line-through;color:#9aa2ac;font-size:13px">${_clrEur(o.retailPrice)}${pu}</span>
+                <span class="clr-num" style="font-size:22px;font-weight:800;color:#2e9e00;letter-spacing:-.02em;margin-left:4px">${_clrEur(o.clearancePrice)}${pu}</span>
+                <div style="font-size:10px;color:#6b7280;font-weight:600">Clearance Net Rate</div>
+              </div>
+            </div>
+            ${cta}
+          </div>`;
+      };
+      const v2feat = (t, s, p) => `<div style="flex:1;min-width:160px;display:flex;gap:9px;align-items:center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="1.7" style="flex:0 0 auto"><path d="${p}"/></svg><div><div style="font-size:12.5px;font-weight:800;color:#10151f">${t}</div><div style="font-size:11.5px;color:#374151">${_clrEsc(s)}</div></div></div>`;
+      body.innerHTML = `
+        <style>
+          #clearanceBody .clr-eyebrow{font-size:10px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:#2e9e00}
+          #clearanceBody .clr-num{font-variant-numeric:tabular-nums}
+        </style>
+        <div style="max-width:640px;margin:0 auto">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+            <div>
+              <div class="clr-eyebrow" style="margin-bottom:2px">Partners-Only Clearance</div>
+              <div style="font-size:25px;font-weight:800;color:#10151f;letter-spacing:-.035em;line-height:1.0">Seat Clearance</div>
+            </div>
+            <div style="text-align:center">
+              <div class="clr-eyebrow" style="color:#6b7280;margin-bottom:4px">Rate Ends ${deadline}</div>
+              <div id="clrCountdown" style="display:flex;gap:5px"></div>
+            </div>
+          </div>
+          <div style="margin:8px 0 10px;background:#f1f5ee;border:1.5px solid #d4af37;box-shadow:0 1px 4px rgba(0,0,0,.07);border-radius:8px;padding:8px 12px">
+            <div style="font-size:12.5px;font-weight:800;color:#10151f;margin-bottom:4px">How It Works</div>
+            <div style="display:flex;flex-direction:column;gap:3px;font-size:12.5px;color:#1f2937;font-weight:600">
+              <div style="display:flex;gap:7px;align-items:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2e9e00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><polyline points="20 6 9 17 4 12"/></svg>Click Claim Rate to enter Seat Clearance</div>
+              <div style="display:flex;gap:7px;align-items:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2e9e00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><polyline points="20 6 9 17 4 12"/></svg>Seats are limited — first come, first served</div>
+              <div style="display:flex;gap:7px;align-items:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2e9e00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><polyline points="20 6 9 17 4 12"/></svg>Students start any time up to ${startBy}</div>
+              <div style="display:flex;gap:7px;align-items:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2e9e00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><polyline points="20 6 9 17 4 12"/></svg>Offer ends ${deadline}</div>
+            </div>
+          </div>
+          ${_offers.map(allocCard).join('')}
+          <div style="margin-top:6px;font-size:11px;color:#9ca3af;text-align:center;line-height:1.4">Seats at this price are limited. If oversubscribed we will notify all partners. Subject to course availability &amp; our terms.</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;border-top:1px solid #eef0f2;padding-top:10px">
+            ${v2feat('Deposit Accepted', 'Secure the enrolment with a €250 partial payment', 'M2 7a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2zM2 10h20')}
+            ${v2feat('Flexible Start', `Students begin any time to ${startBy}`, 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z')}
+            ${v2feat('Need Help?', 'partners@ulearnschool.com', 'M4 4h16v12H5.2L4 17.2z')}
+          </div>
+        </div>`;
+      _clrStartCountdown(d.sale.endsAt);
+      // Handoff from the public tease: ?clrclaim=<offerId> → auto-claim once logged in.
+      try {
+        const cid = parseInt(new URLSearchParams(location.search).get('clrclaim'), 10);
+        if (IS_PORTAL && cid && !claimed.has(cid)) _clrClaim(cid, null);
+        const u = new URL(location.href); if (u.searchParams.has('clrclaim')) { u.searchParams.delete('clrclaim'); history.replaceState(null, '', u.toString()); }
+      } catch (e) {}
+      return;
+    }
 
     const assignBy = d.sale.assignBy ? new Date(d.sale.assignBy).toLocaleDateString('en-IE', { timeZone: 'UTC' }) : '';
     // A student, not furniture — a person figure (each tile is the "seat").
@@ -335,6 +441,7 @@
   window._clrToggleSeatById = _clrToggleSeatById;
   window._clrClearAll = _clrClearAll;
   window._clrReserve = _clrReserve;
+  window._clrClaim = _clrClaim;
   window._clrCloseCheckout = _clrCloseCheckout;
   // Let the portal's tab nav stop the countdown interval when leaving the clearance tab.
   window._clrStopCountdown = function () { if (_clrTimer) { clearInterval(_clrTimer); _clrTimer = null; } };

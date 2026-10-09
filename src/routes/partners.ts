@@ -7,13 +7,16 @@ import { Router } from 'express';
 import { PrismaClient } from '../generated/prisma/client';
 import { partnerScripts } from '../scripts/partners';
 import { generatePartnerCertificate } from '../scripts/partner-cert';
+import { isContractExempt } from '../lib/contract-exempt';
 import { CONTRACT_VERSION, gatherContractData, renderPreviewBytes, renderPreviewHtml, writeBackDetails, signContract } from '../scripts/partner-contract';
 import { pushCredit, deleteCreditEverywhere } from '../scripts/partner-credit-sync';
 import { acceleratorScripts } from '../scripts/accelerator';
 import { clearanceScripts } from '../scripts/clearance';
 import { documentScripts, buildGrossReceiptHtml, receiptPage } from '../scripts/documents';
+import { groupScripts } from '../scripts/groups';
+import { parseGroupList } from '../scripts/group-list-parser';
 import multer from 'multer';
-import { parsePassport } from '../scripts/passport-parser';
+import { parsePassport, fillBirthdayIfEmpty } from '../scripts/passport-parser';
 import { classifyInsurancePdf } from '../scripts/insurance-classifier';
 import path from 'path';
 import fs from 'fs';
@@ -41,6 +44,7 @@ export function partnerRoutes(prisma: PrismaClient) {
   const docs = documentScripts(prisma);
   const accel = acceleratorScripts(prisma);
   const clearance = clearanceScripts(prisma);
+  const groups = groupScripts(prisma);
 
   // Guard: authenticated partner only. Returns the agencyId or sends 401.
   function requirePartner(req: any, res: any): number | null {
@@ -49,6 +53,24 @@ export function partnerRoutes(prisma: PrismaClient) {
       return null;
     }
     return req.session.agencyId as number;
+  }
+
+  // "Unpack AY?" permission — a per-partner switch owned in HubSpot (Company
+  // property `unpack_ay`). Read live so the team can flip it in the CRM; any
+  // failure defaults to false (extras stay fully bundled — the safe default).
+  // This is the AUTHORITATIVE, server-side check for unbundling — never trust a
+  // client-supplied flag for it.
+  async function agencyUnpackAY(agencyId: number): Promise<boolean> {
+    try {
+      const ag = await prisma.agency.findUnique({ where: { id: agencyId }, select: { hubspotCompanyId: true } });
+      if (ag?.hubspotCompanyId && process.env.ACCESS_TOKEN) {
+        const r = await fetch(`https://api.hubapi.com/crm/v3/objects/companies/${ag.hubspotCompanyId}?properties=unpack_ay`, {
+          headers: { Authorization: `Bearer ${process.env.ACCESS_TOKEN}` },
+        });
+        if (r.ok) { const j: any = await r.json(); return j?.properties?.unpack_ay === 'true'; }
+      }
+    } catch { /* default false */ }
+    return false;
   }
 
   // ── Accelerator programme (non-blocking opt-in) ───────────────────
@@ -85,6 +107,9 @@ export function partnerRoutes(prisma: PrismaClient) {
       where: { id: req.session.agencyId! },
       select: { contractSignedAt: true, commissionRate: true, clearanceEligible: true },
     });
+    // Unbundle-AY permission (HubSpot Company `unpack_ay`) — drives the editable
+    // Exam/Health extras in the enrol form for whitelisted partners (e.g. World2Go).
+    const unpackAY = await agencyUnpackAY(req.session.agencyId!);
     // Seat Clearance — drives the tab: shown when eligible; auto-selected on load
     // while a sale is live. Light summary here; the tab fetches the full payload.
     const _clrSale = await clearance.currentSale();
@@ -99,12 +124,16 @@ export function partnerRoutes(prisma: PrismaClient) {
       // projection scales every figure by this / 100. Null = "not set" (kept
       // null, not 0, so it stays a visible gap); the display falls back to 22%.
       commissionRate: agency?.commissionRate != null ? Number(agency.commissionRate) : null,
-      contractSigned: !!agency?.contractSignedAt,
+      // Non-commercial schools are exempt from the reseller agreement — report as
+      // satisfied so the first-login signing modal never shows for them.
+      contractSigned: !!agency?.contractSignedAt || isContractExempt(req.session.agencyId),
+      contractExempt: isContractExempt(req.session.agencyId),
       contractSignedAt: agency?.contractSignedAt ?? null,
       impersonating: !!req.session.impersonatedByAdmin,
       impersonatedBy: req.session.impersonatedByAdmin || null,
       // LifePass not offered to Visa-Before-Departure / Unsupported partner territories → hide the tab
       lifePassEligible: await scripts.agencyLifePassEligible(req.session.agencyId!),
+      unpackAY,   // partner may unbundle AY/LifePass extras (Exam/Health) in enrol form
       clearance: { eligible: !!agency?.clearanceEligible, state: clearance.saleState(_clrSale) },
     });
   });
@@ -127,6 +156,17 @@ export function partnerRoutes(prisma: PrismaClient) {
         null,
         items,
       );
+      res.json(out);
+    } catch (e: any) { res.status(400).json({ ok: false, error: String(e?.message || e) }); }
+  });
+
+  // V2 ALLOCATION opt-in — €0 "Claim This Rate" for a time-limited allocation offer.
+  router.post('/clearance/claim', async (req: any, res) => {
+    const agencyId = requirePartner(req, res); if (agencyId == null) return;
+    try {
+      const offerId = parseInt(String(req.body?.offerId), 10);
+      if (!Number.isFinite(offerId)) return res.status(400).json({ ok: false, error: 'offerId required' });
+      const out = await clearance.claim(agencyId, req.session?.sisUserId ?? null, offerId);
       res.json(out);
     } catch (e: any) { res.status(400).json({ ok: false, error: String(e?.message || e) }); }
   });
@@ -165,7 +205,8 @@ export function partnerRoutes(prisma: PrismaClient) {
           const d = await gatherContractData(prisma, req.session.agencyId!);
           suggestedName = d.suggestedSignerName;
           suggestedTitle = d.suggestedSignerTitle;
-          commissionSet = d.commissionSet;
+          // commissionSet no longer gates signing — every partner defaults to the Accelerator
+          // Programme (Neil 2026-09-03), so the agreement is always signable. Kept `true`.
           // Editable, HubSpot-pulled details the ETO confirms/corrects on sign.
           details = {
             etoName: d.fields.etoName,
@@ -311,6 +352,53 @@ export function partnerRoutes(prisma: PrismaClient) {
     } catch (e) { res.status(500).json({ success: false, error: String(e) }); }
   });
 
+  // ── Groups ───────────────────────────────────
+  // Closed / junior groups for THIS agency. Unlike individuals (which only exist
+  // once they have an invoice), a group is surfaced as soon as we create its
+  // skeleton off the deal — so partners see it and can populate members early.
+  // Every handler re-checks group.agencyId against the session: a partner can
+  // only ever see or touch their own groups.
+  router.get('/groups', async (req: any, res) => {
+    const agencyId = requirePartner(req, res); if (agencyId == null) return;
+    try { res.json(await groups.listGroups({ agencyId })); }
+    catch (e) { res.status(500).json({ error: String((e as any)?.message || e) }); }
+  });
+
+  router.get('/groups/:id', async (req: any, res) => {
+    const agencyId = requirePartner(req, res); if (agencyId == null) return;
+    try {
+      const g = await groups.getGroup(parseInt(req.params.id, 10));
+      if (!g) return res.status(404).json({ error: 'Group not found' });
+      if (g.group.agencyId !== agencyId) return res.status(403).json({ error: 'Not your group' });
+      res.json(g);
+    } catch (e) { res.status(500).json({ error: String((e as any)?.message || e) }); }
+  });
+
+  // Preview: pasted text → structured rows for the editable table. Writes nothing.
+  router.post('/groups/:id/parse', async (req: any, res) => {
+    const agencyId = requirePartner(req, res); if (agencyId == null) return;
+    try {
+      const g = await groups.getGroup(parseInt(req.params.id, 10));
+      if (!g) return res.status(404).json({ error: 'Group not found' });
+      if (g.group.agencyId !== agencyId) return res.status(403).json({ error: 'Not your group' });
+      res.json(await parseGroupList(String(req.body?.rawText || '')));
+    } catch (e) { res.status(500).json({ error: String((e as any)?.message || e) }); }
+  });
+
+  // Save: reviewed rows → real member Student + Booking rows (the one write).
+  router.post('/groups/:id/commit', async (req: any, res) => {
+    const agencyId = requirePartner(req, res); if (agencyId == null) return;
+    try {
+      const id = parseInt(req.params.id, 10);
+      const g = await groups.getGroup(id);
+      if (!g) return res.status(404).json({ error: 'Group not found' });
+      if (g.group.agencyId !== agencyId) return res.status(403).json({ error: 'Not your group' });
+      const students = Array.isArray(req.body?.students) ? req.body.students : [];
+      const r = await groups.commitGroupStudents(id, students, { createdBy: req.session?.user ?? null });
+      res.status(201).json({ success: true, ...r });
+    } catch (e) { res.status(400).json({ error: String((e as any)?.message || e) }); }
+  });
+
   // ── Students ─────────────────────────────────
   router.get('/students', async (req, res) => {
     try {
@@ -348,6 +436,16 @@ export function partnerRoutes(prisma: PrismaClient) {
       const id = parseInt(req.params.id);
       if (!id) return res.status(400).json({ success: false, error: 'Invalid id' });
       res.json(await scripts.updateStudentFlights(req.session.agencyId!, id, req.body || {}));
+    } catch (e) { res.status(500).json({ success: false, error: String(e) }); }
+  });
+
+  // Partner-editable student email — lets a group organiser replace the synthetic
+  // placeholder with the student's real address (updates SIS + HubSpot).
+  router.patch('/students/:id/email', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (!id) return res.status(400).json({ success: false, error: 'Invalid id' });
+      res.json(await scripts.updateStudentEmail(req.session.agencyId!, id, req.body || {}));
     } catch (e) { res.status(500).json({ success: false, error: String(e) }); }
   });
 
@@ -404,6 +502,7 @@ export function partnerRoutes(prisma: PrismaClient) {
             const pp = await parsePassport(file.path, file.mimetype);
             result.supported = pp.supported;
             result.extracted = pp.extracted;
+            result.birthdaySet = await fillBirthdayIfEmpty(prisma, id, pp.extracted);
             if (pp.error) result.parseError = pp.error;
           } catch (e) { result.parseError = String(e); }
         }
@@ -586,12 +685,15 @@ export function partnerRoutes(prisma: PrismaClient) {
       if (format === 'pdf') {
         const pdf = await docs.generatePdf(r.html);
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename="receipt-${r.number || bookingId}.pdf"`);
+        // "display-…" not "receipt-…": this doc is an INVOICE before payment and
+        // only becomes a receipt once settled, so a fixed "receipt" name misleads
+        // (Neil, 2026-08-31).
+        res.setHeader('Content-Disposition', `attachment; filename="display-${r.number || bookingId}.pdf"`);
         return res.send(pdf);
       }
       if (format === 'html') {
         const pdfUrl = `/sis/partners/api/gross-receipt/${bookingId}?format=pdf`;
-        return res.type('html').send(receiptPage(r.html, pdfUrl, `Receipt ${r.number}`));
+        return res.type('html').send(receiptPage(r.html, pdfUrl, `${r.number || 'Document'}`));
       }
       res.json({ success: true, html: r.html, number: r.number });
     } catch (e) { res.status(500).json({ success: false, error: String(e) }); }
@@ -665,6 +767,9 @@ export function partnerRoutes(prisma: PrismaClient) {
   // Receives form data, creates contact + deal in HubSpot server-side.
   router.post('/enroll', async (req, res) => {
     try {
+      // Server-decide the unbundle permission — the client cannot grant itself the
+      // right to strip Exam/Health off an AY/LifePass deal.
+      req.body.allowUnbundle = await agencyUnpackAY(req.session.agencyId!);
       const result = await scripts.enroll(
         req.session.agencyId!,
         req.session.agencyName || '',

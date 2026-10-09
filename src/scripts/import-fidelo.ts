@@ -6,6 +6,7 @@ import path from 'path';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../generated/prisma/client';
 import { extractFees, pickBestInvoice } from './fidelo-fee-extractor';
+import { TERRITORY_MAP as ESTATE_TERRITORY_MAP } from './territories';
 
 dotenv.config();
 
@@ -100,17 +101,16 @@ const patchStartAfterDate = new Date(PATCH_START_AFTER + 'T00:00:00Z');
 // OFF by default (nightly cron doesn't need it — staff gatekeep unsupported nationalities
 // at the Fidelo entry point). Opt in with --filter-territory for historical backfills,
 // where stale data may contain previously-accepted unsupported nationalities.
-// Override the map file with --territory-map=filename.json (default: TerritoryMap.json).
+// Uses the ONE estate territory map (./territories — hub facts/territories.json); --territory-map=/path.json overrides.
 const FILTER_TERRITORY = process.argv.includes('--filter-territory');
 const mapArg = process.argv.find(a => a.startsWith('--territory-map='))?.split('=')[1];
-const TERRITORY_MAP_FILE = mapArg || 'TerritoryMap.json';
+const TERRITORY_MAP_FILE = mapArg || 'the estate territory map';
 let unsupportedCountries = new Set<string>();
 if (FILTER_TERRITORY) {
   try {
-    const mapPath = path.resolve(__dirname, '../../.claude/docs/', TERRITORY_MAP_FILE);
-    const map = JSON.parse(fs.readFileSync(mapPath, 'utf-8')) as Record<string, string>;
+    const map = mapArg ? JSON.parse(fs.readFileSync(path.resolve(mapArg), 'utf-8')) as Record<string, string> : ESTATE_TERRITORY_MAP;
     for (const [country, cat] of Object.entries(map)) {
-      if (cat === 'unsupported_territory') unsupportedCountries.add(country.toLowerCase());
+      if (cat === 'Unsupported Territory' || cat === 'unsupported_territory') unsupportedCountries.add(country.toLowerCase());
     }
     console.log(`[territory] Filter ACTIVE — loaded ${TERRITORY_MAP_FILE} with ${unsupportedCountries.size} unsupported countries`);
   } catch (e) {

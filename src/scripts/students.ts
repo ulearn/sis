@@ -2,6 +2,7 @@ import { PrismaClient, Prisma } from '../generated/prisma/client';
 import { autoFillIlepForStudent } from './ilep-deriver';
 import { sendStudentEmail } from '../routes/email';
 import { studentSearchSql } from '../lib/student-search';
+import { emailTemplateWhere } from './email-templates';
 
 const DATE_FIELDS = [
   'birthday', 'visaFrom', 'visaUntil', 'passportValidFrom', 'passportValidUntil',
@@ -27,8 +28,11 @@ export function studentScripts(prisma: PrismaClient) {
     const search = (query.search || '').trim();
     const nationality = (query.nationality || '').trim();
     const status = (query.status || '').trim();
-    const bookingStatus = (query.bookingStatus || '').trim().toUpperCase();
+    // Booking-status filter — accepts one OR several (comma-separated) statuses,
+    // combinable from the UI's multi-select pills; matched as IN(...) below.
+    const bookingStatuses = (query.bookingStatus || '').split(',').map((x: string) => x.trim().toUpperCase()).filter(Boolean);
     const archive = String(query.archive || '') === 'true' || query.archive === '1';
+    const agencyId = parseInt(query.agencyId) || 0;   // Partner (agency) filter — 0 = all
 
     // Whitelist sort columns — onboarded is the derived join column, the rest map directly.
     // Default to onboarded-desc so the most recent enrolments surface first.
@@ -76,9 +80,14 @@ export function studentScripts(prisma: PrismaClient) {
       }
     }
     if (nationality) conditions.push(Prisma.sql`s.nationality = ${nationality}`);
+    // Partner filter: match the student's CURRENT partner — i.e. the agency on their
+    // most-recent agency-bearing booking. This is the SAME rule the Partner column uses
+    // (partnerById below), so filter and displayed agent never disagree. (A repeat student
+    // who switched agents shows/filters under their latest agent only, not every past one.)
+    if (agencyId) conditions.push(Prisma.sql`(SELECT b3.agency_id FROM bookings b3 WHERE b3.student_id = s.id AND b3.agency_id IS NOT NULL ORDER BY b3.created_at DESC LIMIT 1) = ${agencyId}`);
     if (status) conditions.push(Prisma.sql`s.student_status = ${status}`);
     // Filter by the student's CURRENT booking status (most-recent booking) — drives the Students status pills.
-    if (bookingStatus) conditions.push(Prisma.sql`(SELECT b2.status FROM bookings b2 WHERE b2.student_id = s.id ORDER BY b2.created_at DESC LIMIT 1) = ${bookingStatus}`);
+    if (bookingStatuses.length) conditions.push(Prisma.sql`(SELECT b2.status FROM bookings b2 WHERE b2.student_id = s.id ORDER BY b2.created_at DESC LIMIT 1) IN (${Prisma.join(bookingStatuses)})`);
     // Default to the recent/active window (snappy): students with ANY booking
     // activity since 2024-01-01. The Archive toggle (archive=true) lifts it to the
     // whole database. A search always bypasses the bracket so you can find anyone.
@@ -100,7 +109,7 @@ export function studentScripts(prisma: PrismaClient) {
       ) ob ON ob.student_id = s.id
     `;
 
-    const [idRows, countRows, natRows] = await Promise.all([
+    const [idRows, countRows, natRows, agencyRows] = await Promise.all([
       prisma.$queryRaw<{ id: number; onboarding_date: Date | null }[]>`
         SELECT s.id, ob.onboarding_date
         FROM students s
@@ -121,10 +130,20 @@ export function studentScripts(prisma: PrismaClient) {
         distinct: ['nationality'],
         orderBy: { nationality: 'asc' },
       }),
+      // Partner (agency) dropdown options — only agencies that actually appear on
+      // a booking, so the list is the real partner roster, not every agency row.
+      prisma.$queryRaw<{ id: number; name: string }[]>`
+        SELECT DISTINCT ag.id, ag.name
+        FROM agencies ag
+        JOIN bookings b ON b.agency_id = ag.id
+        WHERE ag.name IS NOT NULL AND ag.name <> ''
+        ORDER BY ag.name ASC
+      `,
     ]);
 
     const total = Number(countRows[0]?.count || 0);
     const nationalities = natRows.map(r => r.nationality).filter(Boolean) as string[];
+    const agencies = agencyRows.map(r => ({ id: r.id, name: r.name }));
     const ids = idRows.map(r => r.id);
 
     // Load full Student records (for type-safe shape), then reorder per the sorted IDs.
@@ -165,6 +184,7 @@ export function studentScripts(prisma: PrismaClient) {
       limit,
       pages: Math.ceil(total / limit),
       nationalities,
+      agencies,
       sortBy,
       sortDir: sortDirAsc ? 'asc' : 'desc',
     };
@@ -193,6 +213,9 @@ export function studentScripts(prisma: PrismaClient) {
               where: { active: true },
               orderBy: { scheduledAt: 'asc' },
             },
+            // Instalment ledger presence = LifePass booking (€997 + 25×€297).
+            // Count only — drives the "LifePass" badge in the student overview.
+            _count: { select: { paymentInstalments: true } },
           },
           orderBy: { serviceStart: 'desc' },
         },
@@ -218,6 +241,13 @@ export function studentScripts(prisma: PrismaClient) {
       data.studentType = age < 16 ? 'JUNIOR' : 'ADULT';
     }
     if (data.groupId) data.groupId = parseInt(data.groupId);
+    // Derive Mother Tongue from Nationality when not supplied (fill-only — never
+    // overwrite an explicit value). Uses the langmap (data/lang-map.json).
+    if ((data.language == null || data.language === '') && data.nationality) {
+      const { languageForNationality } = await import('../lib/nationality-language');
+      const lang = languageForNationality(data.nationality);
+      if (lang) data.language = lang;
+    }
     return prisma.student.create({ data: data as any });
   }
 
@@ -506,8 +536,8 @@ export function studentScripts(prisma: PrismaClient) {
     }) as any;
     if (!student) throw new Error('Student not found');
 
-    const tpl = await prisma.documentTemplate.findUnique({
-      where: { slug: 'Visa-Approval-Notice' },
+    const tpl = await prisma.documentTemplate.findFirst({
+      where: emailTemplateWhere('Visa-Approval-Notice'),
     });
     if (!tpl) throw new Error('Template "Visa-Approval-Notice" not seeded — run seed-templates.');
 
@@ -565,8 +595,8 @@ export function studentScripts(prisma: PrismaClient) {
 
     const html = await renderVisaApprovalNotice(studentId);
     const subject = `Visa Approval — your new earliest arrival date for ULearn Dublin`;
-    const tpl = await prisma.documentTemplate.findUnique({
-      where: { slug: 'Visa-Approval-Notice' }, select: { id: true },
+    const tpl = await prisma.documentTemplate.findFirst({
+      where: emailTemplateWhere('Visa-Approval-Notice'), select: { id: true },
     });
 
     // Same pathway as every other staff-sent email: signature gets

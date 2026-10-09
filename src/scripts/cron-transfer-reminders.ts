@@ -31,6 +31,7 @@
 
 import dotenv from 'dotenv';
 import pg from 'pg';
+import { emailTemplateWhere } from './email-templates';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../generated/prisma/client';
 import { sendStudentEmail } from '../routes/email';
@@ -78,8 +79,8 @@ export const DEFAULT_HTML = `<p style="margin:0 0 16px">Dear {{student.first_nam
 // Load the staff-editable template; create it from the seed copy if absent so
 // the cron never silently no-ops. Never overwrites an existing (edited) row.
 export async function loadArrivalTemplate(prisma: PrismaClient) {
-  let tpl = await prisma.documentTemplate.findUnique({
-    where: { slug: TEMPLATE_SLUG },
+  let tpl = await prisma.documentTemplate.findFirst({
+    where: emailTemplateWhere(TEMPLATE_SLUG),
     select: { id: true, subject: true, htmlTemplate: true },
   });
   if (!tpl) {
@@ -129,6 +130,21 @@ function earliestServiceStart(booking: any): Date | null {
   return ts.length ? new Date(Math.min(...ts)) : null;
 }
 
+// Latest service end = max(course ends, active-accom end) — the DEPARTURE window
+// a drop-off (outbound) transfer keys off. A pickup keys off arrival (start); a
+// drop-off keys off when they actually leave.
+function latestServiceEnd(booking: any): Date | null {
+  const ts: number[] = [];
+  for (const c of booking?.courses || []) if (c?.endDate) ts.push(new Date(c.endDate).getTime());
+  for (const a of booking?.accommodations || []) if (a?.endDate) ts.push(new Date(a.endDate).getTime());
+  return ts.length ? new Date(Math.max(...ts)) : null;
+}
+
+// Don't chase a return-flight detail more than this many days before departure —
+// students rarely have return flights booked months out, and doing so just spams
+// them (Lavdim Dobra, Sept 2026: chased for a December return flight 3 months early).
+const OUTBOUND_LEAD_DAYS = 28;
+
 async function main() {
   const dry = process.argv.includes('--dry');
   const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
@@ -156,8 +172,8 @@ async function main() {
           select: {
             id: true, studentId: true,
             student: { select: { id: true, firstName: true, email: true } },
-            courses: { select: { startDate: true } },
-            accommodations: { where: { active: true }, orderBy: { startDate: 'asc' as const }, take: 1, select: { startDate: true } },
+            courses: { select: { startDate: true, endDate: true } },
+            accommodations: { where: { active: true }, select: { startDate: true, endDate: true } },
           },
         },
       },
@@ -169,11 +185,20 @@ async function main() {
     type Grp = { studentId: number; firstName: string; email: string | null; bookingId: number; extraIds: number[]; earliest: Date; lastSent: Date | null; count: number; inbound: boolean; outbound: boolean };
     const byStudent = new Map<number, Grp>();
     for (const r of rows) {
-      const start = earliestServiceStart(r.booking);
-      if (!start || start.getTime() < todayUTC.getTime()) continue;
+      if (!r.booking) continue;   // group-level transfers (no member booking) aren't student-chased here
+      const isPickup = r.extraType === 'AIRPORT_PICKUP';
+      // Reference date = the deadline this transfer keys off. Pickup ← ARRIVAL
+      // (earliest service start); drop-off ← DEPARTURE (latest service end). A
+      // drop-off is also gated to a lead window before departure so we don't
+      // chase a return flight the student hasn't booked yet.
+      const ref = isPickup ? earliestServiceStart(r.booking) : latestServiceEnd(r.booking);
+      if (!ref || ref.getTime() < todayUTC.getTime()) continue;   // past — water under the bridge
+      if (!isPickup) {
+        const daysToDeparture = Math.round((ref.getTime() - todayUTC.getTime()) / 86400000);
+        if (daysToDeparture > OUTBOUND_LEAD_DAYS) continue;        // too early to ask for the return flight
+      }
       const sid = r.booking.studentId;
       if (sid == null) continue;
-      const isPickup = r.extraType === 'AIRPORT_PICKUP';
       const g = byStudent.get(sid);
       if (!g) {
         byStudent.set(sid, {
@@ -182,7 +207,7 @@ async function main() {
           email: r.booking.student?.email || null,
           bookingId: r.booking.id,
           extraIds: [r.id],
-          earliest: start,
+          earliest: ref,
           lastSent: r.arrivalReminderSentAt,
           count: r.arrivalReminderCount || 0,
           inbound: isPickup,
@@ -190,7 +215,7 @@ async function main() {
         });
       } else {
         g.extraIds.push(r.id);
-        if (start.getTime() < g.earliest.getTime()) g.earliest = start;
+        if (ref.getTime() < g.earliest.getTime()) g.earliest = ref;   // soonest pending deadline drives cadence
         if (r.arrivalReminderSentAt && (!g.lastSent || r.arrivalReminderSentAt > g.lastSent)) g.lastSent = r.arrivalReminderSentAt;
         g.count = Math.max(g.count, r.arrivalReminderCount || 0);
         if (isPickup) g.inbound = true; else g.outbound = true;

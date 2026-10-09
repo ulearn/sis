@@ -107,10 +107,23 @@ export function testRoutesPublic(prisma: PrismaClient) {
   const router = Router();
   const scripts = testScripts(prisma);
 
-  // CORS — the LMS calls these from the browser. Post-migration it's served at
-  // sis.ulearnschool.com/prototype (same-origin), but the old lms.ulearnschool.com
-  // host still runs in parallel, so reflect either allowed origin.
-  const TEST_ORIGINS = new Set(['https://sis.ulearnschool.com', 'https://lms.ulearnschool.com']);
+  // CORS — the test app calls these public endpoints (draft autosave + score
+  // submit) from the browser, and it is embedded across SEVERAL ulearn origins:
+  // sis.ulearnschool.com/prototype (in-app, same-origin), the old
+  // lms.ulearnschool.com host, AND the branded Drupal wrapper on ulearnschool.com
+  // (the emailed/sales link). ulearnschool.com was NOT allowed here, so EVERY
+  // draft + submit from that path was CORS-blocked before it left the browser —
+  // the "results vanish, nothing reaches us" bug (Neil, 2026-08-31). Allow the
+  // whole ulearn family + the Capacitor app's local origins. These are public,
+  // no-credential endpoints, so reflecting a trusted origin is safe.
+  const TEST_ORIGINS = new Set([
+    'https://sis.ulearnschool.com',
+    'https://lms.ulearnschool.com',
+    'https://ulearnschool.com',
+    'https://www.ulearnschool.com',
+    'https://localhost',       // Capacitor app (androidScheme/iosScheme = https)
+    'capacitor://localhost',   // Capacitor iOS fallback scheme
+  ]);
   router.use((req, res, next) => {
     const o = req.headers.origin || '';
     res.setHeader('Access-Control-Allow-Origin', TEST_ORIGINS.has(o) ? o : 'https://sis.ulearnschool.com');

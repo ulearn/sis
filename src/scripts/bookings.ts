@@ -1,5 +1,6 @@
 import { PrismaClient, BookingStatus } from '../generated/prisma/client';
 import { autoFillIlepForStudent } from './ilep-deriver';
+import { notifyDosOf121 } from './notify-121';
 
 const DATE_FIELDS = ['confirmedAt', 'checkinAt', 'checkoutAt', 'serviceStart', 'serviceEnd'];
 const COURSE_DATE_FIELDS = ['startDate', 'endDate'];
@@ -122,6 +123,13 @@ export function bookingScripts(prisma: PrismaClient) {
         // LifePass instalment ledger — only present on LifePass bookings.
         // Empty array on non-LifePass means the UI hides the panel.
         paymentInstalments: { orderBy: { sequence: 'asc' } },
+        // Linked refund cases — surfaced in a "Refunds" card under Payments so a
+        // Cancelled booking can be traced down to the refund detail. Empty ⇒ card
+        // shows just the "Add Refund" action.
+        refundRequests: {
+          orderBy: { createdAt: 'desc' },
+          select: { id: true, status: true, refundReason: true, refundReasonOther: true, amountRequested: true, feeDeductionEur: true, amountRefunded: true, escrowHeld: true, createdAt: true },
+        },
       },
     });
   }
@@ -274,6 +282,10 @@ export function bookingScripts(prisma: PrismaClient) {
     if (data.commission) data.commission = parseFloat(data.commission);
     for (const k of Object.keys(data)) { if (data[k] === '') data[k] = null; }
     const created = await prisma.bookingCourse.create({ data: { bookingId, ...data } as any });
+    // 1-to-1 (PRIVATE) courses need a specially-rostered teacher — alert the DOS once.
+    if ((created as any).category === 'PRIVATE') {
+      notifyDosOf121(prisma, created.id).catch(e => console.error('[121-alert]', e?.message || e));
+    }
     const booking = await prisma.booking.findUnique({ where: { id: bookingId }, select: { studentId: true } });
     if (booking?.studentId) {
       try { await autoFillIlepForStudent(prisma, booking.studentId); } catch (e) { console.error('autoFillIlep failed', e); }
@@ -288,6 +300,7 @@ export function bookingScripts(prisma: PrismaClient) {
     if (data.fee) data.fee = parseFloat(data.fee);
     if (data.discount) data.discount = parseFloat(data.discount);
     if (data.commission) data.commission = parseFloat(data.commission);
+    if (data.holidayWks !== undefined && data.holidayWks !== '' && data.holidayWks !== null) data.holidayWks = parseInt(data.holidayWks);
     for (const k of Object.keys(data)) { if (data[k] === '') data[k] = null; }
     const updated = await prisma.bookingCourse.update({ where: { id }, data: data as any });
     const bc = await prisma.bookingCourse.findUnique({ where: { id }, select: { bookingId: true, booking: { select: { studentId: true } } } });
@@ -359,25 +372,28 @@ export function bookingScripts(prisma: PrismaClient) {
     return days;
   }
 
-  function addWeekdays(date: Date, weekdays: number): Date {
-    // Skip past weekends so the new end-date lands on a working day.
+  function addWeekdays(date: Date, weekdays: number, isClosed?: (d: Date) => boolean): Date {
+    // Skip weekends AND school-closure days (e.g. the Christmas closure) so a
+    // holiday shunt extends by TEACHING days only. A closure day isn't a lost
+    // class day, so it must NOT consume the extension — otherwise a shunt that
+    // crosses Christmas lands ~2 weeks early (Issues 59/60). Neil, 2026-09-23.
     const d = new Date(date); d.setUTCHours(0,0,0,0);
     let added = 0;
     while (added < weekdays) {
       d.setUTCDate(d.getUTCDate() + 1);
       const dow = d.getUTCDay();
-      if (dow >= 1 && dow <= 5) added++;
+      if (dow >= 1 && dow <= 5 && !(isClosed && isClosed(d))) added++;
     }
     return d;
   }
 
-  function subWeekdays(date: Date, weekdays: number): Date {
+  function subWeekdays(date: Date, weekdays: number, isClosed?: (d: Date) => boolean): Date {
     const d = new Date(date); d.setUTCHours(0,0,0,0);
     let removed = 0;
     while (removed < weekdays) {
       d.setUTCDate(d.getUTCDate() - 1);
       const dow = d.getUTCDay();
-      if (dow >= 1 && dow <= 5) removed++;
+      if (dow >= 1 && dow <= 5 && !(isClosed && isClosed(d))) removed++;
     }
     return d;
   }
@@ -421,35 +437,29 @@ export function bookingScripts(prisma: PrismaClient) {
       if (nat && EU.has(nat.toLowerCase())) warnings.push(`${nat} is an EU/EEA/Swiss nationality — holidays apply only to non-EU (visa) students.`);
       const isAYorLP = bk.courses.some(c => /academic year|life ?pass/i.test(c.name || '') || (c as any).isRenewal);
       if (!isAYorLP) warnings.push('This booking has no Academic Year / LifePass course — only those students may take holidays.');
-      const existing = await prisma.bookingHoliday.findMany({ where: { bookingId }, select: { weeks: true } });
-      const existingWeeks = existing.reduce((s, h) => s + (h.weeks || 0), 0);
-      if (existingWeeks + weeks > 10) warnings.push(`This brings total holidays to ${existingWeeks + weeks} weeks — the entitlement is 10 weeks.`);
-
-      // 35-week visa ceiling — HARD block, Academic Year ONLY. The AY visa
-      // permission is a fixed 35 weeks from the course start (mirrors
-      // computeVisaWindow, documents.ts). Because tuition is a fixed 25 weeks,
-      // capping the OUTER window at ~36 weeks (35 + a week of wiggle for
-      // weekday/arrival oddities) mathematically caps holidays at ~10 with no
-      // separate count needed (Neil, 2026-07-03: "set the limit at the outside
-      // and it stops giving them more holidays"). Measured on the AY course(s)
-      // in THIS booking only — earliest AY start → latest shunted AY end — NOT
-      // the whole booking span (the old ~110wk bug). LifePass / short courses
-      // aren't 35-week visa products, so they're exempt (this is why Gretel's
-      // LifePass holiday, gsheet #44, is allowed).
-      const isAY = (c: any) => /academic year|renewal/i.test(c.name || '') || c.isRenewal;
-      const ayCourses = bk.courses.filter((c: any) => isAY(c) && c.startDate && c.endDate);
-      if (ayCourses.length) {
-        const earliestStart = Math.min(...ayCourses.map((c: any) => +new Date(c.startDate)));
-        let latestShuntedEnd = 0;
-        for (const c of ayCourses) {
-          const shuntedEnd = +addWeekdays(c.endDate!, effectiveWeekdays(startDate, endDate, c.endDate));
-          if (shuntedEnd > latestShuntedEnd) latestShuntedEnd = shuntedEnd;
-        }
-        const windowWeeks = (latestShuntedEnd - earliestStart) / (7 * 86400000);
-        if (windowWeeks > 36) {
-          throw new Error(`35-week visa ceiling: this holiday would run the Academic Year to ~${Math.round(windowWeeks)} weeks from the course start. The visa permission is 35 weeks (25 tuition + 10 holiday) — shorten the holiday.`);
-        }
+      // Entitlement is 10 holiday weeks PER Academic Year course, not per
+      // booking — a LifePass booking nests 3 AY courses, so measure against the
+      // course this holiday falls in (its overlap), not the booking total.
+      const isAYc = (c: any) => c.holidayWks != null || /academic year|life ?pass|renewal/i.test(c.name || '') || c.isRenewal;
+      const hitCourse = bk.courses.find((c: any) => isAYc(c) && c.startDate && c.endDate && startDate <= new Date(c.endDate) && endDate >= new Date(c.startDate));
+      if (hitCourse) {
+        const existing = await prisma.bookingHoliday.findMany({ where: { bookingId }, select: { startDate: true, endDate: true, weeks: true } });
+        const cs = +new Date(hitCourse.startDate!), ce = +new Date(hitCourse.endDate!);
+        const inCourse = existing.filter(h => +new Date(h.startDate) <= ce && +new Date(h.endDate) >= cs);
+        const existingWeeks = inCourse.reduce((s, h) => s + (h.weeks || 0), 0);
+        if (existingWeeks + weeks > 10) warnings.push(`This brings this course's holidays to ${existingWeeks + weeks} weeks — the entitlement is 10 weeks per Academic Year.`);
+        // ILEP timing (soft — staff may override): no wk 1–2, ≤6 in wk 3–25, ≤4 in wk 26–35.
+        const { checkIlepAllowance } = await import('../lib/ilep-holiday');
+        const ilep = checkIlepAllowance(new Date(hitCourse.startDate!), inCourse, startDate, weeks);
+        if (!ilep.ok) warnings.push(ilep.error.replace(/\s*\(ILEP rule\)\.?$/, '') + ' (ILEP).');
       }
+
+      // NOTE: the old hard 35-week visa ceiling (earliest AY start → latest
+      // shunted end) is intentionally gone. It summed across a nested LifePass
+      // booking's 3 courses (~105 weeks) and false-blocked every request. We now
+      // treat each course as a separate 35-week component; the 10-week-per-course
+      // allowance above is the real cap, enforced hard on the student self-service
+      // path and a soft override for staff here.
 
       if (warnings.length && !data.force) {
         throw new Error('⚠ ' + warnings.join(' ') + ' — re-confirm to add anyway.');
@@ -459,29 +469,38 @@ export function bookingScripts(prisma: PrismaClient) {
     return prisma.$transaction(async (tx) => {
       const courses = await tx.bookingCourse.findMany({
         where: { bookingId },
-        select: { id: true, endDate: true },
+        select: { id: true, startDate: true, endDate: true },
       });
+      // School closures (Christmas etc.) — a holiday shunt must skip these so the
+      // new course end lands on a real teaching day, not inside/before the closure.
+      const closures = await tx.schoolClosure.findMany({ select: { startDate: true, endDate: true } });
+      const isClosedDay = (d: Date) => closures.some(cl => d >= cl.startDate && d <= cl.endDate);
 
-      // Compute effective push per course. Per the user's 35-week-per-course
-      // rule, holidays only ever overlap one course at a time, so the values
-      // converge to either 0 or the same N. We track the max for storage.
+      // Shunt ONLY the course this holiday falls in — a mid-course holiday pushes
+      // that course's end forward so the student keeps all 25 tuition weeks (a
+      // holiday is a break FROM class, not lost class). Each nested LifePass
+      // course is a separate component: a holiday in year 1 must NOT drag years
+      // 2 & 3, so we require the holiday to overlap the course's own window
+      // (start..end), not merely precede its end (the old rule shunted every
+      // later course too).
       let maxPush = 0;
       for (const c of courses) {
+        const overlaps = c.startDate && c.endDate && startDate <= c.endDate && endDate >= c.startDate;
+        if (!overlaps) continue;
         const push = effectiveWeekdays(startDate, endDate, c.endDate);
         if (push > maxPush) maxPush = push;
         if (push > 0) {
-          const newEnd = addWeekdays(c.endDate!, push);
+          const newEnd = addWeekdays(c.endDate!, push, isClosedDay);
           await tx.bookingCourse.update({ where: { id: c.id }, data: { endDate: newEnd } });
         }
       }
 
-      // Mirror on the booking's serviceEnd
+      // Recompute serviceEnd = latest course end after the shunt (a year-1
+      // holiday leaves serviceEnd — the year-3 end — unchanged).
       if (maxPush > 0) {
-        const booking = await tx.booking.findUnique({ where: { id: bookingId }, select: { serviceEnd: true } });
-        if (booking?.serviceEnd) {
-          const newServiceEnd = addWeekdays(booking.serviceEnd, maxPush);
-          await tx.booking.update({ where: { id: bookingId }, data: { serviceEnd: newServiceEnd } });
-        }
+        const after = await tx.bookingCourse.findMany({ where: { bookingId }, select: { endDate: true } });
+        const latest = after.map(c => c.endDate).filter(Boolean).map(d => +new Date(d!));
+        if (latest.length) await tx.booking.update({ where: { id: bookingId }, data: { serviceEnd: new Date(Math.max(...latest)) } });
       }
 
       const holiday = await tx.bookingHoliday.create({
@@ -511,18 +530,24 @@ export function bookingScripts(prisma: PrismaClient) {
       if (weekdays > 0) {
         const courses = await tx.bookingCourse.findMany({
           where: { bookingId: holiday.bookingId },
-          select: { id: true, endDate: true },
+          select: { id: true, startDate: true, endDate: true },
         });
+        const closures = await tx.schoolClosure.findMany({ select: { startDate: true, endDate: true } });
+        const isClosedDay = (d: Date) => closures.some(cl => d >= cl.startDate && d <= cl.endDate);
         for (const c of courses) {
           if (!c.endDate) continue;
-          const newEnd = subWeekdays(c.endDate, weekdays);
+          // Roll back ONLY the course this holiday overlaps — mirrors addHoliday's
+          // per-course shunt, so cancelling a nested LifePass year-1 holiday never
+          // drags years 2 & 3 back.
+          const overlaps = c.startDate && holiday.startDate <= c.endDate && holiday.endDate >= c.startDate;
+          if (!overlaps) continue;
+          const newEnd = subWeekdays(c.endDate, weekdays, isClosedDay);
           await tx.bookingCourse.update({ where: { id: c.id }, data: { endDate: newEnd } });
         }
-        const booking = await tx.booking.findUnique({ where: { id: holiday.bookingId }, select: { serviceEnd: true } });
-        if (booking?.serviceEnd) {
-          const newServiceEnd = subWeekdays(booking.serviceEnd, weekdays);
-          await tx.booking.update({ where: { id: holiday.bookingId }, data: { serviceEnd: newServiceEnd } });
-        }
+        // Recompute serviceEnd = latest course end after the roll-back.
+        const after = await tx.bookingCourse.findMany({ where: { bookingId: holiday.bookingId }, select: { endDate: true } });
+        const latest = after.map(c => c.endDate).filter(Boolean).map(d => +new Date(d!));
+        if (latest.length) await tx.booking.update({ where: { id: holiday.bookingId }, data: { serviceEnd: new Date(Math.max(...latest)) } });
       }
 
       await tx.bookingHoliday.delete({ where: { id: holidayId } });
@@ -717,6 +742,57 @@ export function bookingScripts(prisma: PrismaClient) {
     return { updated: true, amountPaid: realPaid, amountOpen: open };
   }
 
+  // ── LifePass report ───────────────────────────────────────────────────
+  // A LifePass booking is identified by having a PaymentInstalment ledger (the
+  // 25 × €297 monthly drawdown against the master -Sub invoice). Onboard fee =
+  // booking.amountTotal; the private "Total Balance" is what's still outstanding
+  // on the -Sub (sum of unpaid, non-cancelled instalments — NOT published to the
+  // customer). Overdue = unpaid instalments already past their due date.
+  async function lifePassReport() {
+    const rows: any[] = await prisma.$queryRawUnsafe(`
+      SELECT b.id AS booking_id, s.id AS student_id,
+             s.first_name, s.last_name, s.card_on_file, s.card_on_file_at,
+             b.service_start, b.service_end,
+             b.amount_total::float AS onboard_fee,
+             b.amount_open::float  AS onboard_open,
+             agg.total_seq, agg.paid, agg.overdue,
+             agg.overdue_amt::float AS overdue_amt,
+             agg.unpaid_amt::float  AS total_balance,
+             agg.xero_inv
+        FROM bookings b
+        JOIN students s ON s.id = b.student_id
+        JOIN (
+          SELECT booking_id,
+                 COUNT(*) FILTER (WHERE cancelled_at IS NULL)::int AS total_seq,
+                 COUNT(*) FILTER (WHERE paid_at IS NOT NULL)::int AS paid,
+                 COUNT(*) FILTER (WHERE paid_at IS NULL AND due_date < CURRENT_DATE AND cancelled_at IS NULL)::int AS overdue,
+                 COALESCE(SUM(amount) FILTER (WHERE paid_at IS NULL AND due_date < CURRENT_DATE AND cancelled_at IS NULL), 0) AS overdue_amt,
+                 COALESCE(SUM(amount) FILTER (WHERE paid_at IS NULL AND cancelled_at IS NULL), 0) AS unpaid_amt,
+                 MIN(xero_invoice_number) AS xero_inv
+            FROM payment_instalments
+           GROUP BY booking_id
+        ) agg ON agg.booking_id = b.id
+       WHERE b.status IS DISTINCT FROM 'CANCELLED'   -- withdrawn LifePass bookings drop off the report
+       ORDER BY agg.overdue DESC, s.first_name ASC`);
+    return rows.map(r => ({
+      bookingId: Number(r.booking_id),
+      studentId: Number(r.student_id),
+      name: `${r.first_name} ${r.last_name || ''}`.trim(),
+      cardOnFile: !!r.card_on_file,
+      cardOnFileAt: r.card_on_file_at || null,
+      startDate: r.service_start || null,
+      endDate: r.service_end || null,
+      onboardFee: r.onboard_fee ?? null,
+      onboardOpen: r.onboard_open ?? null,       // >0 → onboard fee not fully paid
+      subsPaid: Number(r.paid || 0),
+      subsTotal: Number(r.total_seq || 0),        // 25 for LifePass
+      overdue: Number(r.overdue || 0),
+      overdueBalance: r.overdue_amt ?? 0,
+      totalBalance: r.total_balance ?? 0,         // private — remaining on the -Sub invoice
+      xeroInvoice: r.xero_inv || null,
+    }));
+  }
+
   return {
     list, getById, create, update, remove,
     addCourse, updateCourse, removeCourse,
@@ -724,5 +800,6 @@ export function bookingScripts(prisma: PrismaClient) {
     addExtra, updateExtra, removeExtra,
     addHoliday, removeHoliday, listHolidays,
     addPayment, updatePayment, deletePayment,
+    lifePassReport,
   };
 }

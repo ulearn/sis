@@ -17,48 +17,60 @@
   --danger: #dc2626; --success: #059669; --warning: #d97706;
   --radius: 6px;
 }
-body { font-family: 'DM Sans', -apple-system, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; padding: 24px; }
+body { font-family: 'DM Sans', -apple-system, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; padding: 18px; }
 .shell { max-width: 1400px; margin: 0 auto; }
 .back { color: var(--muted); text-decoration: none; font-size: 13px; }
 .back:hover { color: var(--accent); }
 
-.header { display: flex; align-items: center; justify-content: space-between; margin: 8px 0 20px; gap: 16px; flex-wrap: wrap; }
-.header h1 { font-size: 22px; font-weight: 600; }
+.header { display: flex; align-items: center; justify-content: space-between; margin: 6px 0 14px; gap: 16px; flex-wrap: wrap; }
+.header h1 { font-size: 20px; font-weight: 600; }
 .header .meta { color: var(--muted); font-size: 13px; }
 
-.status { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+.status { display: inline-block; padding: 3px 9px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
 .status.pending_review { background: #fef3c7; color: #92400e; }
 .status.approved { background: #dbeafe; color: #1e40af; }
 .status.sent_to_tm { background: #d1fae5; color: #065f46; }
+.status.sent_to_xero { background: #dbeafe; color: #1e40af; }
 .status.rejected { background: #fee2e2; color: #991b1b; }
 
-.actions { display: flex; gap: 8px; }
-button { padding: 8px 16px; border: 1px solid var(--border); background: #fff; border-radius: 4px; cursor: pointer; font: inherit; font-size: 13px; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+button { padding: 8px 14px; border: 1px solid var(--border); background: #fff; border-radius: 4px; cursor: pointer; font: inherit; font-size: 13px; }
 button:hover { background: #f9f9f7; }
 button.primary { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
 button.primary:hover { background: var(--accent-hover); }
+button.ghost-primary { border-color: var(--accent); color: var(--accent); font-weight: 600; }
 button.danger { background: var(--danger); color: #fff; border-color: var(--danger); }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.grid { display: grid; grid-template-columns: 1fr 360px; gap: 20px; }
-@media (max-width: 1024px) { .grid { grid-template-columns: 1fr; } }
+/* Three equal review columns above the fold; approval spans full width below. */
+.cols3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; align-items: start; margin-bottom: 14px; }
+@media (max-width: 900px) { .cols3 { grid-template-columns: 1fr; } }
 
-.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 16px; }
-.card h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); font-weight: 600; margin-bottom: 14px; }
-.kv { display: grid; grid-template-columns: 180px 1fr; gap: 8px 16px; font-size: 13px; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 14px; }
+.card:last-child { margin-bottom: 0; }
+.card h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); font-weight: 600; margin-bottom: 10px; }
+.kv { display: grid; grid-template-columns: minmax(90px, auto) 1fr; gap: 6px 12px; font-size: 13px; }
 .kv .k { color: var(--muted); }
-.kv .v { font-weight: 500; }
+.kv .v { font-weight: 500; overflow-wrap: anywhere; word-break: break-word; min-width: 0; }
 .kv .v.mono { font-family: monospace; }
 .kv .v.empty { color: var(--subtle); font-style: italic; font-weight: 400; }
 
-.editable { display: flex; gap: 8px; align-items: center; }
-.editable input { padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; font: inherit; font-size: 13px; width: 100px; }
-.editable input.wide { width: 100%; }
+.editable { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.editable input { padding: 5px 8px; border: 1px solid var(--border); border-radius: 4px; font: inherit; font-size: 13px; width: 120px; }
+.editable input.wide { width: 100%; min-width: 180px; }
 
-.payment-row { display: flex; gap: 12px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 4px; margin-bottom: 8px; }
+.approval-grid { display: grid; grid-template-columns: repeat(2, minmax(240px, 1fr)); gap: 12px 28px; }
+@media (max-width: 700px) { .approval-grid { grid-template-columns: 1fr; } }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); font-weight: 600; }
+.field .hint { font-size: 11px; color: var(--subtle); }
+.field .big { font-size: 20px; font-weight: 700; }
+.field input.amt { padding: 8px 10px; border: 1px solid var(--border); border-radius: 4px; font: inherit; font-size: 18px; font-weight: 700; width: 160px; }
+
+.payment-row { display: flex; gap: 12px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 4px; margin-bottom: 6px; }
 .payment-row.highlight { border-color: var(--success); background: #f0fdf4; }
 
-.doc-preview { width: 100%; height: 360px; border: 1px solid var(--border); border-radius: 4px; }
+.doc-preview { width: 100%; height: 340px; border: 1px solid var(--border); border-radius: 4px; }
 
 .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; align-items: center; justify-content: center; z-index: 100; }
 .modal-backdrop.active { display: flex; }
@@ -85,35 +97,16 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 
   <div id="notice-area"></div>
 
-  <div class="grid">
-    <div>
-      <div class="card">
-        <h2>Submission</h2>
-        <div class="kv" id="kv-submission"></div>
-      </div>
+  <!-- Three review columns, above the fold -->
+  <div class="cols3">
+    <div class="card">
+      <h2>Submission</h2>
+      <div class="kv" id="kv-submission"></div>
+    </div>
 
-      <div class="card" id="bank-card">
-        <h2>Refund Bank Details</h2>
-        <div class="kv" id="kv-bank"></div>
-      </div>
-
-      <div class="card" id="approval-card">
-        <h2>Approval</h2>
-        <div class="kv">
-          <div class="k">Fee deduction (€)</div>
-          <div class="v editable">
-            <input type="number" id="fee-amount" step="0.01" value="300.00">
-            <input type="text" id="fee-breakdown" class="wide" value="">
-            <button id="save-fee">Save</button>
-          </div>
-          <div class="k">Approved by</div>
-          <div class="v" id="approved-by">—</div>
-          <div class="k">Approved at</div>
-          <div class="v" id="approved-at">—</div>
-          <div class="k">Sent to TM at</div>
-          <div class="v" id="sent-at">—</div>
-        </div>
-      </div>
+    <div class="card" id="bank-card">
+      <h2>Refund Bank Details</h2>
+      <div class="kv" id="kv-bank"></div>
     </div>
 
     <div>
@@ -121,17 +114,51 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
         <h2>Student (SIS)</h2>
         <div id="student-block"></div>
       </div>
-
       <div class="card" id="payments-card">
         <h2>Booking Payments</h2>
         <div id="payments-block"></div>
       </div>
+    </div>
+  </div>
 
-      <div class="card" id="doc-card" style="display:none">
-        <h2>Visa Refusal Letter</h2>
-        <iframe class="doc-preview" id="doc-preview"></iframe>
+  <!-- Approval, full width -->
+  <div class="card" id="approval-card">
+    <h2>Approval</h2>
+    <div class="approval-grid">
+      <div class="field">
+        <label>Refund Amount (€) — this is what gets paid</label>
+        <div class="editable">
+          <input type="number" id="refund-amount" class="amt" step="0.01">
+          <button id="save-amount">Save</button>
+        </div>
+        <div class="hint" id="amount-hint"></div>
+      </div>
+      <div class="field" id="fee-field">
+        <label>Fee Deduction (€) <span id="fee-context" style="font-weight:400;text-transform:none;letter-spacing:0"></span></label>
+        <div class="editable">
+          <input type="number" id="fee-amount" step="0.01">
+          <input type="text" id="fee-breakdown" class="wide" placeholder="Breakdown">
+          <button id="save-fee">Save</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Approved by</label>
+        <div class="v" id="approved-by">—</div>
+      </div>
+      <div class="field">
+        <label>Approved at</label>
+        <div class="v" id="approved-at">—</div>
+      </div>
+      <div class="field">
+        <label>Dispatched at</label>
+        <div class="v" id="sent-at">—</div>
       </div>
     </div>
+  </div>
+
+  <div class="card" id="doc-card" style="display:none">
+    <h2>Visa Refusal Letter</h2>
+    <iframe class="doc-preview" id="doc-preview"></iframe>
   </div>
 </div>
 
@@ -164,6 +191,13 @@ function fmtDate(s) {
   return new Date(s).toLocaleString('en-IE', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
+const REASON_LABEL = {
+  visa_refusal: 'Visa Refusal',
+  cancellation: 'Cancellation',
+  service_issue: 'Service Issue',
+  other: 'Other',
+};
+
 async function load() {
   const r = await fetch(API, { credentials: 'same-origin' });
   if (r.status === 401) { location.href = '/sis/login'; return; }
@@ -173,18 +207,21 @@ async function load() {
 }
 
 function render() {
+  const isVisa = data.refundReason === 'visa_refusal';
   document.getElementById('title').textContent = `Refund #${data.id} — ${data.studentName}`;
   document.getElementById('meta').innerHTML =
     `Received ${fmtDate(data.createdAt)} · <span class="status ${data.status}">${data.status.replace(/_/g, ' ')}</span>`;
 
-  // Action buttons
+  // Action buttons — two single-action lanes. Visa → TM primary; otherwise → Xero primary.
   const actions = document.getElementById('actions');
   if (data.status === 'pending_review' || data.status === 'approved') {
     actions.innerHTML = `
-      <button class="primary" id="btn-approve">Approve &amp; Send to TM</button>
+      <button class="${isVisa ? 'primary' : 'ghost-primary'}" id="btn-tm">Approve &amp; Send to TM</button>
+      <button class="${isVisa ? 'ghost-primary' : 'primary'}" id="btn-xero">Approve &amp; Send to Xero</button>
       <button class="danger" id="btn-reject">Reject</button>
     `;
-    document.getElementById('btn-approve').addEventListener('click', approve);
+    document.getElementById('btn-tm').addEventListener('click', approveTM);
+    document.getElementById('btn-xero').addEventListener('click', approveXero);
     document.getElementById('btn-reject').addEventListener('click', () => {
       document.getElementById('reject-modal').classList.add('active');
     });
@@ -192,14 +229,7 @@ function render() {
     actions.innerHTML = '';
   }
 
-  // Submission card
-  const reasonLabel = ({
-    visa_refusal: 'Visa refusal',
-    operational_service: 'Operational — service',
-    operational_satisfaction: 'Operational — satisfaction',
-    operational_cancellation: 'Operational — cancellation',
-    other: 'Other',
-  })[data.refundReason] || data.refundReason;
+  const reasonLabel = REASON_LABEL[data.refundReason] || data.refundReason;
   document.getElementById('kv-submission').innerHTML = `
     <div class="k">Student name</div><div class="v">${escapeHtml(data.studentName)}</div>
     <div class="k">Email</div><div class="v">${escapeHtml(data.studentEmail)}</div>
@@ -208,38 +238,45 @@ function render() {
     <div class="k">Invoice #</div><div class="v mono">${escapeHtml(data.invoiceNumber)}</div>
     <div class="k">Agent</div><div class="v ${data.agentName ? '' : 'empty'}">${data.agentName ? escapeHtml(data.agentName) : '(none)'}</div>
     <div class="k">Reason</div><div class="v">${reasonLabel}${data.refundReasonOther ? ' — ' + escapeHtml(data.refundReasonOther) : ''}</div>
-    <div class="k">Amount requested</div><div class="v">${data.amountRequested ? '€' + data.amountRequested : '<span class="empty">(not stated)</span>'}</div>
-    <div class="k">Payment processor</div><div class="v">${escapeHtml(data.paymentProcessor)}${data.paymentProcessorOther ? ' / ' + escapeHtml(data.paymentProcessorOther) : ''}</div>
-    <div class="k">Payment method</div><div class="v">${escapeHtml(data.paymentMethod)}</div>
+    <div class="k">Requested</div><div class="v">${data.amountRequested ? '€' + data.amountRequested : '<span class="empty">(not stated)</span>'}</div>
+    <div class="k">Processor</div><div class="v">${escapeHtml(data.paymentProcessor)}${data.paymentProcessorOther ? ' / ' + escapeHtml(data.paymentProcessorOther) : ''}</div>
+    <div class="k">Method</div><div class="v">${escapeHtml(data.paymentMethod)}</div>
     <div class="k">Other info</div><div class="v ${data.otherInformation ? '' : 'empty'}">${data.otherInformation ? escapeHtml(data.otherInformation) : '(none)'}</div>
   `;
 
-  // Bank card
   document.getElementById('kv-bank').innerHTML = `
-    <div class="k">Bank account type</div><div class="v">${escapeHtml(data.bankType || '—')}</div>
+    <div class="k">Account type</div><div class="v">${escapeHtml(data.bankType || '—')}</div>
     <div class="k">Bank country</div><div class="v">${escapeHtml(data.bankCountry || '—')}</div>
     <div class="k">Payee name</div><div class="v">${escapeHtml(data.payeeName || '—')}</div>
     <div class="k">Payee address</div><div class="v">${escapeHtml([data.payeeAddress, data.payeeAddress2].filter(Boolean).join(', ') || '—')}</div>
     <div class="k">Payee country</div><div class="v">${escapeHtml(data.payeeCountry || '—')}</div>
     <div class="k">BIC / SWIFT</div><div class="v mono">${escapeHtml(data.bicSwift || '—')}</div>
-    <div class="k">NSC / Sort code</div><div class="v mono">${escapeHtml(data.nsc || '—')}</div>
-    <div class="k">Account number / IBAN</div><div class="v mono">${escapeHtml(data.accountNumber || '—')}</div>
+    <div class="k">NSC / Sort</div><div class="v mono">${escapeHtml(data.nsc || '—')}</div>
+    <div class="k">Account / IBAN</div><div class="v mono">${escapeHtml(data.accountNumber || '—')}</div>
     <div class="k">Bank name</div><div class="v">${escapeHtml(data.bankName || '—')}</div>
     <div class="k">Bank address</div><div class="v">${escapeHtml([data.bankStreetAddress, data.bankCity].filter(Boolean).join(', ') || '—')}</div>
-    <div class="k">Correspondent bank</div><div class="v">${escapeHtml(data.correspondentBank || '—')}</div>
-    <div class="k">Correspondent SWIFT</div><div class="v mono">${escapeHtml(data.correspondentSwift || '—')}</div>
+    <div class="k">Corresp. bank</div><div class="v">${escapeHtml(data.correspondentBank || '—')}</div>
+    <div class="k">Corresp. SWIFT</div><div class="v mono">${escapeHtml(data.correspondentSwift || '—')}</div>
   `;
 
-  // Approval card
-  document.getElementById('fee-amount').value = data.feeDeductionEur ?? '300.00';
+  // Approval — the editable Refund Amount defaults to the approved value, else the request.
+  const amt = (data.approvedAmountEur ?? data.amountRequested ?? '');
+  document.getElementById('refund-amount').value = amt;
+  document.getElementById('amount-hint').textContent = data.amountRequested
+    ? `Student requested €${data.amountRequested}. Edit before dispatching if the entitlement differs.`
+    : 'No amount was requested — enter the correct figure.';
+  document.getElementById('fee-amount').value = data.feeDeductionEur ?? (isVisa ? '300.00' : '0.00');
   document.getElementById('fee-breakdown').value = data.feeBreakdown ?? '';
+  // Fee deduction is the TM/visa concept; de-emphasise it for non-visa.
+  document.getElementById('fee-context').textContent = isVisa
+    ? '(visa: €250 visa + €50 reg)'
+    : '— usually 0 for non-visa; TM lane only';
+  document.getElementById('fee-field').style.opacity = isVisa ? '1' : '0.6';
   document.getElementById('approved-by').textContent = data.approvedBy
-    ? (data.approvedBy.displayName || data.approvedBy.username)
-    : '—';
+    ? (data.approvedBy.displayName || data.approvedBy.username) : '—';
   document.getElementById('approved-at').textContent = fmtDate(data.approvedAt);
-  document.getElementById('sent-at').textContent = fmtDate(data.sentToTmAt);
+  document.getElementById('sent-at').textContent = fmtDate(data.sentToTmAt || data.sentToXeroAt);
 
-  // Student card
   if (data.student) {
     document.getElementById('student-block').innerHTML = `
       <div class="kv">
@@ -248,23 +285,20 @@ function render() {
         <div class="k">Email</div><div class="v">${escapeHtml(data.student.email)}</div>
         <div class="k">Visa status</div><div class="v">${escapeHtml(data.student.visaStatus || '—')}</div>
       </div>
-      <p style="margin-top:10px"><a href="/sis/students/${data.student.id}">Open student record →</a></p>
+      <p style="margin-top:10px"><a href="/sis/admin#/student-detail/${data.student.id}" target="_blank">Open student record →</a></p>
     `;
   } else {
     document.getElementById('student-block').innerHTML =
       '<p class="empty" style="color: var(--warning)">No SIS student matched on email. Manual reconciliation required before approving.</p>';
   }
 
-  // Payments
   const pblock = document.getElementById('payments-block');
   if (data.payments && data.payments.length) {
     pblock.innerHTML = data.payments.map(p => `
       <div class="payment-row ${p.method === 'TransferMate' ? 'highlight' : ''}">
         <div style="flex:1">
           <div><strong>€${p.amount}</strong> — ${escapeHtml(p.method || 'unknown')}</div>
-          <div class="terr" style="font-size:12px;color:var(--muted)">
-            ${fmtDate(p.paymentDate)} · ${escapeHtml(p.type || '')}
-          </div>
+          <div style="font-size:12px;color:var(--muted)">${fmtDate(p.paymentDate)} · ${escapeHtml(p.type || '')}</div>
           ${p.transactionId ? `<div class="mono" style="font-size:11px;color:var(--muted)">Tx: ${escapeHtml(p.transactionId)}</div>` : ''}
         </div>
       </div>
@@ -273,44 +307,49 @@ function render() {
     pblock.innerHTML = '<p style="color: var(--muted)">No payments on file.</p>';
   }
 
-  // Refusal letter
   if (data.visaRefusalDocId) {
     document.getElementById('doc-card').style.display = 'block';
     document.getElementById('doc-preview').src = API + '/refusal-letter';
   }
 }
 
-document.getElementById('save-fee').addEventListener('click', async () => {
+async function patchFields(body, okMsg) {
   const r = await fetch(API, {
-    method: 'PATCH',
-    credentials: 'same-origin',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      feeDeductionEur: document.getElementById('fee-amount').value,
-      feeBreakdown: document.getElementById('fee-breakdown').value,
-    }),
+    method: 'PATCH', credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
   });
-  if (r.ok) {
-    notice('Saved.', 'success');
-    load();
-  } else {
-    notice('Save failed.');
-  }
-});
+  if (r.ok) { notice(okMsg, 'success'); load(); }
+  else { const e = await r.json().catch(() => ({})); notice('Save failed: ' + (e.error || r.statusText)); }
+}
 
-async function approve() {
-  if (!confirm('Approve this refund and email TransferMate now?')) return;
-  const r = await fetch(API + '/approve', {
-    method: 'POST',
-    credentials: 'same-origin',
+document.getElementById('save-amount').addEventListener('click', () =>
+  patchFields({ approvedAmountEur: document.getElementById('refund-amount').value }, 'Refund amount saved.'));
+
+document.getElementById('save-fee').addEventListener('click', () =>
+  patchFields({
+    feeDeductionEur: document.getElementById('fee-amount').value,
+    feeBreakdown: document.getElementById('fee-breakdown').value,
+  }, 'Fee deduction saved.'));
+
+async function approveLane(path, confirmMsg, okMsg) {
+  if (!confirm(confirmMsg)) return;
+  const amount = document.getElementById('refund-amount').value;
+  const r = await fetch(API + path, {
+    method: 'POST', credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amount }),
   });
-  if (r.ok) {
-    notice('Approved — email sent to TransferMate. Remember to move the HubSpot deal to “Lost”.', 'success');
-    load();
-  } else {
-    const err = await r.json().catch(() => ({}));
-    notice('Approve failed: ' + (err.error || r.statusText));
-  }
+  if (r.ok) { notice(okMsg, 'success'); load(); }
+  else { const e = await r.json().catch(() => ({})); notice('Failed: ' + (e.error || r.statusText)); }
+}
+
+function approveTM() {
+  approveLane('/approve', 'Approve this refund and email TransferMate now?\n\nTM keeps our fee and returns the balance to the student.',
+    'Approved — request emailed to TransferMate. Remember to move the HubSpot deal to “Lost”.');
+}
+function approveXero() {
+  const amt = document.getElementById('refund-amount').value;
+  approveLane('/approve-xero', `Approve and create a Xero refund Bill for €${amt}?\n\nBooked to 100 – General Course Sales, payable to the bank details on file. Accounts processes the payment in Xero.`,
+    'Approved — Xero refund Bill created for Accounts to process.');
 }
 
 document.getElementById('reject-cancel').addEventListener('click', () => {
@@ -320,18 +359,14 @@ document.getElementById('reject-confirm').addEventListener('click', async () => 
   const reason = document.getElementById('reject-reason').value.trim();
   if (!reason) { alert('Please enter a reason.'); return; }
   const r = await fetch(API + '/reject', {
-    method: 'POST',
-    credentials: 'same-origin',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ reason }),
+    method: 'POST', credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reason }),
   });
   if (r.ok) {
     document.getElementById('reject-modal').classList.remove('active');
     notice('Rejected. Student notified.', 'success');
     load();
-  } else {
-    notice('Reject failed.');
-  }
+  } else { notice('Reject failed.'); }
 });
 
 load();

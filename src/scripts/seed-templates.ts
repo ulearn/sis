@@ -361,8 +361,8 @@ ${FOOTER}`,
   },
 
   {
-    name: 'Net-to-Gross Invoice',
-    slug: 'Net-to-Gross-Invoice',
+    name: 'Receipt',
+    slug: 'ULearn-Receipt',
     category: 'accounts',
     documentType: 'accounts',
     htmlTemplate: `${HEADER}
@@ -371,13 +371,12 @@ ${FOOTER}`,
     <div style="text-align:right;font-size:12px;color:#6b7280">
       <div>Invoice {{invoice.number}}</div>
       <div>{{invoice.date}}</div>
-      <div style="margin-top:6px"><span style="background:#d1fae5;color:#065f46;padding:2px 10px;border-radius:999px;font-weight:700;font-size:11px;letter-spacing:.04em">PAID</span></div>
+      <div style="margin-top:6px">{{invoice.status_badge}}</div>
     </div>
   </div>
 
   <table style="width:100%;border-collapse:collapse;margin:8px 0 18px">
-    <tr><td style="padding:3px 0;width:120px;color:#6b7280;font-size:12px">Billed to</td><td style="padding:3px 0;font-weight:600">{{agency.name}}</td></tr>
-    <tr><td style="padding:3px 0;color:#6b7280;font-size:12px">Student</td><td style="padding:3px 0">{{student.first_name}} {{student.last_name}}</td></tr>
+    <tr><td style="padding:3px 0;width:120px;color:#6b7280;font-size:12px">Billed to</td><td style="padding:3px 0;font-weight:600">{{invoice.billed_to}}</td></tr>
     <tr><td style="padding:3px 0;color:#6b7280;font-size:12px">Nationality</td><td style="padding:3px 0">{{student.nationality}}</td></tr>
   </table>
 
@@ -391,11 +390,9 @@ ${FOOTER}`,
     <tbody>
       {{invoice.line_items}}
       <tr style="font-weight:700;font-size:15px"><td style="padding:12px 0">Total</td><td style="padding:12px 0;text-align:right">{{invoice.gross}}</td></tr>
-      <tr><td style="padding:2px 0;color:#065f46;font-size:12px">Paid in full</td><td style="padding:2px 0;text-align:right;color:#065f46;font-weight:600">{{invoice.gross}}</td></tr>
+      {{invoice.settlement_rows}}
     </tbody>
   </table>
-
-  <p style="font-size:11px;color:#9b9ea6;margin-top:30px">This receipt confirms the gross amount received for the enrolment above. All figures are taken directly from invoice {{invoice.number}}.</p>
 
   ${DOC_META_SHORT}
 ${FOOTER}`,

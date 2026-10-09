@@ -439,9 +439,35 @@
   .attendance-help {
     font-size: 11px;
     color: var(--muted);
-    margin: 8px 0 4px;
-    line-height: 1.4;
+    margin: 10px 0 0;
+    line-height: 1.45;
   }
+  /* Academic-Year hard absence limit banner */
+  .att-limit {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
+    background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px;
+    padding: 10px 12px; margin-bottom: 10px;
+  }
+  .att-limit .used { font-size: 18px; font-weight: 800; color: var(--text); line-height: 1.1; }
+  .att-limit .used .cap { color: #dc2626; }
+  .att-limit .lbl { font-size: 11px; color: var(--muted); line-height: 1.4; }
+  .att-limit.breach { background: #fef2f2; border-color: #fecaca; }
+  /* Two action buttons */
+  .att-actions { display: flex; gap: 8px; margin-bottom: 4px; }
+  .att-action-btn {
+    flex: 1; padding: 10px 8px; border-radius: 8px; font-size: 13px; font-weight: 700;
+    font-family: inherit; cursor: pointer; border: 1px solid var(--brand);
+    background: #fff; color: var(--brand); display: flex; align-items: center;
+    justify-content: center; gap: 6px;
+  }
+  .att-action-btn.open { background: var(--brand); color: #fff; }
+  .att-slot:not(:empty) { margin: 8px 0 2px; }
+  .att-hol-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 8px 0; border-top: 1px solid var(--border); font-size: 13px;
+  }
+  .att-hol-row:first-of-type { border-top: 0; }
+  .att-sec-title { font-size: 12px; font-weight: 700; color: var(--text); margin: 14px 0 4px; }
 
   /* ─── Camera modal ────────────────────────── */
   .cam-overlay {
@@ -584,7 +610,11 @@
   @font-face { font-family: 'Bulgatti';   src: url('/sis/partners/public/fonts/Bulgatti.ttf') format('truetype');   font-display: swap; }
   .contract-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.85); backdrop-filter: blur(6px); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 20px; }
   .contract-overlay.show { display: flex; }
-  .contract-card { background: #fff; border-radius: 16px; width: 100%; max-width: 980px; max-height: calc(100vh - 40px); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+  /* Explicit height (not just max-height) so the card FILLS the viewport on
+     desktop — without it the card shrinks to content and any flex:1 child (the
+     Card-on-File iframe, the Agreement doc/sign body) collapses to a sliver.
+     The ≤760px query already sets its own height; this is the desktop twin. */
+  .contract-card { background: #fff; border-radius: 16px; width: 100%; max-width: min(1400px, 96vw); height: calc(100vh - 40px); max-height: calc(100vh - 40px); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
   .contract-header { padding: 18px 24px; border-bottom: 1px solid #e5e4e0; background: linear-gradient(135deg,#339900 0%,#1a6600 100%); color: #fff; position: relative; }
   .contract-header h2 { margin: 0 0 4px 0; font-size: 18px; font-weight: 700; }
   .contract-header p  { margin: 0; font-size: 13px; opacity: 0.92; }
@@ -1011,6 +1041,96 @@ async function submitBooking() {
   }
 }
 
+/* ─── Personal-area address fieldsets (Home + Irish) — tap to reveal/edit ──
+   Lets the student keep their own address current so address-bearing documents
+   (Confirmation with Address) can be self-issued. Saves to /sis/student/api/address. */
+const ADDR_DEFS = {
+  native: { title: 'Native Address', fields: [['address','Street'],['addressAddon','Line 2'],['city','City'],['state','State'],['zip','Zip'],['countryIso','Country']] },
+  irish:  { title: 'Irish Address', fields: [['irishAddress','Street'],['irishAddressAddon','Line 2'],['irishCity','City'],['irishState','County'],['irishZip','Eircode'],['irishCountryIso','Country']] },
+};
+function addrSummaryText(s, key) {
+  const parts = ADDR_DEFS[key].fields.map(([k]) => s[k]).filter(Boolean);
+  return parts.length ? parts.join(', ') : 'Add';
+}
+function addrBlockHtml(s, key) {
+  const def = ADDR_DEFS[key];
+  const inputs = def.fields.map(([k, lbl]) =>
+    `<label style="display:block;font-size:11px;font-weight:700;color:var(--muted);margin:6px 0 2px">${lbl}</label>`
+    + `<input id="af-${key}-${k}" value="${esc(s[k] || '')}" style="width:100%;box-sizing:border-box;padding:7px 9px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit">`
+  ).join('');
+  return `<div class="kv" style="cursor:pointer" onclick="toggleAddr('${key}')">`
+    + `<span class="kv-label">${def.title}</span>`
+    + `<span class="kv-value" id="addrSum-${key}" style="color:var(--brand);font-weight:600">${esc(addrSummaryText(s, key))} ✎</span></div>`
+    + `<div id="addrEdit-${key}" style="display:none;padding:2px 0 10px">${inputs}`
+    + `<div style="display:flex;justify-content:flex-end;margin-top:8px">`
+    + `<button id="af-save-${key}" onclick="saveAddr('${key}')" style="background:var(--brand);color:#fff;border:0;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">Save</button></div></div>`;
+}
+function toggleAddr(key) {
+  const el = document.getElementById('addrEdit-' + key);
+  if (el) el.style.display = (el.style.display === 'none') ? 'block' : 'none';
+}
+async function saveAddr(key) {
+  const def = ADDR_DEFS[key];
+  const btn = document.getElementById('af-save-' + key);
+  const payload = {};
+  for (const [k] of def.fields) payload[k] = (document.getElementById('af-' + key + '-' + k)?.value || '').trim();
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+  try {
+    const r = await fetch('/sis/student/api/address', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    if (!r.ok) throw new Error('save failed');
+    const parts = def.fields.map(([k]) => payload[k]).filter(Boolean);
+    const sum = document.getElementById('addrSum-' + key);
+    if (sum) sum.innerHTML = esc(parts.length ? parts.join(', ') : 'Add') + ' ✎';
+    toggleAddr(key);
+  } catch { alert('Could not save address. Please try again.'); }
+  finally { if (btn) { btn.disabled = false; btn.textContent = 'Save'; } }
+}
+
+/* ─── Self-service document generation (student → own whitelisted docs) ──── */
+async function getDocument() {
+  const sel = document.getElementById('getDocSelect');
+  const slug = sel && sel.value;
+  if (!slug) return;
+  // Single-instance per type: if they already hold this document, confirm overwrite.
+  const existing = (window._issuedDocs || []).some(x => (x.template && x.template.slug) === slug);
+  if (existing && !confirm('Doc already exists. Update with new version?')) return;
+  return _issueDoc(slug, existing);
+}
+
+async function _issueDoc(slug, overwrite) {
+  const sel = document.getElementById('getDocSelect');
+  const btn = document.getElementById('getDocBtn');
+  const status = document.getElementById('getDocStatus');
+  const setStatus = (msg, color) => { if (status) { status.style.color = color; status.textContent = msg; } };
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+  setStatus('Creating your document…', 'var(--muted)');
+  try {
+    const r = await fetch('/sis/student/api/documents/issue', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug, overwrite: !!overwrite }),
+    });
+    const j = await r.json().catch(() => ({}));
+    if (r.ok && j.success) {
+      if (sel) sel.value = '';
+      setStatus(overwrite ? 'Updated — new version below.' : 'Done — your document is below.', 'var(--brand)');
+      loadOverview();                               // refresh the issued list
+      setTimeout(() => setStatus('', 'var(--muted)'), 4000);
+    } else if (j && j.error === 'exists') {
+      // Server guard (client list was stale) — confirm then retry as overwrite.
+      if (btn) { btn.disabled = false; btn.textContent = 'Get'; }
+      if (confirm('Doc already exists. Update with new version?')) return _issueDoc(slug, true);
+      setStatus('', 'var(--muted)');
+    } else if (j && j.error === 'irish_address_required') {
+      setStatus('Add your Irish Address in Personal first.', '#dc2626');
+    } else {
+      setStatus((j && j.error) || 'Could not create that document.', '#dc2626');
+    }
+  } catch {
+    setStatus('Network error. Please try again.', '#dc2626');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Get'; }
+  }
+}
+
 /* ─── "Message us" — student → school support email ─────────────────────── */
 function openSupport() {
   let overlay = document.getElementById('supportSheet');
@@ -1034,6 +1154,9 @@ function openSupport() {
         <label style="display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px">Message</label>
         <textarea id="supportMsg" rows="5" placeholder="How can we help?" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;resize:vertical"></textarea>
         <div id="supportErr" style="display:none;color:#dc2626;font-size:13px;font-weight:600;margin-top:10px"></div>
+        <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border,#eee)">
+          <a href="/sis/delete-account" style="color:var(--muted);font-size:12px;text-decoration:underline">Delete my account &amp; data</a>
+        </div>
       </div>
       <div style="padding:12px 18px;border-top:1px solid var(--border,#eee)">
         <button id="supportSend" onclick="submitSupport()" style="width:100%;background:var(--brand);color:#fff;border:0;border-radius:12px;padding:14px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit">Send message</button>
@@ -1434,18 +1557,37 @@ async function initPushNotifications() {
       <span class="chevron">▾</span>
     </div>
     <div class="card-body">
-      <input type="file" id="docFile" accept="image/*,application/pdf" multiple style="display:none" onchange="uploadMyDocs(this.files)">
-      <button onclick="document.getElementById('docFile').click()" style="background:var(--brand);color:#fff;border:0;border-radius:10px;padding:10px 16px;font-size:14px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:7px;font-family:inherit">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        Upload Document
-      </button>
-      <div id="docUploadStatus" style="font-size:12px;color:var(--muted);margin-top:8px"></div>
-      <div id="myDocsList" style="margin-top:12px"></div>
+      <!-- ULearn-issued letters (top): pick a type → Get. Self-serve, boxed in brand green. -->
+      <div style="border:1px solid #10b981;background:rgba(16,185,129,0.06);border-radius:14px;padding:12px">
+        <div style="display:flex;gap:8px">
+          <select id="getDocSelect" style="flex:1;min-width:0;padding:9px 10px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;background:#fff">
+            <option value="">Get a Document…</option>
+            <option value="Attendance-Current">Attendance (Current)</option>
+            <option value="Attendance-Final">Attendance (Final)</option>
+            <option value="Student-Letter">Student Letter</option>
+            <option value="Holiday-Letter">Holiday Letter</option>
+            <option value="Confirm-General">Confirmation</option>
+            <option value="Confirm-ISD">Confirmation + Address</option>
+          </select>
+          <button id="getDocBtn" onclick="getDocument()" style="background:var(--brand);color:#fff;border:0;border-radius:10px;padding:9px 16px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit">Get</button>
+        </div>
+        <div id="getDocStatus" style="font-size:12px;margin:8px 0 0"></div>
+        <div id="card-docs" style="margin-top:6px">…</div>
+      </div>
 
-      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
-
-      <div style="font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">From ULearn</div>
-      <div id="card-docs">…</div>
+      <!-- Student uploads (bottom): label left, Upload right, boxed to match. -->
+      <div style="border:1px solid rgba(100,116,139,0.35);background:rgba(100,116,139,0.06);border-radius:14px;padding:12px;margin-top:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <div style="font-size:14px;font-weight:800;color:var(--text)">Your Documents</div>
+          <input type="file" id="docFile" accept="image/*,application/pdf" multiple style="display:none" onchange="uploadMyDocs(this.files)">
+          <button onclick="document.getElementById('docFile').click()" style="background:var(--brand);color:#fff;border:0;border-radius:10px;padding:9px 14px;font-size:14px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:7px;font-family:inherit">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Upload
+          </button>
+        </div>
+        <div id="docUploadStatus" style="font-size:12px;color:var(--muted);margin-top:8px"></div>
+        <div id="myDocsList" style="margin-top:8px"></div>
+      </div>
     </div>
   </section>
 
@@ -1806,7 +1948,7 @@ async function initPushNotifications() {
     // the terminal, low-gate step, so it shouldn't black out the whole screen.
     o.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,0.5);display:flex;align-items:flex-start;justify-content:center;padding:10px;overflow:auto';
     o.innerHTML = `
-      <div style="width:100%;max-width:560px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.4);display:flex;flex-direction:column">
+      <div style="width:100%;max-width:min(880px,96vw);background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.4);display:flex;flex-direction:column">
         <div style="flex:0 0 auto;background:#fff;padding:14px 16px 4px">${renderOnboardProgress(3, hasCard)}</div>
         <div class="contract-header">
           <h2>Welcome to ULearn</h2>
@@ -2047,6 +2189,7 @@ async function initPushNotifications() {
     updateFontPreviews(); updateSubmitState();
   }
 
+  function loadOverview() {
   fetch('/sis/student/api/me')
     .then(r => {
       if (r.status === 401) { window.location.href = '/sis/login'; return null; }
@@ -2122,7 +2265,9 @@ async function initPushNotifications() {
         kv('Date of birth', s.birthday ? fmtDate(s.birthday) : '') +
         kv('Email', s.email) +
         kv('Phone', s.phone) +
-        igRow;
+        igRow +
+        addrBlockHtml(s, 'native') +
+        addrBlockHtml(s, 'irish');
 
       const c = d.course;
       // Footnote with timetable info — pulled from the StudentClassAssignment
@@ -2188,15 +2333,19 @@ async function initPushNotifications() {
       const navRow = navLinks.length
         ? `<div style="margin-top:14px;padding-top:12px;border-top:1px dashed var(--border);display:flex;gap:20px;flex-wrap:wrap">${navLinks.join('')}</div>`
         : '';
-      const courseBody = c
+      // invoiceRow (the "View Invoice" button) is booking-level, so it must show
+      // even when there's no course — e.g. an ACCOMMODATION-ONLY booking, which
+      // otherwise fell into the "No active course" branch and lost the button, so
+      // the student couldn't see/pay their invoice (Neil, 2026-08-31).
+      const courseBody = (c
         ? kv('Course', c.name) +
           kv('Level', displayLevel) +
           kv('Start / End', c.startDate ? `${fmtDate(c.startDate)} — ${fmtDate(c.endDate)}` : '') +
           kv('Weeks', c.weeks) +
           kv('Hours / week', c.hoursPerWeek) +
-          ttLine +
-          invoiceRow
-        : empty('No active course');
+          ttLine
+        : empty('No active course')) +
+        invoiceRow;
       document.getElementById('card-course').innerHTML = upcomingBadge + courseBody + navRow;
       _cfFillButton();   // async — injects the Course Feedback button if eligible
 
@@ -2227,6 +2376,7 @@ async function initPushNotifications() {
       loadSocialFeedbackPrompts();
 
       const docs = d.documents || [];
+      window._issuedDocs = docs;          // read by getDocument() for the overwrite check
       // Each issued doc gets a 👁 (preview HTML in a new tab) and a 📄
       // (download PDF) action — mirrors what the SIS admin sees so students
       // can pull their own letters without going through office staff.
@@ -2243,16 +2393,23 @@ async function initPushNotifications() {
         : empty('No documents issued yet');
 
       const att = d.attendance || {};
+      window._att = att;                 // academicYear block read by loadAbsences
+      const _ayS = att.academicYear;
       document.getElementById('card-attendance').innerHTML =
         `<div class="attendance-stats">` +
-        kv('This week', att.weekPct != null ? att.weekPct + '%' : '—') +
         kv('Overall', att.overallPct != null ? att.overallPct + '%' : '—') +
-        kv('Records on file', att.totalRecords ?? 0) +
-        `</div><div id="absences-list">Loading absences…</div>`;
+        // AY students also see days attended out of class days SO FAR (not the
+        // whole 125-day course), so it always reconciles with the Overall %.
+        // Non-AY students just get the Overall %. Pre-migration straddlers show the
+        // % only — their absolute day counts can't be made exact (see server).
+        (_ayS && !_ayS.preMigration ? kv('Attended', `${_ayS.daysPresent} of ${_ayS.daysCounted}`) : '') +
+        `</div><div id="absences-list">Loading…</div>`;
       loadAbsences();
       loadChallenges();
     })
     .catch(() => {});
+  }
+  loadOverview();
 
   // ── Absences (last 60 days) ───────────────────
   const REASON_LABELS = {
@@ -2420,41 +2577,83 @@ async function initPushNotifications() {
     const wrap = document.getElementById('absences-list');
     if (!wrap) return;
     try {
-      const [pastRes, plannedRes] = await Promise.all([
+      const [pastRes, plannedRes, holRes] = await Promise.all([
         fetch('/sis/student/api/absences?days=60'),
         fetch('/sis/student/api/planned-absences?days=60'),
+        fetch('/sis/student/api/holidays'),
       ]);
       const past = pastRes.ok ? await pastRes.json() : [];
       const planned = plannedRes.ok ? await plannedRes.json() : [];
+      const holidays = holRes.ok ? await holRes.json() : [];
+      const ay = (window._att || {}).academicYear || null;
 
-      const helpHtml = '<div class="attendance-help">If you have a reason for an absence (sickness, IRP/visa appointment, etc.), record it here. <strong>Reasons do not change your attendance %</strong> — they\'re kept on file for the school and for any later review of your visa renewal.</div>';
+      // Hard absence limit (Academic Year only) — a ceiling, not a target.
+      // Pre-migration straddlers: the "X of N days" count can't be exact (pre-SIS
+      // days aren't day-tracked), so show the 85% requirement without the count —
+      // the Overall % above is the accurate figure of record.
+      const limitHtml = !ay ? ''
+        : ay.preMigration
+          ? `<div class="att-limit">
+               <div class="lbl">Your Overall figure includes attendance from before our current system. You must keep it at <strong>85%</strong> or above.</div>
+             </div>`
+          : `<div class="att-limit${ay.absencesUsed >= ay.maxAbsences ? ' breach' : ''}">
+               <div class="used">${ay.absencesUsed} of <span class="cap">${ay.maxAbsences}</span> Days Absent</div>
+               <div class="lbl">You require 85% Attendance. You cannot exceed ${ay.maxAbsences} days absence.</div>
+             </div>`;
 
-      const plannedSection = `
-        <div style="margin-top:8px;padding-top:8px">
-          <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px">Planned absences <span style="font-weight:400;color:var(--muted)">— let us know in advance</span></div>
-          ${planned.length ? planned.map(a => renderAbsenceRow(a, true)).join('') : '<div style="font-size:12px;color:var(--muted);margin-bottom:6px">None tagged.</div>'}
-          <div id="plan-form-slot"></div>
-          <button type="button" onclick="openPlanForm()" id="plan-add-btn" style="margin-top:4px;background:transparent;border:1px dashed var(--brand);color:var(--brand);padding:6px 10px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">+ Tag a planned absence</button>
-        </div>`;
+      // Two actions: Notify Absence · Request Holidays (holiday button only for AY).
+      const actionsHtml = `
+        <div class="att-actions">
+          <button type="button" id="btn-notify" class="att-action-btn" onclick="toggleAtt('notify')">🗓️ Notify Absence</button>
+          ${ay ? `<button type="button" id="btn-holiday" class="att-action-btn" onclick="toggleAtt('holiday')">🌴 Request Holidays</button>` : ''}
+        </div>
+        <div id="notify-slot" class="att-slot"></div>
+        <div id="holiday-slot" class="att-slot"></div>`;
 
-      const pastSection = past.length
-        ? `<div style="margin-top:14px;padding-top:8px;border-top:1px solid var(--border)">
-             <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px">Recorded absences <span style="font-weight:400;color:var(--muted)">— last 60 days</span></div>
-             ${past.map(a => renderAbsenceRow(a, false)).join('')}
-           </div>`
-        : '<div style="margin-top:8px;font-size:12px;color:var(--muted)">No absences recorded in the last 60 days. 🎉</div>';
+      const absenceItems = [
+        ...planned.map(a => renderAbsenceRow(a, true)),
+        ...past.map(a => renderAbsenceRow(a, false)),
+      ];
+      const absSection = `
+        <div class="att-sec-title">Absences</div>
+        ${absenceItems.length ? absenceItems.join('') : '<div style="font-size:12px;color:var(--muted)">No absences in the last 60 days. 🎉</div>'}`;
 
-      wrap.innerHTML = helpHtml + plannedSection + pastSection;
+      const holItems = holidays.map(h => {
+        const s = new Date(h.startDate + 'T00:00:00'), e = new Date(h.endDate + 'T00:00:00');
+        const fmt = d => d.toLocaleDateString('en-IE', { day: '2-digit', month: 'short' });
+        // Upcoming holidays can be cancelled in-app (rolls back the course + notifies
+        // the school); ones already started/taken just show a "Taken" tag.
+        const right = h.cancellable
+          ? `<button type="button" onclick="cancelHolidayRequest(${h.id})" style="background:transparent;border:1px solid var(--border);color:var(--muted);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;cursor:pointer;font-family:inherit">Cancel</button>`
+          : `<span class="reason-saved">Taken</span>`;
+        return `<div class="att-hol-row"><div><strong>${fmt(s)} → ${fmt(e)}</strong> <span style="color:var(--muted)">· ${h.weeks || ''} wk</span></div>${right}</div>`;
+      });
+      const holSection = ay ? `
+        <div class="att-sec-title">Holidays ${ay.holidayRemainingWeeks != null ? `<span style="font-weight:400;color:var(--muted)">— ${ay.holidayRemainingWeeks} of ${ay.holidayAllowanceWeeks} weeks left</span>` : ''}</div>
+        ${holItems.length ? holItems.join('') : '<div style="font-size:12px;color:var(--muted)">None yet.</div>'}` : '';
+
+      wrap.innerHTML = limitHtml + actionsHtml + absSection + holSection;
     } catch {
       wrap.innerHTML = empty('Could not load absences');
     }
   }
 
-  function openPlanForm() {
-    const slot = document.getElementById('plan-form-slot');
-    const btn = document.getElementById('plan-add-btn');
-    if (!slot || !btn) return;
-    btn.style.display = 'none';
+  // Toggle one of the two action panels open (closing the other).
+  function toggleAtt(which) {
+    const other = which === 'notify' ? 'holiday' : 'notify';
+    const slot = document.getElementById(which + '-slot');
+    const btn = document.getElementById('btn-' + which);
+    const otherSlot = document.getElementById(other + '-slot');
+    const otherBtn = document.getElementById('btn-' + other);
+    if (otherSlot) otherSlot.innerHTML = '';
+    if (otherBtn) otherBtn.classList.remove('open');
+    if (!slot) return;
+    if (slot.innerHTML.trim()) { slot.innerHTML = ''; btn && btn.classList.remove('open'); return; }
+    btn && btn.classList.add('open');
+    which === 'notify' ? renderNotifyForm(slot) : renderHolidayForm(slot);
+  }
+
+  function renderNotifyForm(slot) {
     const today = new Date();
     const minDate = today.toISOString().slice(0, 10);
     const max = new Date(today); max.setDate(max.getDate() + 60);
@@ -2464,22 +2663,15 @@ async function initPushNotifications() {
       .join('');
     slot.innerHTML = `
       <div class="absence-row" style="background:#fffbeb;border-radius:8px;padding:10px;border:1px solid #fde68a">
-        <div class="absence-date">Add a planned absence</div>
-        <input type="date" id="plan-date" min="${minDate}" max="${maxDate}" style="margin-top:4px">
+        <input type="date" id="plan-date" min="${minDate}" max="${maxDate}">
         <select id="plan-reason">${opts}</select>
-        <input type="text" id="plan-note" placeholder="Brief detail (optional)" maxlength="500" style="margin-top:4px">
-        <div style="display:flex;gap:6px;margin-top:4px">
-          <button type="button" onclick="cancelPlanForm()" class="cam-btn secondary" style="flex:0 0 auto;padding:6px 10px;font-size:12px;border-radius:6px">Cancel</button>
-          <button type="button" onclick="savePlanForm()" class="cam-btn primary" style="flex:1;padding:6px 10px;font-size:12px;border-radius:6px">Save</button>
+        <input type="text" id="plan-note" placeholder="Brief detail (optional)" maxlength="500">
+        <div style="display:flex;gap:6px">
+          <button type="button" onclick="toggleAtt('notify')" class="cam-btn secondary" style="flex:0 0 auto;padding:8px 12px;font-size:13px;border-radius:6px">Cancel</button>
+          <button type="button" onclick="savePlanForm()" class="cam-btn primary" style="flex:1;padding:8px 12px;font-size:13px;border-radius:6px">Save</button>
         </div>
+        <div class="attendance-help">Tell us about a sickness or an IRP/visa appointment. <strong>This does not change your attendance %</strong> — it's kept on file for the school and any later visa-renewal review.</div>
       </div>`;
-  }
-
-  function cancelPlanForm() {
-    const slot = document.getElementById('plan-form-slot');
-    const btn = document.getElementById('plan-add-btn');
-    if (slot) slot.innerHTML = '';
-    if (btn) btn.style.display = '';
   }
 
   async function savePlanForm() {
@@ -2500,10 +2692,96 @@ async function initPushNotifications() {
         alert(msg);
         return;
       }
-      cancelPlanForm();
       loadAbsences();
     } catch (e) {
       alert('Save failed: ' + e.message);
+    }
+  }
+
+  function renderHolidayForm(slot) {
+    const ay = (window._att || {}).academicYear || {};
+    const remaining = ay.holidayRemainingWeeks ?? 10;
+    if (remaining <= 0) {
+      slot.innerHTML = `<div class="absence-row" style="background:#f0fdf4;border-radius:8px;padding:10px;border:1px solid #bbf7d0"><div style="font-size:13px">You've used your full ${ay.holidayAllowanceWeeks || 10}-week holiday allowance for this year. 🌴</div></div>`;
+      return;
+    }
+    const minDate = ay.earliestHolidayStart || new Date().toISOString().slice(0, 10);
+    const weekOpts = Array.from({ length: remaining }, (_, i) => i + 1)
+      .map(n => `<option value="${n}">${n} week${n === 1 ? '' : 's'}</option>`).join('');
+    slot.innerHTML = `
+      <div class="absence-row" style="background:#ecfeff;border-radius:8px;padding:10px;border:1px solid #a5f3fc">
+        <div style="font-size:12px;color:var(--muted);line-height:1.45">You have <strong>${remaining} of ${ay.holidayAllowanceWeeks || 10} weeks</strong> left. Start on a <strong>Monday</strong>, requested by <strong>5pm the Friday before</strong>. ILEP rules: none in your first 2 weeks, up to <strong>6 weeks during the course</strong>, and <strong>4 kept for after</strong> it ends.</div>
+        <label style="font-size:11px;color:var(--muted);margin-top:2px">Start (Monday)</label>
+        <input type="date" id="hol-start" min="${minDate}" value="${minDate}" onchange="holSnapMonday()">
+        <label style="font-size:11px;color:var(--muted)">How many weeks</label>
+        <select id="hol-weeks" onchange="holRangePreview()">${weekOpts}</select>
+        <div id="hol-range" style="font-size:12px;color:var(--muted);margin-top:2px"></div>
+        <div style="display:flex;gap:6px">
+          <button type="button" onclick="toggleAtt('holiday')" class="cam-btn secondary" style="flex:0 0 auto;padding:8px 12px;font-size:13px;border-radius:6px">Cancel</button>
+          <button type="button" onclick="saveHolidayForm()" class="cam-btn primary" style="flex:1;padding:8px 12px;font-size:13px;border-radius:6px">Request</button>
+        </div>
+        <div class="attendance-help">Your request is recorded straight away and the school is notified. Your course end date shifts to match.</div>
+      </div>`;
+    holRangePreview();
+  }
+
+  // Holidays are booked in whole weeks (Monday–Friday), never single days. Snap any
+  // date the student picks to that week's Monday (never before the earliest allowed
+  // Monday) so what reaches SIS is always a clean full-week block.
+  function holSnapMonday() {
+    const el = document.getElementById('hol-start');
+    if (!el || !el.value) return;
+    const d = new Date(el.value + 'T00:00:00Z');
+    const dow = d.getUTCDay();                 // 0 Sun … 6 Sat
+    d.setUTCDate(d.getUTCDate() + (dow === 0 ? -6 : 1 - dow)); // back to Monday
+    let mon = d.toISOString().slice(0, 10);
+    if (el.min && mon < el.min) mon = el.min;  // el.min is itself a Monday
+    el.value = mon;
+    holRangePreview();
+  }
+
+  // Live "Mon → Fri · N weeks" preview so the full-week span is obvious before sending.
+  function holRangePreview() {
+    const el = document.getElementById('hol-start');
+    const wEl = document.getElementById('hol-weeks');
+    const box = document.getElementById('hol-range');
+    if (!el || !wEl || !box) return;
+    if (!el.value) { box.textContent = ''; return; }
+    const wk = parseInt(wEl.value, 10) || 1;
+    const s = new Date(el.value + 'T00:00:00Z');
+    const e = new Date(s); e.setUTCDate(s.getUTCDate() + (wk - 1) * 7 + 4); // Friday of final week
+    const f = (x) => x.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
+    box.innerHTML = `<strong>${f(s)} → ${f(e)}</strong> · ${wk} week${wk === 1 ? '' : 's'} (Mon–Fri)`;
+  }
+
+  async function saveHolidayForm() {
+    const startDate = document.getElementById('hol-start')?.value;
+    const weeks = document.getElementById('hol-weeks')?.value;
+    if (!startDate) { alert('Pick a start Monday.'); return; }
+    try {
+      const r = await fetch('/sis/student/api/holiday-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ startDate, weeks }),
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) { alert(j?.error || 'Request failed'); return; }
+      alert(`Holiday requested: ${weeks} week(s) from ${startDate}. The school has been notified.`);
+      loadOverview();
+    } catch (e) {
+      alert('Request failed: ' + e.message);
+    }
+  }
+
+  async function cancelHolidayRequest(id) {
+    if (!confirm('Cancel this holiday?\n\nYour course end date will be rolled back, your allowance freed up, and the school notified.')) return;
+    try {
+      const r = await fetch('/sis/student/api/holidays/' + id, { method: 'DELETE' });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) { alert(j?.error || 'Could not cancel'); return; }
+      loadOverview();
+    } catch (e) {
+      alert('Could not cancel: ' + e.message);
     }
   }
 
@@ -2899,12 +3177,13 @@ async function initPushNotifications() {
         if (!upcoming.length) {
           profileWrap.innerHTML = empty;
         } else {
-          const rows = upcoming.map((a, i) => {
-            const isToday = localISO(new Date(a.date)) === todayStr;
-            return i === 0 ? renderActivityRow(a, isToday) : renderActivityTeaser(a, isToday);
-          });
-          rows.push(`<button type="button" onclick="event.stopPropagation(); openActivitiesCalendar()" style="margin-top:4px;background:transparent;border:1px dashed var(--border);border-radius:8px;padding:8px;font:inherit;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer">Browse more by month →</button>`);
-          profileWrap.innerHTML = rows.join('');
+          // Featured activity (row 0, full) → Browse Month button → the rest as
+          // compact teasers. The browse button sits directly under the featured
+          // activity and above the individual rows (Neil, 2026-10-09).
+          const browseBtn = `<button type="button" onclick="event.stopPropagation(); openActivitiesCalendar()" style="margin:6px 0;width:100%;background:transparent;border:1px dashed var(--border);border-radius:8px;padding:8px;font:inherit;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer">Browse Month →</button>`;
+          const featured = renderActivityRow(upcoming[0], localISO(new Date(upcoming[0].date)) === todayStr);
+          const rest = upcoming.slice(1).map(a => renderActivityTeaser(a, localISO(new Date(a.date)) === todayStr));
+          profileWrap.innerHTML = [featured, browseBtn, ...rest].join('');
         }
       }
 
@@ -3399,9 +3678,9 @@ async function initPushNotifications() {
       <div class="kv"><span class="kv-label">Google review URL</span><span class="kv-value">
         <input id="googleUrl" type="text" placeholder="https://…" value="${esc(gUrl)}" style="width:200px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-family:inherit;font-size:13px">
       </span></div>
-      <div class="kv"><span class="kv-label">Status</span><span class="kv-value">${d?.googleVerified ? '⭐ Verified 5-star' : (gUrl ? 'Awaiting verification by Kelly' : 'Add your link')}</span></div>
+      <div class="kv"><span class="kv-label">Status</span><span class="kv-value">${d?.googleVerified ? '⭐ Verified Review' : (gUrl ? 'Awaiting verification by Kelly' : 'Add your link')}</span></div>
       <div style="margin-top:10px"><button onclick="saveReview()" style="background:var(--brand);color:white;border:0;padding:6px 14px;border-radius:4px;font-family:inherit;font-size:13px;cursor:pointer">Save</button></div>
-      <div style="margin-top:8px;font-size:12px;color:var(--muted);line-height:1.5">A 5★ Google review unlocks your Ambassador badge and code.</div>`;
+      <div style="margin-top:8px;font-size:12px;color:var(--muted);line-height:1.5">A Google Review can unlock your Ambassador Code!</div>`;
   }
 
   function ambassadorBody(d) {
@@ -3561,15 +3840,23 @@ async function initPushNotifications() {
   // PDFs (and window.open / navigation to a .pdf) silently no-op in the Capacitor
   // webview. A "Download signed PDF" button offers the signed artifact for anyone
   // who wants it (opens in the system browser where PDFs do render).
-  function openSignedAgreement() {
+  async function openSignedAgreement() {
     if (document.getElementById('agreementViewOverlay')) return;
+    // LifePass students also get the LifePass Programme Terms & Conditions here
+    // (the Student Agreement appendix points to the app). Opens in the system
+    // browser where PDFs render (Capacitor webview no-ops inline PDFs).
+    let lpUrl = null;
+    try { const d = await fetch('/sis/student/api/contract').then(r => r.json()); if (d && d.isLifePass) lpUrl = d.lifePassTermsUrl; } catch {}
     const o = document.createElement('div');
     o.id = 'agreementViewOverlay';
     o.style.cssText = 'position:fixed;inset:0;z-index:10000;background:#fff;display:flex;flex-direction:column';
     o.innerHTML = `
-      <div style="flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #e5e7eb;background:#fff">
+      <div style="flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-bottom:1px solid #e5e7eb;background:#fff">
         <span style="font-weight:800;color:#1a1a2e;font-size:15px">Student Agreement</span>
-        <button id="agreeViewClose" style="background:none;border:0;color:#6b7280;font-size:14px;font-weight:700;cursor:pointer;padding:6px 4px">Close</button>
+        <div style="display:flex;align-items:center;gap:10px">
+          ${lpUrl ? `<a href="${lpUrl}" target="_blank" rel="noopener" style="font-size:12px;font-weight:700;color:#339900;text-decoration:none;border:1px solid #339900;border-radius:6px;padding:5px 10px;white-space:nowrap">📄 LifePass Terms</a>` : ''}
+          <button id="agreeViewClose" style="background:none;border:0;color:#6b7280;font-size:14px;font-weight:700;cursor:pointer;padding:6px 4px">Close</button>
+        </div>
       </div>
       <iframe src="/sis/student/api/contract/signed.html" style="flex:1 1 auto;min-height:0;width:100%;border:0;display:block" title="Signed Student Agreement"></iframe>`;
     document.body.appendChild(o);
