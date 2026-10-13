@@ -1,12 +1,67 @@
 [
   {
-    "range": "H47:K47",
+    "range": "H7:K7",
     "values": [
       [
-        "• 113th check Thu 20 Aug 2026 UTC — no change from 112th check (Wed 19 Aug)\n• Stale active Booking Courses (end date before 20 Aug 2026): 24,497 — unchanged\n• Most recently ended stale: IDs 1591, 1344, 1305, 24, 1572 — all ended 14 Aug 2026 (6 days ago)\n• Fix script prepared; bulk deactivation not yet run",
-        "Run bulk deactivation of 24,497 stale Booking Courses. See recipe: issue-45-addendum-20aug.md",
-        "113th Thu 20 Aug UTC. No change. 24,497 stale unchanged. Fix NOT RUN.",
-        "24,497 stale; fix pending"
+        "1584th check Tue 13 Oct 2026 UTC — no data change from 1560th\n• 553 students with phone_mobile not starting with '+' — Day 106 past first report (count unchanged)\n• Total phones on file: 1,402 (was 1,401 — one new student added with valid format)\n• Fix NOT RUN",
+        "Bulk-prepend + to 553 phone numbers. See recipe: issue-6-addendum-13oct.md",
+        "1584th Tue 13 Oct UTC. Count 553 unchanged. Total phones 1,402 (+1 new valid). Day 106.",
+        "553 bad phones; Day 106"
+      ]
+    ]
+  },
+  {
+    "range": "H19:K19",
+    "values": [
+      [
+        "1584th check Tue 13 Oct 2026 UTC — no data change from 1560th\n• Student 983 (Flávia Nascimento Mariano): visa_status = null — cannot be set via dropdown (Prisma error)\n• Booking 1534: CONFIRMED, fully paid EUR 1,308 — amountOpen = EUR 0\n• Payment 17035 (EUR 250, Bank Transfer, 5 May 2026): xeroPaymentId = null\n• Payment 17527 (EUR 1,058, Bank Transfer, 28 May 2026): xeroPaymentId = null\n• Fix NOT RUN",
+        "Set visa_status via direct DB update; reconcile payments 17035 + 17527. See recipe: issue-18-addendum-13oct.md",
+        "1584th Tue 13 Oct UTC. Visa null + payments 17035+17527 both xeroPaymentId null. Day 240. No change.",
+        "visa null Day240; P17035+P17527 null xeroPaymentId"
+      ]
+    ]
+  },
+  {
+    "range": "H24:K24",
+    "values": [
+      [
+        "1584th check Tue 13 Oct 2026 UTC — no data change from 1560th\n• Booking Course 828 (Academic Year Morning, booking 787, Enshi Lu): start 2 Mar 2026, end 27 Feb 2026 — end before start (backwards dates)\n• Booking Course 828 is inactive (active = false) — cosmetic anomaly only\n• Booking 787: CONFIRMED, fully paid EUR 2,147.50 — no financial impact\n• Low priority",
+        "Correct Booking Course 828 end date or leave inactive. See recipe: issue-23-addendum-13oct.md",
+        "1584th Tue 13 Oct UTC. Booking Course 828 backward dates, inactive, cosmetic. No change.",
+        "Course828 backwards; inactive; cosmetic"
+      ]
+    ]
+  },
+  {
+    "range": "H25:K25",
+    "values": [
+      [
+        "1584th check Tue 13 Oct 2026 UTC — no data change from 1560th\n• Booking Course 1797 (Morning General, booking 1611, Alberto Squillace): ended 26 Jun 2026, active = true — Day 109 past end\n• Booking Course 24686 (Morning General, booking 1611, Alberto Squillace): ended 18 Sep 2026, active = true — Day 25 past end\n• Fix NOT RUN",
+        "Deactivate Booking Courses 1797 + 24686. See recipe: issue-24-addendum-13oct.md",
+        "1584th Tue 13 Oct UTC. Booking Course 1797 Day 109, Booking Course 24686 Day 25. Both active past end. No change.",
+        "BC1797 Day109; BC24686 Day25"
+      ]
+    ]
+  },
+  {
+    "range": "H39:K39",
+    "values": [
+      [
+        "1584th check Tue 13 Oct 2026 UTC — no data change from 1559th\n• Provider 15 (Capel Street): xeroContactId = null — billing blocked, unchanged\n• Booking Accommodation 11352 (Verónica Martín, Capel Street bed 83, booking 18156): end date 11 Jul 2026, fee = EUR 360, active = true — Day 94 past checkout\n• 0 host payment line items — billing blocked by Capel Street missing Xero contact\n• Fix NOT RUN",
+        "Set Capel Street xeroContactId (master fix Issue 54). See recipe: issue-37-addendum-13oct.md",
+        "1584th Tue 13 Oct UTC. Day 94 (+1 from 93). Capel xeroContactId still null. No change.",
+        "EUR360; Capel blocker; Day94"
+      ]
+    ]
+  },
+  {
+    "range": "H54:K54",
+    "values": [
+      [
+        "1584th check Tue 13 Oct 2026 UTC — no data change from 1559th\n• Provider 29 (Family McMahon): xeroContactId = null — root blocker unchanged\n• Booking Accommodation 11336 (booking 18141): ended 29 Aug 2026, active = true, fee = EUR 240/week — Day 45 past checkout\n• 0 host payment line items for Booking Accommodation 11336 — EUR 240 unbilled\n• Fix NOT RUN",
+        "Add McMahon Xero contact (provider 29); bill and deactivate Booking Accommodation 11336. See recipe: issue-52-addendum-13oct.md",
+        "1584th Tue 13 Oct UTC. Day 45 past checkout (+1 from 44). McMahon Xero null. No change.",
+        "BA11336 Day45; McMahon Xero null"
       ]
     ]
   }

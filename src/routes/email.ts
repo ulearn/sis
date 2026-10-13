@@ -282,6 +282,34 @@ export function emailRoutes(prisma: PrismaClient) {
     res.json({ html: SIGNATURE_HTML });
   });
 
+  // Server-side render of a template for a student/booking — returns the fully
+  // resolved subject + body ({if} AND {{token}} both applied) plus the resolved
+  // accommodation recipient. Used by the "email the host on placement" preview
+  // modal so staff see the real email (notice block, student details) before
+  // sending, rather than raw {{ }}/{if} markers.
+  router.post('/render', async (req, res) => {
+    try {
+      const { templateId, studentId, bookingId } = req.body || {};
+      if (!templateId || !studentId) return res.status(400).json({ error: 'templateId and studentId required' });
+      const tpl = await prisma.documentTemplate.findUnique({
+        where: { id: parseInt(templateId) },
+        select: { htmlTemplate: true, subject: true },
+      });
+      if (!tpl) return res.status(404).json({ error: 'Template not found' });
+      const docs = documentScripts(prisma);
+      const { tokens } = await docs.resolveTokens(parseInt(studentId), bookingId ? parseInt(bookingId) : null);
+      res.json({
+        subject: docs.renderTemplate(tpl.subject || '', tokens),
+        html: docs.renderTemplate(tpl.htmlTemplate || '', tokens),
+        to: tokens['accommodation.email'] || '',
+        hostName: tokens['accommodation.contact_name'] || tokens['accommodation.provider_name'] || '',
+        // Step 2 of the placement email flow goes to the student.
+        studentTo: tokens['student.email'] || '',
+        studentName: [tokens['student.first_name'], tokens['student.last_name']].filter(Boolean).join(' '),
+      });
+    } catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }
+  });
+
   // Send a message on one or both channels (signature auto-appended on email).
   // Channel flags (default = email-only, so existing callers are unaffected):
   //   sendEmail !== false  → deliver via Gmail + log to EmailLog

@@ -514,6 +514,14 @@ export function studentRoutesPortal(prisma: PrismaClient) {
       if (passportValidUntil) data.passportValidUntil = toDate(passportValidUntil);
       if (Object.keys(data).length) await prisma.student.update({ where: { id: studentId }, data });
       res.json({ success: true });
+      // Passport just arrived via the student app → close the LoA loop: if a
+      // fully-paid AY booking was waiting only on the passport, issue it now.
+      // Fire-and-forget; non-fatal.
+      if (data.passportNumber) {
+        const { documentScripts } = await import('../scripts/documents');
+        documentScripts(prisma).issueLoaForStudentIfReady(studentId, 'auto-loa-passport-app')
+          .catch((e: any) => console.warn('[LOA passport-trigger] app student', studentId, e?.message || e));
+      }
     } catch (e: any) { res.status(500).json({ error: String(e?.message || e) }); }
   });
 

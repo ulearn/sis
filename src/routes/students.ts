@@ -178,6 +178,41 @@ export function studentRoutes(prisma: PrismaClient) {
         }
       }
 
+      // LOA monitor — flag Academic-Year / LifePass bookings that are fully
+      // funded (standard payment OR escrow-held) but have NO issued LOA, so
+      // reception can see at a glance who's still waiting on their visa letter.
+      // Same shape as the card-on-file badge; read-only, no automation here.
+      if (bookingIds.length) {
+        const loaTpl = await prisma.documentTemplate.findFirst({
+          where: { slug: 'LOA-NonEU-QR', templateType: 'document' }, select: { id: true },
+        });
+        const issuedSet = new Set<number>();
+        if (loaTpl) {
+          const issued = await prisma.documentRecord.findMany({
+            where: { bookingId: { in: bookingIds }, templateId: loaTpl.id, status: 'ISSUED' },
+            select: { bookingId: true },
+          });
+          for (const d of issued) if (d.bookingId != null) issuedSet.add(d.bookingId);
+        }
+        const fins = await prisma.booking.findMany({
+          where: { id: { in: bookingIds } },
+          select: { id: true, status: true, amountTotal: true, amountPaid: true, payments: { select: { amount: true, type: true, method: true } } },
+        });
+        const fundedSet = new Set<number>();
+        for (const f of fins) {
+          const total = Number(f.amountTotal || 0);
+          const escrow = f.payments.filter(p => p.type === 'Escrow' || /escrow/i.test(p.method || '')).reduce((s, p) => s + Number(p.amount || 0), 0);
+          if (total > 0 && (Number(f.amountPaid || 0) >= total - 0.01 || escrow >= total - 1.00 || f.status === 'ESCROW')) fundedSet.add(f.id);
+        }
+        for (const r of rows as any[]) {
+          // AY/LifePass is the filter (course-driven — AY implies non-EU visa).
+          const isAY = /academic year|life ?pass|renewal/i.test(r.course_name || '') || r.is_renewal || r.ilep_code != null;
+          r.loa_issued = issuedSet.has(r.booking_id);
+          r.loa_missing = isAY && fundedSet.has(r.booking_id) && !r.loa_issued;
+          r.loa_relevant = isAY;
+        }
+      }
+
       res.json({
         from: fromIso, to: toIso,
         count: rows.length,

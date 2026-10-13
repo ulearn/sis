@@ -139,6 +139,34 @@ ${FOOTER}`,
 </div>`,
   },
 
+  // Sent automatically when an AY/LifePass booking is fully paid (incl. escrow)
+  // but the student has no passport on file — the LoA carries the passport number
+  // for airport / QR interoperability, so it can't issue without it. ONE template:
+  // {if recipient_student} / {if recipient_agent} swap the upload channel + login
+  // link; requestPassportForLoa (scripts/documents.ts) sets those flags per
+  // recipient. Plain body — the send path adds the house wrap + signature.
+  {
+    name: 'LoA — Passport Required',
+    slug: 'LoA-Passport-Request',
+    templateType: 'email',
+    category: 'success/visa',
+    documentType: 'success',
+    subject: 'Passport required to issue your Letter of Acceptance',
+    htmlTemplate: `<div style="font-family:Verdana,sans-serif;font-size:13px;line-height:1.6;color:#1a1d23">
+  <p>Hi {{student.first_name}},</p>
+
+  <p>Good news — the payment for your booking {{booking.ref}} has been reconciled and shows as <strong>paid in full</strong>.</p>
+
+  <p>Remaining items required prior to issuing your <strong>Letter of Acceptance (LOA)</strong>:</p>
+
+  <ul style="margin:8px 0 10px 18px;padding:0"><li>Student passport</li></ul>
+
+  <p>Please upload it to {if recipient_student}your <a href="https://sis.ulearnschool.com/sis/login">student app</a>{/if}{if recipient_agent}your <a href="https://sis.ulearnschool.com/sis/partners/login">portal</a>{/if} — once we have it, your LOA will issue to you automatically.</p>
+
+  <p>Many thanks,<br>ULearn</p>
+</div>`,
+  },
+
   {
     name: 'ISD Confirmation',
     slug: 'ISD-Confirm',

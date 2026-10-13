@@ -458,71 +458,20 @@ export function documentRoutes(prisma: PrismaClient) {
     try {
       const docId = parseInt(String(req.params.id));
       if (!Number.isFinite(docId)) return res.status(400).json({ error: 'bad document id' });
-      const notifyAgent = req.body.agent !== false;      // default on
-      const notifyStudent = req.body.student !== false;  // default on
       const sentBy = (req as any).session?.user || 'admin';
-      const validEmail = (e?: string | null) => !!e && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e);
-
-      const doc = await scripts.getDocument(docId);
-      if (!doc) return res.status(404).json({ error: 'Document not found' });
-      if (doc.status !== 'ISSUED') return res.status(400).json({ error: 'Only issued documents can be sent' });
-
-      const student = await prisma.student.findUnique({ where: { id: doc.studentId }, select: { email: true } });
-      const { tokens } = await scripts.resolveTokens(doc.studentId, doc.bookingId ?? null);
-      (tokens as any)['document.name'] = (doc as any).template?.name || (doc as any).documentType || 'document';
-      const results: Record<string, { status: string; to?: string | null; reason?: string }> = {};
-
-      // Pick the notify email per document type. A Receipt drives the student to
-      // log in with its own wording (Receipt-Notify-Student) and is student-only
-      // — receipts are billed to the student, so there's no agent notify. Every
-      // other doc (LoA etc.) keeps the dual student+agent LoA notify.
-      const isReceipt = (doc as any).documentType === 'accounts' || (doc as any).template?.slug === 'ULearn-Receipt';
-      const isLoA = /visa/i.test((doc as any).documentType || '') || /^lo?a[-_]/i.test((doc as any).template?.slug || '');
-      // Receipt keeps its own; LoA keeps the dual student+agent LoA notify; every OTHER success doc
-      // (Student Letter, Attendance, Exit, Certificate, Holiday, Insurance…) uses the generic student notify.
-      const studentSlug = isReceipt ? 'Receipt-Notify-Student' : (isLoA ? 'LoA-Attach-Student' : 'Doc-Notify-Student');
-
-      // ── Student ──
-      if (notifyStudent) {
-        const tpl = await prisma.documentTemplate.findFirst({ where: emailTemplateWhere(studentSlug, { templateType: 'email' }) });
-        if (!tpl) results.student = { status: 'failed', reason: `${studentSlug} template missing` };
-        else if (!validEmail(student?.email)) results.student = { status: 'skipped', to: student?.email, reason: 'no valid student email' };
-        else {
-          await scripts.sendDocument({
-            docId, to: student!.email!, from: 'success@ulearnschool.com', fromName: 'ULearn',
-            subject: scripts.renderTemplate(tpl.subject || tpl.name, tokens),
-            body: scripts.renderTemplate(tpl.htmlTemplate, tokens), sentBy,
-            // LoA is notify-only (lives in the ULearn account). The Receipt is a
-            // deliberate exception: an escrow/visa customer is at arm's length —
-            // not yet a student, funds not with us — so we ATTACH the PDF so they
-            // can get on with the embassy application, while still keeping the
-            // account-creation instructions in the body.
-            attach: isReceipt,
-          });
-          results.student = { status: 'sent', to: student!.email };
-        }
-      }
-
-      // ── Agent (agency on the booking) — LoA only, never for receipts ──
-      if (notifyAgent && isLoA) {
-        const tpl = await prisma.documentTemplate.findFirst({ where: emailTemplateWhere('LoA-Attach-Agent', { templateType: 'email' }) });
-        const agentEmail = tokens['agency.email'];
-        if (!tpl) results.agent = { status: 'failed', reason: 'LoA-Attach-Agent template missing' };
-        else if (!validEmail(agentEmail)) results.agent = { status: 'skipped', to: agentEmail || null, reason: 'no valid agency email' };
-        else {
-          await scripts.sendDocument({
-            docId, to: agentEmail, from: 'partners@ulearnschool.com', fromName: 'ULearn',
-            subject: scripts.renderTemplate(tpl.subject || tpl.name, tokens),
-            body: scripts.renderTemplate(tpl.htmlTemplate, tokens), sentBy,
-            attach: false,   // notify-only — the LoA lives in their Partner Portal
-          });
-          results.agent = { status: 'sent', to: agentEmail };
-        }
-      }
-
+      // Shared with the fully-paid LOA automation (scripts.autoIssueLoaForBooking)
+      // so the student/agent recipients, templates and attach rules never drift.
+      const { results } = await scripts.notifyDocument(docId, {
+        agent: req.body.agent !== false,      // default on
+        student: req.body.student !== false,  // default on
+        sentBy,
+      });
       res.json({ results });
     } catch (e) {
-      res.status(500).json({ error: String(e instanceof Error ? e.message : e) });
+      const msg = String(e instanceof Error ? e.message : e);
+      if (msg === 'Document not found') return res.status(404).json({ error: msg });
+      if (msg === 'Only issued documents can be sent') return res.status(400).json({ error: msg });
+      res.status(500).json({ error: msg });
     }
   });
 

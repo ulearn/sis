@@ -426,7 +426,15 @@ export function partnerRoutes(prisma: PrismaClient) {
     try {
       const id = parseInt(req.params.id);
       if (!id) return res.status(400).json({ success: false, error: 'Invalid id' });
-      res.json(await scripts.updateStudentPassport(req.session.agencyId!, id, req.body || {}));
+      const result = await scripts.updateStudentPassport(req.session.agencyId!, id, req.body || {});
+      res.json(result);
+      // Passport just arrived via the portal → close the LoA loop: if a fully-paid
+      // AY booking was waiting only on the passport, issue it now. Fire-and-forget.
+      if (typeof (req.body || {}).passportNumber === 'string' && (req.body).passportNumber.trim()) {
+        const { documentScripts } = await import('../scripts/documents');
+        documentScripts(prisma).issueLoaForStudentIfReady(id, 'auto-loa-passport-portal')
+          .catch((e: any) => console.warn('[LOA passport-trigger] portal student', id, e?.message || e));
+      }
     } catch (e) { res.status(500).json({ success: false, error: String(e) }); }
   });
 

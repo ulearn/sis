@@ -1657,9 +1657,14 @@ export function studentScripts(prisma: PrismaClient) {
     if (!Number.isInteger(hid)) return { success: false, error: 'Bad holiday id' };
     const hol = await prisma.bookingHoliday.findUnique({
       where: { id: hid },
-      select: { id: true, startDate: true, endDate: true, weeks: true, bookingId: true, booking: { select: { studentId: true, courses: { select: { name: true }, take: 1 } } } },
+      select: { id: true, type: true, startDate: true, endDate: true, weeks: true, bookingId: true, booking: { select: { studentId: true, courses: { select: { name: true }, take: 1 } } } },
     });
     if (!hol || hol.booking?.studentId !== studentId) return { success: false, error: 'Holiday not found' };
+    // School closures (Christmas etc.) are compulsory — the school is shut, so the
+    // student cannot remove them. Only their own requested holidays are cancellable.
+    if (hol.type !== 'student') {
+      return { success: false, error: 'This is a school closure and cannot be cancelled — the school is closed during this period.' };
+    }
     const today = new Date(); today.setUTCHours(0, 0, 0, 0);
     if (+new Date(hol.startDate) <= +today) {
       return { success: false, error: 'This holiday has already started — please contact the school to change it.' };
@@ -1715,7 +1720,9 @@ export function studentScripts(prisma: PrismaClient) {
       weeks: h.weeks,
       type: h.type,
       createdAt: h.createdAt,
-      cancellable: +new Date(h.startDate) > +today,   // only a holiday that hasn't started
+      // Only the student's OWN upcoming holidays can be cancelled in-app. School
+      // closures (type='school', e.g. Christmas) are compulsory and locked.
+      cancellable: h.type === 'student' && +new Date(h.startDate) > +today,
     }));
   }
 

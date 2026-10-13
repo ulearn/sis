@@ -20,12 +20,12 @@
 import type { PrismaClient } from '../generated/prisma/client';
 import { sendEmail } from './email';
 import { emailTemplateWhere } from './email-templates';
+import { ageAt, gvPhase, isJuniorAt } from '../lib/junior-gate';
 import fs from 'fs';
 import path from 'path';
 
 const CONFIG_PATH = path.join(__dirname, '..', '..', 'data', 'auto-nudge.json');
 const GV_KEY = ['none', 'form', 'upload', 'complete'] as const;   // phase 0..3
-const PHASE_NUM: Record<string, number> = { none: 0, form: 1, upload: 2, complete: 3, returned: 3 };
 const DAY_NUM: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
 const FROM = 'accomm@ulearnschool.com';
 const FROM_NAME = 'ULearn Accommodation';
@@ -107,14 +107,7 @@ export function autoNudgeScripts(prisma: PrismaClient) {
   }
 
   // ── Host / pool helpers ────────────────────────────────────────────────
-  function hostPhase(p: any): number {
-    if (p.vettingStatus != null) return PHASE_NUM[p.vettingStatus] ?? 0;
-    const subs: any[] = p.vettingSubmissions || [];
-    if (!subs.length) return 0;
-    if (subs.some(s => s.status === 'submitted')) return 1;
-    if (subs.some(s => s.status === 'signed')) return 2;
-    return 3;
-  }
+  const hostPhase = (p: any): number => gvPhase(p.vettingStatus, p.vettingSubmissions);
   const hostHasNoAttrs = (p: any) => !p.acceptsJuniors && !p.acceptsAdults && !p.acceptsMature && !p.acceptsMale && !p.acceptsFemale;
   function hostMatchesPool(p: any, pool: any) {
     const ageOk = (p.acceptsJuniors && pool.juniors) || (p.acceptsAdults && pool.adults) || (p.acceptsMature && pool.mature);
@@ -134,23 +127,30 @@ export function autoNudgeScripts(prisma: PrismaClient) {
   };
   const poolCount = () => prisma.bookingAccommodation.count({ where: poolWhere() });
 
+  // Pool profile (age bands are AT ARRIVAL). `adult` = the same profile over only the
+  // students who are 18+ on arrival — the junior gate matches non-vetted hosts
+  // against it, so they are never nudged for a junior-only pool.
   async function unplacedProfiles() {
-    const today = new Date(); today.setHours(0, 0, 0, 0);
     const rows = await prisma.bookingAccommodation.findMany({
       where: poolWhere(),
-      select: { booking: { select: { student: { select: { birthday: true, gender: true } } } } },
+      select: { startDate: true, booking: { select: { student: { select: { birthday: true, gender: true } } } } },
     });
-    let juniors = false, adults = false, mature = false, male = false, female = false;
+    const blank = () => ({ count: 0, juniors: false, adults: false, mature: false, male: false, female: false });
+    const all = blank(), adult = blank();
     for (const r of rows) {
       const st = r.booking?.student; if (!st) continue;
-      if (st.birthday) {
-        const age = (today.getTime() - new Date(st.birthday).getTime()) / (365.25 * 864e5);
-        if (age < 18) juniors = true; else if (age < 30) adults = true; else mature = true;
-      } else { juniors = true; adults = true; mature = true; }
-      if (st.gender === 1) male = true; else if (st.gender === 2) female = true; else { male = true; female = true; }
+      const junior = isJuniorAt(st.birthday, r.startDate);
+      const mature = !junior && (ageAt(st.birthday, r.startDate) ?? 0) >= 30;
+      for (const prof of junior ? [all] : [all, adult]) {
+        prof.count++;
+        if (junior) prof.juniors = true; else if (mature) prof.mature = true; else prof.adults = true;
+        if (st.gender === 1) prof.male = true; else if (st.gender === 2) prof.female = true; else { prof.male = true; prof.female = true; }
+      }
     }
-    return { count: rows.length, juniors, adults, mature, male, female };
+    return { ...all, adult };
   }
+  // Junior gate: only GV-complete hosts are matched against juniors.
+  const poolFor = (h: any, pool: any) => hostPhase(h) === 3 ? pool : pool.adult;
 
   function fetchSendableHosts() {
     return prisma.accommodationProvider.findMany({
@@ -175,9 +175,10 @@ export function autoNudgeScripts(prisma: PrismaClient) {
     });
   };
   const applyMatch = (w: Wave, tier: any[], pool: any) => {
-    if (w.onlyUnset) return tier.filter(hostHasNoAttrs);
-    if (!w.preMatch) return tier;
-    return tier.filter(h => hostMatchesPool(h, pool) || (w.includeUnset && hostHasNoAttrs(h)));
+    const live = tier.filter(h => poolFor(h, pool).count > 0);   // nothing they may host → no nudge
+    if (w.onlyUnset) return live.filter(hostHasNoAttrs);
+    if (!w.preMatch) return live;
+    return live.filter(h => hostMatchesPool(h, poolFor(h, pool)) || (w.includeUnset && hostHasNoAttrs(h)));
   };
 
   /** Live wave list with host counts — for the UI. */
@@ -206,6 +207,7 @@ export function autoNudgeScripts(prisma: PrismaClient) {
     const since = new Date(); since.setDate(since.getDate() - 6);
 
     let sent = 0, skippedWeek = 0, skippedNoLink = 0, failed = 0, stopped = false;
+    const emailedIds: number[] = [];
     for (const h of matched) {
       // Per-send auto-stop: the instant every student is placed, cancel the rest.
       if (apply && await poolCount() === 0) { stopped = true; break; }
@@ -232,14 +234,15 @@ export function autoNudgeScripts(prisma: PrismaClient) {
           },
         });
         sent++;
+        emailedIds.push(h.id);
       } catch { failed++; }
     }
-    // First Dibs is SINGLE-USE: once the First-Dibs wave has reached them this cycle,
-    // consume it (revert to auto category) so no host holds the front of the queue
-    // indefinitely. They re-earn it by tapping the button again if they miss out next
-    // time. (Hosts not matched/emailed this cycle keep it until a matching student comes.)
+    // First Dibs is SINGLE-USE: once the First-Dibs wave has actually EMAILED them this
+    // cycle, consume it so no host holds the front of the queue indefinitely. They
+    // re-earn it by tapping the button again if they miss out next time. Hosts not
+    // emailed (6-day cap, auto-stop, failed send) keep it until they are reached.
     if (apply && wave.firstDibs) {
-      const ids = matched.map((h: any) => h.id);
+      const ids = emailedIds;
       if (ids.length) {
         // Clear ONLY the flag — their activity level (SuperHost/BusyBee/…) is untouched.
         await prisma.accommodationProvider.updateMany({
@@ -270,7 +273,9 @@ export function autoNudgeScripts(prisma: PrismaClient) {
       w.lastFired = dateStr;
       fired.push({ id: w.id, batch: w.batch, wave: w.wave, ...res });
     }
-    if (fired.length) saveConfig(cfg);
+    // Re-read lastSentAt: sendWave stamps it mid-loop, and saving the stale cfg
+    // loaded above would wipe it (that kept the First Dibs button hidden).
+    if (fired.length) saveConfig({ ...cfg, lastSentAt: loadConfig().lastSentAt });
     return { armed: cfg.armed, checkedAt: `${dateStr} ${hhmm}`, fired };
   }
 

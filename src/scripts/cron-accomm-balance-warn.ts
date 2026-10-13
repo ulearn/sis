@@ -1,4 +1,4 @@
-// Wed-6am cron: for placed accommodation bookings starting in the next 3 days
+// Wed-6am cron: for placed accommodation bookings starting Wed→Sun (today + 4 days)
 // that still carry an outstanding balance, post to the Slack #financial
 // channel and (when the balance is > €25) auto-bounce the student out of
 // their bed once. The bounce is intentionally a one-shot per booking — if
@@ -17,7 +17,7 @@ const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma  = new PrismaClient({ adapter });
 
 const BOUNCE_THRESHOLD = 25;       // ≤ €25 → notify only, do not unplace
-const HORIZON_DAYS     = 3;        // T-3 window: today through today+3 (inclusive)
+const HORIZON_DAYS     = 4;        // today through today+4 inclusive: Wed→Sun, so weekend (Sat AND Sun) arrivals are covered
 const CHANNEL          = process.env.SLACK_DEFAULT_CHANNEL || '#financial';
 
 function mention(envVarId: string, fallbackName: string): string {
@@ -69,7 +69,7 @@ async function main() {
     // booking status.
     if (r.booking?.status === 'ESCROW') { skipped++; continue; }
     const sv = r.booking?.student?.visaStatus;
-    if (sv === 'Pending' || sv === 'In Appeal') { skipped++; continue; }
+    if (sv === 'Pending' || sv === 'Appeal' || sv === 'In Appeal') { skipped++; continue; }
     const paid    = Number(r.booking?.amountPaid  || 0);
     const total   = Number(r.booking?.amountTotal || 0);
     const balance = total - paid;

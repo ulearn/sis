@@ -5,8 +5,9 @@ import puppeteer from 'puppeteer';
 import fs from 'fs';
 import path from 'path';
 import { sendEmail } from './email';
-import { deriveIlepCode, isAyIlepCourse, isNonVisaNationality } from './ilep-deriver';
+import { deriveIlepCode } from './ilep-deriver';
 import { irishPublicHolidays } from './irish-holidays';
+import { emailTemplateWhere } from './email-templates';
 
 const BASE_URL = process.env.BASE_URL || 'https://sis.ulearnschool.com';
 const PUBLIC_DIR = path.resolve(__dirname, '../../public');
@@ -895,6 +896,10 @@ export function documentScripts(prisma: PrismaClient) {
       'booking.agency': (booking as any)?.agency?.name || '',
       'booking.amount_paid': booking?.amountPaid ? `€${Number(booking.amountPaid).toFixed(2)}` : '',
       'booking.amount_open': booking?.amountOpen ? `€${Number(booking.amountOpen).toFixed(2)}` : '',
+      // Truthy ('1') while a balance is still payable → drives the host-booking
+      // email's "Confirmation Pending" notice ({if confirmation_pending}). Blank
+      // once paid in full, so the notice vanishes. (Host-family bookings only.)
+      'booking.confirmation_pending': (Number(booking?.amountOpen || 0) > 0.5) ? '1' : '',
       'booking.currency': booking?.currency || 'EUR',
 
       // Agency / Commission
@@ -2107,38 +2112,15 @@ export function documentScripts(prisma: PrismaClient) {
 
     const emptyTokens = [];
     for (const tok of referenced) {
+      // ILEP is NO LONGER a blocker (Neil 2026-10-12): it A2-defaults in token
+      // resolution, and for a non-AY/EU course it's legitimately blank. So a blank
+      // ILEP code must never block or warn on issuance — skip it here. (Passport
+      // stays a blocker: `student.passport_number` is still flagged when blank.)
+      if (tok === 'booking.ilep_code' || tok === 'ilep_course_code') continue;
       const val = tokens[tok];
       if (val == null || String(val).trim() === '') {
         emptyTokens.push({ token: tok, hint: TOKEN_FIELD_HINTS[tok] || null });
       }
-    }
-
-    // ── ILEP course-code completeness (visa / LoA templates) ─────────────────
-    // The ILEP row is wrapped in `{if booking.ilep_code}`, so a BLANK code drops
-    // out of `visible` above and the generic scan never flags it. But for an
-    // Academic Year, non-EU booking the ILEP programme code is a Department of
-    // Justice requirement on the acceptance letter — surface it explicitly and
-    // point staff at the TWO grounding fields it derives from (course Level +
-    // Course Type). The code auto-fills from those when either is set; if it's
-    // still blank the level is missing or the type isn't ILEP-listed.
-    const templateUsesIlep = /\{\{\s*booking\.ilep_code\s*\}\}/.test(template.htmlTemplate);
-    const ilepBlank = String(tokens['booking.ilep_code'] || '').trim() === '';
-    const courseName = (course as any)?.name || '';
-    const courseLevel = String((course as any)?.level || '').trim();   // the COURSE level, NOT the profile fallback
-    if (templateUsesIlep && ilepBlank
-        && isAyIlepCourse(courseName)
-        && !isNonVisaNationality((student as any)?.nationality)
-        && !referenced.has('booking.ilep_code')) {   // don't double-flag if it ever renders unconditionally
-      const derived = deriveIlepCode(courseName, courseLevel || null, (student as any)?.nationality || null);
-      let hint: string;
-      if (!courseLevel) {
-        hint = 'ILEP code auto-fills from the booking course’s Level + Course Type, but this course has no Level set. Set it on Booking → Course (use the current/renewal level — a 2nd course is usually a step up from the starting level, not the profile’s starting CEFR).';
-      } else if (derived) {
-        hint = `ILEP code is blank. For “${courseName}” at ${courseLevel} it should be ${derived} — set it on Booking → Course (it auto-fills from Level once, then it’s manual).`;
-      } else {
-        hint = 'ILEP code is blank and could not be auto-derived (course type not on the ILEP list for this level). Enter it manually on Booking → Course.';
-      }
-      emptyTokens.push({ token: 'booking.ilep_code', hint });
     }
 
     return {
@@ -2150,6 +2132,206 @@ export function documentScripts(prisma: PrismaClient) {
     };
   }
 
+  // Shared document-notify — the dual student+agent notify behind the admin
+  // "Notify Agent / Student?" button AND the fully-paid LOA automation, so the
+  // two paths can never drift. Per doc type: a Receipt is student-only and
+  // ATTACHES its PDF (arm's-length escrow customer); an LoA goes to student
+  // (success@) + agent (partners@), both notify-only (the doc lives in the
+  // ULearn account / Partner Portal); any other doc uses the generic student
+  // notify. Recipients that are missing/invalid are skipped gracefully.
+  async function notifyDocument(docId: number, opts: { agent?: boolean; student?: boolean; sentBy?: string } = {}) {
+    const notifyAgent = opts.agent !== false;
+    const notifyStudent = opts.student !== false;
+    const sentBy = opts.sentBy || 'admin';
+    const validEmail = (e?: string | null) => !!e && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e);
+
+    const doc = await getDocument(docId);
+    if (!doc) throw new Error('Document not found');
+    if (doc.status !== 'ISSUED') throw new Error('Only issued documents can be sent');
+
+    const student = await prisma.student.findUnique({ where: { id: doc.studentId }, select: { email: true } });
+    const { tokens } = await resolveTokens(doc.studentId, doc.bookingId ?? null);
+    (tokens as any)['document.name'] = (doc as any).template?.name || (doc as any).documentType || 'document';
+    const results: Record<string, { status: string; to?: string | null; reason?: string }> = {};
+
+    const isReceipt = (doc as any).documentType === 'accounts' || (doc as any).template?.slug === 'ULearn-Receipt';
+    const isLoA = /visa/i.test((doc as any).documentType || '') || /^lo?a[-_]/i.test((doc as any).template?.slug || '');
+    const studentSlug = isReceipt ? 'Receipt-Notify-Student' : (isLoA ? 'LoA-Attach-Student' : 'Doc-Notify-Student');
+
+    // ── Student ──
+    if (notifyStudent) {
+      const tpl = await prisma.documentTemplate.findFirst({ where: emailTemplateWhere(studentSlug, { templateType: 'email' }) });
+      if (!tpl) results.student = { status: 'failed', reason: `${studentSlug} template missing` };
+      else if (!validEmail(student?.email)) results.student = { status: 'skipped', to: student?.email, reason: 'no valid student email' };
+      else {
+        await sendDocument({
+          docId, to: student!.email!, from: 'success@ulearnschool.com', fromName: 'ULearn',
+          subject: renderTemplate(tpl.subject || tpl.name, tokens),
+          body: renderTemplate(tpl.htmlTemplate, tokens), sentBy,
+          attach: isReceipt,   // LoA/other = notify-only; receipt attaches
+        });
+        results.student = { status: 'sent', to: student!.email };
+      }
+    }
+
+    // ── Agent (agency on the booking) — LoA only, never for receipts ──
+    if (notifyAgent && isLoA) {
+      const tpl = await prisma.documentTemplate.findFirst({ where: emailTemplateWhere('LoA-Attach-Agent', { templateType: 'email' }) });
+      const agentEmail = tokens['agency.email'];
+      if (!tpl) results.agent = { status: 'failed', reason: 'LoA-Attach-Agent template missing' };
+      else if (!validEmail(agentEmail)) results.agent = { status: 'skipped', to: agentEmail || null, reason: 'no valid agency email' };
+      else {
+        await sendDocument({
+          docId, to: agentEmail, from: 'partners@ulearnschool.com', fromName: 'ULearn',
+          subject: renderTemplate(tpl.subject || tpl.name, tokens),
+          body: renderTemplate(tpl.htmlTemplate, tokens), sentBy,
+          attach: false,   // notify-only — the LoA lives in their Partner Portal
+        });
+        results.agent = { status: 'sent', to: agentEmail };
+      }
+    }
+
+    return { results };
+  }
+
+  // Fully-paid → auto-issue the LOA. Called from the invoice-paid webhook the
+  // moment an Academic-Year / LifePass booking is fully paid. For LifePass that
+  // is the course-1 €997 onboarding, because the webhook excludes the -Sub
+  // subscription master from the balance — so "fully paid" there means course 1,
+  // and courses 2 & 3 are untouched. The AY COURSE is the sole filter (AY is a
+  // visa product → no nationality gate). IDEMPOTENT: skips if an ISSUED LOA
+  // already exists for this student+booking, so a re-fired payment webhook never
+  // double-issues. Staff can still re-issue by hand (Generate→Issue→Notify) — this
+  // guard governs only the automation. Reuses generateDraft→issueDocument→
+  // notifyDocument so the payment gate, QR and email copy match the manual path.
+  // Is a booking's course fee fully covered — by settled payment OR escrow-held
+  // funds? (Escrow is a shadow payment excluded from amountPaid; see the TM
+  // escrow path.) Mirrors the LoA payment gate's "secured" test.
+  function bookingFullyFunded(b: { amountTotal: any; amountPaid: any; status: string | null; payments: { amount: any; type: string | null; method: string | null }[] }): boolean {
+    const total = Number(b.amountTotal || 0);
+    if (total <= 0) return false;
+    const escrow = (b.payments || []).filter(p => p.type === 'Escrow' || /escrow/i.test(p.method || '')).reduce((s, p) => s + Number(p.amount || 0), 0);
+    return Number(b.amountPaid || 0) >= total - 0.01 || escrow >= total - 1.00 || b.status === 'ESCROW';
+  }
+
+  // Email student + agent that the LoA is ready EXCEPT we still need the passport
+  // (the one hard content requirement — the letter carries the passport number
+  // for airport / QR interoperability). ONE template, conditional link: student →
+  // student app, agent → partner portal. Deduped (≤1 round per booking / 14 days)
+  // so a re-firing payment webhook doesn't nag; naturally stops once the passport
+  // lands and the LoA issues. `sentBy` = the trigger tag.
+  async function requestPassportForLoa(bookingId: number, sentBy = 'auto-loa') {
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      select: { id: true, studentId: true, student: { select: { firstName: true, email: true, passportNumber: true } }, agency: { select: { email: true } } },
+    });
+    if (!booking) return { status: 'skipped', reason: 'booking-not-found' };
+    if (booking.student?.passportNumber) return { status: 'skipped', reason: 'has-passport' };
+
+    const tpl = await prisma.documentTemplate.findFirst({ where: emailTemplateWhere('LoA-Passport-Request', { templateType: 'email' }) });
+    if (!tpl) return { status: 'skipped', reason: 'passport-request-template-missing' };
+
+    const since = new Date(); since.setDate(since.getDate() - 14);
+    const already = await prisma.emailLog.count({ where: { bookingId, templateId: tpl.id, createdAt: { gte: since } } });
+    if (already) return { status: 'skipped', reason: 'already-requested' };
+
+    const { tokens } = await resolveTokens(booking.studentId, booking.id);
+    (tokens as any)['booking.ref'] = '#' + booking.id;
+    const validEmail = (e?: string | null) => !!e && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e);
+    const results: Record<string, any> = {};
+
+    // Student copy — "student app" link.
+    if (validEmail(booking.student?.email)) {
+      const t = { ...tokens, recipient_student: '1', recipient_agent: '' } as Record<string, string>;
+      const subject = renderTemplate(tpl.subject || tpl.name, t);
+      const html = renderTemplate(tpl.htmlTemplate, t);
+      try {
+        await sendEmail({ from: 'success@ulearnschool.com', fromName: 'ULearn', to: booking.student!.email!, subject, html });
+        await prisma.emailLog.create({ data: { studentId: booking.studentId, bookingId, fromEmail: 'success@ulearnschool.com', toEmail: booking.student!.email!, subject, bodyHtml: html, templateId: tpl.id, sentBy } as any });
+        results.student = { status: 'sent', to: booking.student!.email };
+      } catch (e: any) { results.student = { status: 'failed', reason: e?.message }; }
+    } else results.student = { status: 'skipped', reason: 'no valid student email' };
+
+    // Agent copy — "portal" link (only when there's an agency with an email).
+    const agentEmail = booking.agency?.email || null;
+    if (validEmail(agentEmail)) {
+      const t = { ...tokens, recipient_student: '', recipient_agent: '1' } as Record<string, string>;
+      const subject = renderTemplate(tpl.subject || tpl.name, t);
+      const html = renderTemplate(tpl.htmlTemplate, t);
+      try {
+        await sendEmail({ from: 'partners@ulearnschool.com', fromName: 'ULearn', to: agentEmail!, subject, html });
+        await prisma.emailLog.create({ data: { studentId: booking.studentId, bookingId, fromEmail: 'partners@ulearnschool.com', toEmail: agentEmail!, subject, bodyHtml: html, templateId: tpl.id, sentBy } as any });
+        results.agent = { status: 'sent', to: agentEmail };
+      } catch (e: any) { results.agent = { status: 'failed', reason: e?.message }; }
+    } else results.agent = { status: 'skipped', reason: 'no agency email' };
+
+    return { status: 'requested', results };
+  }
+
+  async function autoIssueLoaForBooking(bookingId: number, trigger = 'auto-loa') {
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      select: {
+        id: true, studentId: true, status: true, amountTotal: true, amountPaid: true,
+        courses: { select: { name: true, holidayWks: true, isRenewal: true } },
+        payments: { select: { amount: true, type: true, method: true } },
+        student: { select: { passportNumber: true } },
+      },
+    });
+    if (!booking) return { status: 'skipped', reason: 'booking-not-found' };
+
+    // AY / LifePass gate — the course is the filter (holidayWks set, an AY /
+    // renewal / LifePass name, or the renewal-SKU flag). Mirrors scripts/student.ts.
+    const isAY = booking.courses.some((c: any) =>
+      c.holidayWks != null || /academic year|life ?pass|renewal/i.test(c.name || '') || c.isRenewal);
+    if (!isAY) return { status: 'skipped', reason: 'not-academic-year' };
+
+    const tpl = await prisma.documentTemplate.findFirst({
+      where: { slug: 'LOA-NonEU-QR', templateType: 'document' },
+      select: { id: true },
+    });
+    if (!tpl) return { status: 'skipped', reason: 'loa-template-missing' };
+
+    // Idempotency — an ISSUED LOA already on file means the automation has run.
+    const existing = await prisma.documentRecord.count({
+      where: { studentId: booking.studentId, bookingId: booking.id, templateId: tpl.id, status: 'ISSUED' },
+    });
+    if (existing) return { status: 'skipped', reason: 'already-issued' };
+
+    // Real blockers (Neil 2026-10-12) = (1) full payment and (2) passport. ILEP is
+    // NO LONGER a blocker — it A2-defaults in token resolution. Self-gates on
+    // funding so this is safe to call from the invoice-paid webhook, the escrow
+    // receiver AND the passport-upload hook.
+    if (!bookingFullyFunded(booking as any)) return { status: 'skipped', reason: 'not-funded' };
+    if (!booking.student?.passportNumber) {
+      // Fully paid but no passport → don't issue a letter with a blank passport
+      // number; email student+agent to upload it (LoA then issues automatically).
+      const request = await requestPassportForLoa(bookingId, trigger);
+      return { status: 'passport-requested', request };
+    }
+
+    // generateDraft renders + persists a DRAFT, issueDocument locks + mints the QR,
+    // notifyDocument emails both. callerRole 'admin' so the gate doesn't re-block on
+    // the inherent visa-pending state — we've done our own funded+passport gating.
+    const { record } = await generateDraft(tpl.id, booking.studentId, booking.id, 'admin');
+    await issueDocument(record.id, trigger, 'admin');
+    const { results } = await notifyDocument(record.id, { agent: true, student: true, sentBy: trigger });
+    return { status: 'issued', documentId: record.id, notify: results };
+  }
+
+  // Passport just arrived (upload / AI-read) → close the loop: issue the LoA for
+  // any of this student's AY bookings now fully funded + passport-complete + LoA-
+  // less. autoIssueLoaForBooking self-gates, so this just fans out over bookings.
+  async function issueLoaForStudentIfReady(studentId: number, trigger = 'auto-loa-passport') {
+    const bookings = await prisma.booking.findMany({ where: { studentId }, select: { id: true } });
+    const out: any[] = [];
+    for (const b of bookings) {
+      try { out.push({ bookingId: b.id, ...(await autoIssueLoaForBooking(b.id, trigger)) }); }
+      catch (e: any) { out.push({ bookingId: b.id, status: 'error', reason: e?.message }); }
+    }
+    return out;
+  }
+
   return {
     listTemplates, getTemplate, createTemplate, updateTemplate, deleteTemplate,
     resolveTokens, renderTemplate,
@@ -2157,7 +2339,7 @@ export function documentScripts(prisma: PrismaClient) {
     issueDocument, createNewVersion, revokeDocument, liveEditDocument, refreshDocumentFromSource, resetDocumentFromSource, renderIssuedDocInPlace, syncLoaToBooking, attachExternalPdf, fileInsurancePolicy, saveInsurancePolicy,
     verify,
     generatePdf, getDocumentPdf,
-    logDispatch, sendDocument,
+    logDispatch, sendDocument, notifyDocument, autoIssueLoaForBooking, requestPassportForLoa, issueLoaForStudentIfReady,
     validateTemplate,
   };
 }
@@ -2201,6 +2383,7 @@ const TOKEN_FIELD_HINTS: Record<string, string> = {
   'booking.amount_total':     'Booking total — set on Booking → Financial',
   'booking.amount_paid':      'Amount Paid — payments synced from Xero',
   'booking.amount_open':      'Balance — derived from total minus paid',
+  'booking.confirmation_pending': "'1' while a balance is payable (else blank) — for {if confirmation_pending} notices",
   'booking.ilep_code':        'ILEP code — only set on AY programmes (Booking → Course)',
   'booking.gross_from_net':   'Falls back to net if HubSpot commission rate is unavailable',
   'booking.course_fee':       'Course Fee — set on Booking → Course',

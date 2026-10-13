@@ -431,6 +431,14 @@ export function bookingScripts(prisma: PrismaClient) {
           courses: { select: { name: true, startDate: true, endDate: true, isRenewal: true } } },
       });
       if (!bk) throw new Error('Booking not found');
+      // HARD guard: a holiday shunts a COURSE end forward — a booking with no
+      // course (e.g. an accommodation-only booking) has nothing to shunt, so a
+      // holiday there is meaningless and corrupts records. Block it outright,
+      // even with force. (Matheus #1046: his holidays had scrambled onto the
+      // wrong booking; this stops course-less bookings ever holding a holiday.)
+      if (!bk.courses.length) {
+        throw new Error('This booking has no course — holidays can only be added to a booking with a course.');
+      }
       const EU = new Set(['austria','belgium','bulgaria','croatia','cyprus','czechia','czech republic','denmark','estonia','finland','france','germany','greece','hungary','ireland','italy','latvia','lithuania','luxembourg','malta','netherlands','poland','portugal','romania','slovakia','slovenia','spain','sweden','iceland','liechtenstein','norway','switzerland']);
       const warnings: string[] = [];
       const nat = (bk.student?.nationality || '').trim();

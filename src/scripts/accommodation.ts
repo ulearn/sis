@@ -1,4 +1,5 @@
 import { PrismaClient } from '../generated/prisma/client';
+import { gvComplete, isJuniorAt } from '../lib/junior-gate';
 
 // effectiveActive is now simply the `active` flag. The old activeFrom/activeTo
 // "holiday window" was removed 2026-07-02 — we don't track host holidays; a host
@@ -69,6 +70,10 @@ export function accommodationScripts(prisma: PrismaClient) {
     const row = await prisma.accommodationProvider.findUnique({
       where: { id },
       include: {
+        siteVisitPhotos: {
+          orderBy: { id: 'desc' },
+          select: { id: true, originalName: true, mimeType: true, size: true, createdAt: true },
+        },
         properties: {
           orderBy: { id: 'asc' },
           include: {
@@ -113,15 +118,16 @@ export function accommodationScripts(prisma: PrismaClient) {
         select: {
           id: true, periodFrom: true, periodTo: true, amount: true, studentName: true,
           weeksPaid: true, daysPaid: true, xeroStatus: true, reason: true, amendmentNote: true,
+          dietType: true, dietAmount: true,
         },
         orderBy: { id: 'desc' },
         take: 100,   // 5 shown + "View more" reveals the rest
       });
       const earned = await prisma.hostPaymentLineItem.aggregate({
         where: { providerId: id, xeroStatus: 'paid' },
-        _sum: { amount: true },
+        _sum: { amount: true, dietAmount: true },
       });
-      result.totalEarnings = Number(earned._sum.amount || 0);
+      result.totalEarnings = Number(earned._sum.amount || 0) + Number(earned._sum.dietAmount || 0);
     }
     return result;
   }
@@ -535,9 +541,26 @@ export function accommodationScripts(prisma: PrismaClient) {
   ) {
     const ba = await prisma.bookingAccommodation.findUnique({
       where: { id: bookingAccommodationId },
-      include: { booking: { select: { amountPaid: true } } },
+      include: { booking: { select: { amountPaid: true, studentId: true, student: { select: { birthday: true } } } } },
     });
     if (!ba) throw new Error('Booking accommodation not found');
+
+    // Junior safeguarding gate (Neil 2026-10-10): a student under 18 on arrival can
+    // only go to a Host Family whose Garda vetting is complete. Adult-only hosting
+    // needs no vetting. Fix a wrong block by marking the host's vetting Complete.
+    {
+      const hostRow = await prisma.accommodationBed.findUnique({
+        where: { id: bedId },
+        select: { room: { select: { property: { select: { provider: { select: {
+          name: true, type: true, vettingStatus: true, vettingSubmissions: { select: { status: true } },
+        } } } } } } },
+      });
+      const prov: any = hostRow?.room?.property?.provider;
+      if (prov?.type === 'Host Family' && !gvComplete(prov.vettingStatus, prov.vettingSubmissions)
+          && isJuniorAt((ba as any).booking?.student?.birthday, (ba as any).startDate)) {
+        throw new Error(`Cannot place: this student is under 18 on arrival and ${prov.name || 'this host'} does not have completed Garda vetting. Place with a vetted host, or mark this host's vetting Complete first.`);
+      }
+    }
 
     // Short-let availability guard. We rent these rooms only for the exact dates
     // of the booking they were taken for (we're the middleman — the room isn't
@@ -616,7 +639,7 @@ export function accommodationScripts(prisma: PrismaClient) {
     // normal queue. Prevents a served host holding the front of the queue.
     const bedProv = await prisma.accommodationBed.findUnique({
       where: { id: bedId },
-      select: { room: { select: { property: { select: { providerId: true } } } } },
+      select: { room: { select: { property: { select: { providerId: true, provider: { select: { type: true } } } } } } },
     });
     const provId = bedProv?.room?.property?.providerId;
     if (provId) {
@@ -626,7 +649,15 @@ export function accommodationScripts(prisma: PrismaClient) {
         data: { firstDibsAt: null, firstDibsStrikes: 0 },
       });
     }
-    return result;
+    // Signal the caller whether this placement is into a Host Family (→ the UI
+    // surfaces the host booking-confirmation email). studentId/bookingId let it
+    // render that email without a second lookup.
+    const isHostFamily = bedProv?.room?.property?.provider?.type === 'Host Family';
+    return Object.assign({}, result, {
+      isHostFamily,
+      studentId: (ba as any).booking?.studentId ?? null,
+      bookingId: (result as any).bookingId ?? null,
+    });
   }
 
   // Release a host-portal Expression of Interest — clears the provisional claim
@@ -653,9 +684,19 @@ export function accommodationScripts(prisma: PrismaClient) {
 
   // Unplace a student
   async function unplaceStudent(bookingAccommodationId: number) {
+    const ba = await prisma.bookingAccommodation.findUnique({
+      where: { id: bookingAccommodationId },
+      select: { claimStatus: true, claimedByProviderId: true },
+    });
+    const data: any = { bedId: null };
+    // Unplacing is the inverse of placing. placeStudent flips a host's pending
+    // offer → 'confirmed' when the student is placed; returning the student to
+    // the pool must therefore restore that offer to 'pending' (not silently drop
+    // it). Only Release (releaseClaim) ever clears a host's offer. (Neil, 2026-10-10)
+    if (ba?.claimStatus === 'confirmed' && ba.claimedByProviderId) data.claimStatus = 'pending';
     return prisma.bookingAccommodation.update({
       where: { id: bookingAccommodationId },
-      data: { bedId: null },
+      data,
     });
   }
 
@@ -1229,8 +1270,52 @@ export function accommodationScripts(prisma: PrismaClient) {
     };
   }
 
+  // Accept a pending host-portal offer (EOI) in one click: auto-place the
+  // student into a free bed at the host who offered, for the student's stay
+  // dates. Placing resolves the offer (placeStudent flips claimStatus →
+  // 'confirmed'). Picks the first free, gender-valid bed at that host (Kelly
+  // can drag to move afterwards); errors clearly if the host has no free bed.
+  async function acceptClaim(bookingAccommodationId: number, callerRole?: string, callerUser?: string | null) {
+    const ba = await prisma.bookingAccommodation.findUnique({
+      where: { id: bookingAccommodationId },
+      select: {
+        id: true, startDate: true, endDate: true, claimStatus: true, claimedByProviderId: true,
+        claimedByProvider: { select: { id: true, name: true } },
+        booking: { select: { id: true, student: { select: { id: true, gender: true, firstName: true } } } },
+      },
+    });
+    if (!ba) throw new Error('Booking accommodation not found');
+    if (!ba.claimedByProviderId || ba.claimStatus !== 'pending') {
+      throw new Error('There is no pending offer to accept on this student.');
+    }
+    const from = (ba as any).startDate ? new Date((ba as any).startDate).toISOString().slice(0, 10) : null;
+    const to   = (ba as any).endDate   ? new Date((ba as any).endDate).toISOString().slice(0, 10)   : null;
+    if (!from || !to) throw new Error('This stay has no start/end date — place manually.');
+    const hostName = ba.claimedByProvider?.name || 'the host';
+    // No roomType filter → matches = every free, gender-valid bed at this host.
+    const avail = await accommodationAvailability({
+      from, to,
+      gender: ba.booking?.student?.gender ?? null,
+      providerIds: [ba.claimedByProviderId],
+    });
+    const free = avail.matches || [];
+    if (!free.length) {
+      throw new Error(`No free bed at ${hostName} for ${from} → ${to}. Free up a bed first, or release the offer.`);
+    }
+    const bed = free[0];
+    await placeStudent(bookingAccommodationId, bed.bedId, callerRole, false, callerUser);
+    return {
+      placed: true, bedId: bed.bedId, room: bed.room, host: hostName,
+      firstName: ba.booking?.student?.firstName || 'Student',
+      moreFree: free.length - 1,
+      studentId: ba.booking?.student?.id || null,
+      bookingId: ba.booking?.id || null,
+    };
+  }
+
   return {
     accommodationAvailability,
+    acceptClaim,
     listProviders, getProviderById, createProvider, updateProvider, deleteProvider,
     addProperty, updateProperty, deleteProperty,
     addRoom, updateRoom, deleteRoom,

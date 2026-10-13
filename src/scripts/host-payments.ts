@@ -1,6 +1,12 @@
 import { PrismaClient } from '../generated/prisma/client';
 import { getAuthedXero } from './xero';
 
+// Special-diet host surcharge: a host providing a special diet (Halal, Kosher,
+// Vegetarian, etc.) is paid +€40 per week on top of their weekly rate, pro-rated
+// by nights on checkout settlements (same as the base stay). Previously Kelly
+// added this by hand in Xero; now auto-added as its own bill line. (Neil, 2026-10-10)
+const DIET_HOST_SURCHARGE_PER_WEEK = 40;
+
 /**
  * Host Payment Calculation
  *
@@ -179,6 +185,8 @@ export function hostPaymentScripts(prisma: PrismaClient) {
       daysPaid: number;
       weeklyRate: number;
       amount: number;
+      dietType: string | null;
+      dietAmount: number;
       reason: string;
       periodFrom: string;
       periodTo: string;
@@ -253,6 +261,12 @@ export function hostPaymentScripts(prisma: PrismaClient) {
         const remainderDays = totalDays % 7;
         const amount = Math.round(((fullWeeks * rate) + (remainderDays * rate / 7)) * 100) / 100;
 
+        // Special-diet surcharge — same pro-rata shape as the stay (daily = €40/7).
+        const dietType = p.diet || null;
+        const dietAmount = dietType
+          ? Math.round(((fullWeeks * DIET_HOST_SURCHARGE_PER_WEEK) + (remainderDays * DIET_HOST_SURCHARGE_PER_WEEK / 7)) * 100) / 100
+          : 0;
+
         lineItems.push({
           providerId: provider.id,
           bookingAccommodationId: p.id,
@@ -261,6 +275,8 @@ export function hostPaymentScripts(prisma: PrismaClient) {
           daysPaid: remainderDays,
           weeklyRate: rate,
           amount,
+          dietType,
+          dietAmount,
           reason: 'checkout',
           periodFrom: unpaidFrom.toISOString().split('T')[0],
           periodTo: endDate.toISOString().split('T')[0],
@@ -282,6 +298,12 @@ export function hostPaymentScripts(prisma: PrismaClient) {
         const periodTo = new Date(unpaidFrom);
         periodTo.setDate(periodTo.getDate() + (weeksToPay * 7));
 
+        // Special-diet surcharge — whole weeks only on the fortnightly track.
+        const dietType = p.diet || null;
+        const dietAmount = dietType
+          ? Math.round(weeksToPay * DIET_HOST_SURCHARGE_PER_WEEK * 100) / 100
+          : 0;
+
         lineItems.push({
           providerId: provider.id,
           bookingAccommodationId: p.id,
@@ -290,6 +312,8 @@ export function hostPaymentScripts(prisma: PrismaClient) {
           daysPaid: 0,
           weeklyRate: rate,
           amount,
+          dietType,
+          dietAmount,
           reason: 'fortnightly',
           periodFrom: unpaidFrom.toISOString().split('T')[0],
           periodTo: periodTo.toISOString().split('T')[0],
@@ -306,6 +330,8 @@ export function hostPaymentScripts(prisma: PrismaClient) {
       daysPaid: li.daysPaid || 0,
       weeklyRate: li.weeklyRate,
       amount: li.amount,
+      dietType: li.dietType,
+      dietAmount: li.dietAmount || 0,
       reason: li.reason,
       periodFrom: new Date(li.periodFrom),
       periodTo: new Date(li.periodTo),
@@ -321,7 +347,7 @@ export function hostPaymentScripts(prisma: PrismaClient) {
       return { run: null, message: 'No payments due for ' + runDateStr, created: false, lineItems: [] };
     }
 
-    const newTotal = lineItems.reduce((sum, li) => sum + li.amount, 0);
+    const newTotal = lineItems.reduce((sum, li) => sum + li.amount + (li.dietAmount || 0), 0);
 
     if (reuseRunId) {
       // Append the newly-due drafts to the existing run; bump its total by the
@@ -329,10 +355,10 @@ export function hostPaymentScripts(prisma: PrismaClient) {
       await prisma.hostPaymentLineItem.createMany({
         data: newRowData.map(r => ({ ...r, runId: reuseRunId! })),
       });
-      const agg = await prisma.hostPaymentLineItem.aggregate({ where: { runId: reuseRunId }, _sum: { amount: true } });
+      const agg = await prisma.hostPaymentLineItem.aggregate({ where: { runId: reuseRunId }, _sum: { amount: true, dietAmount: true } });
       await prisma.hostPaymentRun.update({
         where: { id: reuseRunId },
-        data: { totalAmount: Math.round(Number(agg._sum.amount || 0) * 100) / 100 },
+        data: { totalAmount: Math.round((Number(agg._sum.amount || 0) + Number(agg._sum.dietAmount || 0)) * 100) / 100 },
       });
       const run = await prisma.hostPaymentRun.findUnique({ where: { id: reuseRunId }, include: { lineItems: true } });
       return { run, message: `Added ${lineItems.length} new line item(s), €${newTotal.toFixed(2)}`, created: true };
@@ -562,6 +588,17 @@ export function hostPaymentScripts(prisma: PrismaClient) {
           });
         }
       }
+
+      // Special-diet surcharge (+€40/wk) — its own clean line on the SAME bill.
+      if (li.dietAmount && Number(li.dietAmount) > 0.01) {
+        billLineItems.push({
+          description: `Special Diet — ${li.dietType || 'Special'} (${nights} nights)`,
+          quantity: 1,
+          unitAmount: Math.round(Number(li.dietAmount) * 100) / 100,
+          accountCode: 'A100',
+          tracking,
+        });
+      }
     } else {
       // Pure amendment
       billLineItems.push({
@@ -658,6 +695,17 @@ export function hostPaymentScripts(prisma: PrismaClient) {
             tracking,
           });
         }
+      }
+
+      // Special-diet surcharge (+€40/wk) — its own clean line on the SAME bill.
+      if (li.dietAmount && Number(li.dietAmount) > 0.01) {
+        billLineItems.push({
+          description: `Special Diet — ${li.dietType || 'Special'} (${nights} nights)`,
+          quantity: 1,
+          unitAmount: Math.round(Number(li.dietAmount) * 100) / 100,
+          accountCode: 'A100',
+          tracking,
+        });
       }
     } else {
       billLineItems.push({

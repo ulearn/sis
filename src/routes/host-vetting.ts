@@ -512,14 +512,38 @@ export function publicHostVettingRoutes(prisma: PrismaClient) {
       if (err) return res.status(400).json({ error: err.message || 'Upload failed' });
       if (!req.file) return res.status(400).json({ error: 'No file received' });
       const id = parseInt(String(req.params.id), 10);
-      const sub = await prisma.hostVettingSubmission.findFirst({ where: { id, providerId: req.hostProvider!.id }, select: { id: true } });
+      const provider = req.hostProvider!;
+      const sub = await prisma.hostVettingSubmission.findFirst({ where: { id, providerId: provider.id }, select: { id: true, formType: true, personName: true } });
       if (!sub) return res.status(404).json({ error: 'Vetting form not found' });
-      const relPath = path.join('host-vetting', String(req.hostProvider!.id), req.file.filename);
+      const relPath = path.join('host-vetting', String(provider.id), req.file.filename);
       await prisma.hostVettingSubmission.update({
         where: { id },
         data: { signedFilePath: relPath, signedFileName: req.file.originalname, signedUploadedAt: new Date(), status: 'signed' },
       });
       res.json({ ok: true });
+
+      // Notify the accommodation team that a signed Garda vetting form has
+      // arrived (fire-and-forget — never blocks the host's upload response).
+      // Pairs with the in-app profile-bubble notification (GET /recent below).
+      (async () => {
+        try {
+          const { sendEmail } = await import('../scripts/email');
+          const esc = (v: any) => String(v == null ? '' : v).replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' } as any)[c]);
+          const who = esc(sub.personName || 'a household member');
+          const hostName = esc(provider.name || `Host #${provider.id}`);
+          const link = `https://sis.ulearnschool.com/sis/admin#/accommodation-detail/${provider.id}`;
+          await sendEmail({
+            from: 'accomm@ulearnschool.com', fromName: 'ULearn',
+            to: process.env.HOST_VETTING_NOTIFY || 'accomm@ulearnschool.com',
+            subject: `Garda Vetting form uploaded — ${hostName}`,
+            html: `<p><strong>${hostName}</strong> has uploaded a signed Garda vetting form (${esc(sub.formType)}) for <strong>${who}</strong>.</p>`
+              + `<p><a href="${link}">Open the host in SIS &rarr;</a> to review and file it.</p>`
+              + `<p style="color:#6b7280;font-size:13px">Reminder: an uploaded form still needs to be posted to the vetting bureau and cleared offline before the host is marked Garda-vetting complete.</p>`,
+          });
+        } catch (e: any) {
+          console.error(`[host-vetting] notify email failed for submission ${id}: ${e?.message || e}`);
+        }
+      })();
     });
   });
 
@@ -540,6 +564,24 @@ export function hostVettingAdminRoutes(prisma: PrismaClient) {
       orderBy: { id: 'desc' },
     });
     res.json(subs);
+  });
+
+  // Recently uploaded signed forms (last 14 days) → surfaced as staff
+  // notifications under the profile bubble in admin.html (loadPendingClaimsBadge).
+  // 14-day window auto-clears the notice; there is no per-item "seen" flag.
+  router.get('/recent', async (_req, res) => {
+    try {
+      const since = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+      const subs = await prisma.hostVettingSubmission.findMany({
+        where: { status: 'signed', signedUploadedAt: { gte: since } },
+        orderBy: { signedUploadedAt: 'desc' },
+        select: {
+          id: true, providerId: true, personName: true, formType: true, signedUploadedAt: true,
+          provider: { select: { name: true } },
+        },
+      });
+      res.json(subs);
+    } catch (e) { res.status(400).json({ error: String(e) }); }
   });
 
   // Stream the signed file for a submission (inline so it previews in-browser).

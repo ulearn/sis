@@ -7,6 +7,7 @@ import { createXeroInvoiceFromHubSpot } from '../scripts/xero-invoice-commission
 import { getAuthedXero } from '../scripts/xero';
 import { pushSisStudentIdToHubspot } from '../scripts/hubspot-contact-push';
 import { applyChristmasClosures } from '../scripts/christmas-shunt';
+import { documentScripts } from '../scripts/documents';
 import { syncArrivalFromFlight } from '../lib/transport-sync';
 import { reconcileBookingCredit } from '../scripts/partner-credit-sync';
 import { sendStudentEmail } from './email';
@@ -1087,6 +1088,8 @@ export async function resyncBookingLogistics(
   const desiredCourses: any[] = [];
   const desiredAccom: any[] = [];
   const desiredAccomSkus: string[] = [];   // for the SKU peak/off-peak double-check
+  let rsDietType = '';                      // special diet captured off a DIET line (host-family only)
+  let rsDietFee = 0;
   for (const li of lineItems) {
     const p = li.properties || {};
     const sku = p.hs_sku || '';
@@ -1103,6 +1106,11 @@ export async function resyncBookingLogistics(
         fee: amount,
         isRenewal: isRenewalSku(sku),
       });
+      continue;
+    }
+    if (sku === 'DIET') {
+      rsDietType = (p.description || p.name || '').trim();
+      rsDietFee += amount;
       continue;
     }
     const at = skuToAccommType(sku);
@@ -1137,7 +1145,7 @@ export async function resyncBookingLogistics(
       id: true, serviceStart: true, serviceEnd: true,
       amountTotal: true, amountPaid: true, regFee: true, placementFee: true,
       courses: { select: { id: true, category: true, startDate: true, endDate: true, weeks: true, fee: true } },
-      accommodations: { select: { id: true, accommodationType: true, roomType: true, board: true, startDate: true, endDate: true, weeks: true, fee: true } },
+      accommodations: { select: { id: true, accommodationType: true, roomType: true, board: true, startDate: true, endDate: true, weeks: true, fee: true, diet: true, dietFee: true } },
     },
   });
   if (!existing) return changes;
@@ -1209,6 +1217,13 @@ export async function resyncBookingLogistics(
   // line items collapse to ONE row (see mergeAccomRows). Rows of DIFFERENT accommodationType
   // are a genuine multi-booking (apartment then host family) → left to humans.
   const desiredMerged = mergeAccomRows(desiredAccom);              // one row per type|room|board
+  // Re-attach special-diet info to the host-family stay post-merge (mergeAccomRows
+  // keys on type|room|board and would drop these extra fields).
+  if (rsDietType) {
+    const hf = (desiredMerged as any[]).find(a => a.accommodationType === 'Host Family')
+      || (desiredMerged.length === 1 ? (desiredMerged as any[])[0] : null);
+    if (hf) { hf.diet = rsDietType; hf.dietFee = rsDietFee > 0 ? rsDietFee : null; }
+  }
   const existingTypes = new Set(existing.accommodations.map(a => a.accommodationType).filter(Boolean));
   if (existing.accommodations.length === 0) {
     for (const da of desiredMerged) {
@@ -1216,6 +1231,7 @@ export async function resyncBookingLogistics(
         data: {
           bookingId, accommodationType: da.accommodationType, roomType: da.roomType, board: da.board,
           startDate: da.startDate, endDate: da.endDate, weeks: da.weeks, fee: da.fee, active: true,
+          diet: (da as any).diet || null, dietFee: (da as any).dietFee ?? null,
         } as any,
       });
       changes.push(`accom+${created.id}(${da.accommodationType})`);
@@ -1252,6 +1268,7 @@ export async function resyncBookingLogistics(
       if (da.endDate && +(survivor.endDate as any) !== +da.endDate) data.endDate = da.endDate;
       if (da.weeks && (wasSplit || (survivor as any).weeks !== da.weeks)) data.weeks = da.weeks;
       if (da.fee != null && (wasSplit || Number(survivor.fee) !== Number(da.fee))) data.fee = da.fee;
+      if ((da as any).diet && (survivor as any).diet !== (da as any).diet) { data.diet = (da as any).diet; data.dietFee = (da as any).dietFee ?? null; }
       if (Object.keys(data).length) {
         await prisma.bookingAccommodation.update({ where: { id: survivor.id }, data });
         changes.push(`accom#${survivor.id} set:${Object.keys(data).join(',')}`);
@@ -1267,6 +1284,7 @@ export async function resyncBookingLogistics(
       if (da.board && (ex as any).board == null) data.board = da.board;
       if (da.startDate && ex.startDate == null) data.startDate = da.startDate;
       if (da.endDate && ex.endDate == null) data.endDate = da.endDate;
+      if ((da as any).diet && (ex as any).diet == null) { data.diet = (da as any).diet; data.dietFee = (da as any).dietFee ?? null; }
       if (Object.keys(data).length) {
         await prisma.bookingAccommodation.update({ where: { id: ex.id }, data });
         changes.push(`accom#${ex.id} fill:${Object.keys(data).join(',')}`);
@@ -1969,6 +1987,11 @@ export function webhookRoutes(prisma: PrismaClient) {
       let examFeeTotal = 0;
       let insuranceFeeTotal = 0;
       let accomFallbackFee = 0;   // description-matched accom rows when SKU scan misses
+      // Special diet (host-family only). AutoQuote emits a `DIET` SKU line per
+      // host-family week; the diet TYPE rides in the line description, the student
+      // charge in its amount. Captured here, pinned onto the host-family stay below.
+      let dietType = '';
+      let dietFee = 0;
 
       for (const li of lineItems) {
         const p = li.properties;
@@ -2024,6 +2047,17 @@ export function webhookRoutes(prisma: PrismaClient) {
           continue;
         }
 
+        // Special diet — not a course, not accommodation, not a generic extra:
+        // it belongs ON the host-family stay. Capture type (description) + fee
+        // (amount) and pin them to the Host Family accom row after the loop. The
+        // amount is already in totalAmount; `continue` keeps classifyAuxItem from
+        // misrouting it (e.g. a "no dairy" description won't hit the accom branch).
+        if (sku === 'DIET') {
+          dietType = (p.description || p.name || '').trim();
+          dietFee += amount;
+          continue;
+        }
+
         // No SKU match — classify by name/description so reg fees, placement
         // fees, and extras stop getting silently merged into amountTotal.
         const kind = classifyAuxItem(p.name || '', p.description || '');
@@ -2074,6 +2108,17 @@ export function webhookRoutes(prisma: PrismaClient) {
           fee: accomFallbackFee > 0 ? accomFallbackFee : null,
           active: true,
         });
+      }
+
+      // Pin any special-diet info onto the host-family stay (DIET is host-family
+      // only; apartments self-cater). The host is separately paid the +€40/week
+      // surcharge at payment-run time off this `diet` flag.
+      if (dietType) {
+        // Normally exactly one host-family row; fall back to the sole accom row if
+        // the label drifted (DIET is only ever emitted for a host-family booking).
+        const hf = accommodations.find(a => a.accommodationType === 'Host Family')
+          || (accommodations.length === 1 ? accommodations[0] : null);
+        if (hf) { hf.diet = dietType; hf.dietFee = dietFee > 0 ? dietFee : null; }
       }
 
       // Split ambiguous "transfer" / "airport" line items between pickup/dropoff
@@ -2775,6 +2820,25 @@ export function webhookRoutes(prisma: PrismaClient) {
         await sendWelcomeAboardIfNew(prisma, booking);
       }
 
+      // Fully-paid → auto-issue the Letter of Acceptance (Academic Year, and
+      // LifePass course-1 — for LifePass "fully paid" excludes the -Sub master,
+      // so it fires on the €997 onboarding). The AY course is the sole filter.
+      // Idempotent: skips if an ISSUED LOA already exists, so a re-fired payment
+      // webhook never double-issues; staff can still re-issue by hand. Awaited
+      // but non-fatal — a failure here must never break the payment/WON update.
+      if (isFullyPaid) {
+        try {
+          const loa = await documentScripts(prisma).autoIssueLoaForBooking(booking.id, 'auto-loa');
+          if (loa.status === 'issued') {
+            console.log(`[Payment Webhook] auto-LOA issued for bk${booking.id} (doc ${(loa as any).documentId}): ${JSON.stringify((loa as any).notify)}`);
+          } else {
+            console.log(`[Payment Webhook] auto-LOA skipped for bk${booking.id}: ${(loa as any).reason}`);
+          }
+        } catch (e: any) {
+          console.warn(`[Payment Webhook] auto-LOA failed for booking ${booking.id}:`, e?.message || e);
+        }
+      }
+
       // Auto-deduct the agency credit STORE when a HubSpot credit memo has been
       // applied to a booking invoice. The memo object is API-walled, but the
       // invoice's `credit_memos` association is readable and the credit amount is
@@ -2945,6 +3009,28 @@ export function webhookRoutes(prisma: PrismaClient) {
 
       const studentLabel = booking.student ? `${booking.student.firstName} ${booking.student.lastName}` : '(no student)';
       console.log(`[TM Escrow] bk${booking.id} ${studentLabel} — €${amount} shadow payment ${receiptNumber} recorded (status now: ${booking.status === 'CONFIRMED' ? 'CONFIRMED-kept' : 'ESCROW'})`);
+
+      // Fully secured in escrow → auto-issue the LOA, same as a standard full
+      // payment. Escrow IS the green light for a visa-required LoA (the student
+      // needs it to lodge the embassy application; TM holds the fees). Fire once
+      // the escrow held (incl. this payment) + any settled payment cover the fee.
+      // AY-gated + idempotent inside autoIssueLoaForBooking; non-fatal.
+      try {
+        const fin = await prisma.booking.findUnique({
+          where: { id: booking.id },
+          select: { amountTotal: true, amountPaid: true, payments: { select: { amount: true, type: true, method: true } } },
+        });
+        const total = Number(fin?.amountTotal || 0);
+        const escrowHeld = (fin?.payments || []).filter(p => p.type === 'Escrow' || /escrow/i.test(p.method || '')).reduce((s, p) => s + Number(p.amount || 0), 0);
+        const secured = Number(fin?.amountPaid || 0) + escrowHeld;
+        if (total > 0 && secured >= total - 1.00) {
+          const loa = await documentScripts(prisma).autoIssueLoaForBooking(booking.id, 'auto-loa-escrow');
+          console.log(`[TM Escrow] bk${booking.id} fully secured (€${secured.toFixed(2)}/€${total.toFixed(2)}) → auto-LOA ${loa.status}${loa.status === 'issued' ? ' doc ' + (loa as any).documentId : ' (' + (loa as any).reason + ')'}`);
+        }
+      } catch (e: any) {
+        console.warn(`[TM Escrow] auto-LOA check failed for booking ${booking.id}:`, e?.message || e);
+      }
+
       return res.json({ status: 'created', paymentId: created.id, bookingId: booking.id, receiptNumber });
     } catch (err: any) {
       console.error('[TM Escrow] error:', err?.message, err?.stack?.split('\n').slice(0, 3).join('\n'));

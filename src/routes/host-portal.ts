@@ -17,11 +17,11 @@
 // enforced at the DB level (`providerId @unique`).
 import { Router, Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
-import fs from 'fs';
-import path from 'path';
 import { PrismaClient } from '../generated/prisma/client';
 import { hostPaymentScripts } from '../scripts/host-payments';
 import { postSlackMessage, kellyMention } from '../lib/slack';
+import { gvComplete, isJuniorAt, JUNIOR_GV_MESSAGE } from '../lib/junior-gate';
+import { grantFirstDibs } from '../lib/first-dibs';
 
 // Express request augmentation — provider attached by the middleware so
 // downstream handlers (account view, matching pool, claim endpoint) can
@@ -153,6 +153,20 @@ export function publicHostPortalRoutes(prisma: PrismaClient) {
     const baId = parseInt(String(req.body?.bookingAccommodationId ?? ''), 10);
     if (!Number.isFinite(baId)) return res.status(400).json({ error: 'bookingAccommodationId required' });
     try {
+      // Junior gate: under-18-on-arrival students can only be claimed by GV-complete hosts.
+      const target = await prisma.bookingAccommodation.findUnique({
+        where: { id: baId },
+        select: { startDate: true, booking: { select: { student: { select: { birthday: true } } } } },
+      });
+      if (target && isJuniorAt(target.booking?.student?.birthday, target.startDate)) {
+        const [hp, subs] = await Promise.all([
+          prisma.accommodationProvider.findUnique({ where: { id: provider.id }, select: { vettingStatus: true } }),
+          prisma.hostVettingSubmission.findMany({ where: { providerId: provider.id }, select: { status: true } }),
+        ]);
+        if (!gvComplete(hp?.vettingStatus, subs)) {
+          return res.status(403).json({ error: JUNIOR_GV_MESSAGE + ' Tap "Complete Garda Vetting" on this page to finish it.', code: 'GV_REQUIRED' });
+        }
+      }
       // Atomic: only succeeds while still unclaimed AND unplaced AND active.
       // 0 rows back = another host got there first (or it was placed).
       const updated = await prisma.bookingAccommodation.updateMany({
@@ -186,50 +200,14 @@ export function publicHostPortalRoutes(prisma: PrismaClient) {
   });
 
   // First Dibs — a host who missed out self-tags to be emailed FIRST next cycle.
-  // Gates: matching on · GV completed (else a "finish vetting" nudge, no grant) ·
-  // cap of 5 concurrent holders. Single-use + placement clearing (elsewhere) stop
-  // it becoming a permanent bump.
-  const FIRST_DIBS_CAP = 5;
+  // All gates (matching on · GV completed · cap of 5), the flag write, the 3-strikes
+  // Slack escalation and the host-facing copy live in the shared lib/first-dibs
+  // (also used by the hubapp accomm desk), so the two paths can never drift.
   router.post('/:token/first-dibs', async (req: any, res) => {
     const provider = req.hostProvider!;
     try {
-      if (provider.portalMatchingEnabled === false) {
-        return res.json({ status: 'error', message: 'Your account isn\'t set up for student matching right now. Please contact accomm@ulearnschool.com.' });
-      }
-      const p = await prisma.accommodationProvider.findUnique({
-        where: { id: provider.id },
-        select: { firstDibsAt: true, vettingStatus: true },
-      });
-      if (!p) return res.status(404).json({ status: 'error', message: 'Host not found.' });
-      if (p.firstDibsAt) {
-        return res.json({ status: 'already', message: 'You\'re already on the First Dibs list — no need to click again.' });
-      }
-      // GV gate — non-completed hosts get a nudge, not a grant (turns the First
-      // Dibs itch into a vetting-completion prompt), and it does NOT consume a slot.
-      const subs = await prisma.hostVettingSubmission.findMany({ where: { providerId: provider.id }, select: { status: true } });
-      if (!firstDibsGvComplete(p.vettingStatus, subs)) {
-        return res.json({ status: 'gv-incomplete', message: 'Almost! Your Garda vetting isn\'t complete yet — finish it and you can grab First Dibs. Tap "Complete Garda Vetting" below to do the next step.' });
-      }
-      // Cap — count current flag-holders.
-      const held = await prisma.accommodationProvider.count({ where: { firstDibsAt: { not: null } } });
-      if (held >= FIRST_DIBS_CAP) {
-        return res.json({ status: 'full', message: 'First Dibs is full for this round — but you\'ll still be in the running. We\'ll be in touch as students come up.' });
-      }
-      // Set ONLY the flag — their activity level (SuperHost/BusyBee/…) is left as-is.
-      const granted = await prisma.accommodationProvider.update({
-        where: { id: provider.id },
-        data: { firstDibsAt: new Date(), firstDibsStrikes: { increment: 1 } },
-        select: { firstDibsStrikes: true },
-      });
-      const slackChannel = process.env.SLACK_ACCOMM_CHANNEL || process.env.SLACK_DEFAULT_CHANNEL || undefined;
-      // 3-strikes safety valve: a host who keeps raising their hand but never converts
-      // (distance / suitability / accept-flags) gets escalated to Kelly instead of just
-      // silently re-queuing forever.
-      const slackText = granted.firstDibsStrikes >= 3
-        ? `⚠️ *${provider.name}* has tapped *First Dibs* ${granted.firstDibsStrikes}× without ever being placed — worth a look (distance / suitability / accept-flags?). ${kellyMention()}`
-        : `⭐ *${provider.name}* tapped *First Dibs* — front of next week's outreach.`;
-      postSlackMessage({ channel: slackChannel, text: slackText }).catch(() => {});
-      return res.json({ status: 'granted', message: '✓ You\'re on the First Dibs list — you\'ll be first to hear about next week\'s students.' });
+      const result = await grantFirstDibs(prisma, provider.id, 'portal');
+      return res.json(result);
     } catch (e: any) {
       console.error('[host-portal] first-dibs failed for provider', provider?.id, e);
       res.status(500).json({ status: 'error', message: 'Something went wrong. Please contact accomm@ulearnschool.com.' });
@@ -336,7 +314,7 @@ async function renderHostPortalPage(prisma: PrismaClient, providerId: number, to
     where: { providerId },
     select: {
       id: true, periodFrom: true, periodTo: true, amount: true, studentName: true,
-      weeksPaid: true, daysPaid: true,
+      weeksPaid: true, daysPaid: true, dietType: true, dietAmount: true,
       xeroStatus: true, xeroPaidAt: true, xeroBillId: true, reason: true, amendmentNote: true,
     },
     // Newest first. Order by id (== H-number sequence == creation order) rather
@@ -350,9 +328,9 @@ async function renderHostPortalPage(prisma: PrismaClient, providerId: number, to
   // the 30 shown). Open/void bills don't count as earned.
   const earnedAgg = await prisma.hostPaymentLineItem.aggregate({
     where: { providerId, xeroStatus: 'paid' },
-    _sum: { amount: true },
+    _sum: { amount: true, dietAmount: true },
   });
-  const totalEarnings = Number(earnedAgg._sum.amount || 0);
+  const totalEarnings = Number(earnedAgg._sum.amount || 0) + Number(earnedAgg._sum.dietAmount || 0);
 
   // Garda vetting status — drives the portal section's count line.
   const vetting = await prisma.hostVettingSubmission.findMany({
@@ -362,51 +340,27 @@ async function renderHostPortalPage(prisma: PrismaClient, providerId: number, to
   const vettingStats = {
     total: vetting.length,
     pending: vetting.filter(v => v.status !== 'signed').length,
+    complete: gvComplete(provider.vettingStatus, vetting),
   };
 
-  // ── First Dibs — the self-serve "missed out → jump next week's queue" button.
-  // Surfaces ONLY when: matching is on, the pool is empty (they missed out), they
-  // don't already hold it, we're inside an active outreach cycle (a wave fired in
-  // the last 3 days), and fewer than FD_CAP hosts currently hold it. GV is checked
-  // on CLICK (non-GV still see it → get a "finish your vetting" nudge). Single-use
-  // + placement clearing keep it from becoming a permanent bump.
+  // ── First Dibs — the self-serve "missed out → jump next cycle's queue" button.
+  // Surfaces whenever: matching is on, the pool is empty (they've missed out),
+  // they don't already hold it, and fewer than FD_CAP hosts currently hold it.
+  // No time window — the cascade email simply drops them here, and the button is
+  // always available to remedy a missed-out week. GV is checked on CLICK (non-GV
+  // still see it → get a "finish your vetting" nudge). Single-use (auto-nudge
+  // clears it once the First Dibs wave actually emails them) + placement clearing
+  // keep it from becoming a permanent bump.
   const FD_CAP = 5;
   const alreadyFirstDibs = provider.firstDibsAt != null;
   let showFirstDibs = false;
   if (provider.portalMatchingEnabled !== false && unplaced.length === 0 && !alreadyFirstDibs) {
     const fdCount = await prisma.accommodationProvider.count({ where: { firstDibsAt: { not: null } } });
-    showFirstDibs = firstDibsWindowOpen() && fdCount < FD_CAP;
+    showFirstDibs = fdCount < FD_CAP;
   }
   const firstDibs = { show: showFirstDibs, alreadyIn: alreadyFirstDibs };
 
   return wrapHtml(provider.name, buildPortalBody(provider, unplaced, placements, bills, totalEarnings, token, vettingStats, provider.portalMatchingEnabled !== false, firstDibs));
-}
-
-// GV "completed" = phase 3 (mirrors auto-nudge.hostPhase): manual vettingStatus
-// wins; else derived from submissions (submitted→form, signed→upload, else complete).
-function firstDibsGvComplete(vettingStatus: string | null | undefined, subs: { status: string }[]): boolean {
-  const PHASE: Record<string, number> = { none: 0, form: 1, upload: 2, complete: 3, returned: 3 };
-  if (vettingStatus != null) return (PHASE[vettingStatus] ?? 0) === 3;
-  if (!subs || !subs.length) return false;
-  if (subs.some(s => s.status === 'submitted')) return false;
-  if (subs.some(s => s.status === 'signed')) return false;
-  return true;
-}
-
-// First Dibs button window: open only within FIRST_DIBS_WINDOW_H hours of the
-// cascade's LAST actual send (config.lastSentAt — auto-stop aware). This is the
-// "goes away X hours after the last cohort was emailed" rule. Hour-precise.
-const FIRST_DIBS_WINDOW_H = 6;
-function firstDibsWindowOpen(): boolean {
-  try {
-    const cfgPath = path.join(__dirname, '..', '..', 'data', 'auto-nudge.json');
-    if (!fs.existsSync(cfgPath)) return false;
-    const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
-    if (!cfg.lastSentAt) return false;
-    const sentMs = new Date(cfg.lastSentAt).getTime();
-    if (!isFinite(sentMs)) return false;
-    return (Date.now() - sentMs) <= FIRST_DIBS_WINDOW_H * 3600 * 1000;
-  } catch { return false; }
 }
 
 // ─── HTML helpers ──────────────────────────────────────────────────────────
@@ -471,6 +425,8 @@ function wrapHtml(providerName: string, body: string): string {
   .card-name{font-weight:700;font-size:15px;margin-bottom:4px}
   .card-meta{font-size:12px;color:#666}
   .card-dates{font-size:13px;margin-top:6px}
+  .gv-note{margin-top:8px;padding:8px 10px;border-radius:6px;background:#fff7ed;border:1px solid #fed7aa;color:#7c2d12;font-size:13px;line-height:1.4}
+  .gv-note a{color:#3a6c00;font-weight:700;white-space:nowrap}
   .pill{display:inline-block;background:#eef5d3;color:#3a6c00;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px}
   .btn{display:inline-block;background:#6FB42C;color:#fff;border:0;border-radius:6px;padding:8px 16px;font-weight:700;font-size:13px;cursor:pointer;text-decoration:none;font-family:inherit}
   .btn:disabled{background:#c0c0c0;cursor:not-allowed}
@@ -505,7 +461,7 @@ function buildPortalBody(
   bills: any[],
   totalEarnings: number,
   token: string,
-  vettingStats: { total: number; pending: number },
+  vettingStats: { total: number; pending: number; complete: boolean },
   showMatching: boolean = true,
   firstDibs: { show: boolean; alreadyIn: boolean } = { show: false, alreadyIn: false },
 ): string {
@@ -522,17 +478,17 @@ function buildPortalBody(
       ${unplaced.length === 0
         ? `<div class="box muted">No students need a host right now. We'll be in touch when new students need placement.</div>
            ${firstDibs.alreadyIn
-             ? `<div class="box box-green" style="margin-top:10px">✓ You're on the <strong>First Dibs</strong> list — you'll be first to hear about next week's students.</div>`
+             ? `<div class="box box-green" style="margin-top:10px">✓ You're <strong>top of the queue</strong> — First Dibs on the next students we get. If we have any, your email goes out first, at 8am Monday.</div>`
              : firstDibs.show
                ? `<div class="box" style="margin-top:10px;text-align:center">
                     <div style="font-weight:700;margin-bottom:4px">Missed out this week?</div>
-                    <div class="muted" style="font-size:13px;margin-bottom:10px">Tap below and we'll email you <strong>first</strong> next time students need a host.</div>
-                    <button id="firstDibsBtn" class="btn" onclick="firstDibs(this)" style="background:#2563eb;color:#fff;border:0">⭐ GET FIRST DIBS NEXT WEEK</button>
+                    <div class="muted" style="font-size:13px;margin-bottom:10px">Tap below to go <strong>top of the queue</strong> — you'll be first to get the email (8am Monday) the next time we have students.</div>
+                    <button id="firstDibsBtn" class="btn" onclick="firstDibs(this)" style="background:#2563eb;color:#fff;border:0">⭐ GET FIRST DIBS</button>
                     <div id="firstDibsMsg" class="muted" style="font-size:12px;margin-top:8px"></div>
                   </div>`
                : ''}`
         : `${renderCalendar(unplaced)}
-           <div id="cardList">${unplaced.map((p, i) => renderStudentCard(p, i >= 5)).join('')}</div>
+           <div id="cardList">${unplaced.map((p, i) => renderStudentCard(p, i >= 5, vettingStats.complete)).join('')}</div>
            ${unplaced.length > 5
              ? `<div class="muted" style="text-align:center;margin:8px 0">
                   Showing <span id="visibleCount">5</span> of ${unplaced.length}
@@ -567,14 +523,14 @@ function buildPortalBody(
   // fill → print → upload pipeline (routes/host-vetting.ts). A tiny nudge
   // shows only when a started form still needs its signed upload.
   const sectionVetting = `
-    <div style="margin:18px 0 4px">
+    <div id="gv" style="margin:18px 0 4px;scroll-margin-top:16px">
       <a class="btn btn-secondary" href="/host-portal/${esc(token)}/vetting">Complete Garda Vetting →</a>
       ${vettingStats.pending ? `<span class="muted" style="margin-left:10px;color:#92400e;font-weight:700">${vettingStats.pending} awaiting signed upload</span>` : ''}
     </div>
   `;
 
   // ── Section C: account / bills
-  const totalOpen = bills.filter(b => b.xeroStatus !== 'paid').reduce((s, b) => s + Number(b.amount || 0), 0);
+  const totalOpen = bills.filter(b => b.xeroStatus !== 'paid').reduce((s, b) => s + Number(b.amount || 0) + Number(b.dietAmount || 0), 0);
   const sectionC = `
     <h2 style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap">
       <span>Account</span>
@@ -596,13 +552,19 @@ function buildPortalBody(
              const period = `${fmtDate(b.periodFrom)} → ${fmtDate(b.periodTo)} | ${nights} night${nights === 1 ? '' : 's'} | ${ref}`;
              const statusCls = b.xeroStatus === 'paid' ? 'paid' : (b.xeroStatus === 'voided' ? 'void' : 'open');
              const statusLabel = b.xeroStatus === 'paid' ? 'PAID' : (b.xeroStatus === 'voided' ? 'VOID' : 'OPEN');
+             // Special-diet surcharge is its own Xero line on the same bill — show
+             // it to the host so the figure matches their remittance.
+             const dietAmt = Number(b.dietAmount || 0);
+             const billTotal = Number(b.amount || 0) + dietAmt;
+             const dietNote = dietAmt > 0.01 ? `<div class="muted" style="font-size:11px">+ Special Diet${b.dietType ? ' (' + esc(b.dietType) + ')' : ''} ${fmtMoney(dietAmt)}</div>` : '';
              return `<div class="bill bill-row${i >= 5 ? ' bill-hidden' : ''}"${i >= 5 ? ' style="display:none"' : ''}>
                <div>
                  <div><strong>${esc(b.studentName || (b.reason === 'amendment' ? (b.amendmentNote || 'Amendment') : 'Stay'))}</strong></div>
                  <div class="muted" style="font-size:11px">${period}</div>
+                 ${dietNote}
                </div>
                <div style="text-align:right">
-                 <div><strong>${fmtMoney(b.amount)}</strong></div>
+                 <div><strong>${fmtMoney(billTotal)}</strong></div>
                  <span class="bill-status ${statusCls}">${statusLabel}</span>
                </div>
              </div>`;
@@ -643,8 +605,12 @@ function localIso(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-function renderStudentCard(pl: any, hidden: boolean): string {
+const isJuniorCard = (pl: any) => isJuniorAt(pl.booking?.student?.birthday, pl.startDate);
+
+function renderStudentCard(pl: any, hidden: boolean, hostGvComplete = true): string {
   const s = pl.booking?.student;
+  const junior = isJuniorCard(pl);
+  const blocked = junior && !hostGvComplete;
   const arrivalIso = localIso(new Date(pl.startDate));
   const nights = nightsBetween(pl.startDate, pl.endDate);
   const dietBits = [s?.diet, s?.allergies].filter(Boolean).join(' · ');
@@ -654,11 +620,15 @@ function renderStudentCard(pl: any, hidden: boolean): string {
       <div class="card-meta">
         ${esc(s?.nationality || '')}${s?.gender ? ' · ' + genderSymbol(s.gender) : ''}${ageFrom(s?.birthday) ? ' · age ' + ageFrom(s?.birthday) : ''}
         ${dietBits ? ' · <span class="pill">' + esc(dietBits) + '</span>' : ''}
+        ${junior ? ' · <span class="pill" style="background:#fff7ed;color:#9a3412">Under 18</span>' : ''}
       </div>
       <div class="card-dates"><strong>Arr ${fmtDate(pl.startDate)}</strong> · ${nights} nights (${esc(pl.board || 'board TBC')})</div>
+      ${blocked ? `<div class="gv-note">🛡️ <strong>Under 18 — Garda vetting needed.</strong> You can host this student once your Garda vetting is complete. It only takes a few minutes to start — <a href="#gv">Complete Garda Vetting ↓</a></div>` : ''}
     </div>
     <div>
-      <button class="btn claim-btn" data-ba="${pl.id}" onclick="claimStudent(this)" title="Register your interest in hosting this student">Claim</button>
+      ${blocked
+        ? `<button class="btn claim-btn" disabled title="${esc(JUNIOR_GV_MESSAGE)}" style="opacity:.55;cursor:not-allowed">🛡️ Vetting needed</button>`
+        : `<button class="btn claim-btn" data-ba="${pl.id}" onclick="claimStudent(this)" title="Register your interest in hosting this student">Claim</button>`}
     </div>
   </div>`;
 }

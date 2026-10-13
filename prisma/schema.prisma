@@ -1387,12 +1387,36 @@ model AccommodationProvider {
   cleaningSheetId    String?  @map("cleaning_sheet_id")
   cleaningSheetGid   Int?     @map("cleaning_sheet_gid")
 
+  // Site Visit — staff visit to a host family's home (host-family only).
+  // visited flag + date (YYYY-MM-DD string, no TZ games) + outcome notes;
+  // photos live in the child table below.
+  siteVisited     Boolean  @default(false) @map("site_visited")
+  siteVisitDate   String?  @map("site_visit_date")
+  siteVisitNotes  String?  @map("site_visit_notes")
+
   properties    AccommodationProperty[]
   portalToken   HostPortalToken?
   claimedPlacements BookingAccommodation[] @relation("ClaimedBy")
   vettingSubmissions HostVettingSubmission[]
+  siteVisitPhotos HostSiteVisitPhoto[]
 
   @@map("accommodation_providers")
+}
+
+// Photos from a host-family site visit (reuses the student-upload disk-storage
+// pattern; files under uploads/host-site-visits/<providerId>/).
+model HostSiteVisitPhoto {
+  id           Int      @id @default(autoincrement())
+  createdAt    DateTime @default(now()) @map("created_at")
+  providerId   Int      @map("provider_id")
+  provider     AccommodationProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  filename     String
+  originalName String   @map("original_name")
+  mimeType     String   @map("mime_type")
+  size         Int      @default(0)
+
+  @@index([providerId])
+  @@map("host_site_visit_photos")
 }
 
 /// Public "become a host" application intake (the iframe form on ulearnschool.com).
@@ -1567,6 +1591,17 @@ model BookingAccommodation {
 
   // Financial
   fee               Decimal? @db.Decimal(10,2)
+
+  // Special diet (host-family only). Set by the invoice-created webhook when the
+  // deal carries a DIET line (AutoQuote emits it per host-family week; the diet
+  // TYPE rides in the line description, the student charge in its amount). The
+  // host is separately paid a +€40/week surcharge at payment-run time. (Neil, 2026-10-10)
+  diet              String?                       // Halal / Kosher / Vegetarian / No dairy / Vegan / Coeliac / Other
+  dietFee           Decimal? @map("diet_fee") @db.Decimal(10,2)  // what the student was charged (from the DIET line)
+
+  // Pre-arrival host reminder (cron-arrival-reminder) — stamped once the host has
+  // been reminded for this stay, so the daily cron never double-sends. (Neil, 2026-10-10)
+  arrivalReminderSentAt DateTime? @map("arrival_reminder_sent_at") @db.Timestamp(3)
 
   // T-3 balance-warning cron (cron-accomm-balance-warn) sets this when it
   // auto-bounces a placed-but-unpaid student out of their bed. Populated once,
@@ -2086,7 +2121,14 @@ model HostPaymentLineItem {
   weeksPaid     Int      @map("weeks_paid")        // how many weeks this line covers
   daysPaid      Int?     @map("days_paid")         // for partial week settlements
   weeklyRate    Decimal  @map("weekly_rate") @db.Decimal(8,2)
-  amount        Decimal  @db.Decimal(10,2)         // weeksPaid * weeklyRate (or pro-rata)
+  amount        Decimal  @db.Decimal(10,2)         // weeksPaid * weeklyRate (or pro-rata) — base stay only (may include a manual amendment, NOT diet)
+
+  // Special-diet host surcharge (+€40/week, pro-rated by nights). Auto-set at
+  // calculatePaymentRun time when the stay carries a diet; billed to the host as
+  // its own Xero line on the SAME bill. Kept separate from `amount` so the base
+  // stay line reconciles cleanly. (Neil, 2026-10-10)
+  dietType      String?  @map("diet_type")
+  dietAmount    Decimal? @map("diet_amount") @db.Decimal(10,2)
 
   reason        String?  // "fortnightly", "checkout", or "amendment"
   periodFrom    DateTime @map("period_from") @db.Date

@@ -1,4 +1,7 @@
 import { Router } from 'express';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 import { PrismaClient } from '../generated/prisma/client';
 import { accommodationScripts } from '../scripts/accommodation';
 import { syncCleaningSheet } from '../scripts/cleaning-sheet-sync';
@@ -7,10 +10,83 @@ import { runHostOutreach } from '../scripts/host-outreach';
 import { recomputeOneHostCategory } from '../scripts/host-category';
 import { autoNudgeScripts } from '../scripts/auto-nudge';
 
+// Site-visit photos — provider-scoped disk storage, mirroring the student-upload
+// bucket / host-vetting pattern. Files land under uploads/host-site-visits/<id>/.
+const siteVisitDir = path.join(__dirname, '..', '..', 'uploads', 'host-site-visits');
+const siteVisitUpload = multer({
+  storage: multer.diskStorage({
+    destination: (req: any, _file, cb) => {
+      const dir = path.join(siteVisitDir, String(req.params.id));
+      fs.mkdirSync(dir, { recursive: true });
+      cb(null, dir);
+    },
+    filename: (_req, file, cb) => {
+      const ext = path.extname(file.originalname) || '';
+      cb(null, `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`);
+    },
+  }),
+  limits: { fileSize: 15 * 1024 * 1024 },
+});
+
 export function accommodationRoutes(prisma: PrismaClient) {
   const router = Router();
   const scripts = accommodationScripts(prisma);
   const autoNudge = autoNudgeScripts(prisma);
+
+  // ── Host Site Visit photos (provider-scoped) ─────────────────
+  // Multi-segment /:id paths, so they sit above the bare /:id route.
+  router.post('/:id/site-visit-photos', siteVisitUpload.array('files', 10), async (req: any, res) => {
+    try {
+      const providerId = parseInt(req.params.id);
+      if (!Number.isFinite(providerId)) return res.status(400).json({ error: 'Invalid provider id' });
+      const files = (req.files as any[]) || [];
+      if (!files.length) return res.status(400).json({ error: 'No files received' });
+      const created = [];
+      for (const f of files) {
+        created.push(await prisma.hostSiteVisitPhoto.create({
+          data: { providerId, filename: f.filename, originalName: f.originalname, mimeType: f.mimetype, size: f.size },
+          select: { id: true, originalName: true, mimeType: true, size: true, createdAt: true },
+        }));
+      }
+      res.status(201).json({ success: true, photos: created });
+    } catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }
+  });
+
+  router.get('/:id/site-visit-photos', async (req, res) => {
+    try {
+      const providerId = parseInt(req.params.id);
+      if (!Number.isFinite(providerId)) return res.status(400).json({ error: 'Invalid provider id' });
+      res.json(await prisma.hostSiteVisitPhoto.findMany({
+        where: { providerId }, orderBy: { id: 'desc' },
+        select: { id: true, originalName: true, mimeType: true, size: true, createdAt: true },
+      }));
+    } catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }
+  });
+
+  router.get('/:id/site-visit-photos/:photoId/download', async (req, res) => {
+    try {
+      const providerId = parseInt(req.params.id);
+      const photo = await prisma.hostSiteVisitPhoto.findFirst({ where: { id: parseInt(req.params.photoId), providerId } });
+      if (!photo) return res.status(404).send('Not found');
+      const abs = path.join(siteVisitDir, String(providerId), photo.filename);
+      if (!fs.existsSync(abs)) return res.status(404).send('File missing');
+      const inline = req.query.inline === '1' || req.query.inline === 'true';
+      res.setHeader('Content-Disposition', `${inline ? 'inline' : 'attachment'}; filename="${photo.originalName.replace(/"/g, '')}"`);
+      res.setHeader('Content-Type', photo.mimeType);
+      fs.createReadStream(abs).pipe(res);
+    } catch (e: any) { res.status(500).send(String(e?.message || e)); }
+  });
+
+  router.delete('/:id/site-visit-photos/:photoId', async (req, res) => {
+    try {
+      const providerId = parseInt(req.params.id);
+      const photo = await prisma.hostSiteVisitPhoto.findFirst({ where: { id: parseInt(req.params.photoId), providerId } });
+      if (!photo) return res.status(404).json({ error: 'Not found' });
+      try { fs.unlinkSync(path.join(siteVisitDir, String(providerId), photo.filename)); } catch { /* already gone */ }
+      await prisma.hostSiteVisitPhoto.delete({ where: { id: photo.id } });
+      res.json({ success: true });
+    } catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }
+  });
 
   // AutoNudge "Cascade" — wave config + live host counts (defined before /:id so
   // the multi-segment paths never collide with the provider-by-id route).
@@ -354,6 +430,16 @@ export function accommodationRoutes(prisma: PrismaClient) {
       const { bookingAccommodationId } = req.body;
       if (!bookingAccommodationId) return res.status(400).json({ error: 'bookingAccommodationId required' });
       res.json(await scripts.releaseClaim(bookingAccommodationId));
+    } catch (e) { res.status(400).json({ error: String(e) }); }
+  });
+  // Accept a pending host offer → auto-place into a free bed at that host.
+  router.post('/matching/accept-claim', async (req, res) => {
+    try {
+      const { bookingAccommodationId } = req.body;
+      if (!bookingAccommodationId) return res.status(400).json({ error: 'bookingAccommodationId required' });
+      const role = (req as any).session?.role;
+      const user = (req as any).session?.user || null;
+      res.json(await scripts.acceptClaim(bookingAccommodationId, role, user));
     } catch (e) { res.status(400).json({ error: String(e) }); }
   });
 

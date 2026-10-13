@@ -59,7 +59,7 @@ export function hostPaymentRoutes(prisma: PrismaClient) {
   router.patch('/line-items/:id', async (req, res) => {
     try {
       const id = parseInt(req.params.id as string);
-      const { amount, weeksPaid, daysPaid, weeklyRate, amendmentNote, amendedBy, periodFrom, periodTo } = req.body;
+      const { amount, weeksPaid, daysPaid, weeklyRate, amendmentNote, amendedBy, periodFrom, periodTo, dietType, dietAmount } = req.body;
       const data: any = {};
       if (amount !== undefined) data.amount = parseFloat(amount);
       if (weeksPaid !== undefined) data.weeksPaid = parseInt(weeksPaid);
@@ -69,10 +69,14 @@ export function hostPaymentRoutes(prisma: PrismaClient) {
       if (amendedBy !== undefined) data.amendedBy = amendedBy;
       if (periodFrom !== undefined) data.periodFrom = new Date(periodFrom);
       if (periodTo !== undefined) data.periodTo = new Date(periodTo);
+      // Diet surcharge — editable so staff can toggle it off (dietAmount 0/null)
+      // or correct the type. Set together.
+      if (dietType !== undefined) data.dietType = dietType || null;
+      if (dietAmount !== undefined) data.dietAmount = (dietAmount === null || dietAmount === '') ? null : parseFloat(dietAmount);
       const updated = await prisma.hostPaymentLineItem.update({ where: { id }, data });
-      // Recalculate run total
+      // Recalculate run total (base stay + diet surcharge)
       const allItems = await prisma.hostPaymentLineItem.findMany({ where: { runId: updated.runId } });
-      const total = allItems.reduce((s, li) => s + Number(li.amount), 0);
+      const total = allItems.reduce((s, li) => s + Number(li.amount) + Number(li.dietAmount || 0), 0);
       await prisma.hostPaymentRun.update({ where: { id: updated.runId }, data: { totalAmount: Math.round(total * 100) / 100 } });
       res.json(updated);
     } catch (e) { res.status(400).json({ error: String(e) }); }
@@ -103,9 +107,9 @@ export function hostPaymentRoutes(prisma: PrismaClient) {
           amendedBy: amendedBy || 'admin',
         },
       });
-      // Recalculate run total
+      // Recalculate run total (base stay + diet surcharge)
       const allItems = await prisma.hostPaymentLineItem.findMany({ where: { runId } });
-      const total = allItems.reduce((s, item) => s + Number(item.amount), 0);
+      const total = allItems.reduce((s, item) => s + Number(item.amount) + Number(item.dietAmount || 0), 0);
       await prisma.hostPaymentRun.update({ where: { id: runId }, data: { totalAmount: Math.round(total * 100) / 100 } });
       res.json(li);
     } catch (e) { res.status(400).json({ error: String(e) }); }

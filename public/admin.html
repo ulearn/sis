@@ -427,6 +427,12 @@ tr:last-child td { border-bottom: none; }
 }
 .chip-btn:hover { background: #f7f7f4; }
 .chip-btn.is-on, .chip-btn.is-on:hover { background: #6FB42C; color: #fff; border-color: #6FB42C; }
+/* Checkbox-backed pill switch (host details): hidden input keeps [data-field] saving intact. */
+.chip-btn.pill-check { display: inline-flex; align-items: center; white-space: nowrap; background: #f1f5f9; color: #94a3b8; }
+.chip-btn.pill-check input { display: none; }
+.chip-btn.pill-check.is-on { background: #6FB42C; color: #fff; border-color: #6FB42C; }
+.chip-btn.pill-check.boy.is-on { background: #2563eb; border-color: #2563eb; }
+.chip-btn.pill-check.girl.is-on { background: #db2777; border-color: #db2777; }
 
 /* AMOUNT */
 .amount { font-family: var(--font-mono); font-weight: 500; }
@@ -618,6 +624,12 @@ tr:last-child td { border-bottom: none; }
 <div id="cleaningDrawer" style="position:fixed;top:0;right:0;height:100vh;width:380px;max-width:90vw;background:var(--card-bg);border-left:1px solid var(--card-border);box-shadow:-4px 0 16px rgba(0,0,0,0.08);transform:translateX(100%);transition:transform 280ms cubic-bezier(0.16, 1, 0.3, 1);z-index:1000;display:flex;flex-direction:column"></div>
 <div id="cleaningDrawerScrim" style="position:fixed;inset:0;background:rgba(0,0,0,0);transition:background 280ms ease;z-index:999;pointer-events:none" onclick="closeCleaningDrawer()"></div>
 
+<!-- Provider / host-family quick-preview drawer — slides in when a host name is
+     clicked on the Matching board. Read-only summary; "Open full profile" jumps
+     to the full host detail view. -->
+<div id="providerPreviewDrawer" style="position:fixed;top:0;right:0;height:100vh;width:400px;max-width:92vw;background:var(--card-bg);border-left:1px solid var(--card-border);box-shadow:-4px 0 16px rgba(0,0,0,0.08);transform:translateX(100%);transition:transform 280ms cubic-bezier(0.16, 1, 0.3, 1);z-index:1000;display:flex;flex-direction:column;overflow-y:auto"></div>
+<div id="providerPreviewScrim" style="position:fixed;inset:0;background:rgba(0,0,0,0);transition:background 280ms ease;z-index:999;pointer-events:none" onclick="closeProviderPreview()"></div>
+
 <script>
 // Build marker — prints in console on every fresh load. If you see an
 // old timestamp here after a code change, the browser is serving a
@@ -660,20 +672,41 @@ let currentUser = { user: '', role: 'staff', permissions: { deny: [], viewOnly: 
   } catch {}
 })();
 
-// Pending host-portal Expression-of-Interest claims → user-menu notifications.
+// Staff notifications under the profile bubble. Live-derived (no stored
+// notification records): pending host-portal claims + recently-uploaded Garda
+// vetting forms. Each source renders its own block; dividers between them.
 async function loadPendingClaimsBadge() {
   const el = document.getElementById('userMenuNotifications');
   if (!el) return;
   try {
-    const claims = await api('/accommodation/claims/pending').catch(() => []);
-    const n = Array.isArray(claims) ? claims.length : 0;
-    if (n > 0) {
+    const [claims, gv] = await Promise.all([
+      api('/accommodation/claims/pending').catch(() => []),
+      api('/host-vetting/recent').catch(() => []),
+    ]);
+    const blocks = [];
+
+    const nc = Array.isArray(claims) ? claims.length : 0;
+    if (nc > 0) {
       const names = claims.slice(0, 3).map(c => `${esc(c.claimedByProvider?.name || 'A host')} → ${esc(c.booking?.student?.firstName || '')} ${esc((c.booking?.student?.lastName || '')[0] || '')}.`).join('<br>');
-      el.innerHTML = `<div style="cursor:pointer" onclick="toggleUserMenu();navigate('matching')">
-        <strong style="color:#b8860b">💛 ${n} host claim${n === 1 ? '' : 's'} to review</strong>
-        <div style="margin-top:4px;color:var(--text-muted);font-size:11px">${names}${n > 3 ? '<br>…' : ''}</div>
+      blocks.push(`<div style="cursor:pointer" onclick="toggleUserMenu();navigate('matching')">
+        <strong style="color:#b8860b">💛 ${nc} host offer${nc === 1 ? '' : 's'} to review</strong>
+        <div style="margin-top:4px;color:var(--text-muted);font-size:11px">${names}${nc > 3 ? '<br>…' : ''}</div>
         <div style="margin-top:4px;color:var(--accent);font-size:11px">Open Matching →</div>
-      </div>`;
+      </div>`);
+    }
+
+    const ng = Array.isArray(gv) ? gv.length : 0;
+    if (ng > 0) {
+      const gnames = gv.slice(0, 3).map(s => `${esc(s.provider?.name || 'A host')} — ${esc(s.personName || 'household member')} (${esc(s.formType || 'GV')})`).join('<br>');
+      blocks.push(`<div style="cursor:pointer" onclick="toggleUserMenu();navigate('accommodation')">
+        <strong style="color:#2563eb">🛡️ ${ng} Garda vetting upload${ng === 1 ? '' : 's'}</strong>
+        <div style="margin-top:4px;color:var(--text-muted);font-size:11px">${gnames}${ng > 3 ? '<br>…' : ''}</div>
+        <div style="margin-top:4px;color:var(--accent);font-size:11px">Open Hosts →</div>
+      </div>`);
+    }
+
+    if (blocks.length) {
+      el.innerHTML = blocks.join('<div style="height:1px;background:var(--card-border);margin:8px 0"></div>');
     } else {
       el.textContent = 'No new notifications';
     }
@@ -2104,6 +2137,17 @@ function renderArrivalsTable() {
           ? '<span title="Card on file — accommodation guarantee held" style="display:inline-block;background:#dcfce7;color:#166534;font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;white-space:nowrap">&#128179; Card &#10003;</span>'
           : '<span title="NO card on file — send the €1 CardOnFile link" style="display:inline-block;background:#fee2e2;color:#991b1b;font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;white-space:nowrap">&#9888; No Card</span>')
       : '';
+    // LOA monitor — Academic-Year / LifePass (non-EU visa) students only. Green
+    // once the LOA is issued; red when they're fully paid (incl. escrow-held) but
+    // the LOA hasn't been issued yet — i.e. someone to chase in Documents. Same
+    // CSS as the card badge. No badge for non-AY rows or AY rows not yet funded.
+    const loaBadge = r.loa_relevant
+      ? (r.loa_issued
+          ? '<span title="Letter of Acceptance issued" style="display:inline-block;background:#dcfce7;color:#166534;font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;white-space:nowrap">&#128196; LOA &#10003;</span>'
+          : (r.loa_missing
+              ? '<span title="Fully paid but NO Letter of Acceptance issued — issue it in Documents" style="display:inline-block;background:#fee2e2;color:#991b1b;font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;white-space:nowrap">&#9888; No LOA</span>'
+              : ''))
+      : '';
     // Level shown here is the PLACEMENT TEST result (CEFR) — NOT the booking
     // course level, which is seeded with an A2 default on first booking and would
     // otherwise surface a misleading guess to academic staff. placement_test_level
@@ -2127,6 +2171,7 @@ function renderArrivalsTable() {
               <span style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono)">#${r.student_id}</span>
               ${r.has_account ? '<span title="Has created a ULearn account" style="display:inline-block;background:#dcfce7;color:#166534;font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;letter-spacing:.02em">&#10003; Account</span>' : ''}
               ${cardBadge}
+              ${loaBadge}
               ${r.private121 ? `<span title="1-to-1 (private) lesson on this booking — a teacher must be rostered. ${esc(r.private121.name || '1-to-1')}${r.private121.start ? ' &middot; starts '+r.private121.start : ''}${r.private121.hours_per_week ? ' &middot; '+r.private121.hours_per_week+' hrs/wk' : ''}" style="display:inline-block;background:#7c3aed;color:#fff;font-size:10px;font-weight:800;padding:1px 7px;border-radius:8px;white-space:nowrap;letter-spacing:.03em">&#9733; 1-to-1</span>` : ''}
             </div>
           </div>
@@ -2404,6 +2449,17 @@ function renderDeparturesTable() {
           ? '<span title="Card on file — accommodation guarantee held" style="display:inline-block;background:#dcfce7;color:#166534;font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;white-space:nowrap">&#128179; Card &#10003;</span>'
           : '<span title="NO card on file — send the €1 CardOnFile link" style="display:inline-block;background:#fee2e2;color:#991b1b;font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;white-space:nowrap">&#9888; No Card</span>')
       : '';
+    // LOA monitor — Academic-Year / LifePass (non-EU visa) students only. Green
+    // once the LOA is issued; red when they're fully paid (incl. escrow-held) but
+    // the LOA hasn't been issued yet — i.e. someone to chase in Documents. Same
+    // CSS as the card badge. No badge for non-AY rows or AY rows not yet funded.
+    const loaBadge = r.loa_relevant
+      ? (r.loa_issued
+          ? '<span title="Letter of Acceptance issued" style="display:inline-block;background:#dcfce7;color:#166534;font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;white-space:nowrap">&#128196; LOA &#10003;</span>'
+          : (r.loa_missing
+              ? '<span title="Fully paid but NO Letter of Acceptance issued — issue it in Documents" style="display:inline-block;background:#fee2e2;color:#991b1b;font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;white-space:nowrap">&#9888; No LOA</span>'
+              : ''))
+      : '';
     const lvl = r.current_level
       ? `<span class="badge" style="background:#dbeafe;color:#1e40af">${esc(r.current_level)}</span>`
       : (r.placement_test_score ? `<span style="font-size:11px;color:var(--text-muted)">${r.placement_test_score}%</span>` : '<span style="color:var(--text-muted)">—</span>');
@@ -2420,6 +2476,7 @@ function renderDeparturesTable() {
               <span style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono)">#${r.student_id}</span>
               ${r.has_account ? '<span title="Has created a ULearn account" style="display:inline-block;background:#dcfce7;color:#166534;font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;letter-spacing:.02em">&#10003; Account</span>' : ''}
               ${cardBadge}
+              ${loaBadge}
               ${r.private121 ? `<span title="1-to-1 (private) lesson on this booking — a teacher must be rostered. ${esc(r.private121.name || '1-to-1')}${r.private121.start ? ' &middot; starts '+r.private121.start : ''}${r.private121.hours_per_week ? ' &middot; '+r.private121.hours_per_week+' hrs/wk' : ''}" style="display:inline-block;background:#7c3aed;color:#fff;font-size:10px;font-weight:800;padding:1px 7px;border-radius:8px;white-space:nowrap;letter-spacing:.03em">&#9733; 1-to-1</span>` : ''}
             </div>
           </div>
@@ -13542,7 +13599,13 @@ function statCardSmall(label, value) {
 let matchingFrom = null; // date string
 let matchingSelectedDot = null; // bookingAccommodationId
 let matchingHostOrderCache = {}; // keyed by provider type
-let matchingSortMode = 'recent'; // 'recent', 'az', 'za'
+// Sort mode is PER SECTION, keyed by section ('apt'/'host' on the unified board,
+// or the provider type on the single-type board) so sorting Apartments doesn't
+// reorder Host Families and vice-versa.
+let matchingSortModes = {}; // key → 'recent' | 'az' | 'za'
+let matchingCollapsed = {}; // key → bool (section collapsed on the unified board)
+let matchingHostSearch = ''; // sticky host-search term — survives week scrolling / re-renders
+const smode = k => matchingSortModes[k] || 'recent';
 
 function sortMatchingHosts(hosts, cacheKey) {
   const key = cacheKey || 'default';
@@ -13551,9 +13614,10 @@ function sortMatchingHosts(hosts, cacheKey) {
     matchingHostOrderCache[key] = hosts.map(h => h.id);
   }
 
-  if (matchingSortMode === 'az') {
+  const mode = smode(key);
+  if (mode === 'az') {
     hosts.sort((a, b) => a.name.localeCompare(b.name));
-  } else if (matchingSortMode === 'za') {
+  } else if (mode === 'za') {
     hosts.sort((a, b) => b.name.localeCompare(a.name));
   } else {
     // 'recent' — always use cached order from first load
@@ -13565,7 +13629,8 @@ function sortMatchingHosts(hosts, cacheKey) {
 }
 
 function filterMatchingHosts(query) {
-  const q = query.toLowerCase().trim();
+  matchingHostSearch = query || '';            // remember raw term for re-render
+  const q = matchingHostSearch.toLowerCase().trim();
   // Find all host rows in the timeline tables and show/hide
   document.querySelectorAll('tr[data-host-name]').forEach(row => {
     const name = row.dataset.hostName;
@@ -13573,17 +13638,28 @@ function filterMatchingHosts(query) {
   });
 }
 
-function toggleMatchingSort() {
-  if (matchingSortMode === 'recent') matchingSortMode = 'az';
-  else if (matchingSortMode === 'az') matchingSortMode = 'za';
-  else matchingSortMode = 'recent';
+// key: 'apt'/'host' (unified board) or the provider type (single-type board).
+function toggleMatchingSort(key) {
+  const k = key || matchingProviderType || 'default';
+  const m = smode(k);
+  matchingSortModes[k] = m === 'recent' ? 'az' : m === 'az' ? 'za' : 'recent';
   refreshMatching();
 }
 
-function sortLabel() {
-  if (matchingSortMode === 'az') return 'A→Z';
-  if (matchingSortMode === 'za') return 'Z→A';
+function sortLabel(key) {
+  const m = smode(key || matchingProviderType || 'default');
+  if (m === 'az') return 'A→Z';
+  if (m === 'za') return 'Z→A';
   return 'Recent';
+}
+
+// Collapse/expand a whole section on the unified board (DOM-only, no re-fetch).
+function toggleMatchingCollapse(key) {
+  matchingCollapsed[key] = !matchingCollapsed[key];
+  const body = document.getElementById(key === 'apt' ? 'matchSectionApt' : 'matchSectionHost');
+  if (body) body.style.display = matchingCollapsed[key] ? 'none' : 'block';
+  const caret = document.getElementById(key === 'apt' ? 'caretApt' : 'caretHost');
+  if (caret) caret.textContent = matchingCollapsed[key] ? '▸' : '▾';
 }
 
 function getMonday2(d) { const dt = new Date(d); const day = dt.getDay(); const diff = dt.getDate() - day + (day === 0 ? -6 : 1); dt.setDate(diff); return dt; }
@@ -13883,8 +13959,8 @@ async function showUnifiedMatching() {
         onclick="selectMatchingDot(${u.id})"
         onmouseenter="showMatchTooltip(this)" onmouseleave="hideMatchTooltip(this)"
         class="match-dot${selected ? ' selected' : ''}"
-        style="min-width:60px;height:30px;border-radius:15px;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;padding:0 10px;gap:4px;font-size:11px;font-weight:600;cursor:grab;user-select:none;border:${borderWidth} solid ${borderColor};box-shadow:${selected ? '0 0 0 2px #84cc16' : 'none'};transition:all 150ms ease;position:relative">
-        ${esc(s.firstName)}<span style="font-size:9px;background:${accommBg};color:${accommFont};padding:1px 4px;border-radius:6px;font-weight:700">${accommLabel}</span>
+        style="min-width:60px;height:30px;border-radius:15px;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;padding:0 10px;gap:4px;font-size:11px;font-weight:600;cursor:grab;user-select:none;border:${borderWidth} solid ${borderColor};box-shadow:${selected ? '0 0 0 2px #84cc16' : (u.claimStatus === 'pending' ? '0 0 0 2px #FFC107' : 'none')};transition:all 150ms ease;position:relative">
+        ${u.claimStatus === 'pending' ? '<span title="A host offered to host this student — Accept or Release">💛</span>' : ''}${esc(s.firstName)}<span style="font-size:9px;background:${accommBg};color:${accommFont};padding:1px 4px;border-radius:6px;font-weight:700">${accommLabel}</span>
         <div class="match-tooltip">
           <div style="font-weight:700;margin-bottom:4px">${esc(s.firstName)} ${esc(s.lastName)}</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:11px">
@@ -13893,7 +13969,7 @@ async function showUnifiedMatching() {
             ${s.nationality ? '<span>'+countryName(s.nationality)+'</span>' : ''}
             <span style="background:${accommBg};color:${accommFont};padding:1px 5px;border-radius:4px;font-size:10px">${esc(u.accommodationType||'')}</span>
           </div>
-          ${diet ? '<div style="font-size:10px;color:#fde68a;margin-top:3px;font-weight:600">Diet: '+esc(diet)+'</div>' : ''}
+          ${diet ? '<div style="font-size:10px;color:#fde68a;margin-top:3px;font-weight:600">🥗 '+esc(diet)+'</div>' : ''}
           ${isHold ? '<div style="font-size:10px;color:#fecaca;margin-top:3px;font-weight:700">⚠ Zero paid — 48h hold (place to start clock)</div>' : ''}
           ${isPartial ? '<div style="font-size:10px;color:#fed7aa;margin-top:3px;font-weight:700">⚠ Balance €'+Number(u.paymentBalance||0).toFixed(2)+' — outstanding</div>' : ''}
           <div style="font-family:var(--font-mono);font-size:10px;margin-top:4px;color:#fff">${(() => {
@@ -13916,7 +13992,7 @@ async function showUnifiedMatching() {
     }
 
     // Timeline renderer (shared for both sections)
-    function renderTimeline(hosts, sectionLabel) {
+    function renderTimeline(hosts, sectionLabel, sortKey) {
       // Pre-pass: build a set of bookingIds that appear on >1 placement (i.e. split bookings)
       const bookingCounts = {};
       for (const h of hosts) for (const pr of (h.properties||[])) for (const rm of (pr.rooms||[])) for (const bd of (rm.beds||[])) for (const pl of (bd.placements||[])) {
@@ -13925,7 +14001,7 @@ async function showUnifiedMatching() {
       const splitBookings = new Set(Object.entries(bookingCounts).filter(([,c]) => c > 1).map(([id]) => parseInt(id)));
       let html = `<table style="border-collapse:collapse;font-size:11px;width:100%">
         <thead><tr style="position:sticky;top:0;z-index:2;background:#fff">
-          <th style="position:sticky;left:0;z-index:3;background:#fff;min-width:170px;max-width:170px;padding:4px 6px;text-align:left;font-size:10px;border-right:2px solid var(--card-border);cursor:pointer" onclick="toggleMatchingSort()">${sectionLabel} <span style="font-size:9px;color:var(--text-muted)">${sortLabel()}</span></th>`;
+          <th style="position:sticky;left:0;z-index:3;background:#fff;min-width:170px;max-width:170px;padding:4px 6px;text-align:left;font-size:10px;border-right:2px solid var(--card-border)">${sectionLabel}</th>`;
       let lastMonth = '';
       for (let i = 0; i < 42; i++) {
         const d = days[i];
@@ -13975,7 +14051,7 @@ async function showUnifiedMatching() {
               // the divider spans the full row.
               const propDividerStyle = (propRowIdx === 0) ? blockDivider : '';
               propRowIdx++;
-              html += '<tr data-host-name="'+esc(host.name.toLowerCase())+'"><td style="position:sticky;left:0;z-index:1;background:var(--card-bg);padding:4px 6px;border-right:2px solid var(--card-border);'+propDividerStyle+'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:170px;max-width:170px;font-size:11px" title="'+esc(room.roomType||host.name)+'"><strong>'+esc(host.name)+'</strong>'+(_seg?'<span style="color:var(--text-muted)"> / '+esc(_seg)+'</span>'+_rtPill:_rtPill)+'</td>';
+              html += '<tr data-host-name="'+esc(host.name.toLowerCase())+'"><td style="position:sticky;left:0;z-index:1;background:var(--card-bg);padding:4px 6px;border-right:2px solid var(--card-border);'+propDividerStyle+'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:170px;max-width:170px;font-size:11px" title="'+esc(room.roomType||host.name)+'"><strong style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px" onclick="openProviderPreview('+host.id+',event)" title="Preview host">'+esc(host.name)+'</strong>'+(_seg?'<span style="color:var(--text-muted)"> / '+esc(_seg)+'</span>'+_rtPill:_rtPill)+'</td>';
 
               for (let i = 0; i < 42; i++) {
                 const d = days[i];
@@ -14056,9 +14132,9 @@ async function showUnifiedMatching() {
         </div>
         <div style="padding:4px 10px;border-radius:12px;font-size:11px;font-weight:700;${selStudent.accommodationType==='Host Family'?'background:#00ff9d;color:#000':'background:#642de1;color:#fff'}">${esc(selStudent.accommodationType||'')}</div>
         ${selStudent.roomType ? '<div style="padding:4px 10px;border-radius:12px;font-size:11px;font-weight:700;border:1px solid var(--card-border);background:var(--card-bg);color:var(--text-secondary)">'+esc(selStudent.roomType)+'</div>' : ''}
-        ${(selStudent.claimStatus==='pending' && selStudent.claimedByProvider) ? '<div title="Expressed interest via the host portal — place them at this host to confirm, or release back to the pool" style="display:flex;align-items:center;gap:6px;padding:4px 12px;border-radius:12px;font-size:11px;font-weight:700;background:#FFC107;color:#3a2e00">💛 '+esc(selStudent.claimedByProvider.name)+' expressed interest<button class="btn btn-ghost btn-sm" style="font-size:10px;padding:0 6px;color:#7a1f1f" onclick="releaseClaim('+selStudent.id+')">Release</button></div>' : ''}
+        ${(selStudent.claimStatus==='pending' && selStudent.claimedByProvider) ? '<div title="This host offered to host the student via their portal. Accept to place them here, or release back to the pool." style="display:flex;align-items:center;gap:6px;padding:4px 8px 4px 12px;border-radius:12px;font-size:11px;font-weight:700;background:#FFC107;color:#3a2e00">💛 Offered by '+esc(selStudent.claimedByProvider.name)+'<button class="btn btn-sm" style="font-size:10px;padding:1px 8px;background:#16a34a;color:#fff;border:0;border-radius:8px;font-weight:700" onclick="acceptClaim('+selStudent.id+')">Accept</button><button class="btn btn-ghost btn-sm" style="font-size:10px;padding:1px 6px;color:#7a1f1f" onclick="releaseClaim('+selStudent.id+')">Release</button></div>' : ''}
         ${selStudent.paymentStatus === 'partial' ? '<div title="Outstanding balance — placement locked unless admin overrides" style="padding:4px 10px;border-radius:12px;font-size:11px;font-weight:700;background:#f97316;color:#fff;display:flex;align-items:center;gap:4px"><span>⚠</span><span>Balance €'+Number(selStudent.paymentBalance||0).toFixed(2)+'</span></div>' : ''}
-        ${(dietLabel||allergies) ? '<div style="display:flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid var(--card-border);border-radius:20px;background:var(--card-bg);font-size:12px">'+(dietLabel?'<span style="color:var(--warning);font-weight:600">'+esc(dietLabel)+'</span>':'')+(allergies?'<span style="color:var(--danger)">'+esc(allergies)+'</span>':'')+'</div>' : ''}
+        ${(dietLabel||allergies) ? '<div style="display:flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid var(--card-border);border-radius:20px;background:var(--card-bg);font-size:12px">'+(dietLabel?'<span style="color:var(--warning);font-weight:600">🥗 '+esc(dietLabel)+'</span>':'')+(allergies?'<span style="color:var(--danger)">'+esc(allergies)+'</span>':'')+'</div>' : ''}
         <button class="btn btn-ghost btn-sm" onclick="matchingSelectedDot=null;showUnifiedMatching()" style="margin-left:auto">&times;</button>
       </div>`;
     }
@@ -14130,22 +14206,37 @@ async function showUnifiedMatching() {
 
     ${unifiedFilterApts ? `<!-- Apartments section -->
     <div style="margin-bottom:8px">
-      <div class="collapse-body open thin-scroll" style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);overflow:auto;max-height:${unifiedFilterHosts ? 'fit-content' : 'calc(100vh - 350px)'}">
-        ${aptHosts.length ? renderTimeline(aptHosts, 'Apartment / Room') : '<div style="padding:20px;color:var(--text-muted);font-size:12px;text-align:center">No apartments</div>'}
+      <div style="display:flex;align-items:center;gap:8px;padding:5px 10px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius) var(--radius) 0 0;cursor:pointer" onclick="toggleMatchingCollapse('apt')" title="Collapse / expand">
+        <span id="caretApt" style="font-size:10px;color:var(--text-muted)">${matchingCollapsed.apt ? '▸' : '▾'}</span>
+        <strong style="font-size:12px">Apartments</strong>
+        <span style="flex:1"></span>
+        <span onclick="event.stopPropagation();toggleMatchingSort('apt')" title="Change sort order" style="font-size:10px;font-weight:600;color:var(--text-muted);border:1px solid var(--card-border);border-radius:10px;padding:2px 9px;background:var(--bg-subtle);cursor:pointer">${sortLabel('apt')}</span>
+      </div>
+      <div id="matchSectionApt" class="thin-scroll" style="display:${matchingCollapsed.apt ? 'none' : 'block'};background:var(--card-bg);border:1px solid var(--card-border);border-top:none;border-radius:0 0 var(--radius) var(--radius);overflow:auto;max-height:${unifiedFilterHosts ? 'fit-content' : 'calc(100vh - 350px)'}">
+        ${aptHosts.length ? renderTimeline(aptHosts, 'Apartment / Room', 'apt') : '<div style="padding:20px;color:var(--text-muted);font-size:12px;text-align:center">No apartments</div>'}
       </div>
     </div>` : ''}
 
     ${unifiedFilterHosts ? `<!-- Hosts section -->
     <div>
-      <div style="padding:6px 8px;background:var(--card-bg);border:1px solid var(--card-border);border-bottom:none;border-radius:var(--radius) var(--radius) 0 0">
-        <input type="text" id="hostSearchMatch" placeholder="Search hosts..." oninput="filterMatchingHosts(this.value)" style="width:100%;padding:5px 10px;border:1px solid var(--card-border);border-radius:16px;font-size:12px;outline:none;background:var(--bg-subtle)">
+      <div style="display:flex;align-items:center;gap:8px;padding:5px 10px;background:var(--card-bg);border:1px solid var(--card-border);border-bottom:none;border-radius:var(--radius) var(--radius) 0 0;cursor:pointer" onclick="toggleMatchingCollapse('host')" title="Collapse / expand">
+        <span id="caretHost" style="font-size:10px;color:var(--text-muted)">${matchingCollapsed.host ? '▸' : '▾'}</span>
+        <strong style="font-size:12px">Host Families</strong>
+        <span style="flex:1"></span>
+        <span onclick="event.stopPropagation();toggleMatchingSort('host')" title="Change sort order" style="font-size:10px;font-weight:600;color:var(--text-muted);border:1px solid var(--card-border);border-radius:10px;padding:2px 9px;background:var(--bg-subtle);cursor:pointer">${sortLabel('host')}</span>
       </div>
-      <div class="thin-scroll" style="background:var(--card-bg);border:1px solid var(--card-border);border-top:none;border-radius:0 0 var(--radius) var(--radius);overflow:auto;max-height:calc(100vh - ${unifiedFilterApts ? '420' : '310'}px)">
-        ${famHosts.length ? renderTimeline(famHosts, 'Host / Room') : '<div style="padding:20px;color:var(--text-muted);font-size:12px;text-align:center">No hosts</div>'}
+      <div id="matchSectionHost" style="display:${matchingCollapsed.host ? 'none' : 'block'}">
+        <div style="padding:6px 8px;background:var(--card-bg);border:1px solid var(--card-border);border-top:none">
+          <input type="text" id="hostSearchMatch" value="${esc(matchingHostSearch)}" placeholder="Search hosts..." oninput="filterMatchingHosts(this.value)" style="width:100%;padding:5px 10px;border:1px solid var(--card-border);border-radius:16px;font-size:12px;outline:none;background:var(--bg-subtle)">
+        </div>
+        <div class="thin-scroll" style="background:var(--card-bg);border:1px solid var(--card-border);border-top:none;border-radius:0 0 var(--radius) var(--radius);overflow:auto;max-height:calc(100vh - ${unifiedFilterApts ? '420' : '310'}px)">
+          ${famHosts.length ? renderTimeline(famHosts, 'Host / Room', 'host') : '<div style="padding:20px;color:var(--text-muted);font-size:12px;text-align:center">No hosts</div>'}
+        </div>
       </div>
     </div>` : ''}`;
 
     document.getElementById('content').innerHTML = html;
+    if (matchingHostSearch) filterMatchingHosts(matchingHostSearch);
     renderCheckinNameOverlays();
   } catch (e) { toast(e.message, true); }
 }
@@ -14225,16 +14316,17 @@ async function showAccommMatching(providerType) {
           onclick="selectMatchingDot(${u.id})"
           onmouseenter="showMatchTooltip(this)" onmouseleave="hideMatchTooltip(this)"
           class="match-dot${selected ? ' selected' : ''}"
-          style="min-width:60px;height:30px;border-radius:15px;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;padding:0 10px;font-size:11px;font-weight:600;cursor:grab;user-select:none;border:${borderWidth} solid ${borderColor};box-shadow:${selected ? '0 0 0 2px #84cc16' : 'none'};transition:all 150ms ease;position:relative">
-          ${esc(s.firstName)}
+          style="min-width:60px;height:30px;border-radius:15px;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;padding:0 10px;gap:4px;font-size:11px;font-weight:600;cursor:grab;user-select:none;border:${borderWidth} solid ${borderColor};box-shadow:${selected ? '0 0 0 2px #84cc16' : (u.claimStatus === 'pending' ? '0 0 0 2px #FFC107' : 'none')};transition:all 150ms ease;position:relative">
+          ${u.claimStatus === 'pending' ? '<span title="A host offered to host this student — Accept or Release">💛</span>' : ''}${esc(s.firstName)}
           <div class="match-tooltip">
+            ${u.claimStatus === 'pending' && u.claimedByProvider ? '<div style="font-size:10px;color:#fde68a;margin-bottom:3px;font-weight:700">💛 Offered by '+esc(u.claimedByProvider.name)+'</div>' : ''}
             <div style="font-weight:700;margin-bottom:4px">${esc(s.firstName)} ${esc(s.lastName)}</div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:11px">
               ${age ? '<span>Age '+age+'</span>' : ''}
               <span style="background:#fff;color:${color};width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px">${gLabel}</span>
               ${s.nationality ? '<span>'+countryName(s.nationality)+'</span>' : ''}
             </div>
-            ${diet ? '<div style="font-size:10px;color:#fde68a;margin-top:3px;font-weight:600">Diet: '+esc(diet)+'</div>' : ''}
+            ${diet ? '<div style="font-size:10px;color:#fde68a;margin-top:3px;font-weight:600">🥗 '+esc(diet)+'</div>' : ''}
             ${isHold ? '<div style="font-size:10px;color:#fecaca;margin-top:3px;font-weight:700">⚠ Zero paid — 48h hold (place to start clock)</div>' : ''}
             ${isPartial ? '<div style="font-size:10px;color:#fed7aa;margin-top:3px;font-weight:700">⚠ Balance €'+Number(u.paymentBalance||0).toFixed(2)+' — outstanding</div>' : ''}
             <div style="font-family:var(--font-mono);font-size:10px;margin-top:4px;color:#fff">${(() => {
@@ -14307,7 +14399,7 @@ async function showAccommMatching(providerType) {
           </div>
           ${selStudent.paymentStatus === 'partial' ? '<div title="Outstanding balance" style="padding:4px 10px;border-radius:12px;font-size:11px;font-weight:700;background:#f97316;color:#fff;display:flex;align-items:center;gap:4px"><span>⚠</span><span>Balance €'+Number(selStudent.paymentBalance||0).toFixed(2)+'</span></div>' : ''}
           ${hasDietInfo ? '<div style="display:flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid var(--card-border);border-radius:20px;background:var(--card-bg);font-size:12px">' +
-            (dietLabel ? '<span style="color:var(--warning);font-weight:600">'+esc(dietLabel)+'</span>' : '') +
+            (dietLabel ? '<span style="color:var(--warning);font-weight:600">🥗 '+esc(dietLabel)+'</span>' : '') +
             (allergies ? '<span style="color:var(--danger)">'+esc(allergies)+'</span>' : '') +
           '</div>' : ''}
           <button class="btn btn-ghost btn-sm" onclick="matchingSelectedDot=null;showAccommMatching(matchingProviderType)" style="margin-left:auto">&times;</button>
@@ -14320,7 +14412,7 @@ async function showAccommMatching(providerType) {
       <table style="border-collapse:collapse;font-size:11px">
         <thead>
           <tr style="position:sticky;top:0;z-index:2;background:#fff">
-            <th style="position:sticky;left:0;z-index:3;background:#fff;min-width:170px;max-width:170px;padding:4px 6px;text-align:left;font-size:10px;border-right:2px solid var(--card-border);cursor:pointer" onclick="toggleMatchingSort()">Host / Room <span style="font-size:9px;color:var(--text-muted)">${sortLabel()}</span></th>`;
+            <th style="position:sticky;left:0;z-index:3;background:#fff;min-width:170px;max-width:170px;padding:4px 6px;text-align:left;font-size:10px;border-right:2px solid var(--card-border);cursor:pointer" onclick="toggleMatchingSort(matchingProviderType)">Host / Room <span style="font-size:9px;color:var(--text-muted)">${sortLabel(matchingProviderType)}</span></th>`;
 
     // Day headers
     let lastMonth = '';
@@ -14385,7 +14477,7 @@ async function showAccommMatching(providerType) {
 
           html += `<tr data-host-name="${esc(host.name.toLowerCase())}">
             <td style="position:sticky;left:0;z-index:1;background:var(--card-bg);padding:4px 6px;border-right:2px solid var(--card-border);${propDividerStyle}white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:170px;max-width:170px;font-size:11px" title="${esc(room.roomType || label)}">
-              <strong>${esc(host.name)}</strong>${_seg ? '<span style="color:var(--text-muted)"> / '+esc(_seg)+'</span>'+_rtPill : _rtPill}
+              <strong style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px" onclick="openProviderPreview(${host.id},event)" title="Preview host">${esc(host.name)}</strong>${_seg ? '<span style="color:var(--text-muted)"> / '+esc(_seg)+'</span>'+_rtPill : _rtPill}
             </td>`;
 
             for (let i = 0; i < 42; i++) {
@@ -14450,12 +14542,15 @@ async function showAccommMatching(providerType) {
 // browsers when content overflows into adjacent cells). Instead we append
 // overlay <div>s as direct children of the .thin-scroll container — they
 // scroll with the table but are not bound by td paint order.
-function renderCheckinNameOverlays() {
-  const scrollContainers = document.querySelectorAll('.thin-scroll');
-  scrollContainers.forEach(sc => {
-    // Need a positioning context for absolute children
+// Position the check-in name overlays. Each check-in bar is only the right half
+// of its cell, so the student name is drawn as a separate absolutely-positioned
+// overlay that can overflow leftward. Positions are pixel-captured, so they MUST
+// be recomputed after any layout shift (the selected-student detail bar's 200ms
+// expand, or scrolling) — otherwise a name drifts onto a neighbouring row and you
+// see e.g. the wrong student over a bar. (Neil reported this 2026-10-10.)
+function _positionCheckinOverlays() {
+  document.querySelectorAll('.thin-scroll').forEach(sc => {
     if (getComputedStyle(sc).position === 'static') sc.style.position = 'relative';
-    // Wipe previous overlays in this container
     sc.querySelectorAll('.checkin-name-overlay').forEach(el => el.remove());
     const bars = sc.querySelectorAll('[data-checkin-name]');
     if (!bars.length) return;
@@ -14474,6 +14569,23 @@ function renderCheckinNameOverlays() {
       overlay.textContent = name;
       overlay.style.cssText = 'position:absolute;top:' + top + 'px;left:' + (left + 6) + 'px;height:' + barRect.height + 'px;display:flex;align-items:center;font-size:10px;font-weight:700;color:' + color + ';white-space:nowrap;pointer-events:none;z-index:2';
       sc.appendChild(overlay);
+    });
+  });
+}
+
+function renderCheckinNameOverlays() {
+  _positionCheckinOverlays();
+  // Re-run after the selected-student detail bar's 200ms expand/collapse settles,
+  // so overlays don't drift onto the wrong row after the push-down.
+  setTimeout(_positionCheckinOverlays, 260);
+  // Keep overlays glued to their bars while the board is scrolled. The container
+  // is rebuilt on every render, so the listener is bound fresh (no accumulation).
+  document.querySelectorAll('.thin-scroll').forEach(sc => {
+    if (sc.dataset.ovlScrollBound) return;
+    sc.dataset.ovlScrollBound = '1';
+    sc.addEventListener('scroll', () => {
+      if (sc._ovlRaf) return;
+      sc._ovlRaf = requestAnimationFrame(() => { sc._ovlRaf = null; _positionCheckinOverlays(); });
     });
   });
 }
@@ -14581,12 +14693,14 @@ async function matchDrop(event, bedId) {
   if (!matchDragId) return;
   const asHold = unifiedHoldIds.has(matchDragId);
   try {
-    await api('/accommodation/matching/place', { method: 'POST', body: { bookingAccommodationId: matchDragId, bedId, asHold } });
+    const r = await api('/accommodation/matching/place', { method: 'POST', body: { bookingAccommodationId: matchDragId, bedId, asHold } });
     if (asHold) { unifiedHoldIds.delete(matchDragId); toast('Placed under 48h hold'); }
     else toast('Placed');
     matchDragId = null;
     matchingSelectedDot = null;
     refreshMatching();
+    // Any placement into a Host Family → surface the host booking-confirmation email.
+    if (r && r.isHostFamily && r.studentId) openHostBookingEmail(r.studentId, r.bookingId);
   } catch (e) { toast(e.message, true); }
 }
 
@@ -14594,11 +14708,13 @@ async function matchClickPlace(bedId) {
   if (!matchingSelectedDot) return;
   const asHold = unifiedHoldIds.has(matchingSelectedDot);
   try {
-    await api('/accommodation/matching/place', { method: 'POST', body: { bookingAccommodationId: matchingSelectedDot, bedId, asHold } });
+    const r = await api('/accommodation/matching/place', { method: 'POST', body: { bookingAccommodationId: matchingSelectedDot, bedId, asHold } });
     if (asHold) { unifiedHoldIds.delete(matchingSelectedDot); toast('Placed under 48h hold'); }
     else toast('Placed');
     matchingSelectedDot = null;
     refreshMatching();
+    // Any placement into a Host Family → surface the host booking-confirmation email.
+    if (r && r.isHostFamily && r.studentId) openHostBookingEmail(r.studentId, r.bookingId);
   } catch (e) { toast(e.message, true); }
 }
 
@@ -14815,13 +14931,99 @@ async function matchUnplace(bookingAccommodationId) {
 // Release a host-portal Expression of Interest — clears the gold claim and
 // returns the student to the pool (and every host's portal).
 async function releaseClaim(bookingAccommodationId) {
-  if (!confirm('Release this host\'s expression of interest? The student goes back into the pool for any host to claim.')) return;
+  if (!confirm('Release this host\'s offer? The student goes back into the pool for any host to claim.')) return;
   try {
     await api('/accommodation/matching/release-claim', { method: 'POST', body: { bookingAccommodationId } });
-    toast('Interest released');
+    toast('Offer released');
     loadPendingClaimsBadge();
     refreshMatching();
   } catch (e) { toast(e.message, true); }
+}
+
+// Accept a host's offer → auto-places the student into a free bed at that host
+// (first free gender-valid bed; drag to move afterwards). Confirms the offer,
+// then surfaces the host booking-confirmation email to send.
+async function acceptClaim(bookingAccommodationId) {
+  if (!confirm('Accept this offer and place the student with this host?')) return;
+  try {
+    const r = await api('/accommodation/matching/accept-claim', { method: 'POST', body: { bookingAccommodationId } });
+    toast(`Placed with ${r.host}${r.room ? ' — ' + r.room : ''}${r.moreFree > 0 ? ' (drag to move; ' + r.moreFree + ' other free bed' + (r.moreFree === 1 ? '' : 's') + ')' : ''}`);
+    matchingSelectedDot = null;
+    loadPendingClaimsBadge();
+    refreshMatching();
+    openHostBookingEmail(r.studentId, r.bookingId);
+  } catch (e) { toast(e.message, true); }
+}
+
+// Placement email mini-flow (Neil 2026-10-10): right after a Host Family
+// placement/Accept, Email 1/2 → the HOST (Host-Booking #19), then — on Send OR
+// "Not now" — Email 2/2 → the STUDENT (Arrival-Student-Accomm #33). Each renders
+// server-side so staff see the real email (incl. the "Confirmation Pending"
+// notice when a balance is owed), review, then Send. NEVER auto-sends — nothing
+// leaves without the click. × abandons the rest of the flow.
+const HOST_BOOKING_TPL_ID = 19;
+const STUDENT_HOST_ARRIVAL_TPL_ID = 33;
+function openHostBookingEmail(studentId, bookingId) {
+  if (!studentId) return;
+  openPlacementEmailStep([
+    { tpl: HOST_BOOKING_TPL_ID, label: 'Host', title: 'Email the host — booking confirmation', toKey: 'to', nameKey: 'hostName', noTo: 'Add a host email in their profile first' },
+    { tpl: STUDENT_HOST_ARRIVAL_TPL_ID, label: 'Student', title: 'Email the student — host family confirmation', toKey: 'studentTo', nameKey: 'studentName', noTo: 'This student has no email on file' },
+  ], 0, studentId, bookingId);
+}
+async function openPlacementEmailStep(steps, i, studentId, bookingId) {
+  const step = steps[i];
+  if (!step) return;
+  let data;
+  try {
+    data = await api('/email/render', { method: 'POST', body: { templateId: step.tpl, studentId, bookingId } });
+  } catch (e) {
+    toast(`Could not prepare the ${step.label.toLowerCase()} email: ` + e.message, true);
+    return openPlacementEmailStep(steps, i + 1, studentId, bookingId);
+  }
+  const to = data[step.toKey] || '';
+  const name = data[step.nameKey] || '';
+  const last = i === steps.length - 1;
+  document.getElementById('hostBookingEmailModal')?.remove();
+  const ov = document.createElement('div');
+  ov.id = 'hostBookingEmailModal';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto';
+  const tabs = steps.map((s, k) => `<span style="padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;${k === i ? 'background:var(--accent);color:#fff' : 'background:var(--bg-subtle);color:var(--text-muted)'}">Email ${k + 1}/${steps.length} — ${esc(s.label)}</span>`).join('');
+  ov.innerHTML = `
+    <div style="background:#fff;border-radius:10px;max-width:640px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.25);overflow:hidden">
+      <div style="padding:14px 18px;border-bottom:1px solid var(--card-border)">
+        <div style="display:flex;align-items:center;gap:6px">${tabs}
+          <button data-act="close" title="Close — skip the remaining emails" style="margin-left:auto;background:none;border:0;font-size:20px;cursor:pointer;color:var(--text-muted)">&times;</button>
+        </div>
+        <div style="font-weight:800;font-size:15px;margin-top:8px">📧 ${esc(step.title)}</div>
+      </div>
+      <div style="padding:14px 18px;font-size:13px">
+        <div style="display:flex;gap:8px;margin-bottom:6px"><span style="color:var(--text-muted);min-width:64px">From</span><strong>accomm@ulearnschool.com</strong></div>
+        <div style="display:flex;gap:8px;margin-bottom:6px"><span style="color:var(--text-muted);min-width:64px">To</span>${to ? '<strong>'+esc(to)+'</strong>'+(name ? ' <span style="color:var(--text-muted)">('+esc(name)+')</span>' : '') : '<span style="color:var(--danger,#c00)">'+esc(step.noTo)+'</span>'}</div>
+        <div style="display:flex;gap:8px;margin-bottom:10px"><span style="color:var(--text-muted);min-width:64px">Subject</span><strong>${esc(data.subject || '')}</strong></div>
+        <div style="border:1px solid var(--card-border);border-radius:8px;padding:14px;max-height:50vh;overflow:auto;background:#fafafa">${data.html || ''}</div>
+      </div>
+      <div style="padding:12px 18px;border-top:1px solid var(--card-border);display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btn-ghost" data-act="skip">${last ? 'Not now' : 'Not now → ' + esc(steps[i + 1].label)}</button>
+        <button class="btn btn-success" data-act="send" ${to ? '' : 'disabled title="'+esc(step.noTo)+'"'}>Send to ${esc(step.label.toLowerCase())}</button>
+      </div>
+    </div>`;
+  document.body.appendChild(ov);
+  const next = () => { ov.remove(); openPlacementEmailStep(steps, i + 1, studentId, bookingId); };
+  ov.querySelector('[data-act="close"]').onclick = () => ov.remove();
+  ov.querySelector('[data-act="skip"]').onclick = next;
+  const btn = ov.querySelector('[data-act="send"]');
+  if (to) btn.onclick = async () => {
+    btn.disabled = true; btn.textContent = 'Sending…';
+    try {
+      await api('/email/send', { method: 'POST', body: {
+        to, from: 'accomm@ulearnschool.com', fromName: 'ULearn',
+        subject: data.subject, html: data.html,
+        templateId: step.tpl, studentId, bookingId,
+      }});
+      toast(`Email sent to ${step.label.toLowerCase()}`);
+      next();
+    } catch (e) { toast('Send failed: ' + e.message, true); btn.disabled = false; btn.textContent = `Send to ${step.label.toLowerCase()}`; }
+  };
 }
 
 // ── HOST PAYMENTS ────────────────────────────────
@@ -14844,6 +15046,24 @@ async function syncXeroStatuses(btn) {
   }
 }
 
+// A run's stored status is never advanced past 'pending' — the real state lives
+// on each line item's Xero status. Derive the badge from the bills ACTUALLY RAISED
+// in Xero: a line item that was never submitted (no xeroBillId) is an un-actioned
+// draft, not an outstanding bill, so it must NOT hold a run at PARTIAL. PAID = every
+// raised bill is paid; PARTIAL = some raised, not all paid; PENDING = nothing raised
+// yet. (voided lines ignored throughout.)
+function paymentRunBadge(run) {
+  const li = (run.lineItems || []).filter(x => x.xeroStatus !== 'voided');
+  const billed = li.filter(x => x.xeroBillId);          // bills actually raised in Xero
+  if (billed.length) {
+    const paid = billed.filter(x => x.xeroStatus === 'paid').length;
+    if (paid === billed.length) return { label: 'PAID', cls: 'badge-confirmed' };
+    return { label: 'PARTIAL', cls: 'badge-pending' };
+  }
+  if (li.length) return { label: 'PENDING', cls: 'badge-enquiry' };
+  return { label: 'EMPTY', cls: 'badge-enquiry' };
+}
+
 async function showHostPayments(specificRunId) {
   setTopbar('Host Payments', '', '<button class="btn btn-secondary btn-sm" onclick="syncXeroStatuses(this)" title="Pull just-paid bill statuses from Xero now (same as the daily cron)">⟳ Sync Xero</button> <button class="btn btn-success btn-sm" onclick="triggerPaymentRun()">Run Calculation</button>');
 
@@ -14863,7 +15083,8 @@ async function showHostPayments(specificRunId) {
       return;
     }
 
-    const statusCls = run.status === 'paid' ? 'badge-confirmed' : run.status === 'approved' ? 'badge-pending' : 'badge-enquiry';
+    const runBadge = paymentRunBadge(run);
+    const statusCls = runBadge.cls;
     const editable = run.status === 'pending';
 
     // Group line items by provider
@@ -14871,13 +15092,13 @@ async function showHostPayments(specificRunId) {
     for (const li of (run.lineItems || [])) {
       if (!byProvider[li.providerName]) byProvider[li.providerName] = { items: [], total: 0, providerId: li.providerId };
       byProvider[li.providerName].items.push(li);
-      byProvider[li.providerName].total += parseFloat(li.amount);
+      byProvider[li.providerName].total += parseFloat(li.amount) + Number(li.dietAmount || 0);
     }
 
     let html = `
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
       <h2 style="font-size:16px;font-weight:700;margin:0">Payment Run — ${formatDate(run.runDate)}</h2>
-      <span class="badge ${statusCls}">${run.status.toUpperCase()}</span>
+      <span class="badge ${statusCls}">${runBadge.label}</span>
       <span style="flex:1"></span>
       <span style="font-size:18px;font-weight:700">${formatMoney(run.totalAmount)}</span>
     </div>
@@ -14893,10 +15114,10 @@ async function showHostPayments(specificRunId) {
       html += '<div class="table-wrap"><table><thead><tr><th>Date</th><th>Status</th><th>Items</th><th style="text-align:right">Total</th></tr></thead><tbody>';
       for (let i = 1; i < runs.length; i++) {
         const r = runs[i];
-        const sCls = r.status === 'paid' ? 'badge-confirmed' : r.status === 'approved' ? 'badge-pending' : 'badge-enquiry';
+        const rBadge = paymentRunBadge(r);
         html += `<tr class="clickable" onclick="showHostPayments(${r.id})">
           <td style="font-family:var(--font-mono);font-size:12px">${formatDate(r.runDate)}</td>
-          <td><span class="badge ${sCls}" style="font-size:10px">${r.status.toUpperCase()}</span></td>
+          <td><span class="badge ${rBadge.cls}" style="font-size:10px">${rBadge.label}</span></td>
           <td style="font-family:var(--font-mono)">${r.lineItems?.length || 0}</td>
           <td style="font-weight:600;text-align:right">${formatMoney(r.totalAmount)}</td>
         </tr>`;
@@ -14937,19 +15158,22 @@ function showPaymentPreview(lineItemId) {
   const editable = paymentRunCache.status === 'pending';
   const amendAmount = li.amendmentNote ? (Number(li.amount) - (li.weeksPaid * Number(li.weeklyRate) + (li.daysPaid || 0) * Number(li.weeklyRate) / 7)) : 0;
   const baseAmount = Number(li.amount) - Math.round(amendAmount * 100) / 100;
+  // Special-diet surcharge (host-family only). Shown when the stay carries a diet;
+  // amount keys off the SAME nights as the stay (€40/wk pro-rata). Toggle-able off.
+  const dietInit = li.dietType
+    ? (li.dietAmount != null ? Number(li.dietAmount) : Math.round(((li.weeksPaid * DIET_PER_WEEK) + ((li.daysPaid || 0) * DIET_PER_WEEK / 7)) * 100) / 100)
+    : 0;
+  const dietOn = !!li.dietType && (li.dietAmount == null || Number(li.dietAmount) > 0);
+  const totalInit = Math.round((baseAmount + amendAmount + (dietOn ? dietInit : 0)) * 100) / 100;
 
   let html = `
     <div style="overflow-y:auto;height:100%">
-    <div style="display:flex;justify-content:flex-end;padding:6px 10px;border-bottom:1px solid var(--card-border)">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px 10px 20px;border-bottom:1px solid var(--card-border)">
+      <div style="font-size:16px;font-weight:700;line-height:1.2">${esc(li.providerName)}</div>
       <button class="btn btn-ghost btn-sm" onclick="closePaymentPreview()" style="font-size:16px;padding:2px 8px">&times;</button>
     </div>
 
-    <div style="padding:16px 20px;border-bottom:1px solid var(--card-border)">
-      <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);margin-bottom:4px">Host</div>
-      <div style="font-size:16px;font-weight:700">${esc(li.providerName)}</div>
-    </div>
-
-    <div style="padding:16px 20px;border-bottom:1px solid var(--card-border)">
+    <div style="padding:14px 20px;border-bottom:1px solid var(--card-border)">
       <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);margin-bottom:8px">Student Stay</div>
       <div style="display:flex;flex-direction:column;gap:10px;font-size:13px">
         <div>
@@ -14976,17 +15200,23 @@ function showPaymentPreview(lineItemId) {
             <input id="ppRate" type="number" step="0.01" value="${li.weeklyRate}" ${editable?'oninput="ppCalcTotal()"':' disabled'} style="width:100%;padding:6px 10px;border:1px solid var(--card-border);border-radius:6px;font-size:13px">
           </div>
         </div>
-        <div>
-          <label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px">Reason</label>
-          <div style="font-size:13px">${li.reason === 'checkout' ? 'Checkout' : 'Fortnightly'}</div>
+        <div style="display:flex;gap:6px;align-items:baseline">
+          <span style="font-size:11px;font-weight:600;color:var(--text-muted)">Reason:</span>
+          <span style="font-size:13px">${li.reason === 'checkout' ? 'Checkout' : 'Fortnightly'}</span>
         </div>
       </div>
     </div>
 
-    <div style="padding:16px 20px;border-bottom:1px solid var(--card-border)">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <span style="font-size:12px;color:var(--text-muted)">Amount</span>
-        <span id="ppBaseAmount" style="font-size:15px;font-weight:600">${formatMoney(li.amount)}</span>
+    <div style="padding:14px 20px;border-bottom:1px solid var(--card-border)">
+      ${li.dietType ? `
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:12px;${editable?'cursor:pointer':''}">
+        <input id="ppDietOn" type="checkbox" ${dietOn?'checked':''} ${editable?'onchange="ppCalcTotal()"':'disabled'}>
+        <span>🥗 Special Diet — <strong>${esc(li.dietType)}</strong></span>
+        <span id="ppDietAmt" style="margin-left:auto;font-weight:600">${formatMoney(dietOn ? dietInit : 0)}</span>
+      </label>` : ''}
+      <div style="display:flex;justify-content:flex-end;align-items:baseline;gap:12px;margin-bottom:12px">
+        <span style="font-size:12px;color:var(--text-muted)">Subtotal</span>
+        <span id="ppBaseAmount" style="font-size:15px;font-weight:600;min-width:80px;text-align:right">${formatMoney(baseAmount)}</span>
       </div>
       <div style="display:flex;gap:10px;margin-bottom:10px">
         <div style="flex:1">
@@ -14994,13 +15224,13 @@ function showPaymentPreview(lineItemId) {
           <input id="ppAmend" type="number" step="0.01" value="${amendAmount ? amendAmount.toFixed(2) : ''}" placeholder="0" ${editable?'oninput="ppCalcTotal()"':'disabled'} style="width:100%;padding:6px 10px;border:1px solid var(--card-border);border-radius:6px;font-size:13px">
         </div>
         <div style="flex:2">
-          <label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px">Reason</label>
+          <label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px">Amend Reason</label>
           <input id="ppAmendNote" type="text" value="${esc(li.amendmentNote || '')}" placeholder="e.g. Extra Night, Breakage" ${editable?'':'disabled'} style="width:100%;padding:6px 10px;border:1px solid var(--card-border);border-radius:6px;font-size:13px">
         </div>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:2px solid var(--card-border)">
+      <div style="display:flex;justify-content:flex-end;align-items:baseline;gap:12px;padding:10px 0;border-top:2px solid var(--card-border)">
         <span style="font-size:14px;font-weight:700">Total</span>
-        <span id="ppTotal" style="font-size:20px;font-weight:700">${formatMoney(li.amount)}</span>
+        <span id="ppTotal" style="font-size:20px;font-weight:700;min-width:90px;text-align:right">${formatMoney(totalInit)}</span>
       </div>
     </div>
 
@@ -15034,6 +15264,17 @@ function closePaymentPreview() {
 }
 
 let ppOriginalAmount = 0; // set when preview opens
+const DIET_PER_WEEK = 40; // host special-diet surcharge — keep in sync with host-payments.ts
+
+// Special-diet surcharge for the current nights (€40/wk pro-rata), 0 when toggled off.
+function ppDietAmount() {
+  const toggle = document.getElementById('ppDietOn');
+  if (!toggle || !toggle.checked) return 0;
+  const nights = parseInt(document.getElementById('ppNights')?.value) || 0;
+  const weeks = Math.floor(nights / 7);
+  const days = nights % 7;
+  return Math.round(((weeks * DIET_PER_WEEK) + (days * DIET_PER_WEEK / 7)) * 100) / 100;
+}
 
 function ppCalcTotal() {
   const rate = parseFloat(document.getElementById('ppRate')?.value) || 0;
@@ -15043,10 +15284,13 @@ function ppCalcTotal() {
   const days = nights % 7;
   const base = (weeks * rate) + (days * rate / 7);
   const baseRounded = Math.round(base * 100) / 100;
-  const total = baseRounded + amend;
+  const diet = ppDietAmount();
+  const total = baseRounded + amend + diet;
   const baseEl = document.getElementById('ppBaseAmount');
   const totalEl = document.getElementById('ppTotal');
+  const dietEl = document.getElementById('ppDietAmt');
   if (baseEl) baseEl.textContent = formatMoney(baseRounded);
+  if (dietEl) dietEl.textContent = formatMoney(diet);
   if (totalEl) totalEl.textContent = formatMoney(Math.round(total * 100) / 100);
 }
 
@@ -15096,7 +15340,10 @@ function savePaymentLineItem(id) {
     }
   }
 
-  api('/host-payments/line-items/' + id, { method: 'PATCH', body: {
+  // Special diet: send only when this line has a diet concept, so staff can
+  // toggle the €40/wk surcharge off (dietAmount 0) without affecting other lines.
+  const liCache = paymentRunCache?.lineItems?.find(l => l.id === id);
+  const body = {
     weeklyRate: rate,
     weeksPaid: weeks,
     daysPaid: days,
@@ -15105,7 +15352,13 @@ function savePaymentLineItem(id) {
     periodTo: to ? new Date(to) : undefined,
     amendmentNote: note || null,
     amendedBy: (amend || total !== ppOriginalAmount) ? 'admin' : null,
-  }}).then(() => { toast('Saved'); }).catch(e => toast(e.message, true));
+  };
+  if (liCache && liCache.dietType) {
+    body.dietType = liCache.dietType;
+    body.dietAmount = ppDietAmount();   // 0 when toggled off
+  }
+  api('/host-payments/line-items/' + id, { method: 'PATCH', body })
+    .then(() => { toast('Saved'); }).catch(e => toast(e.message, true));
 }
 
 async function submitSingleLineItem(id) {
@@ -15184,15 +15437,18 @@ function renderPaymentTable(byProvider, runId, editable) {
         const invCell = li.xeroBillId
           ? '<a href="https://go.xero.com/AccountsPayable/Edit.aspx?InvoiceID=' + esc(li.xeroBillId) + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--accent);text-decoration:none">' + invRef + '</a>'
           : invRef;
+        const dietAmt = Number(li.dietAmount || 0);
+        const rowTotal = Number(li.amount) + dietAmt;
+        const dietTag = dietAmt > 0.01 ? ' <span title="Special Diet' + (li.dietType ? ' — '+esc(li.dietType) : '') + ' (+'+formatMoney(dietAmt)+')">🥗</span>' : '';
         html += `<tr style="cursor:pointer" onclick="showPaymentPreview(${li.id})" class="${paymentPreviewLineId===li.id?'payment-active':''}">
           <td><strong>${esc(provName)}</strong></td>
-          <td>${esc(li.studentName)}</td>
+          <td>${esc(li.studentName)}${dietTag}</td>
           <td style="font-family:var(--font-mono);font-size:12px">${fromFmt} - ${toFmt}</td>
           <td style="font-family:var(--font-mono);font-size:12px">${invCell}</td>
           <td style="font-family:var(--font-mono)">${nights}</td>
           <td>${formatMoney(li.weeklyRate)}/wk</td>
           <td><span class="badge ${reasonCls}" style="font-size:10px">${reasonLabel}</span></td>
-          <td style="font-weight:600;text-align:right">${formatMoney(li.amount)}${paidBadge}</td>
+          <td style="font-weight:600;text-align:right">${formatMoney(rowTotal)}${paidBadge}</td>
           ${editable ? '<td></td>' : ''}
         </tr>`;
       }
@@ -15794,7 +16050,7 @@ function accomAccountCard(p) {
   const earnings = Number(p.totalEarnings || 0);
   const isOpen = b => b.xeroStatus !== 'paid' && b.xeroStatus !== 'voided';
   const openCount = bills.filter(isOpen).length;
-  const openTotal = bills.filter(isOpen).reduce((s, b) => s + Number(b.amount || 0), 0);
+  const openTotal = bills.filter(isOpen).reduce((s, b) => s + Number(b.amount || 0) + Number(b.dietAmount || 0), 0);
   // First 5 shown; the rest hidden behind "View more" (+5 per click) so a long
   // history doesn't become a wall.
   const rows = bills.map((b, i) => {
@@ -15803,9 +16059,12 @@ function accomAccountCard(p) {
     const status = b.xeroStatus === 'paid' ? 'PAID' : (b.xeroStatus === 'voided' ? 'VOID' : 'OPEN');
     const color = b.xeroStatus === 'paid' ? '#3a6c00' : (b.xeroStatus === 'voided' ? '#999' : '#b45309');
     const name = esc(b.studentName || (b.reason === 'amendment' ? (b.amendmentNote || 'Amendment') : 'Stay'));
+    const bDiet = Number(b.dietAmount || 0);
+    const bTotal = Number(b.amount || 0) + bDiet;
+    const dietLine = bDiet > 0.01 ? `<div style="color:var(--text-muted);font-size:11px">🥗 Special Diet${b.dietType ? ' ('+esc(b.dietType)+')' : ''} ${eur(bDiet)}</div>` : '';
     return `<div class="acc-bill-row" style="display:${i >= 5 ? 'none' : 'flex'};justify-content:space-between;align-items:center;padding:8px 14px;border-top:1px solid var(--card-border);font-size:12px">
-      <div><strong>${name}</strong><div style="color:var(--text-muted);font-size:11px">${formatDate(b.periodFrom)} → ${formatDate(b.periodTo)} | ${nights} night${nights === 1 ? '' : 's'} | ${ref}</div></div>
-      <div style="text-align:right"><div><strong>${eur(b.amount)}</strong></div><span style="font-size:10px;font-weight:700;color:${color}">${status}</span></div>
+      <div><strong>${name}</strong><div style="color:var(--text-muted);font-size:11px">${formatDate(b.periodFrom)} → ${formatDate(b.periodTo)} | ${nights} night${nights === 1 ? '' : 's'} | ${ref}</div>${dietLine}</div>
+      <div style="text-align:right"><div><strong>${eur(bTotal)}</strong></div><span style="font-size:10px;font-weight:700;color:${color}">${status}</span></div>
     </div>`;
   }).join('');
   const moreBtn = bills.length > 5
@@ -15834,6 +16093,90 @@ function accomBillsMore(btn) {
 }
 
 // ─── ACCOMMODATION DETAIL ───────────────────────
+// ─── Provider quick-preview drawer (Matching board host-name click) ───
+function closeProviderPreview() {
+  const d = document.getElementById('providerPreviewDrawer');
+  const s = document.getElementById('providerPreviewScrim');
+  if (d) d.style.transform = 'translateX(100%)';
+  if (s) { s.style.background = 'rgba(0,0,0,0)'; s.style.pointerEvents = 'none'; }
+}
+
+async function openProviderPreview(id, ev) {
+  if (ev) { ev.stopPropagation(); }
+  const d = document.getElementById('providerPreviewDrawer');
+  const s = document.getElementById('providerPreviewScrim');
+  if (!d) return;
+  d.innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-muted);font-size:12px">Loading…</div>';
+  d.style.transform = 'translateX(0)';
+  if (s) { s.style.background = 'rgba(0,0,0,0.25)'; s.style.pointerEvents = 'auto'; }
+  try {
+    const p = await api('/accommodation/' + id);
+    if (!p) { d.innerHTML = '<div style="padding:30px;color:var(--danger);font-size:12px">Provider not found</div>'; return; }
+    d.innerHTML = renderProviderPreview(p);
+  } catch (e) {
+    d.innerHTML = '<div style="padding:30px;color:var(--danger);font-size:12px">'+esc(e.message)+'</div>';
+  }
+}
+
+function renderProviderPreview(p) {
+  const isApt = p.type === 'Apartment';
+  const typeBg = isApt ? '#642de1' : '#00ff9d';
+  const typeFg = isApt ? '#fff' : '#000';
+  const row = (label, val) => val ? `<div style="display:flex;gap:10px;font-size:12px;padding:3px 0"><span style="min-width:72px;color:var(--text-muted);flex-shrink:0">${label}</span><span style="font-weight:500;word-break:break-word">${val}</span></div>` : '';
+  const section = (title, body) => body ? `<div style="padding:12px 18px;border-top:1px solid var(--card-border)"><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);margin-bottom:6px">${title}</div>${body}</div>` : '';
+
+  let beds = 0, rooms = 0;
+  (p.properties||[]).forEach(pr => (pr.rooms||[]).forEach(rm => { rooms++; beds += (rm.beds||[]).length; }));
+
+  const today = new Date().toISOString().split('T')[0];
+  const guests = [];
+  (p.properties||[]).forEach(pr => (pr.rooms||[]).forEach(rm => (rm.beds||[]).forEach(bd => (bd.placements||[]).forEach(pl => {
+    if (!pl.active) return;
+    const sd = (pl.startDate||'').split('T')[0], ed = (pl.endDate||'').split('T')[0];
+    if (sd && ed && sd <= today && ed >= today) {
+      const st = pl.booking && pl.booking.student;
+      guests.push({ name: st ? (st.firstName+' '+(st.lastName||'')).trim() : 'Student', from: sd, to: ed });
+    }
+  }))));
+
+  const accepts = [];
+  if (p.acceptsMale) accepts.push('Male'); if (p.acceptsFemale) accepts.push('Female');
+  if (p.acceptsJuniors) accepts.push('Juniors'); if (p.acceptsAdults) accepts.push('Adults'); if (p.acceptsMature) accepts.push('Mature');
+
+  const addr = [p.address, p.addressAddon, p.city, p.zip].filter(Boolean).map(esc).join(', ');
+  const contact = [p.contactFirstName, p.contactLastName].filter(Boolean).map(esc).join(' ');
+  const phone = p.mobile || p.phone || p.phone2;
+  const vett = { complete:'Complete', returned:'Complete', upload:'Signed on file', form:'Form entered', none:'Not started' }[p.vettingStatus] || (p.vettingStatus ? esc(p.vettingStatus) : '');
+
+  const guestBody = guests.length
+    ? guests.map(g => `<div style="font-size:12px;padding:2px 0"><strong>${esc(g.name)}</strong> <span style="color:var(--text-muted);font-family:var(--font-mono);font-size:11px">${esc(g.from.slice(5))}→${esc(g.to.slice(5))}</span></div>`).join('')
+    : '<div style="font-size:12px;color:var(--text-muted)">No current guests</div>';
+
+  const chip = t => `<span style="display:inline-block;background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:2px 9px;font-size:11px;margin:2px 4px 2px 0">${t}</span>`;
+
+  return `
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px 12px 18px;border-bottom:1px solid var(--card-border);position:sticky;top:0;background:var(--card-bg);z-index:1">
+      <div style="min-width:0">
+        <div style="font-size:16px;font-weight:700;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.name||('Host #'+p.id))}</div>
+        <span style="display:inline-block;margin-top:3px;background:${typeBg};color:${typeFg};font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px">${esc(p.type||'')}</span>
+        ${p.hostCategory ? `<span style="display:inline-block;margin-left:4px;font-size:10px;color:var(--text-muted)">${esc(p.hostCategory)}</span>` : ''}
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="closeProviderPreview()" style="font-size:16px;padding:2px 8px;flex-shrink:0">&times;</button>
+    </div>
+
+    ${section('Contact', row('Contact', contact) + row('Phone', phone?esc(phone):'') + row('Email', p.email?esc(p.email):'') + row('Address', addr))}
+    ${section('Capacity', row('Beds', beds + ' bed' + (beds===1?'':'s') + ' · ' + rooms + ' room' + (rooms===1?'':'s')) + row('Rate', p.weeklyRate ? formatMoney(p.weeklyRate)+'/wk' : '') + (accepts.length ? `<div style="margin-top:4px">${accepts.map(chip).join('')}</div>` : ''))}
+    ${section('Current Guests', guestBody)}
+    ${!isApt ? section('Vetting', row('Status', vett || 'Not started')) : ''}
+    ${!isApt ? section('Site Visit', row('Visited', p.siteVisited ? ('Yes' + (p.siteVisitDate ? ' · ' + esc(String(p.siteVisitDate).slice(0,10)) : '')) : 'No') + (p.siteVisitNotes ? row('Notes', esc(p.siteVisitNotes)) : '')) : ''}
+    ${p.note ? section('Notes', `<div style="font-size:12px;white-space:pre-wrap">${esc(p.note)}</div>`) : ''}
+
+    <div style="padding:14px 18px;border-top:1px solid var(--card-border);display:flex;flex-direction:column;gap:8px;margin-top:auto">
+      <button class="btn btn-primary btn-sm" onclick="closeProviderPreview();showAccommodationDetail(${p.id})" style="width:100%">Open Full Profile</button>
+      ${p.portalToken ? `<a href="https://sis.ulearnschool.com/host-portal/${esc(p.portalToken)}" target="_blank" rel="noopener" style="font-size:11px;color:var(--accent);text-align:center;text-decoration:underline">Host portal ↗</a>` : ''}
+    </div>`;
+}
+
 async function showAccommodationDetail(id) {
   try {
     const p = await api('/accommodation/' + id);
@@ -15878,26 +16221,58 @@ async function showAccommodationDetail(id) {
             ${field('xeroContactId','Xero ID',p.xeroContactId)}
             <div class="form-group">
               <label class="form-label">Portal</label>
-              ${p.portalToken
-                ? `<div style="padding:7px 0"><a href="https://sis.ulearnschool.com/host-portal/${esc(p.portalToken)}" target="_blank" rel="noopener" style="color:var(--accent);font-family:var(--font-mono);font-weight:600;text-decoration:underline" title="Open ${esc(p.name)}'s portal in a new tab">${esc(p.portalToken)}</a></div>`
-                : `<div style="padding:3px 0"><button type="button" class="btn btn-sm btn-secondary" onclick="generatePortalLink(${p.id})">Generate Portal Link</button></div>`}
-              <label class="form-checkbox" style="white-space:nowrap;margin-top:6px" title="On: this host sees the 'students looking for a host' pool and can register interest. Off: pool hidden + claiming blocked — they keep access to their own residents & bills."><input type="checkbox" data-field="portalMatchingEnabled" ${p.portalMatchingEnabled !== false ? 'checked' : ''}> Portal Matching?</label>
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;min-height:34px">
+                ${p.portalToken
+                  ? `<a href="https://sis.ulearnschool.com/host-portal/${esc(p.portalToken)}" target="_blank" rel="noopener" style="color:var(--accent);font-family:var(--font-mono);font-weight:600;text-decoration:underline" title="Open ${esc(p.name)}'s portal in a new tab">${esc(p.portalToken)}</a>`
+                  : `<button type="button" class="btn btn-sm btn-secondary" onclick="generatePortalLink(${p.id})">Generate Link</button>`}
+                <label class="chip-btn pill-check ${p.portalMatchingEnabled !== false ? 'is-on' : ''}" title="Display student matching"><input type="checkbox" data-field="portalMatchingEnabled" ${p.portalMatchingEnabled !== false ? 'checked' : ''} onchange="this.parentElement.classList.toggle('is-on',this.checked)">Show Matching</label>
+              </div>
             </div>
-            <div class="form-group"><div style="padding-top:6px"><label class="form-checkbox" style="white-space:nowrap" title="Deactivate a host fully — their portal link stops working (404), they can't be issued a portal, and they drop off matching + the weekly nudge list. No holiday dates: a host self-selects by claiming, or opts out of the mailing list."><input type="checkbox" data-field="active" ${p.active ? 'checked' : ''}> Activated?</label></div></div>
+            <div class="form-group full" style="border-top:1px solid var(--card-border);height:0;margin:0"></div>
             <div class="form-group">
               <label class="form-label" title="Host Activity level for targeted outreach. Auto-derived nightly from hosting history: SuperHost ≥6 student-weeks/12wk · BusyBee ≥3 · Regular ≥1 (or hosted within 12mo) · Sleeper 12mo+ ago. Pick a value to override manually (survives the nightly recompute); pick Auto to hand it back to the engine.">Activity${p.hostCategoryManual ? ' <span style="font-weight:400;color:var(--text-muted);font-size:11px">(manual)</span>' : ''}</label>
               <select class="form-input" onchange="setHostCategory(${p.id}, this.value)">
                 <option value="__auto" ${!p.hostCategoryManual ? 'selected' : ''}>Auto${(!p.hostCategoryManual && p.hostCategory) ? ' → ' + p.hostCategory : ''}</option>
                 ${['SuperHost','BusyBee','Regular','Sleeper','Dormant'].map(c => `<option value="${c}" ${(p.hostCategoryManual && p.hostCategory===c) ? 'selected' : ''}>${c}</option>`).join('')}
               </select>
-              <label class="form-checkbox" style="white-space:nowrap;margin-top:8px" title="${FIRST_DIBS_TIP}"><input type="checkbox" ${p.firstDibsAt ? 'checked' : ''} onchange="setFirstDibs(${p.id}, this.checked)"> ⭐ First Dibs${p.firstDibsAt ? ' <span style="font-weight:400;color:#2563eb;font-size:11px">(active)</span>' : ''}</label>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+                <label class="chip-btn pill-check ${p.active ? 'is-on' : ''}" title="Off: portal link stops working, no matching, off the nudge list."><input type="checkbox" data-field="active" ${p.active ? 'checked' : ''} onchange="this.parentElement.classList.toggle('is-on',this.checked)">Activated</label>
+                <label class="chip-btn pill-check ${p.firstDibsAt ? 'is-on' : ''}" title="${FIRST_DIBS_TIP}"><input type="checkbox" ${p.firstDibsAt ? 'checked' : ''} onchange="this.parentElement.classList.toggle('is-on',this.checked);setFirstDibs(${p.id}, this.checked)">⭐ First Dibs</label>
+              </div>
             </div>
+            ${!isApt ? `<div class="form-group">
+              <label class="form-label" title="Who this host will take. Juniors = under 18 on arrival — also needs Garda vetting Complete to claim or be placed.">Accepts</label>
+              <div style="display:grid;grid-template-columns:repeat(2,max-content);gap:6px 8px;padding-top:4px">
+                <label class="chip-btn pill-check ${p.acceptsJuniors ? 'is-on' : ''}"><input type="checkbox" data-field="acceptsJuniors" ${p.acceptsJuniors ? 'checked' : ''} onchange="this.parentElement.classList.toggle('is-on',this.checked)">Juniors (&lt;18)</label>
+                <label class="chip-btn pill-check ${p.acceptsAdults ? 'is-on' : ''}"><input type="checkbox" data-field="acceptsAdults" ${p.acceptsAdults ? 'checked' : ''} onchange="this.parentElement.classList.toggle('is-on',this.checked)">Adults 18–29</label>
+                <label style="grid-column:1 / -1;justify-self:start" class="chip-btn pill-check ${p.acceptsMature ? 'is-on' : ''}"><input type="checkbox" data-field="acceptsMature" ${p.acceptsMature ? 'checked' : ''} onchange="this.parentElement.classList.toggle('is-on',this.checked)">Mature 30+</label>
+                <label class="chip-btn pill-check boy ${p.acceptsMale ? 'is-on' : ''}"><input type="checkbox" data-field="acceptsMale" ${p.acceptsMale ? 'checked' : ''} onchange="this.parentElement.classList.toggle('is-on',this.checked)">Boy</label>
+                <label class="chip-btn pill-check girl ${p.acceptsFemale ? 'is-on' : ''}"><input type="checkbox" data-field="acceptsFemale" ${p.acceptsFemale ? 'checked' : ''} onchange="this.parentElement.classList.toggle('is-on',this.checked)">Girl</label>
+              </div>
+            </div>` : ''}
+            <div class="form-group"><label class="form-label">Allergies Info</label><textarea class="form-textarea" data-field="allergies">${esc(p.allergies||'')}</textarea></div>
             ${isApt ? `<div class="form-group full" style="border-top:1px solid var(--card-border);padding-top:10px;margin-top:6px">
               <label class="form-checkbox" style="white-space:nowrap"><input type="checkbox" data-field="cleaningEnabled" ${p.cleaningEnabled ? 'checked' : ''}> Cleaning — surface checkouts in a Cleaning section below</label>
             </div>` : ''}
-            <div class="form-group full"><label class="form-label">Description</label><textarea class="form-textarea" data-field="description">${esc(p.description||'')}</textarea></div>
-            <div class="form-group full"><label class="form-label">Allergies Info</label><textarea class="form-textarea" data-field="allergies">${esc(p.allergies||'')}</textarea></div>
-            <div class="form-group full"><label class="form-label">Note</label><textarea class="form-textarea" data-field="note">${esc(p.note||'')}</textarea></div>
+            <div class="form-group full" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+              <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea" data-field="description">${esc(p.description||'')}</textarea></div>
+              <div class="form-group"><label class="form-label">Note</label><textarea class="form-textarea" data-field="note">${esc(p.note||'')}</textarea></div>
+            </div>
+            ${!isApt ? `<div class="form-group full" style="border-top:1px solid var(--card-border);padding-top:10px;margin-top:6px">
+              <div class="collapse-header" onclick="toggleCollapse(this)" style="cursor:pointer;display:flex;align-items:center"><strong style="font-size:13px">🏠 Site Visits</strong></div>
+              <div class="collapse-body" style="padding-top:12px">
+                <label class="form-checkbox" style="white-space:nowrap"><input type="checkbox" data-field="siteVisited" ${p.siteVisited ? 'checked' : ''}> Visited</label>
+                <div class="form-group" style="margin-top:10px"><label class="form-label">Visit Date</label><input class="form-input" type="date" data-field="siteVisitDate" value="${esc((p.siteVisitDate || '').slice(0,10))}"></div>
+                <div class="form-group" style="margin-top:8px"><label class="form-label">Outcome Notes</label><textarea class="form-textarea" data-field="siteVisitNotes" placeholder="What came out of the visit…">${esc(p.siteVisitNotes || '')}</textarea></div>
+                <label class="form-label" style="margin-top:10px;display:block">Photos</label>
+                <div id="siteVisitPhotos">${renderSiteVisitPhotos(p.id, p.siteVisitPhotos || [])}</div>
+                <div style="margin-top:8px">
+                  <input type="file" id="siteVisitFileInput" multiple accept="image/*,.pdf" style="display:none" onchange="uploadSiteVisitPhotos(${p.id}, this.files)">
+                  <button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('siteVisitFileInput').click()">+ Add Photos</button>
+                  <span style="font-size:11px;color:var(--text-muted);margin-left:8px">Images or PDF, up to 15MB each · uploads immediately</span>
+                </div>
+              </div>
+            </div>` : ''}
           </div>
         </div>
       </div>
@@ -16472,6 +16847,50 @@ async function saveAccomProvider(id) {
     toast('Provider saved');
     // Reload so toggles like Cleaning that surface new sections take effect.
     showAccommodationDetail(id);
+  } catch (e) { toast(e.message, true); }
+}
+
+// ── Host Site Visit photos (reuses the student-upload bucket pattern, no
+// passport/reader) — upload/delete hit their own endpoints immediately; the
+// Visited flag / date / notes save with the page-level Provider Save button.
+function renderSiteVisitPhotos(providerId, photos) {
+  if (!photos || !photos.length) return '<div style="color:var(--text-muted);font-size:12px">No photos yet.</div>';
+  return '<div style="display:flex;flex-wrap:wrap;gap:8px">' + photos.map(ph => {
+    const base = `/sis/api/accommodation/${providerId}/site-visit-photos/${ph.id}/download`;
+    const isImg = /^image\//.test(ph.mimeType || '');
+    const thumb = isImg
+      ? `<a href="${base}?inline=1" target="_blank" rel="noopener"><img src="${base}?inline=1" style="width:72px;height:72px;object-fit:cover;border-radius:6px;display:block;border:1px solid var(--card-border)"></a>`
+      : `<a href="${base}" target="_blank" rel="noopener" title="${esc(ph.originalName || 'file')}" style="width:72px;height:72px;border-radius:6px;background:var(--bg-subtle);border:1px solid var(--card-border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--accent)">PDF</a>`;
+    return `<div style="position:relative">${thumb}<button type="button" title="Delete photo" onclick="deleteSiteVisitPhoto(${providerId}, ${ph.id})" style="position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:#dc2626;color:#fff;border:0;cursor:pointer;font-size:12px;line-height:16px;padding:0">&times;</button></div>`;
+  }).join('') + '</div>';
+}
+
+async function reloadSiteVisitPhotos(providerId) {
+  try {
+    const photos = await api('/accommodation/' + providerId + '/site-visit-photos');
+    const el = document.getElementById('siteVisitPhotos');
+    if (el) el.innerHTML = renderSiteVisitPhotos(providerId, photos);
+  } catch { /* leave current view */ }
+}
+
+async function uploadSiteVisitPhotos(providerId, files) {
+  if (!files || !files.length) return;
+  const form = new FormData();
+  for (const f of files) form.append('files', f);
+  try {
+    const r = await fetch(API + '/accommodation/' + providerId + '/site-visit-photos', { method: 'POST', body: form });
+    if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || 'Upload failed');
+    toast('Photo' + (files.length === 1 ? '' : 's') + ' uploaded');
+    reloadSiteVisitPhotos(providerId);
+  } catch (e) { toast(e.message, true); }
+  const inp = document.getElementById('siteVisitFileInput'); if (inp) inp.value = '';
+}
+
+async function deleteSiteVisitPhoto(providerId, photoId) {
+  if (!confirm('Delete this photo?')) return;
+  try {
+    await api('/accommodation/' + providerId + '/site-visit-photos/' + photoId, { method: 'DELETE' });
+    reloadSiteVisitPhotos(providerId);
   } catch (e) { toast(e.message, true); }
 }
 

@@ -1,30 +1,29 @@
-Issue 36 attendance homework section — code check 21 (29 Jul 2026)
-Reporter: AC | Area: Attendance sheets | Sheet row: 37
+Issue 36 (row 37) -- Attendance Sheet Homework Section Missing
 
-Symptom A: Attendance sheets do not include a homework section.
-Symptom B: Students on holiday still appear on attendance sheets with live checkboxes.
+Reporter: AC | Area: Attendance Sheets | Sheet row: 37
 
-Root cause:
-Symptom A: renderSheetHtml() in src/routes/attendance.ts (lines 36-128) has no homework block.
-  Awaiting layout spec from Neil and Paul.
-Symptom B: getWeekAttendance() in src/scripts/attendance.ts (lines 31-88) does not filter out
-  students whose holiday date range covers the week being viewed.
-  The SCA filter at lines 62-65 only checks weekEnd/bookingCourse.endDate — no holiday lookup.
-  10 students are currently on holiday today (29 Jul 2026) and would appear on sheets:
-  studentIds: 400, 744, 803, 814, 945, 1001, 1028, 856, 14522, 917
-Last commit: 9008d10 (17 Jul 2026) — no attendance commits since then.
+Symptom
+Attendance sheets generated from SIS do not include a homework section.
+Students on holiday also appear with live checkboxes.
 
-Fix recipe (NOT YET RUN):
-Symptom B — add holiday filter to getWeekAttendance() in src/scripts/attendance.ts:
-  After fetching studentAssignments, fetch BookingHoliday records covering the week.
-  Filter out (or flag) student assignments where a holiday covers the queried week.
-  Example approach: fetch active holidays overlapping [monday, friday] for relevant bookings,
-  then mark students on_holiday=true in the response (already returned for the student portal view).
-Symptom A — add homework block to renderSheetHtml() in src/routes/attendance.ts:
-  Wait for Neil and Paul to confirm layout spec before implementing.
+Root Cause (1506th check, Fri 9 Oct 2026)
+- renderSheetHtml() in src/routes/attendance.ts: no homework block implemented
+- grep for homework in attendance.ts returns no matches -- confirmed absent
+- File is modified in current git diff but homework has not been added
+- Holiday filtering: getWeekAttendance() in src/scripts/attendance.ts does not filter
+  students whose holiday covers the queried week
 
-Risk: Code fix. src/scripts/attendance.ts only. Low blast radius.
-  Reversible — holiday filter is additive; does not affect existing attendance records.
+Fix Recipe (NOT YET RUN)
 
-Status: Both bugs open. Fix NOT RUN. Awaiting spec for homework section.
-Last checked: 2026-07-29 UTC (code check 21)
+Step 1 -- Homework section in renderSheetHtml():
+  Awaiting layout spec from Neil and Paul before implementing.
+
+Step 2 -- Holiday filter in getWeekAttendance():
+  Fetch BookingHoliday records overlapping the queried week.
+  Mark or exclude students where holiday overlaps [monday, friday].
+  Render as grey row or HOL label in the sheet.
+
+Risk: Code | Low blast radius (attendance route + script only) | Reversible
+
+Status: Open. Neither fix run. Awaiting homework spec from Neil/Paul.
+Last checked: 2026-10-09 UTC (1506th run).

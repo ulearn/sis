@@ -1,67 +1,67 @@
 [
   {
-    "range": "H38:K38",
+    "range": "H26:K26",
     "values": [
       [
-        "• 42nd hourly check Wed 22 Jul 2026 UTC (25th check)\n• B column change: ID 14521 annotation added to Pietro Caccianiga entry\n• Pietro original issue RESOLVED — BA11311 (bed 84, 28 Jun to 13 Sep 2026, EUR 3850) correct 11-week stay; EUR 5331/5331 paid\n• 16 tracked stale booking accommodations still active — deactivation NOT run\n• System-wide stale BAs (active, end before 22 Jul 2026): 11,175 — unchanged\n• BA9917 (Kanna +67d), BA11246 (Felix +46d), BA30 (Fabrizio +38d), BA11180 (Daniela +32d), BA11168 (Diego +32d),\n  BA11278 (Leila +25d), BA11280 (Valeriya +25d), BA11165 (Giulia +25d), BA11354 (Giulia +24d),\n  BA11339 (Valeriya +18d), BA11247 (Felix +18d), BA11167 (Abdulaziz +18d),\n  BA11345 (Fabrizio +10d), BA11365 (Hugo +4d), BA11257 (Aitana +4d), BA11265 (Kanna +3d)",
-        "Deactivate 16 tracked stale BAs; schedule nightly job for 11k+. See recipe: issue-36b-addendum-22jul-c.md",
-        "42nd hrly 25th check Wed 22 Jul UTC. B col: ID 14521 added. Pietro BA11311 CORRECT. 16 tracked still active. System-wide 11,175. Fix NOT RUN.",
-        "11k stale BAs; 16 tracked with beds"
+        "1566th check Mon 12 Oct 2026 UTC — no data change from 1539th (Sun 11 Oct)\n• Student 917 (Uyanga Tungalag): visa_status = null, hubspot_contact_id = null — unchanged\n• Booking Course 1613 (Academic Year Morning, booking 1467): active = true, end 20 Nov 2026 — 39 days remaining\n• Course extended from Oct 30 to Nov 20 (21-day extension noted in prior runs)\n• visa_status = null prevents student from appearing in class assignment lists\n• Fix NOT RUN",
+        "Set visa_status = approved for student 917; add HubSpot contact ID. See recipe: issue-25-addendum-12oct.md",
+        "1566th Mon 12 Oct UTC. No data change from 1539th (2 days). Visa still null; Booking Course 1613 ends Nov 20 (39d).",
+        "visa null; Nov20 39d; no HubSpot link"
       ]
     ]
   },
   {
-    "range": "H23:K23",
+    "range": "H31:K31",
     "values": [
       [
-        "• 50th hourly check Wed 22 Jul 2026 UTC (73rd total)\n• Booking course 24991 (Edith Nunes, student 1015, booking 18214): General English AM, 13 Jul to 7 Aug 2026 — STILL zero class assignments\n• 9 school days missed (Mon 13 Jul through Wed 22 Jul); 12 remaining (Thu 23 Jul to Fri 7 Aug)\n• Note: Aug BH 3 Aug 2026 absent from school_closures (Issue 38) — if fixed, 11 remaining days\n• Fresh DB confirmed 0 CAs — fix NOT RUN",
-        "Assign Edith Nunes (BC24991) to a General English AM class immediately. See recipe: issue-22-addendum-22jul-i.md",
-        "50th hrly 73rd check Wed 22 Jul UTC. BC24991 STILL 0 CAs. 9 school days missed. 12 remaining (11 if Aug BH added). Fix NOT RUN.",
-        "CRITICAL; 9d missed; assign NOW"
+        "1566th check Mon 12 Oct 2026 UTC — day counts +1 from 1540th (Sun 11 Oct)\n• Payment 945 (EUR 4,231, Prior to arrival, booking 79, created 9 Apr 2026): xeroPaymentId = null — Day 255\n• Booking Course 82 (Intensive General 30, booking 79): ended 6 Mar 2026, active = true — Day 220 past end\n• Booking Course 83 (Afternoon General Plus, booking 79): ended 8 May 2026, active = true — Day 157 past end\n• Fix NOT RUN",
+        "Link payment 945 to Xero; deactivate booking courses 82 and 83. See recipe: issue-30-addendum-12oct.md",
+        "1566th Mon 12 Oct UTC. Day counts +1. Payment 945 Day 255; Booking Course 82 Day 220; Booking Course 83 Day 157.",
+        "P945 Day255; BC82 Day220; BC83 Day157"
       ]
     ]
   },
   {
-    "range": "H40:K40",
+    "range": "H34:K34",
     "values": [
       [
-        "• 54th hourly check Wed 22 Jul 2026 UTC (127th total)\n• August Bank Holiday Mon 3 Aug 2026: STILL absent from school_closures — 12 calendar days away — URGENT\n• October Bank Holiday Mon 27 Oct 2026: STILL absent — 96 calendar days away\n• school_closures confirmed: 0 entries between 22 Jul 2026 and 1 Nov 2026 (fresh query)\n• 9 existing closures: Good Friday Apr 2026 (past), Christmas 2026-2029, Good Fridays 2027-2030\n• Fix NOT RUN",
-        "Add school_closure rows for Aug 3 2026 and Oct 27 2026. See recipe: issue-38-addendum-22jul-l.md",
-        "54th hrly 127th check Wed 22 Jul UTC. Aug BH STILL absent — 12d to Aug 3. 0 closures Jul22-Nov01. UNCHANGED. Fix NOT RUN.",
-        "Aug BH; 12d URGENT"
+        "1566th check Mon 12 Oct 2026 UTC — Day 117; no data change from 1545th (Sun 11 Oct)\n• Student 356 (Shih-Wei Huang): gender = null, visa_status = null — Day 117\n• Document 238 (Exit Letter, template 4): status = ISSUED, version 1, created 17 Jun 2026\n• Null gender caused wrong pronouns (she/her) in the issued exit letter\n• Fix NOT RUN",
+        "Set student 356 gender = MALE; re-issue document 238. See recipe: issue-33-addendum-12oct.md",
+        "1566th Mon 12 Oct UTC. Day 117. Gender still null; exit letter still ISSUED with wrong pronouns.",
+        "117d; doc238 ISSUED; gender null"
       ]
     ]
   },
   {
-    "range": "H41:K41",
+    "range": "H52:K52",
     "values": [
       [
-        "• 53rd hourly check Wed 22 Jul 2026 UTC (78th total)\n• Booking course 24609 (Xuezhen Huang, student 14443): Morning General, 13 Jul to 31 Jul 2026 — STILL zero class assignments — 7 school days remaining (Thu 23 Jul to Fri 31 Jul)\n• Accommodation BA11358: Host Family, bed 180, 12 Jul to 2 Aug 2026, active — confirmed\n• Fresh DB confirmed 0 CAs — fix NOT RUN",
-        "Assign Xuezhen Huang (BC24609) to a Morning General class. See recipe: issue-39-addendum-22jul-k.md",
-        "53rd hrly 78th check Wed 22 Jul UTC. BC24609 STILL 0 CAs — 7 school days left (ends Jul 31). Fix NOT RUN.",
-        "BC24609 0 CAs; 7d left (ends Jul 31)"
+        "1566th check Mon 12 Oct 2026 UTC — Day 44; no data change from 1559th (earlier today)\n• Booking Accommodation 11336 (booking 18141, Family McMahon, bed = null — orphaned): Aug 22–29 2026, active = true, fee = EUR 240/week\n• End date Aug 29 — Day 44 past checkout; completely unbilled\n• Provider 29 (Family McMahon): xero_contact_id = null — root blocker unchanged\n• Fix NOT RUN",
+        "Create Family McMahon Xero supplier; bill Booking Accommodation 11336 EUR 240 (1 week). See recipe: issue-50-addendum-12oct.md",
+        "1566th Mon 12 Oct UTC. Day 44. McMahon xero_contact_id still null. EUR 240 unbilled.",
+        "BA11336 Day44; McMahon Xero null"
       ]
     ]
   },
   {
-    "range": "H43:K43",
+    "range": "H55:K55",
     "values": [
       [
-        "• 53rd hourly check Wed 22 Jul 2026 UTC (103rd total)\n• Booking 18180 (Giampaolo Russo, student 14571): 1 accommodation only — Capel Street apartment STILL MISSING\n• Host Family confirmed: BA11357, bed 178, 2 Aug to 6 Sep 2026, active, fee EUR 1250\n• Payment 17954 (EUR 2584.96, Bank Transfer, 26 Jun 2026): Xero payment ID STILL null — 26 days unreconciled\n• Booking total EUR 2584.96, amount open EUR 0\n• Check-in Host Family 2 Aug 2026 — 11 calendar days away\n• Fresh DB confirmed — fix NOT RUN",
-        "Add Capel Street apt to booking 18180; reconcile payment 17954 in Xero. See recipe: issue-41-addendum-22jul-j.md",
-        "53rd hrly 103rd check Wed 22 Jul UTC. Capel apt STILL missing. PMT17954 xeroId=null (26d since Jun26). Check-in Aug 2 (11d). Fix NOT RUN.",
-        "Xero null; Capel missing; 11d to check-in"
+        "1566th check Mon 12 Oct 2026 UTC — no data change from 1547th (Sun 11 Oct)\n• Booking Accommodation 11267 (Fanny Scelles, bed 23, booking 17843): Aug 29–Dec 19 2026, active = true, fee = EUR 3,840 total\n• claimed_by_provider_id = 105 (Orla Salinger): WRONG — actual host is provider 12 (Bob & Ann O'Sullivan)\n• Item 213 (Aug 29–Sep 12, EUR 420): Xero paid — correct\n• Item 218 (Sep 12–Sep 26, EUR 420): xero_bill_id = null — ghost duplicate; must be deleted\n• Item 225 (Sep 12–Sep 26, EUR 420): Xero 459fc73a submitted — authoritative\n• Sep 26–Oct 10 period (14 days): 0 billing items — 2 days OVERDUE; EUR 420 unbilled\n• Total unbilled to Dec 19 at EUR 420/fortnight: EUR 2,520\n• Fix NOT RUN",
+        "Fix claimed_by to provider 12; delete ghost item 218; bill Sep 26–Oct 10 EUR 420. See recipe: issue-53-addendum-12oct.md",
+        "1566th Mon 12 Oct UTC. No data change from 1547th. Sep 26–Oct 10 OVERDUE 2 days (EUR 420). Ghost item 218 still present.",
+        "BA11267; item218 ghost; Sep26-Oct10 2d OVERDUE; EUR420"
       ]
     ]
   },
   {
-    "range": "H47:K47",
+    "range": "H64:K64",
     "values": [
       [
-        "• 53rd hourly check Wed 22 Jul 2026 UTC (85th total)\n• FINAL CHANCE — 2 SCHOOL DAYS LEFT: Thu 23 Jul + Fri 24 Jul (both courses end Fri 24 Jul 2026)\n• BC24828 (Martina Tartaro): Morning General Plus & IELTS, ends Fri 24 Jul — STILL zero class assignments\n• BC25011 (Eduardo Roche Diaz): General English PM, ends Fri 24 Jul — STILL zero class assignments\n• Courses expire end of Friday — no further chance after that\n• Fresh DB confirmed 0 assignments — fix NOT RUN",
-        "ASSIGN TODAY: Martina (BC24828) AM class + Eduardo (BC25011) PM class before Thu 23 Jul 09:00. See recipe: issue-45-addendum-22jul-m.md",
-        "53rd hrly 85th check Wed 22 Jul UTC. BC24828 + BC25011 STILL 0 CAs. 2 days left: Thu 23 + Fri 24 Jul. LAST CHANCE. Fix NOT RUN.",
-        "EXPIRES TOMORROW Fri 24 Jul"
+        "1566th check Mon 12 Oct 2026 UTC — Day 38; no change from 1553rd (Sun 11 Oct)\n• Booking Course 24699 (Academic Year Morning, booking 17917, Gretel Merlina Nunez): ended 4 Sep 2026, active = true — Day 38 past end\n• ILEP code 0318/0011 — LifePass; renewal Booking Course 25099 starts 9 Nov 2026 — 28 days\n• Class Assignment on Booking Course 24699: last week ended 6 Sep 2026 (class 10) — past; no current assignment\n• Class Assignment on Booking Course 25099: none yet — needs assigning before Nov 9\n• Fix NOT RUN",
+        "Deactivate Booking Course 24699; assign class for Booking Course 25099 before Nov 9. See recipe: issue-62r64-addendum-12oct.md",
+        "1566th Mon 12 Oct UTC. Day 38. Renewal starts Nov 9 (28d). No class assignment on Booking Course 25099 yet.",
+        "BC24699 Day38; BC25099 no class; 28d"
       ]
     ]
   }

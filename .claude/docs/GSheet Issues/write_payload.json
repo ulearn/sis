@@ -1,67 +1,67 @@
 [
   {
-    "range": "H54:K54",
+    "range": "H47:K47",
     "values": [
       [
-        "• 503rd check Mon 24 Aug 2026 UTC — no change since 501st\n• Booking Accommodation 11267 (bed 23, 29 Aug to 4 Oct 2026): fee EUR 3,840, active — OK\n• Booking Accommodation 11399 (bed 54, 4 Oct to 19 Dec 2026): fee null — NOT YET SET, 41 days to move-in\n• Booking 17843 (Fanny Scelles): CONFIRMED, fully paid EUR 5,595.16\n• Fanny ARRIVES 29 Aug 2026 — 5 days away",
-        "Set fee on Booking Accommodation 11399 (Oct 4 to Dec 19, 11 weeks). Confirm rate with KC. See recipe: issue-52-addendum-24aug-d.md",
-        "503rd Mon 24 Aug UTC. BA11267 fee EUR 3,840 OK. BA11399 fee null. Arrival Aug 29 (5d). No change since 501st.",
-        "ARRIVES AUG 29 (5d); BA11399 fee null"
+        "1528th check Sat 10 Oct 2026 UTC -- checkout PAST; data unchanged from 1526th\n• Booking Accommodation 11443 (Bader Fareed Al Jurbua, Jenny Manders, bed 44, booking 18312): Oct 8-10 2026, checkout PAST TODAY Oct 10, active = true, fee = null -- 0 billing items; EUR 60 owed (2 days at EUR 210/week)\n• Provider 39 (Jenny Manders): xero_contact_id present -- billing unblocked once fee is set\n• Booking Accommodation 11444 (Bader Fareed Al Jurbua, Capel Street, bed 83, booking 18312): Oct 10-17 2026, active, fee = null -- Capel blocked (see Issue 54)\n• Provider 15 (Capel Street): xero_contact_id = null -- root blocker for Booking Accommodation 11444\n• Fix NOT RUN",
+        "Set Booking Accommodation 11443 fee (EUR 210/wk) + generate host bill (EUR 60). Capel: see Issue 54. See recipe: issue-45-addendum-10oct-g.md",
+        "1528th Sat 10 Oct UTC. Data unchanged from 1526th. Booking Accommodation 11443 checkout PAST TODAY Oct 10. EUR 60 overdue. Booking Accommodation 11444 Capel blocked.",
+        "BA11443 checkout PAST Oct10; EUR60 overdue"
       ]
     ]
   },
   {
-    "range": "H55:K55",
+    "range": "H68:K68",
     "values": [
       [
-        "• 503rd check Mon 24 Aug 2026 UTC — Booking Accommodation 11399 fee null persists; same student as issue 52\n• Booking Accommodation 11267 (bed 23, 29 Aug to 4 Oct 2026): fee EUR 3,840, arrival 5 days (29 Aug)\n• Booking Accommodation 11399 (bed 54, 4 Oct to 19 Dec 2026): fee null — 41 days to set\n• Multi-host email template feature: spec still open, no code changes\n• Fix NOT RUN",
-        "Set fee on Booking Accommodation 11399 (see issue 52); multi-host template spec open. Recipe: issue-53-addendum-24aug.md",
-        "503rd Mon 24 Aug UTC. Fanny arrives Aug 29 (5d). BA11399 fee null (41d to Oct 4). Multi-host template spec open. No change.",
-        "BA11399 fee null; spec open"
+        "1528th check Sat 10 Oct 2026 UTC -- checkout PAST; data unchanged from 1526th\n• Booking Accommodation 11386 (Mohammed Ibrahimi Alsaidalani, Edel McDonald, bed 33, booking 18145): Aug 30 - Oct 10 2026, checkout PAST TODAY Oct 10, active = true, fee = null\n• Provider 24 (Edel McDonald): xero_contact_id present -- billing unblocked\n• Host billing item 209 (Aug 30 - Sep 13, EUR 520): Xero bill paid -- correct\n• Host billing item 222 (Sep 13 - Sep 27, EUR 520): Xero bill null -- ghost; must be deleted\n• Host billing item 227 (Sep 13 - Sep 27, EUR 520): Xero bill submitted -- authoritative\n• Sep 27 - Oct 10 (13 days at EUR 260/week = EUR 482.86): 0 billing items -- OVERDUE at checkout\n• Fix NOT RUN",
+        "Delete ghost billing item 222; create checkout billing Sep 27-Oct 10 (EUR 482.86); set fee=260. See recipe: issue-62r68-addendum-10oct-g.md",
+        "1528th Sat 10 Oct UTC. Data unchanged from 1526th. Booking Accommodation 11386 checkout PAST TODAY Oct 10. EUR 482.86 unbilled. Ghost billing item 222 still present.",
+        "OVERDUE; checkout PAST Oct10; HPLI222 ghost; EUR482.86"
       ]
     ]
   },
   {
-    "range": "H39:K39",
+    "range": "H57:K57",
     "values": [
       [
-        "• 503rd check Mon 24 Aug 2026 UTC — 5 stale Booking Accommodations unchanged; deadline 6 days\n• Current occupant Alessandro Signorotti (Booking Accommodation 11173): ends 30 Aug 2026, fee EUR 1,080\n• Next occupant Rosa Maria Mollica (Booking Accommodation 25): starts 30 Aug 2026 — 6 DAYS AWAY, fee EUR 2,100\n• 5 stale Booking Accommodations on bed 83 still active — must deactivate before Rosa arrives:\n• BA 11239 (Ivan Rodriguez Solares): ended 24 May 2026 — 92 days stale, fee EUR 1,050\n• BA 11168 (Diego Da Silva Saldanha): ended 20 Jun 2026 — 65 days stale, fee EUR 700\n• BA 11285 (Jesus Manuel Ramirez Diaz): ended 5 Jul 2026 — 50 days stale, fee null\n• BA 11352 (Veronica Martin): ended 11 Jul 2026 — 44 days stale, fee EUR 360\n• BA 11179 (Africa Mera Bachir): ended 9 Aug 2026 — 15 days stale, fee EUR 1,360\n• Fix NOT RUN",
-        "Deactivate Booking Accommodations 11239, 11168, 11285, 11352, 11179 on bed 83 before Aug 30. See recipe: issue-37-addendum-24aug.md",
-        "503rd Mon 24 Aug UTC. 5 stale BAs unchanged. Rosa Mollica (BA 25) starts Aug 30 = 6d. Signorotti (BA 11173) current until Aug 30. Fix NOT RUN.",
-        "5 stale BAs; DEADLINE Aug30 = 6d"
+        "1528th check Sat 10 Oct 2026 UTC -- data unchanged from 1526th; checkout TOMORROW Oct 11\n• Booking Accommodation 32 (Maria Rosa Ghiani, student 14437, booking 17823): Capel Street, Sep 27 - Oct 11 2026, active = true, fee = EUR 400/week\n• Booking 17823: CONFIRMED, EUR 645.10 total = EUR 645.10 paid, EUR 0 open\n• Host billing items for Booking Accommodation 32: 0 -- EUR 800 (2 x EUR 400 weeks) completely unbilled\n• Provider 15 (Capel Street): xero_contact_id = null -- root blocker unchanged\n• Checkout TOMORROW Oct 11 -- action needed TODAY\n• Fix NOT RUN",
+        "Add Xero contact to Capel (provider 15) then bill Booking Accommodation 32 (2 weeks EUR 800). See recipe: issue-55-addendum-10oct-g.md",
+        "1528th Sat 10 Oct UTC. No data change from 1526th. Checkout TOMORROW Oct 11. EUR 800 still unbilled. Capel blocker unchanged.",
+        "BA32 checkout TOMORROW Oct11; EUR800 blocked"
       ]
     ]
   },
   {
-    "range": "H45:K45",
+    "range": "H56:K56",
     "values": [
       [
-        "• 503rd check Mon 24 Aug 2026 UTC — unchanged\n• Booking Accommodation 11285 (Jesus Manuel Ramirez Diaz, bed 83): ended 5 Jul 2026, active — 50 days stale, fee null\n• One of 5 stale Booking Accommodations on bed 83 (see issue 37 for full list)\n• Next occupant Rosa Maria Mollica (Booking Accommodation 25) starts bed 83 on 30 Aug — 6 DAYS AWAY",
-        "Deactivate Booking Accommodation 11285 (part of 5-item fix on bed 83). See recipe: issue-37-addendum-24aug.md",
-        "503rd Mon 24 Aug UTC. BA 11285 50 days stale, fee null. Rosa Mollica starts Aug 30 = 6d. Fix NOT RUN.",
-        "5 stale BAs; Aug30 = 6d"
+        "1528th check Sat 10 Oct 2026 UTC -- data unchanged from 1526th\n• Booking Accommodation 32 (Maria Rosa Ghiani, student 14437, booking 17823): Capel Street, Sep 27 - Oct 11 2026, active = true, fee = EUR 400/week\n• Checkout TOMORROW Oct 11 -- EUR 800 (2 x EUR 400 weeks) completely unbilled\n• Provider 15 (Capel Street): xero_contact_id = null -- root blocker unchanged\n• Booking Accommodation 11393 (Pietro Caccianiga): ended Sep 13, Day 27, active = true, fee = null, 0 billing items\n• Booking Accommodation 11397 (Capel Street bed 89): ended Sep 6, Day 34, active = true, fee = null, 0 billing items\n• Booking Accommodation 11444 (Bader Fareed Al Jurbua): Oct 10-17 2026, active, fee = null\n• Action needed today",
+        "Add Xero contact to Capel Street (provider 15); unblocks BA32, BA11393, BA11397, BA11444. See recipe: issue-54-addendum-10oct-g.md",
+        "1528th Sat 10 Oct UTC. No change from 1526th. BA32 checkout TOMORROW Oct 11; EUR 800 blocked. BA11393 Day 27, BA11397 Day 34, both unbilled.",
+        "Capel Xero null; BA32 checkout TOMORROW; EUR800 blocked"
       ]
     ]
   },
   {
-    "range": "H16:K16",
+    "range": "H21:K21",
     "values": [
       [
-        "• 503rd check Mon 24 Aug 2026 UTC — no change since 502nd\n• Student Class Assignment 255: class 11, weekEnd 3 Jul 2026 — expired 52 days ago\n• Booking Course 24925 (Academic Year Afternoon): active, ends 2 Oct 2026 — 39 days left\n• Booking Course 24925 has only 1 Student Class Assignment (id 255, expired) — zero current assignment\n• Attendance not tracked since 3 Jul 2026 — 52-day gap",
-        "Add new Student Class Assignment to Booking Course 24925: class 11, weekStart 6 Jul 2026, weekEnd 2 Oct 2026. See recipe: issue-15-addendum-24aug-d.md",
-        "503rd Mon 24 Aug UTC. Student Class Assignment 255 expired 3 Jul. Booking Course 24925 ends 2 Oct. Student 1001. 52d gap. Fix NOT RUN.",
-        "CRITICAL: SCA needed NOW"
+        "1528th check Sat 10 Oct 2026 UTC -- data unchanged; Oct 23 deadline 13 days\n• Booking 1605 (Ariunsarnai Batbayar, student 1047): status = PENDING, confirmed = false\n• Amount total = EUR 1,509; amount paid = EUR 0; amount open = EUR 1,509 -- fully outstanding; zero payments on record\n• Booking Course 1791 (Academic Year Renewal Morning): Apr 13 - Oct 23 2026, active = true\n• Service end = Oct 23 2026 -- 13 days remaining\n• HubSpot deal ID: 502951083215\n• Fix NOT RUN",
+        "Chase payment from Ariunsarnai Batbayar or cancel booking 1605 before Oct 23. See recipe: issue-20-addendum-10oct-g.md",
+        "1528th Sat 10 Oct UTC. Data unchanged from 1524th. EUR 1,509 open, zero payments, course ends Oct 23 (13 days). PENDING/unconfirmed. Urgent.",
+        "EUR1,509 EUR0 paid; Oct23 13d; URGENT"
       ]
     ]
   },
   {
-    "range": "H30:K30",
+    "range": "H2:K2",
     "values": [
       [
-        "• 503rd check Mon 24 Aug 2026 UTC — no change since 502nd\n• Student Class Assignment 255: class 11, weekEnd 3 Jul 2026 — expired 52 days ago\n• Booking Course 24925 (Academic Year Afternoon): active, ends 2 Oct 2026 — 39 days left\n• Student (Saikhantes Shagdasuren, student 1001) attends class with no valid Student Class Assignment\n• See row 16 (issue 15) for full diagnosis and recipe",
-        "Add Student Class Assignment to Booking Course 24925. See recipes: issue-15-addendum-24aug-d.md and issue-29-15-addendum-24aug-b.md",
-        "503rd Mon 24 Aug UTC. Student Class Assignment 255 expired 3 Jul. Booking Course 24925 ends 2 Oct (39d). Fix NOT RUN.",
-        "CRITICAL: class today, no SCA; 39d left"
+        "1528th check Sat 10 Oct 2026 UTC -- day counts unchanged from 1524th (same calendar day)\n• Payment 18122 (EUR 250, Card, 23 Aug 2026): booking_id = null -- Day 48\n• Payment 18123 (EUR 250, Card, 23 Aug 2026): booking_id = null -- Day 48\n• Payment 16988 (EUR 339.90, Bank Transfer, 28 Apr 2026): booking_id = null -- Day 165\n• Payment 16989 (EUR 339.90, Bank Transfer, 28 Apr 2026): booking_id = null -- Day 165\n• Payment 17187 (EUR 6,151, TransferMate Escrow, 5 May 2026): booking_id = null -- Day 158\n• Payment 4781 (EUR 380, Flywire, Aug 2019): booking_id = null -- legacy pre-migration Fidelo record\n• Fix NOT RUN",
+        "Verify Payments 18122+18123 in Xero then link or void. See recipe: issue-1-addendum-10oct-g.md",
+        "1528th Sat 10 Oct UTC. Day counts unchanged from 1524th (same day). P18122+P18123 Day 48; P16988/P16989 Day 165; P17187 Day 158; P4781 legacy.",
+        "6 orphan pmts; P18122+P18123 Day48"
       ]
     ]
   }
