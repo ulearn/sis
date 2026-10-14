@@ -34,6 +34,8 @@ export const TEMPLATE_ID_BY_SLUG: Record<string, number> = {
   'challenger-nudge-1': 113,       // KickStart challenger nudge drip (cron-challenger-nudge)
   'challenger-nudge-2': 114,
   'challenger-nudge-3': 115,
+  'CES-Exam-Request-Prepaid': 119,  // exam booking → CES (student prepaid; ULearn settles)
+  'CES-Exam-Request-DirectPay': 120,// exam booking → CES (student invoiced directly)
 };
 
 // Build a Prisma `where` that prefers the template ID and falls back to the slug.

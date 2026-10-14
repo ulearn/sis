@@ -160,3 +160,5 @@ SIS (Student Information System) — a custom replacement for Fidelo SIS (€750
 - Sessions are date-based, not weekly-only
 - Attendance stored as individual records, not summaries
 - **Agencies: HubSpot is authoritative.** The `agencies` table in Postgres is a Fidelo-era holdover kept only so `Booking.agencyId` joins work. Treat `id`, `name`, `hubspotCompanyId` as the only valid fields. **Never read `commissionRate`, contact details, or other agency fields from Postgres** — always fetch from the HubSpot API. Flag any existing code that violates this.
+
+**ToDo protocol (Neil 2026-10-13):** unfinished work goes in this project's ToDo (synced with Wrike every 5 min), never only in memory — full rules + every project's ToDo path in ~/.claude/CLAUDE.md.

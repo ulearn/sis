@@ -219,6 +219,7 @@ model Student {
   socialActivityFeedback  SocialActivityFeedback[]
   courseFeedback          CourseFeedback[]
   signatures          StudentSignature[]
+  examBookings        StudentExamBooking[]
 
   @@map("students")
 }
@@ -961,6 +962,7 @@ model BookingCourse {
 
   // Relations
   classAssignments  StudentClassAssignment[]
+  examBookings      StudentExamBooking[]
 
   @@map("booking_courses")
 }
@@ -2632,4 +2634,137 @@ model RefundRequest {
   @@index([studentId])
   @@index([createdAt])
   @@map("refund_requests")
+}
+
+// ============================================================
+// EXAMINATIONS: end-of-programme exam booking (CES Dublin)
+// ULearn is the registration FACILITATOR — CES confirms the actual
+// registration and handles payment. A booking request is NOT a
+// confirmed registration (see sis/.claude/projects/exam-calendar.md).
+// ============================================================
+
+enum ExamCode {
+  B1_PRELIMINARY        // Cambridge B1 Preliminary (PET)
+  B2_FIRST              // Cambridge B2 First (FCE)
+  C1_ADVANCED           // Cambridge C1 Advanced (CAE)
+  IELTS_GT              // IELTS General Training
+  // Phase 2: A1/A2 (LanguageCert etc.), IELTS_ACADEMIC
+}
+
+enum ExamSittingStatus {
+  PUBLISHED
+  UNVERIFIED
+  WITHDRAWN
+  ARCHIVED
+}
+
+enum ExamBookingStatus {
+  REQUEST_PENDING       // student started but not yet confirmed/submitted
+  REQUESTED             // email sent to CES; awaiting acknowledgement
+  CONFIRMED             // CES has confirmed the actual registration
+  SAT                   // student has completed the examination
+  RESULTS_RECEIVED      // results recorded against the student
+  COMPLETED             // documentation checked and filed
+  // exception states
+  CANCELLED
+  CHANGE_REQUESTED
+  REJECTED
+  EXPIRED
+  NEEDS_ATTENTION
+}
+
+// A published examination sitting the student can choose from. Manually
+// maintained (imported from the exam-date Google Sheet via CSV); not a live
+// British Council feed. Preserve published uncertainty (nullable times).
+model ExamSitting {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  examCode        ExamCode          @map("exam_code")
+  provider        String                               // "Cambridge" | "IELTS / British Council"
+  centreId        String            @default("CES-DUBLIN") @map("centre_id") // single centre in v1
+  examDate        DateTime          @map("exam_date") @db.Date
+  startTime       String?           @map("start_time")  // local session times, nullable (uncertainty preserved)
+  endTime         String?           @map("end_time")
+  timezone        String            @default("Europe/Dublin")
+  feeEur          Decimal?          @map("fee_eur") @db.Decimal(10,2) // published indicative fee
+  externalExamId  String?           @unique @map("external_exam_id")  // British Council sitting id where available
+  sourceUrl       String?           @map("source_url")
+  sourceCheckedAt DateTime?         @map("source_checked_at") @db.Date
+  status          ExamSittingStatus @default(PUBLISHED)
+  notes           String?
+
+  bookings        StudentExamBooking[]
+
+  @@unique([centreId, examCode, examDate, startTime], map: "exam_sittings_centre_code_date_time_unique")
+  @@index([examCode, examDate])
+  @@map("exam_sittings")
+}
+
+// A student's request to register for a sitting. Mirrors the holiday
+// self-service shape: the student confirms, we email CES (student CC'd),
+// and track the Gmail thread + lifecycle. One active booking per enrolment.
+model StudentExamBooking {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  studentId        Int           @map("student_id")
+  student          Student       @relation(fields: [studentId], references: [id])
+  bookingCourseId  Int           @map("booking_course_id")  // the Academic Year enrolment
+  bookingCourse    BookingCourse @relation(fields: [bookingCourseId], references: [id])
+  // Nullable: an assistance / needs-attention case (student below B1, or no
+  // suitable date) is a tracked row with no chosen sitting yet.
+  examSittingId    Int?          @map("exam_sitting_id")
+  examSitting      ExamSitting?  @relation(fields: [examSittingId], references: [id])
+
+  status           ExamBookingStatus @default(REQUEST_PENDING)
+  // PREPAID = student paid ULearn an exam fee upfront (EXAM_FEE extra) → ULearn
+  // settles with CES. DIRECT = no upfront fee → CES invoices the student.
+  paymentArrangement String        @map("payment_arrangement")
+
+  requestedAt        DateTime?     @map("requested_at")
+  studentConfirmedAt DateTime?     @map("student_confirmed_at")
+  centreConfirmedAt  DateTime?     @map("centre_confirmed_at")
+  satAt              DateTime?     @map("sat_at")
+  resultsReceivedAt  DateTime?     @map("results_received_at")
+
+  externalBookingReference String? @map("external_booking_reference") // CES confirmation reference
+  emailThreadId    String?         @map("email_thread_id")            // Gmail threadId of the CES request
+  templateSlug     String?         @map("template_slug")              // which CES template was used
+  choiceSnapshot   Json?           @map("choice_snapshot")            // sitting snapshot at request time
+
+  // Reminder bookkeeping (cron-exam-reminders)
+  ackReminderSentAt     DateTime?  @map("ack_reminder_sent_at")
+  escalatedAt           DateTime?  @map("escalated_at")
+  preExamReminderSentAt DateTime?  @map("pre_exam_reminder_sent_at")
+  postExamReminderSentAt DateTime? @map("post_exam_reminder_sent_at")
+
+  events           ExamBookingEvent[]
+
+  @@index([studentId, bookingCourseId])
+  @@index([status])
+  @@map("student_exam_bookings")
+}
+
+// Append-only event log — regulatory evidence without complicating the
+// booking table (mirrors AuditLog / BookingStatusHistory: createdAt only).
+model ExamBookingEvent {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  examBookingId Int                @map("exam_booking_id")
+  examBooking   StudentExamBooking @relation(fields: [examBookingId], references: [id], onDelete: Cascade)
+
+  eventType  String  @map("event_type")  // status_change | email_sent | confirmation_recorded | amendment | error | escalation
+  fromStatus String? @map("from_status")
+  toStatus   String? @map("to_status")
+  actor      String?                      // student-app | <admin user> | cron
+  detail     String?
+  metadata   Json?
+  emailLogId Int?    @map("email_log_id")
+
+  @@index([examBookingId])
+  @@map("exam_booking_events")
 }

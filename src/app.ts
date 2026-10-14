@@ -134,8 +134,8 @@ const ROLE_PERMISSIONS: Record<string, { deny: string[]; viewOnly: string[] }> =
   // Unified-app roles — ZERO SIS API access by default (GDPR / payroll / student PII).
   // Student-self routes (own profile, own bookings) will be added later;
   // teachers must never see SIS data. See TODO inside /sis/auth/login.
-  teacher: { deny: ['accommodation','apartments','attendance','bookings','classes','documents','email','healthcheck','host-payments','matching','partners','payroll','students','student','teachers','tests','transport','webhooks'], viewOnly: [] },
-  student: { deny: ['accommodation','apartments','attendance','bookings','classes','documents','email','healthcheck','host-payments','matching','partners','payroll','students','student','teachers','tests','transport','webhooks'], viewOnly: [] },
+  teacher: { deny: ['accommodation','apartments','attendance','bookings','classes','documents','email','exams','healthcheck','host-payments','matching','partners','payroll','students','student','teachers','tests','transport','webhooks'], viewOnly: [] },
+  student: { deny: ['accommodation','apartments','attendance','bookings','classes','documents','email','exams','healthcheck','host-payments','matching','partners','payroll','students','student','teachers','tests','transport','webhooks'], viewOnly: [] },
 };
 
 // Friendly display labels for permission tiers — UI shows these so staff
@@ -1377,6 +1377,8 @@ import { hostVettingAdminRoutes } from './routes/host-vetting';
 app.use('/sis/api/host-vetting', hostVettingAdminRoutes(prisma));
 app.use('/sis/api/payroll', payrollRoutes(prisma));
 app.use('/sis/api/activities', activitiesRoutes(prisma));
+import { examRoutes } from './routes/exams';
+app.use('/sis/api/exams', examRoutes(prisma));
 app.use('/sis/zoho/auth', zohoAuthRoutes());
 
 // Scheduling (closures CRUD) + startup occurrence top-up

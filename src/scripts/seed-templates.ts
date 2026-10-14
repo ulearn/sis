@@ -62,7 +62,7 @@ const templates = [
   <p style="text-align:center;margin:4px 0 0;font-size:12px"><strong>SCAN THIS QR CODE WITH YOUR PHONE TO VERIFY THE AUTHENTICITY OF THIS DOCUMENT</strong></p>
   <p style="text-align:center;margin:0">{{document.qr}}</p>
 
-  <p style="margin:6px 0 4px">{{student.salutation}} {{student.first_name}} {{student.last_name}} has paid ULearn English School {{booking.amount_reserved}} to reserve the following:</p>
+  <p style="margin:6px 0 4px">{{student.first_name}} {{student.last_name}} has paid ULearn English School {{booking.amount_reserved}} to reserve the following:</p>
 
   <table style="width:100%;border-collapse:collapse;margin:6px 0">
     <tr><td style="padding:3px 0;border-bottom:1px solid #e5e4e0;width:180px"><strong>Student Name</strong></td><td style="padding:3px 0;border-bottom:1px solid #e5e4e0">{{student.first_name}} {{student.last_name}}</td></tr>
@@ -89,11 +89,11 @@ const templates = [
   </table>{/if}</div>
 
   {if booking.is_academic_year}<div data-editable="insurance_details" style="margin-top:8px">
-    <p style="margin:0 0 6px"><strong>Insurance details:</strong><br>ULearn has organised health insurance for {{student.salutation}} {{student.last_name}} in Ireland through Arachas Insurance. The school policy number is IAS 84420.</p>
+    <p style="margin:0 0 6px"><strong>Insurance details:</strong><br>ULearn has organised health insurance for {{student.first_name}} {{student.last_name}} in Ireland through Arachas Insurance. The school policy number is IAS 84420.</p>
     <p style="margin:0"><strong>Learner Protection:</strong><br>ULearn has partnered with Arachas Insurance to provide protection for its enrolled learners in line with the change in regulations that came into force on July 4, 2022. Our policy number is ECOAG15683.</p>
   </div>{/if}
 
-  <p style="margin:10px 0 0">I wish to confirm that ULearn has the capacity to accommodate {{student.salutation}} {{student.last_name}} on a full-time basis in in-person lessons at our city-centre premises.</p>
+  <p style="margin:10px 0 0">I wish to confirm that ULearn has the capacity to accommodate {{student.first_name}} {{student.last_name}} on a full-time basis in in-person lessons at our city-centre premises.</p>
 
   <p style="margin:8px 0 0">I may be contacted at 01-4751222 or 0851574801 for any confirmation of the details in this document that may be necessary.</p>
 
@@ -164,6 +164,74 @@ ${FOOTER}`,
   <p>Please upload it to {if recipient_student}your <a href="https://sis.ulearnschool.com/sis/login">student app</a>{/if}{if recipient_agent}your <a href="https://sis.ulearnschool.com/sis/partners/login">portal</a>{/if} — once we have it, your LOA will issue to you automatically.</p>
 
   <p>Many thanks,<br>ULearn</p>
+</div>`,
+  },
+
+  // ── CES exam-registration request (student app → Success Desk → CES) ──────────
+  // TWO templates, chosen by whether the student PREPAID an exam fee to ULearn
+  // (EXAM_FEE booking extra). PREPAID → ULearn settles with CES (CES invoices
+  // ULearn). DIRECT (later fee-free cohort) → CES invoices the STUDENT directly.
+  // The student is CC'd on both; sent from success@. Tokens set in examScripts:
+  // {{student.full_name}} {{exam.title}} {{exam.date}} {{exam.time}} {{ulearn.ref}}
+  {
+    name: 'CES Exam Request — Prepaid (ULearn settles)',
+    slug: 'CES-Exam-Request-Prepaid',
+    templateType: 'email',
+    category: 'exam',
+    documentType: 'exam_request',
+    subject: 'Examination registration request — {{student.full_name}} (ULearn ref {{ulearn.ref}})',
+    htmlTemplate: `<div style="font-family:Verdana,sans-serif;font-size:13px;line-height:1.6;color:#1a1d23">
+  <p>Dear CES Examinations Team,</p>
+
+  <p>ULearn English School is writing to request examination registration for the student copied on this email.</p>
+
+  <p><strong>Student:</strong> {{student.full_name}}<br>
+  <strong>Examination:</strong> {{exam.title}}<br>
+  <strong>Requested date:</strong> {{exam.date}}<br>
+  {if exam.time}<strong>Requested time:</strong> {{exam.time}}<br>{/if}
+  <strong>Examination centre:</strong> Centre of English Studies, Dublin<br>
+  <strong>ULearn reference:</strong> {{ulearn.ref}}</p>
+
+  <p>The student has selected this examination sitting through the ULearn student application and has confirmed their intention to proceed, subject to availability.</p>
+
+  <p>The examination fee for this student has already been paid to ULearn English School as part of their programme. <strong>Please invoice ULearn English School for the examination fee — do not request payment from the student.</strong> We will settle the invoice directly.</p>
+
+  <p>Please liaise with the student, who is copied on this email, for any identity documents or logistical details required, and confirm the registration by reply so we can update the student's academic record.</p>
+
+  <p>Kind regards,<br>ULearn Student Success Team<br>ULearn English School Dublin</p>
+</div>`,
+  },
+
+  {
+    name: 'CES Exam Request — Direct pay (student invoiced)',
+    slug: 'CES-Exam-Request-DirectPay',
+    templateType: 'email',
+    category: 'exam',
+    documentType: 'exam_request',
+    subject: 'Examination registration request — {{student.full_name}} (ULearn ref {{ulearn.ref}})',
+    htmlTemplate: `<div style="font-family:Verdana,sans-serif;font-size:13px;line-height:1.6;color:#1a1d23">
+  <p>Dear CES Examinations Team,</p>
+
+  <p>ULearn English School is writing to request examination registration for the student copied on this email.</p>
+
+  <p><strong>Student:</strong> {{student.full_name}}<br>
+  <strong>Examination:</strong> {{exam.title}}<br>
+  <strong>Requested date:</strong> {{exam.date}}<br>
+  {if exam.time}<strong>Requested time:</strong> {{exam.time}}<br>{/if}
+  <strong>Examination centre:</strong> Centre of English Studies, Dublin<br>
+  <strong>ULearn reference:</strong> {{ulearn.ref}}</p>
+
+  <p>The student has selected this examination sitting through the ULearn student application and has confirmed their intention to proceed, subject to availability.</p>
+
+  <p>Please liaise directly with the student, who is copied on this email, to confirm the registration and arrange payment of the examination fee.</p>
+
+  <p><strong>Please issue any invoice or payment request directly to the student, not to ULearn English School.</strong></p>
+
+  <p>If further confirmation or documentation is required, please request it directly from the student on this thread.</p>
+
+  <p>We would appreciate confirmation of the examination registration by reply, so that we can update the student's academic record.</p>
+
+  <p>Kind regards,<br>ULearn Student Success Team<br>ULearn English School Dublin</p>
 </div>`,
   },
 

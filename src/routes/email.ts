@@ -152,6 +152,7 @@ export async function sendStudentEmail(prisma: PrismaClient, opts: {
   from: string;
   fromName?: string;
   to: string;
+  cc?: string;
   bcc?: string;
   subject: string;
   html: string;
@@ -195,6 +196,7 @@ export async function sendStudentEmail(prisma: PrismaClient, opts: {
     from: opts.from,
     fromName: opts.fromName,
     to: opts.to,
+    cc: opts.cc,
     bcc: opts.bcc,
     subject: opts.subject,
     html: opts.html,

@@ -669,6 +669,7 @@
 </head>
 <body>
 <!-- €500-challenge UI translations (PT/ES/IT/FR/DE/TR/JA/KO/ZH/RU + EN). -->
+<script src="/sis/student/public/lang-map.js"></script>
 <script src="/sis/student/public/challenge-i18n.js"></script>
 
 <header class="topbar">
@@ -1725,6 +1726,145 @@ async function initPushNotifications() {
   </div>
 </main>
 
+<!-- ═══════════ EXAM BOOKING OVERLAY (opened from the Course card) ═══════════ -->
+<div class="contract-overlay" id="examOverlay" role="dialog" aria-modal="true" aria-label="Book your exam">
+  <div style="background:#fff;border-radius:16px;max-width:460px;width:100%;max-height:88vh;overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,.3)">
+    <div style="display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid #eef0f3;position:sticky;top:0;background:#fff;border-radius:16px 16px 0 0">
+      <span style="font-size:20px">📝</span>
+      <h2 style="margin:0;font-size:17px;flex:1">Book your exam</h2>
+      <button onclick="closeExamOverlay()" aria-label="Close" style="background:none;border:0;font-size:22px;line-height:1;color:#94a3b8;cursor:pointer;padding:2px 6px">×</button>
+    </div>
+    <div id="examOverlayBody" style="padding:16px 18px"><div style="color:#64748b">Loading…</div></div>
+  </div>
+</div>
+
+<script>
+  // ── Exam booking (overlay, opened from the Course card) ───────────────────
+  // No tab. The student's exam is HARD-MAPPED to their current level; the
+  // overlay pre-populates it and they just pick a date. "Not your exam?" routes
+  // to us. This only automates the CES outreach — no payment is taken here.
+  window._exam = null; window._examPick = { sittingId: null };
+
+  // Called from loadOverview — stash state so the Course-card button renders.
+  function setupExamButton(exam) { window._exam = (exam && exam.relevant) ? exam : null; }
+
+  // The Course-card button (built by the card renderer via examButtonHtml()).
+  function examButtonHtml(exam) {
+    if (!exam || !exam.relevant) return '';
+    const big = 'display:block;width:100%;margin-top:10px;padding:13px;border:0;border-radius:12px;font-family:inherit;font-weight:700;font-size:15px;cursor:pointer;text-align:center';
+    if (exam.satisfied && exam.activeBooking) {
+      const st = exam.activeBooking.status;
+      const txt = st === 'CONFIRMED' ? '✅ Exam booked'
+        : st === 'NEEDS_ATTENTION' ? '📝 Exam — we’re in touch'
+        : st === 'REQUEST_PENDING' ? '📝 Finish exam booking'
+        : '📝 Exam requested';
+      return `<button onclick="openExamOverlay()" style="${big};background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0">${txt}</button>`;
+    }
+    if (!exam.visible) {
+      return `<div style="margin-top:10px;font-size:12px;color:#94a3b8;text-align:center">Exam booking opens at week ${exam.eligibilityWeek} of your programme</div>`;
+    }
+    return `<button onclick="openExamOverlay()" style="${big};background:var(--brand,#4f46e5);color:#fff">📝 Book Exam</button>`;
+  }
+
+  function closeExamOverlay() { document.getElementById('examOverlay').classList.remove('show'); }
+  function openExamOverlay() {
+    const o = document.getElementById('examOverlay');
+    o.classList.add('show');
+    window._examPick.sittingId = null;
+    const body = document.getElementById('examOverlayBody');
+    body.innerHTML = `<div style="color:#64748b">Loading…</div>`;
+    fetch('/sis/student/api/exam/options').then(x => x.json()).then(renderExamOverlay)
+      .catch(() => { body.innerHTML = `<div style="color:#b91c1c">Couldn't load — please try again.</div>`; });
+  }
+  // Close when tapping the dimmed backdrop (but not the card).
+  document.getElementById('examOverlay').addEventListener('click', e => { if (e.target.id === 'examOverlay') closeExamOverlay(); });
+
+  function renderExamOverlay(data) {
+    window._examData = data;
+    const body = document.getElementById('examOverlayBody');
+
+    // Already requested / confirmed → status, not the picker.
+    if (data.satisfied && data.activeBooking) {
+      const st = data.activeBooking.status;
+      const label = st === 'REQUESTED' ? 'Requested — the exam centre will confirm your place and payment directly with you.'
+        : st === 'CONFIRMED' ? 'Confirmed by the exam centre. 🎉'
+        : st === 'NEEDS_ATTENTION' ? 'Our team is arranging the right exam for you — we’ll be in touch.'
+        : 'Your request is recorded. Our team will finalise it with the exam centre.';
+      body.innerHTML = `<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:16px">
+        <div style="font-weight:700;margin-bottom:6px">Exam ${st==='CONFIRMED'?'confirmed':'requested'}</div>
+        <div style="font-size:14px;color:#166534;line-height:1.5">${esc(label)}</div></div>
+        ${['REQUEST_PENDING','REQUESTED'].includes(st) ? `<button onclick="cancelExam(${data.activeBooking.id})" style="margin-top:12px;background:none;border:1px solid #cbd5e1;color:#475569;border-radius:8px;padding:8px 13px;font-size:13px;cursor:pointer">Cancel request</button>` : ''}`;
+      return;
+    }
+
+    const title = data.alignedExamTitle || 'your exam';
+    const list = (data.sittings || []);
+    body.innerHTML = `
+      <div style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:12px;padding:12px 14px;margin-bottom:12px">
+        <div style="font-size:12px;color:#6366f1;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Your exam · level ${esc(data.level||'—')}</div>
+        <div style="font-weight:700;font-size:16px;margin-top:2px">${esc(title)}</div>
+        <div style="font-size:12px;color:#475569;margin-top:4px">Not the right exam for you? <a href="#" onclick="examContactUs();return false" style="color:#4f46e5;font-weight:600">Contact us</a></div>
+      </div>
+      <div style="font-size:12px;color:#475569;margin-bottom:10px;line-height:1.5">Pick a date. These are the sittings you can take — from the end of your course until your visa renewal window.${data.earliestExamDate?` <span style="color:#64748b">(${esc(data.earliestExamDate)} – ${esc(data.latestExamDate||'')})</span>`:''} We’ll email the exam centre (CES Dublin) to request your place — they confirm it and arrange payment with you directly.</div>
+      ${!list.length ? `<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px;font-size:13px;color:#475569">No sittings fall inside your exam window right now. <a href="#" onclick="examContactUs();return false" style="color:#4f46e5;font-weight:600">Contact us</a> and we’ll sort one out.</div>` : `
+      <div id="examDates">${list.map(s => {
+        const sel = window._examPick.sittingId === s.id;
+        return `<div onclick="pickExamSitting(${s.id})" style="cursor:pointer;border:1px solid ${sel?'#6366f1':'#e2e8f0'};background:${sel?'#eef2ff':'#fff'};border-radius:12px;padding:11px 13px;margin-bottom:8px">
+          <div style="font-weight:600;font-size:14px">${esc(s.dateLong || s.date)}${s.time?(' · '+esc(s.time)):''}</div>
+          <div style="font-size:12px;color:#64748b;margin-top:2px">${esc(s.centre)}</div>
+        </div>`; }).join('')}</div>
+      <div id="examConfirm"></div>`}`;
+    if (window._examPick.sittingId) renderExamConfirm();
+  }
+
+  function pickExamSitting(id) { window._examPick.sittingId = id; renderExamOverlay(window._examData); }
+
+  function renderExamConfirm() {
+    const s = (window._examData.sittings || []).find(x => x.id === window._examPick.sittingId);
+    if (!s) return;
+    document.getElementById('examConfirm').innerHTML = `
+      <label style="display:flex;gap:9px;align-items:flex-start;margin:12px 0;font-size:12.5px;color:#475569;line-height:1.45">
+        <input type="checkbox" id="examConsent" style="margin-top:3px">
+        <span>I want ULearn to request this sitting for me. I understand the exam centre (CES) will confirm availability and arrange payment directly with me.</span></label>
+      <button onclick="submitExam()" style="width:100%;background:var(--brand,#4f46e5);color:#fff;border:0;border-radius:10px;padding:12px;font-size:15px;font-weight:700;cursor:pointer">Submit request</button>`;
+  }
+
+  async function submitExam() {
+    if (!document.getElementById('examConsent')?.checked) { alert('Please tick the box to confirm.'); return; }
+    const body = document.getElementById('examOverlayBody');
+    try {
+      const out = await fetch('/sis/student/api/exam/request', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ examSittingId: window._examPick.sittingId, consent: true }) }).then(x=>x.json());
+      if (out.error) { alert(out.error); return; }
+      body.innerHTML = `<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:16px">
+        <div style="font-weight:700;margin-bottom:6px">Request submitted ✅</div>
+        <div style="font-size:14px;color:#166534;line-height:1.5">${esc(out.message||'Your request has been sent.')}</div>
+        <div style="font-size:12px;color:#64748b;margin-top:8px">Reference: ${esc(out.reference||('EX-'+out.bookingId))}</div></div>
+        <button onclick="closeExamOverlay();loadOverview()" style="margin-top:12px;width:100%;background:#f1f5f9;color:#334155;border:0;border-radius:10px;padding:11px;font-size:14px;font-weight:600;cursor:pointer">Done</button>`;
+    } catch (e) { alert('Something went wrong — please try again.'); }
+  }
+
+  async function examContactUs() {
+    const body = document.getElementById('examOverlayBody');
+    try {
+      const out = await fetch('/sis/student/api/exam/assistance', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({}) }).then(x=>x.json());
+      if (out.error) { alert(out.error); return; }
+      body.innerHTML = `<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:16px">
+        <div style="font-weight:700;margin-bottom:6px">Thanks — we’re on it</div>
+        <div style="font-size:14px;color:#166534;line-height:1.5">${esc(out.message||'Our team will be in touch to arrange the right exam for you.')}</div></div>
+        <button onclick="closeExamOverlay();loadOverview()" style="margin-top:12px;width:100%;background:#f1f5f9;color:#334155;border:0;border-radius:10px;padding:11px;font-size:14px;font-weight:600;cursor:pointer">Done</button>`;
+    } catch (e) { alert('Something went wrong — please try again.'); }
+  }
+
+  async function cancelExam(id) {
+    if (!confirm('Cancel this exam request?')) return;
+    try {
+      const out = await fetch('/sis/student/api/exam/'+id, { method:'DELETE' }).then(x=>x.json());
+      if (out.error) { alert(out.error); return; }
+      closeExamOverlay(); loadOverview();
+    } catch (e) { alert('Something went wrong — please try again.'); }
+  }
+</script>
+
 <!-- ═══════════ BOTTOM TAB BAR ═══════════ -->
 <nav class="tabbar">
   <button class="tab active" data-tab="profile">
@@ -1748,7 +1888,8 @@ async function initPushNotifications() {
       const tab = btn.dataset.tab;
       document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === btn));
       ['profile','challenges','learning'].forEach(id => {
-        document.getElementById('tab-' + id).classList.toggle('hidden', id !== tab);
+        const el = document.getElementById('tab-' + id);
+        if (el) el.classList.toggle('hidden', id !== tab);
       });
       // Lazy-load the today.html iframe on first Learning-tab visit. Prefer
       // the live timetable (window._meData.timetable) over URL query params
@@ -2231,6 +2372,10 @@ async function initPushNotifications() {
         } else { pwBox.innerHTML = ''; }
       }
 
+      // Exam booking — stash state so the Course-card "Book Exam" button renders
+      // (Academic Year students only). Null-safe.
+      try { setupExamButton(d.exam); } catch (e) { /* non-fatal */ }
+
       const s = d.student;
       const fullName = [s.firstName, s.lastName].filter(Boolean).join(' ');
       document.getElementById('studentName').textContent = s.firstName || 'Student';
@@ -2312,11 +2457,13 @@ async function initPushNotifications() {
       // asynchronously by _cfFillButton() once the card is in the DOM.
       const feedbackBtn = '<span id="cfBtnSlot"></span>';
       const invoiceBtn = invoiceUrl
-        ? `<a href="${esc(invoiceUrl)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;padding:10px 16px;background:#16a34a;color:#fff;border-radius:10px;text-decoration:none;font-weight:600;font-size:14px">
-               <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" fill="#fff" opacity="0.18"/><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 2.5V8h5.5" stroke="#fff" stroke-width="1.4"/><line x1="8" y1="13" x2="16" y2="13" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><line x1="8" y1="16.5" x2="16" y2="16.5" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><line x1="8" y1="20" x2="12.5" y2="20" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg>
-               View Invoice
+        ? `<a href="${esc(invoiceUrl)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;padding:9px 14px;background:#16a34a;color:#fff;border-radius:10px;text-decoration:none;font-weight:600;font-size:13.5px">
+               <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" fill="#fff" opacity="0.18"/><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 2.5V8h5.5" stroke="#fff" stroke-width="1.4"/><line x1="8" y1="13" x2="16" y2="13" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><line x1="8" y1="16.5" x2="16" y2="16.5" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><line x1="8" y1="20" x2="12.5" y2="20" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg>
+               Invoice
              </a>`
         : '';
+      // Invoice + Feedback sit SIDE BY SIDE (one tight row); Book Exam goes full
+      // width below them (built via examButtonHtml, injected at render).
       const invoiceRow = (invoiceBtn || feedbackBtn)
         ? `<div style="margin-top:12px;padding-top:12px;border-top:1px dashed var(--border);display:flex;flex-wrap:wrap;gap:8px">${invoiceBtn}${feedbackBtn}</div>`
         : '';
@@ -2346,8 +2493,8 @@ async function initPushNotifications() {
           ttLine
         : empty('No active course')) +
         invoiceRow;
-      document.getElementById('card-course').innerHTML = upcomingBadge + courseBody + navRow;
-      _cfFillButton();   // async — injects the Course Feedback button if eligible
+      document.getElementById('card-course').innerHTML = upcomingBadge + courseBody + examButtonHtml(d.exam) + navRow;
+      _cfFillButton();   // async — injects the Feedback button if eligible
 
       const a = d.accommodation;
       const addrHtml = a?.address
@@ -3909,8 +4056,8 @@ async function initPushNotifications() {
       const row = list[0];   // most recently-ending eligible booking
       if (!row) return;
       const done = !!row.submitted_at;
-      slot.outerHTML = `<button onclick="openCourseFeedback(${row.booking_id})" style="display:inline-flex;align-items:center;gap:7px;padding:10px 16px;background:${done ? '#64748b' : '#f59e0b'};color:#fff;border:0;border-radius:10px;font-family:inherit;font-weight:600;font-size:14px;cursor:pointer">
-           <span style="font-size:15px">★</span> ${done ? 'Update Feedback' : 'Course Feedback'}
+      slot.outerHTML = `<button onclick="openCourseFeedback(${row.booking_id})" style="display:inline-flex;align-items:center;gap:7px;padding:9px 14px;background:${done ? '#64748b' : '#f59e0b'};color:#fff;border:0;border-radius:10px;font-family:inherit;font-weight:600;font-size:13.5px;cursor:pointer">
+           <span style="font-size:14px">★</span> Feedback
          </button>`;
       // Deep-link from the final-week feedback email
       // (…/sis/student/?feedback=course): open the questionnaire straight away.
@@ -4560,7 +4707,9 @@ async function initPushNotifications() {
   document.body.appendChild(ptrBanner);
 
   // ── Swipe-between-tabs ──────────────────────────────────────────
-  const TAB_ORDER = ['profile', 'challenges', 'learning'];
+  // Derived at swipe time from the VISIBLE tab buttons, so a hidden tab (e.g.
+  // Exam for non-Academic-Year students) is automatically skipped.
+  const visibleTabOrder = () => [...document.querySelectorAll('.tab')].filter(b => b.style.display !== 'none').map(b => b.dataset.tab);
   const SWIPE_MIN_X = 60;     // horizontal travel needed
   const SWIPE_MAX_Y = 50;     // vertical drift cap (else treat as scroll)
   let swStartX = 0, swStartY = 0, swStartT = 0;
@@ -4571,13 +4720,14 @@ async function initPushNotifications() {
     const activeBtn = document.querySelector('.tab.active');
     const currentTab = activeBtn?.dataset?.tab;
     if (!currentTab) return;
-    const idx = TAB_ORDER.indexOf(currentTab);
+    const order = visibleTabOrder();
+    const idx = order.indexOf(currentTab);
     if (idx < 0) return;
     const newIdx = direction === 'next' ? idx + 1 : idx - 1;
-    if (newIdx < 0 || newIdx >= TAB_ORDER.length) return;
-    const nextBtn = document.querySelector(`.tab[data-tab="${TAB_ORDER[newIdx]}"]`);
+    if (newIdx < 0 || newIdx >= order.length) return;
+    const nextBtn = document.querySelector(`.tab[data-tab="${order[newIdx]}"]`);
     if (!nextBtn) return;
-    const incoming = document.getElementById('tab-' + TAB_ORDER[newIdx]);
+    const incoming = document.getElementById('tab-' + order[newIdx]);
     const animClass = direction === 'next' ? 'slide-from-right' : 'slide-from-left';
     incoming?.classList.add(animClass);
     nextBtn.click();

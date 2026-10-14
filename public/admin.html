@@ -585,6 +585,10 @@ tr:last-child td { border-bottom: none; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
           Documents
         </a>
+        <a class="sidebar-item" data-view="examinations" href="/sis/admin?view=examinations">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 14l9-5-9-5-9 5 9 5z"/><path d="M12 14l6.16-3.42A12 12 0 0 1 12 21a12 12 0 0 1-6.16-10.42L12 14z"/></svg>
+          Examinations
+        </a>
       </div>
       <div class="sidebar-section">
         <div class="sidebar-section-label">System</div>
@@ -835,6 +839,7 @@ const viewLabels = {
   refunds: 'Refunds', 'refund-detail': 'Refund',
   'attendance-monitor': 'Attendance Monitor',
   lifepass: 'LifePass',
+  examinations: 'Exams',
 };
 
 function saveTabState() {
@@ -1096,6 +1101,7 @@ function loadView(view, opts = {}) {
   else if (view === 'apartment-matching') showAccommMatching('Apartment');
   else if (view === 'matching') showUnifiedMatching();
   else if (view === 'host-payments') showHostPayments();
+  else if (view === 'examinations') showExaminations(opts);
   else if (view === 'documents') showDocumentsList();
   else if (view === 'document-detail') showDocumentDetail(opts.id);
   else if (view === 'document-templates') {
@@ -1106,6 +1112,235 @@ function loadView(view, opts = {}) {
   else if (view === 'lms-dashboard') showLmsDashboard();
   else if (view === 'lms-class') showLmsClassDetail(opts.id);
   else if (view === 'lms-student') showLmsStudentProfile(opts.id);
+}
+
+// ─── EXAMINATIONS (exam booking module) ───────────────────────────
+const EXAM_STATUS_STYLE = {
+  REQUEST_PENDING: ['#92400e','#fef3c7'], REQUESTED: ['#1e40af','#dbeafe'], CONFIRMED: ['#065f46','#d1fae5'],
+  SAT: ['#3730a3','#e0e7ff'], RESULTS_RECEIVED: ['#065f46','#d1fae5'], COMPLETED: ['#374151','#e5e7eb'],
+  CANCELLED: ['#6b7280','#f3f4f6'], CHANGE_REQUESTED: ['#92400e','#fef3c7'], REJECTED: ['#991b1b','#fee2e2'],
+  EXPIRED: ['#6b7280','#f3f4f6'], NEEDS_ATTENTION: ['#991b1b','#fee2e2'],
+};
+function examBadge(s){ const [c,b] = EXAM_STATUS_STYLE[s] || ['#374151','#e5e7eb']; return `<span style="font-size:11px;font-weight:600;color:${c};background:${b};padding:2px 8px;border-radius:999px;white-space:nowrap">${(s||'').replace(/_/g,' ')}</span>`; }
+let _examImportRows = null;
+
+function showExaminations(opts = {}) {
+  document.getElementById('content').innerHTML = `
+    <div style="padding:16px 18px">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
+        <h2 style="margin:0;font-size:18px">Examinations</h2>
+        <div id="examTabs" style="display:flex;gap:4px">
+          <button class="btn btn-ghost btn-sm" data-et="requests" onclick="examTab('requests')">Requests</button>
+          <button class="btn btn-ghost btn-sm" data-et="sittings" onclick="examTab('sittings')">Sittings</button>
+          <button class="btn btn-ghost btn-sm" data-et="settings" onclick="examTab('settings')">Settings</button>
+        </div>
+        <a class="btn btn-ghost btn-sm" href="${API}/exams/export" style="margin-left:auto">Export CSV</a>
+      </div>
+      <div id="examBody"><div style="padding:20px;color:var(--text-muted)">Loading…</div></div>
+    </div>`;
+  if (opts.id) examOpenRequest(opts.id); else examTab('requests');
+}
+function examTab(which){
+  document.querySelectorAll('#examTabs [data-et]').forEach(b => b.classList.toggle('btn-primary', b.dataset.et === which));
+  if (which === 'requests') examLoadRequests();
+  else if (which === 'sittings') examLoadSittings();
+  else examLoadSettings();
+}
+
+async function examLoadRequests(){
+  const body = document.getElementById('examBody');
+  try {
+    const { requests } = await api('/exams/requests');
+    if (!requests.length) { body.innerHTML = `<div style="padding:20px;color:var(--text-muted)">No exam requests yet.</div>`; return; }
+    body.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr style="text-align:left;border-bottom:2px solid var(--card-border)">
+        ${['Student','Level','Exam','Date','Pay','Status','Requested',''].map(h=>`<th style="padding:7px 8px">${h}</th>`).join('')}
+      </tr></thead><tbody>
+      ${requests.map(r => {
+        const name = `${r.student?.firstName||''} ${r.student?.lastName||''}`.trim() || ('#'+r.studentId);
+        const exam = r.examSitting ? r.examSitting.examCode.replace(/_/g,' ') : '<span style="color:var(--text-muted)">—</span>';
+        const date = r.examSitting?.examDate ? r.examSitting.examDate.slice(0,10) : '';
+        return `<tr style="border-bottom:1px solid var(--card-border);cursor:pointer" onclick="examOpenRequest(${r.id})">
+          <td style="padding:7px 8px"><a href="/sis/admin?view=student-detail&id=${r.studentId}" onclick="event.stopPropagation();navigate('student-detail',{id:${r.studentId}});return false" style="color:var(--accent)">${esc(name)}</a></td>
+          <td style="padding:7px 8px">${esc(r.student?.currentLevel||'')}</td>
+          <td style="padding:7px 8px">${esc(exam)}</td>
+          <td style="padding:7px 8px">${date}</td>
+          <td style="padding:7px 8px">${r.paymentArrangement==='PREPAID'?'Prepaid':'Direct'}</td>
+          <td style="padding:7px 8px">${examBadge(r.status)}</td>
+          <td style="padding:7px 8px;color:var(--text-muted)">${r.requestedAt?r.requestedAt.slice(0,10):'—'}</td>
+          <td style="padding:7px 8px;color:var(--accent)">Open ›</td>
+        </tr>`;
+      }).join('')}
+      </tbody></table>`;
+  } catch(e){ body.innerHTML = `<div style="padding:20px;color:var(--danger)">${esc(e.message||e)}</div>`; }
+}
+
+async function examOpenRequest(id){
+  showExaminations({});
+  const body = document.getElementById('examBody');
+  body.innerHTML = `<div style="padding:20px;color:var(--text-muted)">Loading request…</div>`;
+  try {
+    const { request: r } = await api('/exams/requests/'+id);
+    const name = `${r.student?.firstName||''} ${r.student?.lastName||''}`.trim() || ('#'+r.studentId);
+    const s = r.examSitting;
+    const statusOpts = ['REQUESTED','CONFIRMED','SAT','RESULTS_RECEIVED','COMPLETED','CANCELLED','CHANGE_REQUESTED','REJECTED','EXPIRED','NEEDS_ATTENTION']
+      .map(o=>`<option value="${o}" ${o===r.status?'selected':''}>${o.replace(/_/g,' ')}</option>`).join('');
+    body.innerHTML = `
+      <button class="btn btn-ghost btn-sm" onclick="examTab('requests')" style="margin-bottom:10px">‹ Back</button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:900px">
+        <div>
+          <h3 style="margin:0 0 8px">${esc(name)} ${examBadge(r.status)}</h3>
+          <div style="font-size:13px;line-height:1.9">
+            <div><b>Exam:</b> ${s?esc(s.examCode.replace(/_/g,' ')):'—'}</div>
+            <div><b>Date:</b> ${s?.examDate?s.examDate.slice(0,10):'—'} ${s?.startTime?('· '+esc(s.startTime)):''}</div>
+            <div><b>Centre:</b> Centre of English Studies, Dublin</div>
+            <div><b>Payment:</b> ${r.paymentArrangement==='PREPAID'?'Prepaid (ULearn settles)':'Direct (CES invoices student)'}</div>
+            <div><b>Level:</b> ${esc(r.student?.currentLevel||'—')}</div>
+            <div><b>Enrolment:</b> ${esc(r.bookingCourse?.name||'')}</div>
+            <div><b>ULearn ref:</b> EX-${r.id}</div>
+            ${r.emailThreadId?`<div><b>Email thread:</b> <span style="font-family:monospace;font-size:12px">${esc(r.emailThreadId)}</span></div>`:''}
+          </div>
+          <div style="margin-top:14px;padding:12px;border:1px solid var(--card-border);border-radius:8px">
+            <div style="font-weight:600;margin-bottom:8px;font-size:13px">Record confirmation / update</div>
+            <label style="font-size:12px;display:block;margin-bottom:6px">Status
+              <select id="examReqStatus" style="width:100%;padding:5px;margin-top:3px">${statusOpts}</select></label>
+            <label style="font-size:12px;display:block;margin-bottom:6px">CES confirmation reference
+              <input id="examReqRef" value="${esc(r.externalBookingReference||'')}" placeholder="e.g. CES booking no." style="width:100%;padding:5px;margin-top:3px"></label>
+            <label style="font-size:12px;display:block;margin-bottom:8px">Note (logged)
+              <input id="examReqNote" placeholder="optional" style="width:100%;padding:5px;margin-top:3px"></label>
+            <button class="btn btn-primary btn-sm" onclick="examSaveRequest(${r.id})">Save</button>
+          </div>
+        </div>
+        <div>
+          <div style="font-weight:600;margin-bottom:8px;font-size:13px">History</div>
+          <div style="font-size:12px;line-height:1.6">
+            ${(r.events||[]).map(e=>`<div style="padding:6px 0;border-bottom:1px solid var(--card-border)">
+              <span style="color:var(--text-muted)">${e.createdAt.slice(0,16).replace('T',' ')}</span> ·
+              <b>${esc(e.eventType)}</b>${e.toStatus?(' → '+esc(e.toStatus)):''}
+              ${e.detail?`<div style="color:var(--text-muted)">${esc(e.detail)}</div>`:''}
+              ${e.actor?`<span style="color:var(--text-muted);font-size:11px">by ${esc(e.actor)}</span>`:''}
+            </div>`).join('') || '<div style="color:var(--text-muted)">No events.</div>'}
+          </div>
+        </div>
+      </div>`;
+  } catch(e){ body.innerHTML = `<div style="padding:20px;color:var(--danger)">${esc(e.message||e)}</div>`; }
+}
+async function examSaveRequest(id){
+  try {
+    const patch = { status: document.getElementById('examReqStatus').value, externalBookingReference: document.getElementById('examReqRef').value, note: document.getElementById('examReqNote').value || undefined };
+    await api('/exams/requests/'+id, { method:'PATCH', body: patch });
+    toast('Saved'); examOpenRequest(id);
+  } catch(e){ toast(e.message||e, true); }
+}
+
+async function examLoadSittings(){
+  const body = document.getElementById('examBody');
+  try {
+    const { sittings } = await api('/exams/sittings');
+    body.innerHTML = `
+      <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
+        <button class="btn btn-primary btn-sm" onclick="examAddSitting()">+ Add sitting</button>
+        <label class="btn btn-ghost btn-sm" style="cursor:pointer">Import CSV<input type="file" accept=".csv" style="display:none" onchange="examImportPreview(this.files[0])"></label>
+        <span style="color:var(--text-muted);font-size:12px">CSV headers: exam_code, exam_date, start_time, fee_eur, external_exam_id, notes</span>
+      </div>
+      <div id="examImportPanel"></div>
+      ${!sittings.length ? '<div style="padding:16px;color:var(--text-muted)">No sittings yet — import the exam-date CSV.</div>' : `
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr style="text-align:left;border-bottom:2px solid var(--card-border)">
+          ${['Exam','Date','Time','Fee €','Status','External ID',''].map(h=>`<th style="padding:7px 8px">${h}</th>`).join('')}
+        </tr></thead><tbody>
+        ${sittings.map(s=>`<tr style="border-bottom:1px solid var(--card-border)${s.status==='ARCHIVED'?';opacity:.5':''}">
+          <td style="padding:7px 8px">${esc(s.examCode.replace(/_/g,' '))}</td>
+          <td style="padding:7px 8px">${s.examDate.slice(0,10)}</td>
+          <td style="padding:7px 8px">${esc(s.startTime||'—')}</td>
+          <td style="padding:7px 8px">${s.feeEur!=null?Number(s.feeEur).toFixed(2):'—'}</td>
+          <td style="padding:7px 8px">${esc(s.status)}</td>
+          <td style="padding:7px 8px;font-family:monospace;font-size:11px">${esc(s.externalExamId||'—')}</td>
+          <td style="padding:7px 8px">${s.status!=='ARCHIVED'?`<button class="btn btn-ghost btn-sm" onclick="examArchiveSitting(${s.id})">Archive</button>`:''}</td>
+        </tr>`).join('')}
+        </tbody></table>`}`;
+  } catch(e){ body.innerHTML = `<div style="padding:20px;color:var(--danger)">${esc(e.message||e)}</div>`; }
+}
+async function examImportPreview(file){
+  if (!file) return;
+  const panel = document.getElementById('examImportPanel');
+  panel.innerHTML = '<div style="padding:10px;color:var(--text-muted)">Parsing…</div>';
+  try {
+    const fd = new FormData(); fd.append('file', file);
+    const res = await fetch(API+'/exams/import', { method:'POST', body: fd });
+    const data = await res.json(); if (!res.ok) throw new Error(data.error||'Import failed');
+    _examImportRows = data.rows; const r = data.result;
+    const flagged = r.flagged.length ? `<div style="color:#92400e;background:#fef3c7;padding:8px;border-radius:6px;margin:6px 0;font-size:12px">⚠ ${r.flagged.length} sitting(s) have a changed date/fee while students already hold a booking — review before committing.</div>` : '';
+    const errs = r.errors.length ? `<div style="color:#991b1b;background:#fee2e2;padding:8px;border-radius:6px;margin:6px 0;font-size:12px">${r.errors.length} row error(s): ${esc(r.errors.slice(0,3).map(e=>'row '+e.row+' '+e.error).join('; '))}${r.errors.length>3?'…':''}</div>` : '';
+    panel.innerHTML = `<div style="border:1px solid var(--card-border);border-radius:8px;padding:12px;margin-bottom:10px">
+      <div style="font-weight:600;margin-bottom:6px">Import preview</div>
+      <div style="font-size:13px">Create <b>${r.created}</b> · Update <b>${r.updated}</b> · Unchanged <b>${r.unchanged}</b></div>
+      ${flagged}${errs}
+      <div style="margin-top:8px">
+        <button class="btn btn-primary btn-sm" onclick="examImportCommit()">Commit import</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('examImportPanel').innerHTML=''">Cancel</button>
+      </div></div>`;
+  } catch(e){ panel.innerHTML = `<div style="padding:10px;color:var(--danger)">${esc(e.message||e)}</div>`; }
+}
+async function examImportCommit(){
+  try {
+    const { result } = await api('/exams/import/commit', { method:'POST', body: { rows: _examImportRows } });
+    toast(`Imported: ${result.created} new, ${result.updated} updated`); _examImportRows = null; examLoadSittings();
+  } catch(e){ toast(e.message||e, true); }
+}
+async function examAddSitting(){
+  const code = prompt('Exam code (B1_PRELIMINARY / B2_FIRST / C1_ADVANCED / IELTS_GT):'); if (!code) return;
+  const date = prompt('Exam date (YYYY-MM-DD):'); if (!date) return;
+  const time = prompt('Start time (optional, e.g. 09:00):') || null;
+  const fee = prompt('Fee € (optional):') || null;
+  try { await api('/exams/sittings', { method:'POST', body:{ examCode: code.trim().toUpperCase(), examDate: date.trim(), startTime: time, feeEur: fee } }); toast('Added'); examLoadSittings(); }
+  catch(e){ toast(e.message||e, true); }
+}
+async function examArchiveSitting(id){
+  if (!confirm('Archive this sitting? It will no longer be offered to students.')) return;
+  try { await api('/exams/sittings/'+id+'/archive', { method:'POST' }); toast('Archived'); examLoadSittings(); }
+  catch(e){ toast(e.message||e, true); }
+}
+
+async function examLoadSettings(){
+  const body = document.getElementById('examBody');
+  try {
+    const { config: c } = await api('/exams/config');
+    body.innerHTML = `<div style="max-width:560px">
+      <div style="border:1px solid var(--card-border);border-radius:8px;padding:14px">
+        <div style="font-weight:600;margin-bottom:10px">Exam-centre sends</div>
+        <label style="font-size:13px;display:block;margin-bottom:10px">CES registration email <span style="color:var(--danger)">*</span>
+          <input id="examCesEmail" value="${esc(c.cesEmail||'')}" placeholder="verified CES exam-registration address" style="width:100%;padding:6px;margin-top:3px">
+          <span style="color:var(--text-muted);font-size:11px">Required before any live send. Do not use a general enquiries address.</span></label>
+        <label style="font-size:13px;display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <input type="checkbox" id="examSendsArmed" ${c.sendsArmed?'checked':''}> Live CES sends ARMED${!c.cesEmail?' <span style="color:#92400e">(no address set — sends held)</span>':''}</label>
+        <div style="font-weight:600;margin:6px 0 10px">Eligibility &amp; suitability</div>
+        <div style="display:flex;gap:12px;margin-bottom:12px">
+          <label style="font-size:13px;flex:1">Visible from week<input type="number" id="examEligWeek" value="${c.eligibilityWeek}" style="width:100%;padding:6px;margin-top:3px"></label>
+          <label style="font-size:13px;flex:1">Result lead (weeks)<input type="number" id="examResultLead" value="${c.resultLeadWeeks}" style="width:100%;padding:6px;margin-top:3px"></label>
+        </div>
+        <div style="font-weight:600;margin:6px 0 10px">Follow-up reminders</div>
+        <label style="font-size:13px;display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <input type="checkbox" id="examRemArmed" ${c.reminders.armed?'checked':''}> Reminder cron ARMED <span style="color:var(--text-muted);font-size:11px">(dark by default)</span></label>
+        <div style="display:flex;gap:12px;margin-bottom:14px">
+          <label style="font-size:13px;flex:1">Ack flag (working days)<input type="number" id="examAckDays" value="${c.reminders.ackDays}" style="width:100%;padding:6px;margin-top:3px"></label>
+          <label style="font-size:13px;flex:1">Escalate (working days)<input type="number" id="examEscDays" value="${c.reminders.escalateDays}" style="width:100%;padding:6px;margin-top:3px"></label>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="examSaveSettings()">Save settings</button>
+      </div></div>`;
+  } catch(e){ body.innerHTML = `<div style="padding:20px;color:var(--danger)">${esc(e.message||e)}</div>`; }
+}
+async function examSaveSettings(){
+  try {
+    const body = {
+      cesEmail: document.getElementById('examCesEmail').value,
+      sendsArmed: document.getElementById('examSendsArmed').checked,
+      eligibilityWeek: Number(document.getElementById('examEligWeek').value),
+      resultLeadWeeks: Number(document.getElementById('examResultLead').value),
+      reminders: { armed: document.getElementById('examRemArmed').checked, ackDays: Number(document.getElementById('examAckDays').value), escalateDays: Number(document.getElementById('examEscDays').value) },
+    };
+    await api('/exams/config', { method:'PATCH', body }); toast('Settings saved'); examLoadSettings();
+  } catch(e){ toast(e.message||e, true); }
 }
 
 // ─── API HELPERS ────────────────────────────────

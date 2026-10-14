@@ -26,22 +26,46 @@ const iso = (d: any) => d ? new Date(d).toISOString().slice(0, 10) : null;
 // EU/EEA/Swiss nationalities can't take work-study holidays (no visa window).
 const EU_EEA_CH = new Set(['austria','belgium','bulgaria','croatia','cyprus','czechia','czech republic','denmark','estonia','finland','france','germany','greece','hungary','ireland','italy','latvia','lithuania','luxembourg','malta','netherlands','poland','portugal','romania','slovakia','slovenia','spain','sweden','iceland','liechtenstein','norway','switzerland']);
 
-// Earliest Monday a student may start a holiday, enforcing the notice rule:
-// a holiday must be requested by 17:00 the Friday before it starts. So the
-// earliest eligible Monday is the soonest one whose preceding Friday 17:00 is
-// still in the future — request after Fri 5pm and the coming Monday rolls to the
-// Monday after. Server (Dublin) local time; the app re-uses this as the picker's
-// hard minimum.
-function earliestHolidayStartMonday(now: Date = new Date()): Date {
-  // UTC date arithmetic so the returned calendar date never drifts a day under
-  // Dublin DST (see reference_utc_date_math). The cutoff instant is the holiday
-  // Monday's preceding Friday at 16:00 UTC (≈17:00 Dublin in term time).
+// Minutes/ms Europe/Dublin is ahead of UTC at a given instant (+1h in IST
+// summer, 0 in GMT winter) — derived from the zone itself so it's DST-correct
+// without a hardcoded changeover date (see reference_utc_date_math).
+function dublinOffsetMs(utcMs: number): number {
+  const dtf = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Dublin', hour12: false,
+    year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const p: any = {}; for (const part of dtf.formatToParts(new Date(utcMs))) p[part.type] = part.value;
+  const asUtc = Date.UTC(+p.year, +p.month - 1, +p.day, +(p.hour === '24' ? '0' : p.hour), +p.minute, +p.second);
+  return asUtc - utcMs;
+}
+// Class start by session — AY students are either morning or afternoon (Neil):
+// morning lesson 9:00am, afternoon lesson 1:45pm. The holiday cut-off is 30 min
+// before the student's own class, so the picker/floor is session-specific.
+// Resolved off the AY course (category first, else its name).
+function holidayCutoffForCourse(course: { category?: string | null; name?: string | null } | null | undefined): { h: number; m: number } {
+  const s = `${course?.category || ''} ${course?.name || ''}`;
+  if (/afternoon|evening/i.test(s)) return { h: 13, m: 15 };   // 1:45pm class − 30 min
+  return { h: 8, m: 30 };                                      // 9:00am class − 30 min (morning / default)
+}
+// The true UTC instant of the given Dublin wall-clock time (h:m) on the given
+// (UTC-midnight) Monday — the self-service holiday cut-off for that session.
+function holidayMondayCutoffMs(mondayMidnightUtc: Date, h: number, m: number): number {
+  const guess = Date.UTC(mondayMidnightUtc.getUTCFullYear(), mondayMidnightUtc.getUTCMonth(), mondayMidnightUtc.getUTCDate(), h, m, 0);
+  return guess - dublinOffsetMs(guess);
+}
+// Earliest Monday a student may start a holiday. The notice rule is now simply:
+// you can set a holiday for a Monday right up until 30 min before your class
+// (08:30 Dublin for morning, 13:15 for afternoon) that same Monday. So the
+// earliest eligible Monday is the current or coming Monday whose cut-off is
+// still in the future — once it passes, it rolls to the next Monday. (Was: by
+// 17:00 the Friday before; relaxed per Neil 2026-10-13 — staff set these
+// manually anyway, so the hard floor just needs to stop a student booking a
+// holiday after their class has begun.) Returns a UTC-midnight Monday; the app
+// re-uses it as the picker's minimum.
+function earliestHolidayStartMonday(now: Date = new Date(), cutoff: { h: number; m: number } = { h: 8, m: 30 }): Date {
   const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
   const dow = d.getUTCDay();                                   // 0=Sun..1=Mon..6=Sat
-  let add = (8 - dow) % 7; if (add === 0) add = 7;             // always a future Monday
+  const add = (8 - dow) % 7;                                   // current/coming Monday (0 if today is Monday)
   const monday = new Date(d); monday.setUTCDate(d.getUTCDate() + add);
-  const precedingFridayMs = (m: Date) => { const f = new Date(m); f.setUTCDate(m.getUTCDate() - 3); f.setUTCHours(16, 0, 0, 0); return f.getTime(); };
-  while (precedingFridayMs(monday) < now.getTime()) monday.setUTCDate(monday.getUTCDate() + 7);
+  while (holidayMondayCutoffMs(monday, cutoff.h, cutoff.m) <= now.getTime()) monday.setUTCDate(monday.getUTCDate() + 7);
   return monday;
 }
 
@@ -309,7 +333,7 @@ export function studentScripts(prisma: PrismaClient) {
         holidayAllowanceWeeks: entitlement,
         holidayWeeksTaken,
         holidayRemainingWeeks: Math.max(0, entitlement - holidayWeeksTaken),
-        earliestHolidayStart: iso(earliestHolidayStartMonday()),
+        earliestHolidayStart: iso(earliestHolidayStartMonday(new Date(), holidayCutoffForCourse(compliance as any))),
       };
     } else {
       overallPct = blendedAttendancePct(
@@ -1533,8 +1557,9 @@ export function studentScripts(prisma: PrismaClient) {
   // The student picks a Monday start + a number of weeks. It writes straight to
   // the database (creates the BookingHoliday, which shunts the course end) and
   // emails success@ so staff are notified and can veto/adjust in SIS. Guards:
-  // AY/LifePass + non-EU only; hard notice-period minimum (Fri-5pm-for-Monday);
-  // and the remaining holiday allowance for the current course (10 wks).
+  // AY/LifePass + non-EU only; notice-period minimum (set it up to 08:30 Dublin
+  // the Monday it starts — 30 min before class); and the remaining holiday
+  // allowance for the current course (10 wks).
   async function requestHoliday(studentId: number | undefined, data: any) {
     if (!studentId) return { success: false, error: 'No student session' };
     const startIso = String(data?.startDate || '').slice(0, 10);
@@ -1551,19 +1576,17 @@ export function studentScripts(prisma: PrismaClient) {
       return { success: false, error: 'Work-study holidays apply only to non-EU visa students.' };
     }
 
-    // Hard notice-period floor. Build in UTC so @db.Date + iso() never drift a
-    // day under Dublin DST (see reference_utc_date_math).
+    // Build in UTC so @db.Date + iso() never drift a day under Dublin DST (see
+    // reference_utc_date_math). The notice-period floor is checked AFTER course
+    // resolution below — the cut-off time depends on the student's session
+    // (morning vs afternoon class).
     const start = new Date(startIso + 'T00:00:00Z');
     if (start.getUTCDay() !== 1) return { success: false, error: 'Holidays start on a Monday.' };
-    const earliest = earliestHolidayStartMonday();
-    if (start < earliest) {
-      return { success: false, error: `Too soon — the earliest holiday you can start is Monday ${iso(earliest)} (requests must be in by 5pm the Friday before).` };
-    }
 
     // Resolve the Academic-Year booking + the course this holiday lands in.
     const bookings = await prisma.booking.findMany({
       where: { studentId, status: { not: 'CANCELLED' } },
-      select: { id: true, courses: { select: { name: true, startDate: true, endDate: true, holidayWks: true, isRenewal: true } } },
+      select: { id: true, courses: { select: { name: true, category: true, startDate: true, endDate: true, holidayWks: true, isRenewal: true } } },
       orderBy: { serviceStart: 'desc' },
     });
     const isAY = (c: any) => c.holidayWks != null || /academic year|life ?pass|renewal/i.test(c.name || '') || c.isRenewal;
@@ -1579,6 +1602,17 @@ export function studentScripts(prisma: PrismaClient) {
       if (!withAy) return { success: false, error: 'No Academic Year course on file — holidays apply to work-study students only.' };
       booking = withAy;
       course = withAy.courses.filter(isAY).sort((a, b2) => +new Date(b2.startDate!) - +new Date(a.startDate!))[0];
+    }
+
+    // Notice-period floor (session-specific). You can set a holiday for a Monday
+    // right up to 30 min before your class that day — 08:30 Dublin for a morning
+    // student, 13:15 for an afternoon one — after which the earliest selectable
+    // Monday rolls to the next week.
+    const cutoff = holidayCutoffForCourse(course);
+    const earliest = earliestHolidayStartMonday(new Date(), cutoff);
+    if (start < earliest) {
+      const clock = cutoff.h === 13 ? '1:15pm' : '8:30am';
+      return { success: false, error: `Too soon — the earliest holiday you can start is Monday ${iso(earliest)} (set it up by ${clock} the Monday it starts, 30 minutes before class).` };
     }
 
     // Remaining allowance for THIS course (10 weeks less what's already taken in

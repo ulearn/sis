@@ -12,6 +12,7 @@ import { syncArrivalFromFlight } from '../lib/transport-sync';
 import { testScripts } from '../scripts/tests';
 import { activitiesScripts } from '../scripts/activities';
 import { documentScripts } from '../scripts/documents';
+import { examScripts } from '../scripts/exams';
 import { messageScripts } from '../scripts/messages';
 import { CONTRACT_VERSION, renderPreviewBytes, buildPreviewHtmlDoc, signContract } from '../scripts/student-contract';
 import { compressUploads } from '../lib/compress';
@@ -89,6 +90,7 @@ const shotUpload = multer({
 export function studentRoutesPortal(prisma: PrismaClient) {
   const router = Router();
   const scripts = studentScripts(prisma);
+  const exams = examScripts(prisma);
   const tests = testScripts(prisma);
   const acts = activitiesScripts(prisma);
   const docs = documentScripts(prisma);
@@ -248,7 +250,7 @@ export function studentRoutesPortal(prisma: PrismaClient) {
     try {
       const studentId = req.session.studentId;
       if (!studentId) return res.status(401).json({ error: 'No student session' });
-      const [me, unreadMessages, gate, accomCount, groupBookings, lifePassCount, challengeCount] = await Promise.all([
+      const [me, unreadMessages, gate, accomCount, groupBookings, lifePassCount, challengeCount, examState] = await Promise.all([
         scripts.me(studentId),
         msgs.unreadCount(studentId),
         prisma.student.findUnique({ where: { id: studentId }, select: { contractSignedAt: true, cardOnFile: true, email: true, birthday: true } }),
@@ -261,6 +263,8 @@ export function studentRoutesPortal(prisma: PrismaClient) {
         prisma.booking.count({ where: { studentId, paymentInstalments: { some: {} } } }),
         // Challenge enrolment — any booking carrying the mirrored HubSpot Deal.challenge tag.
         prisma.booking.count({ where: { studentId, hubspotChallenge: { not: null } } }),
+        // Exam-booking eligibility + dashboard reminder (null-safe — never breaks /me).
+        exams.eligibility(studentId).catch(() => null),
       ]);
       // Only REAL student sessions are gated; staff previewing the portal never
       // see it, and the whole gate is inert until STUDENT_CONTRACT_GATE=on.
@@ -290,6 +294,7 @@ export function studentRoutesPortal(prisma: PrismaClient) {
       if ((me as any)?.student && !isStudent) (me as any).student.welcomeVideoSeenAt = 'preview';
       res.json({
         ...me, unreadMessages, contractSigned, contractSignedAt: gate?.contractSignedAt ?? null,
+        exam: examState || null, examReminder: (examState as any)?.reminder || null,
         cardOnFile, needsCardOnFile,
         cardOnFileLink: needsCardOnFile ? (process.env.CARD_ON_FILE_LINK || 'https://payments-eu1.hubspot.com/payments/G72pxrd7YqZG?referrer=PAYMENT_LINK') : null,
         studentEmail: needsCardOnFile ? (gate?.email || null) : null,
@@ -889,6 +894,46 @@ export function studentRoutesPortal(prisma: PrismaClient) {
       const studentId = req.session.studentId;
       if (!studentId) return res.status(401).json({ error: 'No student session' });
       const out = await scripts.cancelHoliday(studentId, req.params.id);
+      if (!out.success) return res.status(400).json({ error: out.error });
+      res.json(out);
+    } catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }
+  });
+
+  // ── Exam booking (self-service) ──────────────────────────────────────────────
+  // Eligible exams + ranked suitable sittings for the picker.
+  router.get('/exam/options', async (req, res) => {
+    try {
+      const studentId = req.session.studentId;
+      if (!studentId) return res.status(401).json({ error: 'No student session' });
+      res.json(await exams.options(studentId));
+    } catch (e: any) { res.status(500).json({ error: String(e?.message || e) }); }
+  });
+  // Confirm a sitting → create the request + email CES (student CC'd).
+  router.post('/exam/request', async (req, res) => {
+    try {
+      const studentId = req.session.studentId;
+      if (!studentId) return res.status(401).json({ error: 'No student session' });
+      const out = await exams.createExamRequest(studentId, req.body || {});
+      if (!out.success) return res.status(400).json({ error: out.error });
+      res.json(out);
+    } catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }
+  });
+  // Below-B1 / no suitable date → raise a Success Desk assistance case.
+  router.post('/exam/assistance', async (req, res) => {
+    try {
+      const studentId = req.session.studentId;
+      if (!studentId) return res.status(401).json({ error: 'No student session' });
+      const out = await exams.requestAssistance(studentId, (req.body || {}).note);
+      if (!out.success) return res.status(400).json({ error: out.error });
+      res.json(out);
+    } catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }
+  });
+  // Cancel the student's own pending/requested exam booking.
+  router.delete('/exam/:id', async (req, res) => {
+    try {
+      const studentId = req.session.studentId;
+      if (!studentId) return res.status(401).json({ error: 'No student session' });
+      const out = await exams.cancelOwn(studentId, Number(req.params.id));
       if (!out.success) return res.status(400).json({ error: out.error });
       res.json(out);
     } catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }
