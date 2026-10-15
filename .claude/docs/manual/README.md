@@ -36,6 +36,9 @@ Finance/
   LifePass-Subscription-Accounting.md  How a LifePass sale is invoiced across HubSpot + Xero,
                                        why the €7,425 master `-Sub` invoice exists, and the
                                        manual Xero void that stops the €297 auto-invoices double-counting
+  Escrow.md                            TransferMate escrow hold → release → refund (SIS side): the
+                                       shadow Payment row, the release "adopt the shadow" conversion in
+                                       /invoice-paid, adoption edge cases, and the not-yet-built refund mirror
 
 Media/
   App-Guide-Multilingual-Dubbing.md  SRT-timed video dubbing recipe + toolchain (dub-guide.js, OpenAI/ElevenLabs). Content-creation — destined for the CMS, parked here for the app guide.

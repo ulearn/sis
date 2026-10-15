@@ -64,6 +64,22 @@ Exam Booking module is live in the app, but CES sends are held (requests sit at 
   - [ ] Neil sets the verified CES address
   - [ ] Phase 2 (not built): LanguageCert / A1–A2 exam, IELTS Academic, automatic parsing of CES confirmation emails, pre/post-exam student reminders, HubSpot deep-link
   - [ ] Confirm regulatory date rules (8-month permission, result lead time, 3-year retention) against verified ILEP/TrustEd/ISD wording. They are configurable/soft for now.
+  - [x] 2026-10-14 — realigned the picker logic to the KB (`kb/courses/academic-year/Exam-Renewal-Protocol.md` + `Exam-Student-FAQ.md`) after Neil's #97 test showed only 1 exam on 1 date (`src/scripts/exams.ts`, student.html picker). Root causes + fixes: (1) outer date limit was `courseStart+35w − 8w result-lead` applied as a HARD cut (~2-week window) — the KB explicitly says NOT course+35w; now uses the student's ACTUAL permission expiry (`Student.visaUntil`, course+35w only as fallback) and no longer subtracts the lead, so #97's window went 14 days → 10 weeks (1 → 34 dates). (2) Only the single level-aligned Cambridge exam was offered; IELTS General Training (207 loaded sittings, a KB-listed approved exam) is now offered alongside it at all levels. (3) Result-turnaround is now SOFT (warn + rank + allow per §3/§12) with per-exam figures from the KB table (IELTS ≤1wk, Cambridge digital ~2wk): a date is marked not-suitable ONLY if results genuinely land after permission expiry; a gentler note flags the renewal-prep buffer zone. Student picker now labels each date with its exam + shows the amber warning.
+  - [ ] Neil to confirm two judgement calls made in that realignment: (a) IELTS offered at ALL levels (not gated B1+) since it's band-scored and sat months later — re-gate if you disagree; (b) the 8-week `resultLeadWeeks` is now a soft renewal-prep buffer (admin Settings tunable), not a hard cut — on the tight course+35w fallback it still flags most dates, but real students with a recorded `visaUntil` get a wider window. Backfilling `visaUntil` for AY students would sharpen this.
+  - [x] 2026-10-14 — payment-arrangement V1/V2 (Neil): V1 (live default) = ULearn settles with CES for EVERY student, because they've already paid us (exam bundled or an EXAM_FEE extra). The old code branched `hasExamFee ? PREPAID : DIRECT`, which is really V2 and would have told the 2,129 AY bookings with NO itemised EXAM_FEE extra (incl. 52 of 132 currently running) to pay CES directly despite having paid — now gated behind `directPayEnabled` (exam-config, default OFF). Admin → Examinations → Settings has a "Student Pays Centre When No Exam Fee On Booking (V2)" toggle. `src/scripts/exams.ts` + `src/lib/exam-config.ts` + admin Settings. tsc 0, restarted.
+  - [ ] V2 gate is an EXTRAS AUDIT, not a time-wait (Neil, 2026-10-14: "there is no impediment to V2 — I just didn't turn it on as it first requires an audit of the Extras"). Before flipping `directPayEnabled`, audit whether exams are properly recorded in the Extras section: are EXAM_FEE extras present/consistent on the bookings that actually prepaid, and absent on the no-charge cohort? V2 branches on exactly that flag, so if the extras are misaligned V2 will mis-bill. Check the exam line is aligned in that section, then flip.
+
+---
+
+## Carlotta Butti #70 — Capel Street extension invisible + €800 unreconciled
+
+**Priority:** High
+**Status:** Waiting — Kelly (which room now) + accounts (€800)
+**Added:** 2026-10-14
+
+Kelly (accomm@, Slack 2026-10-13) flagged Carlotta extended at Capel Street but "doesn't show up in SIS." Diagnosed: she IS in SIS (student #70). Her extension is booking **18357** (HubSpot deal 524720509127, HS invoice 1388324376805), status PENDING, 2026-10-10 → 2027-02-20, 17 wks, €3,400 total, **€0 paid**. Two breakages:
+  - [ ] **Unassigned bed.** Extension accommodation placement #11438 was created with `bedId = null`, so she's on no room / no occupancy board. Her original bed 87 (A2/Room 2, Superior, booking 76, ended 2026-10-10) then read as empty and was reassigned — Michele Mancini (1 night) then **Sandrine Bruneau 2026-10-11 → 2026-11-01**. So in SIS she occupies no bed and her old one is taken. NEED from Kelly: which room is she physically in now → then attach #11438 to that bed. (Root-cause: extension placement created without a bed lets the vacated bed look free and get re-let — worth a guard: AY/continuation accommodation rows shouldn't be left bed-null.)
+  - [ ] **€800 not recorded.** She sent proof of a direct BOI transfer ("Rent room", €800 = 4 wks @ €200, authorised 05-10-2026, settled 06-10). Direct-to-bank (not PayNow/TransferMate) so no webhook fired → not in SIS, booking still €0/PENDING. Reconcile: confirm accounts/Saraa haven't already keyed it in HubSpot, then record €800 against booking 18357 (leaves €2,600 open). Awaiting Neil's go-ahead (financial write).
 
 ---
 
@@ -88,6 +104,8 @@ The Mon/Wed/Fri reminder drip for KickStart challengers who haven't finished the
 **Added:** 2026-10-05
 
 The Capel St accommodation check is built. The academic side is still spec only. Hard cap = 7 teaching rooms × 16 = 112 seats per session (AM+PM = 224/day). `Classroom.capacity` is null everywhere and Room 3 has no classes. (from Claude memory: project_soft_availability.md)
+  - [x] 2026-10-14 FIX — accommodation checker now counts the availability UNIT per ROOM (not per bed) for regular types: a Premium room is a DOUBLE modelled as 2 beds, but one individual takes the whole room = ONE free unit (was reporting "4 beds free" against only 3 rooms). Only genuine stranger-shared rooms (Twin/Shared) still count per free bed. Output now NAMES the free rooms with type in brackets ("A1 / Room 2 (Premium, en-suite)"). `accommodationAvailability` in `src/scripts/accommodation.ts`; admin matching "Avail" overlay updated; alternatives gained `free`+`unit` fields (`freeBeds` kept as alias). tsc 0, restarted, verified live on the 2026-10-18→2027-01-09 window.
+  - [ ] Hub b2b-sales agent (hub.ulearnschool.com/hubapp/b2b-sales#agent) wording: it composes "Premium — N beds free" from the endpoint. The NUMBER is now correct (counts rooms), but it still says "beds" for regular rooms. Point its prompt/tool at the endpoint's `summary` (fully room-worded + names rooms) or the new `rooms`/`unit` fields so it says "room". Hub-side change — can't edit from the SIS box.
   - [ ] Set capacities (16 per room, or keep hard-coded) and exclude/deactivate Room 3
   - [ ] Course seat function + endpoint + test page
   - [ ] Combined `/availability`, agent token auth, reservation mode (pending demand nets a bed)
@@ -450,5 +468,102 @@ Original plan: for all active partners, create user + password + email, add temp
 **Added:** 2026-04-18
 
 Cosmetic, HubSpot side: B2B quote template with a "Commission" label. Probably stale: quotes/invoices are now always NET, and the partner agreement reframed commission as "Wholesale Discount". Confirm, then close.
+
+---
+
+---
+
+## Fix the Monday host-payments cron (no cd → module not found)
+
+**Priority:** High
+**Status:** Waiting — Neil (first run after the fix may catch up on missed weeks)
+**Added:** 2026-10-14
+
+sis crontab line `0 3 * * 1 node dist/scripts/cron-host-payments.js >> …/private/db/host-payments.log` has no `cd …/public_html/sis &&`, so it fails every Monday with `Cannot find module '/home/sis/dist/scripts/cron-host-payments.js'` (28 failures in the log). The other host-payment crons have the `cd`. Check what the job does on a first run after weeks off before fixing.
+
+---
+
+## Attendance roster hides paid/escrow/net-terms students (ILEP gap)
+
+**Priority:** High
+**Status:** Waiting — Neil (approve full weekly report + the gate fix)
+**Added:** 2026-10-14
+
+Students physically in class but absent from the SIS output list, so attendance can't be recorded (Slack, Antonella/Paul). Root cause: the class **placement pool** (`classes.ts` `unassignedStudents`, feeds `attendance.ts` roster) only surfaces a booking course that has **≥1 real non-escrow Payment row** (plus active course / not ESCROW-CANCELLED / visa not Pending). **Agency net-terms** students (agency settles net → no per-student Payment rows) and **escrow/visa-pending** students have no qualifying row → hidden from placement → can't be rostered even when paid-up and attending → **ILEP attendance-recording gap**.
+Named cases diagnosed: Ana Jessica #766 (fixed, assign now) · Nominjin #759 (paid, 0 Payment rows, net-terms) · Uyanga #917 (escrow €3066 only) · Jiaming #14487 (visa Approved but escrow €2800 unreleased + course active=false + PM→AM) · Telmuun #293 (partial, €250 owed, non-admin lock) · Ariunsarnai #1047 (genuinely unpaid, PENDING — the one true commercial case). Group B "conversation class" = mostly on their main roster; the conversation class isn't a SIS class (Rakan #14444 genuinely unassigned).
+  - [ ] Generate authoritative weekly report: every student with an active course covering the week on NO roster, reason-coded (net-terms / escrow / no-payment-rows / unpaid / visa-pending / inactive-course)
+  - [ ] Decide the gate fix: surface escrow/net-terms/paid students into the pool for ATTENDANCE (flagged), keep truly-unpaid visibly flagged
+  - [ ] Chase Jiaming #14487 stuck escrow (visa Approved, not released) on hub/finance side
+  - [ ] **Ariunsarnai Batbayar #1047 — roster-and-flag-unpaid bucket (further review).** Fidelo API check (2026-10-14) confirms Fidelo invoice D2026201 (€1509) was NEVER paid: zero Incoming-Payment records for her customer number 30921, her name, or the invoice number (only "Batbayar" hit is an unrelated 2019 student, cust 20814). No agency "Internal Assignment"/credit entry either (that's how Saraa-settled students show, e.g. Batzorig cust 29433 "Paid by Agent Saraa"). So NOT a sync/timing artifact and NOT a credit — genuinely €1509 outstanding (SIS PENDING €0 + HubSpot deal 502951083215 open all agree). She's physically back in class this week (approved leave), so she needs rostering under the gate fix (attending-but-unpaid, flagged); the €1509 is a Saraa chase.
+
+---
+
+## Host-portal duplicate Bills (orphan Xero drafts) — issue #63
+
+**Priority:** High
+**Status:** Waiting — Neil (approve deletes + pick systemic fix)
+**Added:** 2026-10-14
+
+Hosts see two Bills for one stay (Slack, Kelly/accomm@). H-number = `3500 + host_payment_line_item.id`. Each dupe is an orphan draft left when a payment run's Xero push **partially failed** (`xeroBillId=null`); the next run correctly re-billed (new bill submitted to Xero) but the "clear un-pushed drafts" cleanup (`host-payments.ts:98-118`) is keyed to the **same runDate only**, so the orphan persists, and the portal query (`host-portal.ts:314`) lists line items with no `xeroBillId`/status filter → host sees both. **Xero token is HEALTHY** (not a dead-key issue — auto-refreshing `xero-tokens.json`).
+  - [ ] Delete orphan SIS line items (xeroBillId null, never in Xero, never paid): **218** (H-3718, Bob&Ann O'Sullivan — keep H-3725/id225), **222** (H-3722, Edel McDonald — keep H-3727/id227), **65** (H-3565, Patty McSweeney — pre-existing dupe). No Xero write needed.
+  - [ ] Systemic: (a) portal filter out `xeroBillId:null` drafts from host-facing list, and/or (b) broaden cross-run orphan cleanup, and/or (c) surface failed Xero pushes for retry instead of silently orphaning.
+  - [x] Deleted orphan line items 65/218/222 on 2026-10-14 — all xeroBillId null, confirmed never in Xero; Kelly pays H-3725 + H-3727.
+
+---
+
+## Email template hierarchy reorg (Student Operations)
+
+**Priority:** Medium
+**Status:** Waiting — Neil (pick Option A/B + confirm 7 ambiguous, then execute)
+**Added:** 2026-10-14
+
+Reorg per `.claude/tmp/doc-hierarchy.md`: introduce Student Operations with Student Administration / Student Success, reclassify ~44 templates by function. Audit complete (full before/after mapping produced, nothing executed). Category-string changes only — slugs/ids/tokens/TEMPLATE_ID_BY_SLUG untouched, so send/automation paths unaffected.
+  - [ ] Decision: Option A (2-level nav, parents "Student Admin"/"Student Success", no code change — recommended) vs Option B (~15-line buildTree change for a true 3-level Operations umbrella). Nav buildTree is 2-level today, no "Other" catch-all.
+  - [ ] Confirm 7 ambiguous: DOSVisitRequest-Student(11), LEAP(69), Trial(72)/Trial-FollowUp(71), End-Certificate(68), Confirm-Group(58), LifePass-Agreement(112), FeedbackFinal2-ExitLetter(60).
+  - [ ] "Attendance & Holiday Self-Service" (#99) to Student Success (Neil override; student-facing self-service).
+  - [ ] Execute: ~44 category updates + new EMAIL_TREE/DOC_TREE nodes + remove emptied nodes; fold the 3 still-orphaned accomm/transport categories in too.
+
+
+## Legacy TransferMate-escrow escape hole — sweep siblings of Jiaming Wang
+
+**Priority:** Low
+**Status:** Waiting — TransferMate (report on the card escape hole; no SIS-side search needed)
+**Added:** 2026-10-14
+
+Not a duplicate student (one clean SIS record #14487). Root issue Neil diagnosed: he paid via TransferMate by credit/debit card, which TransferMate should have blocked for a visa-required (escrow) student but did NOT — the card funds were paid straight out to us in 2025, bypassing the escrow filter entirely. The money landed against the old Fidelo invoice D2025348 (€2800, 2025-07-14) and was banked as general revenue in Xero (no Xero invoice existed then). When the deal later closed-won on 2026-08-07 (visa approval), the new system raised INV-1460 (€2800) — the upstream invoice-creation is what creates the SIS booking downstream, so it was likely raised to populate SIS. **TransferMate escape hole since resolved by Neil (shouldn't recur).**
+**Resolution (Neil, manual, 2026-10-14):** found the 2025 €2800 payment in Xero, un-reconciled it from general revenue and re-reconciled it against INV-1460 (now paid, not a duplicate); then reset the HubSpot deal to contractsent + escrow="Yes" to simulate a proper TransferMate→escrow-aligned payout and watch it flow downstream.
+  - [x] Confirmed downstream (2026-10-14): HubSpot escrow Yes→No + deal WON fired correctly. SIS `/invoice-paid` created a NEW Standard payment #18245 (€2800, HubSpot src) and booking #17886 → CONFIRMED / paid €2800 (not doubled — escrow rows excluded from amountPaid). The manual deal edit alone did NOT flip SIS (no TM escrow webhook); the invoice-paid sync is what landed it.
+  - [x] Sibling sweep NOT needed from our side — Neil emailed TransferMate 2026-10-14 for their report on who card-paid through the escape hole (easier than searching SIS). Reconcile any they return against the new invoice (don't void).
+  - [ ] Minor: Xero contact email zachary0505@163.com differs from SIS wjm2860@gmail.com (possible stray contact).
+
+---
+
+## SIS escrow-RELEASE payment-row conversion — refund mirror + Jiaming one-off
+
+**Priority:** Medium
+**Status:** Waiting — Neil (finish the refund-mechanics sentence + authorize the Jiaming DB one-off)
+**Added:** 2026-10-14
+
+Release side BUILT + approach approved by Neil 2026-10-14: on escrow release the EXISTING escrow shadow row is converted in place (not a duplicate added). Verified in fins: the escrow MACHINERY is extensive (`fins/scripts/tm` — handleEscrow/moveDealToWon/Lost, handleRefusal+€300 retention, webhook.js card-hold lane, hs-invoice-hook URL stamp) but `handleEscrowRelease` only flips HubSpot and has ZERO callers; it punts the SIS side ("moves off ESCROW via its own release handling"), which never did the conversion. Audit trail in central KB `kb/finance/escrow.md` + memory project_escrow_flag_release.
+  - [x] Release conversion built in SIS `/invoice-paid` commerce-payment sync (`webhooks.ts` ~2708): if a row already carries the HubSpot payment id → volatile re-sync; else if EXACTLY ONE unlinked escrow shadow (type='Escrow' OR method='TransferMate Escrow') matches the amount (±€0.01) → convert it to `type='Standard'`, stamp the HubSpot payment id, KEEP method; else create a new row as before. tsc 0, restarted 2026-10-14.
+  - [x] Display fix (admin.html): payment Add + Edit overlays — Method and Type stacked full-width (Type below Method), was a skewed 2-col grid.
+  - [ ] REFUND mirror (Neil 2026-10-14: will get to it later): on visa refusal (escrow→No + deal LOST) the same shadow row should be updated "in the negative" to reflect money returned to the student minus our fees (retention €300 = €250 visa + €50 reg, +€65 accomm if booked). Decide: `type='Refund'` vs negative amount, and how retention is represented. NOTE the SIS refusal endpoint is still unbuilt — fins `postRefusalToSis`/`TM_SIS_REFUSAL_URL` is "pending", so the refund SIS lane needs building too.
+  - [x] One-off Jiaming #14487 / booking #17886 DONE (Neil ran it 2026-10-14): escrow shadow #17210 → type Standard, method kept (TransferMate Escrow), stamped HubSpot payment id 1400251590876; duplicate #18245 deleted. One released €2800 row, paid €2800, CONFIRMED.
+  - Full workflow + adoption edge cases (partial escrow, equal-amount shadows) now documented in the SIS technical manual `.claude/docs/manual/Finance/Escrow.md` + central KB `kb/finance/escrow.md` — not a ToDo.
+
+---
+
+## Reconcile the TransferMate in-escrow list against attendance (release what's owed)
+
+**Priority:** High
+**Status:** Waiting — TransferMate (Neil requested the definitive in-escrow list; expected ~2026-10-14)
+**Added:** 2026-10-14
+
+Neil has asked TransferMate for the authoritative "who is in escrow right now" list (TM reporting is CSV-only and clunky). When it lands, cross-reference each name against SIS attendance using the heuristic (documented in KB `kb/finance/escrow.md` + manual `Finance/Escrow.md`):
+  - [ ] Attending our school (roster OR named on the paper attendance sheet) ⇒ in the State ⇒ visa approved ⇒ the held money should already have released → flag to chase TM for release; once released, apply the release-conversion (flip the escrow shadow → Standard).
+  - [ ] Not yet arrived but visa approved ⇒ legitimately still held; the success-notice to TM just wasn't sent → trigger it.
+  - [ ] Neither ⇒ genuinely pending visa decision → leave held.
+  - [ ] Uyanga Tungalag (#917, booking #1467, Easy Go): TM email confirms €3,066 held since 20/10/2025 (ref ULEARNP2025900), no release notice ever issued; she is in Ireland renewing (first visa approved) → €3,066 owed to us, should release. SIS escrow tag is CORRECT — do NOT re-tag; release only on TM confirmation. Classic "Saraa special" (partner notified, did nothing, sent LOA prematurely).
+  - Root cause is the un-triggered release step, not a code bug; the new system blocks ad-hoc LOA sends so it shouldn't recur.
 
 ---

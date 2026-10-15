@@ -1312,8 +1312,11 @@ async function examLoadSettings(){
         <label style="font-size:13px;display:block;margin-bottom:10px">CES registration email <span style="color:var(--danger)">*</span>
           <input id="examCesEmail" value="${esc(c.cesEmail||'')}" placeholder="verified CES exam-registration address" style="width:100%;padding:6px;margin-top:3px">
           <span style="color:var(--text-muted);font-size:11px">Required before any live send. Do not use a general enquiries address.</span></label>
-        <label style="font-size:13px;display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <label style="font-size:13px;display:flex;align-items:center;gap:8px;margin-bottom:10px">
           <input type="checkbox" id="examSendsArmed" ${c.sendsArmed?'checked':''}> Live CES sends ARMED${!c.cesEmail?' <span style="color:#92400e">(no address set — sends held)</span>':''}</label>
+        <label style="font-size:13px;display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <input type="checkbox" id="examDirectPay" ${c.directPayEnabled?'checked':''}> Student Pays Centre When No Exam Fee On Booking (V2)</label>
+        <div style="color:var(--text-muted);font-size:11px;margin-bottom:12px">Off = ULearn pays CES for every student (they already paid us). Leave off until legacy bundled bookings clear.</div>
         <div style="font-weight:600;margin:6px 0 10px">Eligibility &amp; suitability</div>
         <div style="display:flex;gap:12px;margin-bottom:12px">
           <label style="font-size:13px;flex:1">Visible from week<input type="number" id="examEligWeek" value="${c.eligibilityWeek}" style="width:100%;padding:6px;margin-top:3px"></label>
@@ -1335,6 +1338,7 @@ async function examSaveSettings(){
     const body = {
       cesEmail: document.getElementById('examCesEmail').value,
       sendsArmed: document.getElementById('examSendsArmed').checked,
+      directPayEnabled: document.getElementById('examDirectPay').checked,
       eligibilityWeek: Number(document.getElementById('examEligWeek').value),
       resultLeadWeeks: Number(document.getElementById('examResultLead').value),
       reminders: { armed: document.getElementById('examRemArmed').checked, ackDays: Number(document.getElementById('examAckDays').value), escalateDays: Number(document.getElementById('examEscDays').value) },
@@ -6790,31 +6794,29 @@ function openAddPaymentModal(bookingId) {
           <label class="form-label">Amount (€)</label>
           <input class="form-input" type="number" step="0.01" id="payAmount" placeholder="e.g. 1500.00">
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div>
-            <label class="form-label">Method</label>
-            <select class="form-select" id="payMethod" onchange="onAddPaymentMethodChange()">
-              <option value="">—</option>
-              <option value="Bank Transfer">Bank Transfer</option>
-              <option value="TransferMate">TransferMate</option>
-              <option value="Stripe">Stripe</option>
-              <option value="Card">Card</option>
-              <option value="Cash">Cash</option>
-              <option value="Cheque">Cheque</option>
-              <option value="ULearn Credit">ULearn Credit</option>
-            </select>
-          </div>
-          <div>
-            <label class="form-label">Type</label>
-            <select class="form-select" id="payType">
-              <option value="">—</option>
-              <option value="Standard">Standard</option>
-              <option value="Escrow">Escrow</option>
-              <option value="Prior to arrival">Prior to arrival</option>
-              <option value="Paid at school">Paid at school</option>
-              <option value="Refund">Refund</option>
-            </select>
-          </div>
+        <div>
+          <label class="form-label">Method</label>
+          <select class="form-select" id="payMethod" onchange="onAddPaymentMethodChange()">
+            <option value="">—</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+            <option value="TransferMate">TransferMate</option>
+            <option value="Stripe">Stripe</option>
+            <option value="Card">Card</option>
+            <option value="Cash">Cash</option>
+            <option value="Cheque">Cheque</option>
+            <option value="ULearn Credit">ULearn Credit</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Type</label>
+          <select class="form-select" id="payType">
+            <option value="">—</option>
+            <option value="Standard">Standard</option>
+            <option value="Escrow">Escrow</option>
+            <option value="Prior to arrival">Prior to arrival</option>
+            <option value="Paid at school">Paid at school</option>
+            <option value="Refund">Refund</option>
+          </select>
         </div>
         <div>
           <label class="form-label">Receipt # (optional)</label>
@@ -6925,15 +6927,13 @@ function openEditPaymentModal(bookingId, paymentId, btn) {
           <label class="form-label">Amount (€)</label>
           <input class="form-input" type="number" step="0.01" id="payEditAmount" value="${esc(pay.amount)}">
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div>
-            <label class="form-label">Method</label>
-            <select class="form-select" id="payEditMethod">${opt(methods, pay.method || '')}</select>
-          </div>
-          <div>
-            <label class="form-label">Type</label>
-            <select class="form-select" id="payEditType">${opt(types, pay.type || '')}</select>
-          </div>
+        <div>
+          <label class="form-label">Method</label>
+          <select class="form-select" id="payEditMethod">${opt(methods, pay.method || '')}</select>
+        </div>
+        <div>
+          <label class="form-label">Type</label>
+          <select class="form-select" id="payEditType">${opt(types, pay.type || '')}</select>
         </div>
         <div>
           <label class="form-label">Receipt #</label>
@@ -14990,10 +14990,10 @@ async function runAvailCheck() {
       html += '<div style="font-size:12px;margin-bottom:4px"><b>Free ' + esc(r.requested.roomType || 'rooms') + ':</b> '
         + [...new Set(r.matches.map(m => m.room))].map(x => pill(x, '#d1fae5', '#065f46')).join('') + '</div>';
     }
-    const alts = (r.alternatives || []).filter(a => a.freeBeds > 0);
+    const alts = (r.alternatives || []).filter(a => (a.free != null ? a.free : a.freeBeds) > 0);
     if (alts.length) {
       html += '<div style="font-size:12px"><b>Other free:</b> '
-        + alts.map(a => pill(a.roomType + ' · ' + a.freeBeds, '#fef3c7', '#92400e')).join('') + '</div>';
+        + alts.flatMap(a => (a.rooms || []).map(rm => pill(rm + ' · ' + a.roomType + (a.unit === 'bed' ? ' bed' : ''), '#fef3c7', '#92400e'))).join('') + '</div>';
     }
     if (r.genderReminder && r.anyAvailable) {
       html += '<div style="font-size:11px;color:#92400e;margin-top:6px">&#9888; Shared room involved — confirm the student\'s gender before placing (no mixed-gender rooms).</div>';
@@ -18532,12 +18532,19 @@ const DOC_TREE = [
 // Email template folder tree (has subcategories)
 const EMAIL_TREE = [
   { key: 'academic', label: 'Academic' },
+  { key: 'attendance/selfservice', label: 'Attendance Self-Service' },
   { key: 'accomm/confirm-provider', label: 'Confirm Provider', parent: 'Accomm' },
   { key: 'accomm/confirm-student', label: 'Confirm Student', parent: 'Accomm' },
   { key: 'accomm/transfer', label: 'Transfer', parent: 'Accomm' },
+  { key: 'accommodation', label: 'Host Outreach', parent: 'Accomm' },
+  { key: 'accommodation/host-arrival-reminder', label: 'Host Arrival Reminder', parent: 'Accomm' },
   { key: 'accounts', label: 'Accounts' },
   { key: 'app', label: 'App / Portal' },
+  { key: 'communication', label: 'Communication' },
+  { key: 'exam', label: 'Exam' },
+  { key: 'transport/arrival-details', label: 'Transport Arrival' },
   { key: 'success/agent', label: 'Agent', parent: 'Success' },
+  { key: 'success/challenge', label: 'Challengers', parent: 'Success' },
   { key: 'success/feedback', label: 'Feedback', parent: 'Success' },
   { key: 'success/student', label: 'Student', parent: 'Success' },
   { key: 'success/visa', label: 'Visa', parent: 'Success' },

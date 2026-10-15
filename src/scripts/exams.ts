@@ -24,6 +24,14 @@ const EXAM_TITLE: Record<ExamCode, string> = {
 const EXAM_KIND: Record<ExamCode, 'cambridge' | 'ielts'> = {
   B1_PRELIMINARY: 'cambridge', B2_FIRST: 'cambridge', C1_ADVANCED: 'cambridge', IELTS_GT: 'ielts',
 };
+// Indicative results turnaround (weeks) per Exam-Renewal-Protocol.md — IELTS on
+// computer 1–5 days (≤1wk); Cambridge digital 5–10 working days (~2wk). CES
+// sittings are computer-delivered; paper-based (4–6wk) isn't modelled separately.
+// Used only to estimate "results expected by" + a soft deadline warning — never
+// a hard block.
+const RESULT_TURNAROUND_WEEKS: Record<ExamCode, number> = {
+  IELTS_GT: 1, B1_PRELIMINARY: 2, B2_FIRST: 2, C1_ADVANCED: 2,
+};
 
 const LEVEL_ORDER = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 const levelRank = (l?: string | null) => LEVEL_ORDER.indexOf((l || '').toUpperCase());
@@ -85,7 +93,7 @@ export function examScripts(prisma: PrismaClient) {
   async function resolveEnrolment(studentId: number) {
     const student = await prisma.student.findUnique({
       where: { id: studentId },
-      select: { id: true, firstName: true, lastName: true, email: true, currentLevel: true },
+      select: { id: true, firstName: true, lastName: true, email: true, currentLevel: true, visaUntil: true, visaStatus: true },
     });
     if (!student) return { student: null as any, booking: null as any, course: null as any, hasExamFee: false };
 
@@ -124,10 +132,22 @@ export function examScripts(prisma: PrismaClient) {
     const courseStart = new Date(course.startDate);
     const courseEnd = course.endDate ? new Date(course.endDate) : null;         // reflects holiday shunts
     const programmeWeek = Math.floor((Date.now() - +courseStart) / WEEK) + 1;
-    const permissionEnd = addWeeksUtc(courseStart, 35);                          // 35-week AY permission window
+    // Outer exam limit = the student's ACTUAL immigration-permission expiry
+    // (Student.visaUntil). The ILEP/TrustEd protocol is explicit: do NOT compute
+    // this as course start + 35 weeks (Exam-Renewal-Protocol.md §5 + validation).
+    // The 35-week figure is only a FALLBACK when visaUntil isn't recorded yet.
+    const permissionFromVisa = student.visaUntil ? new Date(student.visaUntil) : null;
+    const permissionEnd = permissionFromVisa || addWeeksUtc(courseStart, 35);
+    const permissionSource = permissionFromVisa ? 'visaUntil' : 'course+35w (fallback)';
     const level = student.currentLevel || null;
-    const alignedCode = alignedExamForLevel(level);          // hard-mapped learning-outcome exam
+    const alignedCode = alignedExamForLevel(level);          // level-aligned learning-outcome exam
+    // The level-aligned Cambridge exam is the default; IELTS General Training is
+    // an approved PARALLEL option offered alongside it (the protocol and student
+    // FAQ both list IELTS as an approved exam). IELTS is band-scored with no level
+    // floor, and the sitting is months after today's recorded level, so it is not
+    // level-gated — the student (with our confirmation) chooses which to sit.
     const codes: ExamCode[] = [alignedCode];
+    if (alignedCode !== 'IELTS_GT') codes.push('IELTS_GT');
 
     const existing = await prisma.studentExamBooking.findMany({
       where: { studentId, bookingCourseId: course.id },
@@ -147,7 +167,7 @@ export function examScripts(prisma: PrismaClient) {
       programmeWeek, eligibilityWeek: cfg.eligibilityWeek,
       level, eligibleExamCodes: codes,
       alignedExamCode: alignedCode, alignedExamTitle: EXAM_TITLE[alignedCode],
-      courseName: course.name, courseEnd: iso(courseEnd), permissionEnd: iso(permissionEnd),
+      courseName: course.name, courseEnd: iso(courseEnd), permissionEnd: iso(permissionEnd), permissionSource,
       activeBooking: active ? { id: active.id, status: active.status } : null,
       reminder,
     };
@@ -164,17 +184,22 @@ export function examScripts(prisma: PrismaClient) {
 
     const courseEnd = base.courseEnd ? new Date(base.courseEnd) : null;
     const permissionEnd = base.permissionEnd ? new Date(base.permissionEnd) : null;
-    const resultLeadMs = cfg.resultLeadWeeks * WEEK;
+    const renewalBufferMs = cfg.resultLeadWeeks * WEEK;   // soft renewal-prep buffer, not exam turnaround
 
-    // Hard regulatory bookends (Neil 2026-10-13): a student may only sit the exam
-    // from the LAST DAY of their course (courseEnd, inclusive) up to the point where
-    // results still arrive before the 35-week permission window closes
-    // (permissionEnd − results lead). Dates outside this window are not shown at all
-    // — no soft warnings — so the picker never offers a sitting they can't take.
-    // Window values are config-driven (eligibilityWeek / resultLeadWeeks / 35wk) and
-    // remain tunable in admin Settings pending final ILEP/TrustEd confirmation.
+    // Regulatory bookends, aligned to Exam-Renewal-Protocol.md:
+    //   earliest = course end (inclusive) — a safe proxy for "after 25 weeks of
+    //              tuition delivered"; courseEnd already reflects holiday shunts.
+    //   latest   = the student's ACTUAL immigration-permission expiry (hard):
+    //              the exam cannot be sat after the permission ends. This is
+    //              permissionEnd (= Student.visaUntil, else the 35-week fallback),
+    //              NOT "course start + 35 weeks minus a results lead".
+    // The result-turnaround lead is a SOFT buffer, never a hard cut: a sitting
+    // whose results would land after the permission expires is still SHOWN, with
+    // a warning + marked not-suitable, so the picker warns + ranks + allows rather
+    // than hiding it (protocol §3/§12). The earlier build subtracted the lead from
+    // the outer limit AND used course-start+35w, collapsing the window to ~2 weeks.
     const earliest = courseEnd;                                           // inclusive
-    const latest = permissionEnd ? new Date(+permissionEnd - resultLeadMs) : null; // inclusive
+    const latest = permissionEnd;                                         // inclusive — hard outer = permission expiry
     const floorMs = Math.max(Date.now(), earliest ? +earliest : 0);       // never list a past date
 
     const rows = codes.length ? await prisma.examSitting.findMany({
@@ -188,13 +213,27 @@ export function examScripts(prisma: PrismaClient) {
 
     const sittings = rows.map((s) => {
       const d = new Date(s.examDate);
-      const resultsBy = new Date(+d + resultLeadMs);
+      const code = s.examCode as ExamCode;
+      // Honest results estimate = sitting + this exam's own turnaround (KB table),
+      // NOT the renewal buffer — so an IELTS date (~days) isn't wrongly flagged.
+      const resultsBy = new Date(+d + (RESULT_TURNAROUND_WEEKS[code] ?? 2) * WEEK);
+      const warnings: string[] = [];
+      let suitable = true;
+      if (permissionEnd && +resultsBy > +permissionEnd) {
+        // Genuine problem: results won't be issued before the permission expires.
+        suitable = false;
+        warnings.push('Results are expected after your immigration permission expires — they may not be ready in time. Check with Student Support before choosing this date.');
+      } else if (permissionEnd && +resultsBy > +permissionEnd - renewalBufferMs) {
+        // Results land before expiry but inside the recommended renewal-prep
+        // buffer — allowed, just tight. Soft note only (stays suitable).
+        warnings.push('This date leaves limited time to use your results for an immigration renewal — pick an earlier date if you can.');
+      }
       return {
-        id: s.id, examCode: s.examCode, title: EXAM_TITLE[s.examCode as ExamCode],
+        id: s.id, examCode: code, title: EXAM_TITLE[code],
         date: iso(d), dateLong: fmtLongDate(d), time: s.startTime || null, endTime: s.endTime || null,
         centre: 'Centre of English Studies, Dublin',
         feeEur: s.feeEur != null ? Number(s.feeEur) : null,
-        suitable: true, warnings: [] as string[], notes: s.notes || null,   // all shown sittings are in-window
+        suitable, warnings, notes: s.notes || null,
         resultsExpectedBy: iso(resultsBy),
       };
     });
@@ -202,6 +241,7 @@ export function examScripts(prisma: PrismaClient) {
     return {
       ...base, exams, sittings,
       earliestExamDate: iso(earliest), latestExamDate: iso(latest),
+      recommendedResultsBy: iso(permissionEnd),
     };
   }
 
@@ -233,7 +273,18 @@ export function examScripts(prisma: PrismaClient) {
     const sitting = await prisma.examSitting.findUnique({ where: { id: examSittingId } });
     if (!sitting || sitting.status !== 'PUBLISHED') return { success: false, error: 'That sitting is no longer available. Please pick another.' };
 
-    const paymentArrangement = hasExamFee ? 'PREPAID' : 'DIRECT';
+    // Payment arrangement.
+    // V1 (default, cfg.directPayEnabled=false): ULearn settles with CES for EVERY
+    //   student — the exam fee was already paid to us (bundled into the course
+    //   price, or as an EXAM_FEE extra), so we never send a student to pay the
+    //   centre directly.
+    // V2 (cfg.directPayEnabled=true): honour the per-booking signal — an EXAM_FEE
+    //   extra ⇒ PREPAID (we pay CES); no extra ⇒ the newer cohort that wasn't
+    //   charged up front ⇒ DIRECT (student pays CES).
+    // V2 is gated because most legacy AY bookings carry NO itemised EXAM_FEE extra
+    // yet DID pay (bundled) — flipping the branch on before that population clears
+    // would wrongly tell ~2,000 paid students to pay CES again.
+    const paymentArrangement = (cfg.directPayEnabled && !hasExamFee) ? 'DIRECT' : 'PREPAID';
     const code = sitting.examCode as ExamCode;
 
     // Create the row first (REQUEST_PENDING) so its id is the ULearn reference.

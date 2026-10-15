@@ -1797,21 +1797,26 @@ async function initPushNotifications() {
       return;
     }
 
-    const title = data.alignedExamTitle || 'your exam';
+    const rec = data.alignedExamTitle || 'your exam';
     const list = (data.sittings || []);
     body.innerHTML = `
       <div style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:12px;padding:12px 14px;margin-bottom:12px">
-        <div style="font-size:12px;color:#6366f1;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Your exam · level ${esc(data.level||'—')}</div>
-        <div style="font-weight:700;font-size:16px;margin-top:2px">${esc(title)}</div>
-        <div style="font-size:12px;color:#475569;margin-top:4px">Not the right exam for you? <a href="#" onclick="examContactUs();return false" style="color:#4f46e5;font-weight:600">Contact us</a></div>
+        <div style="font-size:12px;color:#6366f1;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Your Exam · level ${esc(data.level||'—')}</div>
+        <div style="font-weight:700;font-size:16px;margin-top:2px">${esc(rec)}</div>
+        <div style="font-size:12px;color:#475569;margin-top:4px">Not sure which exam? <a href="#" onclick="examContactUs();return false" style="color:#4f46e5;font-weight:600">Contact us</a></div>
       </div>
-      <div style="font-size:12px;color:#475569;margin-bottom:10px;line-height:1.5">Pick a date. These are the sittings you can take — from the end of your course until your visa renewal window.${data.earliestExamDate?` <span style="color:#64748b">(${esc(data.earliestExamDate)} – ${esc(data.latestExamDate||'')})</span>`:''} We’ll email the exam centre (CES Dublin) to request your place — they confirm it and arrange payment with you directly.</div>
       ${!list.length ? `<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px;font-size:13px;color:#475569">No sittings fall inside your exam window right now. <a href="#" onclick="examContactUs();return false" style="color:#4f46e5;font-weight:600">Contact us</a> and we’ll sort one out.</div>` : `
       <div id="examDates">${list.map(s => {
         const sel = window._examPick.sittingId === s.id;
-        return `<div onclick="pickExamSitting(${s.id})" style="cursor:pointer;border:1px solid ${sel?'#6366f1':'#e2e8f0'};background:${sel?'#eef2ff':'#fff'};border-radius:12px;padding:11px 13px;margin-bottom:8px">
-          <div style="font-weight:600;font-size:14px">${esc(s.dateLong || s.date)}${s.time?(' · '+esc(s.time)):''}</div>
+        const warn = (s.warnings && s.warnings.length) ? s.warnings[0] : '';
+        const border = sel ? '#6366f1' : (s.suitable ? '#e2e8f0' : '#fcd34d');
+        return `<div onclick="pickExamSitting(${s.id})" style="cursor:pointer;border:1px solid ${border};background:${sel?'#eef2ff':'#fff'};border-radius:12px;padding:11px 13px;margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
+            <div style="font-weight:600;font-size:14px">${esc(s.dateLong || s.date)}${s.time?(' · '+esc(s.time)):''}</div>
+            <span style="font-size:11px;font-weight:700;color:#6366f1;white-space:nowrap">${esc(s.title||'')}</span>
+          </div>
           <div style="font-size:12px;color:#64748b;margin-top:2px">${esc(s.centre)}</div>
+          ${warn?`<div style="font-size:11.5px;color:#92400e;background:#fffbeb;border-radius:8px;padding:5px 8px;margin-top:6px;line-height:1.35">&#9888; ${esc(warn)}</div>`:''}
         </div>`; }).join('')}</div>
       <div id="examConfirm"></div>`}`;
     if (window._examPick.sittingId) renderExamConfirm();

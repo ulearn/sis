@@ -1182,40 +1182,62 @@ export function accommodationScripts(prisma: PrismaClient) {
 
     const propertyName = providers.map(p => p.name).join(', ') || 'Capel Street';
 
-    type FreeBed = { bedId: number; roomId: number; room: string; roomType: string; enSuite: boolean; shared: boolean };
-    const freeByType: Record<string, FreeBed[]> = {};
+    // Availability is keyed off the ROOM for one individual request, not the bed.
+    // A Premium room is a DOUBLE bed — modelled as 2 beds so a couple *could*
+    // share — but a single student takes the whole room, so it is ONE available
+    // unit, never two. Counting its two beds as two free spaces is wrong (and
+    // produced "4 beds free" against only 3 rooms). Only a genuine stranger-
+    // shared room (Twin/Shared) is counted per free bed. Mirrors the
+    // PER_BED_ROOM_TYPES split used by the cleaning/billing logic in this file.
+    // (Couples sharing a double are a separate, surcharged case — not this check.)
+    const PER_BED_ROOM_TYPES = new Set(['Twin/Shared']);
+
+    type FreeUnit = { bedId: number; roomId: number; room: string; roomType: string; enSuite: boolean; shared: boolean };
+    const freeByType: Record<string, FreeUnit[]> = {};
     let sharedOffered = false;
 
     for (const prov of providers) {
       for (const prop of prov.properties) {
         for (const room of prop.rooms) {
-          const shared = room.beds.length > 1;
-          // Gender already committed in this room across the window (any bed).
-          const roomGenders = new Set<number>();
-          for (const bed of room.beds) {
-            for (const pl of bed.placements) {
-              const gg = pl.booking?.student?.gender;
-              if (gg === 1 || gg === 2) roomGenders.add(gg);
+          const rtype = String(room.roomType || '—');
+          const perBed = PER_BED_ROOM_TYPES.has(rtype);
+          // room.name usually already carries the apartment prefix ("A1 / Room 2");
+          // only prepend the property when it doesn't.
+          const rn = room.name || '';
+          const pn = prop.name || '';
+          const roomLabel = rn.includes(pn) ? rn : `${pn} / ${rn}`.replace(/^ \/ /, '');
+
+          if (perBed) {
+            // Genuine shared room — each FREE bed is one unit; same-gender only.
+            const roomGenders = new Set<number>();
+            for (const bed of room.beds)
+              for (const pl of bed.placements) {
+                const gg = pl.booking?.student?.gender;
+                if (gg === 1 || gg === 2) roomGenders.add(gg);
+              }
+            for (const bed of room.beds) {
+              if (bed.placements.length > 0) continue; // occupied over the window
+              // A known-gender requester can't take a bed in a shared room that
+              // already holds the other gender.
+              if (roomGenders.size > 0 && g && !roomGenders.has(g)) continue;
+              (freeByType[rtype] ||= []).push({
+                bedId: bed.id, roomId: room.id, room: roomLabel,
+                roomType: rtype, enSuite: !!room.enSuite, shared: true,
+              });
+              sharedOffered = true;
             }
-          }
-          for (const bed of room.beds) {
-            if (bed.placements.length > 0) continue; // occupied over the window
-            // A known-gender requester can't take a bed in a shared room already
-            // holding the other gender.
-            if (shared && roomGenders.size > 0 && g && !roomGenders.has(g)) continue;
-            // room.name usually already carries the apartment prefix ("A1 / Room 2");
-            // only prepend the property when it doesn't.
-            const rn = room.name || '';
-            const pn = prop.name || '';
-            const roomLabel = rn.includes(pn) ? rn : `${pn} / ${rn}`.replace(/^ \/ /, '');
-            const fb: FreeBed = {
-              bedId: bed.id, roomId: room.id,
-              room: roomLabel,
-              roomType: String(room.roomType || '—'),
-              enSuite: !!room.enSuite, shared,
-            };
-            (freeByType[fb.roomType] ||= []).push(fb);
-            if (shared) sharedOffered = true;
+          } else {
+            // Regular room (single or double, any en-suite) — ONE unit for an
+            // individual, available only if the WHOLE room is empty over the
+            // window (you can't put a stranger in the other half of a double).
+            const occupied = room.beds.some(b => b.placements.length > 0);
+            if (occupied) continue;
+            const firstBed = room.beds[0];
+            if (!firstBed) continue; // room with no beds modelled — skip
+            (freeByType[rtype] ||= []).push({
+              bedId: firstBed.id, roomId: room.id, room: roomLabel,
+              roomType: rtype, enSuite: !!room.enSuite, shared: false,
+            });
           }
         }
       }
@@ -1225,15 +1247,20 @@ export function accommodationScripts(prisma: PrismaClient) {
       ? (freeByType[wantType] || []).filter(b => !wantEnsuite || b.enSuite)
       : Object.values(freeByType).flat();
 
+    const unitWord = (t: string, n: number) =>
+      (PER_BED_ROOM_TYPES.has(t) ? 'bed' : 'room') + (n === 1 ? '' : 's');
+
     const alternatives = Object.entries(freeByType)
       .filter(([t]) => !wantType || t !== wantType)
-      .map(([t, beds]) => ({
+      .map(([t, units]) => ({
         roomType: t,
-        enSuite: beds.some(b => b.enSuite),
-        freeBeds: beds.length,
-        rooms: [...new Set(beds.map(b => b.room))],
+        enSuite: units.some(b => b.enSuite),
+        unit: PER_BED_ROOM_TYPES.has(t) ? 'bed' : 'room',
+        free: units.length,
+        freeBeds: units.length, // deprecated alias — callers keyed on freeBeds; = free
+        rooms: [...new Set(units.map(b => b.room))],
       }))
-      .sort((a, b) => b.freeBeds - a.freeBeds);
+      .sort((a, b) => b.free - a.free);
 
     const anyAvailable = Object.values(freeByType).some(a => a.length > 0);
     const available = wantType ? matches.length > 0 : anyAvailable;
@@ -1241,13 +1268,20 @@ export function accommodationScripts(prisma: PrismaClient) {
 
     const fmt = (d: Date) => d.toISOString().slice(0, 10);
     const win = `${fmt(from)} → ${fmt(to)}`;
-    const altStr = alternatives.filter(a => a.freeBeds > 0).map(a => `${a.roomType} (${a.freeBeds})`).join(', ');
+    // Name the actual rooms, type in brackets — "A1 / Room 1 (Premium), A2 / Room 3 (Standard)".
+    const listRooms = (units: FreeUnit[]) =>
+      [...new Set(units.map(u => `${u.room} (${u.roomType}${u.enSuite ? ', en-suite' : ''})`))].join(', ');
+    const altStr = Object.entries(freeByType)
+      .filter(([t]) => (!wantType || t !== wantType) && freeByType[t].length > 0)
+      .sort((a, b) => b[1].length - a[1].length)
+      .map(([, units]) => listRooms(units))
+      .join(', ');
     let summary: string;
     if (wantType && matches.length > 0) {
-      const roomsList = [...new Set(matches.map(m => m.room))].join(', ');
-      summary = `Yes — ${matches.length} ${wantType} bed${matches.length > 1 ? 's' : ''} free at ${propertyName} for ${win} (${roomsList}).`;
+      const roomsList = listRooms(matches);
+      summary = `Yes — ${matches.length} ${wantType} ${unitWord(wantType, matches.length)} free at ${propertyName} for ${win}: ${roomsList}.`;
     } else if (wantType && anyAvailable) {
-      summary = `No ${wantType} free at ${propertyName} for ${win}. Alternatives: ${altStr}.`;
+      summary = `No ${wantType} free at ${propertyName} for ${win}. Other free: ${altStr}.`;
     } else if (!wantType && anyAvailable) {
       summary = `Free at ${propertyName} for ${win}: ${altStr}.`;
     } else {

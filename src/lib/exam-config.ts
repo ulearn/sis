@@ -5,6 +5,10 @@
 //  - cesEmail        : the VERIFIED CES exam-registration address. Null blocks
 //                      live sends (spec: never assume a general enquiries address).
 //  - sendsArmed      : master switch for live CES request sends (Neil: ON).
+//  - directPayEnabled: V1=false → ULearn pays CES for EVERY student (they already
+//                      paid us). V2=true → honour the per-booking EXAM_FEE extra
+//                      (extra=prepaid/we pay CES; no extra=student pays CES direct).
+//                      Keep OFF until legacy bundled-but-no-extra bookings clear.
 //  - eligibilityWeek : programme week the exam requirement becomes visible (12).
 //  - resultLeadWeeks : soft preference — results should be available at least this
 //                      many weeks before the permission window ends (NOT a hard
@@ -16,6 +20,7 @@ import path from 'path';
 export interface ExamConfig {
   cesEmail: string | null;
   sendsArmed: boolean;
+  directPayEnabled: boolean;
   eligibilityWeek: number;
   resultLeadWeeks: number;
   reminders: { armed: boolean; ackDays: number; escalateDays: number; preExamDays: number };
@@ -26,6 +31,7 @@ const CONFIG_PATH = path.join(__dirname, '..', '..', 'data', 'exam-config.json')
 const DEFAULTS: ExamConfig = {
   cesEmail: null,
   sendsArmed: true,
+  directPayEnabled: false,   // V1: ULearn pays CES for everyone (they already paid us)
   eligibilityWeek: 12,
   resultLeadWeeks: 8,
   reminders: { armed: false, ackDays: 3, escalateDays: 7, preExamDays: 7 },
@@ -37,6 +43,7 @@ export function getExamConfig(): ExamConfig {
     return {
       cesEmail: typeof saved.cesEmail === 'string' && saved.cesEmail.trim() ? saved.cesEmail.trim() : null,
       sendsArmed: saved.sendsArmed !== false,          // default ON
+      directPayEnabled: saved.directPayEnabled === true, // default OFF (V1 — we pay CES)
       eligibilityWeek: Number.isFinite(saved.eligibilityWeek) ? saved.eligibilityWeek : DEFAULTS.eligibilityWeek,
       resultLeadWeeks: Number.isFinite(saved.resultLeadWeeks) ? saved.resultLeadWeeks : DEFAULTS.resultLeadWeeks,
       reminders: {

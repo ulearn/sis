@@ -453,30 +453,44 @@ export function documentScripts(prisma: PrismaClient) {
     })[0];
   }
 
-  // When the caller doesn't name a booking, resolve the one holding the most
-  // arrival-relevant accommodation; else the newest non-cancelled booking.
+  // When the caller doesn't name a booking, resolve the one the student is most
+  // arrival-relevant to: UPCOMING → PRESENT → PAST (pickAccommByArrival order).
+  // Rank ALL non-cancelled bookings — each by its accommodation span when it has
+  // a room, else its own service window. Ranking across the whole set (not just
+  // the bookings that happen to carry a room) is the 2026-10-14 fix: a returning
+  // student with an OLD completed booking that still has a room and a CURRENT
+  // upcoming booking with no room yet (e.g. Ralph #31: Feb booking w/ accom vs
+  // an Oct re-enrolment w/o accom) was resolving to the stale past booking — so
+  // the Day-1 email read that booking's Monday start (02 Feb = St Brigid's, a
+  // bank holiday) and wrongly told him the school was closed on day one.
+  // The incremental id is unreliable (deal-splitting / legacy migration can give
+  // an older stay a higher id), so id is only the last-resort tiebreak.
   async function bestBookingIdForStudent(studentId: number): Promise<number | null> {
-    const accoms = await prisma.bookingAccommodation.findMany({
-      where: { booking: { studentId, NOT: { status: 'CANCELLED' as any } } },
-      select: { bookingId: true, startDate: true, endDate: true },
-    });
-    const best = pickAccommByArrival(accoms);
-    if (best) return best.bookingId;
-    // No accommodation on any booking → STILL choose by date, not id. The
-    // incremental id sequence is unreliable here: legacy/migration paths and
-    // deal-splitting (a €250 deposit deal becomes a separate high-id booking)
-    // mean a higher id can be an OLDER stay. Fall back on the booking's own
-    // service window with the same arrival ordering; newest-id is only the
-    // last-resort tiebreak when no dates exist at all.
     const bookings = await prisma.booking.findMany({
       where: { studentId, NOT: { status: 'CANCELLED' as any } },
-      select: { id: true, serviceStart: true, serviceEnd: true },
+      select: {
+        id: true, serviceStart: true, serviceEnd: true,
+        accommodations: { select: { startDate: true, endDate: true } },
+      },
     });
     if (!bookings.length) return null;
-    const bestBk = pickAccommByArrival(
-      bookings.map(b => ({ id: b.id, startDate: b.serviceStart, endDate: b.serviceEnd })),
-    );
-    return bestBk?.id ?? [...bookings].sort((a, b) => b.id - a.id)[0].id;
+    const ms = (d: any) => (d ? new Date(d).getTime() : null);
+    const windows = bookings.map(b => {
+      // A booking with a room ranks by the room span (the arrival signal that
+      // matters for accommodation docs); otherwise by its own service window.
+      const accs = b.accommodations || [];
+      let start: Date | null = b.serviceStart;
+      let end: Date | null = b.serviceEnd;
+      if (accs.length) {
+        const starts = accs.map(a => ms(a.startDate)).filter((n): n is number => n != null);
+        const ends = accs.map(a => ms(a.endDate)).filter((n): n is number => n != null);
+        if (starts.length) start = new Date(Math.min(...starts));
+        if (ends.length) end = new Date(Math.max(...ends));
+      }
+      return { id: b.id, startDate: start, endDate: end };
+    });
+    const best = pickAccommByArrival(windows);
+    return best?.id ?? [...bookings].sort((a, b) => b.id - a.id)[0].id;
   }
 
   async function resolveTokens(studentId: number, bookingId?: number | null, opts: { certAggregate?: boolean; slug?: string | null } = {}) {

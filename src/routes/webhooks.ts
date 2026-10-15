@@ -2707,17 +2707,63 @@ export function webhookRoutes(prisma: PrismaClient) {
             // every inbound payment to "Standard"; never leak the raw enum to the UI.
             const type = 'Standard';
 
-            await prisma.payment.upsert({
-              where: { hubspotPaymentId: hsId },
-              // Re-sync refreshes only the volatile fields — never clobber method/
-              // type, which a human or the escrow-retag job may have refined.
-              update: {
-                amount,
-                paymentDate,
-                transactionId: p.hs_reference_number || null,
-                comment: p.hs_internal_comment || null,
-              },
-              create: {
+            // Does a SIS row already carry this HubSpot payment id? Then this is a
+            // re-sync — refresh only the volatile fields, never clobber method/type
+            // (a human or the escrow-retag job may have refined them).
+            const existingById = await prisma.payment.findFirst({
+              where: { hubspotPaymentId: hsId } as any,
+              select: { id: true },
+            });
+            if (existingById) {
+              await prisma.payment.update({
+                where: { id: existingById.id },
+                data: {
+                  amount,
+                  paymentDate,
+                  transactionId: p.hs_reference_number || null,
+                  comment: p.hs_internal_comment || null,
+                },
+              });
+              continue;
+            }
+
+            // ESCROW RELEASE — adopt the shadow row instead of adding a duplicate.
+            // On visa approval the held money settles for real and HubSpot emits this
+            // commerce-payment. SIS already holds a shadow row for the same money
+            // (type='Escrow' / method='TransferMate Escrow', no hubspotPaymentId, from
+            // the /transfermate-escrow hold). Convert that ONE row to a released
+            // Standard payment and stamp this HubSpot id onto it — KEEPING its method
+            // as the permanent record of how the money arrived — rather than creating
+            // a second row beside it. This is the SIS mirror of the HubSpot escrow flag
+            // Yes→No flip (one record, one field changes; see kb/finance/escrow.md).
+            // Conservative: adopt only when EXACTLY ONE unlinked escrow shadow matches
+            // the amount; anything ambiguous falls through to a normal new row.
+            const shadows = await prisma.payment.findMany({
+              where: {
+                bookingId: booking.id,
+                hubspotPaymentId: null,
+                OR: [{ type: 'Escrow' }, { method: 'TransferMate Escrow' }],
+              } as any,
+              select: { id: true, amount: true },
+            });
+            const shadowMatch = shadows.filter((s: any) => Math.abs(Number(s.amount || 0) - amount) < 0.01);
+            if (shadowMatch.length === 1) {
+              await prisma.payment.update({
+                where: { id: shadowMatch[0].id },
+                data: {
+                  type: 'Standard',
+                  hubspotPaymentId: hsId,
+                  paymentDate,
+                  transactionId: p.hs_reference_number || null,
+                  comment: p.hs_internal_comment || null,
+                } as any,
+              });
+              console.log(`[Payment Webhook] bk${booking.id}: escrow shadow #${shadowMatch[0].id} RELEASED → Standard (adopted HubSpot payment ${hsId}, €${amount}) — method kept`);
+              continue;
+            }
+
+            await prisma.payment.create({
+              data: {
                 bookingId: booking.id,
                 hubspotPaymentId: hsId,
                 amount,

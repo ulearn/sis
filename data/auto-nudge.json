@@ -159,7 +159,7 @@
       "time": "08:00",
       "enabled": true,
       "note": "Vetting done on their end — attributes unknown",
-      "lastFired": "2026-10-07"
+      "lastFired": "2026-10-14"
     },
     {
       "id": "b4w2",
@@ -179,7 +179,7 @@
       "time": "12:00",
       "enabled": true,
       "note": "Vetting not done — attributes unknown",
-      "lastFired": "2026-10-07"
+      "lastFired": "2026-10-14"
     }
   ],
   "armed": true,

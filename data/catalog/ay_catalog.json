@@ -42,7 +42,7 @@
   {
     "id": "AYAFT",
     "name": "General English Academic Year PM",
-    "description": "15 hours/week Afternoon course (09:00 - 12:20), total 375 hours",
+    "description": "15 hours/week Afternoon course (13:45 - 17:00), total 375 hours",
     "hoursPerWeek": 15,
     "timeSlot": "Afternoon",
     "weeks": 25,
@@ -62,7 +62,7 @@
   {
     "id": "AYAFT+",
     "name": "General English Academic Year PM (Plus)",
-    "description": "20 hours/week Afternoon course (09:00 - 13:30), total 500 hours",
+    "description": "20 hours/week Afternoon course (12:30 - 17:00), total 500 hours",
     "hoursPerWeek": 20,
     "timeSlot": "Afternoon",
     "weeks": 25,
