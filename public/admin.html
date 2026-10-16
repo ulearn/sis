@@ -17771,7 +17771,9 @@ function makeSearchable(selectEl, onSelect) {
         for (const opt of child.children) {
           items.push({ value: opt.value, label: opt.textContent, group });
         }
-      } else if (child.tagName === 'OPTION' && child.value) {
+      } else if (child.tagName === 'OPTION' && (child.value || child.textContent.trim())) {
+        // Include the empty-value option (e.g. "All Partners", "—", "None — blank")
+        // so the dropdown can be cleared back to null — it was being dropped before.
         items.push({ value: child.value, label: child.textContent, group: null });
       }
     }
@@ -17811,7 +17813,10 @@ function makeSearchable(selectEl, onSelect) {
     let lastGroup = null;
     let count = 0;
     for (const item of items) {
-      if (q && !item.label.toLowerCase().includes(q) && !(item.group && item.group.toLowerCase().includes(q))) continue;
+      // The null/clear option (empty value) stays pinned at the top and is never
+      // filtered out by the search query, so you can always clear back to null.
+      const isNull = item.value === '';
+      if (!isNull && q && !item.label.toLowerCase().includes(q) && !(item.group && item.group.toLowerCase().includes(q))) continue;
       if (item.group && item.group !== lastGroup) {
         html += '<div style="padding:4px 12px 2px;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);font-weight:600;' + (lastGroup !== null ? 'border-top:1px solid var(--card-border);margin-top:4px;padding-top:6px' : '') + '">' + esc(item.group) + '</div>';
         lastGroup = item.group;

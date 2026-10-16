@@ -1,12 +1,42 @@
 # SIS — ToDo
 
-Open work for this project. Protocol: anything left unfinished at the end of a session goes here (not in memory); finished work is moved to ToDo-Done.md. Synced with Wrike (space "hub" → folder "SIS") every 10 minutes — edit the text here; status syncs both ways.
+Open work for this project. Protocol: anything left unfinished at the end of a session goes here (not in memory); finished work is moved to ToDo-Done.md. Synced with Wrike (space "hub" → folder "SIS") every 5 minutes — edit the text here; status syncs both ways.
+
+## Gate LOA auto-issue email on the signed contract (LifePass/AY)
+
+**Priority:** Medium
+**Status:** Waiting — Neil (pick option A/B + placement-gate call)
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T17:30:06Z
+
+Diego (partners@, Slack 2026-10-15) flagged Roger Luis Dorfschmidt #14700: LOA shouldn't be out — LifePass T&Cs unsigned + placement test not done. Investigated — **no leak**: 0 DocumentRecords (no LOA ever issued for him), and he HAS signed the in-app Student Agreement (`contract_signed_at = 2026-10-09`, version 2026-09-v1, which folds in the LifePass Programme Terms appendix). Placement test genuinely not done (`placement_test_date` null) — Diego has emailed him. Diego's "send back a signed copy" reflects the old emailed-PDF process; the new in-app hard gate (`STUDENT_CONTRACT_GATE=on`) already covers it.
+
+Structural gap to decide on (Neil said "can't access the LOA until he signs it — not a big deal"; that holds for the in-app download but not the email):
+  - [ ] `autoIssueLoaForBooking` (`src/scripts/documents.ts`) gates only on AY + fully-funded + passport — it does NOT check `contract_signed_at`, and on issue it EMAILS the LOA PDF to the student via `notifyDocument(student:true)`, which bypasses the app's contract gate. So a funded+passport LifePass student who hasn't signed could receive the LOA by email. **Option A (recommended):** still generate+record the LOA, but suppress the student email copy until signed (agent copy ok) — student retrieves it in-app after signing, exactly matching the intended "no LOA until signed," with no LOA delay for the many students who pay+passport before signing. **Option B (Diego's literal ask):** don't issue at all until signed (simpler, but delays the record + agent copy for ALL AY students, not just LifePass).
+  - [ ] Placement test as an LOA gate? Diego wants it; Neil didn't mention it. Recommend NOT gating LOA on placement (placement sets class level, not acceptance/visa). Confirm.
+
+---
+
+## Re-sign existing non-EU AY students on the exam-inclusive Student Agreement
+
+**Priority:** Medium
+**Status:** Waiting — Neil (re-sign vs rely on exam-module consent)
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T15:15:06Z
+
+Done today (2026-10-15, no action needed): folded the end-of-programme exam obligation into the signed Student Agreement for TrustEd/ILEP compliance as we move to examless up-front charging. New **§12 "End-of-Programme Examination"** + a signed Student Declaration line, conditional on non-EEA / 25-week / Stamp 2; states ULearn arranges registration in line with ILEP / Department of Justice / TrustEd and that the exam fee is not included in tuition unless the booking confirmation says so. Bumped `CONTRACT_VERSION` → `2026-10-v1` (`src/scripts/student-contract.ts`); KB `kb/courses/academic-year/Exam-Renewal-Protocol.md` updated with the implementation note. tsc 0, restarted, render-verified.
+
+Leftover — the backfill decision:
+  - [ ] All **247** currently-signed agreements predate the clause (141 on `2026-07-v1`, 85 `grandfathered-2026-07`, 21 `2026-09-v1`; 0 on `2026-10-v1` yet). Go-forward signers are covered automatically. **Decide for the existing non-EU AY cohort:** re-issue the agreement for re-sign (cleanest audit trail), or treat the per-booking exam-module consent as sufficient for those who already signed. If re-sign: scope = active/upcoming non-EEA 25-week Stamp 2 students only (not B2C/EU/juniors/past students).
+
+---
 
 ## Rotate credentials exposed in SIS git history
 
 **Priority:** High
 **Status:** Backlog
 **Added:** 2026-10-10
+**Updated:** 2026-10-13T21:52:25Z
 
 Two secrets were committed to GitHub history before being untracked (`.env.bak-slack-1786991371`, `zoho-tokens.json`). Untracking only stops future exposure. (from Claude memory: project_git_hygiene.md)
   - [ ] Rotate Zoho OAuth tokens
@@ -21,6 +51,7 @@ Two secrets were committed to GitHub history before being untracked (`.env.bak-s
 **Priority:** High
 **Status:** Waiting — Neil (algorithm decision)
 **Added:** 2026-06-04
+**Updated:** 2026-10-13T21:52:24Z
 
 474 Fidelo bookings with ~€388k drift between the gross course rack-rate (`booking_course.fee`) and the net amount banked (`booking.amount_total`). Two algorithm candidates documented; decision pending. **2025 year-end accounts depend on this.**
 Spec: `.claude/docs/ToDo/fidelo-gross-net-cleanup.md`
@@ -32,6 +63,7 @@ Spec: `.claude/docs/ToDo/fidelo-gross-net-cleanup.md`
 **Priority:** Medium
 **Status:** Waiting — Neil (true figures for the payment-differs pairs; course-name dictionary)
 **Added:** 2026-06-03
+**Updated:** 2026-10-13T21:52:26Z
 
 Post-Fidelo backfill cleanup. Specs in `.claude/docs/MigrationCleanup/`.
   - [ ] **Duplicates** (`MigrationCleanup/dupes.md`): booking/payment reconnect — 83 done, 11 left, all "payment differs", waiting on Neil's true-figure call. Also unassigned-pool escrow/shadow flips and literal duplicate students. Forward-facing urgent cohort list: `.claude/docs/dup-bookings-urgent.md`.
@@ -45,6 +77,7 @@ Post-Fidelo backfill cleanup. Specs in `.claude/docs/MigrationCleanup/`.
 **Priority:** Medium
 **Status:** Backlog
 **Added:** 2026-06-05
+**Updated:** 2026-10-13T21:52:26Z
 
 The 3 June 2026 backfill double-recorded payments. The SAFE bucket is done (28 bookings, €25,304). Check first whether the later 2026 backfill/recon work already covered these. (from Claude memory: project_payment_dedup.md)
   - [ ] HS_ALSO (3 bookings, €7,746): SIS dedup + HubSpot `commerce_payment` cleanup (otherwise a webhook re-fire re-inflates)
@@ -59,6 +92,7 @@ Truth source = hub `hubapp/Docs/MigrateRecon/recon-task-FULL.csv`. Dedup = merge
 **Priority:** Medium
 **Status:** Waiting — Neil (verified CES address)
 **Added:** 2026-10-13
+**Updated:** 2026-10-14T17:51:22Z
 
 Exam Booking module is live in the app, but CES sends are held (requests sit at REQUEST_PENDING) until a verified CES exam-registration address is set in admin → Examinations → Settings. Never use a general enquiries address. (from Claude memory: project_exam_booking.md)
   - [ ] Neil sets the verified CES address
@@ -76,6 +110,7 @@ Exam Booking module is live in the app, but CES sends are held (requests sit at 
 **Priority:** High
 **Status:** Waiting — Kelly (which room now) + accounts (€800)
 **Added:** 2026-10-14
+**Updated:** 2026-10-14T17:51:22Z
 
 Kelly (accomm@, Slack 2026-10-13) flagged Carlotta extended at Capel Street but "doesn't show up in SIS." Diagnosed: she IS in SIS (student #70). Her extension is booking **18357** (HubSpot deal 524720509127, HS invoice 1388324376805), status PENDING, 2026-10-10 → 2027-02-20, 17 wks, €3,400 total, **€0 paid**. Two breakages:
   - [ ] **Unassigned bed.** Extension accommodation placement #11438 was created with `bedId = null`, so she's on no room / no occupancy board. Her original bed 87 (A2/Room 2, Superior, booking 76, ended 2026-10-10) then read as empty and was reassigned — Michele Mancini (1 night) then **Sandrine Bruneau 2026-10-11 → 2026-11-01**. So in SIS she occupies no bed and her old one is taken. NEED from Kelly: which room is she physically in now → then attach #11438 to that bed. (Root-cause: extension placement created without a bed lets the vacated bed look free and get re-let — worth a guard: AY/continuation accommodation rows shouldn't be left bed-null.)
@@ -88,6 +123,7 @@ Kelly (accomm@, Slack 2026-10-13) flagged Carlotta extended at Capel Street but 
 **Priority:** Medium
 **Status:** Waiting — Neil (approve templates)
 **Added:** 2026-10-09
+**Updated:** 2026-10-13T21:52:26Z
 
 The Mon/Wed/Fri reminder drip for KickStart challengers who haven't finished their tasks is built and the cron is running, but `data/challenger-nudge.json` is still `armed:false`. Dry run verified (cohort 32, eligible 31). (from Claude memory: project_challenge_nudge.md)
   - [ ] Neil approves/edits the 3 template bodies (slugs challenger-nudge-1/2/3)
@@ -102,6 +138,7 @@ The Mon/Wed/Fri reminder drip for KickStart challengers who haven't finished the
 **Priority:** Medium
 **Status:** Backlog
 **Added:** 2026-10-05
+**Updated:** 2026-10-14T12:11:21Z
 
 The Capel St accommodation check is built. The academic side is still spec only. Hard cap = 7 teaching rooms × 16 = 112 seats per session (AM+PM = 224/day). `Classroom.capacity` is null everywhere and Room 3 has no classes. (from Claude memory: project_soft_availability.md)
   - [x] 2026-10-14 FIX — accommodation checker now counts the availability UNIT per ROOM (not per bed) for regular types: a Premium room is a DOUBLE modelled as 2 beds, but one individual takes the whole room = ONE free unit (was reporting "4 beds free" against only 3 rooms). Only genuine stranger-shared rooms (Twin/Shared) still count per free bed. Output now NAMES the free rooms with type in brackets ("A1 / Room 2 (Premium, en-suite)"). `accommodationAvailability` in `src/scripts/accommodation.ts`; admin matching "Avail" overlay updated; alternatives gained `free`+`unit` fields (`freeBeds` kept as alias). tsc 0, restarted, verified live on the 2026-10-18→2027-01-09 window.
@@ -119,6 +156,7 @@ The Capel St accommodation check is built. The academic side is still spec only.
 **Priority:** Medium
 **Status:** Backlog
 **Added:** 2026-07-17
+**Updated:** 2026-10-13T21:52:25Z
 
 The internal ETO Agreement signing replaced Zoho Sign, but the Zoho sync cron is still in the crontab (`dist/scripts/sync-contracts.js`, daily 06:45). (from Claude memory: project_partner_contract_signing.md)
   - [ ] Confirm the backfill ran and the gate blocks unsigned agencies in the UI
@@ -132,6 +170,7 @@ The internal ETO Agreement signing replaced Zoho Sign, but the Zoho sync cron is
 **Priority:** Low
 **Status:** Backlog
 **Added:** 2026-09-03
+**Updated:** 2026-10-13T21:52:24Z
 
 Partners who sign without a fixed rate are auto-enrolled on the Accelerator ladder. Not yet tested end to end with a real confirmed-partner AY deal emitting 22% through autoQuote. Use a controlled "ABC Test" throwaway. (from Claude memory: project_accelerator_signing.md)
 
@@ -142,6 +181,7 @@ Partners who sign without a fixed rate are auto-enrolled on the Accelerator ladd
 **Priority:** Medium
 **Status:** Backlog
 **Added:** 2026-05-18
+**Updated:** 2026-10-13T21:52:26Z
 
 Most of the Friday assessment is class-wide (everyone had the same week, so it follows the can-do statements and Pearson GSE vocabulary). Add a short personal section at the end, about 3 questions, tailored to errors the individual student showed in class (as recorded by the teacher) or in their homework. Questions could be written by the teacher or by AI. Assessment generation lives on the LMS side; see the Friday Assessment inputs design (Mon–Thu recap + programme_curriculum + class_output).
 
@@ -152,6 +192,7 @@ Most of the Friday assessment is class-wide (everyone had the same week, so it f
 **Priority:** Medium
 **Status:** Backlog
 **Added:** 2026-04-07
+**Updated:** 2026-10-13T21:52:48Z
 
 The single-file admin was 7,731 lines when this was written and is now ~21,000. Harder to navigate and edit, prone to merge conflicts, and the whole bundle loads on every request. Splitting reduces friction without a build step.
   - [ ] Phase 1, CSS extract: move the `<style>` block to `public/admin.css`, linked via `/sis/admin.css`. Zero behaviour risk.
@@ -167,6 +208,7 @@ Out of scope: ES modules, bundlers, and moving to `addEventListener`. Risk is me
 **Priority:** Low
 **Status:** Backlog
 **Added:** 2026-06-04
+**Updated:** 2026-10-13T21:52:25Z
 
 `admin.html` has 5 duplicated rich-text editors (divergence and maintenance risk; the doc editor already differs). Font/colour controls are already centralised (`rtControls()`). Finish the job with a single `richEditor(id, opts)` helper that emits toolbar + contenteditable. CRITICAL: keep each editor's existing id or sends break. Low risk, own focused task.
 Spec: `.claude/docs/MigrationCleanup/editor-centralisation.md`
@@ -178,6 +220,7 @@ Spec: `.claude/docs/MigrationCleanup/editor-centralisation.md`
 **Priority:** Low
 **Status:** Backlog
 **Added:** 2026-06-29
+**Updated:** 2026-10-13T21:52:47Z
 
 Phase 1 is done and live: the KickStart €500 challenge + leaderboard are translated into PT/ES/IT/FR/DE/TR/JA/KO/ZH/RU+EN via `public/challenge-i18n.js`, auto-resolved from `Student.language` → nationality, with a flag toggle. Phase 2 = translate the app chrome only (tab/nav names, section/card headers, key buttons, ~40–60 strings) and move the toggle to a global spot. Skip long-form and staff-written content (that needs live machine translation).
 Spec: `.claude/docs/mobile-app/translate.md`
@@ -189,6 +232,7 @@ Spec: `.claude/docs/mobile-app/translate.md`
 **Priority:** Low
 **Status:** Backlog
 **Added:** 2026-06-30
+**Updated:** 2026-10-13T21:52:47Z
 
 Template translations (OpenAI → 10 languages) work in the profile composer (`sendCommsEmail`) and the bulk modal. The other per-context composers, pvComms `sendPvEmail` and the generic `commsBlock`/`sendCommsGeneric`, don't have the toggle yet. (from Claude memory: project_template_translations.md)
 
@@ -199,6 +243,7 @@ Template translations (OpenAI → 10 languages) work in the profile composer (`s
 **Priority:** Low
 **Status:** Backlog
 **Added:** 2026-04-07
+**Updated:** 2026-10-13T21:52:26Z
 
 Add a Sunday cron that pulls the weekly payroll data, once payroll is fully tested and operational. There is currently no payroll line in the crontab; the engine is `src/scripts/payroll.ts` (`refreshPayroll`). Context: teachers are paid hourly, on Thursday, with payroll cutting off the Wednesday before; the next month must include the Thu/Fri after the cutoff (Fidelo couldn't do this).
 
@@ -209,6 +254,7 @@ Add a Sunday cron that pulls the weekly payroll data, once payroll is fully test
 **Priority:** Low
 **Status:** Backlog
 **Added:** 2026-06-06
+**Updated:** 2026-10-13T21:52:48Z
 
 Track B engine is built (`src/scripts/booking-parser.ts` `parseBookingPdf`: pdftotext + gpt-4o-mini). The remaining work is a thin staff UI: upload + pick agency → review (highlight `needsReview`) → existing `enroll()`. Never put the uploader in the partner portal. Track A (magic-link student form per agency) is spec only. Spec: `.claude/docs/parser/booking-intake-spec.md`. (from Claude memory: project_booking_intake.md)
 
@@ -219,6 +265,7 @@ Track B engine is built (`src/scripts/booking-parser.ts` `parseBookingPdf`: pdft
 **Priority:** Low
 **Status:** Waiting — Neil (go-ahead to arm)
 **Added:** 2026-10-10
+**Updated:** 2026-10-13T21:52:47Z
 
 `cron-arrival-reminder` runs daily at 09:30 but `data/arrival-reminder.json` is `armed:false`, so it sends nothing. Flip `armed:true` once to enable for all upcoming host-family arrivals (2 days' notice, one reminder per stay). (from Claude memory: project_host_arrival_reminder.md)
 
@@ -229,6 +276,7 @@ Track B engine is built (`src/scripts/booking-parser.ts` `parseBookingPdf`: pdft
 **Priority:** Low
 **Status:** Backlog
 **Added:** 2026-07-02
+**Updated:** 2026-10-13T21:52:48Z
 
 The email nudge and AutoNudge Cascade are live and controlled from the admin UI. V2 adds WhatsApp/SMS. Not urgent; expected to lift response rates.
   - [ ] SMS is easiest (likely via the bird.com setup) but costs per message, so use only if the uplift justifies it
@@ -244,6 +292,7 @@ The email nudge and AutoNudge Cascade are live and controlled from the admin UI.
 **Priority:** Low
 **Status:** Someday/Maybe
 **Added:** 2026-07-02
+**Updated:** 2026-10-13T21:52:47Z
 
 Neil brain-dump, capture only. Let hosts control their own comms preferences so staff stop tracking holidays.
   - [ ] Profile avatar (initials) top-right of the portal → dropdown → Preferences → Communications. No login (stays click-to-view).
@@ -259,6 +308,7 @@ Neil brain-dump, capture only. Let hosts control their own comms preferences so 
 **Priority:** Low
 **Status:** Backlog
 **Added:** 2026-07-02
+**Updated:** 2026-10-13T21:52:48Z
 
 Host portal slice 2. A Travel Pair = 2 (occasionally 3) students travelling together (same flight → usually same transfer and house). Distinct from a group. UI label "Travel Pair"; DB `travelPairId` UUID. Claims are single-placement only today. (from Claude memory: project_host_portal_v1.md)
 
@@ -269,6 +319,7 @@ Host portal slice 2. A Travel Pair = 2 (occasionally 3) students travelling toge
 **Priority:** Low
 **Status:** Backlog
 **Added:** 2026-05-11
+**Updated:** 2026-10-13T21:52:47Z
 
 V1 (airport pickup/dropoff queue with Lynk confirmation) is live. Remaining phases:
   - [ ] V2, group bus bookings: show group bus jobs in Transport regardless of the 4-week cutoff (long lead time). Types: airport↔accom, activity shuttles, excursion shuttles.
@@ -284,6 +335,7 @@ Out of scope: Link Taxis API, in-app payment, dropoff billing reconciliation. Co
 **Priority:** Low
 **Status:** Backlog
 **Added:** 2026-10-06
+**Updated:** 2026-10-13T21:52:48Z
 
 The Group module pipeline is complete (upload/pull/paste → AI parse → review → create students/bookings at €0 → push HubSpot contacts). Remaining items: (from Claude memory: project_group_management.md)
   - [ ] Neil to OK the general placement-engine change: `recordResult` overwrites the first booking only
@@ -298,6 +350,7 @@ The Group module pipeline is complete (upload/pull/paste → AI parse → review
 **Priority:** Low
 **Status:** Backlog
 **Added:** 2026-10-12
+**Updated:** 2026-10-13T21:52:47Z
 
   - [ ] Deferred ("app stuff second"): front-end passport to-do / onboarding step / green alert after the welcome video. Only the passport-request email was built. (from Claude memory: project_loa_auto_issue.md)
   - [ ] Parked: auto-refresh-from-source when a Student/Booking field is edited (check for docs containing that field, then run `refreshDocumentFromSource`). Deliberately parked 2026-07-05. (from Claude memory: project_living_loa_documents.md)
@@ -309,6 +362,7 @@ The Group module pipeline is complete (upload/pull/paste → AI parse → review
 **Priority:** Low
 **Status:** Someday/Maybe
 **Added:** 2026-09-11
+**Updated:** 2026-10-13T21:52:48Z
 
 When a course is rescheduled, the booking service window and HubSpot deal dates go stale (a systemic accom/date cascade). Offered, Neil's call. The transfer chase cron and Date-TBC panel are the safety net until then. (from Claude memory: project_transport_arrival_gap.md)
 
@@ -319,6 +373,7 @@ When a course is rescheduled, the booking service window and HubSpot deal dates 
 **Priority:** Low
 **Status:** Someday/Maybe
 **Added:** 2026-08-13
+**Updated:** 2026-10-13T21:52:48Z
 
 <2–5% of bookings have 2 different courses or 2 different accommodations at different times (e.g. apartment then host family). Root problem: line items carry no dates; course/accom dates come only from the deal's single flat fields. Invoice/SIS/Xero already handle n courses + accom from line items; only the deal fields can't. Parked. (from Claude memory: project_resync_authoritative.md)
 
@@ -329,6 +384,7 @@ When a course is rescheduled, the booking service window and HubSpot deal dates 
 **Priority:** Low
 **Status:** Someday/Maybe
 **Added:** 2026-06-07
+**Updated:** 2026-10-13T21:52:47Z
 
 Spec'd, not built (pre-revenue). Hero "€X/month recurring" (€66.75 × active LifePass students) + staircase chart; accrual source = the `-Sub` master invoice's `hs_amount_paid`, not `instalment.paidAt`. (from Claude memory: project_lifepass_earnings.md)
   - [ ] Opt-in Load/Remove Sample Data (demo source, not an `isSample` flag)
@@ -342,6 +398,7 @@ Spec'd, not built (pre-revenue). Hero "€X/month recurring" (€66.75 × active
 **Priority:** Low
 **Status:** Someday/Maybe
 **Added:** 2026-07-18
+**Updated:** 2026-10-13T21:52:47Z
 
 The partner credit ledger and its 3-way Xero/HubSpot push are built. Parked: on booking-form submit, look up the agency's credit balance and surface it into HubSpot (task/flag) at deal/autoQuote time. HubSpot's `credit_memos` API is 403 for standard apps. (from Claude memory: project_partner_credit_ledger.md)
 
@@ -352,6 +409,7 @@ The partner credit ledger and its 3-way Xero/HubSpot push are built. Parked: on 
 **Priority:** Low
 **Status:** Someday/Maybe
 **Added:** 2026-04-18
+**Updated:** 2026-10-13T21:52:47Z
 
 V1 ("+ Book" → continuation deal + autoQuote + staff task) is built. Only explore v2 once v1 is stable:
   - [ ] Direct payment: course always allowed (seats + level known); accommodation needs ≥72h notice (warn if arrival <72h, per T&C); extras anytime. Payment rail (Stripe/TransferMate) TBD.
@@ -365,6 +423,7 @@ V1 ("+ Book" → continuation deal + autoQuote + staff task) is built. Only expl
 **Priority:** Low
 **Status:** Backlog
 **Added:** 2026-06-06
+**Updated:** 2026-10-13T21:52:48Z
 
   - [ ] Manually confirm the 3 weak Phase-2 matches: maltamalta.com, MatchMYCourse → Match My Course, WEST1 → WEST 1 (from Claude memory: project_agency_dedup_grandfather.md)
   - [ ] Void Micael Goulart's HubSpot "Partner Onboard" deal 515037176009 (bot-registered partner, SIS rows deleted). Contact 835976200403 / company 376032476352 still carry a stale `sis_portal` stamp. (from Claude memory: project_partner_registration_gate.md)
@@ -376,6 +435,7 @@ V1 ("+ Book" → continuation deal + autoQuote + staff task) is built. Only expl
 **Priority:** Low
 **Status:** Backlog
 **Added:** 2026-08-26
+**Updated:** 2026-10-13T21:52:48Z
 
 Run recipe `issue-54-addendum` (reconcile BA11161 to match the already-cleaned twin BA11160) and write the #54 status to the Cleanup sheet via `node .claude/cron/sheet.js`. Check first; it may already be done. (from Claude memory: project_cleaning_queue_per_room.md)
 
@@ -386,6 +446,7 @@ Run recipe `issue-54-addendum` (reconcile BA11161 to match the already-cleaned t
 **Priority:** Low
 **Status:** Waiting — Apple (App Store review; verify outcome)
 **Added:** 2026-09-21
+**Updated:** 2026-10-13T21:52:47Z
 
 v1.0 was submitted to App Store review 2026-09-21. Keep demo student 14561 (`app-review@`) alive until approved. Optional: add `ITSAppUsesNonExemptEncryption = NO` to `ios/App/App/Info.plist` in `/home/sis/dev/sis-mobile` to skip the export-compliance prompt on future builds (needs a rebuild). (from Claude memory: project_ios_testflight.md)
 
@@ -396,6 +457,7 @@ v1.0 was submitted to App Store review 2026-09-21. Keep demo student 14561 (`app
 **Priority:** Low
 **Status:** Backlog
 **Added:** 2026-04-07
+**Updated:** 2026-10-13T21:52:47Z
 
 It is still hard to match incoming payments to specific students/bookings; references are often a legacy Fidelo ID. Put better reference codes on invoices (booking ID, student ID in the transfer reference). The SIS student id is already mirrored to HubSpot `student_id` so the TM checkout prefills it.
 
@@ -406,6 +468,7 @@ It is still hard to match incoming payments to specific students/bookings; refer
 **Priority:** Low
 **Status:** Backlog
 **Added:** 2026-04-07
+**Updated:** 2026-10-13T21:52:47Z
 
 Auto-populate the HubSpot line item `description` with the date range from deal properties, e.g. "Morning slot, 25 March – 14 April" (deal start_date + weeks → end date). Helps invoice clarity, visa letter references and compliance. autoQuote (hub `scripts/quote-inv/autoQuote.js`) currently sets only "Summer"/diet subtitles, not dates. Staff need to know dates now come from HubSpot, not Fidelo.
 
@@ -416,6 +479,7 @@ Auto-populate the HubSpot line item `description` with the date range from deal 
 **Priority:** Low
 **Status:** Someday/Maybe
 **Added:** 2026-04-07
+**Updated:** 2026-10-13T21:52:47Z
 
 The native HubSpot→Xero data sync doesn't preserve line-item order. Cosmetic only (totals/accounting unaffected). If order matters on client-facing invoices, reorder manually or build a custom sync that respects order. Monitor.
 
@@ -426,6 +490,7 @@ The native HubSpot→Xero data sync doesn't preserve line-item order. Cosmetic o
 **Priority:** Low
 **Status:** Someday/Maybe
 **Added:** 2026-04-07
+**Updated:** 2026-10-13T21:52:48Z
 
 Xero likely has many more (older) hosts than SIS. Not sure it's worth importing them. If imported, they need an active/quiet/inactive status based on last booking, and quiet/inactive hosts kept off the Matching screen. Host categories (SuperHost/BusyBee/Regular/Interested/Sleeper/Dormant) now auto-derive from hosting history and could carry this.
 
@@ -436,6 +501,7 @@ Xero likely has many more (older) hosts than SIS. Not sure it's worth importing 
 **Priority:** Low
 **Status:** Someday/Maybe
 **Added:** 2026-09-21
+**Updated:** 2026-10-13T21:52:48Z
 
 Pre-04/05/2026 Fidelo attendance % is backfilled for current students. The full 52-week historical job (final % for departed students) is deferred. Method in `fidelo-history/backfill-instructions.md`; match key = sheet "Student ID" == `fidelo_customer_num`. (from Claude memory: project_fidelo_legacy_attendance.md)
 
@@ -446,6 +512,7 @@ Pre-04/05/2026 Fidelo attendance % is backfilled for current students. The full 
 **Priority:** Low
 **Status:** Someday/Maybe
 **Added:** 2026-05-22
+**Updated:** 2026-10-13T21:52:46Z
 
 Antonella buys Learner Protection + Medical one by one on ARACHAS. Check whether ARACHAS has an API; otherwise (a) a bookmarklet/extension that autofills their web form from the open SIS student page, or (b) a "record purchase" form (policy number + PDF upload). Policy PDFs are already auto-classified on upload. (from Claude memory: project_insurance_workflow.md)
 
@@ -456,6 +523,7 @@ Antonella buys Learner Protection + Medical one by one on ARACHAS. Check whether
 **Priority:** Low
 **Status:** Someday/Maybe
 **Added:** 2026-04-18
+**Updated:** 2026-10-13T21:52:48Z
 
 Original plan: for all active partners, create user + password + email, add temporarily to HubSpot, then send an email with personalisation tokens for the login. Probably superseded: partners now self-register at `/sis/partners/register` (allow-list gate) and established partners were grandfathered. Confirm, then close.
 
@@ -466,10 +534,10 @@ Original plan: for all active partners, create user + password + email, add temp
 **Priority:** Low
 **Status:** Someday/Maybe
 **Added:** 2026-04-18
+**Updated:** 2026-10-15T10:05:14Z
 
 Cosmetic, HubSpot side: B2B quote template with a "Commission" label. Probably stale: quotes/invoices are now always NET, and the partner agreement reframed commission as "Wholesale Discount". Confirm, then close.
 
----
 
 ---
 
@@ -478,6 +546,7 @@ Cosmetic, HubSpot side: B2B quote template with a "Commission" label. Probably s
 **Priority:** High
 **Status:** Waiting — Neil (first run after the fix may catch up on missed weeks)
 **Added:** 2026-10-14
+**Updated:** 2026-10-14T05:24:20Z
 
 sis crontab line `0 3 * * 1 node dist/scripts/cron-host-payments.js >> …/private/db/host-payments.log` has no `cd …/public_html/sis &&`, so it fails every Monday with `Cannot find module '/home/sis/dist/scripts/cron-host-payments.js'` (28 failures in the log). The other host-payment crons have the `cd`. Check what the job does on a first run after weeks off before fixing.
 
@@ -488,6 +557,7 @@ sis crontab line `0 3 * * 1 node dist/scripts/cron-host-payments.js >> …/priva
 **Priority:** High
 **Status:** Waiting — Neil (approve full weekly report + the gate fix)
 **Added:** 2026-10-14
+**Updated:** 2026-10-14T12:01:29Z
 
 Students physically in class but absent from the SIS output list, so attendance can't be recorded (Slack, Antonella/Paul). Root cause: the class **placement pool** (`classes.ts` `unassignedStudents`, feeds `attendance.ts` roster) only surfaces a booking course that has **≥1 real non-escrow Payment row** (plus active course / not ESCROW-CANCELLED / visa not Pending). **Agency net-terms** students (agency settles net → no per-student Payment rows) and **escrow/visa-pending** students have no qualifying row → hidden from placement → can't be rostered even when paid-up and attending → **ILEP attendance-recording gap**.
 Named cases diagnosed: Ana Jessica #766 (fixed, assign now) · Nominjin #759 (paid, 0 Payment rows, net-terms) · Uyanga #917 (escrow €3066 only) · Jiaming #14487 (visa Approved but escrow €2800 unreleased + course active=false + PM→AM) · Telmuun #293 (partial, €250 owed, non-admin lock) · Ariunsarnai #1047 (genuinely unpaid, PENDING — the one true commercial case). Group B "conversation class" = mostly on their main roster; the conversation class isn't a SIS class (Rakan #14444 genuinely unassigned).
@@ -503,6 +573,7 @@ Named cases diagnosed: Ana Jessica #766 (fixed, assign now) · Nominjin #759 (pa
 **Priority:** High
 **Status:** Waiting — Neil (approve deletes + pick systemic fix)
 **Added:** 2026-10-14
+**Updated:** 2026-10-14T06:11:27Z
 
 Hosts see two Bills for one stay (Slack, Kelly/accomm@). H-number = `3500 + host_payment_line_item.id`. Each dupe is an orphan draft left when a payment run's Xero push **partially failed** (`xeroBillId=null`); the next run correctly re-billed (new bill submitted to Xero) but the "clear un-pushed drafts" cleanup (`host-payments.ts:98-118`) is keyed to the **same runDate only**, so the orphan persists, and the portal query (`host-portal.ts:314`) lists line items with no `xeroBillId`/status filter → host sees both. **Xero token is HEALTHY** (not a dead-key issue — auto-refreshing `xero-tokens.json`).
   - [ ] Delete orphan SIS line items (xeroBillId null, never in Xero, never paid): **218** (H-3718, Bob&Ann O'Sullivan — keep H-3725/id225), **222** (H-3722, Edel McDonald — keep H-3727/id227), **65** (H-3565, Patty McSweeney — pre-existing dupe). No Xero write needed.
@@ -516,6 +587,7 @@ Hosts see two Bills for one stay (Slack, Kelly/accomm@). H-number = `3500 + host
 **Priority:** Medium
 **Status:** Waiting — Neil (pick Option A/B + confirm 7 ambiguous, then execute)
 **Added:** 2026-10-14
+**Updated:** 2026-10-14T06:11:27Z
 
 Reorg per `.claude/tmp/doc-hierarchy.md`: introduce Student Operations with Student Administration / Student Success, reclassify ~44 templates by function. Audit complete (full before/after mapping produced, nothing executed). Category-string changes only — slugs/ids/tokens/TEMPLATE_ID_BY_SLUG untouched, so send/automation paths unaffected.
   - [ ] Decision: Option A (2-level nav, parents "Student Admin"/"Student Success", no code change — recommended) vs Option B (~15-line buildTree change for a true 3-level Operations umbrella). Nav buildTree is 2-level today, no "Other" catch-all.
@@ -529,6 +601,7 @@ Reorg per `.claude/tmp/doc-hierarchy.md`: introduce Student Operations with Stud
 **Priority:** Low
 **Status:** Waiting — TransferMate (report on the card escape hole; no SIS-side search needed)
 **Added:** 2026-10-14
+**Updated:** 2026-10-14T09:36:20Z
 
 Not a duplicate student (one clean SIS record #14487). Root issue Neil diagnosed: he paid via TransferMate by credit/debit card, which TransferMate should have blocked for a visa-required (escrow) student but did NOT — the card funds were paid straight out to us in 2025, bypassing the escrow filter entirely. The money landed against the old Fidelo invoice D2025348 (€2800, 2025-07-14) and was banked as general revenue in Xero (no Xero invoice existed then). When the deal later closed-won on 2026-08-07 (visa approval), the new system raised INV-1460 (€2800) — the upstream invoice-creation is what creates the SIS booking downstream, so it was likely raised to populate SIS. **TransferMate escape hole since resolved by Neil (shouldn't recur).**
 **Resolution (Neil, manual, 2026-10-14):** found the 2025 €2800 payment in Xero, un-reconciled it from general revenue and re-reconciled it against INV-1460 (now paid, not a duplicate); then reset the HubSpot deal to contractsent + escrow="Yes" to simulate a proper TransferMate→escrow-aligned payout and watch it flow downstream.
@@ -543,6 +616,7 @@ Not a duplicate student (one clean SIS record #14487). Root issue Neil diagnosed
 **Priority:** Medium
 **Status:** Waiting — Neil (finish the refund-mechanics sentence + authorize the Jiaming DB one-off)
 **Added:** 2026-10-14
+**Updated:** 2026-10-14T09:36:20Z
 
 Release side BUILT + approach approved by Neil 2026-10-14: on escrow release the EXISTING escrow shadow row is converted in place (not a duplicate added). Verified in fins: the escrow MACHINERY is extensive (`fins/scripts/tm` — handleEscrow/moveDealToWon/Lost, handleRefusal+€300 retention, webhook.js card-hold lane, hs-invoice-hook URL stamp) but `handleEscrowRelease` only flips HubSpot and has ZERO callers; it punts the SIS side ("moves off ESCROW via its own release handling"), which never did the conversion. Audit trail in central KB `kb/finance/escrow.md` + memory project_escrow_flag_release.
   - [x] Release conversion built in SIS `/invoice-paid` commerce-payment sync (`webhooks.ts` ~2708): if a row already carries the HubSpot payment id → volatile re-sync; else if EXACTLY ONE unlinked escrow shadow (type='Escrow' OR method='TransferMate Escrow') matches the amount (±€0.01) → convert it to `type='Standard'`, stamp the HubSpot payment id, KEEP method; else create a new row as before. tsc 0, restarted 2026-10-14.
@@ -558,6 +632,7 @@ Release side BUILT + approach approved by Neil 2026-10-14: on escrow release the
 **Priority:** High
 **Status:** Waiting — TransferMate (Neil requested the definitive in-escrow list; expected ~2026-10-14)
 **Added:** 2026-10-14
+**Updated:** 2026-10-14T10:06:23Z
 
 Neil has asked TransferMate for the authoritative "who is in escrow right now" list (TM reporting is CSV-only and clunky). When it lands, cross-reference each name against SIS attendance using the heuristic (documented in KB `kb/finance/escrow.md` + manual `Finance/Escrow.md`):
   - [ ] Attending our school (roster OR named on the paper attendance sheet) ⇒ in the State ⇒ visa approved ⇒ the held money should already have released → flag to chase TM for release; once released, apply the release-conversion (flip the escrow shadow → Standard).
@@ -565,5 +640,630 @@ Neil has asked TransferMate for the authoritative "who is in escrow right now" l
   - [ ] Neither ⇒ genuinely pending visa decision → leave held.
   - [ ] Uyanga Tungalag (#917, booking #1467, Easy Go): TM email confirms €3,066 held since 20/10/2025 (ref ULEARNP2025900), no release notice ever issued; she is in Ireland renewing (first visa approved) → €3,066 owed to us, should release. SIS escrow tag is CORRECT — do NOT re-tag; release only on TM confirmation. Classic "Saraa special" (partner notified, did nothing, sent LOA prematurely).
   - Root cause is the un-triggered release step, not a code bug; the new system blocks ad-hoc LOA sends so it shouldn't recur.
+
+---
+
+## LMS: Build the Vocab Builder (class vocab archive + weekly 10-word check)
+
+**Priority:** High
+**Status:** Backlog
+**Added:** 2026-07-01
+**Updated:** 2026-10-15T12:20:06Z
+
+Vocab is a key lesson OUTPUT, and the "learn 10 new words in a week" Challenge depends on it. We're strong on planning ("shipshape before we leave port") but weak on output — the "wake of the ship": learning gets scattered, photocopies binned, no architecture. Goal: capture each class's new vocabulary, surface it in the student's class history, and test it at the end of the week.
+  - [x] Teacher "fat-finger" capture in the class screen — error correction / vocab / grammar / note / Q&A (`lms-api/src/routes/class-output.ts`, kinds `error|vocab|grammar|note|qa`)
+  - [ ] Decide where board-vocab lands: teacher photographs the whiteboard → auto-uploads as an asset on the class OUTPUT (not the lesson plan); exact upload/storage location still to resolve
+  - [ ] Surface each class's vocab at the "class history" level — student sees current class and scrolls back through past weeks
+  - [ ] Historical archive glued together by SOW theme (semantic grouping — e.g. Computing → Hardware → mouse/monitor; Software → coding; spidergram style, as modern EFL classrooms do) AND chronological (dated)
+  - [ ] Vocabulary component in the end-of-week assessment: multiple choice on the week's 10 new words (confirm with the Academic Director / DOS; less relevant at higher levels)
+  - [ ] Wire into the "10 new words" Challenge — a challenger must get the 10 right to pass, but be lenient (retries allowed; the point is to pass)
+  - [ ] Handle changing context of vocabulary (same word, different semantic context) — design question Neil has grappled with for years
+
+---
+
+## LMS: Give the weekly curriculum detail a home in the LMS
+
+**Priority:** Medium
+**Status:** Backlog
+**Added:** 2026-05-19
+**Updated:** 2026-10-15T12:20:06Z
+
+The plan.html topbar now shows only the week's theme (from `programme_curriculum.theme`); the old `programme.*` pills were removed as noise. The curriculum detail (can-do statements, grammar areas, EVP/GSE vocab lists, supplementary refs, Friday testing, core textbook unit) is useful but needs a proper surface — NOT back in the topbar dropdown. Was task #44; revisit when Paul lands more curriculum content. (from Claude memory: project_lms_sow_topbar_redesign.md)
+  - [ ] Options: a "This Week's Syllabus" tab/drawer; an info icon on the topbar opening a side panel; or threading bits into each lesson card (grammar on the Grammar lesson, vocab on Vocabulary)
+  - [ ] Always render from `programme_curriculum`, never `programme.*`
+
+---
+
+## LMS: Condense goals verbosity in the student Learning panel
+
+**Priority:** Low
+**Status:** Backlog
+**Added:** 2026-07-30
+**Updated:** 2026-10-15T12:20:06Z
+
+Neil asked (Learning-panel pass, 2026-07-30) to condense the verbosity of the can-do goals in `lms/prototype/lms/today.html` without compromising the SOW content. Topbar compression was done in the same pass; this part was left pending. (from Claude memory: project_beta_learning_gate.md)
+
+---
+
+## LMS: Decommission the lms.ulearnschool.com subdomain
+
+**Priority:** Medium
+**Status:** Waiting — Neil / root access
+**Added:** 2026-06-11
+**Updated:** 2026-10-15T12:20:07Z
+
+LMS files/infra already run inside the SIS vhost (`sis.ulearnschool.com/prototype/`, `/lms-api/`, `/api/lms/`). The old subdomain still answers (302 on 2026-10-13) and is still in the transition allow-lists. (from Claude memory: project_lms_subdomain_migration.md)
+  - [ ] Remove the subdomain via Hestia/nginx and stop the lms-side Phusion app (root)
+  - [ ] Add `pg_dump lms_lms` to backups (root)
+  - [ ] Then drop `https://lms.ulearnschool.com` from SIS `sis/src/app.ts` SSO_ORIGINS and `sis/src/routes/tests.ts` TEST_ORIGINS
+  - [x] Drupal quiz iframe repointed to `sis.ulearnschool.com/prototype`
+
+---
+
+## LMS: Activate the HubSpot Quiz Workflow for placement-quiz leads
+
+**Priority:** Medium
+**Status:** Waiting — Neil (HubSpot workflow switch-on)
+**Added:** 2026-07-04
+**Updated:** 2026-10-15T12:20:07Z
+
+The public quiz (`ulearnschool.com/quiz` → `sis.ulearnschool.com/prototype/?embed=1`) is a lead harvester: sitting 20 questions = high intent. Score + level are written to HubSpot (`level`, `quiz_score`) and the lead gets an auto-reply, but the HubSpot "Quiz Workflow" (Deal creation + sequencing, trigger "Level is known AND Quiz Score is known") was created 2026-04-17 and NEVER turned on. (from Claude memory: project_quiz_lead_funnel.md)
+  - [ ] Turn the workflow on and make sure the trigger uses `quiz_score` (code WRITES `quiz_score` but reads back `latest_quiz_score` in one spot — align)
+  - [ ] Quick check on quiz submit: search the SIS by email; if the visitor already exists as a student, push the result to the SIS too (from original ToDo "Users come in 2 main categories")
+  - Reminder: whenever the test is embedded on a new ULearn origin, add it to `TEST_ORIGINS` or its POSTs die silently (CORS)
+
+---
+
+## LMS: Admin dashboard for SyllabAi prompts (Paul-editable, version-controlled)
+
+**Priority:** Medium
+**Status:** Backlog
+**Added:** 2026-07-01
+**Updated:** 2026-10-15T12:20:07Z
+
+The lesson-planner system prompt lives at `lms-api/prompts/lesson-planner/system.md` (mostly Paul's lesson-plan-template language); today only a developer with shell + git can edit it. Build a simple admin dashboard so Paul can read, edit, diff and roll back. Why: educators are wordy — a hallucination risk; a visible character count + "prefer 5 words to 50" hint nudges tighter language.
+  - [ ] Textarea for the system prompt + `day-slot-conventions.md`; submit edits; diff vs previous version before committing; roll back to any prior version (revision list with timestamp + author)
+  - [ ] Markdown stays the source of truth on disk — dashboard reads/writes the same `.md` files the loader consumes; no DB-backed second copy
+  - [ ] Versioning via a small `prompt_revisions` table `(file_rel, content, edited_by, edited_at, note)` — a row on every successful write
+  - [ ] Restart hook: write file → re-read into memory (or `touch tmp/restart.txt`); no full deploy for a prompt tweak
+  - [ ] Gate with `admin` / `dos` role; teachers don't need it
+  - [ ] Keep JSON output-schema files OFF the dashboard (schema edits break UI rendering — developer territory); only `.md` prose files editable
+  - [ ] Also surface `prompts/quiz-author/system.md` and `prompts/ai-tutor/system.md` (same rules; ai-tutor `output-schema.json` stays off)
+  - [ ] Optional later: "diff vs last good production result" preview — run one draft against a sample programme row with the new prompt side-by-side with current output
+
+---
+
+## LMS: Student lesson feedback — open follow-ups
+
+**Priority:** Low
+**Status:** Backlog
+**Added:** 2026-07-01
+**Updated:** 2026-10-15T12:20:07Z
+
+Per-lesson student rating is LIVE (`/lms-api/feedback`, identified, own-rows only, bound to `sis_class_occurrence_id` + `lesson_index`; see ToDo-Done.md). Open questions from the original spec remain:
+  - [ ] Edit window — probably "until end of next day", so feedback can't be silently revised after grades/reports land (not verified as enforced)
+  - [ ] Reminder if not submitted — push / email nudge?
+  - [ ] Anonymised mode — revisit later
+  - [ ] Marketing reuse — out of scope for v1; revisit once volume exists and an opt-in model for republishing is agreed
+
+---
+
+## LMS: Null out legacy programme.* text columns
+
+**Priority:** Low
+**Status:** Backlog
+**Added:** 2026-05-17
+**Updated:** 2026-10-15T12:20:08Z
+
+`public.programme` text columns (`objective, theme, grammar, vocab, exam_focus, core_text`) are a stale IELTS-programme seed; only the row `id` matters (FK target). The real GE curriculum is `public.programme_curriculum`. NULL the text columns eventually so nothing accidentally renders IELTS placeholder strings on GE classes (needs a DB write — get approval). (from Claude memory: project_lms_programme_vs_curriculum.md)
+
+---
+
+## LMS: Friday Assessment AI — deferred input upgrades
+
+**Priority:** Low
+**Status:** Someday/Maybe
+**Added:** 2026-05-14
+**Updated:** 2026-10-15T12:20:08Z
+
+The Friday Assessment prompt deliberately uses Mon–Thu recap + class outputs + `programme_curriculum`, and ignores the empty SOW Friday Review rows. Parked upgrades (Paul's call 2026-05-14): (from Claude memory: project_friday_assessment_inputs.md)
+  - [ ] Wire `programme_curriculum.exam_prep` + `programme.exam_focus` into `buildAssessmentPrompt` once the SOW importer populates them uniformly across A2/B1/B2/C1 (currently A2 only, sparse)
+  - [ ] B2 + C1 assessment-author prompt: emphasise IELTS-style task formats more
+  - [ ] Formally link `programme_curriculum.can_do` to CEFR can-dos for levels beyond A2 (TrustED-driven)
+
+---
+
+## LMS: AI Tutor — deployment beyond the placement writing task
+
+**Priority:** Low
+**Status:** Someday/Maybe
+**Added:** 2026-07-01
+**Updated:** 2026-10-15T12:20:08Z
+
+The AI Tutor (`lms-api/src/ai/tutor.ts`, prompt in `prompts/ai-tutor/`) grades writing (corrections + estimated CEFR) and is live ONLY on the placement-test writing task. Its defensible value there is a second, independent CEFR read to cross-check the multiple-choice score — the delta is the signal. PARKED (Neil, 2026-07-01): extending it to weekly/Friday progress tests or oral. Resolve with the DOS first:
+  - [ ] Device autocorrect kills the correction half on phones — only an autocorrect-free channel (or handwriting + a vision reader, which even gpt-4o struggles with) recovers true error data
+  - [ ] Oral is a different dimension (pressure-cooker, no lookup) — likely the human anti-cheat anchor (~3× weight); record + dictation is experimental, no clear pathway yet
+  - [ ] Friday/weekly progress test is unbuilt and its format undecided (maybe quiz + written, maybe a vocab multi-choice of the week's 10 new words — see Vocab Builder). Don't wire the AI Tutor in until the format is settled with the DOS
+
+---
+
+## LMS: Auto-abandon orphan live_session rows
+
+**Priority:** Low
+**Status:** Someday/Maybe
+**Added:** 2026-07-01
+**Updated:** 2026-10-15T12:20:08Z
+
+Quiz live sessions get stuck in `lobby`/`running` when a host closes the tab without clicking Finish. A stale `running` session blocks PUT /quiz/:id ("cannot edit while a session is running" 409 in the composer). Deferred until it has happened in production a couple of times — manual SQL cleanup is fine for now.
+  - [ ] Background job (cron / setInterval at startup): `lobby` older than ~1h → `abandoned`; `running` with `current_started_at + 4h < now()` → `abandoned`
+  - [ ] Optional: "your active sessions" panel in `quiz-list.html` with a kill button per row
+
+---
+
+## LMS: Migrate legacy Directus reads off to /lms-api/
+
+**Priority:** Low
+**Status:** Someday/Maybe
+**Added:** 2026-05-05
+**Updated:** 2026-10-15T12:20:09Z
+
+Neil wants to ditch Directus eventually. Don't grow its surface; move legacy `/items/...` reads (e.g. `/items/sow_lesson`, `/items/lesson_activities`, `/items/materials` — still 5 references in `prototype/lms/today.html` as of 2026-10-13) to `/lms-api/` routes, using `/lms-api/class-lesson/...` as the template. (from Claude memory: project_directus_offramp.md)
+
+---
+
+## LMS: Content changelog — "git for the syllabus"
+
+**Priority:** Low
+**Status:** Someday/Maybe
+**Added:** 2026-07-01
+**Updated:** 2026-10-15T12:20:09Z
+
+System-wide changelog of the canonical content surface plus per-occurrence teacher deltas, so any past `class_occurrence` can be reconstructed exactly as taught even after the DOS edits the canonical SOW / Lesson Plan / Resources. Substantial design topic, not a sprint item.
+  - [ ] DOS-edit archival: before a canonical Lesson / SOW / Resource is modified, snapshot the previous version into the OUTPUT archive of every past occurrence that pointed at it
+  - [ ] Snapshot pointers: each `class_occurrence` carries a `content_rev`; reconstruction = canonical@rev + delta
+  - [ ] Delta-only storage: un-customised occurrences store nothing; only real uploads (and superseded canonical revisions) consume Drive storage in OUTPUT
+  - [ ] Drive versioning shape TBD: per-asset suffix `name_v3.pdf`, or per-occurrence `8.OUTPUT/{level}/.../{date}-{session}/0.canonical_snapshot/` populated only when an edit invalidates past occurrences
+  - [ ] Schema to consider: `content_revision` table (table+row+rev → blob/Drive id); `class_occurrence.content_rev` FK; `class_occurrence_asset.replaces_revision_id`
+
+---
+
+## LMS: Device-native (biometric) auth for the mobile app
+
+**Priority:** Low
+**Status:** Someday/Maybe
+**Added:** 2026-07-01
+**Updated:** 2026-10-15T12:20:09Z
+
+Once the LMS ships inside the Android/iOS apps, first sign-in uses the standard username/password page; later unlocks use the device's biometric/passcode. Web stays cookie-based (`connect.sid` on `.ulearnschool.com`). Captured so the mobile stack picks the right auth shape from day one.
+  - [ ] iOS: Face ID / Touch ID via `LocalAuthentication`; Android: `BiometricPrompt`; desktop web fallback: WebAuthn / Passkeys
+  - [ ] After first password login store a long-lived per-device refresh token in the secure enclave (Keychain / Keystore); biometric prompt unlocks it → exchanged for a short-lived session cookie
+  - [ ] "Manage devices" screen in the student profile to revoke a lost phone without rotating the password
+
+---
+
+## LMS: Ecosystem — third-party schools and self-directed learners on the app
+
+**Priority:** Low
+**Status:** Someday/Maybe
+**Added:** 2026-07-01
+**Updated:** 2026-10-15T12:20:10Z
+
+Vision: users create their own lesson plans like teachers do (upload authentic materials, perhaps in their own language, translated into English); the AI tutor guides them with error correction and assessment and outputs challenges as can-do statements. Sell the app to other schools to form an ecosystem where a user can join a real-world class inside the ULearn ecosystem on that week's can-do statement.
+  - [ ] Create / popularise a de facto standard based on end-user students and commercial-user schools
+
+---
+
+## Retry the SIS Xero invoice create on no-contact
+
+**Priority:** Medium
+**Status:** Backlog
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:18Z
+
+createXeroInvoiceFromHubSpot gives up permanently when DataSync is ~45 s late creating the contact. Proper fix not built. (moved from Claude memory: hubapp memory project_xero_nocontact_race)
+
+---
+
+## Confirm the SIS prune of payments for the 59 deleted HubSpot orphans
+
+**Priority:** Low
+**Status:** Backlog
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:18Z
+
+2026-06-05 (€34,135). Also check the 40 invoices for duplicate paid effects, especially INV-1010. (moved from Claude memory: fins memory project_xero_hubspot_payment_reconciler)
+
+---
+
+## Audit AY bookings missing the Christmas closure shunt
+
+**Priority:** Medium
+**Status:** Backlog
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:18Z
+
+About 16 legacy #1xxx AY bookings and some recent ones lack applyChristmasClosures (2026-10-10). #18338 and #17920 have a NULL serviceEnd. (moved from Claude memory: project_holiday_spec)
+
+---
+
+## Live-test Seat Clearance pricing through autoQuote
+
+**Priority:** Medium
+**Status:** Backlog
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:18Z
+
+Not yet run (2026-09-03). Expect €1,799 (AM) / €1,749 (PM) net. Sale deadline 31/10/2026. (moved from Claude memory: project_occupancy_seat_clearance)
+
+---
+
+## Turn on the Student Agreement gate
+
+**Priority:** Medium
+**Status:** Waiting — Neil
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:19Z
+
+Built 2026-07-14. (moved from Claude memory: project_student_contract_signing)
+  - [ ] Run the grandfather backfill --commit (~85 students)
+  - [ ] Set STUDENT_CONTRACT_GATE=on and restart
+  - [ ] Smoke-test
+
+---
+
+## Auto-create the StudentGroup from the invoice-created webhook for group deals
+
+**Priority:** Medium
+**Status:** Backlog
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:19Z
+
+Flagged by Neil 2026-09-15; phantom booking #18301 came from this gap. (moved from Claude memory: project_group_management)
+
+---
+
+## Confirm the queued escrow fixes ran (sis/tmp/escrow-reconcile-1-2.js)
+
+**Priority:** Medium
+**Status:** Waiting — Neil
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:19Z
+
+Usukhbadrakh/Burte-ujin and Jiaojiao/Turbold (2026-09-09). (moved from Claude memory: project_escrow_endrun_audit)
+
+---
+
+## Attendance register compliance fixes
+
+**Priority:** Medium
+**Status:** Backlog
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:19Z
+
+Signed register is a legal requirement (2026-07-31). (moved from Claude memory: project_attendance_sheet_reconciliation)
+  - [ ] Relabel overflow rows "Name (print) / Signature"
+  - [ ] Assign Conversation +5 (class 16) and audit IELTS (class 10) so they print a roster
+  - [ ] HubSpot-won vs SIS sweep
+  - [ ] Identify "Suguru"
+
+---
+
+## Refund module data and wiring follow-ups
+
+**Priority:** Medium
+**Status:** Backlog
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:20Z
+
+As of 2026-09-21. (moved from Claude memory: project_refund_module)
+  - [ ] Refunds #51, #60, #65, #66 have no student
+  - [ ] Verify multi-booking links on #35 and #63
+  - [ ] Normalise status case variants
+  - [ ] RFA sequence is unused
+  - [ ] Supervised first live Xero refund
+  - [ ] Refunds filter on the Students page
+
+---
+
+## ReSync leftovers
+
+**Priority:** Low
+**Status:** Backlog
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:20Z
+
+From 2026-07-28. The SKU fix waits on Neil. (moved from Claude memory: project_resync_authoritative)
+  - [ ] Unmerged accommodation splits: Fayez #18236, Luana #18188, Fabrizio #17826
+  - [ ] Tsengelbayar #948 bk 18194: RNW-PM → RNW-AM (€300 difference), or ReSync reverts to Afternoon
+  - [ ] Reconcile the 2027 peak windows
+
+---
+
+## Seat Clearance follow-ups
+
+**Priority:** Low
+**Status:** Someday/Maybe
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:20Z
+
+(moved from Claude memory: project_occupancy_seat_clearance)
+  - [ ] Countdown to the next sale
+  - [ ] Contact-only partners aren't auto-detected
+  - [ ] Clear the flag on conversion
+
+---
+
+## Group transport and detail follow-ups
+
+**Priority:** Low
+**Status:** Backlog
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:20Z
+
+(moved from Claude memory: project_group_management)
+  - [ ] No transport edit UI to fire syncGroupTransportJobs
+  - [ ] No excursions field; pack derivation
+  - [ ] Colegio Vitoria rename
+  - [ ] Laura Kilijanski group #6 has no agency
+
+---
+
+## Resolve three HubSpot-side flags from the dup-booking cleanup
+
+**Priority:** Low
+**Status:** Waiting — Neil
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:21Z
+
+From 2026-06-07. (moved from Claude memory: project_dup_booking_reconnect)
+  - [ ] Federico #90: €1201 paid vs INV-1240 showing €328.30 due
+  - [ ] Gretel #17917 is on the wrong deal
+  - [ ] Maicol Moretti shell deal 494814703802
+
+---
+
+## LifePass withdrawals: Pedro #1040 and a withdrawal UI
+
+**Priority:** Low
+**Status:** Waiting — Diego
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:21Z
+
+Parked 2026-09-28 pending Diego. Bucket 2 keeps the €50 fee. (moved from Claude memory: project_lifepass_subscription_accounting)
+
+---
+
+## Finish or drop the May–June handwritten attendance backfill
+
+**Priority:** Low
+**Status:** Waiting — Neil
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:21Z
+
+From 2026-06-08. (moved from Claude memory: project_attendance_backfill)
+
+---
+
+## Certificate of Completion should use the latest segment's level and code
+
+**Priority:** Low
+**Status:** Backlog
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:21Z
+
+Also verify Telmuun bk 1624. (moved from Claude memory: project_ilep_codes)
+
+---
+
+## Card-on-file follow-ups
+
+**Priority:** Low
+**Status:** Backlog
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:22Z
+
+Add an email token to the €1 webhook; decide on LifePass/Challenge badge and mirror coverage. (moved from Claude memory: project_accom_card_on_file)
+
+---
+
+## Review the 13 paid > total bookings and the parked balance-ghost sweep
+
+**Priority:** Low
+**Status:** Someday/Maybe
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:22Z
+
+The 38-safe sweep was built but never run. (moved from Claude memory: project_balance_field_semantics)
+
+---
+
+## Treat the Xero "must supply a LineItemID" error as "already paid, skip"
+
+**Priority:** Low
+**Status:** Backlog
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:22Z
+
+(moved from Claude memory: project_escrow_flag_release)
+
+---
+
+## Move the remaining internal alert emails into alerts/emails.ts
+
+**Priority:** Low
+**Status:** Backlog
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:22Z
+
+notify-121, partners.ts, refunds notifyAccounts, holiday and support-forward emails (2026-09-24). (moved from Claude memory: feedback_email_centralisation)
+
+---
+
+## Clean up spam partner portal accounts
+
+**Priority:** Low
+**Status:** Backlog
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:23Z
+
+40 users with no hubspotContactId, bots #52/#54/#63/#140, test #9. Keep #34. (moved from Claude memory: project_partner_registration_gate)
+
+---
+
+## Verify two possible duplicate students
+
+**Priority:** Low
+**Status:** Backlog
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:23Z
+
+Jiaojiao Yu 957 vs 14503; "Liu / Unknown" #14507 with a €109k booking. (moved from Claude memory: project_student_dupes_saraa)
+
+---
+
+## Arrival one-click split send (#30 Apartment / #33 Host)
+
+**Priority:** Low
+**Status:** Waiting — Neil
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:23Z
+
+Approved in principle, held (2026-10-10). (moved from Claude memory: reference_email_templates)
+  - [ ] Add an "Other" catch-all to the template trees (2026-10-14)
+
+---
+
+## iOS-launch follow-ups
+
+**Priority:** Low
+**Status:** Waiting — Apple
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:23Z
+
+(moved from Claude memory: project_play_store_launch)
+  - [ ] Change the "iOS coming soon" copy (tests.ts, templates #92 and #76)
+  - [ ] Add the Apple badge; use the official Play badge
+  - [ ] Upload the APNs key
+
+---
+
+## Rotate the Slack tokens and add the missing notify env vars
+
+**Priority:** Low
+**Status:** Waiting — Neil
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:24Z
+
+Tokens exposed 2026-08-17. Missing: SLACK_ANTONELLA_USER_ID, SLACK_DIEGO_USER_ID, SLACK_CHALLENGES_CHANNEL, SLACK_TRANSPORT_CHANNEL. (moved from Claude memory: reference_slack_read)
+
+---
+
+## Extend pinch-zoom to the partner-portal doc viewer and contract preview
+
+**Priority:** Low
+**Status:** Backlog
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:24Z
+
+(moved from Claude memory: reference_doc_viewer_pinch_zoom)
+
+---
+
+## Let staff record a host's phone offer
+
+**Priority:** Low
+**Status:** Someday/Maybe
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:24Z
+
+From 2026-10-10. (moved from Claude memory: reference_matching_ui_additions)
+
+---
+
+## Finish app-guide video dubbing (de/tr/ru/ko/ja/zh)
+
+**Priority:** Low
+**Status:** Backlog
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:25Z
+
+Tune the Korean and Japanese timing. (moved from Claude memory: reference_video_dub_srt)
+
+---
+
+## Re-check Irish sick-pay figures each January
+
+**Priority:** Low
+**Status:** Planned
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:25Z
+
+Due Jan 2027. The ÷5 daily figure understates pay for part-week staff. (moved from Claude memory: reference_ie_sick_pay_kb)
+
+---
+
+## Normalise the 9 students with ISO-2 nationality ("MN")
+
+**Priority:** Low
+**Status:** Backlog
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:25Z
+
+Check first; may already be done. (moved from Claude memory: project_fidelo_retired)
+
+---
+
+## Delete the stray /home/sis/dev/mobile clone
+
+**Priority:** Low
+**Status:** Waiting — Neil
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:25Z
+
+From 2026-10-12. (moved from Claude memory: project_git_hygiene)
+
+---
+
+## Mirror the central KB read-only under the sis user
+
+**Priority:** Low
+**Status:** Someday/Maybe
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:26Z
+
+(moved from Claude memory: feedback_knowledge_base_first)
+
+---
+
+## Add a controlled-documents permission tier once the data is clean
+
+**Priority:** Low
+**Status:** Someday/Maybe
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:26Z
+
+(moved from Claude memory: feedback_no_doc_legal_lock_yet)
+
+---
+
+## Kick Start leaderboard snapshot and translation follow-ups
+
+**Priority:** Low
+**Status:** Someday/Maybe
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:26Z
+
+Frozen month-end snapshot table; native check of JA/KO/ZH/RU; translate the late-screenshot notice. (moved from Claude memory: project_kickstart_impact_prize)
+
+---
+
+## Check the 56 non-clean cases after the AY end-date recompute
+
+**Priority:** Low
+**Status:** Backlog
+**Added:** 2026-10-15
+**Updated:** 2026-10-15T12:25:26Z
+
+Flagged 2026-06-05 with no sign they were resolved (lower confidence). (moved from Claude memory: reference_utc_date_math)
 
 ---

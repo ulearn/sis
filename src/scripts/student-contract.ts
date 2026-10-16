@@ -17,7 +17,7 @@ import path from 'path';
 import type { PrismaClient } from '../generated/prisma/client';
 import { documentScripts } from './documents';
 
-export const CONTRACT_VERSION = '2026-09-v1';   // 2026-09: + LifePass Programme Terms appendix
+export const CONTRACT_VERSION = '2026-10-v1';   // 2026-10: + End-of-Programme Examination declaration (non-EEA Stamp 2). 2026-09: + LifePass Programme Terms appendix
 
 const SIGNED_DIR = path.join(__dirname, '..', '..', 'data', 'contracts', 'student');
 
@@ -79,42 +79,48 @@ const SECTIONS: Array<{ n?: number; title: string; body: string }> = [
     <p>This includes, where applicable:</p>
     <ul><li>Passport</li><li>Visa</li><li>Immigration documentation</li><li>Financial evidence</li><li>Any other documentation required by Irish authorities</li></ul>
     <p>ULearn cannot guarantee visa approval or entry into Ireland, as these decisions rest solely with the relevant government authorities.</p>` },
-  { n: 12, title: 'Medical Insurance', body: `
+  { n: 12, title: 'End-of-Programme Examination', body: `
+    <p>This section applies to non-EEA (visa-required) students undertaking an Academic Year or other 25-week English language programme in Ireland under Stamp 2 immigration permission. If this does not apply to you, this section does not affect you.</p>
+    <p>If it applies to you, you understand that you are required to sit a recognised end-of-programme English language examination. You agree to participate in the examination arranged by ULearn English School and to cooperate with the school in completing the examination registration process.</p>
+    <p>ULearn English School is responsible for arranging your registration for an appropriate recognised examination and for presenting you with the relevant examination details and reservation arrangements. These arrangements are made in line with the requirements of the Irish immigration authorities (ILEP / Department of Justice) and TrustEd, the national framework that is replacing the ILEP.</p>
+    <p>You acknowledge that the examination fee is not included in your course tuition fee unless expressly stated otherwise in your booking confirmation. Where a fee applies, the amount and the payment arrangements will be disclosed to you before enrolment and will be due in accordance with those agreed arrangements.</p>
+    <p>You understand that evidence of your examination may be required when renewing your immigration permission in Ireland.</p>` },
+  { n: 13, title: 'Medical Insurance', body: `
     <p>Where required by Irish immigration regulations or visa conditions, students are responsible for maintaining appropriate medical or travel insurance throughout their studies.</p>` },
-  { n: 13, title: 'Accommodation', body: `
+  { n: 14, title: 'Accommodation', body: `
     <p>Students staying in accommodation arranged by ULearn agree to:</p>
     <ul><li>Respect accommodation providers and fellow residents.</li><li>Follow all house rules.</li><li>Respect neighbours.</li><li>Keep accommodation clean and in good condition.</li><li>Avoid causing unnecessary disturbance.</li></ul>
     <p>Students may be responsible for damage caused through negligence or deliberate misconduct.</p>` },
-  { n: 14, title: 'School Property', body: `
+  { n: 15, title: 'School Property', body: `
     <p>Students agree to respect all school facilities and equipment, including:</p>
     <ul><li>Classrooms</li><li>Furniture</li><li>Computers</li><li>Books</li><li>Student areas</li><li>Digital equipment</li></ul>
     <p>Any deliberate or negligent damage may result in charges and disciplinary action.</p>` },
-  { n: 15, title: 'Digital Services', body: `
+  { n: 16, title: 'Digital Services', body: `
     <p>Students agree to use ULearn's digital systems responsibly.</p>
     <p>This includes:</p>
     <ul><li>Student Portal</li><li>Mobile application</li><li>School Wi-Fi</li><li>Email systems</li><li>Online learning platforms</li></ul>
     <p>Students must not attempt to gain unauthorised access to school systems, interfere with digital services, distribute malicious software or misuse school technology.</p>` },
-  { n: 16, title: 'Privacy &amp; Recording', body: `
+  { n: 17, title: 'Privacy &amp; Recording', body: `
     <p>Students must respect the privacy of others.</p>
     <p>Photography, video recording or audio recording of staff, students or classroom activities should not take place without the consent of those involved and, where appropriate, the school.</p>` },
-  { n: 17, title: 'Health &amp; Safety', body: `
+  { n: 18, title: 'Health &amp; Safety', body: `
     <p>Students agree to follow all health and safety instructions issued by ULearn staff.</p>
     <p>In the event of an emergency, students must cooperate fully with school personnel and emergency services.</p>` },
-  { n: 18, title: 'Complaints Procedure', body: `
+  { n: 19, title: 'Complaints Procedure', body: `
     <p>ULearn is committed to resolving complaints fairly, promptly and professionally.</p>
     <p>Students agree to raise any concerns through the school's official complaints procedure in the first instance, allowing ULearn a reasonable opportunity to investigate and respond before escalating the matter elsewhere.</p>
     <p>If a complaint is deliberately pursued simultaneously through public-facing platforms before the internal complaints procedure has concluded, ULearn may suspend or discontinue its internal investigation until the public matter has been resolved or withdrawn, where it is reasonable to do so.</p>
     <p>Nothing in this Agreement limits or affects any statutory or legal rights available to the student.</p>
     <p>Public-facing platforms include, but are not limited to:</p>
     <ul><li>Social media platforms (such as Facebook, Instagram, TikTok, LinkedIn, X and YouTube)</li><li>Online review platforms (including Google Reviews, Trustpilot and similar services)</li><li>Educational directories and comparison websites</li><li>Agency websites and partner platforms</li><li>Public discussion forums and community websites</li><li>Any other publicly accessible website or online service</li></ul>` },
-  { n: 19, title: 'Compliance with Irish Law', body: `
+  { n: 20, title: 'Compliance with Irish Law', body: `
     <p>Students agree to comply with all applicable Irish laws throughout their studies and to follow all reasonable school policies and instructions.</p>` },
-  { n: 20, title: 'Disciplinary Process', body: `
+  { n: 21, title: 'Disciplinary Process', body: `
     <p>Where appropriate, ULearn will normally follow a progressive disciplinary process:</p>
     <ol><li>Informal discussion</li><li>Formal warning</li><li>Final warning</li><li>Suspension</li><li>Expulsion</li></ol>
     <p>However, serious misconduct may result in immediate suspension or expulsion without prior warning.</p>
     <p>Abusive, threatening or aggressive behaviour towards ULearn staff will not be tolerated, whether it occurs in person, by telephone, by email, through messaging platforms, online meetings or on social media.</p>` },
-  { n: 21, title: "ULearn's Commitment", body: `
+  { n: 22, title: "ULearn's Commitment", body: `
     <p>ULearn is committed to providing:</p>
     <ul><li>A safe learning environment</li><li>Qualified teachers</li><li>Professional student support</li><li>Fair and respectful treatment</li><li>Equal opportunities for all students</li><li>Transparent complaints procedures</li><li>Respect for student privacy</li></ul>
     <p>We ask every student to contribute positively to our school community and help maintain a welcoming environment for everyone.</p>` },
@@ -146,6 +152,7 @@ function declarationBlock(opts: { signerName?: string | null; signaturePngB64?: 
       <li>I agree to comply with the policies and expectations outlined above.</li>
       <li>I understand that serious or repeated breaches may result in disciplinary action, including suspension or expulsion.</li>
       <li>I acknowledge that this Agreement operates alongside ULearn's published Terms &amp; Conditions, Refund Policy and any applicable Irish legal or immigration requirements.</li>
+      <li>If I am a non-EEA student undertaking a 25-week programme under Stamp 2 permission, I agree to sit the recognised end-of-programme examination arranged by ULearn and to complete its registration process, and I understand that the examination fee is not included in my tuition unless my booking confirmation states otherwise.</li>
       <li>If I am enrolled on the LifePass Programme, I also agree to be bound by the LifePass Programme Terms &amp; Conditions, available for viewing in my ULearn Student App (see Appendix).</li>
     </ul>
     <table style="width:100%;border-collapse:collapse;margin-top:10px">
