@@ -1116,6 +1116,27 @@ export function accommodationScripts(prisma: PrismaClient) {
   // any shared room on the table raises a "check gender" reminder.
   const SOFT_AVAILABILITY_PROVIDER_IDS = [15]; // Capel Street (#15). Extend as more owned/leased stock opts in.
 
+  // Shared (Twin/Shared) rooms are for young, short-stay guests — primarily the
+  // summer cohort. Gender is a HARD out (no mixed-sex rooms). Age is near-hard:
+  // over 35 we do NOT offer a shared bed at all (bar a deliberate override for a
+  // desperate edge case), and 30–35 is offered but flagged for a human to confirm.
+  // A 50+ guest in a bunk with 20-year-olds is never appropriate. (Neil, 2026-10-16)
+  const SHARED_AGE_HARD = 35; // over this → shared beds withheld unless overridden
+  const SHARED_AGE_SOFT = 30; // over this (to HARD) → offered but flagged
+
+  // Age in whole years from an explicit number or a DOB; null if unknown/invalid.
+  function _ageFrom(birthday?: string | Date | null, explicit?: number | null): number | null {
+    if (typeof explicit === 'number' && isFinite(explicit)) return explicit;
+    if (!birthday) return null;
+    const b = new Date(birthday);
+    if (isNaN(+b)) return null;
+    const now = new Date();
+    let a = now.getUTCFullYear() - b.getUTCFullYear();
+    const m = now.getUTCMonth() - b.getUTCMonth();
+    if (m < 0 || (m === 0 && now.getUTCDate() < b.getUTCDate())) a--;
+    return a >= 0 && a < 130 ? a : null;
+  }
+
   function _normRoomType(input?: string | null): string | null {
     const s = String(input || '').trim().toLowerCase();
     if (!s) return null;
@@ -1132,6 +1153,9 @@ export function accommodationScripts(prisma: PrismaClient) {
     from: string; to: string;
     roomType?: string | null; enSuite?: boolean | null;
     gender?: number | null;            // 1 = male, 2 = female, null/undefined = unknown
+    age?: number | null;               // requester age in years (shared-room rule)
+    birthday?: string | Date | null;   // alternative to age — DOB, age derived
+    allowOlderShared?: boolean;         // override: offer shared beds despite age > SHARED_AGE_HARD
     providerIds?: number[];
   }) {
     const from = new Date(String(opts.from).slice(0, 10) + 'T00:00:00.000Z');
@@ -1142,6 +1166,7 @@ export function accommodationScripts(prisma: PrismaClient) {
     const wantType = _normRoomType(opts.roomType);
     const wantEnsuite = opts.enSuite === true;
     const g = (opts.gender === 1 || opts.gender === 2) ? opts.gender : null;
+    const age = _ageFrom(opts.birthday, opts.age);
     const providerIds = opts.providerIds?.length ? opts.providerIds : SOFT_AVAILABILITY_PROVIDER_IDS;
 
     const providers = await prisma.accommodationProvider.findMany({
@@ -1195,6 +1220,8 @@ export function accommodationScripts(prisma: PrismaClient) {
     type FreeUnit = { bedId: number; roomId: number; room: string; roomType: string; enSuite: boolean; shared: boolean };
     const freeByType: Record<string, FreeUnit[]> = {};
     let sharedOffered = false;
+    let ageFlagShared = false;   // a shared bed was offered to a 30+ requester
+    let ageBlockedShared = false; // shared bed(s) withheld because requester is over SHARED_AGE_HARD
 
     for (const prov of providers) {
       for (const prop of prov.properties) {
@@ -1220,11 +1247,19 @@ export function accommodationScripts(prisma: PrismaClient) {
               // A known-gender requester can't take a bed in a shared room that
               // already holds the other gender.
               if (roomGenders.size > 0 && g && !roomGenders.has(g)) continue;
+              // Age rule (shared rooms only): over SHARED_AGE_HARD the bed is NOT
+              // offered unless the caller explicitly overrides (desperate edge case).
+              if (age != null && age > SHARED_AGE_HARD && !opts.allowOlderShared) {
+                ageBlockedShared = true;
+                continue;
+              }
               (freeByType[rtype] ||= []).push({
                 bedId: bed.id, roomId: room.id, room: roomLabel,
                 roomType: rtype, enSuite: !!room.enSuite, shared: true,
               });
               sharedOffered = true;
+              // 30+ (incl. an overridden 35+) that we DID offer → flag for a human.
+              if (age != null && age > SHARED_AGE_SOFT) ageFlagShared = true;
             }
           } else {
             // Regular room (single or double, any en-suite) — ONE unit for an
@@ -1290,16 +1325,23 @@ export function accommodationScripts(prisma: PrismaClient) {
     if (genderReminder && anyAvailable) {
       summary += ` Shared room involved — check the student's gender first (no mixed-gender rooms).`;
     }
+    if (ageBlockedShared) {
+      summary += ` Shared bed(s) withheld — student is ${age} (shared rooms are for under-${SHARED_AGE_HARD}s, primarily young/short-stay guests). Override only if you have no alternative.`;
+    } else if (ageFlagShared && anyAvailable) {
+      summary += ` Shared room involved and student is ${age} — shared rooms suit under-30s; confirm this is appropriate before placing.`;
+    }
 
     return {
       property: propertyName,
       from: fmt(from), to: fmt(to),
-      requested: { roomType: wantType, enSuite: wantEnsuite || undefined, gender: g },
+      requested: { roomType: wantType, enSuite: wantEnsuite || undefined, gender: g, age },
       available,
       anyAvailable,
       matches,
       alternatives,
       genderReminder,
+      ageReminder: ageFlagShared,   // 30+ offered a shared bed → human should confirm
+      ageBlocked: ageBlockedShared, // over SHARED_AGE_HARD → shared beds withheld (unless overridden)
       summary,
     };
   }
@@ -1315,7 +1357,7 @@ export function accommodationScripts(prisma: PrismaClient) {
       select: {
         id: true, startDate: true, endDate: true, claimStatus: true, claimedByProviderId: true,
         claimedByProvider: { select: { id: true, name: true } },
-        booking: { select: { id: true, student: { select: { id: true, gender: true, firstName: true } } } },
+        booking: { select: { id: true, student: { select: { id: true, gender: true, firstName: true, birthday: true } } } },
       },
     });
     if (!ba) throw new Error('Booking accommodation not found');
@@ -1330,6 +1372,7 @@ export function accommodationScripts(prisma: PrismaClient) {
     const avail = await accommodationAvailability({
       from, to,
       gender: ba.booking?.student?.gender ?? null,
+      birthday: (ba.booking?.student as any)?.birthday ?? null,
       providerIds: [ba.claimedByProviderId],
     });
     const free = avail.matches || [];

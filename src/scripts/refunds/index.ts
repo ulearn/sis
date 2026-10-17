@@ -335,6 +335,24 @@ export function refundScripts(prisma: PrismaClient) {
     const territory = pick(input.territory, TERRITORY_MAP[nationality]) || 'Unsupported Territory';
     const amt = pick(input.amountRequested, pf.amountRequested);
 
+    // A refund reason MUST be chosen explicitly. The old `|| 'visa_refusal'`
+    // default silently stamped reasonless (e.g. operator-created) refunds as a
+    // visa refusal, which then auto-cancelled the booking + lost the HubSpot
+    // deal (REFUND_CANCELS_BOOKING). That mis-cancelled a live service-issue
+    // refund (Sandrine Bruneau, 2026-10). The reason drives whether the sale is
+    // reversed, so it is never defaulted. (Neil, 2026-10-16)
+    const VALID_REFUND_REASONS = ['visa_refusal', 'cancellation', 'service_issue', 'other'];
+    const refundReason = pick(input.refundReason, '');
+    if (!refundReason || !VALID_REFUND_REASONS.includes(refundReason)) {
+      throw new Error(`A refund reason is required — one of: ${VALID_REFUND_REASONS.join(', ')}. Refusing to default (the old visa_refusal default auto-cancelled bookings).`);
+    }
+    // Visa refusal is only possible for students who actually need a study visa.
+    // EU and Non-EU (No Visa) nationals cannot be refused one, so this reason is
+    // blocked for them (it would wrongly cancel the booking + lose the deal).
+    if (refundReason === 'visa_refusal' && (territory === 'EU' || territory === 'Non-EU (No Visa)')) {
+      throw new Error(`Visa refusal is not valid for a ${territory} student (no study visa is required, so none can be refused). Use cancellation, service_issue or other.`);
+    }
+
     return prisma.refundRequest.create({
       data: {
         studentId,
@@ -345,7 +363,7 @@ export function refundScripts(prisma: PrismaClient) {
         territory,
         invoiceNumber: pick(input.invoiceNumber, pf.invoiceNumber) || '',
         agentName: pick(input.agentName, pf.agentName) || null,
-        refundReason: input.refundReason || 'visa_refusal',
+        refundReason,
         refundReasonOther: input.refundReasonOther ?? null,
         amountRequested: amt != null ? String(amt) : undefined,
         paymentProcessor: input.paymentProcessor || 'Manual (staff-created)',

@@ -14421,6 +14421,7 @@ async function showUnifiedMatching() {
           <option value="1">Male</option>
           <option value="2">Female</option>
         </select>
+        <input type="number" id="availAge" min="0" max="120" placeholder="Age ?" title="Only needed for shared rooms — over 35 are not placed in shared rooms" style="width:72px;padding:6px 10px;border:1px solid #a7f3d0;border-radius:14px;font-size:12px;background:#fff;outline:none">
         <button class="btn btn-sm" onclick="runAvailCheck()" style="background:#10b981;color:#fff;border:none;border-radius:14px;padding:6px 16px;font-size:12px;font-weight:700">Check</button>
         <button class="btn btn-ghost btn-sm" onclick="unifiedAvailOpen=false;showUnifiedMatching()" style="font-size:11px;color:#065f46">close</button>
       </div>
@@ -14973,12 +14974,14 @@ async function runAvailCheck() {
   const from = (document.getElementById('availFrom') || {}).value || '';
   const to = (document.getElementById('availTo') || {}).value || '';
   const gender = (document.getElementById('availGender') || {}).value || '';
+  const age = (document.getElementById('availAge') || {}).value || '';
   if (!from || !to) { box.innerHTML = '<div style="font-size:12px;color:#991b1b">Pick both dates.</div>'; return; }
   box.innerHTML = '<div style="font-size:12px;color:#065f46">Checking…</div>';
   try {
     const qs = new URLSearchParams({ from, to });
     if (roomType) qs.set('roomType', roomType);
     if (gender) qs.set('gender', gender);
+    if (age) qs.set('age', age);
     const r = await api('/accommodation/matching/availability?' + qs.toString());
     const pill = (txt, bg, fg) => '<span style="display:inline-block;background:' + bg + ';color:' + fg + ';border-radius:10px;padding:2px 8px;font-size:11px;font-weight:700;margin:0 4px 4px 0">' + esc(txt) + '</span>';
     const headBg = r.available ? '#10b981' : (r.anyAvailable ? '#f59e0b' : '#dc2626');
@@ -14997,6 +15000,11 @@ async function runAvailCheck() {
     }
     if (r.genderReminder && r.anyAvailable) {
       html += '<div style="font-size:11px;color:#92400e;margin-top:6px">&#9888; Shared room involved — confirm the student\'s gender before placing (no mixed-gender rooms).</div>';
+    }
+    if (r.ageBlocked) {
+      html += '<div style="font-size:11px;color:#991b1b;margin-top:6px">&#9940; Shared bed(s) withheld — student is over 35. Shared rooms are for young/short-stay guests; override only if there is no alternative.</div>';
+    } else if (r.ageReminder && r.anyAvailable) {
+      html += '<div style="font-size:11px;color:#92400e;margin-top:6px">&#9888; Shared room involved and student is 30+ — shared rooms suit under-30s; confirm before placing.</div>';
     }
     if (!r.anyAvailable) {
       html += '<div style="font-size:12px;color:#991b1b;margin-top:4px">No internal availability — check alternative providers (blind-CC the city list).</div>';

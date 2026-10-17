@@ -370,10 +370,14 @@ export function accommodationRoutes(prisma: PrismaClient) {
       const enSuite = req.query.enSuite === 'true' || req.query.enSuite === '1';
       const gr = String(req.query.gender || '');
       const gender = (gr === '1' || /^m/i.test(gr)) ? 1 : (gr === '2' || /^f/i.test(gr)) ? 2 : null;
+      const ageQ = parseInt(String(req.query.age || ''), 10);
+      const age = isFinite(ageQ) ? ageQ : null;
+      const birthday = (req.query.birthday as string) || (req.query.dob as string) || null;
+      const allowOlderShared = req.query.allowOlderShared === 'true' || req.query.allowOlderShared === '1';
       const providerIds = String(req.query.providerIds || '')
         .split(',').map(n => parseInt(n, 10)).filter(n => !isNaN(n));
       res.json(await scripts.accommodationAvailability({
-        from, to, roomType, enSuite, gender,
+        from, to, roomType, enSuite, gender, age, birthday, allowOlderShared,
         providerIds: providerIds.length ? providerIds : undefined,
       }));
     } catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }

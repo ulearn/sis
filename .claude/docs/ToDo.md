@@ -953,7 +953,7 @@ Signed register is a legal requirement (2026-07-31). (moved from Claude memory: 
 **Priority:** Medium
 **Status:** Backlog
 **Added:** 2026-10-15
-**Updated:** 2026-10-15T12:25:20Z
+**Updated:** 2026-10-16T15:05:06Z
 
 As of 2026-09-21. (moved from Claude memory: project_refund_module)
   - [ ] Refunds #51, #60, #65, #66 have no student
@@ -962,6 +962,13 @@ As of 2026-09-21. (moved from Claude memory: project_refund_module)
   - [ ] RFA sequence is unused
   - [ ] Supervised first live Xero refund
   - [ ] Refunds filter on the Students page
+
+**Refund reason/cancel policy — fixed + follow-ups (Neil, 2026-10-16):**
+Policy (Neil): visa_refusal = money back BEFORE course starts (often escrow), DOES cancel. cancellation = before start, not necessarily escrow, DOES cancel (penalty timelines; none once course begins). service_issue = AFTER course begins (e.g. no bed), does NOT cancel. other = everything else, does NOT cancel. So `REFUND_CANCELS_BOOKING = ['visa_refusal','cancellation']` is correct as-is — the bug was the silent default.
+  - [x] **FIXED — silent `visa_refusal` default removed.** `src/scripts/refunds/index.ts` `create()` now requires an explicit reason (throws if missing/invalid) and blocks `visa_refusal` for `EU` / `Non-EU (No Visa)` territories. Covers manual form + operator path. tsc clean, restarted 2026-10-16. (intake()/Drupal webform left as-is — student-facing, always collects a reason; add the same EU guard there if EU visa-refusal submissions recur — saw #61 Italy, #62 Italy.)
+  - [x] **FIXED — Sandrine's HubSpot deal 522465150195 reverted** → `closedwon`, `closed_lost_reason` cleared (2026-10-16, via SIS ACCESS_TOKEN PATCH; claude.ai HubSpot connector lacks deal-write scope).
+  - [ ] **Xero Bill RFV-1002** (Sandrine, €350, submitted, unpaid) raised under visa prefix (RFV) — accounts@ to reissue as RFC (service) or amend; it's a service-issue refund, not visa.
+  - [ ] **Move Sandrine out of A2/R2** (Neil: can't put her in that room). Booking CONFIRMED again so she's visible in Matching after a hard-refresh; Kelly to reassign to a better/private room for 11 Oct–1 Nov. Her wk-1 row (11435, 4-11 Oct) bedless + elapsed.
 
 ---
 
