@@ -1274,3 +1274,25 @@ Frozen month-end snapshot table; native check of JA/KO/ZH/RU; translate the late
 Flagged 2026-06-05 with no sign they were resolved (lower confidence). (moved from Claude memory: reference_utc_date_math)
 
 ---
+
+## Document letters — gender wording (de-risked; optional full pass)
+
+**Priority:** Medium
+**Status:** Waiting — Neil (resend decision + optional scope)
+**Added:** 2026-10-19
+**Updated:** 2026-10-19T22:30:06Z
+
+Student 14707 (Ankhbayar Oyundelger, Mongolia) reported his Student Letter said "she." Root cause:
+`src/scripts/documents.ts` defaulted **unknown gender → Ms./she/her**, and `gender` is an
+essentially-unpopulated legacy integer (1=Male, 2=Female): **14,074 students null**, only 460 set;
+**36 null-gender students have a live/future course**. The LoA templates were already pronoun-free,
+but ~14 other letters (Student-Letter #84, Confirm-*, Holiday-Letter, Exit-Letter, Attendance-*…)
+still use the `{{student.pronoun_*}}` / `{{student.salutation}}` tokens.
+
+- [x] Engine fix: gender-aware tokens; **unknown → neutral singular "the student / the student's"** (grammatical with hard-coded singular verbs), salutation blank; known gender still renders he/she accurately. tsc clean + restarted.
+- [x] Set 14707 gender=Male (he told us) → his letter now renders "Mr./He".
+- [x] Re-rendered his issued Student Letter in place (record 958, same link/QR) → now "he/his".
+- [ ] **Resend** the corrected letter to the student? (he needs it for visa renewal — offered to Neil/Theresa)
+- [ ] Optional: a template-body pass to drop gendered wording even for KNOWN-gender students, if Neil wants letters fully gender-free (today known gender still prints he/she). Also consider syncing gender from HubSpot where known so those students get accurate he/she instead of "the student".
+
+---

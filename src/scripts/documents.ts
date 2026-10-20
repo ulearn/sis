@@ -624,9 +624,24 @@ export function documentScripts(prisma: PrismaClient) {
       courseEnd: course?.endDate,
     });
 
-    // Gender-based pronouns (replaces Fidelo's {if gender =="Male"} conditionals)
-    const isMale = student.gender === 1;
-    const salutation = isMale ? 'Mr.' : 'Ms.';
+    // Gender-aware pronouns & salutation. Stored gender is the legacy Fidelo
+    // integer: 1=Male, 2=Female, null/anything-else=unknown. NEVER guess from
+    // the name — unknown renders neutral singular "they/their" and drops the
+    // Mr./Ms. title, so the ~14k students with no gender on file can't be
+    // misgendered (only ~460 have it set). Known gender still renders exactly.
+    // Unknown gender renders the neutral, SINGULAR noun "the student" (not
+    // "they") on purpose: the letter bodies hard-code singular verbs ("… is
+    // enrolled", "… remains on holidays"), so "they is enrolled" would be
+    // ungrammatical. "The student is enrolled" stays correct and gender-free.
+    const _gender = student.gender;
+    const isMale = _gender === 1;
+    const isFemale = _gender === 2;
+    const salutation = isMale ? 'Mr.' : isFemale ? 'Ms.' : '';
+    const pronounSubject = isMale ? 'he' : isFemale ? 'she' : 'the student';
+    const pronounSubjectCap = isMale ? 'He' : isFemale ? 'She' : 'The student';
+    const pronounObject = isMale ? 'him' : isFemale ? 'her' : 'the student';
+    const pronounPossessive = isMale ? 'his' : isFemale ? 'her' : "the student's";
+    const pronounPossessiveCap = isMale ? 'His' : isFemale ? 'Her' : "The student's";
 
     // Accommodation — the arrival-relevant placement (upcoming → present →
     // past), not blindly the first row, so multi-booking students render the
@@ -817,7 +832,7 @@ export function documentScripts(prisma: PrismaClient) {
       'student.photo': student.profilePicture || '',
       'student.id': String(student.id),
       'student.salutation': salutation,
-      'student.gender': isMale ? 'Male' : 'Female',
+      'student.gender': isMale ? 'Male' : isFemale ? 'Female' : '',
       'student.allergies': student.allergies || '',
       'student.address': [student.address, student.addressAddon, student.city, student.zip].filter(Boolean).join(', '),
       // Irish (in-Ireland) address — where the student lives while studying here.
@@ -842,11 +857,11 @@ export function documentScripts(prisma: PrismaClient) {
       'absences_list': absencesListHtml, // populated only when attendance < 85% — drives {if absences_list}
 
       // Gender pronouns (replaces Fidelo {if gender} blocks)
-      'student.pronoun_subject': isMale ? 'he' : 'she',
-      'student.pronoun_object': isMale ? 'him' : 'her',
-      'student.pronoun_possessive': isMale ? 'his' : 'her',
-      'student.pronoun_possessive_cap': isMale ? 'His' : 'Her',
-      'student.pronoun_subject_cap': isMale ? 'He' : 'She',
+      'student.pronoun_subject': pronounSubject,
+      'student.pronoun_object': pronounObject,
+      'student.pronoun_possessive': pronounPossessive,
+      'student.pronoun_possessive_cap': pronounPossessiveCap,
+      'student.pronoun_subject_cap': pronounSubjectCap,
 
       // Day-1 session block — picks the correct first-day-of-school copy
       // based on the booked course's CourseCategory. Replaces the Fidelo
@@ -1007,7 +1022,7 @@ export function documentScripts(prisma: PrismaClient) {
         const d = (student as any).examDate;
         if (!d) return '';
         const fullName = `${salutation} ${student.firstName} ${student.lastName || ''}`.trim();
-        const possessive = isMale ? 'his' : 'her';
+        const possessive = pronounPossessive;
         return `${fullName} is scheduled to sit ${possessive} end-of-course exam on ${fmtDate(d)}.`;
       })(),
       'student.visa_id':                (student as any).visaId || '',  // IRP number
@@ -1015,7 +1030,7 @@ export function documentScripts(prisma: PrismaClient) {
         const exp = (student as any).visaUntil;
         if (!exp) return '';
         const fullName = `${salutation} ${student.firstName} ${student.lastName || ''}`.trim();
-        const subject = isMale ? 'He' : 'She';
+        const subject = pronounSubjectCap;
         return `${fullName}'s IRP is due to expire on ${fmtDate(exp)}. ${subject} remains on course holidays until this date.`;
       })(),
 

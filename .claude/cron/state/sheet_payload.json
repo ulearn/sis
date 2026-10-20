@@ -1,23 +1,12 @@
 [
   {
-    "range": "H38:K38",
+    "range": "H70:K70",
     "values": [
       [
-        "• 452nd check Sat 22 Aug 2026 UTC — 7th check today; fix still not run\n• Booking Accommodation 11311 (bed 84): Jun 28 to 22 Aug 2026, fee EUR 3,850, active = true — checkout date TODAY, not deactivated\n• Booking Accommodation 11393 (bed 88): 22 Aug to 13 Sep 2026, fee = null, active = true — new occupancy starts today, fee unset\n• Booking 17980 (Pietro Caccianiga, student 14521): CONFIRMED, confirmed = true, fully paid EUR 5,331\n• Last database update on Booking Accommodations: 10 Aug 2026 (no change in 12 days)\n• Fix NOT RUN",
-        "Deactivate BA 11311 (checkout today); set fee on BA 11393. See recipe: issue-36b-addendum-22aug-e.md",
-        "452nd Sat 22 Aug UTC. 7th check today. BA 11311 checkout TODAY still active. BA 11393 fee null. Fix NOT RUN.",
-        "URGENT: today"
-      ]
-    ]
-  },
-  {
-    "range": "H43:K43",
-    "values": [
-      [
-        "• 452nd check Sat 22 Aug 2026 UTC — 7th check today; fix still not run\n• Booking Accommodation 11357 (bed 178): 2 Aug to 15 Aug, fee EUR 1,250, active = true — 7 days past end date, not deactivated\n• Booking Accommodation 11396 (bed 44): 15 Aug to 22 Aug (today), fee = null, active = true — checkout TODAY, not deactivated\n• Booking Accommodation 11397 (bed 89): 22 Aug to 6 Sep, fee = null, active = true — new occupancy starts today, fee unset\n• Booking 18180 (Giampaolo Russo, student 14571): CONFIRMED, confirmed = true, fully paid EUR 2,584.96\n• Fix NOT RUN",
-        "Deactivate BAs 11357 + 11396 (past end); set fees on 11396 + 11397. See recipe: issue-41-addendum-22aug-e.md",
-        "452nd Sat 22 Aug UTC. 7th check today. BAs 11357 (7d stale) + 11396 (checkout TODAY) still active. 11397 fee null. Fix NOT RUN.",
-        "URGENT: today"
+        "1742nd check Mon 19 Oct 2026 UTC — BOOKING NOW CONFIRMED (was PENDING at run 1736)\n• Booking 18359 confirmed at 11:50 UTC today — amountPaid = EUR 3,999 = amountTotal, confirmed = true\n• Course 25156 (General English AM, 19 Oct–4 Dec 2026): active = true, ilepCode = null\n• Accommodation 11439 (Capel Street, 18 Oct–6 Dec 2026): active = true, fee = EUR 340, bedId = null\n• Two items still outstanding: assign bed (Booking Accommodation 11439), set ilepCode (Booking Course 25156)",
+        "Assign bed in SIS admin (BA11439); set ilepCode (BC25156). See recipe: issue-64-addendum-19oct-d.md",
+        "1742nd Mon 19 Oct UTC. Booking confirmed at 11:50 UTC. HubSpot deal 521902297281. Bed + ILEP code still needed.",
+        "bed + ilepCode needed"
       ]
     ]
   },
@@ -25,43 +14,10 @@
     "range": "H55:K55",
     "values": [
       [
-        "• 5th check Sat 22 Aug 2026 UTC — no change since 4th check today\n• Fanny Scelles (student 14451): arrives 29 Aug 2026 — 7 DAYS\n• Booking Accommodation 11267 (bed 23): 29 Aug to 4 Oct, fee EUR 3,840, active = true — arrival stay, fee correctly set\n• Booking Accommodation 11399 (bed 54): 4 Oct to 19 Dec, fee = null, active = true — second stay, fee still null (last updated 17 Aug)\n• Fix NOT RUN",
-        "Set fee on BA 11399 before Oct 4. Fanny arrives Aug 29 (7 days). See recipe: issue-53-addendum-22aug.md",
-        "5th Sat 22 Aug UTC. BA 11267 fee EUR 3,840 OK. BA 11399 fee null. Fanny arrives Aug 29 (7 days). Fix NOT RUN.",
-        "BA11399 fee null; 7d"
-      ]
-    ]
-  },
-  {
-    "range": "H16:K16",
-    "values": [
-      [
-        "• 200th check Sat 22 Aug 2026 UTC — 7th check today; no change since 199th\n• Student 1001 (Saikhantes Shagdarsuren): Booking Course 24925 (Academic Year Afternoon), active, ends 2 Oct 2026\n• Class assignment: only 1 SCA (id 255, week ending 3 Jul 2026, class 11) — 50-day gap since last assignment\n• Student returns Tuesday 25 Aug — class assignment must be added by Monday 24 Aug (2 DAYS)\n• Fix NOT RUN",
-        "Add SCA for BC 24925 class 11 week ending 28 Aug. See recipe: issue-15-addendum-22aug-b.md",
-        "200th Sat 22 Aug UTC. 7th today. SCA gap 50 days (last SCA id 255, Jul 3, class 11). Deadline Mon 24 Aug = 2 DAYS. Fix NOT RUN.",
-        "URGENT: Mon24 2days"
-      ]
-    ]
-  },
-  {
-    "range": "H50:K50",
-    "values": [
-      [
-        "• 22nd check Sat 22 Aug 2026 UTC — no change since 21st (Fri 21 Aug)\n• Booking 1624 (Telmuun Enkhsaikhan, student 293): status = PARTIAL, confirmed = false\n• Amount paid = EUR 1,406; amount total = EUR 1,656; amount open = EUR 250\n• Only 1 payment record: EUR 100, Bank, 31 Mar 2026, Xero Payment ID = null\n• Discrepancy: amountPaid field (EUR 1,406) vs sum of payment records (EUR 100) = EUR 1,306 unexplained\n• Booking Course 1810 (Academic Year Renewal Morning): 29 Jun 2026 to 1 Jan 2027, active, 0 class assignments — 54 days since start\n• Last booking update: 5 Aug 2026\n• Fix NOT RUN",
-        "Reconcile EUR 1,306 payment gap; add SCA to BC 1810; set confirmed = true. See recipe: issue-48-addendum-22aug.md",
-        "22nd Sat 22 Aug UTC. EUR 1,306 gap (amountPaid 1,406 vs 1 payment EUR 100). BC 1810 54d since start, 0 SCAs. Xero null. Fix NOT RUN.",
-        "EUR1306 gap; BC1810 0 SCAs"
-      ]
-    ]
-  },
-  {
-    "range": "H52:K52",
-    "values": [
-      [
-        "• 21st check Sat 22 Aug 2026 UTC — 6 Booking Accommodations resolved since Fri 21 Aug (149 to 143)\n• Stale active Booking Accommodations (end date before 22 Aug 2026, 2026 start dates): 143 — down from 149 on Fri 21 Aug\n• Oldest stale: Booking Accommodation 11237 (ended 31 Jan 2026, fee EUR 1,400, bedId = null)\n• Total including legacy records: approximately 11,194\n• Bulk fix NOT RUN",
-        "Deactivate all 143 stale 2026 Booking Accommodations. See recipe: issue-50-addendum-22aug.md",
-        "21st Sat 22 Aug UTC. 143 stale 2026 BAs (down 6 from Fri 149). Oldest BA 11237 ended Jan 31. Fix NOT RUN.",
-        "143 stale BAs; 6 fixed Fri"
+        "1742nd check Mon 19 Oct 2026 UTC — no data change; run 63 due TOMORROW and not yet created\n• 29 host payment runs still pending — total EUR 31,884.29 (unchanged)\n• Run 63 NOT YET CREATED; next run date should be 20 Oct 2026 (tomorrow)\n• Last created run: Run 62, 13 Oct 2026, EUR 2,561.43, pending\n• Oldest pending: Run 10, 4 Apr 2026 (6.5 months ago)",
+        "Create Run 63 for 20 Oct 2026; approve all 29 pending runs. See recipe: issue-53-addendum-19oct-c.md",
+        "1742nd Mon 19 Oct UTC. Run 63 due tomorrow, not created. 29 pending runs, EUR 31,884.29.",
+        "run63 due TODAY; EUR31,884 pending"
       ]
     ]
   }
