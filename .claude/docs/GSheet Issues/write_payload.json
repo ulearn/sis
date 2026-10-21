@@ -1,23 +1,12 @@
 [
   {
-    "range": "H2:K2",
-    "values": [
-      [
-        "1708th check Sun 18 Oct 2026 UTC — day counts +1 from 1688th (Sat 17 Oct)\n• Payment 18122 (EUR 250, Card, 23 Aug 2026): booking_id = null — Day 56\n• Payment 18123 (EUR 250, Card, 23 Aug 2026): booking_id = null — Day 56\n• Payment 16988 (EUR 339.90, Bank Transfer, 28 Apr 2026): booking_id = null — Day 173\n• Payment 16989 (EUR 339.90, Bank Transfer, 28 Apr 2026): booking_id = null — Day 173\n• Payment 17187 (EUR 6,151, TransferMate Escrow, 1 May 2026): booking_id = null — Day 170\n• Payment 4781 (EUR 380, Flywire, Aug 2019): legacy pre-migration Fidelo record\n• Fix NOT RUN",
-        "Verify Payments 18122+18123 in Xero then link or void. See recipe: issue-1-addendum-14oct.md",
-        "1708th Sun 18 Oct UTC. Day counts +1 from 1688th. P18122+P18123 Day 56; P16988/P16989 Day 173; P17187 Day 170; P4781 legacy.",
-        "6 orphan pmts; P18122+P18123 Day56"
-      ]
-    ]
-  },
-  {
     "range": "H7:K7",
     "values": [
       [
-        "1708th check Sun 18 Oct 2026 UTC — no data change from 1688th (Sat 17 Oct)\n• 553 students with phone_mobile not starting with \"+\" — Day 112\n• Total phones on file: 1,406 (unchanged)\n• Fix NOT RUN",
-        "Normalise phone_mobile to E.164 format. See recipe: issue-6-addendum-16oct.md",
-        "1708th Sun 18 Oct UTC. Day 112. Total phones 1,406 (unchanged); bad count still 553.",
-        "553 bad phones; Day 112"
+        "1778th check Wed 21 Oct 2026 UTC — no data change from 1756th\n• 553 students with phone number not starting with \"+\" — Day 115 unresolved\n• Total students with phone on file: 1,408 (was 1,406 at run 1756 — 2 new phones added, both missing \"+\")\n• Fix NOT RUN",
+        "Bulk-normalise phone numbers. See recipe: issue-6-addendum-21oct.md",
+        "1778th Wed 21 Oct UTC. No change from 1756th. 553 bad phones; total 1,408. Day 115.",
+        "553 bad phones; Day 115"
       ]
     ]
   },
@@ -25,43 +14,54 @@
     "range": "H8:K8",
     "values": [
       [
-        "1708th check Sun 18 Oct 2026 UTC — no data change from 1688th (Sat 17 Oct)\n• Booking 17909 (Sofiia Korkishchenko): status = CANCELLED, confirmed = false\n• Amount total = EUR 727.50, amount paid = EUR 0 — zero payments received\n• Stale CANCELLED booking with EUR 727.50 placeholder total; fix NOT RUN",
-        "Zero out booking 17909 amountTotal. See recipe: issue-7-addendum-16oct.md",
-        "1708th Sun 18 Oct UTC. No data change from 1688th. Fix NOT RUN.",
+        "1778th check Wed 21 Oct 2026 UTC — no data change from 1756th\n• Booking 17909 (Sofiia Korkishchenko): status = CANCELLED, confirmed = false\n• Amount total = EUR 727.50, amount paid = EUR 0 — zero payments received\n• Fix NOT RUN",
+        "Zero out booking 17909 amountTotal. See recipe: issue-7-addendum-21oct.md",
+        "1778th Wed 21 Oct UTC. No change from 1756th. Booking 17909 CANCELLED, EUR 727.50.",
         "EUR 727.50 open; fix needed"
       ]
     ]
   },
   {
-    "range": "H37:K37",
+    "range": "H26:K26",
     "values": [
       [
-        "1708th check Sun 18 Oct 2026 UTC — no change from 1670th (Fri 16 Oct)\n• renderSheetHtml() in src/routes/attendance.ts (around line 36): homework section absent\n• No homework-related code found (grep confirmed)\n• Holiday display issue also unresolved\n• Awaiting layout spec from Neil and Paul",
-        "Add homework section to attendance sheet renderSheetHtml(). See recipe: issue-36-addendum-15oct.md",
-        "1708th Sun 18 Oct UTC. No change. Still awaiting spec from Neil and Paul.",
-        "code open; awaiting spec"
+        "1778th check Wed 21 Oct 2026 UTC — no data change from 1761st\n• Student 917 (Uyanga Tungalag): visaStatus = null, visaRequired = true (Mongolian)\n• Visa dates on file: from 27 Apr 2026, valid until 28 Dec 2026 — visa present, status field unset\n• hubspotContactId = null — no HubSpot link\n• Booking Course 1613 (Academic Year Morning): ends 20 Nov 2026, active = true — 30 days remaining\n• Fix NOT RUN",
+        "Set visaStatus on student 917; link HubSpot contact. See recipe: issue-25-addendum-21oct.md",
+        "1778th Wed 21 Oct UTC. No change from 1761st. 30 days to Nov 20 (was 31d). visaStatus null.",
+        "visaStatus null; Nov20 30d; no HubSpot link"
       ]
     ]
   },
   {
-    "range": "H47:K47",
+    "range": "H58:K58",
     "values": [
       [
-        "1708th check Sun 18 Oct 2026 UTC — Day 1 past checkout; no data change from 1690th\n• Booking Accommodation 11449 (bed 83, Capel Street, Bader Fareed A Al Jurbua, booking 18312): end = 17 Oct 2026, active = true, fee = null — Day 1 past checkout\n• Booking 18312: CONFIRMED\n• 0 host payment line items — billing blocked by Issue 54 (Capel xero_contact_id = null)\n• Fix NOT RUN",
-        "Resolve Issue 54 (Capel Xero contact) to unblock BA11449 billing. See recipe: issue-45-addendum-18oct.md",
-        "1708th Sun 18 Oct UTC. BA11449 end Oct 17, Day 1 past checkout. Capel xeroContactId = null still blocking.",
-        "BA11449 Day1 past checkout; fee null; Capel blocked"
+        "1778th check Wed 21 Oct 2026 UTC — no data change from 1756th\n• Student 14508 (Marcela Scaldelai): 96 PRESENT, 12 Absent Uncertified, 2 LATE = 110 total (unchanged)\n• Formula A (LATE counted as PRESENT): 98/110 = 89.1% (unchanged)\n• Formula B (LATE excluded from numerator): 96/110 = 87.3% (unchanged)\n• Awaiting Neil decision on LATE session treatment before code change",
+        "Decide LATE session treatment then update attendance formula. See recipe: issue-56-addendum-21oct.md",
+        "1778th Wed 21 Oct UTC. No change from 1756th. Awaiting decision.",
+        "awaiting decision; 96P/12AU/2L; 89.1% or 87.3%"
       ]
     ]
   },
   {
-    "range": "H57:K57",
+    "range": "H68:K68",
     "values": [
       [
-        "1708th check Sun 18 Oct 2026 UTC — Day 8 past checkout (+1 from 1706th)\n• Booking Accommodation 32 (Maria Rosa Ghiani, booking 17823, bed 168): end_date 11 Oct 2026, active = true, fee = EUR 400 — Day 8 past checkout\n• 0 host payment line items — billing blocked by Issue 54 (Capel Street xero_contact_id = null)\n• Fix NOT RUN",
-        "Depends on Issue 54 fix (Capel Xero contact ID). See recipe: issue-55-addendum-18oct.md",
-        "1708th Sun 18 Oct UTC. BA32 Day 8 past end, still active. Fee EUR 400. Still blocked by Issue 54.",
-        "BA32 Day8 OVERDUE; blocked Issue54"
+        "1778th check Wed 21 Oct 2026 UTC — day count +1 from 1766th\n• Item 209 (run 56, Aug 30 – Sep 13, EUR 520): xero_status = paid\n• Item 227 (run 60, Sep 13 – Sep 27, EUR 520): xero_status = paid\n• Item 236 (run 62, Sep 27 – Oct 5, EUR 291.43): xero_status = submitted\n• Oct 5 – Oct 10 gap (5 days, approx EUR 185.71): no host payment line item created\n• Booking Accommodation 11386 (Edel McDonald, bed 33, booking 18145): ended 10 Oct 2026, active = true, fee = null — Day 11 past checkout\n• Fix NOT RUN",
+        "Create host payment line item for Oct 5–10 gap; deactivate Booking Accommodation 11386. See recipe: issue-62r68-addendum-21oct.md",
+        "1778th Wed 21 Oct UTC. Day +1 from 1766th. BA11386 Day 11 past checkout. Oct 5–10 gap approx EUR 186 still unbilled.",
+        "Oct5-10 gap EUR~186; BA11386 Day11"
+      ]
+    ]
+  },
+  {
+    "range": "H70:K70",
+    "values": [
+      [
+        "1778th check Wed 21 Oct 2026 UTC — no data change from 1766th\n• Booking Accommodation 11439: bed 83 (Capel Street) — assigned since run 1760; accommodation resolved\n• Booking Course 25156 (General English, student 14691 Bianca Bianchi): ilepCode = null — certificate generation will fail at course end\n• Fix NOT RUN",
+        "Set ILEP code on Booking Course 25156 in SIS admin. See recipe: issue-64-addendum-21oct.md",
+        "1778th Wed 21 Oct UTC. No change from 1766th. BC25156 ilepCode null. Bed 83 assigned (resolved).",
+        "ilepCode BC25156 null; bed resolved"
       ]
     ]
   }
