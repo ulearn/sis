@@ -1296,3 +1296,49 @@ still use the `{{student.pronoun_*}}` / `{{student.salutation}}` tokens.
 - [ ] Optional: a template-body pass to drop gendered wording even for KNOWN-gender students, if Neil wants letters fully gender-free (today known gender still prints he/she). Also consider syncing gender from HubSpot where known so those students get accurate he/she instead of "the student".
 
 ---
+
+## Check SIS course mapping for the Learner Protection SKU (LP → PEL)
+
+**Priority:** Medium
+**Status:** Backlog
+**Added:** 2026-10-21
+**Updated:** 2026-10-21T11:25:06Z
+
+webhooks.ts / hubspot-sync.ts treat any SKU starting "LP" as a LifePass (Academic Year) course. Learner Protection had SKU "LP" (Jun–21 Oct 2026; renamed PEL in HubSpot on 21 Oct), so invoices with an LP line may have made a phantom AY course in the booking. Check bookings from invoices with an LP line, e.g. Yael 18390. New PEL lines are safe.
+
+---
+## Build Referral Setup — codes, discounts & reward payouts (Amici di Dublino)
+
+**Priority:** High
+**Status:** In progress
+**Progress:** Spec written (`.claude/projects/referral-setup.md`). Phase 1: [x] `referral_programs` cache table + `ReferralProgram` model (live, verified); [x] HubSpot props created — 6 on Company + 6 on Contact (group `sales_properties`) + Deal `referral_code` (group `dealinformation`). Design locked w/ Neil: props on Company AND Agent-Employee Contact (sole-trader + Ambassador reuse); autoQuote is always downstream (stamp-on-deal); Xero payout account = existing `PartnerPayments`. [x] `src/scripts/referral.ts` engine (upsert→proxy-PATCH company+Agent-Employee contact, syncFromHubSpot cache mirror, code-uniqueness incl. ambassadorCode, resolveReferralCode, validateForStudent) + `src/routes/referral.ts` (PUBLIC `/sis/referral/validate` w/ CORS for ulearnschool.com; staff `/sis/api/referral` CRUD, writes admin/accounts-only) + mounted in app.ts. tsc 0, restarted, validate endpoint + resolver verified. Next: admin "Referral Programs" view → Drupal `discount_code` wire (validate + stamp via booking_enrichment) → hub autoQuote reads referral_code → `/invoice-created` → Booking.discountCode+agency. (Live AMICI record needs Neil's %s.)
+**Added:** 2026-10-21
+**Updated:** 2026-10-21T17:15:06Z
+
+Driver: Amici di Dublino (Marco Torelli) — Italian referral community, fixed code `AMICI`,
+student discount (≈10%) + partner reward (Accelerator 22–44% tiered), paid out weekly via
+Accounts Payable. First *referral/ambassador payout* partner (vs existing B2B net-invoice).
+Spec = Neil's "how I propose we move forward" email; percentages configurable per partner.
+Full spec + recon (SIS/HubSpot/hub/Drupal) in `.claude/projects/referral-setup.md`.
+
+Key architecture: config authoritative on **HubSpot Company props** (SIS caches + owns the
+reward ledger only); student discount rides the existing Challenge line-item mechanism; partner
+reward is a **net-new Accounts-Payable payout** (accrue on payment → Wednesday Xero ACCPAY Bill
+→ remittance → Portal Financial tab). The booking form `discount_code` field already exists but
+is inert; `Booking.discountCode` + `Student.ambassadorCode` are defined-but-unconsumed.
+
+- [ ] **Phase 1** — structure + capture + attribution (makes AMICI real): `ReferralProgram` cache
+      model; HubSpot company+deal props; SIS referral CRUD (proxy-PATCH company) + admin view;
+      wire Drupal `discount_code` (validate + stamp via booking_enrichment); hub autoQuote applies
+      student discount + attribution; `/invoice-created` → `Booking.discountCode` + agency.
+- [ ] **Phase 2** — `ReferralReward` ledger; accrue on `/invoice-paid`; Portal Referral table +
+      Finance "Referral Rewards" card; refund/cancel clawback.
+- [ ] **Phase 3** — Xero ACCPAY payout (`createReferralPayoutBill`, clone bills/refund.js) +
+      weekly Wednesday settlement run + remittance (clone partner-remittance.js) + admin batch UI.
+- [ ] **Phase 4** — fold student `ambassadorCode` into the same resolver (close student.html 10%+10% promise).
+
+Open commercials for Neil (not Phase-1 blockers): exact %s per Amici; reward base; Xero COS
+account code for payouts; min payout threshold; VAT on the Italian-entity bill; discount-stacking
+vs Challenge (recommend exclusive).
+
+---

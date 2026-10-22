@@ -754,6 +754,7 @@ model Agency {
   signatures       AgencySignature[]
   credits          AgencyCredit[]
   challengeOptIn   ChallengeOptIn?
+  referralProgram  ReferralProgram?
 
   // Seat Clearance Sale eligibility — flagged (Model-B "package") partners see the
   // live clearance tab as their first portal tab. See project_occupancy_seat_clearance.
@@ -907,6 +908,37 @@ model AgencyCredit {
 
   @@index([agencyId])
   @@map("agency_credits")
+}
+
+// ── Referral Programs ─────────────────────────────────────────────────────────
+// Per-partner referral config (code + student discount % + partner reward model).
+// READ CACHE ONLY — the authoritative values live on the HubSpot Company props
+// (referral_code / referral_student_discount / referral_reward_model /
+// referral_reward_pct / referral_settlement_mode / referral_active), mirrored here
+// for fast code→partner resolution at booking time (public validate endpoint +
+// the invoice-created webhook). HubSpot wins on conflict. See
+// .claude/projects/referral-setup.md. The reward *ledger* (ReferralReward) is
+// Phase 2 and IS SIS-authoritative (like AgencyCredit).
+model ReferralProgram {
+  id                 Int      @id @default(autoincrement())
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  agencyId           Int      @unique @map("agency_id")
+  agency             Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  hubspotCompanyId   String?  @map("hubspot_company_id")
+  code               String   @unique                      // fixed code, UPPERCASE (e.g. AMICI)
+  label              String?                                // display name ("Amici di Dublino")
+  studentDiscountPct Decimal  @default(0) @map("student_discount_pct") @db.Decimal(5, 2)
+  rewardModel        String   @default("AMBASSADOR_FLAT") @map("reward_model") // AMBASSADOR_FLAT | ACCELERATOR_TIER
+  rewardFlatPct      Decimal? @map("reward_flat_pct") @db.Decimal(5, 2)        // used when rewardModel = AMBASSADOR_FLAT
+  settlementMode     String   @default("PAYOUT") @map("settlement_mode")       // PAYOUT | INVOICE_MARKDOWN
+  active             Boolean  @default(true)
+  syncedAt           DateTime @default(now()) @map("synced_at")                // last mirror from HubSpot
+
+  @@index([code, active])
+  @@map("referral_programs")
 }
 
 // ============================================================

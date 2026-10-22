@@ -1234,6 +1234,11 @@ app.use('/host-portal', publicHostVettingRoutes(prisma));
 import { publicTeacherContractRoutes } from './routes/teacher-contract';
 app.use('/teacher-contract', publicTeacherContractRoutes(prisma));
 
+// Referral code validation — PUBLIC (the Drupal booking form posts here cross-origin).
+// Registered BEFORE requireAuth; its own CORS allow-list covers ulearnschool.com.
+import { publicReferralRoutes, referralRoutes } from './routes/referral';
+app.use('/sis/referral', publicReferralRoutes(prisma));
+
 // Public privacy policy (no auth) — required URL for the Google Play listing.
 app.get('/sis/privacy', (_req, res) => res.sendFile(path.join(__dirname, '..', 'public', 'privacy.html')));
 
@@ -1379,6 +1384,7 @@ app.use('/sis/api/payroll', payrollRoutes(prisma));
 app.use('/sis/api/activities', activitiesRoutes(prisma));
 import { examRoutes } from './routes/exams';
 app.use('/sis/api/exams', examRoutes(prisma));
+app.use('/sis/api/referral', referralRoutes(prisma));   // staff CRUD (writes → admin/accounts, see route)
 app.use('/sis/zoho/auth', zohoAuthRoutes());
 
 // Scheduling (closures CRUD) + startup occurrence top-up

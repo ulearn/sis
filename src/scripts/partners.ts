@@ -644,6 +644,10 @@ export function partnerScripts(prisma: PrismaClient) {
         hs_task_status: 'NOT_STARTED',
         hs_task_priority: data.action === 'QUERIED' ? 'HIGH' : 'MEDIUM',
         hs_timestamp: Date.now().toString(),
+        // Owner partners@ + the Partners task queue (Neil 2026-10-21): these tasks were created with no owner, so
+        // nobody saw them (WORLD2GO / Point acceptances sat for days). 514760653 = partners@, 20872016 = Partners queue.
+        hubspot_owner_id: '514760653',
+        hs_queue_membership_ids: '20872016',
       },
     });
 
