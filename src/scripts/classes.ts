@@ -491,28 +491,30 @@ export function classScripts(prisma: PrismaClient) {
         // here and tagged below so the UI can render an orange warning + lock
         // for non-admin staff. (Mirrors getUnplacedStudents in accommodation.)
         //
-        // Use an EXIST check on real (non-escrow) Payment rows rather than the
+        // Use an EXIST check on real (non-held) Payment rows rather than the
         // denormalised `amountPaid > 0`. Fidelo-imported amountPaid sometimes
         // includes TransferMate escrow money, leaking visa-pending students
         // into the placement pool — booking.status='ESCROW' isn't always set
-        // even when the only payments are escrow. The Payment-row check is
-        // authoritative: escrow rows (type='Escrow' OR
-        // method='TransferMate Escrow') are shadow payments and must not
-        // unlock class placement. Mirrors the rollup logic in
-        // bookings.ts:495–512.
+        // even when the only payments are escrow.
+        //
+        // HELD money is the shadow Payment with `type='Escrow'` (see
+        // .knowledge/kb/finance/escrow.md). On RELEASE that SAME row flips
+        // type Escrow→Standard but KEEPS `method='TransferMate Escrow'` as the
+        // permanent provenance of how the money arrived — so `method` is NOT a
+        // held-marker and must NOT exclude a student (doing so hid Jiaming Wang
+        // #14487, whose card-bypass money was released long ago; Neil 2026-10-22).
+        // Discriminate held vs released on `type='Escrow'` ONLY; the booking
+        // status='ESCROW' and visa Pending/Appeal guards below catch any
+        // legacy held row that was never type-tagged.
         booking: {
           payments: {
             some: {
               amount: { gt: 0 },
-              // SQL NULL trap: `NOT (type='Escrow' OR method='...')` evaluates
-              // to UNKNOWN when either field is NULL, which Prisma's `some`
-              // treats as no-match — so non-escrow payments (type=null) get
-              // wrongly excluded. Use the explicit dual-AND form so NULL
-              // values pass cleanly: NEITHER condition for escrow holds.
-              AND: [
-                { OR: [{ type: null }, { type: { not: 'Escrow' } }] },
-                { OR: [{ method: null }, { method: { not: 'TransferMate Escrow' } }] },
-              ],
+              // SQL NULL trap: `NOT type='Escrow'` evaluates to UNKNOWN when
+              // type IS NULL, which Prisma's `some` treats as no-match — so
+              // null-type payments get wrongly excluded. Use the explicit OR so
+              // NULL passes cleanly: the row is held ONLY when type='Escrow'.
+              OR: [{ type: null }, { type: { not: 'Escrow' } }],
             },
           },
           status: { notIn: ['ESCROW', 'CANCELLED'] },

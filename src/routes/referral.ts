@@ -73,6 +73,28 @@ export function referralRoutes(prisma: PrismaClient): Router {
     catch (e: any) { res.status(500).json({ success: false, error: String(e?.message || e) }); }
   });
 
+  // Agency picker for the admin "New Program" flow — name search, flags whether
+  // the partner has a HubSpot entity to store the config on.
+  router.get('/agencies', async (req, res) => {
+    try {
+      const q = String(req.query.q || '').trim();
+      const rows = await prisma.agency.findMany({
+        where: q ? { name: { contains: q, mode: 'insensitive' } } : undefined,
+        select: { id: true, name: true, hubspotCompanyId: true, primaryContactId: true },
+        orderBy: { name: 'asc' },
+        take: 25,
+      });
+      res.json({
+        success: true,
+        agencies: rows.map((a) => ({
+          id: a.id,
+          name: a.name,
+          hasHubspot: !!(a.hubspotCompanyId || a.primaryContactId),
+        })),
+      });
+    } catch (e: any) { res.status(500).json({ success: false, error: String(e?.message || e) }); }
+  });
+
   router.get('/:agencyId', async (req, res) => {
     try {
       const program = await svc.getProgram(Number(req.params.agencyId));

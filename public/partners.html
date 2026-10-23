@@ -1211,6 +1211,11 @@ tr:hover td { background: #fafaf8; }
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
     Partnership
   </button>
+  <!-- Referrals — shown only for agencies that have a referral/ambassador program -->
+  <button class="nav-tab ref-tab" data-tab="referrals" style="display:none;color:#7c3aed">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+    Referrals
+  </button>
   <!-- Blanket challenge opt-in — bright, beside Partnership; shown only when a challenge is live -->
   <div id="challengeOptIn" class="chal-optin" style="display:none">
     <span class="chal-optin-copy">
@@ -1394,6 +1399,19 @@ tr:hover td { background: #fafaf8; }
     </div>
   </div>
 
+
+  <!-- ── Referrals ── -->
+  <div class="section" id="sec-referrals">
+    <div id="refProgramHead" style="margin-bottom:12px;font-size:13px;color:var(--muted)">Loading…</div>
+    <div class="stat-grid" id="refStats"></div>
+    <div class="card">
+      <div class="card-title">Referred Bookings</div>
+      <div id="refList"><div class="loading">Loading referrals…</div></div>
+    </div>
+    <div style="margin-top:10px;font-size:11px;color:var(--muted)">
+      Reward shown is indicative (flat % of booking value); confirmed, payment-accrued rewards and payouts follow.
+    </div>
+  </div>
 
   <!-- ── Add New (Enrollment Form) ── -->
   <div class="section" id="sec-enroll">
@@ -1870,6 +1888,10 @@ tr:hover td { background: #fafaf8; }
         const lpTab = document.querySelector('.nav-tab[data-tab="lifepass"]');
         if (lpTab) lpTab.style.display = 'none';
       }
+      // Referrals tab — show only if this agency has a referral/ambassador program
+      fetch('/sis/partners/api/referrals').then(r => r.json()).then(d => {
+        if (d && d.program) { const t = document.querySelector('.nav-tab[data-tab="referrals"]'); if (t) t.style.display = ''; }
+      }).catch(() => {});
       if (me.impersonating) {
         // Staff-only discreet return link (a real partner never has this flag).
         // Replaces the old full-width "Admin view — read-only" banner: staff now
@@ -2296,9 +2318,53 @@ tr:hover td { background: #fafaf8; }
         else if (t === 'documents') loadDocuments();
         else if (t === 'lifepass') loadLifePass();
         else if (t === 'clearance') loadClearance();
+        else if (t === 'referrals') loadReferrals();
         else { if (window._clrStopCountdown) window._clrStopCountdown(); }
       });
     });
+  }
+
+  // ── Referrals ──
+  async function loadReferrals() {
+    const head = document.getElementById('refProgramHead');
+    const stats = document.getElementById('refStats');
+    const list = document.getElementById('refList');
+    list.innerHTML = '<div class="loading">Loading referrals…</div>';
+    let d;
+    try { d = await fetch('/sis/partners/api/referrals').then(r => r.json()); }
+    catch { list.innerHTML = '<div class="loading">Could not load referrals.</div>'; return; }
+    if (!d || !d.program) {
+      head.textContent = ''; stats.innerHTML = '';
+      list.innerHTML = '<div style="padding:16px;color:var(--muted)">No referral program is set up for your account yet.</div>';
+      return;
+    }
+    const p = d.program;
+    head.innerHTML = 'Your code <b style="color:#7c3aed">' + esc(p.code) + '</b>' + (p.label ? ' · ' + esc(p.label) : '') +
+      ' — students get <b>' + fmt(p.studentDiscountPct) + '%</b> off, you earn <b>' + fmt(p.rewardFlatPct) + '%</b>' +
+      (p.active ? '' : ' <span style="color:#991b1b">(inactive)</span>');
+    stats.innerHTML =
+      '<div class="stat-card"><div class="stat-value">' + d.totals.count + '</div><div class="stat-label">Referred Bookings</div></div>' +
+      '<div class="stat-card blue"><div class="stat-value">&euro;' + fmt(d.totals.value) + '</div><div class="stat-label">Total Booking Value</div></div>' +
+      '<div class="stat-card green"><div class="stat-value">&euro;' + fmt(d.totals.reward) + '</div><div class="stat-label">Reward Accrued (est.)</div></div>';
+    if (!d.rows.length) {
+      list.innerHTML = '<div style="padding:16px;color:var(--muted)">No referred bookings yet. When a student books with your code, it appears here.</div>';
+      return;
+    }
+    let h = '<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="text-align:left;color:var(--muted);border-bottom:1px solid var(--line)">' +
+      '<th style="padding:6px 8px">Student</th><th style="padding:6px 8px">Course</th><th style="padding:6px 8px">Start</th><th style="padding:6px 8px">Status</th>' +
+      '<th style="padding:6px 8px;text-align:right">Value</th><th style="padding:6px 8px;text-align:right">Reward (est.)</th></tr></thead><tbody>';
+    for (const r of d.rows) {
+      h += '<tr style="border-bottom:1px solid var(--line)">' +
+        '<td style="padding:6px 8px">' + esc(r.student) + (r.nationality ? ' <span style="color:var(--muted)">· ' + esc(r.nationality) + '</span>' : '') + '</td>' +
+        '<td style="padding:6px 8px">' + esc(r.course || '—') + '</td>' +
+        '<td style="padding:6px 8px">' + fmtDate(r.start) + '</td>' +
+        '<td style="padding:6px 8px">' + esc(r.status || '') + '</td>' +
+        '<td style="padding:6px 8px;text-align:right">&euro;' + fmt(r.value) + '</td>' +
+        '<td style="padding:6px 8px;text-align:right;color:#7c3aed">&euro;' + fmt(r.reward) + '</td>' +
+      '</tr>';
+    }
+    h += '</tbody></table>';
+    list.innerHTML = h;
   }
 
   // ── Populate nationality dropdown ──

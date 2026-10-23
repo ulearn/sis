@@ -74,8 +74,31 @@ async function hsGet(kind: 'company' | 'contact', id: string, props: string[]): 
   return j.properties || {};
 }
 
+// Normalise hard: drop everything non-alphanumeric (so "#Amici", "amici ",
+// "A-M-I-C-I" all collapse) and uppercase. This alone handles the hashtag + case
+// variants Neil asked for; typos are handled by the fuzzy fallback in
+// resolveReferralCode.
 export function normCode(code: string | null | undefined): string {
-  return String(code ?? '').trim().toUpperCase();
+  return String(code ?? '').replace(/[^a-z0-9]/gi, '').toUpperCase();
+}
+
+// Plain Levenshtein edit distance — used for typo-tolerant code resolution
+// (e.g. AMICHI / AMICCI / AMISHI → AMICI).
+export function levenshtein(a: string, b: string): number {
+  const m = a.length, n = b.length;
+  if (!m) return n;
+  if (!n) return m;
+  let prev = Array.from({ length: n + 1 }, (_, j) => j);
+  let cur = new Array(n + 1).fill(0);
+  for (let i = 1; i <= m; i++) {
+    cur[0] = i;
+    for (let j = 1; j <= n; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
+    }
+    [prev, cur] = [cur, prev];
+  }
+  return prev[n];
 }
 function toNum(v: any): number | null {
   if (v === null || v === undefined || v === '') return null;
@@ -218,10 +241,31 @@ export function referralScripts(prisma: PrismaClient) {
   }
 
   // Resolve a code → partner terms (active only). Full terms for internal use.
+  // Tolerant: (1) hard-normalise (#/case/punctuation), (2) exact match, (3) a
+  // typo-tolerant fallback — the UNIQUE nearest active code within edit distance
+  // 2 (guarded: both strings ≥4 chars, distance ≤ half the code length, and no
+  // tie with the runner-up). Returns `fuzzy:true` when matched by the fallback.
   async function resolveReferralCode(code: string) {
     const c = normCode(code);
     if (!c) return null;
-    const row = await prisma.referralProgram.findUnique({ where: { code: c }, include: { agency: { select: { id: true, name: true } } } });
+    let row: any = await prisma.referralProgram.findUnique({ where: { code: c }, include: { agency: { select: { id: true, name: true } } } });
+    let fuzzy = false;
+    if (!row || !row.active) {
+      row = null;
+      if (c.length >= 4) {
+        const actives = await prisma.referralProgram.findMany({ where: { active: true }, include: { agency: { select: { id: true, name: true } } } });
+        const scored = actives
+          .filter((p: any) => p.code.length >= 4)
+          .map((p: any) => ({ p, d: levenshtein(c, p.code) }))
+          .sort((a: any, b: any) => a.d - b.d);
+        const best = scored[0];
+        const second = scored[1];
+        if (best && best.d <= 2 && best.d <= Math.floor(best.p.code.length / 2) && (!second || second.d > best.d)) {
+          row = best.p;
+          fuzzy = true;
+        }
+      }
+    }
     if (!row || !row.active) return null;
     return {
       agencyId: row.agencyId,
@@ -232,18 +276,72 @@ export function referralScripts(prisma: PrismaClient) {
       rewardModel: row.rewardModel,
       rewardFlatPct: row.rewardFlatPct == null ? null : Number(row.rewardFlatPct),
       settlementMode: row.settlementMode,
+      fuzzy,
     };
   }
 
   // Student-facing validation (public booking form). Leaks ONLY the discount —
-  // never the partner reward/commission.
+  // never the partner reward/commission. Returns the canonical `code` so the
+  // front-end can confirm what we accepted ("we read that as AMICI ✓"), and
+  // `corrected` when a typo was auto-fixed.
   async function validateForStudent(code: string) {
     const r = await resolveReferralCode(code);
     if (!r) return { valid: false };
-    return { valid: true, label: r.label, studentDiscountPct: r.studentDiscountPct };
+    return { valid: true, code: r.code, label: r.label, studentDiscountPct: r.studentDiscountPct, corrected: !!r.fuzzy };
   }
 
-  return { upsertProgram, syncFromHubSpot, getProgram, listPrograms, resolveReferralCode, validateForStudent };
+  // Partner-portal view: the agency's own referral program + the bookings
+  // attributed to its code (Booking.discountCode), with the student discount and
+  // the partner reward computed per booking. Reward is INDICATIVE here (flat % of
+  // booking value) — the authoritative, payment-accrued ReferralReward ledger is
+  // Phase 2. Scoped by agencyId (caller passes the session's agency).
+  async function partnerReferrals(agencyId: number) {
+    const r2 = (n: number) => Math.round(n * 100) / 100;
+    const prog = await prisma.referralProgram.findUnique({ where: { agencyId } });
+    if (!prog) return { program: null, rows: [], totals: { count: 0, value: 0, reward: 0 } };
+    const bookings = await prisma.booking.findMany({
+      where: { discountCode: prog.code },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true, status: true, amountTotal: true, amountPaid: true, createdAt: true, serviceStart: true,
+        student: { select: { firstName: true, lastName: true, nationality: true } },
+        courses: { select: { name: true, startDate: true }, orderBy: { id: 'asc' }, take: 1 },
+      },
+    });
+    const discPct = Number(prog.studentDiscountPct);
+    const rewardPct = prog.rewardFlatPct == null ? 0 : Number(prog.rewardFlatPct);
+    const rows = bookings.map((b: any) => {
+      const value = Number(b.amountTotal || 0);
+      return {
+        bookingId: b.id,
+        student: `${b.student?.firstName || ''} ${b.student?.lastName || ''}`.trim() || '—',
+        nationality: b.student?.nationality || null,
+        course: b.courses?.[0]?.name || null,
+        start: b.courses?.[0]?.startDate || b.serviceStart || null,
+        status: b.status,
+        value: r2(value),
+        paid: r2(Number(b.amountPaid || 0)),
+        studentDiscount: r2(value * discPct / 100),
+        reward: r2(value * rewardPct / 100),
+        createdAt: b.createdAt,
+      };
+    });
+    return {
+      program: {
+        code: prog.code, label: prog.label, studentDiscountPct: discPct,
+        rewardModel: prog.rewardModel, rewardFlatPct: rewardPct,
+        settlementMode: prog.settlementMode, active: prog.active,
+      },
+      rows,
+      totals: {
+        count: rows.length,
+        value: r2(rows.reduce((s, r) => s + r.value, 0)),
+        reward: r2(rows.reduce((s, r) => s + r.reward, 0)),
+      },
+    };
+  }
+
+  return { upsertProgram, syncFromHubSpot, getProgram, listPrograms, resolveReferralCode, validateForStudent, partnerReferrals };
 }
 
 function serialize(row: any) {

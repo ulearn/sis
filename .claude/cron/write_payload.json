@@ -1,1 +1,68 @@
-[{"range":"H18:K18","values":[["1577th check Mon 12 Oct 2026 UTC — CORRECTION: prior H used wrong booking/student IDs\n• Prior runs 1539–1563 diagnosed booking 17950 / student 14523 — both DO NOT EXIST in database\n• Real student: 766 (Ana Jessica Rosa de Paula Santos), booking 1308\n• Booking 1308: CONFIRMED, confirmed = false (anomaly), EUR 1,530 fully paid\n• Booking updated today 12 Oct 13:18 UTC — recent edit (specific field unknown from DB)\n• Payment 17186 (EUR 1,280, Bank Transfer, paymentDate 17 Feb 2026): xeroPaymentId = null — Day 238\n• Payment 17050 (EUR 250, Bank Transfer, paymentDate 17 Feb 2026): xeroPaymentId = null — Day 238\n• Booking Course 1350 (Academic Year Afternoon): May 25 to Nov 27 2026, active = true — student ongoing\n• confirmed = false is likely root of says-booking-cancelled (SIS uses confirmed flag for display)\n• Fix NOT RUN","Set confirmed=true on booking 1308; link payments 17186+17050 to Xero. See recipe: issue-17-addendum-12oct.md","1577th Mon 12 Oct UTC. CORRECTION: prior H had wrong IDs (booking 17950/student 14523 do not exist). Real: student 766, booking 1308, CONFIRMED not CANCELLED. Updated today 13:18 UTC. P17186+P17050 Day 238 xero null.","P17186+P17050 Day238 xero null; confirmed=false"]]},{"range":"H12:K12","values":[["1577th check Mon 12 Oct 2026 UTC — no data change from 1563rd\n• Booking Course 24696 (General English AM Plus, booking 17912): ended 3 Jul 2026, active = true — Day 101\n• Student 1063 (Valeriya Salauyova): hubspotContactId = null — no HubSpot link\n• Booking 17912: CONFIRMED, confirmed = true, EUR 1,938 fully paid, last updated 8 Jul 2026\n• Fix NOT RUN","Deactivate Booking Course 24696; add HubSpot contact ID for student 1063. See recipe: issue-11-addendum-12oct.md","1577th Mon 12 Oct UTC. No data change from 1563rd (13h). BC24696 Day 101 still active. Student 1063 still no HubSpot link.","BC24696 Day101; no HubSpot link"]]},{"range":"H21:K21","values":[["1577th check Mon 12 Oct 2026 UTC — URGENT — no data change from 1574th\n• Booking 1605 (Ariunsarnai Batbayar, student 1047): status = PENDING, confirmed = false\n• Amount total = EUR 1,509; amount paid = EUR 0; 0 payments on file\n• Booking Course 1791 (Academic Year Renewal Morning): 13 Apr – 23 Oct 2026, active = true\n• Course ends 23 Oct 2026 — 11 days from today — URGENT\n• Booking last updated 23 Jun 2026 (111 days with no activity)\n• Fix NOT RUN","Contact agency/student re: payment before Oct 23 or cancel booking 1605. See recipe: issue-20-addendum-12oct-e.md","1577th Mon 12 Oct UTC. 11 days to course end (Oct 23). EUR 1,509 unpaid. No activity since Jun 2026. No change from 1574th.","EUR1,509 EUR0 paid; Oct23 11d; URGENT"]]},{"range":"H10:K10","values":[["1577th check Mon 12 Oct 2026 UTC — no data change from 1574th\n• Booking Course 1660 (ULearn Renewal Morning, booking 1498): ended 5 Jun 2026, active = true — Day 129\n• Booking Course 1909 (Academic Year Morning, booking 1682, student 947 Suvderdene Bayartsog): ended 24 Oct 2025, active = true — Day 353 (1-year mark 24 Oct 2026 — 12 days away)\n• Document 171 (certificate, template 82): status = DRAFT, created 5 Jun 2026 — Day 129\n• Fix NOT RUN","Deactivate Booking Courses 1660 + 1909; reissue document 171. See recipe: issue-9-addendum-12oct.md","1577th Mon 12 Oct UTC. No change from 1574th. BC1909 Day 353; 1-year mark 24 Oct — 12 days away. Doc 171 DRAFT Day 129.","doc DRAFT Day129; BC1909 Day353 12d to 1yr"]]},{"range":"H14:K14","values":[["1577th check Mon 12 Oct 2026 UTC — no data change from 1563rd (14h stale)\n• Booking 17981 (Lizbeth del Carmen, student 14522): status = CONFIRMED, confirmed = false (anomaly) — Day 140\n• Booking last edited 10 Oct 22:01 UTC — 62 hours with no further changes\n• Booking Extra 96 (INSURANCE): fee = null, active = true — still unpriced\n• Payment 17520 (EUR 1,407.50, Bank Transfer, May 2026): xeroPaymentId = null\n• Amount total = EUR 1,407.50, amount paid = EUR 1,407.50 — fully paid\n• Fix NOT RUN","Confirm insurance fee with Kelly; set confirmed=true; link payment 17520 to Xero. See recipe: issue-13-addendum-12oct.md","1577th Mon 12 Oct UTC. Day 140. No change from 1563rd (14h). Booking last edited Oct 10 22:01 (62h stale). Insurance fee null; confirmed=false; Payment 17520 no Xero link.","insurance fee null Day140; confirmed=false"]]},{"range":"H47:K47","values":[["1577th check Mon 12 Oct 2026 UTC — no data change from 1574th\n• Booking Accommodation 11443 (Bader Fareed A Al Jurbua, booking 18312, Jenny Manders, bed 44): Oct 8–10 2026; Day 3 overdue; active = true; fee = null; 0 billing items; EUR 60 owed (2 days at EUR 210/week)\n• Booking Accommodation 11444 (Bader Fareed A Al Jurbua, booking 18312, Capel Street, bed 83): Oct 10–17 2026; active = true; fee = null; 0 billing items; EUR 210 owed (1 week) — blocked by Capel Xero null (Issue 54)\n• Booking Accommodation 11386 (Mohammed Ibrahimi Alsaidalani, booking 18145, Edel McDonald, bed 33): Aug 30–Oct 10 2026; Day 3 overdue; active = true; fee = null; Xero contact set\n• Item 222 (Sep 13–27, EUR 520, xeroBillId = null): ghost duplicate — delete before next billing run\n• Item 227 (Sep 13–27, EUR 520, Xero 855c7193): submitted — authoritative\n• Missing: Sep 27–Oct 10 (13 days) at EUR 260/week (incl halal diet supplement) = EUR 482.86\n• Total outstanding: BA11443 EUR 60 + BA11386 Sep 27–Oct 10 EUR 482.86 + BA11444 EUR 210 (Capel blocked) = EUR 752.86\n• Fix NOT RUN","Delete ghost item 222; bill BA11443 EUR 60; add Sep 27–Oct 10 EUR 482.86 for BA11386; BA11444 Capel blocked (Issue 54). See recipe: issue-45-addendum-12oct-f.md","1577th Mon 12 Oct UTC. No change from 1574th. BA11386+BA11443 Day 3. EUR 752.86 total (BA11444 EUR 210 blocked by Issue 54).","BA11386+BA11443 OVERDUE Day3; BA11444 Capel blocked; EUR753"]]}]
+[
+  {
+    "range": "H7:K7",
+    "values": [
+      [
+        "1825th check Fri 23 Oct 2026 UTC — no data change from 1806th\n• 553 students with phone number not starting with \"+\" — Day 117 unresolved\n• Total students with phone on file: 1,410 (+2 from 1,408 since 1806th — 2 new valid numbers added)\n• Fix NOT RUN",
+        "Bulk-normalise phone numbers. See recipe: issue-6-addendum-23oct.md",
+        "1825th Fri 23 Oct UTC. Day 117. 553 bad unchanged. Total phones 1,410 (+2). No data change from 1806th.",
+        "553 bad phones; Day 117"
+      ]
+    ]
+  },
+  {
+    "range": "H9:K9",
+    "values": [
+      [
+        "1825th check Fri 23 Oct 2026 UTC — no data change from 1819th\n• Booking Course 1488 (Afternoon General, booking 1388): ended 19 Sep 2025, active = true — Day 399 (13+ months)\n• Booking Course 1489 (Afternoon General, booking 1388): ended 19 Dec 2025, active = true — Day 308\n• Booking Course 52 (Morning General Plus, booking 49): ended 4 Sep 2026, active = true — Day 49\n• Booking Course 1909: see Issue 9 — 1-year mark 24 Oct 2026 (TOMORROW)\n• Fix NOT RUN",
+        "Deactivate Booking Courses 1488, 1489, 52; see Issue 9 for BC1909. See recipe: issue-8-addendum-23oct.md",
+        "1825th Fri 23 Oct UTC. BC1488 Day 399 (13mo+); BC1489 Day 308; BC52 Day 49. BC1909 1yr mark TOMORROW.",
+        "BC1488 Day399 13mo; BC52 Day49; see Iss9 URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H10:K10",
+    "values": [
+      [
+        "1825th check Fri 23 Oct 2026 UTC — no data change from 1824th\n• Booking Course 1909 (Academic Year Morning, booking 1682, Suvderdene Bayartsog): end = 24 Oct 2025, active = true\n• Day 364 past end date — 1-year mark hits 2026-10-24 (TOMORROW)\n• ilepCode = 0318/0010 (set — OK)\n• Deactivation recipe written; fix NOT RUN",
+        "Deactivate BC1909 (set active = false). 1-year mark TOMORROW. See recipe: issue-9-addendum-23oct.md",
+        "1825th check. 1-year mark Oct 24 (TOMORROW). Deactivation not run. BC1660 also pending per 8 Oct recipe.",
+        "BC1909 Day364; 1yr mark Oct24 TOMORROW; URGENT"
+      ]
+    ]
+  },
+  {
+    "range": "H11:K11",
+    "values": [
+      [
+        "1825th check Fri 23 Oct 2026 UTC — no data change from 1804th\n• Booking Course 107 (Morning General, booking 97): ended 22 May 2026, active = true — Day 154 past end\n• Booking Course 24793 (General English AM, booking 18002): ended 5 Jun 2026, active = true — Day 140 past end\n• Booking 97: CONFIRMED, confirmed = false (anomaly), fully paid EUR 1,741\n• Fix NOT RUN",
+        "Set active=false on Booking Courses 107 and 24793. See recipe: issue-10-addendum-23oct.md",
+        "1825th Fri 23 Oct UTC. No data change. BC107 Day 154; BC24793 Day 140. Booking 97 confirmed=false persists.",
+        "BC107 Day154; BC24793 Day140"
+      ]
+    ]
+  },
+  {
+    "range": "H12:K12",
+    "values": [
+      [
+        "1825th check Fri 23 Oct 2026 UTC — no data change from 1811th\n• Booking Course 24696 (General English AM Plus, booking 17912): ended 3 Jul 2026, active = true — Day 112 past end\n• Student 1063 (Valeriya Salauyova): hubspotContactId = null — no HubSpot link\n• Fix NOT RUN",
+        "Deactivate Booking Course 24696; link student 1063 to HubSpot. See recipe: issue-11-addendum-23oct.md",
+        "1825th Fri 23 Oct UTC. Day 112. No data change from 1811th.",
+        "BC24696 Day112; no HubSpot link"
+      ]
+    ]
+  },
+  {
+    "range": "H55:K55",
+    "values": [
+      [
+        "1825th check Fri 23 Oct 2026 UTC — corrected totals; data last checked 1820th\n• 30 pending host payment runs (status = pending, unchanged)\n• Host Payment Line Item 242 (Edel McDonald / Mohammed Ibrahimi Alsaidalani, period 5-10 Oct 2026, EUR 157.14): xeroStatus = null — not yet submitted to Xero — Day 13 since period end\n• True unpaid outstanding = EUR 3,138.57 (EUR 2,981.43 submitted to Xero, EUR 157.14 unsubmitted)\n• Note: previous H stated EUR 3,167 / EUR 186 unsubmitted — now corrected (diet was not a separate record)\n• Fix NOT RUN",
+        "Submit Host Payment Line Item 242 once Issue 54 resolved; close runs where all items paid. See recipe: issue-53-addendum-23oct.md",
+        "1825th Fri 23 Oct UTC. Corrected: EUR 3,138.57 total (was EUR 3,167 — error). EUR 157.14 unsubmitted (HPLI 242). 30 pending runs.",
+        "30 pending runs; EUR 3,138.57 unpaid; fix NOT RUN"
+      ]
+    ]
+  }
+]

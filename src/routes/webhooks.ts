@@ -10,6 +10,7 @@ import { applyChristmasClosures } from '../scripts/christmas-shunt';
 import { documentScripts } from '../scripts/documents';
 import { syncArrivalFromFlight } from '../lib/transport-sync';
 import { reconcileBookingCredit } from '../scripts/partner-credit-sync';
+import { referralScripts } from '../scripts/referral';
 import { sendStudentEmail } from './email';
 import { emailTemplateWhere } from '../scripts/email-templates';
 import { alertMissingStudentContact } from '../scripts/alerts/emails';
@@ -1685,6 +1686,11 @@ export function webhookRoutes(prisma: PrismaClient) {
         // is. Mirrored to Booking.hubspotChallenge below and gates the
         // student-profile Challenges tab.
         'challenge',
+        // 'referral_code' = the partner/ambassador code the student booked
+        // with (captured on the Drupal form → HubSpot deal). Resolved below to
+        // a canonical ReferralProgram code and stamped on Booking.discountCode
+        // for attribution + partner-portal visibility + reward accrual.
+        'referral_code',
       ].join(',');
       const deal = await hsGet(`/crm/v3/objects/deals/${resolvedDealId}?properties=${dealProps}`);
 
@@ -1973,6 +1979,24 @@ export function webhookRoutes(prisma: PrismaClient) {
       // nullable and their readers null-guard (e.g. classes.ts noArrivalDate bucket).
       const courseStart = dp.course_start ? new Date(dp.course_start) : null;
       const courseEnd = dp.course_end ? new Date(dp.course_end) : null;
+
+      // Referral attribution — resolve the deal's referral_code to a canonical
+      // ReferralProgram code (tolerant of #/case/typos) and stamp it on the
+      // booking. Best-effort: a bad/unknown code just leaves discountCode null.
+      let referralCode: string | null = null;
+      if (dp.referral_code) {
+        try {
+          const r = await referralScripts(prisma).resolveReferralCode(String(dp.referral_code));
+          if (r) {
+            referralCode = r.code;
+            console.log(`[Invoice Created] deal ${resolvedDealId}: referral "${dp.referral_code}" → ${r.code} (${r.label || r.agencyName})${r.fuzzy ? ' [fuzzy]' : ''}`);
+          } else {
+            console.warn(`[Invoice Created] deal ${resolvedDealId}: referral code "${dp.referral_code}" did not resolve to any active program`);
+          }
+        } catch (e: any) {
+          console.warn(`[Invoice Created] referral resolve failed for deal ${resolvedDealId}: ${e?.message || e}`);
+        }
+      }
       const courseWeeks = parseInt(dp.course_weeks) || null;
 
       // Per-classification accumulators for non-course/non-accom SKU line items.
@@ -2287,6 +2311,7 @@ export function webhookRoutes(prisma: PrismaClient) {
             placementFee: placementFeeTotal > 0 ? placementFeeTotal : null,
             dataSource: 'HUBSPOT',
             hubspotChallenge: dp.challenge || null, // null if deal doesn't have challenge set
+            discountCode: referralCode || undefined, // referral/ambassador attribution (canonical code)
             note: `HubSpot Deal: ${dp.dealname || resolvedDealId}`,
             courses: courses.length > 0 ? { create: courses } : undefined,
             accommodations: accommodations.length > 0 ? { create: accommodations } : undefined,
@@ -2313,6 +2338,10 @@ export function webhookRoutes(prisma: PrismaClient) {
             if (invoiceId && existing.hubspotInvoiceId !== invoiceId) {
               await prisma.booking.update({ where: { id: existing.id }, data: { hubspotInvoiceId: invoiceId } as any });
               console.log(`[Invoice Created] (create-collision self-heal) booking #${existing.id} hubspotInvoiceId ${existing.hubspotInvoiceId || '(null)'} → ${invoiceId}`);
+            }
+            if (referralCode && !(existing as any).discountCode) {
+              await prisma.booking.update({ where: { id: existing.id }, data: { discountCode: referralCode } as any });
+              console.log(`[Invoice Created] (self-heal) booking #${existing.id} referral attribution → ${referralCode}`);
             }
             try {
               const synced = await resyncBookingLogistics(prisma, existing.id, resolvedDealId, invoiceId || null);

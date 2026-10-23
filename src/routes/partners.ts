@@ -12,6 +12,7 @@ import { CONTRACT_VERSION, gatherContractData, renderPreviewBytes, renderPreview
 import { pushCredit, deleteCreditEverywhere } from '../scripts/partner-credit-sync';
 import { acceleratorScripts } from '../scripts/accelerator';
 import { clearanceScripts } from '../scripts/clearance';
+import { referralScripts } from '../scripts/referral';
 import { documentScripts, buildGrossReceiptHtml, receiptPage } from '../scripts/documents';
 import { groupScripts } from '../scripts/groups';
 import { parseGroupList } from '../scripts/group-list-parser';
@@ -45,6 +46,7 @@ export function partnerRoutes(prisma: PrismaClient) {
   const accel = acceleratorScripts(prisma);
   const clearance = clearanceScripts(prisma);
   const groups = groupScripts(prisma);
+  const referral = referralScripts(prisma);
 
   // Guard: authenticated partner only. Returns the agencyId or sends 401.
   function requirePartner(req: any, res: any): number | null {
@@ -95,6 +97,15 @@ export function partnerRoutes(prisma: PrismaClient) {
     try {
       res.json({ success: true, ...(await accel.activate(agencyId, req.session?.user ?? null)) });
     } catch (e: any) { res.status(500).json({ success: false, error: String(e?.message || e) }); }
+  });
+
+  // ── Referrals (ambassador/referral partners) ─────────────────────
+  // This agency's referral program + the bookings attributed to its code, with
+  // the student discount and (indicative) partner reward per booking.
+  router.get('/referrals', async (req: any, res) => {
+    const agencyId = requirePartner(req, res); if (agencyId == null) return;
+    try { res.json(await referral.partnerReferrals(agencyId)); }
+    catch (e: any) { res.status(500).json({ error: String(e?.message || e) }); }
   });
 
   // ── Me ───────────────────────────────────────

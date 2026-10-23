@@ -456,10 +456,14 @@ export function bookingScripts(prisma: PrismaClient) {
         const inCourse = existing.filter(h => +new Date(h.startDate) <= ce && +new Date(h.endDate) >= cs);
         const existingWeeks = inCourse.reduce((s, h) => s + (h.weeks || 0), 0);
         if (existingWeeks + weeks > 10) warnings.push(`This brings this course's holidays to ${existingWeeks + weeks} weeks — the entitlement is 10 weeks per Academic Year.`);
-        // ILEP timing (soft — staff may override): no wk 1–2, ≤6 in wk 3–25, ≤4 in wk 26–35.
+        // Holiday timing (soft — staff may override with force): no wk 1–2, a
+        // 6-week in-course cap, and the ISD cumulative one-third/no-front-load
+        // check. See lib/ilep-holiday.ts. The capped (6th) in-course week also
+        // raises a compliance-review warning so staff don't add it blind.
         const { checkIlepAllowance } = await import('../lib/ilep-holiday');
         const ilep = checkIlepAllowance(new Date(hitCourse.startDate!), inCourse, startDate, weeks);
         if (!ilep.ok) warnings.push(ilep.error.replace(/\s*\(ILEP rule\)\.?$/, '') + ' (ILEP).');
+        else if (ilep.complianceFlag && ilep.complianceReason) warnings.push(ilep.complianceReason);
       }
 
       // NOTE: the old hard 35-week visa ceiling (earliest AY start → latest

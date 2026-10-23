@@ -19,7 +19,7 @@ import { notifyChallenge } from '../lib/challenge-notify';
 import { mapCourseType, buildBaseDealProps } from './booking-deal';
 import { sendStudentEmail } from '../routes/email';
 import { bookingScripts } from './bookings';
-import { checkIlepAllowance } from '../lib/ilep-holiday';
+import { checkIlepAllowance, HOLIDAY_IN_COURSE_CAP } from '../lib/ilep-holiday';
 
 const iso = (d: any) => d ? new Date(d).toISOString().slice(0, 10) : null;
 
@@ -1629,11 +1629,14 @@ export function studentScripts(prisma: PrismaClient) {
         : `That's ${weeks} weeks but you only have ${remaining} week${remaining === 1 ? '' : 's'} of holiday left this year.` };
     }
 
-    // ILEP timing rules (hard): none in weeks 1–2; ≤6 weeks in the tuition block
-    // (weeks 3–25); ≤4 in the tail (weeks 26–35). Measured from the course start.
+    // Holiday-timing rules (hard, student self-service): no holidays in weeks
+    // 1–2; a 6-week in-course cap (4 weeks held for after the course); and the
+    // ISD cumulative one-third/no-front-loading check. See lib/ilep-holiday.ts
+    // + .claude/tmp/SIS_Holiday_Rules_Claude_Code_Handover.md.
+    let ilep: ReturnType<typeof checkIlepAllowance> | null = null;
     if (course.startDate) {
       const inCourse = taken.filter(h => +new Date(h.startDate) <= ce && +new Date(h.endDate) >= cs);
-      const ilep = checkIlepAllowance(new Date(course.startDate), inCourse, start, weeks);
+      ilep = checkIlepAllowance(new Date(course.startDate), inCourse, start, weeks);
       if (!ilep.ok) return { success: false, error: ilep.error };
     }
 
@@ -1653,6 +1656,24 @@ export function studentScripts(prisma: PrismaClient) {
       return { success: false, error: String(e?.message || e).replace(/^⚠\s*/, '') };
     }
 
+    // Compliance audit: the capped (6th) in-course week is a provisional
+    // management decision, NOT an ISD approval — pin an auditable note to the
+    // holiday row so staff review it rather than treat it as compliant.
+    const complianceFlag = !!(ilep && ilep.ok && ilep.complianceFlag);
+    if (complianceFlag && result?.holiday?.id) {
+      try {
+        await prisma.entityNote.upsert({
+          where: { entityType_entityId: { entityType: 'holiday', entityId: result.holiday.id } },
+          create: {
+            bookingId: booking.id, entityType: 'holiday', entityId: result.holiday.id,
+            createdBy: 'student-app',
+            body: `⚠ COMPLIANCE REVIEW (rule ${(ilep as any).ruleVersion}): ${(ilep as any).complianceReason}`,
+          },
+          update: { body: `⚠ COMPLIANCE REVIEW (rule ${(ilep as any).ruleVersion}): ${(ilep as any).complianceReason}` },
+        });
+      } catch { /* audit note is best-effort — the holiday is already saved */ }
+    }
+
     // Notify success@ (staff can veto/adjust in SIS). Never fail the request on email.
     const name = [student.firstName, student.lastName].filter(Boolean).join(' ');
     const esc = (s: any) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -1665,12 +1686,16 @@ export function studentScripts(prisma: PrismaClient) {
         from: 'app@ulearnschool.com',
         fromName: 'ULearn Student App',
         to: 'success@ulearnschool.com',
-        subject: `[Holiday Request] ${name} (#${student.id}) — ${weeks} wk from ${iso(start)}`,
+        subject: `${complianceFlag ? '⚠ [Holiday — COMPLIANCE REVIEW] ' : '[Holiday Request] '}${name} (#${student.id}) — ${weeks} wk from ${iso(start)}`,
         html:
+          (complianceFlag
+            ? `<p style="font-size:14px;line-height:1.6;background:#fef3c7;border:1px solid #f59e0b;border-radius:6px;padding:10px 12px;margin:0 0 12px;color:#92400e"><strong>⚠ Compliance review.</strong> ${esc((ilep as any).complianceReason)}</p>`
+            : '') +
           `<p style="font-size:15px;line-height:1.6"><a href="${studentUrl}" style="${lnk}">${esc(name)}</a> has requested a holiday through the Student App.</p>` +
           `<p style="font-size:15px;line-height:1.8;margin:0 0 4px">` +
           `<strong>Booking:</strong> <a href="${bookingUrl}" style="${lnk}">#${booking.id} · ${esc(course?.name || '—')}</a><br>` +
           `<strong>Dates:</strong> ${iso(start)} → ${iso(end)} (${weeks} week${weeks === 1 ? '' : 's'})<br>` +
+          `<strong>In-course holidays:</strong> ${(ilep && ilep.ok) ? (ilep as any).inCourseWeeks : (takenWeeks + weeks)} of ${HOLIDAY_IN_COURSE_CAP} allowed during the course<br>` +
           `<strong>Allowance:</strong> ${takenWeeks + weeks} of ${entitlement} weeks used this year (${remaining - weeks} left)</p>` +
           `<hr style="border:none;border-top:1px solid #e2e8f0;margin:16px 0">` +
           `<p style="font-size:13px;color:#555;line-height:1.6">Holiday recorded in SIS. If you need to veto it for any reason you can do so. Otherwise it will proceed as indicated by the Student Request.</p>`,
@@ -1680,7 +1705,7 @@ export function studentScripts(prisma: PrismaClient) {
       });
     } catch { /* email is a nicety — the holiday is already saved */ }
 
-    return { success: true, startDate: iso(start), endDate: iso(end), weeks, remaining: remaining - weeks, shunted: result?.weekdaysPushed || 0 };
+    return { success: true, startDate: iso(start), endDate: iso(end), weeks, remaining: remaining - weeks, shunted: result?.weekdaysPushed || 0, complianceFlag, inCourseWeeks: (ilep && ilep.ok) ? (ilep as any).inCourseWeeks : undefined };
   }
 
   // Cancel a holiday the student previously booked — only one that hasn't started

@@ -2,6 +2,69 @@
 
 Open work for this project. Protocol: anything left unfinished at the end of a session goes here (not in memory); finished work is moved to ToDo-Done.md. Synced with Wrike (space "hub" → folder "SIS") every 5 minutes — edit the text here; status syncs both ways.
 
+## Sarantuya Taivankhuu Co. (#347) — credit ledger −€50 + legacy-credit gap
+
+**Priority:** Medium
+**Status:** Waiting — Neil (how to resolve the −€50; whether to backfill legacy grants)
+**Added:** 2026-10-22
+**Updated:** 2026-10-22T17:55:06Z
+
+Agency 347 (Saraa / Sarantuya) partner portal shows **Credit on Account = −€50** — an impossible negative. Diagnosed 2026-10-22.
+
+- The formal `agency_credits` ledger has only 5 rows (all 2026): +980 / −980 (Nominjin Amartsogt) net 0; +1400 (CREDIT #17 "Gunsanaa refunding", src Gantuguldur's payment → Xero CN-0413) / −1400 (DEBIT #18, auto, HubSpot credit memo on Gantuguldur Gansukh booking #18321) net 0; then **DEBIT #19 −€50** (auto, HubSpot credit memo on Ariuntugs Boldbaatar booking #18332, SIS payment #18210 method "ULearn Credit").
+- **Root cause: #19 is an UNFUNDED auto-debit.** The invoice-paid webhook posts a DEBIT whenever it detects a HubSpot credit memo applied to a booking invoice, but no matching +€50 CREDIT grant was ever banked for this agency → balance goes negative. Not a code bug in itself; a data gap (the grant side was never formalised).
+- **Systemic:** this agency has a **7-year history of informal cross-student "Internal Assignment" / "ULearn Credit" reallocations** (Saraa moves balances between students constantly — dozens of payments, e.g. #648/#649, #17087/#17088, #964/#966, #17460-17463). The formal ledger (starts 2026-06) captures almost none of it, so Neil's "credit audit" is blind to pre-2026 credit and to any memo applied without a SIS grant row.
+- **Resolution options for the €50 (Neil's call):** (a) if the €50 HubSpot credit memo is legitimate (a real reallocation from some student balance), add a +€50 CREDIT grant row documenting its source → ledger zeroes; (b) if the memo was applied in error, void it in HubSpot + void DEBIT #19. Do NOT auto-create a grant on assumption (finance-sensitive). Also consider: clamp the portal display at ≥0 and flag negatives rather than showing −€50 to the agency.
+
+---
+
+## Saikhantes Shagdarsuren (#1001) — renewal LoA (RESOLVED) + €750 Nov balance watch
+
+**Priority:** Medium
+**Status:** Waiting — Nov payment (agent Saraa) · LoA issued 2026-10-22
+**Added:** 2026-10-22
+**Updated:** 2026-10-22T19:25:06Z
+
+RESOLVED 2026-10-22: renewal LoA issued for the embassy appointment. Chain cleared: invoice **INV-1601** raised on deal **529492368616** (€1,500), SIS booking **#18398** ingested, **€750 paid** via credit assignment (below), LoA issued manually by NM.
+
+- **€750 paid leg:** Gantogtokh Bayarjargal's visa-refusal refund (#1568) was assigned to Saikhantes's renewal. Saikhantes paid agent Saraa; Saraa paid Gantogtokh — the €750 **never transited ULearn's bank**. Recorded as HubSpot commerce payment 1412150526169 applied to INV-1601 (05 Oct) → auto-synced to SIS #18398 (PARTIAL, €750/€1,500, payment #18271). Offsetting leg on refund #81 (below). **Xero: reconcile this non-bank payment to a clearing/suspense account, NOT the bank** (finance/accounts@).
+- **Remaining €750 (open balance, due November):** left as the student's open invoice balance; agent **Saraa / Sarantuya #347 is responsible / "standing over it"** — recorded as financial note #12 on #18398. NOT posted as an agency-ledger debit (would double-count the open invoice). If Nov payment misses, convert then.
+- **Credit-history note:** her 2025 booking #1724 was part-funded by two €550 legacy Internal Assignment reallocations (#648/#649) from other students' balances — which is why she's absent from the formal agency credit audit (legacy moves, not ledger grants).
+
+---
+
+## Gantogtokh Bayarjargal (#1016) — visa-refusal refund #81 pending approval
+
+**Priority:** Medium
+**Status:** Waiting — Neil (approve/dispatch; stamp €250 AIB)
+**Added:** 2026-10-22
+**Updated:** 2026-10-22T19:25:07Z
+
+RefundRequest **#81** created 2026-10-22 (visa refusal; never arrived — 0 attendance). Base €2,290 − €300 fee = **€1,990 due**.
+
+- **Recorded:** €750 refunded via credit assignment to Saikhantes #18398 (non-bank, see above) → `amountRefunded €750`.
+- **Not yet stamped:** €250 cash refunded via AIB (NM, 12 Oct) per REFUNDS sheet. Stamp it (`amountRefunded → €1,000`) to show the true **€990 cash balance**.
+- **NOT approved/dispatched** — approval cancels booking #1568 + moves HubSpot deal → lost (escrow=No) + raises Xero RFV bill for the €990 cash balance. Awaiting Neil's go.
+
+---
+
+## Escrow state reconciliation — SIS↔HubSpot↔TransferMate drift
+
+**Priority:** Medium
+**Status:** Waiting — Neil/finance (confirm releases with TransferMate before converting)
+**Added:** 2026-10-22
+**Updated:** 2026-10-22T11:30:06Z
+
+Fixed the operational bug (2026-10-22): the class-placement pool wrongly excluded released students whose Payment kept `method='TransferMate Escrow'` (permanent provenance per `.knowledge/kb/finance/escrow.md`). It now discriminates held on `type='Escrow'` only (classes.ts `unassignedStudents`). Jiaming Wang #14487 unblocked; KB updated with the alignment rule.
+
+Audit surfaced SIS-held (`type='Escrow'`) rows out of step with HubSpot — each needs TransferMate confirmation before converting the shadow row to `type='Standard'` (KB rule: never re-tag on assumption; release only when TM confirms):
+- [ ] **Closed-WON but HubSpot `escrow=Yes`** (Yes→No flip never fired; SIS shadow still held): Saranzaya Khishigbayar #931 (deal 343764313287), Burte-Ujin Ulziibat #1038 (503018836167), Ying Pan #14657 (517774452974).
+- [ ] **HubSpot `escrow=No` + won (released) but SIS shadow still `type='Escrow'`**: Fayez Alanazi #14605 (509475255488) — clearest "released in HS, not converted in SIS".
+- [ ] **Visa APPROVED but still held both sides** → chase TM to release: Hangtian Zhang #14646 (517613161707); plus Uyanga Tungalag #917 (already in KB, awaiting TM).
+- [ ] **HubSpot `escrow=null` (never-escrow) but SIS tagged escrow + deal won**: Wanying Song #872 (297666180293) — likely a mis-tag; review.
+
+---
+
 ## Gate LOA auto-issue email on the signed contract (LifePass/AY)
 
 **Priority:** Medium
@@ -1311,9 +1374,9 @@ webhooks.ts / hubspot-sync.ts treat any SKU starting "LP" as a LifePass (Academi
 
 **Priority:** High
 **Status:** In progress
-**Progress:** Spec written (`.claude/projects/referral-setup.md`). Phase 1: [x] `referral_programs` cache table + `ReferralProgram` model (live, verified); [x] HubSpot props created — 6 on Company + 6 on Contact (group `sales_properties`) + Deal `referral_code` (group `dealinformation`). Design locked w/ Neil: props on Company AND Agent-Employee Contact (sole-trader + Ambassador reuse); autoQuote is always downstream (stamp-on-deal); Xero payout account = existing `PartnerPayments`. [x] `src/scripts/referral.ts` engine (upsert→proxy-PATCH company+Agent-Employee contact, syncFromHubSpot cache mirror, code-uniqueness incl. ambassadorCode, resolveReferralCode, validateForStudent) + `src/routes/referral.ts` (PUBLIC `/sis/referral/validate` w/ CORS for ulearnschool.com; staff `/sis/api/referral` CRUD, writes admin/accounts-only) + mounted in app.ts. tsc 0, restarted, validate endpoint + resolver verified. Next: admin "Referral Programs" view → Drupal `discount_code` wire (validate + stamp via booking_enrichment) → hub autoQuote reads referral_code → `/invoice-created` → Booking.discountCode+agency. (Live AMICI record needs Neil's %s.)
+**Progress:** Spec written (`.claude/projects/referral-setup.md`). Phase 1: [x] `referral_programs` cache table + `ReferralProgram` model (live, verified); [x] HubSpot props created — 6 on Company + 6 on Contact (group `sales_properties`) + Deal `referral_code` (group `dealinformation`). Design locked w/ Neil: props on Company AND Agent-Employee Contact (sole-trader + Ambassador reuse); autoQuote is always downstream (stamp-on-deal); Xero payout account = existing `PartnerPayments`. [x] `src/scripts/referral.ts` engine (upsert→proxy-PATCH company+Agent-Employee contact, syncFromHubSpot cache mirror, code-uniqueness incl. ambassadorCode, resolveReferralCode, validateForStudent) + `src/routes/referral.ts` (PUBLIC `/sis/referral/validate` w/ CORS for ulearnschool.com; staff `/sis/api/referral` CRUD + `/agencies` picker, writes admin/accounts-only) + mounted in app.ts. [x] **Admin "Referral Programs" view** in admin.html (Docs section sidebar) — list, agency-search create, edit form (code/label/discount/reward model+%/settlement/active), Save→PUT (shows HubSpot push count), Sync-from-HubSpot; writes UI-gated to admin/accounts. [x] **AMICI live** — agency 643 / HubSpot company 450325692610: code `AMICI`, 10% student discount, AMBASSADOR_FLAT 10% reward, PAYOUT settlement, active. Verified: public validate→`{valid:true,studentDiscountPct:10}` (reward not leaked), all 6 props on the HubSpot company, SIS cache mirrored. tsc 0, restarted. **NB starting %s are Marco's Ambassador proposal — Neil to confirm/adjust in the new UI.** Next: Drupal `discount_code` wire (validate + stamp via booking_enrichment) → hub autoQuote reads referral_code → `/invoice-created` → Booking.discountCode+agency.
 **Added:** 2026-10-21
-**Updated:** 2026-10-21T17:15:06Z
+**Updated:** 2026-10-22T19:50:06Z
 
 Driver: Amici di Dublino (Marco Torelli) — Italian referral community, fixed code `AMICI`,
 student discount (≈10%) + partner reward (Accelerator 22–44% tiered), paid out weekly via
@@ -1327,10 +1390,28 @@ reward is a **net-new Accounts-Payable payout** (accrue on payment → Wednesday
 → remittance → Portal Financial tab). The booking form `discount_code` field already exists but
 is inert; `Booking.discountCode` + `Student.ambassadorCode` are defined-but-unconsumed.
 
-- [ ] **Phase 1** — structure + capture + attribution (makes AMICI real): `ReferralProgram` cache
-      model; HubSpot company+deal props; SIS referral CRUD (proxy-PATCH company) + admin view;
-      wire Drupal `discount_code` (validate + stamp via booking_enrichment); hub autoQuote applies
-      student discount + attribution; `/invoice-created` → `Booking.discountCode` + agency.
+- [~] **Phase 1** — structure + capture + attribution (makes AMICI real): [x] `ReferralProgram` cache
+      model; [x] HubSpot company+deal props; [x] SIS referral CRUD (proxy-PATCH company) + admin view;
+      [x] AMICI program created live; [ ] wire Drupal `discount_code` → HubSpot; [ ] hub autoQuote applies
+      student discount + attribution; [ ] `/invoice-created` → `Booking.discountCode` + agency.
+      **Drupal audit 2026-10-22 (CONFIRMED NOT DONE — handover gap):** booking webform HAS the front-end field
+      (`discount_code` textfield, placeholder `#ReferralCode`) but it is NOT forwarded to HubSpot — absent from
+      the `hubspot_webform_handler` `field_mapping` AND from the custom handler's hardcoded auto-forward list
+      (`HubspotTrackingWebformHandler.php`, tracking_fields = gclid/ga_*/utm_*/hsa_*). So entered codes die at
+      submission; no deal ever gets `referral_code`. To close capture: (1) add `discount_code` to the webform
+      handler mapping/auto-forward (ulearn access, careful edit to a live form); (2) add a matching field on
+      HubSpot form `42b3dec0-90f2-4bfb-971f-62e4bf7f1d45` mapped to the `referral_code` property (Contact+Deal
+      props already exist). Also: `normCode` in referral.ts must strip `#`/punctuation + fuzzy-match typos
+      (amichi/amicci/amishi) so "#amici"/"amici"/variants all resolve — Neil 2026-10-22.
+- [x] **DEMO SLICE BUILT 2026-10-22 (tsc 0, deployed):** forgiving resolver (`normCode` strips `#`/punctuation;
+      `resolveReferralCode` fuzzy fallback = unique nearest active code within edit-distance 2, guards ≥4 chars /
+      ≤half code length / no tie) — verified amici/#Amici/AMICHI/amicci/amishi→AMICI, AMI/bogus rejected, live over
+      HTTPS; `/invoice-created` reads deal `referral_code` → stamps `Booking.discountCode` (+self-heal backfill);
+      partner-portal **Referrals** tab (partners.html + `GET /sis/partners/api/referrals` → `partnerReferrals`):
+      program summary + totals + per-booking table, tab shown only when a program exists. AMICI login exists
+      (info@amicididublino.com / agency 643). **To watch live:** stamp `referral_code=AMICI` on a test HubSpot deal
+      → invoice → attributes → shows in portal. Reward is indicative (flat % of value); payment-accrued ledger =
+      Phase 2. Still TODO for hands-off prod: Drupal capture (above) + hub autoQuote applying the 10% discount.
 - [ ] **Phase 2** — `ReferralReward` ledger; accrue on `/invoice-paid`; Portal Referral table +
       Finance "Referral Rewards" card; refund/cancel clawback.
 - [ ] **Phase 3** — Xero ACCPAY payout (`createReferralPayoutBill`, clone bills/refund.js) +
