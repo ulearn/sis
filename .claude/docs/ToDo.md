@@ -18,6 +18,23 @@ Agency 347 (Saraa / Sarantuya) partner portal shows **Credit on Account = −€
 
 ---
 
+## Uyanga Tungalag (#917) — €3,066 escrow receipt reconciliation + INV-1571 renewal balance
+
+**Priority:** Medium
+**Status:** Waiting — Neil/finance (code the €3,066 in Xero; watch INV-1571 €1,620)
+**Added:** 2026-10-23
+**Updated:** 2026-10-23
+
+€3,066 "Received" bank line (ref `ULEARNP2025900`, 20 Oct 2026) was unreconcilable against Xero. Diagnosed 2026-10-23 — it's the **original Fidelio Academic Year booking's escrow**, finally cleared to the bank; nothing in Xero to match because that booking predates the migration.
+
+- **Booking #1467** (Fidelio id 41545) — AY Morning, 27 Apr → 20 Nov 2026, Mongolian (visa→escrow). No HubSpot deal, **no Xero invoice** (pre-May-2026). Escrow €3,066 placed 20 Oct 2025 (receipt R20253818, Fidelio payment 36936), now released to bank.
+- **€2,405 vs €3,370 is the known Fidelio gross/net artefact:** €3,370 = gross `course.fee`; €2,405 = net the school recorded as banked (`amount_total`), ~28.6% off — one of the 474 bookings in the `fidelo-gross-net-cleanup` task. EasyGo (#117) is net terms ("Net prior to arrival"; ~25% indicative — confirm rate from HubSpot, authoritative, not the Postgres holdover field).
+- **We banked €3,066 — €661 over the recorded net €2,405.** Escrow holds the student-side payment; €2,405 was commission-netted. Per Neil: take the surplus to incomings, don't query EasyGo.
+- **Xero action:** code the €3,066 to the old AY booking (course-fee income, or clear a 2025 AY receivable if accrued — not-yet-closed 2025 accounts). **Do NOT apply it to INV-1571.**
+- **Renewal is separate:** deal 524422961339 → **INV-1571** (issued 13 Oct 2026, AUTHORISED): €1,870 total (Renewal AY AM €1,500 + Insurance €150 + Exam €220), **€250 paid, €1,620 due**. Watch that balance; unrelated to the €3,066.
+
+---
+
 ## Saikhantes Shagdarsuren (#1001) — renewal LoA (RESOLVED) + €750 Nov balance watch
 
 **Priority:** Medium
