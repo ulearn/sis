@@ -2,6 +2,29 @@
 
 Open work for this project. Protocol: anything left unfinished at the end of a session goes here (not in memory); finished work is moved to ToDo-Done.md. Synced with Wrike (space "hub" → folder "SIS") every 5 minutes — edit the text here; status syncs both ways.
 
+## Exam booking → Procurement dashboard integration (cohort A/B)
+
+**Priority:** High
+**Status:** In progress — handover delivered to fins Claude; SIS-side decisions open
+**Added:** 2026-10-26
+**Updated:** 2026-10-26T12:40:06Z
+
+Code-checked the built exam module 2026-10-26. It works (eligibility, picker, CES templates, admin, reminder cron; 252 CES sittings loaded; 3 test `StudentExamBooking` rows, all NEEDS_ATTENTION). Nothing live — `cesEmail=null` blocks sends, `directPayEnabled=false` = everyone treated PREPAID. Handover written for the fins Claude: `hub:~/web/hub.ulearnschool.com/public_html/fins/EXAM-PROCUREMENT-HANDOVER.md`.
+
+New requirement (Neil, reoriented 2026-10-26): **SIS PUSHES** cohort-A (prepaid) exam bookings into the **fins procurement dashboard** (`/fins/procurement`) the moment the student books — requester "SIS". Accounts approve weekly → then CES is notified. NOT a hub poll. Cohort B (not prepaid) stays direct-to-CES, never procurement. Note at `hub:~/web/hub.ulearnschool.com/public_html/fins/EXAM-PROCUREMENT-HANDOVER.md`.
+
+- **Detection = already seated:** `/invoice-paid` webhook writes the exam line from the paid HubSpot invoice onto the booking as an `EXAM_FEE` `BookingExtra`. Has paid exam extra ⇒ cohort A; none ⇒ cohort B.
+- **Kill the v1/v2 framing in code** — replace the global `cfg.directPayEnabled` toggle with per-student cohort A/B on the exam extra (`src/scripts/exams.ts:287`, `src/lib/exam-config.ts`).
+- **Surfacing rule:** fully paid → green; >50% paid → amber (chase balance); ≤50%/deposit → don't surface.
+- [x] **Push built (2026-10-26):** `hub:fins/scripts/procurement/exams.js` — reconcile script (sibling of `extras.js`), reads SIS via `sisRead` for PREPAID `REQUEST_PENDING`/`REQUESTED` exam bookings, raises **one `store.create` request per booking** (`reference=EX-<id>`, deduped, `requester=SIS`, `category=exams`, `neededBy`=exam date, `amount`=feeEur). Payment tiers: fully paid→raised; >50%→raised+amber title; ≤50%→skipped. Run `node exams.js [--apply]` ("fake the cron"). Dry-run clean; 0 eligible until a student books (the 3 existing rows are NEEDS_ATTENTION assistance asks). No `dashboard.html` change needed (standard card UI → per-student approve/defer).
+- [ ] **Still SIS-side:** move the cohort-A CES send to post-approval (currently just blocked by `cesEmail=null`); decide whether to cron `exams.js` (daily) vs on-booking trigger.
+- [ ] **Move the cohort-A CES send to post-approval** — `createExamRequest` currently emails CES on click; cohort A must wait for procurement approval. Cohort B keeps the on-click direct send. (No cleanup — sends blocked today, `cesEmail=null`.)
+- [ ] **Legacy detection caveat:** only 142/2,271 AY bookings carry the extra today (rest = Fidelio legacy, no webhook). A current legacy student could mis-read as cohort B. Keep conservative default (cohort A) until closed; measure against live in-school cohort before arming.
+- **fins Claude owns:** a "SIS"/System requester in `config.json`; an HTTP intake endpoint calling `store.addAutoLines('exams', head, [line])`; amber/green display; on-approval → CES notify.
+- Statutory "I will sit the exam" undertaking already captured in the student contract (`student-contract.ts`, v2026-10-v1).
+
+---
+
 ## Sarantuya Taivankhuu Co. (#347) — credit ledger −€50 + legacy-credit gap
 
 **Priority:** Medium

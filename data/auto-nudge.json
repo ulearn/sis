@@ -18,7 +18,7 @@
       "time": "08:00",
       "enabled": true,
       "note": "First Dibs — flagged hosts (missed out last cycle, self-serve/manual), front of the queue",
-      "lastFired": "2026-10-19"
+      "lastFired": "2026-10-26"
     },
     {
       "id": "b1w2",
@@ -39,7 +39,7 @@
       "time": "12:00",
       "enabled": true,
       "note": "Dormant — re-engage",
-      "lastFired": "2026-10-19"
+      "lastFired": "2026-10-26"
     },
     {
       "id": "b1w3",
@@ -60,7 +60,7 @@
       "time": "15:00",
       "enabled": true,
       "note": "",
-      "lastFired": "2026-10-19"
+      "lastFired": "2026-10-26"
     },
     {
       "id": "b1w4",
@@ -82,7 +82,7 @@
       "time": "18:00",
       "enabled": true,
       "note": "Most active — reliable",
-      "lastFired": "2026-10-19"
+      "lastFired": "2026-10-26"
     },
     {
       "id": "b2w1",

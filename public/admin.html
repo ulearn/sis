@@ -555,6 +555,10 @@ tr:last-child td { border-bottom: none; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6v6"/><path d="M15 6v6"/><path d="M2 12h19.6"/><path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3"/><circle cx="7" cy="18" r="2"/><path d="M9 18h5"/><circle cx="16" cy="18" r="2"/></svg>
           Transport
         </a>
+        <a class="sidebar-item" data-view="examinations" href="/sis/admin?view=examinations">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 14l9-5-9-5-9 5 9 5z"/><path d="M12 14l6.16-3.42A12 12 0 0 1 12 21a12 12 0 0 1-6.16-10.42L12 14z"/></svg>
+          Exams
+        </a>
         <a class="sidebar-item" data-view="payroll" href="/sis/admin?view=payroll">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
           Payroll
@@ -580,14 +584,10 @@ tr:last-child td { border-bottom: none; }
         </a>
       </div>
       <div class="sidebar-section">
-        <div class="sidebar-section-label">Docs</div>
+        <div class="sidebar-section-label">Other</div>
         <a class="sidebar-item" data-view="documents" href="/sis/admin?view=documents">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
           Documents
-        </a>
-        <a class="sidebar-item" data-view="examinations" href="/sis/admin?view=examinations">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 14l9-5-9-5-9 5 9 5z"/><path d="M12 14l6.16-3.42A12 12 0 0 1 12 21a12 12 0 0 1-6.16-10.42L12 14z"/></svg>
-          Examinations
         </a>
         <a class="sidebar-item" data-view="referrals" href="/sis/admin?view=referrals">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
@@ -1124,57 +1124,74 @@ function loadView(view, opts = {}) {
 // Config is authoritative on HubSpot (Company + Agent-Employee Contact); this
 // view PUTs through /sis/api/referral, which PATCHes HubSpot then mirrors the
 // SIS read-cache. Writes are gated to admin/accounts server-side.
-const REFERRAL_REWARD_MODELS = { AMBASSADOR_FLAT: 'Ambassador (flat %)', ACCELERATOR_TIER: 'Accelerator (tiered)' };
-const REFERRAL_SETTLEMENT = { PAYOUT: 'Payout (Xero Bill)', INVOICE_MARKDOWN: 'Invoice Markdown' };
+const REFERRAL_SETTLEMENT = { PAYOUT: 'Payout (Xero Bill)', INVOICE_MARKDOWN: 'Credit' };
 function referralCanEdit(){ return ['admin','accounts'].includes(currentUser.role); }
 
 function showReferrals(opts = {}) {
   const canEdit = referralCanEdit();
-  document.getElementById('content').innerHTML = `
-    <div style="padding:16px 18px">
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
-        <h2 style="margin:0;font-size:18px">Referral Programs</h2>
-        ${canEdit ? `<button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="referralNew()">+ New Program</button>` : `<span style="margin-left:auto;font-size:12px;color:var(--text-muted)">View only</span>`}
-      </div>
-      <div id="referralBody"><div style="padding:20px;color:var(--text-muted)">Loading…</div></div>
-    </div>`;
-  if (opts.agencyId) referralEdit(opts.agencyId); else referralLoadList();
+  setTopbar('Referrals', '', canEdit
+    ? `<button class="btn btn-primary btn-sm" onclick="referralNew()">+ Add Partner</button>`
+    : `<span style="font-size:12px;color:var(--text-muted)">View only</span>`);
+  document.getElementById('content').innerHTML = `<div style="padding:12px 18px"><div id="referralBody"><div style="padding:20px;color:var(--text-muted)">Loading…</div></div></div>`;
+  referralLoadList();
 }
 
 async function referralLoadList(){
   const body = document.getElementById('referralBody');
+  const canEdit = referralCanEdit();
   try {
     const { programs } = await api('/referral');
-    if (!programs.length) { body.innerHTML = `<div style="padding:20px;color:var(--text-muted)">No referral programs yet. ${referralCanEdit()?'Click <b>+ New Program</b> to set one up.':''}</div>`; return; }
+    if (_referralAdd && programs.some(p => p.agencyId === _referralAdd.agencyId)) _referralAdd = null;
+    const rows = programs.slice();
+    if (_referralAdd) rows.unshift({ agencyId: _referralAdd.agencyId, agencyName: _referralAdd.agencyName, settlementMode: 'PAYOUT', active: true, _new: true });
+    if (!rows.length) { body.innerHTML = `<div style="padding:20px;color:var(--text-muted)">No referral partners yet. ${canEdit?'Click <b>+ Add Partner</b> (top right) to set one up.':''}</div>`; return; }
+    const cols = canEdit ? ['Partner','Code','Discount %','Reward %','Settlement','Active',''] : ['Partner','Code','Discount %','Reward %','Settlement','Active','Synced'];
     body.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px">
       <thead><tr style="text-align:left;border-bottom:2px solid var(--card-border)">
-        ${['Code','Partner','Discount','Reward','Settlement','Active','Synced',''].map(h=>`<th style="padding:7px 8px">${h}</th>`).join('')}
-      </tr></thead><tbody>
-      ${programs.map(p => {
-        const reward = p.rewardModel==='AMBASSADOR_FLAT' ? (p.rewardFlatPct!=null?`${p.rewardFlatPct}% flat`:'flat') : 'Accelerator tier';
-        return `<tr style="border-bottom:1px solid var(--card-border);cursor:pointer" onclick="referralEdit(${p.agencyId})">
-          <td style="padding:7px 8px"><b>${esc(p.code)}</b></td>
-          <td style="padding:7px 8px">${esc(p.agencyName||p.label||('#'+p.agencyId))}</td>
-          <td style="padding:7px 8px">${p.studentDiscountPct}%</td>
-          <td style="padding:7px 8px">${esc(reward)}</td>
-          <td style="padding:7px 8px">${esc(REFERRAL_SETTLEMENT[p.settlementMode]||p.settlementMode)}</td>
-          <td style="padding:7px 8px">${p.active?'<span style="color:#065f46;font-weight:600">Active</span>':'<span style="color:var(--text-muted)">Off</span>'}</td>
-          <td style="padding:7px 8px;color:var(--text-muted)">${p.syncedAt?String(p.syncedAt).slice(0,10):'—'}</td>
-          <td style="padding:7px 8px;color:var(--accent)">Edit ›</td>
-        </tr>`;
-      }).join('')}
-      </tbody></table>`;
+        ${cols.map(h=>`<th style="padding:7px 8px;font-weight:600">${h}</th>`).join('')}
+      </tr></thead>
+      <tbody>${rows.map(p => referralRow(p, canEdit)).join('')}</tbody></table>`;
   } catch(e){ body.innerHTML = `<div style="padding:20px;color:var(--danger)">${esc(e.message||e)}</div>`; }
 }
 
+function referralRow(p, canEdit){
+  const id = p.agencyId;
+  const name = esc(p.agencyName || p.label || ('#'+id));
+  if (!canEdit) {
+    return `<tr style="border-bottom:1px solid var(--card-border)">
+      <td style="padding:7px 8px"><b>${name}</b></td>
+      <td style="padding:7px 8px">${esc(p.code||'—')}</td>
+      <td style="padding:7px 8px">${p.studentDiscountPct!=null?p.studentDiscountPct+'%':'—'}</td>
+      <td style="padding:7px 8px">${p.rewardFlatPct!=null?esc(p.rewardFlatPct)+'%':'—'}</td>
+      <td style="padding:7px 8px">${esc(REFERRAL_SETTLEMENT[p.settlementMode]||p.settlementMode||'—')}</td>
+      <td style="padding:7px 8px">${p.active?'<span style="color:#065f46;font-weight:600">Active</span>':'<span style="color:var(--text-muted)">Off</span>'}</td>
+      <td style="padding:7px 8px;color:var(--text-muted)">${p.syncedAt?String(p.syncedAt).slice(0,10):'—'}</td>
+    </tr>`;
+  }
+  const inp = 'padding:5px 7px;border:1px solid var(--card-border);border-radius:5px;font-size:13px;box-sizing:border-box';
+  return `<tr data-ag="${id}" style="border-bottom:1px solid var(--card-border)">
+    <td style="padding:5px 8px;white-space:nowrap"><b>${name}</b>${p._new?' <span style="font-size:11px;color:var(--accent)">new</span>':''}</td>
+    <td style="padding:5px 8px"><input id="refCode-${id}" value="${esc(p.code||'')}" placeholder="AMICI" style="${inp};width:110px;text-transform:uppercase"></td>
+    <td style="padding:5px 8px"><input id="refDiscount-${id}" type="number" step="0.01" min="0" max="100" value="${p.studentDiscountPct!=null?p.studentDiscountPct:''}" style="${inp};width:70px"></td>
+    <td style="padding:5px 8px"><input id="refRewardPct-${id}" type="number" step="0.01" min="0" max="100" value="${p.rewardFlatPct!=null?p.rewardFlatPct:''}" style="${inp};width:70px"></td>
+    <td style="padding:5px 8px"><select id="refSettlement-${id}" style="${inp}">${Object.entries(REFERRAL_SETTLEMENT).map(([k,v])=>`<option value="${k}" ${(p.settlementMode||'PAYOUT')===k?'selected':''}>${v}</option>`).join('')}</select></td>
+    <td style="padding:5px 8px;text-align:center"><input id="refActive-${id}" type="checkbox" ${p.active!==false?'checked':''}></td>
+    <td style="padding:5px 8px;white-space:nowrap;text-align:right">
+      ${p.code?`<button class="btn btn-ghost btn-sm" onclick="referralSync(${id})" title="Pull the latest from HubSpot">Sync</button> `:''}
+      <button class="btn btn-primary btn-sm" onclick="referralSave(${id})">Save</button>
+    </td>
+  </tr>`;
+}
+
 let _referralAgencySearch = null;
+let _referralAdd = null; // a picked-but-not-yet-saved partner → shown as an editable row until Save
 function referralNew(){
-  if (!referralCanEdit()) return toast('Referral programs are admin/accounts-managed', true);
+  if (!referralCanEdit()) return toast('Referrals are admin/accounts-managed', true);
   const body = document.getElementById('referralBody');
   body.innerHTML = `
     <div style="max-width:520px">
-      <a onclick="referralLoadList()" style="cursor:pointer;color:var(--accent);font-size:13px">‹ Back</a>
-      <h3 style="margin:10px 0 8px;font-size:15px">Choose Partner</h3>
+      <a onclick="referralLoadList()" style="cursor:pointer;color:var(--accent);font-size:13px">‹ Back to list</a>
+      <h3 style="margin:10px 0 8px;font-size:15px">Add Partner</h3>
       <input id="refAgQ" placeholder="Search partner by name…" oninput="referralAgencySearch(this.value)"
         style="width:100%;padding:8px 10px;border:1px solid var(--card-border);border-radius:6px;font-size:14px" autocomplete="off">
       <div id="refAgResults" style="margin-top:6px"></div>
@@ -1190,108 +1207,39 @@ function referralAgencySearch(q){
       const { agencies } = await api('/referral/agencies?q=' + encodeURIComponent(q.trim()));
       if (!agencies.length) { box.innerHTML = `<div style="padding:8px;color:var(--text-muted);font-size:12px">No match.</div>`; return; }
       box.innerHTML = agencies.map(a => `
-        <div onclick='${a.hasHubspot ? `referralEditForm(${JSON.stringify({agencyId:a.id,agencyName:a.name})}, null)` : `toast("This partner has no HubSpot company/contact — cannot store config", true)`}'
+        <div onclick='${a.hasHubspot ? `referralPick(${a.id}, ${JSON.stringify(a.name)})` : `toast("This partner has no HubSpot company/contact — cannot store config", true)`}'
           style="padding:8px 10px;border-bottom:1px solid var(--card-border);cursor:pointer;display:flex;justify-content:space-between;align-items:center">
           <span>${esc(a.name)}</span>
-          ${a.hasHubspot ? '<span style="color:var(--accent);font-size:12px">Select ›</span>' : '<span style="color:var(--danger);font-size:11px">No HubSpot</span>'}
+          ${a.hasHubspot ? '<span style="color:var(--accent);font-size:12px">Add ›</span>' : '<span style="color:var(--danger);font-size:11px">No HubSpot</span>'}
         </div>`).join('');
     } catch(e){ box.innerHTML = `<div style="padding:8px;color:var(--danger)">${esc(e.message||e)}</div>`; }
   }, 250);
 }
 
-async function referralEdit(agencyId){
-  const body = document.getElementById('referralBody');
-  body.innerHTML = `<div style="padding:20px;color:var(--text-muted)">Loading…</div>`;
-  try {
-    const { program } = await api('/referral/' + agencyId);
-    // Resolve the partner name (list carries agencyName; a lone program may not).
-    let agencyName = program && program.label;
-    try { const { programs } = await api('/referral'); const m = programs.find(p=>p.agencyId===Number(agencyId)); if (m) agencyName = m.agencyName || agencyName; } catch {}
-    referralEditForm({ agencyId: Number(agencyId), agencyName: agencyName || ('#'+agencyId) }, program);
-  } catch(e){ body.innerHTML = `<div style="padding:20px;color:var(--danger)">${esc(e.message||e)}</div>`; }
-}
-
-function referralEditForm(ctx, p){
-  const canEdit = referralCanEdit();
-  p = p || {};
-  const model = p.rewardModel || 'AMBASSADOR_FLAT';
-  const settlement = p.settlementMode || 'PAYOUT';
-  const dis = canEdit ? '' : 'disabled';
-  const body = document.getElementById('referralBody');
-  body.innerHTML = `
-    <div style="max-width:560px">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
-        <a onclick="referralLoadList()" style="cursor:pointer;color:var(--accent);font-size:13px">‹ Back</a>
-        <h3 style="margin:0;font-size:15px">${esc(ctx.agencyName)}</h3>
-        ${p.code && canEdit ? `<button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="referralSync(${ctx.agencyId})">Sync from HubSpot</button>` : '<span style="margin-left:auto"></span>'}
-        ${canEdit ? `<button class="btn btn-primary btn-sm" ${p.code&&canEdit?'':'style="margin-left:auto"'} onclick="referralSave(${ctx.agencyId})">Save</button>` : ''}
-      </div>
-      <input type="hidden" id="refAgencyId" value="${ctx.agencyId}">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 14px">
-        <label style="font-size:12px;font-weight:600">Referral Code
-          <input id="refCode" value="${esc(p.code||'')}" ${dis} placeholder="AMICI"
-            style="display:block;width:100%;margin-top:3px;padding:7px 9px;border:1px solid var(--card-border);border-radius:6px;text-transform:uppercase;font-size:14px">
-        </label>
-        <label style="font-size:12px;font-weight:600">Label
-          <input id="refLabel" value="${esc(p.label||ctx.agencyName||'')}" ${dis}
-            style="display:block;width:100%;margin-top:3px;padding:7px 9px;border:1px solid var(--card-border);border-radius:6px;font-size:14px">
-        </label>
-        <label style="font-size:12px;font-weight:600">Student Discount %
-          <input id="refDiscount" type="number" step="0.01" min="0" max="100" value="${p.studentDiscountPct!=null?p.studentDiscountPct:''}" ${dis}
-            style="display:block;width:100%;margin-top:3px;padding:7px 9px;border:1px solid var(--card-border);border-radius:6px;font-size:14px">
-        </label>
-        <label style="font-size:12px;font-weight:600">Reward Model
-          <select id="refModel" ${dis} onchange="referralToggleReward()"
-            style="display:block;width:100%;margin-top:3px;padding:7px 9px;border:1px solid var(--card-border);border-radius:6px;font-size:14px">
-            ${Object.entries(REFERRAL_REWARD_MODELS).map(([k,v])=>`<option value="${k}" ${model===k?'selected':''}>${v}</option>`).join('')}
-          </select>
-        </label>
-        <label style="font-size:12px;font-weight:600">Reward %
-          <input id="refRewardPct" type="number" step="0.01" min="0" max="100" value="${p.rewardFlatPct!=null?p.rewardFlatPct:''}" ${dis}
-            style="display:block;width:100%;margin-top:3px;padding:7px 9px;border:1px solid var(--card-border);border-radius:6px;font-size:14px">
-        </label>
-        <label style="font-size:12px;font-weight:600">Settlement
-          <select id="refSettlement" ${dis}
-            style="display:block;width:100%;margin-top:3px;padding:7px 9px;border:1px solid var(--card-border);border-radius:6px;font-size:14px">
-            ${Object.entries(REFERRAL_SETTLEMENT).map(([k,v])=>`<option value="${k}" ${settlement===k?'selected':''}>${v}</option>`).join('')}
-          </select>
-        </label>
-      </div>
-      <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;font-weight:600">
-        <input id="refActive" type="checkbox" ${p.active!==false?'checked':''} ${dis}> Active
-      </label>
-      <p style="margin:14px 0 0;font-size:12px;color:var(--text-muted);line-height:1.5">
-        Saving writes the code and terms to the partner's HubSpot Company and Agent-Employee Contact, then mirrors the SIS cache. The student discount is the only figure exposed at the booking form; the reward is internal.
-      </p>
-    </div>`;
-  referralToggleReward();
-}
-
-function referralToggleReward(){
-  const model = document.getElementById('refModel');
-  const pct = document.getElementById('refRewardPct');
-  if (!model || !pct) return;
-  const tiered = model.value === 'ACCELERATOR_TIER';
-  pct.disabled = tiered || !referralCanEdit();
-  pct.style.opacity = tiered ? '0.5' : '1';
-  pct.title = tiered ? 'Not used — Accelerator reward is the tiered ladder (set per annual enrolments)' : 'Flat reward percentage';
+// Picked a partner from the Add search → drop an editable row in at the top, ready to fill + Save.
+function referralPick(agencyId, agencyName){
+  _referralAdd = { agencyId: Number(agencyId), agencyName: String(agencyName || ('#'+agencyId)) };
+  referralLoadList();
 }
 
 async function referralSave(agencyId){
+  const g = k => document.getElementById(k + '-' + agencyId);
+  const code = (g('refCode').value || '').trim();
+  if (!code) return toast('Enter a referral code first', true);
   const payload = {
-    code: document.getElementById('refCode').value,
-    label: document.getElementById('refLabel').value,
-    studentDiscountPct: document.getElementById('refDiscount').value,
-    rewardModel: document.getElementById('refModel').value,
-    rewardFlatPct: document.getElementById('refRewardPct').value || null,
-    settlementMode: document.getElementById('refSettlement').value,
-    active: document.getElementById('refActive').checked,
+    code,
+    studentDiscountPct: g('refDiscount').value,
+    rewardModel: 'AMBASSADOR_FLAT',
+    rewardFlatPct: g('refRewardPct').value || null,
+    settlementMode: g('refSettlement').value,
+    active: g('refActive').checked,
   };
   try {
     const out = await api('/referral/' + agencyId, { method: 'PUT', body: payload });
     const pushed = (out.pushed||[]).length, errs = (out.errors||[]).length;
-    toast(errs ? `Saved — HubSpot pushed ${pushed} target(s), ${errs} failed (see console)` : `Saved — HubSpot updated (${pushed} target${pushed===1?'':'s'})`, !!errs);
+    toast(errs ? `Saved — HubSpot pushed ${pushed}, ${errs} failed (see console)` : `Saved — HubSpot updated (${pushed} target${pushed===1?'':'s'})`, !!errs);
     if (errs) console.warn('[referral] HubSpot push errors:', out.errors);
+    _referralAdd = null;
     referralLoadList();
   } catch(e){ toast(e.message||String(e), true); }
 }
@@ -1300,7 +1248,7 @@ async function referralSync(agencyId){
   try {
     await api('/referral/' + agencyId + '/sync', { method: 'POST' });
     toast('Synced from HubSpot');
-    referralEdit(agencyId);
+    referralLoadList();
   } catch(e){ toast(e.message||String(e), true); }
 }
 
@@ -1315,23 +1263,23 @@ function examBadge(s){ const [c,b] = EXAM_STATUS_STYLE[s] || ['#374151','#e5e7eb
 let _examImportRows = null;
 
 function showExaminations(opts = {}) {
+  setTopbar('Exams');
   document.getElementById('content').innerHTML = `
     <div style="padding:16px 18px">
       <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
-        <h2 style="margin:0;font-size:18px">Examinations</h2>
         <div id="examTabs" style="display:flex;gap:4px">
-          <button class="btn btn-ghost btn-sm" data-et="requests" onclick="examTab('requests')">Requests</button>
-          <button class="btn btn-ghost btn-sm" data-et="sittings" onclick="examTab('sittings')">Sittings</button>
-          <button class="btn btn-ghost btn-sm" data-et="settings" onclick="examTab('settings')">Settings</button>
+          <button class="btn btn-secondary btn-sm" data-et="requests" onclick="examTab('requests')">Requests</button>
+          <button class="btn btn-secondary btn-sm" data-et="sittings" onclick="examTab('sittings')">Sittings</button>
+          <button class="btn btn-secondary btn-sm" data-et="settings" onclick="examTab('settings')">Settings</button>
         </div>
-        <a class="btn btn-ghost btn-sm" href="${API}/exams/export" style="margin-left:auto">Export CSV</a>
+        <a href="${API}/exams/export" style="margin-left:auto;color:var(--accent);font-size:12px">Export CSV</a>
       </div>
       <div id="examBody"><div style="padding:20px;color:var(--text-muted)">Loading…</div></div>
     </div>`;
   if (opts.id) examOpenRequest(opts.id); else examTab('requests');
 }
 function examTab(which){
-  document.querySelectorAll('#examTabs [data-et]').forEach(b => b.classList.toggle('btn-primary', b.dataset.et === which));
+  document.querySelectorAll('#examTabs [data-et]').forEach(b => { b.className = 'btn btn-sm ' + (b.dataset.et === which ? 'btn-primary' : 'btn-secondary'); });
   if (which === 'requests') examLoadRequests();
   else if (which === 'sittings') examLoadSittings();
   else examLoadSettings();
