@@ -1,56 +1,67 @@
 [
   {
-    "range": "H38:K38",
+    "range": "H71:K71",
     "values": [
       [
-        "• 443rd check Fri 21 Aug 2026 ~20:00 UTC — CRITICAL: Sat 22 Aug < 4 hours\n• Booking Accommodation 11311 (bed 84, booking 17980): ends Sat 22 Aug, fee EUR 3,850, active — checkout in hours\n• Booking Accommodation 11393 (bed 88, booking 17980): starts Sat 22 Aug, fee = null, active — checkin in hours, fee NOT SET\n• Booking 17980: CONFIRMED, fully paid EUR 5,331, amountOpen = 0\n• Calculated fee for Booking Accommodation 11393 = EUR 5,331 - EUR 3,850 = EUR 1,481\n• Fix NOT RUN",
-        "Set fee EUR 1,481 on Booking Accommodation 11393; deactivate 11311 after checkout Sat 22. Recipe: issue-36b-addendum-21aug-f.md",
-        "443rd Fri 21 Aug ~20:00 UTC. CRITICAL: Sat 22 < 4h. BA 11393 fee null still. Fix NOT RUN.",
-        "URGENT: Sat22 < 4h"
+        "1936th check Tue 27 Oct 2026 UTC — no data change from 1925th\n• Refund Request 77 (RFV-1002, EUR 350): xeroBillStatus = submitted, xeroBillPaidAt = null — Day 19 since sent to Xero (8 Oct 2026)\n• Booking Accommodation 11437 (Capel Street, booking 18353): fee = null, active = true, ends 1 Nov 2026 — 5 days to checkout (URGENT)\n• Booking Accommodation 11435 (ended 11 Oct 2026): active = true — Day 16 past end date\n• Fix NOT RUN",
+        "Pay RFV-1002 in Xero; set fee on BA11437 before 1 Nov; deactivate BA11435. See recipe: issue-65-addendum-27oct.md",
+        "1936th Tue 27 Oct 2026 UTC. No change. RFV-1002 submitted in Xero, unpaid Day 19. BA11437 fee null, ends Nov 1 (5d URGENT). BA11435 active Day 16.",
+        "RFV-1002 Day19 unpaid; BA11437 fee null; Nov1 5d URGENT"
       ]
     ]
   },
   {
-    "range": "H39:K39",
+    "range": "H21:K21",
     "values": [
       [
-        "• 443rd check Fri 21 Aug 2026 ~20:00 UTC — no change since 64th (~16:10 UTC)\n• 5 stale Booking Accommodations on bed 83, all active:\n  - Booking Accommodation 11239 (ended 24 May, 89 days stale, fee EUR 1,050, booking 22)\n  - Booking Accommodation 11168 (ended 20 Jun, 62 days stale, fee EUR 700, booking 92)\n  - Booking Accommodation 11285 (ended 5 Jul, 47 days stale, fee = null, booking 17825)\n  - Booking Accommodation 11352 (ended 11 Jul, 41 days stale, fee EUR 360, booking 18156)\n  - Booking Accommodation 11179 (ended 9 Aug, 12 days stale, fee EUR 1,360, booking 82)\n• Booking 17825 (BA 11285): CONFIRMED, fully paid EUR 2,008 — fee not set on Booking Accommodation\n• Current occupant BA 11173 (booking 88): 9 Aug to 30 Aug, fee EUR 1,080 — active\n• Next occupant Booking Accommodation 25 (booking 17844): starts 30 Aug — 9 days\n• Fix NOT RUN",
-        "Set fee EUR 2,008 on BA 11285 (booking 17825); deactivate BAs 11239, 11168, 11285, 11352, 11179. Recipe: issue-37-addendum-21aug-b.md",
-        "443rd Fri 21 Aug ~20:00 UTC. No change. 5 stale BAs unchanged. BA 11285 fee null (booking 17825). Aug 30 = 9 days. Fix NOT RUN.",
-        "5 stale BAs; Aug 30 = 9d"
+        "1936th check Tue 27 Oct 2026 UTC — no data change from 1922nd\n• Booking Course 1791 (Academic Year Renewal Morning, booking 1605): ended 23 Oct 2026, active = true — Day 4 past end date (URGENT)\n• Booking 1605: status = CONFIRMED, amountPaid = 0, totalAmount = EUR 1,509 — fully unpaid\n• Fix NOT RUN",
+        "Confirm with Kelly whether student still enrolled. If lapsed cancel booking 1605 + deactivate BC1791",
+        "1936th Tue 27 Oct 2026 UTC. Day 4 past course end. EUR 1,509 fully unpaid. URGENT.",
+        "BC1791 Day4 EXPIRED; EUR1509 unpaid; URGENT"
       ]
     ]
   },
   {
-    "range": "H43:K43",
+    "range": "H56:K56",
     "values": [
       [
-        "• 443rd check Fri 21 Aug 2026 ~20:00 UTC — CRITICAL: Sat 22 Aug < 4 hours\n• Booking Accommodation 11396 (bed 44, booking 18180): ends Sat 22 Aug, fee = null, active — checkout in hours, fee NOT SET\n• Booking Accommodation 11397 (bed 89, booking 18180): starts Sat 22 Aug to 6 Sep, fee = null, active — checkin in hours, fee NOT SET\n• Booking Accommodation 11357 (bed 178, booking 18180): ended 15 Aug, fee EUR 1,250, active — 6 days stale\n• Booking Accommodation 11392 (bed 168, booking 18180): starts 6 Sep, ends 14 Sep, fee EUR 415, active\n• Booking Accommodation 11394 (bed 89, booking 17826): ended 9 Aug, fee = null, active — 12 days stale (different booking)\n• Booking 18180: CONFIRMED, fully paid EUR 2,584.96\n• Fee split: EUR 1,250 + EUR 415 = EUR 1,665 accounted; remainder EUR 919.96 — BA 11396 = EUR 306.65 (7 nights), BA 11397 = EUR 613.31 (15 nights)\n• Fix NOT RUN",
-        "Set fee EUR 306.65 on BA 11396; EUR 613.31 on BA 11397; deactivate BAs 11357 + 11394. Recipe: issue-41-addendum-21aug-f.md",
-        "443rd Fri 21 Aug ~20:00 UTC. CRITICAL: Sat 22 < 4h. BAs 11396 + 11397 fee null. Fix NOT RUN.",
-        "URGENT: Sat22 < 4h"
+        "1936th check Tue 27 Oct 2026 UTC — no data change\n• Accommodation Provider 15 (Capel Street): xero_contact_id = null — root cause unchanged\n• All Capel Street billing remains blocked\n• Issues blocked: 36 (row 38), 37 (row 39), 41 (row 43), 43 (row 45), 45 (row 47), 53/55 (rows 55/68), 65 (row 71)",
+        "Create Xero contact for Capel Street; set xero_contact_id on accommodation_providers WHERE id=15. See recipe: issue-54-capel-xero-null.md",
+        "1936th Tue 27 Oct 2026 UTC. Capel xero_contact_id still null. 7 dependent issues blocked.",
+        "Capel Xero null; BA32 Day16; BA11449 Day10; 7 issues blocked"
       ]
     ]
   },
   {
-    "range": "H45:K45",
+    "range": "H64:K64",
     "values": [
       [
-        "• 443rd check Fri 21 Aug 2026 ~20:00 UTC — no change since 55th (~12:00 UTC)\n• Same bed 83 as Issue 37 — 5 stale Booking Accommodations unchanged (see Issue 37 row 39 for detail)\n• Current occupant BA 11173 (booking 88): 9 Aug to 30 Aug, fee EUR 1,080 — active\n• Next occupant Booking Accommodation 25 (booking 17844): starts 30 Aug — 9 days\n• Fix NOT RUN",
-        "See Issue 37 (row 39) — same bed 83, same fix. Recipe: issue-43-addendum-21aug-b.md",
-        "443rd Fri 21 Aug ~20:00 UTC. No change. Aug 30 = 9 days. Fix NOT RUN.",
-        "5 stale BAs; Aug 30 = 9d"
+        "1936th check Tue 27 Oct 2026 UTC — no data change\n• Booking Course 24699 (Academic Year Morning, Gretel Nunez, booking 17917): ended 4 Sep 2026, active = true — Day 53 past end date\n• Booking Course 25099 (Academic Year Morning): starts 9 Nov 2026, ends 11 Jul 2027, ilepCode = 0318/0011 — 13 days to start\n• Student class assignments for Booking Course 25099 = 0 rows — class assignment NOT yet created",
+        "Create class assignment for BC25099 before 9 Nov; deactivate BC24699. See recipe: issue-62r64-addendum-27oct.md",
+        "1936th Tue 27 Oct 2026 UTC. BC24699 Day 53 active. BC25099 ilepCode=0318/0011, starts Nov 9 (13d), no student class assignment yet.",
+        "BC24699 Day53 active; BC25099 ilepCode SET; Nov9 13d"
       ]
     ]
   },
   {
-    "range": "H50:K50",
+    "range": "H68:K68",
     "values": [
       [
-        "• 443rd check Fri 21 Aug 2026 ~20:00 UTC — no change since 154th (~19:00 UTC)\n• Booking 1624 (Telmuun Enkhsaikhan, student 293): status = PARTIAL, confirmed = false\n• Amount paid = EUR 1,406; amount total = EUR 1,656; amount open = EUR 250\n• 1 payment record: Payment 17956, EUR 100, 31 Mar 2026, transactionId = null\n• EUR 1,306 gap between booking.amountPaid (EUR 1,406) and sum of Payment records (EUR 100)\n• Booking Course 1810 (Academic Year Renewal Morning): started 29 Jun 2026, active, 0 class assignments — day 54\n• Fix NOT RUN",
-        "Investigate EUR 1,306 payment gap via Hub fins/; create class assignment on BC 1810; settle EUR 250; set confirmed = true. Recipe: issue-48-addendum-21aug-b.md",
-        "443rd Fri 21 Aug ~20:00 UTC. BC1810 day 54, 0 SCAs. EUR 1,306 gap (amountPaid 1,406 vs 1 payment EUR 100). Fix NOT RUN.",
-        "payment gap; BC1810 54d; SCA 0"
+        "1936th check Tue 27 Oct 2026 UTC — no data change from 1933rd\n• Host Payment Line Item 242 (run 65, period 5–10 Oct 2026, EUR 157.14): xeroStatus = null — Day 17 since period end\n• Host Payment Run 65 (created 20 Oct 2026, total EUR 605.71): status = pending, approvedAt = null — Day 7 not approved\n• Booking Accommodation 11386 (Edel McDonald, ended 10 Oct 2026): fee = null, active = true — Day 17 past end date",
+        "Set fee on BA11386; approve Run 65; submit HPLI 242 to Xero (EUR 157.14); deactivate BA11386. See recipe: issue-62r68-addendum-27oct-b.md",
+        "1936th Tue 27 Oct 2026 UTC. No change from 1933rd. Run 65 status=pending (not approved, Day 7). HPLI242 Day 17. BA11386 fee null Day 17.",
+        "HPLI242 null Day17; Run65 pending 7d; BA11386 fee null"
+      ]
+    ]
+  },
+  {
+    "range": "H70:K70",
+    "values": [
+      [
+        "1936th check Tue 27 Oct 2026 UTC — no data change from 1925th\n• Booking Course 25156 (General English AM, B2-C1, Bianca Bianchi, booking 18359): started 19 Oct 2026, ends 4 Dec 2026, ilepCode = null — Day 9 in course\n• Student class assignment 631 exists: class 4 (B2-C1 Morning), Oct 19 – Dec 4 2026 — physical placement correct\n• Only ilep_code on booking course is missing",
+        "Identify ILEP code for General English AM (class 4, B2-C1); set ilep_code on BC25156. See recipe: issue-64-addendum-27oct.md",
+        "1936th Tue 27 Oct 2026 UTC. No change. BC25156 ilepCode=null Day 9. Class assignment exists (class 4). Need ILEP code from programme register.",
+        "ilepCode null Day9; class 4 OK; set ilepCode needed"
       ]
     ]
   }

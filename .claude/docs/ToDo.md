@@ -25,6 +25,20 @@ New requirement (Neil, reoriented 2026-10-26): **SIS PUSHES** cohort-A (prepaid)
 
 ---
 
+## Isaac Aguilera (#14718) — Xero invoice on wrong contact + €262.50 payment gap
+
+**Priority:** Medium
+**Status:** Waiting — accounts (Xero write needed)
+**Added:** 2026-10-27
+**Updated:** 2026-10-27T17:40:06Z
+
+Deal 528701655285 ("Isaac Bladimir Aguilera Rebolledo | Chile", €1,157) had got tangled with the wrong contact. Fixed 2026-10-27 by Claude: SIS student #14718 relabelled Jefferson Suresh → Isaac (name/email/phone/hubspotContactId→898554837212, booking #18399 retained); HubSpot `student_id=14718` moved onto Isaac's contact, cleared off Jefferson's, and Jefferson detached from the deal (Isaac=Student-B2C, Rachel Harries=Relative retained).
+
+- [ ] **Xero INV-1602 is still billed to Jefferson Suresh** → should be Isaac (Xero contact `4c6087d4-671c-4781-a5f8-a83de4a8b576`). Can't swap the contact via API/UI because the invoice has payments applied (€512.50) — accounts to credit/void & reissue to Isaac, or move via Xero support. (Claude's Xero + HubSpot MCP connectors are read-only; HubSpot writes done via the SIS `ACCESS_TOKEN`.)
+- [ ] **Payment gap:** SIS + HubSpot show €250 paid (1 deposit, 22 Oct, hubspotPaymentId 1419575996663); Xero INV-1602 shows €512.50 paid — €262.50 recorded in Xero never synced to SIS/HubSpot. Reconcile once the invoice is on the right contact.
+
+---
+
 ## Sarantuya Taivankhuu Co. (#347) — credit ledger −€50 + legacy-credit gap
 
 **Priority:** Medium
@@ -1461,5 +1475,23 @@ is inert; `Booking.discountCode` + `Student.ambassadorCode` are defined-but-unco
 Open commercials for Neil (not Phase-1 blockers): exact %s per Amici; reward base; Xero COS
 account code for payouts; min payout threshold; VAT on the Italian-entity bill; discount-stacking
 vs Challenge (recommend exclusive).
+
+---
+
+## Academic Year: record the 35-week STAY end per booking (not just the 25-week course)
+
+**Priority:** High
+**Status:** Waiting — Neil: approve the field design
+**Added:** 2026-10-27
+**Updated:** 2026-10-27T16:20:06Z
+
+Neil 2026-10-27: an AY (or AY renewal) is 25 weeks of tuition inside a 35-week stay; a renewal is a whole new booking (unlike LifePass, which nests 3 courses). Exams (week 12 → end of stay), insurance cover and the immigration renewal all hang on the stay end, and the SIS has no per-booking field for it. Survey of 198 active AY course rows (hub Claude):
+- BookingCourse start/end = tuition only (189/198 span ≤ 26 weeks); holidayWks = 10 on every row but only feeds attendance, never a date
+- The only stay-type dates are Student.visaFrom/visaUntil: one per STUDENT (a renewal overwrites the first stay), set on 156/198; 58 are < 30 weeks from the course start, 18 > 36
+- Courses are often split (e.g. a 25-week renewal stored as 16 + 9 weeks)
+- BookingCourse.isRenewal is never set (0/198), even on "Academic Year Renewal …" rows
+- [ ] Add a per-booking stay window, e.g. Booking.stayStart / stayEnd (or permissionFrom/Until), filled for AY + renewals: stayEnd = permission end when known, else first AY course start + 35 weeks; LifePass = one window per nested year
+- [ ] Set isRenewal on renewal course rows (and backfill from the course name)
+- [ ] Use stayEnd in the exam window (app offers sittings up to it) and expose it to the hub (procurement insurance cover now uses visaUntil, else start + 35 weeks)
 
 ---
