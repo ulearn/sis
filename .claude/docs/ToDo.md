@@ -1478,20 +1478,45 @@ vs Challenge (recommend exclusive).
 
 ---
 
-## Academic Year: record the 35-week STAY end per booking (not just the 25-week course)
+## Academic Year: visa-grounded stay/renewal dating (25-week course inside a 35-week visa)
 
 **Priority:** High
-**Status:** Waiting — Neil: approve the field design
+**Status:** In progress — rule + orchestration built AND armed live on the create webhook; Augusto fixed. Follow-on items (per-booking stay window, IRP upload, ReSync guard) remain.
+**Progress:** 90% — display, multi-visa UI (+row delete ✕), the ISD dating rule, the `applyRenewalDating` orchestration, AND the live arming on the invoice-created webhook are done; Augusto (#900) committed & verified. Remaining: per-booking stay window, student IRP upload, isRenewal backfill, and a guard so an authoritative ReSync can't overwrite a renewal-dated start back to the HubSpot sale date.
 **Added:** 2026-10-27
-**Updated:** 2026-10-27T16:20:06Z
+**Updated:** 2026-10-29T13:40:06Z
 
-Neil 2026-10-27: an AY (or AY renewal) is 25 weeks of tuition inside a 35-week stay; a renewal is a whole new booking (unlike LifePass, which nests 3 courses). Exams (week 12 → end of stay), insurance cover and the immigration renewal all hang on the stay end, and the SIS has no per-booking field for it. Survey of 198 active AY course rows (hub Claude):
+Neil 2026-10-27/29: an AY (or AY renewal) is 25 weeks of tuition inside a **35-week visa stay**; a renewal is a whole new booking (unlike LifePass, which nests 3 courses). The **visa stamp — not the course Friday — grounds the dates**: a visa's END is the HARD start of the next course (no gap ever; a 1–2 day overlap is fine, a gap is not). Sales key off course Mon/Fri and miss the 10 holiday weeks — that's how renewals get mis-dated. Exams (week 12 → end of stay), insurance cover and the immigration renewal all hang on the visa window.
+
+**Live example — Augusto Almeida Poliani (#900, deal 314876430560):** visa 27 Apr → 28 Dec 2026 (=35wk from course 1 start). Booking 1449 course 1 (27 Apr→16 Oct, 25w) correct. Booking **18404** (renewal, isRenewal) course starts **19 Oct — WRONG**; must start **28 Dec** (= visa #1 end), 25 teaching weeks in a 35-week span, Christmas closure (school holiday 21 Dec→3 Jan already on it) sitting enforced at the front. His app/email showing "back in class 19 Oct" caused a panic; Neil is handling comms. **Booking 18404 data still needs correcting (start 19 Oct → 28 Dec) — and the SIS↔HubSpot drift that creates.**
+
+**SEQUENTIALITY (Neil 2026-10-29):** a visa maps 1:1 to an AY course — visa #1 → AY course #1, visa #2 → AY course #2. Numbering is **ULearn-relative**: an external joiner who did course 1 elsewhere enters us at visa #1 (their 2nd in the State, but their 1st WITH US). A student can hold up to 3 visas (first + 2 renewals).
+
+Survey of 198 active AY course rows (hub Claude, 27 Oct):
 - BookingCourse start/end = tuition only (189/198 span ≤ 26 weeks); holidayWks = 10 on every row but only feeds attendance, never a date
-- The only stay-type dates are Student.visaFrom/visaUntil: one per STUDENT (a renewal overwrites the first stay), set on 156/198; 58 are < 30 weeks from the course start, 18 > 36
-- Courses are often split (e.g. a 25-week renewal stored as 16 + 9 weeks)
-- BookingCourse.isRenewal is never set (0/198), even on "Academic Year Renewal …" rows
-- [ ] Add a per-booking stay window, e.g. Booking.stayStart / stayEnd (or permissionFrom/Until), filled for AY + renewals: stayEnd = permission end when known, else first AY course start + 35 weeks; LifePass = one window per nested year
-- [ ] Set isRenewal on renewal course rows (and backfill from the course name)
-- [ ] Use stayEnd in the exam window (app offers sittings up to it) and expose it to the hub (procurement insurance cover now uses visaUntil, else start + 35 weeks)
+- Only stay-type dates = Student.visaFrom/visaUntil: ONE per STUDENT (a renewal overwrites the first stay — no sequence), set on 156/198; 58 are < 30 weeks from course start, 18 > 36
+- Courses often split (e.g. a 25-week renewal stored as 16 + 9 weeks); BookingCourse.isRenewal never set (0/198)
+
+DONE (2026-10-29, `public/admin.html` booking-detail course card — static, hard-refresh):
+- [x] Removed the duplicate per-course Attendance badge (now one badge in the card top bar; per-course badge kept ONLY for multi-course/nested LifePass where windows genuinely differ)
+- [x] Moved RENEWAL out from beside the Level select → top bar, left of Attendance; tooltip trimmed to "Academic Year renewal"
+- [x] Added a **Visa End** badge to the top bar, date-matched to visa #1's course (shown only where course start == visa from-date; numbered "Visa End #1"), so visa #1's end is NOT wrongly stamped on course #2
+- [x] Visa section (student-detail) relabelled: Visa ID → **Visa ID #1**, Visa To → **Visa End**
+- [x] **Multi-visa model + "Add Visa" UI** (mirrors flights' "Add Outbound"): added Student cols `visa2_id/from/until` + `visa3_id/from/until` (zero-drop ALTER; reflected in schema.prisma; DATE_FIELDS updated; `npx tsc` clean; restarted). Visa section now has #1/#2/#3 (Visa ID #N / From / End), one shared Visa Status, an "Add Visa" button in the collapse header revealing #2 then #3 (`revealNextVisa`), hidden at 3. Saves through the normal student Save. Visa End badge is now sequence-aware (matches a booking's course start to visa #N's from-date → "Visa End #N").
+
+- [x] **Renewal dating rule encoded** (`src/scripts/renewal-dates.ts`): `computeRenewalCourseStart` = latest Monday whose FULL open teaching week (Mon→Sun) completes before the prior visa end, skipping enforced `school_closures` weeks (Christmas) — a closed week isn't the required week. `computeRenewalVisaStay` = from prior visa end, +35wk default (pending uploaded IRP). `assessProposedStart` flags an incoming HubSpot date vs the safe start. UTC math. Dry-run verified on Augusto (#900): prior end Mon 28 Dec → course start **Mon 14 Dec 2026** (pushed 1wk by Christmas closure); visa #2 = 28 Dec 2026 → 30 Aug 2027; HubSpot's 19 Oct flagged (~8wk too early). tsc clean. NO writes yet.
+
+- [x] **Orchestration `applyRenewalDating(prisma, bookingId, {commit})`** (`renewal-dates.ts`): resolves the visa slot from the renewal course's position in the student's AY-course sequence (course #N → visa #N, idempotent), writes `student.visa{N}From/Until`, overrides the renewal course start to the safe Monday + naive end, clears+regenerates the `type='school'` closure holiday via `applyChristmasClosures` (re-extends the end). commit:false = code dry-run. Dry-run then COMMITTED on Augusto #900 & verified: visa #2 = 14 Dec 2026 → 16 Aug 2027; course #2 = 14 Dec 2026 → 21 Jun 2027 (Christmas shunt +10 weekdays).
+
+- [x] **Live trigger ARMED (2026-10-29, Neil's go):** `applyRenewalDating(prisma, booking.id, {commit:true})` now runs in the invoice-created create path (`src/routes/webhooks.ts`, just before the plain Christmas shunt ~L2374), wrapped in try/catch (a failure can't abort booking creation) and logged `[webhook] Renewal dating: …`. Self-guards (no-ops unless it's a renewal with a prior ULearn visa End on file); idempotent; fully reversible. Runs before the plain shunt so it does its own closure shunt on the corrected start and the shunt below no-ops. tsc clean, restarted, app serving. External joiners stay manual (no account at enquiry — knowledge-based staff rule).
+
+TO BUILD (next):
+- [ ] **Guard the ReSync path:** an authoritative ReSync (`resyncBookingLogistics`, webhooks.ts ~L1192) overwrites a differing course start with the HubSpot date — which would UNDO a renewal-dated start on a later re-sync. Either run `applyRenewalDating` after ReSync too, or skip the authoritative start-overwrite for `isRenewal` courses.
+- [ ] Later: let students upload the IRP in the app (auto-read dates → overrides the +35wk default), like the passport auto-read.
+- [ ] **Per-booking stay window** (Booking.stayStart/stayEnd or permissionFrom/Until), filled for AY + renewals from the matching visa (else first AY course start + 35 weeks); LifePass = one window per nested year
+- [ ] Set isRenewal on renewal course rows + backfill from course name
+- [ ] **Renewal-alignment engine:** when a renewal deal/invoice hits the SIS, if type=renewal, OVERRIDE the HubSpot start to the prior visa's END (no gap; Monday or overlap, never a gap) — HubSpot's good-faith Mon-after-Friday date is wrong by the 10 holiday weeks. Then reconcile the resulting SIS↔HubSpot drift (SIS becomes authoritative on dates; push back to the deal — cf. ReSync authoritative pattern).
+- [ ] Use stayEnd in the exam window (app offers sittings up to it) and expose to the hub (insurance cover now uses visaUntil, else start + 35 weeks)
+- [ ] Fix Augusto #900 booking 18404: course start 19 Oct → 28 Dec (+ handle drift)
 
 ---

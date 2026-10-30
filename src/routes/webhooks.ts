@@ -7,6 +7,7 @@ import { createXeroInvoiceFromHubSpot } from '../scripts/xero-invoice-commission
 import { getAuthedXero } from '../scripts/xero';
 import { pushSisStudentIdToHubspot } from '../scripts/hubspot-contact-push';
 import { applyChristmasClosures } from '../scripts/christmas-shunt';
+import { applyRenewalDating } from '../scripts/renewal-dates';
 import { documentScripts } from '../scripts/documents';
 import { syncArrivalFromFlight } from '../lib/transport-sync';
 import { reconcileBookingCredit } from '../scripts/partner-credit-sync';
@@ -2248,9 +2249,15 @@ export function webhookRoutes(prisma: PrismaClient) {
       const courseTypeRaw = String(dp.course_type || '');
       const isBundledCourse = /^ay_year_/i.test(courseTypeRaw) || /^lifepass\s*/i.test(courseTypeRaw);
       const examFeeOn   = isTrue(dp.exam_fee)  || isBundledCourse;
-      const insuranceVal = isBundledCourse
-        ? 'PEL;Health'
-        : (String(dp.insurance || '').trim() || null);
+      // Respect an EXPLICIT insurance selection first. An unbundled AY where the
+      // student declined MediCover arrives as 'PEL' (booking-deal.ts), and the
+      // LoA's conditional Medical-Insurance line keys off this `details` value —
+      // so we must NOT blindly stamp the full bundle over a real 'PEL' choice.
+      // Only fall back to 'PEL;Health' when a bundled course arrives with the
+      // property unset (manual creation / legacy drift), where the bundle is the
+      // safe default.
+      const explicitInsurance = String(dp.insurance || '').trim();
+      const insuranceVal = explicitInsurance || (isBundledCourse ? 'PEL;Health' : null);
 
       // Airport Pickup
       if (isTrue(dp.airport_pickup)) {
@@ -2365,6 +2372,27 @@ export function webhookRoutes(prisma: PrismaClient) {
           }
         }
         throw createErr; // not our case — let the outer handler log + 500
+      }
+
+      // Academic-Year RENEWAL dating (the Augusto case): a renewal course's
+      // HubSpot start date is the SALE date, not the legal re-entry date. Re-ground
+      // it on the prior ULearn visa stay — the new course must start early enough
+      // that a full Mon→Sun teaching week closes before the prior permission
+      // expires (enforced school closures don't count as operational weeks) — and
+      // stamp the matching 35-week visa stay on the student (visa #2 / #3).
+      // Self-guards: no-ops unless this booking is a renewal whose prior ULearn
+      // visa End is already on file (external first-timers stay manual). Idempotent
+      // and fully reversible. Runs BEFORE the plain Christmas shunt below: it does
+      // its own closure shunt on the corrected start, so the call below then no-ops.
+      try {
+        const rn = await applyRenewalDating(prisma, booking.id, { commit: true });
+        if (rn.ok && rn.committed) {
+          console.log(`[webhook] Renewal dating: booking ${booking.id} → visa#${rn.targetVisaSlot} ${rn.plan?.visaFrom}→${rn.plan?.visaUntil}; course#${rn.renewalCourse?.id} start ${rn.renewalCourse?.fromStart}→${rn.renewalCourse?.toStart}`, JSON.stringify(rn.changes));
+        } else if (!rn.ok && rn.skipped) {
+          console.log(`[webhook] Renewal dating: booking ${booking.id} skipped — ${rn.skipped}`);
+        }
+      } catch (e) {
+        console.error(`[webhook] Renewal dating failed for booking ${booking.id} (booking still created):`, (e as any)?.message);
       }
 
       // Auto-apply the school's Christmas closure(s) to AY-visa bookings: shunt

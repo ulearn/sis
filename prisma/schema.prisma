@@ -83,6 +83,15 @@ model Student {
   visaId            String?  @map("visa_id")
   visaFrom          DateTime? @map("visa_from") @db.Date
   visaUntil         DateTime? @map("visa_until") @db.Date
+  // Renewal visa stays (ULearn-relative sequence). Visa #1 = visaId/visaFrom/
+  // visaUntil above maps to Academic Year course #1; #2 → course #2 (renewal 1);
+  // #3 → course #3 (renewal 2). A visa END is the hard start of the next course.
+  visa2Id           String?  @map("visa2_id")
+  visa2From         DateTime? @map("visa2_from") @db.Date
+  visa2Until        DateTime? @map("visa2_until") @db.Date
+  visa3Id           String?  @map("visa3_id")
+  visa3From         DateTime? @map("visa3_from") @db.Date
+  visa3Until        DateTime? @map("visa3_until") @db.Date
   passportValidFrom DateTime? @map("passport_valid_from") @db.Date
   passportValidUntil DateTime? @map("passport_valid_until") @db.Date
 

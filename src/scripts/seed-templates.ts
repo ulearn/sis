@@ -88,10 +88,10 @@ const templates = [
     <tr><td style="padding:3px 0"><strong>Host Address</strong></td><td style="padding:3px 0">{{accommodation.host_address}}</td></tr>
   </table>{/if}</div>
 
-  {if booking.is_academic_year}<div data-editable="insurance_details" style="margin-top:8px">
-    <p style="margin:0 0 6px"><strong>Insurance details:</strong><br>ULearn has organised health insurance for {{student.first_name}} {{student.last_name}} in Ireland through Arachas Insurance. The school policy number is IAS 84420.</p>
-    <p style="margin:0"><strong>Learner Protection:</strong><br>ULearn has partnered with Arachas Insurance to provide protection for its enrolled learners in line with the change in regulations that came into force on July 4, 2022. Our policy number is ECOAG15683.</p>
-  </div>{/if}
+  {if booking.is_academic_year}<div data-editable="insurance" style="margin-top:8px">
+    <p style="margin:0 0 6px"><strong>Insurance</strong></p>
+    <p style="margin:0 0 6px"><strong>Learner Protection:</strong><br>ULearn has partnered with Arachas Insurance to provide protection for its enrolled learners in line with the change in regulations that came into force on July 4, 2022. Our policy number is ECOAG15683.</p>
+  </div>{/if}{if booking.has_medical_insurance}<div data-editable="insurance_medical" style="margin:0"><p style="margin:0"><strong>Medical Insurance:</strong><br>ULearn has organised health insurance for {{student.first_name}} {{student.last_name}} in Ireland through Arachas Insurance. The school policy number is IAS 84420.</p></div>{/if}
 
   <p style="margin:10px 0 0">I wish to confirm that ULearn has the capacity to accommodate {{student.first_name}} {{student.last_name}} on a full-time basis in in-person lessons at our city-centre premises.</p>
 

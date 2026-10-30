@@ -6,6 +6,7 @@ import { emailTemplateWhere } from './email-templates';
 
 const DATE_FIELDS = [
   'birthday', 'visaFrom', 'visaUntil', 'passportValidFrom', 'passportValidUntil',
+  'visa2From', 'visa2Until', 'visa3From', 'visa3Until',
   'flightDate', 'outboundFlightDate',
   'insuranceFrom', 'insuranceUntil', 'medicalFrom', 'medicalUntil',
 ];

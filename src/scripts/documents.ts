@@ -922,6 +922,24 @@ export function documentScripts(prisma: PrismaClient) {
       'booking.is_academic_year': (booking?.courses || []).some(
         (c: any) => /academic year|life ?pass|renewal/i.test(c.name || '') || c.isRenewal,
       ) ? '1' : '',
+      // Did the student actually BUY the health/MediCover half of the insurance
+      // bundle? Drives the LoA's conditional "Medical Insurance" line — Learner
+      // Protection is mandatory (always shown for AY), but MediCover is optional,
+      // so the letter must not claim cover that wasn't purchased. Signal = the
+      // INSURANCE BookingExtra's `details` ('PEL;Health' = both, 'PEL' = LP-only).
+      // Requires AY so the block never renders orphaned on a short-course letter;
+      // null/absent details → hidden (we don't assert cover we can't evidence).
+      'booking.has_medical_insurance': (() => {
+        const isAy = (booking?.courses || []).some(
+          (c: any) => /academic year|life ?pass|renewal/i.test(c.name || '') || c.isRenewal,
+        );
+        if (!isAy) return '';
+        const extras = (booking as any)?.extras || [];
+        const hasHealth = extras.some(
+          (e: any) => e.active && e.extraType === 'INSURANCE' && /health|medical/i.test(e.details || ''),
+        );
+        return hasHealth ? '1' : '';
+      })(),
       'booking.agency': (booking as any)?.agency?.name || '',
       'booking.amount_paid': booking?.amountPaid ? `€${Number(booking.amountPaid).toFixed(2)}` : '',
       'booking.amount_open': booking?.amountOpen ? `€${Number(booking.amountOpen).toFixed(2)}` : '',

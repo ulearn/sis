@@ -5093,16 +5093,40 @@ async function showStudentDetail(id, openTab) {
             </div>
             <!-- Visa box — collapsed on load; click the header to expand. -->
             <div style="border:1px solid var(--card-border);border-left:3px solid #52960585;border-radius:8px;margin-top:12px;overflow:hidden">
-              <div class="collapse-header" onclick="toggleCollapse(this)" style="padding:12px 14px;cursor:pointer">
+              <div class="collapse-header" onclick="toggleCollapse(this)" style="padding:12px 14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px">
                 <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.8px;color:var(--text);font-weight:700">Visa</div>
+                <button type="button" id="addVisaBtn"
+                        onclick="event.stopPropagation();revealNextVisa(this)"
+                        style="${(s.visa3Id||s.visa3From||s.visa3Until)?'display:none;':''}background:transparent;border:0;display:inline-flex;align-items:center;gap:6px;cursor:pointer;color:var(--text-muted);font-size:12px;font-weight:600;padding:0"
+                        title="Add a renewal visa stay (visa #2 / #3) — each renewal course is a new ULearn visa stay">
+                  <span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#e5e7eb;color:#6b7280;font-size:13px;font-weight:600;line-height:1">+</span>
+                  Add Visa
+                </button>
               </div>
               <div class="collapse-body" style="padding:0 14px 12px">
                 <div id="studentFormVisa">
                   <div style="margin-bottom:12px">${selectField('visaStatus','Visa Status',s.visaStatus||'',[['','—'],['Pending','Pending'],['Approved','Approved'],['Refused','Refused'],['Appeal','Appeal']])}</div>
-                  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
-                    ${field('visaId','Visa ID',s.visaId)}
+                  <!-- Visa #1 — the first ULearn stay (maps to Academic Year course #1).
+                       Each row carries a tiny top-right ✕ that clears the whole stay (confirm-guarded). -->
+                  <div data-visa-slot="1" style="position:relative;display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+                    <button type="button" onclick="event.stopPropagation();deleteVisa(${s.id},1,this)" title="Delete Visa #1 — clears all three fields" style="position:absolute;top:0;right:0;width:16px;height:16px;line-height:15px;text-align:center;border:none;border-radius:50%;background:transparent;color:var(--text-muted);font-size:15px;cursor:pointer;padding:0;z-index:1">×</button>
+                    ${field('visaId','Visa ID #1',s.visaId)}
                     ${field('visaFrom','Visa From',s.visaFrom?.split('T')[0],'date')}
-                    ${field('visaUntil','Visa To',s.visaUntil?.split('T')[0],'date')}
+                    ${field('visaUntil','Visa End',s.visaUntil?.split('T')[0],'date')}
+                  </div>
+                  <!-- Visa #2 (renewal 1 → course #2) — hidden until Add Visa, or shown when data exists. No per-renewal status: approval covers all stays. -->
+                  <div class="visa-extra-row" data-visa-slot="2" style="position:relative;display:${(s.visa2Id||s.visa2From||s.visa2Until)?'grid':'none'};grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:14px;padding-top:12px;border-top:1px dashed var(--card-border)">
+                    <button type="button" onclick="event.stopPropagation();deleteVisa(${s.id},2,this)" title="Delete Visa #2 — clears all three fields" style="position:absolute;top:12px;right:0;width:16px;height:16px;line-height:15px;text-align:center;border:none;border-radius:50%;background:transparent;color:var(--text-muted);font-size:15px;cursor:pointer;padding:0;z-index:1">×</button>
+                    ${field('visa2Id','Visa ID #2',s.visa2Id)}
+                    ${field('visa2From','Visa From',s.visa2From?.split('T')[0],'date')}
+                    ${field('visa2Until','Visa End',s.visa2Until?.split('T')[0],'date')}
+                  </div>
+                  <!-- Visa #3 (renewal 2 → course #3) -->
+                  <div class="visa-extra-row" data-visa-slot="3" style="position:relative;display:${(s.visa3Id||s.visa3From||s.visa3Until)?'grid':'none'};grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:14px;padding-top:12px;border-top:1px dashed var(--card-border)">
+                    <button type="button" onclick="event.stopPropagation();deleteVisa(${s.id},3,this)" title="Delete Visa #3 — clears all three fields" style="position:absolute;top:12px;right:0;width:16px;height:16px;line-height:15px;text-align:center;border:none;border-radius:50%;background:transparent;color:var(--text-muted);font-size:15px;cursor:pointer;padding:0;z-index:1">×</button>
+                    ${field('visa3Id','Visa ID #3',s.visa3Id)}
+                    ${field('visa3From','Visa From',s.visa3From?.split('T')[0],'date')}
+                    ${field('visa3Until','Visa End',s.visa3Until?.split('T')[0],'date')}
                   </div>
                 </div>
               </div>
@@ -7177,6 +7201,48 @@ async function saveStudent(id) {
   } catch (e) { toast(e.message, true); }
 }
 
+// Reveal the next renewal-visa slot (#2 then #3) in the student Visa section,
+// mirroring the flights "Add Outbound" reveal. Expands the collapsible Visa
+// section first if it's closed, then hides the Add Visa button once #3 is
+// showing (a student holds at most 3 ULearn visa stays: first + two renewals).
+// Fields save through the normal student Save — no separate call.
+function revealNextVisa(btn) {
+  const wrap = document.getElementById('studentFormVisa');
+  if (!wrap) return;
+  const body = wrap.closest('.collapse-body');
+  if (body && !body.classList.contains('open')) {
+    const hdr = body.previousElementSibling;
+    if (hdr && hdr.classList.contains('collapse-header')) toggleCollapse(hdr);
+  }
+  const rows = [...wrap.querySelectorAll('.visa-extra-row')];
+  for (const r of rows) {
+    if (r.style.display === 'none') { r.style.display = 'grid'; break; }
+  }
+  if (!rows.some(r => r.style.display === 'none') && btn) btn.style.display = 'none';
+}
+
+// Delete a whole visa stay (row). Confirm-guarded (immigration data), then PATCH
+// the three fields to null immediately so "delete" means deleted — no stray
+// save needed. Clears the inputs in place, re-hides renewal slots (#2/#3) and
+// brings the Add Visa button back since a slot just freed up.
+async function deleteVisa(studentId, slot, btn) {
+  if (!confirm(`Delete Visa #${slot} for this student?\n\nThis clears Visa ID #${slot}, Visa From and Visa End. It cannot be undone.`)) return;
+  const body = slot === 1
+    ? { visaId: null, visaFrom: null, visaUntil: null }
+    : { [`visa${slot}Id`]: null, [`visa${slot}From`]: null, [`visa${slot}Until`]: null };
+  try {
+    await api('/students/' + studentId, { method: 'PATCH', body });
+    const row = btn.closest('[data-visa-slot]');
+    if (row) {
+      row.querySelectorAll('[data-field]').forEach(el => { el.value = ''; });
+      if (slot !== 1) row.style.display = 'none';
+    }
+    const addBtn = document.getElementById('addVisaBtn');
+    if (addBtn) addBtn.style.display = 'inline-flex';
+    toast(`Visa #${slot} deleted`);
+  } catch (e) { toast(e.message, true); }
+}
+
 function showVisaApprovalNotification(studentId, studentName) {
   // Don't double-stack — replace any existing card for this student.
   document.getElementById('visaApprovalNotif')?.remove();
@@ -8971,6 +9037,42 @@ async function showBookingDetail(id) {
 
     let rightCol = '';   // Payments + Status History accumulate here (right column)
 
+    // Courses-card top-bar badges. RENEWAL (this booking is an Academic Year
+    // renewal) + Visa End (the permission-to-stay end — the hard date the next
+    // course must start from, no gap). Both sit in the card header, left of the
+    // single Attendance badge. The old inline per-course RENEWAL (beside Level)
+    // and the duplicate per-course Attendance badge were removed (Neil 2026-10-29).
+    //
+    // SEQUENTIALITY: a visa maps 1:1 to an Academic Year course — visa #1 → AY
+    // course #1, visa #2 → AY course #2 … (numbering is ULEARN-relative: an
+    // external joiner's first course WITH US is visa #1 even if it's their 2nd
+    // in the State). Only ONE visa is stored today (visaFrom/visaUntil = visa
+    // #1), so Visa End is surfaced ONLY on the booking whose course actually
+    // starts on that visa's from-date — i.e. visa #1's course. A later renewal
+    // course needs its OWN visa (#2), not captured yet, so it shows NO Visa End
+    // until the multi-visa "Add Visa" model lands (then this numbering
+    // generalises). This avoids stamping visa #1's end onto course #2.
+    const _anyRenewal = (b.courses || []).some(c => c.isRenewal);
+    const _st = b.student || {};
+    const _visaStays = [
+      { n: 1, from: _st.visaFrom, end: _st.visaUntil },
+      { n: 2, from: _st.visa2From, end: _st.visa2Until },
+      { n: 3, from: _st.visa3From, end: _st.visa3Until },
+    ];
+    const _bkFirstStart = (b.courses || []).map(c => c.startDate?.split('T')[0]).filter(Boolean).sort()[0] || null;
+    // Match this booking's course to the visa stay that covers it: the visa
+    // whose FROM-date equals the course start (visa #1 → course #1, #2 → #2 …).
+    // Shows that visa's END, numbered. A course with no matching visa stay yet
+    // (e.g. a renewal whose visa #2 hasn't been entered) shows no badge.
+    const _matchedVisa = _visaStays.find(v => v.from && v.end && _bkFirstStart && v.from.split('T')[0] === _bkFirstStart);
+    const _visaEnd = _matchedVisa ? formatDate(_matchedVisa.end) : null;
+    const _renewalBadge = _anyRenewal
+      ? `<span style="font-size:10px;font-weight:700;background:#dcfce7;color:#166534;padding:3px 8px;border-radius:999px;letter-spacing:.3px;white-space:nowrap" title="Academic Year renewal">RENEWAL</span>`
+      : '';
+    const _visaEndBadge = _matchedVisa
+      ? `<span title="Visa #${_matchedVisa.n} end — permission-to-stay end for this course, and the hard date the next course must start from (no gap). Keyed off the visa, not the course Friday." style="font-size:11px;font-weight:700;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;border-radius:999px;padding:2px 9px;white-space:nowrap">Visa End #${_matchedVisa.n} · ${_visaEnd}</span>`
+      : '';
+
     let html = `
     <!-- Booking detail · LEFT main column | RIGHT meta + payments column -->
     <div class="bk-detail" style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
@@ -8979,6 +9081,7 @@ async function showBookingDetail(id) {
         <div class="card" style="margin-bottom:16px;order:1">
           <div class="card-header collapse-header open" onclick="toggleCollapse(this)" style="border-bottom:none"><h3 style="flex:1">Courses (${b.courses?.length || 0})</h3>
             <div style="display:flex;gap:6px;align-items:center">
+              ${_renewalBadge}${_visaEndBadge}
               <span onclick="event.stopPropagation();openAttendanceOverlay(${b.student?.id},{bookingId:${b.id}})" title="Attendance during this Booking — click for the full record" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;background:#f4fbe8;border:1px solid #6FB42C;color:#365314;border-radius:999px;padding:2px 8px">Attendance <span id="attBk-${b.id}"></span></span>
               ${noteIconHtml('course', b.id)}<button class="btn btn-sm btn-primary" onclick="event.stopPropagation();openAddCourseModal(${b.id})">+ Add</button>
               ${b.courses?.length ? `<button class="btn btn-sm btn-success" onclick="event.stopPropagation();saveAllCourses(${b.id})">Save</button>` : ''}
@@ -9013,7 +9116,6 @@ async function showBookingDetail(id) {
                 <div class="bk-lbl"><span class="form-label">Session</span><select class="form-select bk-fld" data-cfield="category" style="width:82px">${catOpts}</select></div>
                 <div class="bk-lbl"><span class="form-label">HRS</span><input class="form-input bk-fld" type="number" data-cfield="hoursPerWeek" value="${c.hoursPerWeek||''}" title="Hours per week" style="width:46px"></div>
                 <div class="bk-lbl"><span class="form-label">Level</span><select class="form-select bk-fld" data-cfield="level" style="width:96px">${lvlOpts}</select></div>
-                ${c.isRenewal ? '<span style="font-size:10px;font-weight:700;background:#dcfce7;color:#166534;padding:2px 7px;border-radius:10px;letter-spacing:.3px;white-space:nowrap;margin-bottom:6px" title="Sold as an Academic Year renewal — same course, discounted price">RENEWAL</span>' : ''}
               </div>
             </div>
             <!-- Set 2 · Dates -->
@@ -9027,10 +9129,11 @@ async function showBookingDetail(id) {
             <div class="bk-set" style="${bg}">
               <div class="bk-lbl"><span class="form-label">Fee</span><input class="form-input bk-fld" type="text" data-cfield="fee" value="${c.fee||''}" style="width:95px;text-align:right;font-family:var(--font-mono)"></div>
             </div>
-            <!-- Set 4 · per-course Attendance (each nested course keys off its own dates) -->
-            <div class="bk-set" style="${bg};align-items:center">
-              ${c.startDate ? `<span class="att-course-badge" data-student="${b.student?.id}" data-start="${c.startDate.split('T')[0]}" data-end="${(c.endDate||'').split('T')[0]}" data-hwks="${c.holidayWks??''}" data-label="${esc((c.name||'Course'))} · ${c.startDate.split('T')[0]}" onclick="event.stopPropagation();openCourseAttendance(this)" title="Attendance for THIS course (its own date window · holiday allowance applied)" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;background:#f4fbe8;border:1px solid #6FB42C;color:#365314;border-radius:999px;padding:3px 9px">Attendance <span class="v"></span></span>` : ''}
-            </div>
+            <!-- Set 4 · per-course Attendance — ONLY for multi-course (nested
+                 LifePass) bookings, where each nested year has its own date
+                 window. On a single-course booking it duplicated the top-bar
+                 Attendance badge, so it's suppressed (Neil 2026-10-29). -->
+            ${_coursesAsc.length > 1 && c.startDate ? `<div class="bk-set" style="${bg};align-items:center"><span class="att-course-badge" data-student="${b.student?.id}" data-start="${c.startDate.split('T')[0]}" data-end="${(c.endDate||'').split('T')[0]}" data-hwks="${c.holidayWks??''}" data-label="${esc((c.name||'Course'))} · ${c.startDate.split('T')[0]}" onclick="event.stopPropagation();openCourseAttendance(this)" title="Attendance for THIS course (its own date window · holiday allowance applied)" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;background:#f4fbe8;border:1px solid #6FB42C;color:#365314;border-radius:999px;padding:3px 9px">Attendance <span class="v"></span></span></div>` : ''}
           </div>
         </div>`;
       }

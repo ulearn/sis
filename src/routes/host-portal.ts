@@ -467,13 +467,13 @@ function buildPortalBody(
 ): string {
   // ── Section A: collapsible (closed on load). Titled "Students Looking For
   // Hosts" — NOT "Arrivals", which older hosts misread as people arriving at
-  // THEIR house. It's a matching pool, so it's tucked away by default; they
-  // open it when they want to browse who needs a host.
+  // THEIR house. It's a matching pool, shown OPEN on load (Neil 2026-10-29: hosts land from the nudge to claim, so the
+  // calendar and cards must be visible straight away); they can still fold it away.
   // Omitted entirely when matching is switched off for this host (ops decision):
   // the section simply isn't there, rather than showing an empty "no students" box.
   const sectionA = !showMatching ? '' : `
-    <details class="section">
-      <summary><span class="sec-title">Students Looking For Hosts</span><span class="muted" style="font-weight:400;margin-left:8px">— tap to view${unplaced.length ? ' (' + unplaced.length + ')' : ''}</span></summary>
+    <details class="section" open>
+      <summary><span class="sec-title">Students Looking For Hosts</span><span class="muted" style="font-weight:400;margin-left:8px">${unplaced.length ? '(' + unplaced.length + ')' : ''}</span></summary>
       <div style="margin-top:10px">
       ${unplaced.length === 0
         ? `<div class="box muted">No students need a host right now. We'll be in touch when new students need placement.</div>
