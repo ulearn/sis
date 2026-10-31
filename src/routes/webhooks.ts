@@ -2602,6 +2602,16 @@ export function webhookRoutes(prisma: PrismaClient) {
         resolvedDealId = assoc.results?.[0]?.id;
       }
 
+      // Quiet list (data/invoice-paid-quiet.json): back-dated receipts being applied in Xero for a clean-up. The SIS
+      // already has the money, so skip everything below: ledger rows, WON, Welcome, LoA (Neil 2026-10-30).
+      try {
+        const quiet = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'data', 'invoice-paid-quiet.json'), 'utf8')).dealIds || [];
+        if (resolvedDealId && quiet.map(String).includes(String(resolvedDealId))) {
+          console.log(`[invoice-paid] quiet list — ignored deal ${resolvedDealId}`);
+          return res.json({ ok: true, quiet: true });
+        }
+      } catch { /* no list → normal */ }
+
       if (!resolvedDealId) {
         return res.status(404).json({ error: 'No deal found for this invoice' });
       }

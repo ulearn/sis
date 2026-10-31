@@ -122,7 +122,7 @@ export function autoNudgeScripts(prisma: PrismaClient) {
     return {
       active: true, bedId: null, claimedByProviderId: null, accommodationType: 'Host Family',
       startDate: { gte: today },
-      booking: { status: 'CONFIRMED', student: { is: { OR: [{ visaStatus: null }, { visaStatus: { notIn: ['Pending', 'Appeal'] } }] } } },
+      booking: { status: { in: ['CONFIRMED', 'PARTIAL'] }, student: { is: { OR: [{ visaStatus: null }, { visaStatus: { notIn: ['Pending', 'Appeal'] } }] } } },   // + part-paid (Neil 2026-10-30)
     } as any;
   };
   const poolCount = () => prisma.bookingAccommodation.count({ where: poolWhere() });

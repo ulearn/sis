@@ -44,12 +44,12 @@ export async function runHostOutreach(
   today.setHours(0, 0, 0, 0);
 
   // 1) Pool gate — identical to the host portal §A. Host Family only, unmatched,
-  //    active, CONFIRMED, visa-clear, arriving today onwards (no upper horizon).
+  //    active, CONFIRMED or PARTIAL (deposit paid), visa-clear, arriving today onwards (no upper horizon).
   const poolWhere: any = {
     active: true, bedId: null, claimedByProviderId: null, accommodationType: 'Host Family',
     startDate: { gte: today },
     booking: {
-      status: 'CONFIRMED',
+      status: { in: ['CONFIRMED', 'PARTIAL'] },   // + part-paid, same as the host portal (Neil 2026-10-30)
       student: { is: { OR: [{ visaStatus: null }, { visaStatus: { notIn: ['Pending', 'Appeal'] } }] } },
     },
   };

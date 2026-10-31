@@ -1442,8 +1442,39 @@ model AccommodationProvider {
   claimedPlacements BookingAccommodation[] @relation("ClaimedBy")
   vettingSubmissions HostVettingSubmission[]
   siteVisitPhotos HostSiteVisitPhoto[]
+  provisionalInterests ProvisionalHostRequest[] @relation("ProvisionalInterest")
 
   @@map("accommodation_providers")
+}
+
+// Provisional host request (Neil 2026-10-30): an UNPAID, usually last-minute enquiry that exists only in HubSpot (no
+// invoice → no Booking), offered to hosts in the portal as an orange "Not booked yet" card. A host taps "I'm interested"
+// (first-come, junior gate on the age) → INTERESTED + Slack ping; staff confirm by booking the student or release it.
+// Created from the hubapp Accomm desk off a deal id. Table created by hand (db execute, zero-drop) 2026-10-30.
+model ProvisionalHostRequest {
+  id                   Int       @id @default(autoincrement())
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+  hubspotDealId        String    @map("hubspot_deal_id")
+  label                String?                                  // "male, 20, from France" — never the student's name
+  gender               Int?                                     // 1 male · 2 female (as Student.gender)
+  birthday             DateTime? @db.Date
+  nationality          String?
+  startDate            DateTime  @map("start_date") @db.Date
+  endDate              DateTime  @map("end_date") @db.Date
+  board                String?
+  notes                String?
+  status               String    @default("OPEN")               // OPEN | INTERESTED | CLOSED
+  interestedProviderId Int?      @map("interested_provider_id")
+  interestedProvider   AccommodationProvider? @relation("ProvisionalInterest", fields: [interestedProviderId], references: [id], onDelete: SetNull)
+  interestedAt         DateTime? @map("interested_at")
+  closedAt             DateTime? @map("closed_at")
+  closedReason         String?   @map("closed_reason")
+  createdBy            String?   @map("created_by")
+
+  @@index([status, startDate])
+  @@index([hubspotDealId])
+  @@map("provisional_host_requests")
 }
 
 // Photos from a host-family site visit (reuses the student-upload disk-storage

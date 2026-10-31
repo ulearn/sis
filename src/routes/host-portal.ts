@@ -199,6 +199,36 @@ export function publicHostPortalRoutes(prisma: PrismaClient) {
     }
   });
 
+  // "I'm interested" on an UNPAID provisional request (Neil 2026-10-30). First-come, same junior gate as a claim; Slack
+  // ping to accommodation; staff confirm (book the student) or release it on the hubapp Accomm desk.
+  router.post('/:token/provisional-interest', async (req: any, res) => {
+    const provider = req.hostProvider!;
+    if (provider.portalMatchingEnabled === false) return res.status(403).json({ error: 'This host account is not currently able to register interest in students. Please contact accomm@ulearnschool.com.' });
+    const id = parseInt(String(req.body?.id ?? ''), 10);
+    if (!Number.isFinite(id)) return res.status(400).json({ error: 'id required' });
+    try {
+      const r = await prisma.provisionalHostRequest.findUnique({ where: { id } });
+      if (!r || r.status !== 'OPEN') return res.status(409).json({ error: 'Another host has already said they are interested — it is no longer available.' });
+      if (isJuniorAt(r.birthday, r.startDate)) {
+        const [hp, subs] = await Promise.all([
+          prisma.accommodationProvider.findUnique({ where: { id: provider.id }, select: { vettingStatus: true } }),
+          prisma.hostVettingSubmission.findMany({ where: { providerId: provider.id }, select: { status: true } }),
+        ]);
+        if (!gvComplete(hp?.vettingStatus, subs)) return res.status(403).json({ error: JUNIOR_GV_MESSAGE + ' Tap "Complete Garda Vetting" on this page to finish it.', code: 'GV_REQUIRED' });
+      }
+      const updated = await prisma.provisionalHostRequest.updateMany({ where: { id, status: 'OPEN' }, data: { status: 'INTERESTED', interestedProviderId: provider.id, interestedAt: new Date() } });
+      if (updated.count === 0) return res.status(409).json({ error: 'Another host has already said they are interested — it is no longer available.' });
+      const slackChannel = process.env.SLACK_ACCOMM_CHANNEL || process.env.SLACK_DEFAULT_CHANNEL || undefined;
+      postSlackMessage({ channel: slackChannel,
+        text: `🟠 *${provider.name}* is interested in an UNPAID enquiry (${r.label || [r.nationality, ageFrom(r.birthday) ? 'age ' + ageFrom(r.birthday) : ''].filter(Boolean).join(', ') || 'student'}) — arr ${fmtDate(r.startDate)}, ${nightsBetween(r.startDate, r.endDate)} nights. HubSpot deal ${r.hubspotDealId}. Confirm with the student, then book it — or release it on the Accomm desk.` })
+        .catch((e: any) => console.error('[host-portal] provisional Slack ping failed:', e?.message || e));
+      res.json({ ok: true });
+    } catch (e: any) {
+      console.error('[host-portal] provisional interest failed for', id, e);
+      res.status(500).json({ error: 'Could not register your interest. Please contact accomm@ulearnschool.com.' });
+    }
+  });
+
   // First Dibs — a host who missed out self-tags to be emailed FIRST next cycle.
   // All gates (matching on · GV completed · cap of 5), the flag write, the 3-strikes
   // Slack escalation and the host-facing copy live in the shared lib/first-dibs
@@ -254,15 +284,12 @@ async function renderHostPortalPage(prisma: PrismaClient, providerId: number, to
       claimedByProviderId: null,   // once any host registers interest it leaves the pool (first-come)
       accommodationType: 'Host Family',
       startDate: { gte: today },
-      // Hosts only ever see CONFIRMED-and-paid students. status='CONFIRMED' is
-      // set by the invoice-paid webhook only once totalPaid >= totalBilled, so
-      // it means confirmed AND fully paid in one check — this excludes PENDING /
-      // PARTIAL / ESCROW / CANCELLED. Reason: a host shouldn't be offered (or
-      // claim) a student who hasn't actually committed + paid — that's how you
-      // create an unmet liability, and it's why an unconfirmed duplicate booking
-      // was showing the same student twice. Visa still must be resolved.
+      // Hosts see paid students: fully paid (CONFIRMED) AND part-paid (PARTIAL — a deposit is in; Neil 2026-10-30: high
+      // intent, our T&Cs cover a cancellation, and the card tells the host it is provisional on both sides until the
+      // balance is paid; the Wed T-3 balance check still bounces anyone unpaid the week of arrival). Never PENDING (nothing
+      // paid), ESCROW or CANCELLED — that's how an unconfirmed duplicate once showed a student twice. Visa must be resolved.
       booking: {
-        status: 'CONFIRMED',
+        status: { in: ['CONFIRMED', 'PARTIAL'] },
         student: { is: { OR: [
           { visaStatus: null },
           { visaStatus: { notIn: ['Pending', 'Appeal'] } },
@@ -360,7 +387,11 @@ async function renderHostPortalPage(prisma: PrismaClient, providerId: number, to
   }
   const firstDibs = { show: showFirstDibs, alreadyIn: alreadyFirstDibs };
 
-  return wrapHtml(provider.name, buildPortalBody(provider, unplaced, placements, bills, totalEarnings, token, vettingStats, provider.portalMatchingEnabled !== false, firstDibs));
+  // Provisional (UNPAID) requests from HubSpot deals — orange "Not booked yet" cards (Neil 2026-10-30).
+  const provisional = provider.portalMatchingEnabled === false ? [] : await prisma.provisionalHostRequest.findMany({
+    where: { status: 'OPEN', startDate: { gte: today } }, orderBy: { startDate: 'asc' },
+  }).catch(() => [] as any[]);
+  return wrapHtml(provider.name, buildPortalBody(provider, unplaced, placements, bills, totalEarnings, token, vettingStats, provider.portalMatchingEnabled !== false, firstDibs, provisional));
 }
 
 // ─── HTML helpers ──────────────────────────────────────────────────────────
@@ -437,6 +468,8 @@ function wrapHtml(providerName: string, body: string): string {
   .cal-grid > .head{font-weight:700;color:#888;font-size:10px;text-transform:uppercase}
   .cal-grid > .has{background:#eef5d3;cursor:pointer;font-weight:700}
   .cal-grid > .has:hover{background:#dfeec0}
+  .cal-grid > .has.prov{background:#fed7aa} .cal-grid > .has.prov .badge{background:#ea580c}
+  .card.prov{border:2px solid #fdba74;background:#fff7ed}
   .cal-grid > .active{background:#6FB42C;color:#fff}
   .cal-grid > .empty{color:#ccc}
   .cal-grid .d{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;line-height:1;border-radius:50%}
@@ -464,6 +497,7 @@ function buildPortalBody(
   vettingStats: { total: number; pending: number; complete: boolean },
   showMatching: boolean = true,
   firstDibs: { show: boolean; alreadyIn: boolean } = { show: false, alreadyIn: false },
+  provisional: any[] = [],
 ): string {
   // ── Section A: collapsible (closed on load). Titled "Students Looking For
   // Hosts" — NOT "Arrivals", which older hosts misread as people arriving at
@@ -473,9 +507,9 @@ function buildPortalBody(
   // the section simply isn't there, rather than showing an empty "no students" box.
   const sectionA = !showMatching ? '' : `
     <details class="section" open>
-      <summary><span class="sec-title">Students Looking For Hosts</span><span class="muted" style="font-weight:400;margin-left:8px">${unplaced.length ? '(' + unplaced.length + ')' : ''}</span></summary>
+      <summary><span class="sec-title">Students Looking For Hosts</span><span class="muted" style="font-weight:400;margin-left:8px">${unplaced.length + provisional.length ? '(' + (unplaced.length + provisional.length) + ')' : ''}</span></summary>
       <div style="margin-top:10px">
-      ${unplaced.length === 0
+      ${unplaced.length === 0 && provisional.length === 0
         ? `<div class="box muted">No students need a host right now. We'll be in touch when new students need placement.</div>
            ${firstDibs.alreadyIn
              ? `<div class="box box-green" style="margin-top:10px">✓ You're <strong>top of the queue</strong> — First Dibs on the next students we get. If we have any, your email goes out first, at 8am Monday.</div>`
@@ -487,7 +521,9 @@ function buildPortalBody(
                     <div id="firstDibsMsg" class="muted" style="font-size:12px;margin-top:8px"></div>
                   </div>`
                : ''}`
-        : `${renderCalendar(unplaced)}
+        : `${renderCalendar(unplaced, provisional)}
+           ${provisional.length ? `<div class="muted" style="font-size:12px;margin:8px 0 4px"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#fed7aa;margin-right:5px"></span>Orange = <strong>not booked yet</strong>: an enquiry for very soon. Tell us if you're interested and we'll confirm with the student.</div>` : ''}
+           <div id="provList">${provisional.map(r => renderProvisionalCard(r, vettingStats.complete)).join('')}</div>
            <div id="cardList">${unplaced.map((p, i) => renderStudentCard(p, i >= 5, vettingStats.complete)).join('')}</div>
            ${unplaced.length > 5
              ? `<div class="muted" style="text-align:center;margin:8px 0">
@@ -614,6 +650,8 @@ function renderStudentCard(pl: any, hidden: boolean, hostGvComplete = true): str
   const arrivalIso = localIso(new Date(pl.startDate));
   const nights = nightsBetween(pl.startDate, pl.endDate);
   const dietBits = [s?.diet, s?.allergies].filter(Boolean).join(' · ');
+  // Part-paid (deposit in, balance due): provisional on BOTH sides until it is fully paid (Neil 2026-10-30).
+  const part = pl.booking && Number(pl.booking.amountTotal) > 0 && Number(pl.booking.amountPaid) < Number(pl.booking.amountTotal);
   return `<div class="card${hidden ? ' hidden extra' : ''}" data-arrival="${arrivalIso}">
     <div class="card-body">
       <div class="card-name">${esc(s?.firstName || '')} ${esc(lastInitial(s?.lastName || null))}</div>
@@ -621,8 +659,10 @@ function renderStudentCard(pl: any, hidden: boolean, hostGvComplete = true): str
         ${esc(s?.nationality || '')}${s?.gender ? ' · ' + genderSymbol(s.gender) : ''}${ageFrom(s?.birthday) ? ' · age ' + ageFrom(s?.birthday) : ''}
         ${dietBits ? ' · <span class="pill">' + esc(dietBits) + '</span>' : ''}
         ${junior ? ' · <span class="pill" style="background:#fff7ed;color:#9a3412">Under 18</span>' : ''}
+        ${part ? ' · <span class="pill" style="background:#fef3c7;color:#92400e">Provisional · deposit paid</span>' : ''}
       </div>
       <div class="card-dates"><strong>Arr ${fmtDate(pl.startDate)}</strong> · ${nights} nights (${esc(pl.board || 'board TBC')})</div>
+      ${part ? `<div class="muted" style="font-size:12px;margin-top:4px">This student has paid a deposit; the balance is due before arrival. Until it is fully paid the booking is provisional — for us and for you: if it doesn't go ahead, neither side is committed.</div>` : ''}
       ${blocked ? `<div class="gv-note">🛡️ <strong>Under 18 — Garda vetting needed.</strong> You can host this student once your Garda vetting is complete. It only takes a few minutes to start — <a href="#gv">Complete Garda Vetting ↓</a></div>` : ''}
     </div>
     <div>
@@ -633,7 +673,28 @@ function renderStudentCard(pl: any, hidden: boolean, hostGvComplete = true): str
   </div>`;
 }
 
-function renderCalendar(unplaced: any[]): string {
+// An UNPAID provisional request (from a HubSpot deal, no booking yet). No name — the profile only.
+function renderProvisionalCard(r: any, hostGvComplete = true): string {
+  const junior = isJuniorAt(r.birthday, r.startDate);
+  const blocked = junior && !hostGvComplete;
+  const nights = nightsBetween(r.startDate, r.endDate);
+  return `<div class="card prov" data-arrival="${localIso(new Date(r.startDate))}">
+    <div class="card-body">
+      <div class="card-name">Not booked yet <span class="pill" style="background:#ffedd5;color:#9a3412">Enquiry</span></div>
+      <div class="card-meta">${esc(r.nationality || '')}${r.gender ? ' · ' + genderSymbol(r.gender) : ''}${ageFrom(r.birthday) ? ' · age ' + ageFrom(r.birthday) : ''}${junior ? ' · <span class="pill" style="background:#fff7ed;color:#9a3412">Under 18</span>' : ''}</div>
+      <div class="card-dates"><strong>Arr ${fmtDate(r.startDate)}</strong> · ${nights} nights (${esc(r.board || 'board TBC')})</div>
+      ${r.notes ? `<div class="muted" style="font-size:12px;margin-top:4px">${esc(r.notes)}</div>` : ''}
+      <div class="muted" style="font-size:12px;margin-top:4px">This student hasn't booked yet. If you're interested, we'll confirm with them — nothing is agreed until we come back to you.</div>
+    </div>
+    <div>
+      ${blocked
+        ? `<button class="btn claim-btn" disabled title="${esc(JUNIOR_GV_MESSAGE)}" style="opacity:.55;cursor:not-allowed">🛡️ Vetting needed</button>`
+        : `<button class="btn claim-btn" data-prov="${r.id}" onclick="provisionalInterest(this)" style="background:#ea580c;border-color:#ea580c;color:#fff">I'm interested</button>`}
+    </div>
+  </div>`;
+}
+
+function renderCalendar(unplaced: any[], provisional: any[] = []): string {
   // Build a 6-week grid starting from this week's Monday so arrivals always
   // land in a familiar Mon-Sun layout. Highlight days with arrivals; show a
   // small badge with the count.
@@ -646,6 +707,8 @@ function renderCalendar(unplaced: any[]): string {
     const k = localIso(new Date(p.startDate));
     arrivalsByDay.set(k, (arrivalsByDay.get(k) || 0) + 1);
   }
+  const provByDay = new Set<string>();
+  for (const p of provisional) { const k = localIso(new Date(p.startDate)); provByDay.add(k); arrivalsByDay.set(k, (arrivalsByDay.get(k) || 0) + 1); }
 
   const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const todayIso = localIso(today);
@@ -662,7 +725,7 @@ function renderCalendar(unplaced: any[]): string {
       const iso = localIso(day);
       const count = arrivalsByDay.get(iso) || 0;
       const past = day < today;
-      const cls = `${past ? 'empty' : (count > 0 ? 'has' : '')}${iso === todayIso ? ' today' : ''}`.trim();
+      const cls = `${past ? 'empty' : (count > 0 ? 'has' : '')}${!past && provByDay.has(iso) ? ' prov' : ''}${iso === todayIso ? ' today' : ''}`.trim();
       const badge = count > 0 ? `<span class="badge">${count}</span>` : '';
       // On the 1st of a month, show a small month tag so a window spanning two
       // months isn't ambiguous (the grid otherwise shows bare day numbers).
@@ -744,6 +807,18 @@ function clientSideScript(): string {
         else billsMore.textContent = 'View more (' + left + ') ▾';
       });
 
+      window.provisionalInterest = function(btn){
+        if (btn.disabled) return;
+        if (!confirm('Tell us you could host this student? They have not booked yet — we will check with them and come back to you.')) return;
+        var orig = btn.textContent; btn.disabled = true; btn.textContent = '…';
+        fetch(location.pathname.replace(/\\/$/, '') + '/provisional-interest', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: Number(btn.getAttribute('data-prov')) }) })
+          .then(function(r){ return r.json().then(function(j){ return { ok:r.ok, j:j }; }); })
+          .then(function(res){
+            if (res.ok) { btn.textContent = '✓ Thanks — we will be in touch'; btn.style.background = '#ea580c'; btn.style.color = '#fff'; var c = btn.closest('.card'); if (c) c.style.opacity = '0.7'; }
+            else { btn.textContent = orig; btn.disabled = false; alert((res.j && res.j.error) || 'Sorry, that could not be registered.'); }
+          })
+          .catch(function(){ btn.textContent = orig; btn.disabled = false; alert('Network error — please try again.'); });
+      };
       window.claimStudent = function(btn){
         if (btn.disabled) return;
         if (!confirm('Are you sure you can host this student? Please do not select unless you are certain. We will be in touch to confirm.')) return;

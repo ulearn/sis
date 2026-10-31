@@ -1520,3 +1520,21 @@ TO BUILD (next):
 - [ ] Fix Augusto #900 booking 18404: course start 19 Oct → 28 Dec (+ handle drift)
 
 ---
+
+## Provisional host requests: unpaid last-minute enquiries in the host portal (from a HubSpot deal)
+
+**Priority:** High
+**Status:** In progress — live 30 Oct; first real use pending
+**Progress:** 85% — part-paid in pool + nudges; table + portal orange cards + "I'm interested" + hubapp desk + WhatsApp template all live 30 Oct
+**Added:** 2026-10-30
+**Updated:** 2026-10-30T21:10:06Z
+
+Neil 2026-10-30: paid students (full OR part-paid) go through the normal weekly cadence; unpaid enquiries exist only in HubSpot (no invoice → no SIS booking) and are only worth it for LAST-MINUTE cases. Built by the hubapp session.
+- [x] Part-paid (Booking.status PARTIAL) in the host-portal pool, auto-nudge poolWhere and host-outreach poolWhere; card shows "Provisional · deposit paid" + "provisional for us and for you until fully paid". 0 part-paid in the pool on 30 Oct. Backups ~/backups/*.bak-2026-10-30
+- [x] Table provisional_host_requests created 30 Oct (Neil: go) via prisma db execute (CREATE only) + model ProvisionalHostRequest in schema.prisma + generate. Backup ~/backups/schema.prisma.bak-2026-10-30
+- [x] Portal: orange "Not booked yet" cards + orange calendar days + legend; POST /host-portal/:token/provisional-interest (first-come, junior gate, Slack ping to the accomm channel). Tested with a TEST row (deleted)
+- [x] hubapp Accomm desk → 🏢 Provider check → "🏠 Host family — not booked yet": deal id → Load → Offer; list with Release / Close (hubapp scripts/accomm/provisionalHost.js). WhatsApp template host_nudge_enquiry approved; 📣 panel has a message picker
+- [ ] First real use; decide when a CLOSED 'booked' request should auto-close when the deal is invoiced
+- [ ] Later: last-minute finder fee (e.g. €100) wording; outside host-family websites
+
+---
