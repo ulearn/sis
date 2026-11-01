@@ -108,7 +108,8 @@ export function autoNudgeScripts(prisma: PrismaClient) {
 
   // ── Host / pool helpers ────────────────────────────────────────────────
   const hostPhase = (p: any): number => gvPhase(p.vettingStatus, p.vettingSubmissions);
-  const hostHasNoAttrs = (p: any) => !p.acceptsJuniors && !p.acceptsAdults && !p.acceptsMature && !p.acceptsMale && !p.acceptsFemale;
+  // Unset = no AGE ticked (Neil 2026-10-31: genders now default to both ON, so a gender tick no longer means someone chose).
+  const hostHasNoAttrs = (p: any) => !p.acceptsJuniors && !p.acceptsAdults && !p.acceptsMature;
   function hostMatchesPool(p: any, pool: any) {
     const ageOk = (p.acceptsJuniors && pool.juniors) || (p.acceptsAdults && pool.adults) || (p.acceptsMature && pool.mature);
     const genderOk = (p.acceptsMale && pool.male) || (p.acceptsFemale && pool.female);
@@ -125,20 +126,24 @@ export function autoNudgeScripts(prisma: PrismaClient) {
       booking: { status: { in: ['CONFIRMED', 'PARTIAL'] }, student: { is: { OR: [{ visaStatus: null }, { visaStatus: { notIn: ['Pending', 'Appeal'] } }] } } },   // + part-paid (Neil 2026-10-30)
     } as any;
   };
-  const poolCount = () => prisma.bookingAccommodation.count({ where: poolWhere() });
+  // Provisional (unpaid, HubSpot-only) requests count too (Neil 2026-10-31): they sit in the portal, so the weekly waves go out for them.
+  const provWhere = () => { const today = new Date(); today.setHours(0, 0, 0, 0); return { status: 'OPEN', startDate: { gte: today } }; };
+  const poolCount = async () => (await prisma.bookingAccommodation.count({ where: poolWhere() })) + (await prisma.provisionalHostRequest.count({ where: provWhere() }));
 
   // Pool profile (age bands are AT ARRIVAL). `adult` = the same profile over only the
   // students who are 18+ on arrival — the junior gate matches non-vetted hosts
   // against it, so they are never nudged for a junior-only pool.
-  async function unplacedProfiles() {
-    const rows = await prisma.bookingAccommodation.findMany({
+  // scope: 'booked' | 'provisional' = only those students (the hubapp WhatsApp cascade); default both. `newest` = when the latest one joined.
+  async function unplacedProfiles(scope?: 'booked' | 'provisional') {
+    const rows = scope === 'provisional' ? [] : await prisma.bookingAccommodation.findMany({
       where: poolWhere(),
-      select: { startDate: true, booking: { select: { student: { select: { birthday: true, gender: true } } } } },
+      select: { startDate: true, createdAt: true, booking: { select: { student: { select: { birthday: true, gender: true } } } } },
     });
+    const prov = scope === 'booked' ? [] : await prisma.provisionalHostRequest.findMany({ where: provWhere(), select: { startDate: true, createdAt: true, birthday: true, gender: true } });
     const blank = () => ({ count: 0, juniors: false, adults: false, mature: false, male: false, female: false });
     const all = blank(), adult = blank();
-    for (const r of rows) {
-      const st = r.booking?.student; if (!st) continue;
+    for (const r of [...rows.map(x => ({ startDate: x.startDate, st: x.booking?.student })), ...prov.map(x => ({ startDate: x.startDate, st: x }))]) {
+      const st = r.st; if (!st) continue;
       const junior = isJuniorAt(st.birthday, r.startDate);
       const mature = !junior && (ageAt(st.birthday, r.startDate) ?? 0) >= 30;
       for (const prof of junior ? [all] : [all, adult]) {
@@ -147,7 +152,8 @@ export function autoNudgeScripts(prisma: PrismaClient) {
         if (st.gender === 1) prof.male = true; else if (st.gender === 2) prof.female = true; else { prof.male = true; prof.female = true; }
       }
     }
-    return { ...all, adult };
+    const newest = [...rows, ...prov].reduce((m: any, r: any) => (!m || r.createdAt > m ? r.createdAt : m), null);
+    return { ...all, adult, newest };
   }
   // Junior gate: only GV-complete hosts are matched against juniors.
   const poolFor = (h: any, pool: any) => hostPhase(h) === 3 ? pool : pool.adult;
@@ -279,7 +285,7 @@ export function autoNudgeScripts(prisma: PrismaClient) {
     return { armed: cfg.armed, checkedAt: `${dateStr} ${hhmm}`, fired };
   }
 
-  return { getWaves, updateWave, setArmed, loadConfig, sendWave, runDueWaves };
+  return { getWaves, updateWave, setArmed, loadConfig, sendWave, runDueWaves, unplacedProfiles };
 }
 
 function pick(obj: any, keys: string[]) {

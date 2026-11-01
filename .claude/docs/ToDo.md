@@ -1538,3 +1538,14 @@ Neil 2026-10-30: paid students (full OR part-paid) go through the normal weekly 
 - [ ] Later: last-minute finder fee (e.g. €100) wording; outside host-family websites
 
 ---
+
+## Host nudge: decide whether "no age ticked" means all ages
+
+**Priority:** Medium
+**Status:** Waiting — Neil: decide
+**Added:** 2026-10-31
+**Updated:** 2026-10-31T10:00:07Z
+
+31 Oct: gender ticks set to both ON for the 111 hosts with neither (ids in ~/backups/hosts-gender-none-ids.2026-10-31.txt), default now true, 3 one-gender hosts left alone. hostHasNoAttrs now means "no AGE ticked", so the 81 active hosts with no age keep getting the Wednesday wave only. If no age should mean all ages, hostMatchesPool changes and they join the Mon/Tue waves by vetting and level (junior gate still applies). Same reason First Dibs wave stays 0/1 for Family McMahon.
+
+---

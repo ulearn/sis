@@ -53,7 +53,7 @@ export async function runHostOutreach(
       student: { is: { OR: [{ visaStatus: null }, { visaStatus: { notIn: ['Pending', 'Appeal'] } }] } },
     },
   };
-  const pool = await prisma.bookingAccommodation.count({ where: poolWhere });
+  const pool = (await prisma.bookingAccommodation.count({ where: poolWhere })) + (await prisma.provisionalHostRequest.count({ where: { status: 'OPEN', startDate: { gte: today } } }));   // + provisional cards (Neil 2026-10-31)
   log(`${pool} unmatched Host-Family student(s) in the pool.`);
 
   const tpl = await prisma.documentTemplate.findFirst({ where: emailTemplateWhere(opts.templateSlug) });

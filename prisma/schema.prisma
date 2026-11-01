@@ -1410,8 +1410,8 @@ model AccommodationProvider {
   acceptsJuniors Boolean @default(false) @map("accepts_juniors")
   acceptsAdults  Boolean @default(false) @map("accepts_adults")
   acceptsMature  Boolean @default(false) @map("accepts_mature")
-  acceptsMale    Boolean @default(false) @map("accepts_male")
-  acceptsFemale  Boolean @default(false) @map("accepts_female")
+  acceptsMale    Boolean @default(true) @map("accepts_male")
+  acceptsFemale  Boolean @default(true) @map("accepts_female")
 
   // Banking
   iban          String?

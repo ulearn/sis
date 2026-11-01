@@ -21276,8 +21276,8 @@ loadConfig().then(() => {
   const viewParam = url.searchParams.get('view');
   const idParam = parseInt(url.searchParams.get('id') || '', 10);
   // Deep-link straight to a record (e.g. from an email): ?view=booking-detail&id=18141
-  if (viewParam && idParam && (viewParam === 'booking-detail' || viewParam === 'student-detail')) {
-    const lbl = (viewParam === 'booking-detail' ? 'Booking #' : 'Student #') + idParam;
+  if (viewParam && idParam && (viewParam === 'booking-detail' || viewParam === 'student-detail' || viewParam === 'accommodation-detail')) {
+    const lbl = (viewParam === 'booking-detail' ? 'Booking #' : viewParam === 'accommodation-detail' ? 'Provider #' : 'Student #') + idParam;
     openTab(viewParam, lbl, { id: idParam });
     history.replaceState(null, '', '/sis/admin');
     return;

@@ -199,7 +199,7 @@ export function publicHostPortalRoutes(prisma: PrismaClient) {
     }
   });
 
-  // "I'm interested" on an UNPAID provisional request (Neil 2026-10-30). First-come, same junior gate as a claim; Slack
+  // "Interested" on an UNPAID provisional request (Neil 2026-10-30). First-come, same junior gate as a claim; Slack
   // ping to accommodation; staff confirm (book the student) or release it on the hubapp Accomm desk.
   router.post('/:token/provisional-interest', async (req: any, res) => {
     const provider = req.hostProvider!;
@@ -387,7 +387,7 @@ async function renderHostPortalPage(prisma: PrismaClient, providerId: number, to
   }
   const firstDibs = { show: showFirstDibs, alreadyIn: alreadyFirstDibs };
 
-  // Provisional (UNPAID) requests from HubSpot deals — orange "Not booked yet" cards (Neil 2026-10-30).
+  // Provisional (UNPAID) requests from HubSpot deals — orange "Provisional" cards (Neil 2026-10-30, renamed 10-31).
   const provisional = provider.portalMatchingEnabled === false ? [] : await prisma.provisionalHostRequest.findMany({
     where: { status: 'OPEN', startDate: { gte: today } }, orderBy: { startDate: 'asc' },
   }).catch(() => [] as any[]);
@@ -473,7 +473,7 @@ function wrapHtml(providerName: string, body: string): string {
   .cal-grid > .active{background:#6FB42C;color:#fff}
   .cal-grid > .empty{color:#ccc}
   .cal-grid .d{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;line-height:1;border-radius:50%}
-  .cal-grid > .today .d{box-shadow:inset 0 0 0 3px #E8843C;font-weight:700}
+  .cal-grid > .today .d{box-shadow:inset 0 0 0 3px #2563eb;font-weight:700}
   .mtag{position:absolute;top:1px;left:3px;font-size:8px;font-weight:700;color:#6FB42C;text-transform:uppercase;letter-spacing:.3px}
   .badge{position:absolute;top:1px;right:3px;font-size:9px;background:#6FB42C;color:#fff;padding:0 4px;border-radius:7px;min-width:14px;font-weight:700}
   .bill{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:13px}
@@ -522,7 +522,7 @@ function buildPortalBody(
                   </div>`
                : ''}`
         : `${renderCalendar(unplaced, provisional)}
-           ${provisional.length ? `<div class="muted" style="font-size:12px;margin:8px 0 4px"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#fed7aa;margin-right:5px"></span>Orange = <strong>not booked yet</strong>: an enquiry for very soon. Tell us if you're interested and we'll confirm with the student.</div>` : ''}
+           ${provisional.length ? `<div class="muted" style="font-size:12px;margin:8px 0 4px"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#fed7aa;margin-right:5px"></span>Orange = <strong>Provisional</strong>. Unconfirmed pending Host interest</div>` : ''}
            <div id="provList">${provisional.map(r => renderProvisionalCard(r, vettingStats.complete)).join('')}</div>
            <div id="cardList">${unplaced.map((p, i) => renderStudentCard(p, i >= 5, vettingStats.complete)).join('')}</div>
            ${unplaced.length > 5
@@ -680,16 +680,16 @@ function renderProvisionalCard(r: any, hostGvComplete = true): string {
   const nights = nightsBetween(r.startDate, r.endDate);
   return `<div class="card prov" data-arrival="${localIso(new Date(r.startDate))}">
     <div class="card-body">
-      <div class="card-name">Not booked yet <span class="pill" style="background:#ffedd5;color:#9a3412">Enquiry</span></div>
+      <div class="card-name">Provisional <span class="pill" style="background:#ffedd5;color:#9a3412">Short notice</span></div>
       <div class="card-meta">${esc(r.nationality || '')}${r.gender ? ' · ' + genderSymbol(r.gender) : ''}${ageFrom(r.birthday) ? ' · age ' + ageFrom(r.birthday) : ''}${junior ? ' · <span class="pill" style="background:#fff7ed;color:#9a3412">Under 18</span>' : ''}</div>
       <div class="card-dates"><strong>Arr ${fmtDate(r.startDate)}</strong> · ${nights} nights (${esc(r.board || 'board TBC')})</div>
       ${r.notes ? `<div class="muted" style="font-size:12px;margin-top:4px">${esc(r.notes)}</div>` : ''}
-      <div class="muted" style="font-size:12px;margin-top:4px">This student hasn't booked yet. If you're interested, we'll confirm with them — nothing is agreed until we come back to you.</div>
+      <div class="muted" style="font-size:12px;margin-top:4px">Short notice and unconfirmed until a Host accepts. Tap Interested and we will arrange &amp; confirm — nothing is agreed until we come back to you.</div>
     </div>
     <div>
       ${blocked
         ? `<button class="btn claim-btn" disabled title="${esc(JUNIOR_GV_MESSAGE)}" style="opacity:.55;cursor:not-allowed">🛡️ Vetting needed</button>`
-        : `<button class="btn claim-btn" data-prov="${r.id}" onclick="provisionalInterest(this)" style="background:#ea580c;border-color:#ea580c;color:#fff">I'm interested</button>`}
+        : `<button class="btn claim-btn" data-prov="${r.id}" onclick="provisionalInterest(this)" style="background:#ea580c;border-color:#ea580c;color:#fff">Interested</button>`}
     </div>
   </div>`;
 }
@@ -809,7 +809,7 @@ function clientSideScript(): string {
 
       window.provisionalInterest = function(btn){
         if (btn.disabled) return;
-        if (!confirm('Tell us you could host this student? They have not booked yet — we will check with them and come back to you.')) return;
+        if (!confirm('Interested in hosting this student? It is short notice and unconfirmed — we will arrange and confirm with you.')) return;
         var orig = btn.textContent; btn.disabled = true; btn.textContent = '…';
         fetch(location.pathname.replace(/\\/$/, '') + '/provisional-interest', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: Number(btn.getAttribute('data-prov')) }) })
           .then(function(r){ return r.json().then(function(j){ return { ok:r.ok, j:j }; }); })
