@@ -126,7 +126,7 @@ export function buildBaseDealProps(data: any): Record<string, any> {
   props.airport_pickup = extras.includes('airport_pickup') ? 'true' : 'false';
   props.airport_dropoff = extras.includes('airport_dropoff') ? 'true' : 'false';
 
-  // AY + LifePass auto-bundle: Exam Fee + PEL/Health Insurance are always included.
+  // LifePass auto-bundle: Exam Fee + PEL/Health Insurance are always included. Academic Year: course + PEL, see below.
   // Server-side enforced so a frontend that "forgets" to send them still produces a
   // valid deal. exam_type is intentionally left null — filled once the student sits
   // the level test.
@@ -139,6 +139,17 @@ export function buildBaseDealProps(data: any): Record<string, any> {
     const parts = ['PEL'];
     if (extras.includes('insurance_health')) parts.push('Health');
     props.insurance = parts.join(';');
+    // Both ticked on an Academic Year = a Visa Pack: autoQuote reads exam + both insurances on their own as the HubSpot workflow's default tick.
+    if (data.courseType === 'academic_year' && props.exam_fee === 'true' && parts.length === 2) props.visa_pack = 'Yes';
+  } else if (data.courseType === 'academic_year' && data.partnerBooking) {
+    // Partners keep the full pack unless they have the "Unpack AY?" permission (Neil 2026-11-01): a partner on commission doesn't get the low price by default.
+    props.exam_fee = 'true';
+    props.insurance = 'PEL;Health';
+    props.visa_pack = 'Yes';
+  } else if (data.courseType === 'academic_year') {
+    // Baseline = course + PEL (Neil 2026-11-01); health and the exam come with a Visa Pack.
+    props.exam_fee = 'false';
+    props.insurance = 'PEL';
   } else if (isBundled) {
     props.exam_fee = 'true';
     props.insurance = 'PEL;Health';

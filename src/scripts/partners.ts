@@ -768,7 +768,7 @@ export function partnerScripts(prisma: PrismaClient) {
       pipeline: B2B_PIPELINE,
       dealstage: ENROLMENT_STAGE,
       hubspot_owner_id: PARTNERS_OWNER,
-      ...buildBaseDealProps(data),
+      ...buildBaseDealProps({ ...data, partnerBooking: true }),
     };
 
     // Academic Year renewal — maps the form checkbox to the HubSpot deal

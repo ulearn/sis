@@ -1032,7 +1032,7 @@ export async function resyncBookingLogistics(
 
   // 1. Pull current deal props + line items from HubSpot.
   const dealProps = [
-    'course_start', 'course_end', 'course_weeks',
+    'course_type', 'course_start', 'course_end', 'course_weeks',
     'accomm_type', 'room_type', 'board', 'accomm_start', 'accomm_end', 'accomm_weeks',
     'amount', 'airport_pickup', 'airport_dropoff', 'resync',
   ].join(',');
@@ -1069,8 +1069,9 @@ export async function resyncBookingLogistics(
   // can carry items the deal does not (e.g. an airport transfer added at invoicing time;
   // deal and invoice hold SEPARATE line-item objects). Fall back to the deal otherwise.
   let liAssoc: any = { results: [] };
+  let linesFromInvoice = false;
   if (effectiveInvoiceId) {
-    try { liAssoc = await hsGet(`/crm/v3/objects/invoices/${effectiveInvoiceId}/associations/line_items`); }
+    try { liAssoc = await hsGet(`/crm/v3/objects/invoices/${effectiveInvoiceId}/associations/line_items`); linesFromInvoice = !!(liAssoc.results || []).length; }
     catch (e: any) { console.warn(`[resync] invoice ${effectiveInvoiceId} line-item lookup failed, falling back to deal: ${e.message}`); }
   }
   if (!(liAssoc.results || []).length) {
@@ -1375,6 +1376,7 @@ export async function resyncBookingLogistics(
 
   // Classify the non-course / non-accom line items into fee buckets (mirrors the create path).
   let regFee = 0, placementFee = 0, pickupFee = 0, dropoffFee = 0, transferFee = 0, examFee = 0, insuranceFee = 0;
+  let examLine = false, insuranceSku = '';   // Academic Year: step 8 mirrors the invoice exactly, a €0 line included
   for (const li of lineItems) {
     const p = li.properties || {};
     const sku = p.hs_sku || '';
@@ -1386,8 +1388,8 @@ export async function resyncBookingLogistics(
       case 'pickup':         pickupFee    += amt; break;
       case 'dropoff':        dropoffFee   += amt; break;
       case 'transfer':       transferFee  += amt; break;
-      case 'exam':           examFee      += amt; break;
-      case 'insurance':      insuranceFee += amt; break;
+      case 'exam':           examFee      += amt; examLine = true; break;
+      case 'insurance':      insuranceFee += amt; insuranceSku = sku.toUpperCase(); break;
     }
   }
   // Ambiguous "airport / transfer" line item → split by the deal's pickup/dropoff flags,
@@ -1416,8 +1418,8 @@ export async function resyncBookingLogistics(
 
   // 8. EXTRAS — every fee-bearing invoice component must be represented. Upsert by type
   //    (create if missing, align fee if present). Non-destructive: an extra that exists in
-  //    SIS but isn't on the invoice (e.g. staff-added airport pickup) is left in place.
-  const existingExtras = await prisma.bookingExtra.findMany({ where: { bookingId }, select: { id: true, extraType: true, fee: true } });
+  //    SIS but isn't on the invoice (e.g. staff-added airport pickup) is left in place, except Academic Year exam + insurance (below).
+  const existingExtras = await prisma.bookingExtra.findMany({ where: { bookingId }, select: { id: true, extraType: true, fee: true, active: true, details: true } });
   const extraByType = new Map(existingExtras.map(e => [e.extraType, e]));
   const upsertExtra = async (extraType: string, fee: number) => {
     const ex = extraByType.get(extraType);
@@ -1433,8 +1435,27 @@ export async function resyncBookingLogistics(
   };
   if (pickupFee    > 0) await upsertExtra('AIRPORT_PICKUP', pickupFee);
   if (dropoffFee   > 0) await upsertExtra('AIRPORT_DROPOFF', dropoffFee);
-  if (examFee      > 0) await upsertExtra('EXAM_FEE', examFee);
-  if (insuranceFee > 0) await upsertExtra('INSURANCE', insuranceFee);
+  // Academic Year (Neil 2026-11-01): exam + insurance on the booking = exactly what was invoiced, no more, no less. The rest of the school reads these rows:
+  // the LoA's medical line keys off `details`. Off the invoice → deactivated, not deleted. LifePass and other courses keep the rule below.
+  const bkSource = (await prisma.booking.findUnique({ where: { id: bookingId }, select: { dataSource: true } }))?.dataSource;
+  if (/^ay_year_/i.test(String(dp.course_type || '')) && linesFromInvoice && bkSource === 'HUBSPOT') {   // not Fidelo migrations: their invoices were rolled up differently
+    const mirror = async (extraType: string, onInvoice: boolean, fee: number, details: string | null) => {
+      const rows = existingExtras.filter(e => e.extraType === extraType);
+      if (!onInvoice) {
+        for (const e of rows) if (e.active) { await prisma.bookingExtra.update({ where: { id: e.id }, data: { active: false } }); changes.push(`extra#${e.id}(${extraType}) off — not on the invoice`); }
+        return;
+      }
+      const data = { fee: fee > 0 ? fee : null, details, active: true };
+      if (!rows.length) { const c = await prisma.bookingExtra.create({ data: { bookingId, extraType, ...data } as any }); changes.push(`extra+${c.id}(${extraType})`); return; }
+      const e = rows[0];
+      if (!e.active || (details && e.details !== details) || Math.abs(Number(e.fee ?? 0) - fee) > 0.005) { await prisma.bookingExtra.update({ where: { id: e.id }, data: data as any }); changes.push(`extra#${e.id}(${extraType}) aligned`); }
+    };
+    await mirror('EXAM_FEE', examLine, examFee, null);
+    await mirror('INSURANCE', !!insuranceSku, insuranceFee, ({ INSR: 'PEL;Health', PEL: 'PEL', LP: 'PEL', MEDI: 'Health' } as Record<string, string>)[insuranceSku] || null);
+  } else {
+    if (examFee      > 0) await upsertExtra('EXAM_FEE', examFee);
+    if (insuranceFee > 0) await upsertExtra('INSURANCE', insuranceFee);
+  }
 
   // If a transfer extra was just represented and the student's flight is
   // already on file, seed the arrival datetime so the job appears in Transport
@@ -2011,6 +2032,8 @@ export function webhookRoutes(prisma: PrismaClient) {
       let transferFeeTotal = 0;   // ambiguous "transfer" / "airport" — split to pickup/dropoff later
       let examFeeTotal = 0;
       let insuranceFeeTotal = 0;
+      let examLine = false;       // Academic Year: the invoice's lines decide the extras (below), not the deal's boxes
+      let insuranceSku = '';
       let accomFallbackFee = 0;   // description-matched accom rows when SKU scan misses
       // Special diet (host-family only). AutoQuote emits a `DIET` SKU line per
       // host-family week; the diet TYPE rides in the line description, the student
@@ -2092,8 +2115,8 @@ export function webhookRoutes(prisma: PrismaClient) {
           case 'pickup':         pickupFeeTotal    += amount; break;
           case 'dropoff':        dropoffFeeTotal   += amount; break;
           case 'transfer':       transferFeeTotal  += amount; break;
-          case 'exam':           examFeeTotal      += amount; break;
-          case 'insurance':      insuranceFeeTotal += amount; break;
+          case 'exam':           examFeeTotal      += amount; examLine = true; break;
+          case 'insurance':      insuranceFeeTotal += amount; insuranceSku = sku.toUpperCase(); break;
           case 'accommodation':  accomFallbackFee  += amount; break;
           // 'other' — already counted in totalAmount, no per-row destination
         }
@@ -2209,7 +2232,8 @@ export function webhookRoutes(prisma: PrismaClient) {
           await prisma.agency.update({ where: { id: agency.id }, data: { name: resolvedCompanyName } });
         }
         agencyId = agency.id;
-      } else if (agentContactId) {
+      } else if (agentContactId && !referralCode) {
+        // A referral deal is B2C: its Partner contact is who earned the referral, not a sole-trader agent (Neil 2026-11-01).
         let agency = await prisma.agency.findFirst({
           where: { primaryEntityId: agentContactId, primaryEntityType: 'contact' } as any,
         });
@@ -2248,7 +2272,10 @@ export function webhookRoutes(prisma: PrismaClient) {
       // still gets the right extras. Mirrors the partners.ts enroll() rule.
       const courseTypeRaw = String(dp.course_type || '');
       const isBundledCourse = /^ay_year_/i.test(courseTypeRaw) || /^lifepass\s*/i.test(courseTypeRaw);
-      const examFeeOn   = isTrue(dp.exam_fee)  || isBundledCourse;
+      // Academic Year is no longer a pack (Neil 2026-11-01): course + PEL, the rest only with a Visa Pack. The invoice is what was sold, so its lines decide;
+      // a HubSpot workflow can re-tick the deal's boxes after the quote. LifePass keeps its bundle.
+      const isAY = /^ay_year_/i.test(courseTypeRaw);
+      const examFeeOn   = isAY ? examLine : (isTrue(dp.exam_fee) || isBundledCourse);
       // Respect an EXPLICIT insurance selection first. An unbundled AY where the
       // student declined MediCover arrives as 'PEL' (booking-deal.ts), and the
       // LoA's conditional Medical-Insurance line keys off this `details` value —
@@ -2257,7 +2284,8 @@ export function webhookRoutes(prisma: PrismaClient) {
       // property unset (manual creation / legacy drift), where the bundle is the
       // safe default.
       const explicitInsurance = String(dp.insurance || '').trim();
-      const insuranceVal = explicitInsurance || (isBundledCourse ? 'PEL;Health' : null);
+      const ayInsurance = ({ INSR: 'PEL;Health', PEL: 'PEL', LP: 'PEL', MEDI: 'Health' } as Record<string, string>)[insuranceSku] || explicitInsurance || 'PEL';
+      const insuranceVal = isAY ? ayInsurance : (explicitInsurance || (isBundledCourse ? 'PEL;Health' : null));
 
       // Airport Pickup
       if (isTrue(dp.airport_pickup)) {
