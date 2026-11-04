@@ -1573,6 +1573,44 @@ export function studentRoutesPortal(prisma: PrismaClient) {
     } catch (e: any) { res.status(500).json({ error: String(e?.message || e) }); }
   });
 
+  // Email the issued document (PDF attached) to the student's own address.
+  // The native app WebView (a thin Capacitor wrap of this site) has no
+  // DownloadListener/window-handler and no browser/share plugin, so an
+  // in-app PDF download silently no-ops. The app client uses this as the
+  // reliable delivery path (iOS always; Android when a device save fails),
+  // so the student can save/forward the letter from their mail app. Reuses
+  // documentScripts.sendDocument — the same send the office staff use.
+  router.post('/documents/:id/email', async (req, res) => {
+    try {
+      const studentId = req.session.studentId;
+      if (!studentId) return res.status(401).json({ error: 'No student session' });
+      const id = parseInt(req.params.id, 10);
+      const doc: any = await prisma.documentRecord.findUnique({
+        where: { id },
+        select: { studentId: true, status: true } as any,
+      });
+      if (!doc || doc.studentId !== studentId || doc.status !== 'ISSUED') {
+        return res.status(404).json({ error: 'Not found' });
+      }
+      const stu = await prisma.student.findUnique({
+        where: { id: studentId },
+        select: { email: true, firstName: true },
+      });
+      const to = (stu?.email || '').trim();
+      if (!to) return res.status(400).json({ error: 'No email address on file — please contact the office.' });
+      await docs.sendDocument({
+        docId: id,
+        to,
+        from: 'app@ulearnschool.com',
+        fromName: 'ULearn',
+        sentBy: `student-app-self:${studentId}`,
+        body: `<p>Hi ${stu?.firstName || 'there'},</p>`
+          + `<p>Here is the document you requested from the ULearn app. The PDF is attached — open it to save, print or forward it.</p>`,
+      });
+      res.json({ sent: true, to });
+    } catch (e: any) { res.status(500).json({ error: String(e?.message || e) }); }
+  });
+
   // Push-notification token registration — called by the mobile app on
   // first launch after the user grants notification permission, and on
   // every cold start (FCM rotates tokens). De-duped on (token).

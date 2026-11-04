@@ -40,7 +40,7 @@ function renderSheetHtml(opts: {
     classroom: string | null;
     session: string;        // MORNING / AFTERNOON / PLUS_FIVE
     teacher: { firstName: string; lastName: string } | null;
-    students: Array<{ firstName: string; lastName: string; nationality?: string | null }>;
+    students: Array<{ firstName: string; lastName: string; nationality?: string | null; balanceOpen?: number | null }>;
   }>;
 }): string {
   const fmtUK = (iso: string) => {
@@ -104,10 +104,14 @@ function renderSheetHtml(opts: {
     <tbody>
       ${Array.from({ length: totalRows }, (_, i) => {
         const s = cls.students[i];
+        // Outstanding balance rides on the surname as "(Bal €X)" so the teacher/
+        // front desk sees the debt on the paper sheet (Neil 2026-11-03).
+        const bal = Number(s?.balanceOpen || 0);
+        const balSuffix = bal > 0 ? ` <span class="bal">(Bal €${bal.toFixed(0)})</span>` : '';
         return `<tr>
           <td class="num">${i + 1}</td>
           <td class="name">${escHtml(s?.firstName || '')}</td>
-          <td class="name">${escHtml(s?.lastName || '')}</td>
+          <td class="name">${escHtml(s?.lastName || '')}${balSuffix}</td>
           <td class="inout"></td><td class="inout"></td>
           <td class="inout"></td><td class="inout"></td>
           <td class="inout"></td><td class="inout"></td>
@@ -154,6 +158,7 @@ function renderSheetHtml(opts: {
   table.grid th.num, table.grid td.num { width: 28px; text-align: center; font-size: 11px; color: #666; }
   table.grid th.name { text-align: left; }
   table.grid td.name { text-align: left; font-weight: 500; }
+  table.grid td.name .bal { color: #b91c1c; font-weight: 700; font-size: 10.5px; white-space: nowrap; }
   /* IN/OUT sub-cells per day — sized for STUDENT SIGNATURES (each student
      signs in on arrival, signs out at end of session) per Paul's workflow.
      Late arrival = 50% / early exit = 50% / both = 0%; the signed timestamps
@@ -197,7 +202,7 @@ export function attendanceRoutes(prisma: PrismaClient) {
           classroom: data.classroom || null,
           session: data.session,
           teacher: data.teacher ? { firstName: data.teacher.firstName, lastName: data.teacher.lastName } : null,
-          students: data.students.map((s: any) => ({ firstName: s.firstName, lastName: s.lastName, nationality: s.nationality })),
+          students: data.students.map((s: any) => ({ firstName: s.firstName, lastName: s.lastName, nationality: s.nationality, balanceOpen: s.balanceOpen })),
         }],
       });
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -231,7 +236,7 @@ export function attendanceRoutes(prisma: PrismaClient) {
           classroom: data.classroom || null,
           session: data.session,
           teacher: data.teacher ? { firstName: data.teacher.firstName, lastName: data.teacher.lastName } : null,
-          students: data.students.map((s: any) => ({ firstName: s.firstName, lastName: s.lastName, nationality: s.nationality })),
+          students: data.students.map((s: any) => ({ firstName: s.firstName, lastName: s.lastName, nationality: s.nationality, balanceOpen: s.balanceOpen })),
         });
       }
       const html = renderSheetHtml({

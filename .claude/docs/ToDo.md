@@ -2,6 +2,25 @@
 
 Open work for this project. Protocol: anything left unfinished at the end of a session goes here (not in memory); finished work is moved to ToDo-Done.md. Synced with Wrike (space "hub" → folder "SIS") every 5 minutes — edit the text here; status syncs both ways.
 
+## Student-app document download broken in the Android app
+
+**Priority:** High
+**Status:** In progress — fix shipped, needs on-device confirmation
+**Added:** 2026-11-03
+**Updated:** 2026-11-03T12:55:06Z
+
+Student (Dayaretsli Beatriz Figueroa Gonzalez) reported — confirmed by Neil — that the Documents card's download buttons (the ⬇️ icon and the "Download PDF" inside the preview) do nothing in the Android app. Root cause: the app is a thin Capacitor 8 webview of the live site; it has no `DownloadListener`, no `onCreateWindow`, and no browser/share plugin, so `window.open('_blank')`/PDF navigation silently no-op. Preview (👁, same-origin HTML) was unaffected. No store rebuild needed — fix is web-served JS + a new route.
+
+Fix shipped 2026-11-03 (compiled, restarted):
+- `public/student.html` `downloadDocumentPdf()` — desktop/web unchanged (`window.open`); **Android** saves a real PDF to the public Documents folder via the bundled `@capacitor/filesystem` (visible in Files); on any failure, and on **iOS**, falls back to emailing the PDF to the student. Added `_appToast` feedback.
+- `src/routes/student.ts` — new `POST /documents/:id/email` (session-scoped, ISSUED only) reuses `documentScripts.sendDocument()` to email the PDF from `app@`. Verified `getDocumentPdf` returns valid bytes (doc #1024, 255 KB `%PDF-`).
+
+- [ ] **Confirm on a real Android device** — the Filesystem save to `Directory.Documents` (scoped storage) couldn't be tested from the server; verify the file lands visibly in Files, else the email fallback carries it.
+- [ ] **Same bug on "My Documents" uploads** — the student's own uploaded-file download links (`myDocsList` / `previewUploadedDoc`) still use `target=_blank` and will also no-op in the app. Not covered by this fix (different data path, no email route). Fix if students report it.
+- [ ] **iOS (when it ships):** Filesystem-saved files are invisible without `UIFileSharingEnabled` + `LSSupportsOpeningDocumentsInPlace` in `ios/App/App/Info.plist` — add those on the next iOS build; until then iOS uses the email path (harmless, already wired).
+
+---
+
 ## Exam booking → Procurement dashboard integration (cohort A/B)
 
 **Priority:** High
@@ -672,14 +691,16 @@ sis crontab line `0 3 * * 1 node dist/scripts/cron-host-payments.js >> …/priva
 ## Attendance roster hides paid/escrow/net-terms students (ILEP gap)
 
 **Priority:** High
-**Status:** Waiting — Neil (approve full weekly report + the gate fix)
+**Status:** In progress — gate fix SHIPPED 2026-11-03; weekly report + net-terms badge nuance remain
 **Added:** 2026-10-14
-**Updated:** 2026-10-14T12:01:29Z
+**Updated:** 2026-11-03T08:45:06Z
+**Progress:** 60% — pool now surfaces unpaid/partial/net-terms with a balance badge, and the printout shows it. Still open: the authoritative weekly "not placed" report, and deciding how net-terms (agency-settled) rows should show the balance.
 
 Students physically in class but absent from the SIS output list, so attendance can't be recorded (Slack, Antonella/Paul). Root cause: the class **placement pool** (`classes.ts` `unassignedStudents`, feeds `attendance.ts` roster) only surfaces a booking course that has **≥1 real non-escrow Payment row** (plus active course / not ESCROW-CANCELLED / visa not Pending). **Agency net-terms** students (agency settles net → no per-student Payment rows) and **escrow/visa-pending** students have no qualifying row → hidden from placement → can't be rostered even when paid-up and attending → **ILEP attendance-recording gap**.
 Named cases diagnosed: Ana Jessica #766 (fixed, assign now) · Nominjin #759 (paid, 0 Payment rows, net-terms) · Uyanga #917 (escrow €3066 only) · Jiaming #14487 (visa Approved but escrow €2800 unreleased + course active=false + PM→AM) · Telmuun #293 (partial, €250 owed, non-admin lock) · Ariunsarnai #1047 (genuinely unpaid, PENDING — the one true commercial case). Group B "conversation class" = mostly on their main roster; the conversation class isn't a SIS class (Rakan #14444 genuinely unassigned).
+  - [x] **Gate fix SHIPPED (Neil 2026-11-03).** `unassignedStudents` no longer requires a Payment row — it surfaces unpaid/partial/net-terms too (still excludes CANCELLED/ESCROW status + visa Pending/Appeal — the real firewall). Tagging adds `paymentStatus:'unpaid'` + `paymentBalance`. Admin pool shows a **"Bal €X"** badge next to the name (red=unpaid, orange=partial) + row tint; `assignStudent` no longer hard-blocks on €0/partial, so **all hands can place** a student who owes while seeing the debt. Printout: `getWeekAttendance` emits `balanceOpen`, the paper sheet prints **"Surname (Bal €X)"** in red. Verified live: Kristina Bondarenko €1,886, Kyunghee Kang €955, Zorigt €1,229, Telmuun €250 now in the pool; Sergiy Bednarskiy €1,622 on his printed row.
   - [ ] Generate authoritative weekly report: every student with an active course covering the week on NO roster, reason-coded (net-terms / escrow / no-payment-rows / unpaid / visa-pending / inactive-course)
-  - [ ] Decide the gate fix: surface escrow/net-terms/paid students into the pool for ATTENDANCE (flagged), keep truly-unpaid visibly flagged
+  - [ ] Net-terms nuance: agency net-terms rows now show a "Bal €X" = unrecorded net, which may be misleading (agency owes, not the student). Decide whether to suppress/relabel the badge for agency-settled bookings.
   - [ ] Chase Jiaming #14487 stuck escrow (visa Approved, not released) on hub/finance side
   - [ ] **Ariunsarnai Batbayar #1047 — roster-and-flag-unpaid bucket (further review).** Fidelo API check (2026-10-14) confirms Fidelo invoice D2026201 (€1509) was NEVER paid: zero Incoming-Payment records for her customer number 30921, her name, or the invoice number (only "Batbayar" hit is an unrelated 2019 student, cust 20814). No agency "Internal Assignment"/credit entry either (that's how Saraa-settled students show, e.g. Batzorig cust 29433 "Paid by Agent Saraa"). So NOT a sync/timing artifact and NOT a credit — genuinely €1509 outstanding (SIS PENDING €0 + HubSpot deal 502951083215 open all agree). She's physically back in class this week (approved leave), so she needs rostering under the gate fix (attending-but-unpaid, flagged); the €1509 is a Saraa chase.
 
@@ -1065,6 +1086,19 @@ Signed register is a legal requirement (2026-07-31). (moved from Claude memory: 
 
 ---
 
+## Attendance printout — holiday (Hols) marking + H prefill
+
+**Priority:** Medium
+**Status:** Planned — Neil requested 2026-11-02; not yet built
+**Added:** 2026-11-03
+**Updated:** 2026-11-03T08:45:06Z
+
+A placed student on holiday should still PRINT on the attendance sheet (not vanish), marked **"Name (Hols)"**, with each school-day cell pre-filled **"H"** (print-only — does not write real Attendance rows; teacher can override). Holidays are authoritative in `booking_holidays` (per-booking start/end date ranges, type student/school). Mirror the just-shipped "(Bal €X)" plumbing: in `getWeekAttendance` compute per-day holiday flags from `booking_holidays` overlapping the week; in `renderSheetHtml` (`src/routes/attendance.ts`) append " (Hols)" to the name and render "H" in covered day cells.
+  - [ ] Build it (same two files as the balance change).
+  - [ ] NB only helps students who are PLACED — a holiday student never placed (e.g. Uyanga Tungalag #917) still won't show until placed. Holiday-marking + placement surfacing are complementary.
+
+---
+
 ## Refund module data and wiring follow-ups
 
 **Priority:** Medium
@@ -1430,7 +1464,7 @@ webhooks.ts / hubspot-sync.ts treat any SKU starting "LP" as a LifePass (Academi
 **Status:** In progress
 **Progress:** Spec written (`.claude/projects/referral-setup.md`). Phase 1: [x] `referral_programs` cache table + `ReferralProgram` model (live, verified); [x] HubSpot props created — 6 on Company + 6 on Contact (group `sales_properties`) + Deal `referral_code` (group `dealinformation`). Design locked w/ Neil: props on Company AND Agent-Employee Contact (sole-trader + Ambassador reuse); autoQuote is always downstream (stamp-on-deal); Xero payout account = existing `PartnerPayments`. [x] `src/scripts/referral.ts` engine (upsert→proxy-PATCH company+Agent-Employee contact, syncFromHubSpot cache mirror, code-uniqueness incl. ambassadorCode, resolveReferralCode, validateForStudent) + `src/routes/referral.ts` (PUBLIC `/sis/referral/validate` w/ CORS for ulearnschool.com; staff `/sis/api/referral` CRUD + `/agencies` picker, writes admin/accounts-only) + mounted in app.ts. [x] **Admin "Referral Programs" view** in admin.html (Docs section sidebar) — list, agency-search create, edit form (code/label/discount/reward model+%/settlement/active), Save→PUT (shows HubSpot push count), Sync-from-HubSpot; writes UI-gated to admin/accounts. [x] **AMICI live** — agency 643 / HubSpot company 450325692610: code `AMICI`, 10% student discount, AMBASSADOR_FLAT 10% reward, PAYOUT settlement, active. Verified: public validate→`{valid:true,studentDiscountPct:10}` (reward not leaked), all 6 props on the HubSpot company, SIS cache mirrored. tsc 0, restarted. **NB starting %s are Marco's Ambassador proposal — Neil to confirm/adjust in the new UI.** Next: Drupal `discount_code` wire (validate + stamp via booking_enrichment) → hub autoQuote reads referral_code → `/invoice-created` → Booking.discountCode+agency.
 **Added:** 2026-10-21
-**Updated:** 2026-10-22T19:50:06Z
+**Updated:** 2026-11-03T13:10:05Z
 
 Driver: Amici di Dublino (Marco Torelli) — Italian referral community, fixed code `AMICI`,
 student discount (≈10%) + partner reward (Accelerator 22–44% tiered), paid out weekly via
@@ -1466,11 +1500,64 @@ is inert; `Booking.discountCode` + `Student.ambassadorCode` are defined-but-unco
       (info@amicididublino.com / agency 643). **To watch live:** stamp `referral_code=AMICI` on a test HubSpot deal
       → invoice → attributes → shows in portal. Reward is indicative (flat % of value); payment-accrued ledger =
       Phase 2. Still TODO for hands-off prod: Drupal capture (above) + hub autoQuote applying the 10% discount.
+- [x] **HubSpot PIPELINE pull BUILT 2026-11-03 (tsc 0, deployed):** the portal Referrals table no longer
+      waits for a won→invoiced SIS booking — it pulls every HubSpot deal carrying the programme code straight
+      into a new `referral_deals` table (model + table via `prisma db execute`), so referred students show from
+      QUOTE stage. `syncProgramDeals(agencyId)` in referral.ts: deal-search on `referral_code` (keyed on the
+      code only — student-sourced B2C deals tied back to the partner, NOT via agency association), resolves the
+      student contact (Student-B2C assoc label) for name/nationality, maps stage→friendly label via the
+      pipelines API, reads `deal.amount` (autoquote/manual), back-links the SIS booking once won, and PRUNES rows
+      whose deal no longer carries the code (deleted/de-coded deals drop off). `partnerReferrals` now reads
+      `referral_deals` (closed-lost hidden; won flagged). Route syncs only on tab-open (`?sync=1`) so the
+      visibility probe stays cheap. Portal: Referrals tab moved to the RIGHT OF STUDENTS; table restyled to match
+      the Finance/History tab (`ref-row` + Stage pill); 4 stat cards (Referral Students / Enrolled (Won) / Total
+      Booking Value / Reward est.); terms line = "<Month> students get 20% off and you earn 10%" with the month
+      auto-rolling (same display trick as KickStart; sourced from current date as the referral offer is standing).
+      Verified live: both AMICI quote-stage deals (534994058441 €194, 531246931186) now appear for agency 643.
+- [x] **Student discount DERIVED, not static (Neil 2026-11-03):** portal shows KickStart% + 5 (capped 30, floored
+      at the partner base %) — mirrors the hub `studentRate()` exactly, so it equals what autoQuote applies and
+      auto-rolls each month. `partnerReferrals` fetches the live KickStart % from the hub challenge JSON
+      (`getKickStartPct`, 10-min cache) and returns `studentDiscountPct` = effective, plus `basePct`/`kickstartPct`.
+      AMICI base reverted 20→10 (my earlier 20 was really KickStart 15 + 5); this month base 10 + KS 15 → 20%.
+      Reward stays config 10%. "you earn 10%" + "{Month} students get 20% off" both render live.
+- [x] **Student name → quote link (Neil 2026-11-03):** each referral row's student name links to that deal's
+      public quote (`hs_quote_link`). `syncProgramDeals` reads deal→quote assoc + `hs_quote_link`/`hs_quote_amount`,
+      stores `quote_url` (new column), and uses the quote amount as the VALUE fallback when `deal.amount` is null
+      (common at quote stage — e.g. 531246931186 showed €1,592.60 from its quote). Verified both AMICI deals link.
+- [x] **Reward math fixed — 10% of NET course only (Neil 2026-11-03):** was wrongly 10% of the whole deal value.
+      Now: student discount applied → NET course total → partner earns reward% of that. `syncProgramDeals` reads the
+      quote's line items (quotes→line_items assoc + `hs_sku`/`amount`), sums NET `amount` of COURSE SKUs only
+      (reuses `skuToCourseCategory` logic — excludes REG/accommodation/exam/insurance/transfer), stores `reward_base`
+      (new column). `partnerReferrals` reward = reward_base × reward%. Verified: 534994058441 course net €144 → €14.40
+      (was €19.40 incl. €50 reg); 531246931186 course net €777.60 of €1,592.60 total → €77.76 (was €159.26). Portal
+      Reward cell tooltip shows the basis. Still indicative "(est.)" until the real accrual/payout ledger (Phase 2).
+- [x] **Referral & KickStart made SEPARATE (Neil 2026-11-03):** reversed the additive "KickStart% + 5"
+      logic. Referral applies the partner's FLAT discount (Amici 10% student / 10% partner); KickStart is a
+      separate compliance-based promo the student earns on its own. Removed `getKickStartPct`/`effectiveStudentDiscount`
+      in SIS referral.ts; hub `studentRate()` (hubapp/scripts/quote-inv/referral.js) now returns the flat partner %
+      (backups `*.bak-20261103-referral` on referral.js + autoQuote.js). AMICI base reverted to 10%. Verified
+      end-to-end: student 10% / partner 10%.
+- [x] **Referral area is COURSE-ONLY (Neil 2026-11-03):** Value column + stat show the net COURSE line-item total
+      (course SKUs only via `skuIsCourse`), not the deal total — accommodation/reg/extras never carry discount or reward.
+      Value reads the live QUOTE amount first (deal.amount lags), reward = reward% × net course.
+- [x] **Reward payout Bill on WON (Neil 2026-11-03):** reusing the accom host-payment Xero pattern (`getAuthedXero`
+      + `createInvoices` ACCPAY), a **DRAFT** Xero Bill is raised to the partner for each WON deal, amount = net
+      course × reward%, account **B114 "Referral Payments"** (was A106; Neil switched + renaming the account; env
+      `REFERRAL_PAYOUT_ACCOUNT`), ref `REF-<code>-<dealId>`. **Trigger = the `/invoice-created` webhook** (the deal→WON
+      event, same path as ReSync) via `onReferralDealWon(code)` → `syncProgramDeals` + `billWonDeals`; fire-and-forget
+      after the 200, in BOTH the fresh-create and the already-exists/re-fire (ReSync) branches. Billing was removed from
+      portal-sync. Idempotent (one bill per deal via `xeroBillId`); partner Xero contact resolved+cached on
+      `referral_programs.xero_contact_id`; tracked on `referral_deals` (reward_amount/xero_bill_id/xero_bill_status/xero_bill_at).
+      Verified: REF-AMICI-534994058441 €126.40 ACCPAY DRAFT on B114 → Amici di Dublino.
+      Open: stale-draft refresh if a won deal's quote later changes; surface payout status in the portal.
 - [ ] **Phase 2** — `ReferralReward` ledger; accrue on `/invoice-paid`; Portal Referral table +
-      Finance "Referral Rewards" card; refund/cancel clawback.
+      Finance "Referral Rewards" card; refund/cancel clawback. (Reward still shown as indicative "(est.)".)
 - [ ] **Phase 3** — Xero ACCPAY payout (`createReferralPayoutBill`, clone bills/refund.js) +
       weekly Wednesday settlement run + remittance (clone partner-remittance.js) + admin batch UI.
 - [ ] **Phase 4** — fold student `ambassadorCode` into the same resolver (close student.html 10%+10% promise).
+- [x] **Payout bank details → HubSpot → Xero (2026-11-03):** 3 props created on Company + Contact (group `sales_properties`): `referral_payout_iban`, `referral_payout_bic`, `referral_payout_account_name`. Sales onboard the IBAN/BIC in HubSpot (never a direct applicant→Xero line). `referral.ts` now pulls them into the partner's Xero contact `bankAccountDetails` (`BIC/IBAN`, accom host-payment convention) at bill time via `resolvePartnerXeroContact` → `syncXeroContactBank` — mod-97 IBAN-validated (bad IBAN logged + skipped, bill still raises), idempotent (writes only on change). New `syncPartnerBank(agencyId)` exposed for an admin "re-sync" / weekly hook. **Marco/AMICI verified:** IE77MONZ91004001996777 / MONZIE22 / "Marco Torelli" stored on company 450325692610 + contact 880259688694 → Xero contact `be4ce718…` `bankAccountDetails=MONZIE22/IE77MONZ91004001996777`. tsc 0, restarted.
+  - [ ] **Flag for Neil:** Xero payee name is the agency "Amici di Dublino" but the account holder is "Marco Torelli" (personal IBAN) — stored `referral_payout_account_name` captures the real holder, but the Xero contact itself still reads as the company. Confirm that's the intended payee, or we rename the Xero contact / split to an individual payee.
+  - [ ] **Optional:** wire `syncPartnerBank` into the weekly reconciliation so a corrected/new IBAN reaches Xero even between reward bills (today it syncs at bill time), and add an admin "Re-sync bank to Xero" button.
 
 Open commercials for Neil (not Phase-1 blockers): exact %s per Amici; reward base; Xero COS
 account code for payouts; min payout threshold; VAT on the Italian-entity bill; discount-stacking

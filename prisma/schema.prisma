@@ -764,6 +764,7 @@ model Agency {
   credits          AgencyCredit[]
   challengeOptIn   ChallengeOptIn?
   referralProgram  ReferralProgram?
+  referralDeals    ReferralDeal[]
 
   // Seat Clearance Sale eligibility — flagged (Model-B "package") partners see the
   // live clearance tab as their first portal tab. See project_occupancy_seat_clearance.
@@ -944,10 +945,56 @@ model ReferralProgram {
   rewardFlatPct      Decimal? @map("reward_flat_pct") @db.Decimal(5, 2)        // used when rewardModel = AMBASSADOR_FLAT
   settlementMode     String   @default("PAYOUT") @map("settlement_mode")       // PAYOUT | INVOICE_MARKDOWN
   active             Boolean  @default(true)
+  xeroContactId      String?  @map("xero_contact_id")                          // partner's Xero contact (payout bills)
   syncedAt           DateTime @default(now()) @map("synced_at")                // last mirror from HubSpot
 
   @@index([code, active])
   @@map("referral_programs")
+}
+
+// Referral PIPELINE — one row per HubSpot deal carrying a programme's referral
+// code, pulled straight from HubSpot (NOT gated on a won SIS booking). This is
+// what lets a partner see referred students who are still at quote stage, long
+// before the deal wins and a SIS booking exists. Refreshed by syncProgramDeals
+// (on portal load + cron). `bookingId` back-links the SIS booking once the deal
+// wins, so the portal can enrich the won rows with the real paid figure.
+model ReferralDeal {
+  id                      Int      @id @default(autoincrement())
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @updatedAt @map("updated_at")
+
+  agencyId                Int      @map("agency_id")
+  agency                  Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  referralCode            String   @map("referral_code")
+
+  hubspotDealId           String   @unique @map("hubspot_deal_id")
+  dealName                String?  @map("deal_name")
+  dealStage               String?  @map("deal_stage")    // raw HubSpot stage id
+  stageLabel              String?  @map("stage_label")   // friendly label from the pipeline
+  pipeline                String?
+  isWon                   Boolean  @default(false) @map("is_won")
+  isClosedLost            Boolean  @default(false) @map("is_closed_lost")
+  amount                  Decimal? @db.Decimal(10, 2)    // deal.amount (autoquote/manual), quote fallback — total booking value
+  rewardBase              Decimal? @map("reward_base") @db.Decimal(10, 2)  // NET course total (post student-discount, course SKUs only) — the reward base
+
+  studentName             String?  @map("student_name")
+  studentNationality      String?  @map("student_nationality")
+  hubspotStudentContactId String?  @map("hubspot_student_contact_id")
+  quoteUrl                String?  @map("quote_url")    // public quote link (hs_quote_link) — student name links to this
+
+  bookingId               Int?     @map("booking_id")    // filled once the deal wins into SIS
+  dealCreatedAt           DateTime? @map("deal_created_at")
+  lastSyncedAt            DateTime @default(now()) @map("last_synced_at")
+
+  // Partner reward payout — a Xero ACCPAY Bill (DRAFT) raised when the deal wins.
+  rewardAmount            Decimal?  @map("reward_amount") @db.Decimal(10, 2)  // amount billed = reward_base × reward%
+  xeroBillId              String?   @map("xero_bill_id")
+  xeroBillStatus          String?   @map("xero_bill_status")   // DRAFT | SUBMITTED | PAID | VOIDED
+  xeroBillAt              DateTime? @map("xero_bill_at")
+
+  @@index([agencyId])
+  @@index([referralCode])
+  @@map("referral_deals")
 }
 
 // ============================================================

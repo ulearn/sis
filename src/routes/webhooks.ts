@@ -2396,6 +2396,18 @@ export function webhookRoutes(prisma: PrismaClient) {
                 }
               })();
             }
+            // Referral reward (ReSync / re-fire path) — same as the fresh-create
+            // branch; idempotent, so a repeat re-fire won't double-bill.
+            if (referralCode) {
+              (async () => {
+                try {
+                  const r = await referralScripts(prisma).onReferralDealWon(referralCode);
+                  console.log(`[Referral Reward] (re-fire) deal ${resolvedDealId} (${referralCode}):`, JSON.stringify(r));
+                } catch (re: any) {
+                  console.error(`[Referral Reward] (re-fire) FAILED for deal ${resolvedDealId} (${referralCode}): ${re?.message || re}`);
+                }
+              })();
+            }
             return;
           }
         }
@@ -2506,6 +2518,24 @@ export function webhookRoutes(prisma: PrismaClient) {
             if (e?.response?.body) {
               console.error(`[Xero Invoice] response body:`, JSON.stringify(e.response.body).slice(0, 1000));
             }
+          }
+        })();
+      }
+
+      // ────────────────────────────────────────────────────────────
+      // Fire-and-forget: referral reward payout. This webhook fires at the
+      // deal→WON moment (and again on ReSync), so if the deal carried a referral
+      // code, refresh that programme's pipeline and raise the partner's reward
+      // as a DRAFT Xero Bill (net course × reward%). Idempotent — one Bill per
+      // deal. Runs after res.json; never affects the webhook response.
+      // ────────────────────────────────────────────────────────────
+      if (referralCode) {
+        (async () => {
+          try {
+            const r = await referralScripts(prisma).onReferralDealWon(referralCode);
+            console.log(`[Referral Reward] deal ${resolvedDealId} (${referralCode}):`, JSON.stringify(r));
+          } catch (e: any) {
+            console.error(`[Referral Reward] FAILED for deal ${resolvedDealId} (${referralCode}): ${e?.message || e}`);
           }
         })();
       }

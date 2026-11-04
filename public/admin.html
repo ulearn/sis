@@ -10527,7 +10527,7 @@ async function showClassesList() {
     html += `
       <details ${unassignedPool.length > 0 ? 'open' : ''} style="margin-top:20px;background:${unassignedPool.length > 0 ? '#fff7e6' : 'var(--card-bg)'};border:1px solid ${unassignedPool.length > 0 ? '#f0c674' : 'var(--card-border)'};border-radius:var(--radius);padding:10px 14px">
         <summary style="cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;font-weight:600;font-size:13px">
-          <span style="color:#7c4a00">Unassigned Pool (Status=Confirmed/Partial)</span>
+          <span style="color:#7c4a00">Unassigned Pool (incl. unpaid — balance shown)</span>
           <span style="background:${unassignedPool.length>0?'#dc2626':'#6FB42C'};color:#fff;padding:1px 8px;border-radius:10px;font-size:11px">${unassignedPool.length}</span>
           ${(classSessionFilter==='MORNING'||classSessionFilter==='AFTERNOON') ? `
             <label onclick="event.stopPropagation()" title="Also show students booked on the other session so you can place a beginner cross-session (e.g. an A1 booked PM into morning A1). Does NOT change their booking." style="margin-left:auto;display:inline-flex;align-items:center;gap:5px;font-weight:500;font-size:11px;color:var(--text-secondary);cursor:pointer">
@@ -10536,7 +10536,7 @@ async function showClassesList() {
             </label>` : ''}
         </summary>
         ${unassignedPool.length === 0
-          ? '<div style="padding:10px 4px;color:var(--text-muted);font-size:12px">✅ Every paid eligible student has a class this week.</div>'
+          ? '<div style="padding:10px 4px;color:var(--text-muted);font-size:12px">✅ Every eligible student has a class this week.</div>'
           : `<div style="margin-top:8px;max-height:280px;overflow-y:auto">
               <table style="width:100%;font-size:12px;border-collapse:collapse">
                 <thead><tr style="text-align:left;border-bottom:1px solid var(--card-border);color:var(--text-muted)">
@@ -10554,23 +10554,29 @@ async function showClassesList() {
                     const s = bc.booking?.student || {};
                     const paid = Number(bc.booking?.amountPaid || 0);
                     const total = Number(bc.booking?.amountTotal || 0);
-                    const isPartial = total > 0 && (total - paid) > 0.01;
+                    const balance = total > 0 && (total - paid) > 0.01 ? (total - paid) : 0;
+                    const isUnpaid = balance > 0 && paid <= 0.01;
+                    const isPartial = balance > 0 && !isUnpaid;
+                    // "Bal €X" badge so all hands see the debt while placing (Neil 2026-11-03).
+                    const balBadge = balance > 0
+                      ? ` <span title="Outstanding balance on this booking — placement is allowed, but this student owes money" style="background:${isUnpaid?'#fde2e2':'#fef3c7'};color:${isUnpaid?'#991b1b':'#92400e'};padding:1px 6px;border-radius:8px;font-size:10px;font-weight:700;white-space:nowrap">Bal €${balance.toFixed(0)}</span>`
+                      : '';
                     const lvl = (levelAsOf(s, isoDate(classListWeek)) || bc.level || s.currentLevel || '—');
                     const sess = bc.category === 'MORNING_PLUS' ? 'AM+' : bc.category === 'AFTERNOON_PLUS' ? 'PM+' : bc.category === 'MORNING' ? 'AM' : bc.category === 'AFTERNOON' ? 'PM' : bc.category === 'INTENSIVE' ? 'INT' : bc.category === 'PRIVATE' ? '1-2-1' : (bc.category || '');
-                    return `<tr style="border-bottom:1px solid var(--card-border)${isPartial ? ';background:#fff3e0' : ''}">
-                      <td style="padding:6px"><strong onclick="showStudentPreview(${s.id})" style="cursor:pointer;color:var(--accent);text-decoration:underline;text-underline-offset:2px">${esc(s.firstName||'')} ${esc(s.lastName||'')}</strong> <span style="color:var(--text-muted);font-size:10px">#${s.id}</span></td>
+                    return `<tr style="border-bottom:1px solid var(--card-border)${isUnpaid ? ';background:#fde8e8' : isPartial ? ';background:#fff3e0' : ''}">
+                      <td style="padding:6px"><strong onclick="showStudentPreview(${s.id})" style="cursor:pointer;color:var(--accent);text-decoration:underline;text-underline-offset:2px">${esc(s.firstName||'')} ${esc(s.lastName||'')}</strong> <span style="color:var(--text-muted);font-size:10px">#${s.id}</span>${balBadge}</td>
                       <td style="padding:6px">${bc.booking?.agency?.name ? esc(bc.booking.agency.name) : '<span style="color:#7c3aed;font-weight:700;font-size:10px">B2C</span>'}</td>
                       <td style="padding:6px">${esc(lvl)}</td>
                       <td style="padding:6px">${esc(s.nationality || '—')}</td>
                       <td style="padding:6px"><span style="background:${bc.category==='MORNING'||bc.category==='MORNING_PLUS'?'#fef3c7':'#dbeafe'};color:#000;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:600">${sess}</span>${bc._crossSession?` <span title="Booked on the other session — cross-placement" style="background:#ede9fe;color:#5b21b6;padding:1px 5px;border-radius:8px;font-size:9px;font-weight:700">booked ${bc._crossSession}</span>`:''}</td>
                       <td style="padding:6px">${esc(bc.name || '')}</td>
                       <td style="padding:6px;color:var(--text-muted);font-size:11px">${bc.startDate ? formatDate(bc.startDate) : ''} → ${bc.endDate ? formatDate(bc.endDate) : ''}</td>
-                      <td style="padding:6px;text-align:right;${isPartial?'color:#b45309;font-weight:600':''}">€${paid.toFixed(0)} / €${total.toFixed(0)}${isPartial?' ⚠':''}</td>
+                      <td style="padding:6px;text-align:right;${balance>0?(isUnpaid?'color:#991b1b;font-weight:600':'color:#b45309;font-weight:600'):''}">€${paid.toFixed(0)} / €${total.toFixed(0)}${balance>0?' ⚠':''}</td>
                     </tr>`;
                   }).join('')}
                 </tbody>
               </table>
-              <div style="margin-top:6px;padding:0 4px;color:var(--text-muted);font-size:11px">Click any row to open the student. Orange rows = partial-paid balance.</div>
+              <div style="margin-top:6px;padding:0 4px;color:var(--text-muted);font-size:11px">Click any row to open the student. Orange = partial balance · red = unpaid. The <strong>Bal €X</strong> badge shows what's still owed — placement is allowed either way.</div>
             </div>`}
       </details>`;
 

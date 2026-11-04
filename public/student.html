@@ -2533,16 +2533,22 @@ async function initPushNotifications() {
       // (download PDF) action — mirrors what the SIS admin sees so students
       // can pull their own letters without going through office staff.
       const docIconBtn = 'background:none;border:0;cursor:pointer;padding:2px 4px;font-size:16px;line-height:1;border-radius:4px';
+      const _bC = window.Capacitor;
+      const _bPf = (_bC && _bC.getPlatform && _bC.getPlatform()) || 'web';
+      const _bNat = !!(_bC && ((_bC.isNativePlatform && _bC.isNativePlatform()) || _bC.isNative));
+      const _bFS = !!(_bC && _bC.Plugins && _bC.Plugins.Filesystem);
+      const _buildTag = '<div style="font-size:10px;color:#c2c2c2;text-align:right;margin-bottom:2px">build ' + (window.STUDENT_BUILD || '?')
+        + ' · ' + _bPf + ' · nat=' + _bNat + ' · cap=' + (!!_bC) + ' · fs=' + _bFS + '</div>';
       document.getElementById('card-docs').innerHTML = docs.length
-        ? docs.map(doc => `<div class="kv">
+        ? _buildTag + docs.map(doc => `<div class="kv">
             <span class="kv-label" style="color:var(--text);font-weight:700">${esc(doc.template?.name || doc.documentType)}</span>
             <span class="kv-value" style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
               <span style="color:var(--muted);font-weight:400">${fmtDate(doc.issuedAt)}</span>
               <button title="Preview document" onclick="previewDocument(${doc.id})" style="${docIconBtn}">👁</button>
-              <button title="Download PDF" onclick="downloadDocumentPdf(${doc.id})" style="${docIconBtn}">⬇️</button>
+              <button title="Download PDF" onclick="window.downloadDocumentPdf && window.downloadDocumentPdf(${doc.id})" style="${docIconBtn}">⬇️</button>
             </span>
           </div>`).join('')
-        : empty('No documents issued yet');
+        : _buildTag + empty('No documents issued yet');
 
       const att = d.attendance || {};
       window._att = att;                 // academicYear block read by loadAbsences
@@ -3983,14 +3989,187 @@ async function initPushNotifications() {
     // to lock it large and take their finger off).
     window.addEventListener('orientationchange', () => setTimeout(fitWidth, 300));
   }
-  function downloadDocumentPdf(id) {
-    // Open the real PDF (QR + signature) in a new tab / system browser, served
-    // inline so it renders and the browser offers save/share. `window.location`
-    // to an attachment silently no-ops in the Capacitor webview — hence open().
-    const url = `/sis/student/api/documents/${id}/pdf?inline=1`;
-    const w = window.open(url, '_blank', 'noopener');
-    if (!w) window.location.href = url;   // popup blocked (desktop) → navigate
+  // Lightweight toast (no dependency) — the app needs to tell the student what
+  // happened to a download, since the webview gives no browser chrome.
+  function _appToast(msg, ms) {
+    let t = document.getElementById('_appToast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = '_appToast';
+      t.style.cssText = 'position:fixed;left:50%;bottom:76px;transform:translateX(-50%);max-width:88%;background:#1a1a2e;color:#fff;padding:11px 16px;border-radius:10px;font-size:13.5px;font-weight:600;z-index:10050;box-shadow:0 8px 28px rgba(0,0,0,.32);text-align:center;line-height:1.38;transition:opacity .35s';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.opacity = '1';
+    clearTimeout(t._h);
+    t._h = setTimeout(() => { t.style.opacity = '0'; }, ms || 3400);
   }
+  function _blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+      const fr = new FileReader();
+      fr.onerror = reject;
+      fr.onload = () => { const s = String(fr.result || ''); resolve(s.slice(s.indexOf(',') + 1)); };
+      fr.readAsDataURL(blob);
+    });
+  }
+  // Reliable in-app delivery: email the issued PDF to the student's own address.
+  async function _emailDocToSelf(id) {
+    _appToast('Emailing it to you…', 8000);
+    try {
+      const r = await fetch(`/sis/student/api/documents/${id}/email`, { method: 'POST', credentials: 'include' });
+      const j = await r.json().catch(() => ({}));
+      if (r.ok && j.sent) _appToast('📧 Sent to ' + (j.to || 'your email') + ' — open your inbox to save or forward it.', 5600);
+      else _appToast((j && j.error) || 'Could not email the document. Please try again.', 5200);
+    } catch (e) {
+      _appToast('Could not email the document. Please check your connection and try again.', 5200);
+    }
+  }
+  // Never let a hung native/plugin promise stall the flow silently.
+  function _withTimeout(promise, ms, label) {
+    return Promise.race([
+      promise,
+      new Promise((_, rej) => setTimeout(() => rej(new Error((label || 'operation') + ' timed out')), ms)),
+    ]);
+  }
+  // In-app chooser (the webview can't do a browser-style download, so we ASK):
+  // Save to the device's Files, or email it — email is the always-works path.
+  // The sheet appearing is also proof the latest app JS is live.
+  function _docGetSheet(id) {
+    const old = document.getElementById('_docGetSheet'); if (old) old.remove();
+    const o = document.createElement('div');
+    o.id = '_docGetSheet';
+    o.style.cssText = 'position:fixed;inset:0;z-index:10040;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center';
+    o.onclick = e => { if (e.target === o) o.remove(); };
+    o.innerHTML =
+      '<div style="background:#fff;width:100%;max-width:460px;border-radius:16px 16px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -8px 30px rgba(0,0,0,.25)">'
+      + '<div style="font-weight:800;font-size:15px;color:#1a1a2e;margin:2px 2px 12px">Get this document</div>'
+      + '<button id="_dgSave" style="width:100%;display:flex;align-items:center;gap:10px;background:#f3f5f9;border:0;border-radius:11px;padding:13px 14px;font-family:inherit;font-size:14.5px;font-weight:700;color:#1a1a2e;margin-bottom:9px;cursor:pointer">📁 Save to my device (Files)</button>'
+      + '<button id="_dgMail" style="width:100%;display:flex;align-items:center;gap:10px;background:#339900;border:0;border-radius:11px;padding:13px 14px;font-family:inherit;font-size:14.5px;font-weight:700;color:#fff;margin-bottom:9px;cursor:pointer">📧 Email it to me</button>'
+      + '<button id="_dgCancel" style="width:100%;background:none;border:0;padding:10px;font-family:inherit;font-size:13.5px;color:#6b7280;cursor:pointer">Cancel</button>'
+      + '</div>';
+    document.body.appendChild(o);
+    o.querySelector('#_dgSave').onclick = () => { o.remove(); _docSaveToFiles(id); };
+    o.querySelector('#_dgMail').onclick = () => { o.remove(); _emailDocToSelf(id); };
+    o.querySelector('#_dgCancel').onclick = () => o.remove();
+  }
+  // Are we inside the native app's WebView (where a browser download can't
+  // work)? Don't trust only Capacitor.isNativePlatform() — on a remotely-loaded
+  // page the bridge may not be injected, so also sniff the WebView user-agent
+  // (Android System WebView = "; wv)"; iOS in-app WKWebView lacks the Safari
+  // token). Belt-and-braces so we NEVER silently take the browser path in-app.
+  function _isInAppWebview() {
+    const Cap = window.Capacitor;
+    if (Cap && ((Cap.isNativePlatform && Cap.isNativePlatform()) || Cap.isNative)) return true;
+    const ua = navigator.userAgent || '';
+    if (/;\s*wv\)/.test(ua)) return true;
+    if (/\b(iPhone|iPad|iPod)\b/.test(ua) && !/Safari/.test(ua) && !/CriOS|FxiOS/.test(ua)) return true;
+    return false;
+  }
+  function _fnameFromResp(resp, id) {
+    let fname = `ULearn-document-${id}.pdf`;
+    const cd = (resp && resp.headers && resp.headers.get('Content-Disposition')) || '';
+    const m = /filename="?([^"]+)"?/.exec(cd);
+    if (m && m[1]) fname = m[1];
+    return fname;
+  }
+  // "Save to device": Android app → real file in public Documents via the
+  // Filesystem plugin; a real browser → anchor[download]; anything else (iOS
+  // app / webview with no plugin, where a save is impossible) → email instead.
+  // Every native step is timeout-guarded so it can never hang doing nothing.
+  async function _docSaveToFiles(id) {
+    const url = `/sis/student/api/documents/${id}/pdf?inline=1`;
+    const Cap = window.Capacitor;
+    const FS = Cap && Cap.Plugins && Cap.Plugins.Filesystem;
+    const platform = (Cap && Cap.getPlatform && Cap.getPlatform()) || '';
+    if (platform === 'android' && FS) {
+      _appToast('Saving…', 12000);
+      try {
+        const resp = await _withTimeout(fetch(url, { credentials: 'include' }), 20000, 'download');
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const blob = await _withTimeout(resp.blob(), 20000, 'read');
+        const fname = _fnameFromResp(resp, id);
+        const b64 = await _blobToBase64(blob);
+        await _withTimeout(FS.writeFile({ path: fname, data: b64, directory: 'DOCUMENTS', recursive: true }), 15000, 'save');
+        _appToast('✓ Saved. Find it in your Files app → Documents → ' + fname, 7000);
+      } catch (e) {
+        _appToast('Couldn’t save to the device — emailing it to you instead…', 3000);
+        await _emailDocToSelf(id);
+      }
+      return;
+    }
+    if (!_isInAppWebview()) {               // real browser → genuine download
+      try {
+        const resp = await fetch(url, { credentials: 'include' });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const blob = await resp.blob();
+        const fname = _fnameFromResp(resp, id);
+        const burl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = burl; a.download = fname;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(burl), 60000);
+      } catch (e) { await _emailDocToSelf(id); }
+      return;
+    }
+    // In-app webview with no file-save capability (iOS app, or bridge missing):
+    // a device save is impossible here, so deliver by email.
+    _appToast('Sending it to your email instead…', 2500);
+    await _emailDocToSelf(id);
+  }
+  async function downloadDocumentPdf(id) {
+    const url = `/sis/student/api/documents/${id}/pdf?inline=1`;
+    const Cap = window.Capacitor;
+    const FS = Cap && Cap.Plugins && Cap.Plugins.Filesystem;
+    const inApp = _isInAppWebview();
+    // ANDROID APP (Filesystem reachable) → one-tap real download: save the PDF
+    // straight to the device's public Documents folder. The toast names the
+    // exact outcome so the path taken is never a mystery.
+    if (inApp && FS) {
+      _appToast('Downloading…', 12000);
+      try {
+        const resp = await _withTimeout(fetch(url, { credentials: 'include' }), 20000, 'download');
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const blob = await _withTimeout(resp.blob(), 20000, 'read');
+        const fname = _fnameFromResp(resp, id);
+        const b64 = await _blobToBase64(blob);
+        await _withTimeout(FS.writeFile({ path: fname, data: b64, directory: 'DOCUMENTS', recursive: true }), 15000, 'save');
+        _appToast('✓ Downloaded → open Files app → Documents → ' + fname, 8000);
+      } catch (e) {
+        _appToast('Save failed (' + ((e && e.message) || e) + ') — emailing it to you instead…', 5000);
+        await _emailDocToSelf(id);
+      }
+      return;
+    }
+    // IN-APP WEBVIEW WITHOUT a file-save capability (native bridge not injected
+    // on this page / iOS app) → a device save is genuinely impossible here, so
+    // deliver by email rather than silently doing nothing.
+    if (inApp) {
+      _appToast('This device can’t save files directly from the app — emailing it to you…', 5000);
+      await _emailDocToSelf(id);
+      return;
+    }
+    // REAL BROWSER (desktop / mobile web) → genuine download to Downloads.
+    try {
+      const resp = await fetch(url, { credentials: 'include' });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const blob = await resp.blob();
+      const fname = _fnameFromResp(resp, id);
+      const burl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = burl; a.download = fname;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(burl), 60000);
+    } catch (e) {
+      window.location.href = url;   // last resort
+    }
+  }
+  // Build tag (shown in the Documents card) + explicit global exposure so the
+  // inline onclick handlers reach these even if the surrounding script scope
+  // ever changes. Bump STUDENT_BUILD on each download-flow change so we can see
+  // at a glance (no tap needed) whether a device has the latest app JS.
+  window.STUDENT_BUILD = 'nov3-6';
+  window.downloadDocumentPdf = downloadDocumentPdf;
+  window.previewDocument = previewDocument;
   // Re-read the Student Agreement (avatar menu). Renders the agreement HTML in an
   // in-app overlay — the SAME preview.html the signing gate iframed successfully;
   // PDFs (and window.open / navigation to a .pdf) silently no-op in the Capacitor

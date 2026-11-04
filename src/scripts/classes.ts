@@ -203,20 +203,15 @@ export function classScripts(prisma: PrismaClient) {
     const courseStart = bc?.startDate ?? null;
     const weekStart = (courseStart && requestedStart < courseStart) ? courseStart : requestedStart;
 
-    // Payment-status gate (matches the accommodation matching engine semantics).
-    // Zero-paid bookings shouldn't even reach this endpoint via the UI, but the
-    // belt-and-braces server check here closes the URL-direct hole.  Partial-
-    // paid bookings can still be assigned, but only by an admin or DOS — every
-    // other role sees an explanatory error so they escalate.
+    // Payment is NO LONGER a hard block on placement (Neil 2026-11-03). Students
+    // who owe — partially or fully — are physically in class and must be placed
+    // so they print on the attendance sheet; the balance is surfaced instead as
+    // a visible "Bal €X" badge in the unassigned pool and a "(Bal €X)" suffix on
+    // the printed sheet, so all hands can see the debt while placing them. We
+    // keep `paid`/`total` only for logging/telemetry below.
     const paid  = Number(bc?.booking?.amountPaid  || 0);
     const total = Number(bc?.booking?.amountTotal || 0);
-    if (paid <= 0) {
-      throw new Error('Cannot assign: no payment has been received on this booking.');
-    }
-    const partial = total > 0 && (total - paid) > 0.01;
-    if (partial && callerRole !== 'admin' && callerRole !== 'dos') {
-      throw new Error('Cannot assign: outstanding balance on this booking. Escalate to admin or DOS.');
-    }
+    void paid; void total;
 
     // Occupancy guard: a student can be in AT MOST ONE class per session at a
     // time (you can't be in two rooms at once). Reject a second assignment to
@@ -485,38 +480,19 @@ export function classScripts(prisma: PrismaClient) {
         active: true,
         category: { in: sessionCategories as any },
         ...dateWhere,
-        // Hide unpaid bookings outright — the staff directive is "if they
-        // haven't paid anything, don't even surface them for assignment".
-        // Partial-paid bookings (paid > 0 but not in full) are still surfaced
-        // here and tagged below so the UI can render an orange warning + lock
-        // for non-admin staff. (Mirrors getUnplacedStudents in accommodation.)
-        //
-        // Use an EXIST check on real (non-held) Payment rows rather than the
-        // denormalised `amountPaid > 0`. Fidelo-imported amountPaid sometimes
-        // includes TransferMate escrow money, leaking visa-pending students
-        // into the placement pool — booking.status='ESCROW' isn't always set
-        // even when the only payments are escrow.
-        //
-        // HELD money is the shadow Payment with `type='Escrow'` (see
-        // .knowledge/kb/finance/escrow.md). On RELEASE that SAME row flips
-        // type Escrow→Standard but KEEPS `method='TransferMate Escrow'` as the
-        // permanent provenance of how the money arrived — so `method` is NOT a
-        // held-marker and must NOT exclude a student (doing so hid Jiaming Wang
-        // #14487, whose card-bypass money was released long ago; Neil 2026-10-22).
-        // Discriminate held vs released on `type='Escrow'` ONLY; the booking
-        // status='ESCROW' and visa Pending/Appeal guards below catch any
-        // legacy held row that was never type-tagged.
+        // Surface UNPAID bookings too (Neil 2026-11-03). The old rule hid any
+        // booking with no real payment — but those students are physically in
+        // class and getting handwritten onto the sheet because SIS never placed
+        // them (they never appeared here to be placed). Now every eligible
+        // course is surfaced regardless of payment, and the outstanding balance
+        // rides along as a "Bal €X" badge (tagged below) so all hands can see
+        // the debt while they place the student. The firewall that genuinely
+        // must stay is below: we still exclude CANCELLED/ESCROW bookings and
+        // visa Pending/Appeal students — those are the escrow/visa-pending
+        // population funnelled to TransferMate, not fee-owing attendees. (Held
+        // TransferMate money is a type='Escrow' Payment and shows as status
+        // ESCROW or visa Pending, so the guards below still catch it.)
         booking: {
-          payments: {
-            some: {
-              amount: { gt: 0 },
-              // SQL NULL trap: `NOT type='Escrow'` evaluates to UNKNOWN when
-              // type IS NULL, which Prisma's `some` treats as no-match — so
-              // null-type payments get wrongly excluded. Use the explicit OR so
-              // NULL passes cleanly: the row is held ONLY when type='Escrow'.
-              OR: [{ type: null }, { type: { not: 'Escrow' } }],
-            },
-          },
           status: { notIn: ['ESCROW', 'CANCELLED'] },
           student: { is: { AND: [
             { OR: [
@@ -553,19 +529,21 @@ export function classScripts(prisma: PrismaClient) {
       },
     });
 
-    // Tag payment status so the UI can paint partial-paid rows orange and
-    // gate the assign action for non-admin staff. We deliberately don't lean
-    // on `amountOpen` because it's a derived field that's been observed to
-    // lag behind paid/total in the Fidelo import — same reasoning as the
-    // accommodation matching engine. EPS=€0.01 wiggle for cent rounding.
+    // Tag payment status so the UI can paint the row and show a "Bal €X" badge.
+    // Three states now: 'paid' (nothing owed), 'partial' (some paid, balance
+    // owed), 'unpaid' (nothing paid, full total owed — newly surfaced per Neil
+    // 2026-11-03). We deliberately don't lean on `amountOpen` because it's a
+    // derived field that's been observed to lag behind paid/total in the Fidelo
+    // import — same reasoning as the accommodation matching engine. EPS=€0.01
+    // wiggle for cent rounding.
     const EPS = 0.01;
     const tagged = bookingCourses.map((bc: any) => {
       const paid  = Number(bc.booking?.amountPaid  || 0);
       const total = Number(bc.booking?.amountTotal || 0);
-      let paymentStatus: 'paid' | 'partial' = 'paid';
+      let paymentStatus: 'paid' | 'partial' | 'unpaid' = 'paid';
       let paymentBalance = 0;
       if (total > 0 && (total - paid) > EPS) {
-        paymentStatus = 'partial';
+        paymentStatus = paid <= EPS ? 'unpaid' : 'partial';
         paymentBalance = total - paid;
       }
       return { ...bc, paymentStatus, paymentBalance };

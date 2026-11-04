@@ -891,7 +891,10 @@ app.get('/sis/student', async (req, res) => {
       if (sample) req.session.studentId = sample.id;
     }
   }
-  res.sendFile(path.join(__dirname, '..', 'public', 'student.html'));
+  // no-store: the native app is a thin webview of this page, so a cached copy
+  // leaves students (and us, while testing) running stale JS. The page is small;
+  // always serve fresh so a fix reaches the app on the next launch/reload.
+  res.sendFile(path.join(__dirname, '..', 'public', 'student.html'), { headers: { 'Cache-Control': 'no-store' } });
 });
 // "No class" block screen — students who lack a booking / level / class
 // assignment land here instead of /sis/student so they can't browse class

@@ -104,8 +104,17 @@ export function partnerRoutes(prisma: PrismaClient) {
   // the student discount and (indicative) partner reward per booking.
   router.get('/referrals', async (req: any, res) => {
     const agencyId = requirePartner(req, res); if (agencyId == null) return;
-    try { res.json(await referral.partnerReferrals(agencyId)); }
-    catch (e: any) { res.status(500).json({ error: String(e?.message || e) }); }
+    try {
+      // Pull the latest HubSpot deals for this programme ONLY when the tab is
+      // actually opened (?sync=1). The tab-visibility probe calls this without
+      // the flag, so it stays a cheap table read. Sync is best-effort — a
+      // HubSpot hiccup must never blank the partner's table.
+      if (req.query.sync === '1') {
+        try { await referral.syncProgramDeals(agencyId); }
+        catch (e) { console.error('syncProgramDeals failed:', e); }
+      }
+      res.json(await referral.partnerReferrals(agencyId));
+    } catch (e: any) { res.status(500).json({ error: String(e?.message || e) }); }
   });
 
   // ── Me ───────────────────────────────────────

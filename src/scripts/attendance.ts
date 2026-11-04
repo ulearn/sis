@@ -160,12 +160,22 @@ export function attendanceScripts(prisma: PrismaClient) {
         };
       });
 
+      // Outstanding balance on the booking behind this assignment — surfaced as
+      // a "(Bal €X)" suffix on the printed sheet so staff see the debt while the
+      // student is in class (Neil 2026-11-03). total−paid, not amountOpen (which
+      // lags in the Fidelo import); 0 when nothing is owed.
+      const _bk = sa.bookingCourse?.booking;
+      const _paid  = Number(_bk?.amountPaid  || 0);
+      const _total = Number(_bk?.amountTotal || 0);
+      const balanceOpen = (_total > 0 && (_total - _paid) > 0.01) ? (_total - _paid) : 0;
+
       return {
         studentId: student.id,
         firstName: student.firstName,
         lastName: student.lastName,
         nationality: student.nationality,
         level: student.currentLevel,
+        balanceOpen,
         days: dailyData,
       };
     }).filter(Boolean);

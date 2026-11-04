@@ -467,6 +467,33 @@ tr:hover td { background: #fafaf8; }
   .history-row { grid-template-columns: 1fr; gap: 4px; }
 }
 
+/* ── Referral pipeline row — Student | Nationality | Stage | Value | Reward ── */
+.ref-row {
+  display: grid;
+  grid-template-columns: 1fr 120px 118px 96px 96px;
+  gap: 10px;
+  padding: 11px 6px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+  align-items: center;
+}
+.ref-row:last-child { border-bottom: none; }
+.ref-row > div { min-width: 0; overflow-wrap: anywhere; }
+.ref-row .stage-pill {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.stage-pill.won { background: #d1fae5; color: #065f46; }
+.stage-pill.open { background: #dbeafe; color: #1e40af; }
+@media (max-width: 768px) {
+  .ref-row { grid-template-columns: 1fr; gap: 4px; }
+}
+
 /* ── Quote row (stacked cards with state-driven border) ── */
 .quote-row {
   border: 2px solid #f59e0b;  /* pending = orange */
@@ -1199,6 +1226,11 @@ tr:hover td { background: #fafaf8; }
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
     Students
   </button>
+  <!-- Referrals — shown only for agencies that have a referral/ambassador program -->
+  <button class="nav-tab ref-tab" data-tab="referrals" style="display:none;color:#7c3aed">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+    Referrals
+  </button>
   <button class="nav-tab" data-tab="history">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
     Finance
@@ -1210,11 +1242,6 @@ tr:hover td { background: #fafaf8; }
   <button class="nav-tab" data-tab="documents">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
     Partnership
-  </button>
-  <!-- Referrals — shown only for agencies that have a referral/ambassador program -->
-  <button class="nav-tab ref-tab" data-tab="referrals" style="display:none;color:#7c3aed">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-    Referrals
   </button>
   <!-- Blanket challenge opt-in — bright, beside Partnership; shown only when a challenge is live -->
   <div id="challengeOptIn" class="chal-optin" style="display:none">
@@ -1405,7 +1432,7 @@ tr:hover td { background: #fafaf8; }
     <div id="refProgramHead" style="margin-bottom:12px;font-size:13px;color:var(--muted)">Loading…</div>
     <div class="stat-grid" id="refStats"></div>
     <div class="card">
-      <div class="card-title">Referred Bookings</div>
+      <div class="card-title">Referral Students</div>
       <div id="refList"><div class="loading">Loading referrals…</div></div>
     </div>
     <div style="margin-top:10px;font-size:11px;color:var(--muted)">
@@ -2331,7 +2358,7 @@ tr:hover td { background: #fafaf8; }
     const list = document.getElementById('refList');
     list.innerHTML = '<div class="loading">Loading referrals…</div>';
     let d;
-    try { d = await fetch('/sis/partners/api/referrals').then(r => r.json()); }
+    try { d = await fetch('/sis/partners/api/referrals?sync=1').then(r => r.json()); }
     catch { list.innerHTML = '<div class="loading">Could not load referrals.</div>'; return; }
     if (!d || !d.program) {
       head.textContent = ''; stats.innerHTML = '';
@@ -2339,31 +2366,43 @@ tr:hover td { background: #fafaf8; }
       return;
     }
     const p = d.program;
-    head.innerHTML = 'Your code <b style="color:#7c3aed">' + esc(p.code) + '</b>' + (p.label ? ' · ' + esc(p.label) : '') +
-      ' — students get <b>' + fmt(p.studentDiscountPct) + '%</b> off, you earn <b>' + fmt(p.rewardFlatPct) + '%</b>' +
-      (p.active ? '' : ' <span style="color:#991b1b">(inactive)</span>');
+    // Current month name — same dynamic trick as the KickStart label (auto-rolls
+    // each month). The referral offer is standing, so the month comes from today's
+    // date rather than a promo JSON.
+    const thisMonth = new Date().toLocaleString('en-IE', { month: 'long' });
+    head.innerHTML =
+      '<div style="font-size:14px;color:var(--ink)"><b>' + thisMonth + '</b> students get <b>' + fmt(p.studentDiscountPct) + '%</b> off and you earn <b>' + fmt(p.rewardFlatPct) + '%</b></div>' +
+      '<div style="margin-top:3px">Your code <b style="color:#7c3aed">' + esc(p.code) + '</b>' + (p.label ? ' · ' + esc(p.label) : '') +
+      (p.active ? '' : ' <span style="color:#991b1b">(inactive)</span>') + '</div>';
+    const won = d.totals.won || 0;
     stats.innerHTML =
-      '<div class="stat-card"><div class="stat-value">' + d.totals.count + '</div><div class="stat-label">Referred Bookings</div></div>' +
-      '<div class="stat-card blue"><div class="stat-value">&euro;' + fmt(d.totals.value) + '</div><div class="stat-label">Total Booking Value</div></div>' +
-      '<div class="stat-card green"><div class="stat-value">&euro;' + fmt(d.totals.reward) + '</div><div class="stat-label">Reward Accrued (est.)</div></div>';
+      '<div class="stat-card"><div class="stat-value">' + d.totals.count + '</div><div class="stat-label">Referral Students</div></div>' +
+      '<div class="stat-card green"><div class="stat-value">' + won + '</div><div class="stat-label">Enrolled (Won)</div></div>' +
+      '<div class="stat-card blue"><div class="stat-value">&euro;' + fmt(d.totals.courseValue) + '</div><div class="stat-label">Total Course Value</div></div>' +
+      '<div class="stat-card green"><div class="stat-value">&euro;' + fmt(d.totals.reward) + '</div><div class="stat-label">Reward (est.)</div></div>';
     if (!d.rows.length) {
-      list.innerHTML = '<div style="padding:16px;color:var(--muted)">No referred bookings yet. When a student books with your code, it appears here.</div>';
+      list.innerHTML = '<div style="padding:16px;color:var(--muted)">No referral students yet. When someone books with your code, they appear here from the moment they request a quote.</div>';
       return;
     }
-    let h = '<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="text-align:left;color:var(--muted);border-bottom:1px solid var(--line)">' +
-      '<th style="padding:6px 8px">Student</th><th style="padding:6px 8px">Course</th><th style="padding:6px 8px">Start</th><th style="padding:6px 8px">Status</th>' +
-      '<th style="padding:6px 8px;text-align:right">Value</th><th style="padding:6px 8px;text-align:right">Reward (est.)</th></tr></thead><tbody>';
+    // Header row (mirrors the History tab layout)
+    let h = '<div class="ref-row" style="font-size:10px;text-transform:uppercase;letter-spacing:0.04em;color:var(--muted);font-weight:700;border-bottom:2px solid var(--line)">' +
+      '<div>Student</div><div>Nationality</div><div>Stage</div>' +
+      '<div style="text-align:right">Course Value</div><div style="text-align:right">Reward (est.)</div></div>';
     for (const r of d.rows) {
-      h += '<tr style="border-bottom:1px solid var(--line)">' +
-        '<td style="padding:6px 8px">' + esc(r.student) + (r.nationality ? ' <span style="color:var(--muted)">· ' + esc(r.nationality) + '</span>' : '') + '</td>' +
-        '<td style="padding:6px 8px">' + esc(r.course || '—') + '</td>' +
-        '<td style="padding:6px 8px">' + fmtDate(r.start) + '</td>' +
-        '<td style="padding:6px 8px">' + esc(r.status || '') + '</td>' +
-        '<td style="padding:6px 8px;text-align:right">&euro;' + fmt(r.value) + '</td>' +
-        '<td style="padding:6px 8px;text-align:right;color:#7c3aed">&euro;' + fmt(r.reward) + '</td>' +
-      '</tr>';
+      const pill = r.isWon
+        ? '<span class="stage-pill won">' + esc(r.stage || 'Won') + '</span>'
+        : '<span class="stage-pill open">' + esc(r.stage || 'In Progress') + '</span>';
+      const nameCell = r.quoteUrl
+        ? '<a href="' + esc(r.quoteUrl) + '" target="_blank" rel="noopener" title="Open this student\'s quote" style="color:var(--green);text-decoration:none;font-weight:600">' + esc(r.student) + ' &rarr;</a>'
+        : '<strong>' + esc(r.student) + '</strong>';
+      h += '<div class="ref-row">' +
+        '<div>' + nameCell + '</div>' +
+        '<div>' + esc(r.nationality || '—') + '</div>' +
+        '<div>' + pill + '</div>' +
+        '<div style="text-align:right" title="Net course fees only — accommodation and extras excluded">' + '<strong>' + (r.courseNet ? '&euro;' + fmt(r.courseNet) : '—') + '</strong></div>' +
+        '<div style="text-align:right;color:#7c3aed" title="' + fmt(p.rewardFlatPct) + '% of the net course value (&euro;' + fmt(r.courseNet || 0) + ') — course only, after the student discount">' + (r.reward ? '&euro;' + fmt(r.reward) : '—') + '</div>' +
+      '</div>';
     }
-    h += '</tbody></table>';
     list.innerHTML = h;
   }
 
