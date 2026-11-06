@@ -374,6 +374,18 @@ Template translations (OpenAI → 10 languages) work in the profile composer (`s
 
 ---
 
+## Add a payroll pre-send cross-check (no staff member silently dropped)
+
+**Priority:** High
+**Status:** Planned
+**Added:** 2026-11-05
+**Updated:** 2026-11-05T13:20:06Z
+
+Robert Lane (cover teacher, October) got his payslip but was left out of the bank payment file, and nothing flagged it (the old bank upload would have rejected the file). Neil (Slack, 5 Nov): "will need to build a final cross-check to prevent that from ever happening again". Neil has already apologised to Robert and corrected his pay.
+- [ ] Before the payment file is released, check every payslip issued for the run has a matching line in the bank file (missing IBAN or zero amount = stop and say who)
+
+---
+
 ## Add a weekly payroll cron (Sunday pull)
 
 **Priority:** Low
@@ -1634,5 +1646,29 @@ Neil 2026-10-30: paid students (full OR part-paid) go through the normal weekly 
 **Updated:** 2026-10-31T10:00:07Z
 
 31 Oct: gender ticks set to both ON for the 111 hosts with neither (ids in ~/backups/hosts-gender-none-ids.2026-10-31.txt), default now true, 3 one-gender hosts left alone. hostHasNoAttrs now means "no AGE ticked", so the 81 active hosts with no age keep getting the Wednesday wave only. If no age should mean all ages, hostMatchesPool changes and they join the Mon/Tue waves by vetting and level (junior gate still applies). Same reason First Dibs wave stays 0/1 for Family McMahon.
+
+---
+
+## Push Edel McDonald 5–10 Oct checkout bill (€157.14) to Xero
+
+**Priority:** Medium
+**Status:** Waiting — Neil/Diana (money: host bill)
+**Added:** 2026-11-05
+**Updated:** 2026-11-05T14:15:06Z
+
+Host payment line 242 (run 65, 20 Oct): Mohammed Ibrahimi Alsaidalani, checkout 5–10 Oct, €157.14 (+ Halal diet €28.57) was calculated but never submitted to Xero. His stay end date moved to 10 Oct after the 13 Oct run had already billed only to 5 Oct. Check Xero for a hand-made bill first, then submit from SIS Host Payments. Note: on 2026-11-05 the Xero daily API limit was used up (submit would fail until it resets).
+
+---
+
+## Add mature-adult and morning/afternoon questions to the host application form
+
+**Priority:** High
+**Status:** Waiting — Neil (go-ahead to change the public host form)
+**Added:** 2026-11-05
+**Updated:** 2026-11-05T14:40:06Z
+
+From #accomm (Diego/Kelly, Lavdim Dobra 40yo placement): hosts reject older and afternoon students, so recruit hosts who accept them. Form (public/host-application.html) asks only Juniors 12-17 / Adults 18+ / Boys / Girls; app.ts:1034 saves only those four. The SIS host record already has acceptsMature (used by AutoNudge matching), but the form never fills it. No field exists yet for morning/afternoon.
+- [ ] Add a "Mature adults (30+)" checkbox → studentTypes.mature → acceptsMature when the application becomes a host
+- [ ] Add a morning / afternoon / no-preference question (needs a new host field + AutoNudge filter)
 
 ---

@@ -16684,7 +16684,7 @@ async function showAccommodationDetail(id) {
       `<span onclick="navigate('${backView}')">${backLabel}</span> / ${esc(p.name)}`,
       // Page-level Save, top-right + green (house rule). Saves all the Details
       // fields; the other cards (rooms/vetting/cleaning) auto-save on change.
-      `<button class="btn btn-success" onclick="saveAccomProvider(${p.id})">Save</button>`
+      `<button class="btn btn-success" id="providerSaveBtn" onclick="saveAccomProvider(${p.id})">Save</button>`
     );
 
     let html = `<div class="detail-grid"><div>
@@ -16705,8 +16705,8 @@ async function showAccommodationDetail(id) {
             ${field('zip','Postal Code',p.zip)}
             ${field('city','City',p.city)}
             ${field('weeklyRate','Weekly Rate (€)',p.weeklyRate)}
-            ${field('iban','IBAN',p.iban)}
-            ${field('bic','BIC',p.bic)}
+            ${bankField('iban','IBAN',p.iban,'iban')}
+            ${bankField('bic','BIC',p.bic,'bic')}
             <div class="form-group"><label class="form-label">Xero Account</label><input class="form-input" type="text" value="${esc((p.bic && p.iban) ? p.bic+'/'+p.iban : p.iban || '')}" readonly style="background:var(--bg-subtle);color:var(--text-secondary)"></div>
             ${field('xeroContactId','Xero ID',p.xeroContactId)}
             <div class="form-group">
@@ -16931,6 +16931,9 @@ async function showAccommodationDetail(id) {
     </div>`;
 
     document.getElementById('content').innerHTML = html;
+    // Flag any already-stored bad IBAN/BIC and set the Save-button state on load.
+    document.querySelectorAll('#providerForm [data-field="iban"]').forEach(i => validateBankField(i,'iban'));
+    document.querySelectorAll('#providerForm [data-field="bic"]').forEach(i => validateBankField(i,'bic'));
     loadCommsHistoryGeneric('provider', p.id, 'hostFp');
     if (isApt && p.cleaningEnabled) loadCleaningQueue(p.id);
     loadAccomProviderFeedback(p.id);
@@ -17329,7 +17332,11 @@ async function generatePortalLink(id) {
 }
 
 async function saveAccomProvider(id) {
+  if (!refreshBankValidity()) { toast('Fix the IBAN / BIC format before saving', true); return; }
   const data = collectFormData('providerForm');
+  // Store bank details clean (uppercase, no spaces) to match the Xero BIC/IBAN convention.
+  if (data.iban) data.iban = String(data.iban).replace(/\s+/g, '').toUpperCase();
+  if (data.bic) data.bic = String(data.bic).replace(/\s+/g, '').toUpperCase();
   if (data.weeklyRate) data.weeklyRate = parseFloat(data.weeklyRate);
   for (const k of Object.keys(data)) { if (data[k] === '') data[k] = null; }
   try {
@@ -17741,6 +17748,72 @@ function field(name, label, value, type = 'text') {
   return `<div class="form-group">
     <label class="form-label">${label}</label>
     <input class="form-input" type="${type}" data-field="${name}" value="${esc(value ?? '')}">
+  </div>`;
+}
+
+// ── Bank-detail validation (IBAN mod-97 + BIC/SWIFT format), live as you type.
+// Mirrors src/scripts/iban-validator.ts so a malformed value is caught in the
+// browser and blocks the save. Empty is allowed (neutral) — only a non-empty
+// bad value turns red and gates Save.
+function _ibanCheck(input) {
+  const iban = String(input || '').replace(/\s+/g, '').toUpperCase();
+  if (!iban) return { empty: true, valid: true };
+  if (iban.length < 15 || iban.length > 34) return { valid: false, error: (iban.length < 15 ? 'Too short' : 'Too long') + ' (' + iban.length + ', need 15–34)' };
+  if (!/^[A-Z]{2}/.test(iban)) return { valid: false, error: 'Must start with a 2-letter country code' };
+  if (!/^[A-Z]{2}\d{2}/.test(iban)) return { valid: false, error: 'Check digits (positions 3–4) must be numbers' };
+  const country = iban.slice(0, 2);
+  if (country === 'IE' && iban.length !== 22) return { valid: false, error: 'Irish IBAN must be 22 chars (got ' + iban.length + ')' };
+  const rearr = iban.slice(4) + iban.slice(0, 4);
+  let numStr = '';
+  for (const ch of rearr) numStr += (ch >= '0' && ch <= '9') ? ch : String(ch.charCodeAt(0) - 55);
+  let rem = 0;
+  for (let i = 0; i < numStr.length; i++) rem = (rem * 10 + parseInt(numStr[i], 10)) % 97;
+  if (rem !== 1) return { valid: false, error: 'Checksum fails — likely mistyped' };
+  return { valid: true, formatted: iban.replace(/(.{4})/g, '$1 ').trim() };
+}
+function _bicCheck(input) {
+  const bic = String(input || '').replace(/\s+/g, '').toUpperCase();
+  if (!bic) return { empty: true, valid: true };
+  if (!/^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(bic)) return { valid: false, error: 'Not BIC format (8 or 11 chars)' };
+  return { valid: true, formatted: bic };
+}
+function validateBankField(inp, kind) {
+  const res = kind === 'bic' ? _bicCheck(inp.value) : _ibanCheck(inp.value);
+  const msg = inp.parentElement.querySelector('.bank-msg');
+  if (res.empty) {
+    inp.style.borderColor = '';
+    if (msg) { msg.textContent = ''; msg.style.color = ''; }
+  } else if (res.valid) {
+    inp.style.borderColor = '#16a34a';
+    if (msg) { msg.textContent = '✓ ' + (res.formatted || 'Valid'); msg.style.color = '#16a34a'; }
+  } else {
+    inp.style.borderColor = '#dc2626';
+    if (msg) { msg.textContent = '✗ ' + res.error; msg.style.color = '#dc2626'; }
+  }
+  refreshBankValidity();
+  return res.valid;
+}
+// Gate the provider Save button on IBAN/BIC validity.
+function refreshBankValidity() {
+  const form = document.getElementById('providerForm');
+  if (!form) return true;
+  const i = form.querySelector('[data-field="iban"]');
+  const b = form.querySelector('[data-field="bic"]');
+  const ok = (!i || _ibanCheck(i.value).valid) && (!b || _bicCheck(b.value).valid);
+  const btn = document.getElementById('providerSaveBtn');
+  if (btn) {
+    btn.disabled = !ok;
+    btn.style.opacity = ok ? '' : '0.5';
+    btn.style.cursor = ok ? '' : 'not-allowed';
+    btn.title = ok ? '' : 'Fix the IBAN / BIC format first';
+  }
+  return ok;
+}
+function bankField(name, label, value, kind) {
+  return `<div class="form-group">
+    <label class="form-label">${label}</label>
+    <input class="form-input" type="text" data-field="${name}" value="${esc(value ?? '')}" oninput="validateBankField(this,'${kind}')" autocomplete="off" spellcheck="false">
+    <div class="bank-msg" style="font-family:var(--font-mono);font-size:11px;min-height:14px;margin-top:3px"></div>
   </div>`;
 }
 
