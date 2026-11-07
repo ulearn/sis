@@ -2,6 +2,50 @@
 
 Open work for this project. Protocol: anything left unfinished at the end of a session goes here (not in memory); finished work is moved to ToDo-Done.md. Synced with Wrike (space "hub" → folder "SIS") every 5 minutes — edit the text here; status syncs both ways.
 
+## Invoice-created self-heal re-points a booking to a one-off extra invoice
+
+**Priority:** Medium
+**Status:** Backlog
+**Added:** 2026-11-06
+**Updated:** 2026-11-06T15:20:06Z
+
+`webhooks.ts` invoice-created: when a deal already has a booking, it sets `bookings.hubspot_invoice_id` to the incoming invoice. A one-off EXTRA invoice on the same deal (e.g. Zorigt INV-1628, €121 health insurance, 6 Nov) therefore re-pointed booking 18376 away from the course invoice INV-1576 (fixed by hand). Only re-point when the old invoice is gone (deleted/voided), not for a second live invoice.
+
+---
+
+## Placement notify on WhatsApp: first live send + follow-ups
+
+**Priority:** Medium
+**Status:** Waiting — on Neil's first live send from the SIS UI
+**Progress:** 80% — built and dry-run tested 6 Nov; no real WhatsApp sent yet
+**Added:** 2026-11-06
+**Updated:** 2026-11-06T09:20:06Z
+
+The student step of the placement email flow (Accept offer / place → Email 2/2) now has "Also send on WhatsApp" (ticked when the student has a phone). It goes from the Accomm number via hubapp `/hubapp/accomm-chat/api/sis-notify` (AUTOINV_KEY). Window open → goes now; closed → `message_waiting` "Tap Yes", and the details follow their Yes (expire after 24 h). Each send is logged in email_log (from `whatsapp:+353851574801`). Code: `src/routes/email.ts` `/whatsapp-notify`, `public/admin.html` openPlacementEmailStep; backups `*.bak-whatsapp-20261106`.
+- [ ] Neil: first live send from the SIS UI (dry run for Ian Zelko 14722 showed "yes-first")
+- [ ] The WhatsApp only goes together with the email; there is no WhatsApp-only send if the student has no email, and no resend button outside the flow
+- [ ] The text is English only; consider the student's language (lang-map) later
+- [ ] email_log shows "waiting on Yes" at send time; it is not updated when they tap Yes or when it expires (that state lives in hubapp `scripts/accomm/chat/data/broadcasts.json`)
+- [ ] Other notify flows (Day-1, transfers) could reuse `/whatsapp-notify` with their own text
+
+---
+
+## Credit note for Julio Quiroz (new B2B partner) — blocked until he registers + signs
+
+**Priority:** Low
+**Status:** Waiting — on partner (Julio Quiroz) to register the portal and sign the partner contract
+**Added:** 2026-11-06
+**Updated:** 2026-11-06T12:30:08Z
+
+Request (via hub sales-email-manager B2B agent view) to raise a partner **credit note** for Julio Quiroz "in respect of fees". Blocked on every axis — Neil's call 6 Nov: **leave it, he must register first.**
+- Agency **647 "Julio Quiroz"** is a bare shell: no email, no Xero contact (`xero_contact_id` null), no HubSpot company link, `contract_signed_at` **null** (unsigned).
+- **No portal user** for `julioquirozdelar@gmail.com` → never registered the portal.
+- Credit **amount + reason still undefined** — the ask was vague ("fees").
+- Mechanism when he IS onboarded: admin impersonate `/sis/partners/impersonate?agency=647` → portal **Credits → + Add Credit** → auto-raises the Xero `ACCRECCREDIT` + HubSpot "Create Credit Memo" task. Would fail the Xero leg today (no Xero contact).
+- Refs: HubSpot contact `190996821202`, deal `532723590387`; first student `14733` / booking `18419` (€1,636.60, PENDING, €0 paid).
+
+---
+
 ## Student-app document download broken in the Android app
 
 **Priority:** High

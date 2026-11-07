@@ -15457,7 +15457,7 @@ function openHostBookingEmail(studentId, bookingId) {
   if (!studentId) return;
   openPlacementEmailStep([
     { tpl: HOST_BOOKING_TPL_ID, label: 'Host', title: 'Email the host — booking confirmation', toKey: 'to', nameKey: 'hostName', noTo: 'Add a host email in their profile first' },
-    { tpl: STUDENT_HOST_ARRIVAL_TPL_ID, label: 'Student', title: 'Email the student — host family confirmation', toKey: 'studentTo', nameKey: 'studentName', noTo: 'This student has no email on file' },
+    { tpl: STUDENT_HOST_ARRIVAL_TPL_ID, label: 'Student', title: 'Email the student — host family confirmation', toKey: 'studentTo', nameKey: 'studentName', noTo: 'This student has no email on file', wa: true },
   ], 0, studentId, bookingId);
 }
 async function openPlacementEmailStep(steps, i, studentId, bookingId) {
@@ -15492,6 +15492,10 @@ async function openPlacementEmailStep(steps, i, studentId, bookingId) {
         <div style="display:flex;gap:8px;margin-bottom:10px"><span style="color:var(--text-muted);min-width:64px">Subject</span><strong>${esc(data.subject || '')}</strong></div>
         <div style="border:1px solid var(--card-border);border-radius:8px;padding:14px;max-height:50vh;overflow:auto;background:#fafafa">${data.html || ''}</div>
       </div>
+      ${step.wa ? `<div data-wa-row style="padding:10px 18px;border-top:1px solid var(--card-border);font-size:13px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" data-wa-check disabled> <strong>Also send on WhatsApp</strong> <span data-wa-info style="color:var(--text-muted)">checking…</span></label>
+        <details style="margin-top:6px"><summary style="cursor:pointer;color:var(--text-muted);font-size:12px">WhatsApp message</summary><pre data-wa-text style="white-space:pre-wrap;font-family:inherit;font-size:12px;background:#f4f8f2;border:1px solid var(--card-border);border-radius:8px;padding:10px;margin:6px 0 0"></pre></details>
+      </div>` : ''}
       <div style="padding:12px 18px;border-top:1px solid var(--card-border);display:flex;gap:8px;justify-content:flex-end">
         <button class="btn btn-ghost" data-act="skip">${last ? 'Not now' : 'Not now → ' + esc(steps[i + 1].label)}</button>
         <button class="btn btn-success" data-act="send" ${to ? '' : 'disabled title="'+esc(step.noTo)+'"'}>Send to ${esc(step.label.toLowerCase())}</button>
@@ -15502,6 +15506,23 @@ async function openPlacementEmailStep(steps, i, studentId, bookingId) {
   ov.querySelector('[data-act="close"]').onclick = () => ov.remove();
   ov.querySelector('[data-act="skip"]').onclick = next;
   const btn = ov.querySelector('[data-act="send"]');
+  // WhatsApp second channel (Neil 2026-11-06): ticked by default when the student has a phone.
+  // The hub sends it now if their 24 h window is open, else sends the "Tap Yes" template and the message follows their Yes.
+  const waCheck = ov.querySelector('[data-wa-check]'), waInfo = ov.querySelector('[data-wa-info]');
+  if (waCheck) api('/email/whatsapp-notify', { method: 'POST', body: { studentId, bookingId, dryRun: true } }).then(w => {
+    ov.querySelector('[data-wa-text]').textContent = w.text || '';
+    if (!w.ok) { waInfo.textContent = '— ' + (w.error || 'not available'); waInfo.style.color = 'var(--danger,#c00)'; return; }
+    waCheck.disabled = false; waCheck.checked = true;
+    waInfo.textContent = `to ${w.phone} — ` + (w.how === 'direct' ? 'chat is open, goes straight away' : 'chat is closed: they get "Tap Yes" first, then this message');
+  }).catch(e => { waInfo.textContent = '— could not check WhatsApp: ' + e.message; waInfo.style.color = 'var(--danger,#c00)'; });
+  async function sendWhatsApp() {
+    if (!waCheck || !waCheck.checked) return;
+    try {
+      const w = await api('/email/whatsapp-notify', { method: 'POST', body: { studentId, bookingId } });
+      if (w.ok) toast(w.how === 'direct' ? 'WhatsApp sent to student' : 'WhatsApp: "Tap Yes" sent — the message follows their Yes');
+      else toast('WhatsApp failed: ' + (w.error || 'unknown'), true);
+    } catch (e) { toast('WhatsApp failed: ' + e.message, true); }
+  }
   if (to) btn.onclick = async () => {
     btn.disabled = true; btn.textContent = 'Sending…';
     try {
@@ -15511,6 +15532,7 @@ async function openPlacementEmailStep(steps, i, studentId, bookingId) {
         templateId: step.tpl, studentId, bookingId,
       }});
       toast(`Email sent to ${step.label.toLowerCase()}`);
+      await sendWhatsApp();
       next();
     } catch (e) { toast('Send failed: ' + e.message, true); btn.disabled = false; btn.textContent = `Send to ${step.label.toLowerCase()}`; }
   };

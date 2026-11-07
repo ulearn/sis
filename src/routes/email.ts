@@ -422,6 +422,62 @@ export function emailRoutes(prisma: PrismaClient) {
     }
   });
 
+  // ── WhatsApp second channel for the placement notify (Neil 2026-11-06) ──
+  // The student step of the placement email flow can also go on WhatsApp, from the
+  // Accomm number, through the hub (hubapp /accomm-chat/api/sis-notify, key-gated on
+  // AUTOINV_KEY). The hub decides: window open → the text goes now; closed → the
+  // approved "message_waiting" template ("I have a message for you. Tap Yes") goes
+  // and the text waits behind it until they tap Yes (expires after 24 h).
+  // dryRun → only returns the text + what would happen (no send, no log).
+  // A real send is logged in email_log (from "whatsapp:<Accomm number>", to the phone)
+  // so it shows in the student's comms history.
+  function placementWhatsAppText(t: Record<string, any>): string {
+    const lines: (string | null)[] = [
+      `Hi ${t['student.first_name'] || 'there'}, here are your Host Family details 🏠`,
+      '',
+      t['accommodation.provider_name'] ? `Host: ${t['accommodation.provider_name']}` : null,
+      t['accommodation.phone'] ? `Phone: ${t['accommodation.phone']}` : null,
+      t['accommodation.address'] ? `Address: ${t['accommodation.address']}` : null,
+      t['accommodation.googlemaps'] ? `Map: ${t['accommodation.googlemaps']}` : null,
+      (t['accommodation.start_date'] && t['accommodation.end_date']) ? `Dates: ${t['accommodation.start_date']} to ${t['accommodation.end_date']}` : null,
+      '',
+      'Please contact your host before you travel to confirm your arrival time. If you have any problems when you arrive in Dublin, call ULearn Accommodation on +353 85 157 4801.',
+      '',
+      'We have sent the full details to your email too.',
+    ];
+    return lines.filter((l): l is string => l !== null).join('\n').replace(/\n{3,}/g, '\n\n').trim();
+  }
+
+  router.post('/whatsapp-notify', async (req, res) => {
+    try {
+      const { studentId, bookingId, dryRun } = req.body || {};
+      const sid = parseInt(studentId);
+      if (!sid) return res.status(400).json({ error: 'studentId required' });
+      const { tokens } = await documentScripts(prisma).resolveTokens(sid, bookingId ? parseInt(bookingId) : null);
+      const phone = String(tokens['student.phone'] || '').trim();
+      const text = placementWhatsAppText(tokens);
+      if (!phone) return res.json({ ok: false, phone: '', text, error: 'This student has no phone number on file' });
+      const hub = process.env.HUB_BASE || 'https://hub.ulearnschool.com';
+      const r = await fetch(`${hub}/hubapp/accomm-chat/api/sis-notify`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: process.env.AUTOINV_KEY, phone, name: [tokens['student.first_name'], tokens['student.last_name']].filter(Boolean).join(' '), first: tokens['student.first_name'] || '', text, dryRun: !!dryRun }),
+      });
+      const data: any = await r.json().catch(() => ({}));
+      if (!r.ok || !data.success) return res.json({ ok: false, phone, text, error: data.error || `hub ${r.status}` });
+      if (!dryRun) {
+        const how = data.how === 'direct' ? 'sent' : 'waiting on Yes';
+        await prisma.emailLog.create({ data: {
+          studentId: sid, bookingId: bookingId ? parseInt(bookingId) : null,
+          fromEmail: 'whatsapp:+353851574801', toEmail: phone,
+          subject: `WhatsApp — Host Family details (${how})`,
+          bodyHtml: text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\n/g, '<br>'),
+          templateId: 33, sentBy: (req as any).session?.user?.email || 'accomm@ulearnschool.com',
+        } as any });
+      }
+      res.json({ ok: true, phone: data.phone || phone, text, how: data.how, dryRun: !!dryRun });
+    } catch (e: any) { res.status(500).json({ error: String(e?.message || e) }); }
+  });
+
   // ── Bulk send ─────────────────────────────────
   // Send the same template to multiple students. Tokens are resolved
   // PER recipient, so {{student.first_name}} and friends render correctly
