@@ -15184,6 +15184,8 @@ async function matchDrop(event, bedId) {
     refreshMatching();
     // Any placement into a Host Family → surface the host booking-confirmation email.
     if (r && r.isHostFamily && r.studentId) openHostBookingEmail(r.studentId, r.bookingId);
+    // Apartment placement (Capel Street etc.) → the student's arrival email (#30) with WhatsApp — Neil 2026-11-07.
+    else if (r && r.studentId) openApartmentArrivalEmail(r.studentId, r.bookingId);
   } catch (e) { toast(e.message, true); }
 }
 
@@ -15198,6 +15200,8 @@ async function matchClickPlace(bedId) {
     refreshMatching();
     // Any placement into a Host Family → surface the host booking-confirmation email.
     if (r && r.isHostFamily && r.studentId) openHostBookingEmail(r.studentId, r.bookingId);
+    // Apartment placement (Capel Street etc.) → the student's arrival email (#30) with WhatsApp — Neil 2026-11-07.
+    else if (r && r.studentId) openApartmentArrivalEmail(r.studentId, r.bookingId);
   } catch (e) { toast(e.message, true); }
 }
 
@@ -15453,6 +15457,15 @@ async function acceptClaim(bookingAccommodationId) {
 // leaves without the click. × abandons the rest of the flow.
 const HOST_BOOKING_TPL_ID = 19;
 const STUDENT_HOST_ARRIVAL_TPL_ID = 33;
+// Apartment arrival (Neil 2026-11-07): ONE message that gets them in — the check-in steps (lockbox code + their key) are in
+// the email body, the property house guide is attached, and the short version goes on WhatsApp. Never auto-sends.
+const STUDENT_APART_ARRIVAL_TPL_ID = 30;
+function openApartmentArrivalEmail(studentId, bookingId) {
+  if (!studentId) return;
+  openPlacementEmailStep([
+    { tpl: STUDENT_APART_ARRIVAL_TPL_ID, label: 'Student', title: 'Email the student — apartment check-in', toKey: 'studentTo', nameKey: 'studentName', noTo: 'This student has no email on file', wa: true },
+  ], 0, studentId, bookingId);
+}
 function openHostBookingEmail(studentId, bookingId) {
   if (!studentId) return;
   openPlacementEmailStep([
@@ -15490,6 +15503,12 @@ async function openPlacementEmailStep(steps, i, studentId, bookingId) {
         <div style="display:flex;gap:8px;margin-bottom:6px"><span style="color:var(--text-muted);min-width:64px">From</span><strong>accomm@ulearnschool.com</strong></div>
         <div style="display:flex;gap:8px;margin-bottom:6px"><span style="color:var(--text-muted);min-width:64px">To</span>${to ? '<strong>'+esc(to)+'</strong>'+(name ? ' <span style="color:var(--text-muted)">('+esc(name)+')</span>' : '') : '<span style="color:var(--danger,#c00)">'+esc(step.noTo)+'</span>'}</div>
         <div style="display:flex;gap:8px;margin-bottom:10px"><span style="color:var(--text-muted);min-width:64px">Subject</span><strong>${esc(data.subject || '')}</strong></div>
+        ${(data.warnings || []).length ? `<div data-warn style="background:#fff8e6;border-left:4px solid #e0a800;border-radius:6px;padding:10px 14px;margin:0 0 10px">
+          <div style="font-weight:700;margin-bottom:4px">⚠️ This email is missing details the student needs</div>
+          <ul style="margin:0 0 8px;padding-left:18px">${data.warnings.map(w => '<li>' + esc(w) + '</li>').join('')}</ul>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">Fill them in (placement, property check-in details) and reopen, or send anyway.</div>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px"><input type="checkbox" data-override> Send anyway</label>
+        </div>` : ''}
         <div style="border:1px solid var(--card-border);border-radius:8px;padding:14px;max-height:50vh;overflow:auto;background:#fafafa">${data.html || ''}</div>
       </div>
       ${step.wa ? `<div data-wa-row style="padding:10px 18px;border-top:1px solid var(--card-border);font-size:13px">
@@ -15523,7 +15542,11 @@ async function openPlacementEmailStep(steps, i, studentId, bookingId) {
       else toast('WhatsApp failed: ' + (w.error || 'unknown'), true);
     } catch (e) { toast('WhatsApp failed: ' + e.message, true); }
   }
+  // Guardrail (Neil 2026-11-07): missing essentials → the send needs an explicit "Send anyway".
+  const override = ov.querySelector('[data-override]');
+  if (override && to) { btn.disabled = true; btn.title = 'Missing details — tick "Send anyway" to send regardless'; override.onchange = () => { btn.disabled = !override.checked; }; }
   if (to) btn.onclick = async () => {
+    if (override && !override.checked) return toast('Missing details: fill them in or tick "Send anyway"', true);
     btn.disabled = true; btn.textContent = 'Sending…';
     try {
       await api('/email/send', { method: 'POST', body: {

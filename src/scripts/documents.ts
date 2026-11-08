@@ -648,13 +648,18 @@ export function documentScripts(prisma: PrismaClient) {
     // room they're actually arriving into.
     const accomm = pickAccommByArrival(booking?.accommodations || []) || booking?.accommodations?.[0];
     let accommProvider: any = null;
+    let accommRoomName = '', accommApartment = '';   // e.g. "A1 / Room 4", "A1" — drive the self check-in key + guide (Neil 2026-11-07)
     if (accomm?.bedId) {
       const bed = await prisma.accommodationBed.findUnique({
         where: { id: accomm.bedId },
         include: { room: { include: { property: { include: { provider: true } } } } },
       });
       accommProvider = bed?.room?.property?.provider;
+      accommRoomName = bed?.room?.name || '';
+      accommApartment = bed?.room?.property?.name || '';
     }
+    // Self check-in (Capel Street etc.): lockbox + door steps from the PRIVATE property-access file, keyed by provider.
+    const accessInfo = require('./propertyAccess').propertyAccess(accommProvider?.id);
     // The placement host's magic-link portal URL (empty if no host / no token).
     let accommPortalLink = '';
     if (accommProvider?.id) {
@@ -1073,6 +1078,17 @@ export function documentScripts(prisma: PrismaClient) {
       'accommodation.end_date': fmtDate(accomm?.endDate),
       'accommodation.weeks': accomm?.weeks ? String(accomm.weeks) : '',
       'accommodation.room_type': accomm?.roomType || '',
+      // Self check-in tokens (Neil 2026-11-07). {if accommodation.self_checkin} = the building has lockbox access on file;
+      // {if accommodation.host_checkin} = everything else (host / residence reception) keeps the old wording.
+      'accommodation.room_name': accommRoomName,
+      'accommodation.apartment': accommApartment,
+      'accommodation.key_label': require('./propertyAccess').keyLabel(accommRoomName),
+      'accommodation.provider_id': accommProvider?.id ? String(accommProvider.id) : '',
+      'accommodation.self_checkin': accessInfo ? 'yes' : '',
+      'accommodation.host_checkin': accomm && !accessInfo ? 'yes' : '',
+      'accommodation.lockbox_code': accessInfo?.lockboxCode || '',
+      'accommodation.lockbox_where': accessInfo?.lockboxWhere || '',
+      'accommodation.checkin_from': accessInfo?.checkinFrom || '2:00pm',
       'accommodation.board': accomm?.board || '',
       'accommodation.type': accomm?.accommodationType || '',
       // Google Maps link for the host address — used by arrival emails so

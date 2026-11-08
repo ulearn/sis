@@ -116,6 +116,17 @@ const TEMPLATE_STATIC_ATTACHMENTS: Record<string, { filename: string; path: stri
   ],
 };
 
+// Templates that get the property house guide when the stay is at a self check-in building (property-access file).
+const GUIDE_TEMPLATES = new Set(['Arrival-Student-Apart-2']);
+async function propertyGuideAttachment(prisma: PrismaClient, studentId: number, bookingId: number | null): Promise<{ filename: string; content: Buffer; contentType: string }[]> {
+  try {
+    const { tokens } = await documentScripts(prisma).resolveTokens(studentId, bookingId);
+    const a = require('../scripts/propertyAccess').propertyAccess(parseInt(String((tokens as any)['accommodation.provider_id'] || '0')));
+    if (!a || !a.guidePdf || !fs.existsSync(a.guidePdf)) return [];
+    return [{ filename: a.guideName || 'House Guide.pdf', content: fs.readFileSync(a.guidePdf), contentType: 'application/pdf' }];
+  } catch (e: any) { console.warn('[email] property guide:', e?.message || e); return []; }
+}
+
 function loadStaticAttachmentsForTemplate(slug: string | null): { filename: string; content: Buffer; contentType: string }[] {
   if (!slug) return [];
   const defs = TEMPLATE_STATIC_ATTACHMENTS[slug];
@@ -183,6 +194,9 @@ export async function sendStudentEmail(prisma: PrismaClient, opts: {
         select: { slug: true },
       });
       if (tpl?.slug) staticAtts = loadStaticAttachmentsForTemplate(tpl.slug);
+      // Conditional attachment (Neil 2026-11-07): the apartment arrival email also carries the building's one-page house guide
+      // (Wi-Fi, bins, heating, contacts) when the student's stay is at a self check-in property (Capel Street).
+      if (tpl?.slug && GUIDE_TEMPLATES.has(tpl.slug) && opts.studentId) staticAtts = [...staticAtts, ...(await propertyGuideAttachment(prisma, opts.studentId, opts.bookingId || null))];
     } catch (e: any) {
       console.warn('[email] failed to load template for static-attachments lookup:', e?.message || e);
     }
@@ -289,6 +303,24 @@ export function emailRoutes(prisma: PrismaClient) {
   // accommodation recipient. Used by the "email the host on placement" preview
   // modal so staff see the real email (notice block, student details) before
   // sending, rather than raw {{ }}/{if} markers.
+  // GUARDRAIL (Neil 2026-11-07): an arrival email must never go out with empty fields (a student once got the notification with
+  // nothing in it and couldn't get into the building). The render returns the missing essentials; the review step shows them
+  // as a warning the operator can fix or override — never a silent send.
+  function placementWarnings(templateId: number, t: Record<string, any>): string[] {
+    const need = (k: string, label: string) => (String(t[k] || '').trim() ? null : label);
+    const w: (string | null)[] = [];
+    if (templateId === 30 || templateId === 33) {
+      w.push(need('accommodation.start_date', 'Arrival date'), need('accommodation.end_date', 'Departure date'),
+        need('accommodation.provider_name', templateId === 33 ? 'Host family (no bed placed?)' : 'Residence (no bed placed?)'), need('accommodation.address', 'Address'));
+    }
+    if (templateId === 30) {
+      if (t['accommodation.self_checkin']) w.push(need('accommodation.lockbox_code', 'Lockbox code'), need('accommodation.room_name', 'Room / bed'), need('accommodation.key_label', 'Which key to take'));
+      else if (t['accommodation.provider_name']) w.push('No self check-in details on file for this property (lockbox code, steps): the student will not know how to get in');
+    }
+    if (templateId === 33) w.push(need('accommodation.phone', "Host's phone number"));
+    return w.filter((x): x is string => !!x);
+  }
+
   router.post('/render', async (req, res) => {
     try {
       const { templateId, studentId, bookingId } = req.body || {};
@@ -308,6 +340,7 @@ export function emailRoutes(prisma: PrismaClient) {
         // Step 2 of the placement email flow goes to the student.
         studentTo: tokens['student.email'] || '',
         studentName: [tokens['student.first_name'], tokens['student.last_name']].filter(Boolean).join(' '),
+        warnings: placementWarnings(parseInt(templateId), tokens),
       });
     } catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }
   });
@@ -432,6 +465,23 @@ export function emailRoutes(prisma: PrismaClient) {
   // A real send is logged in email_log (from "whatsapp:<Accomm number>", to the phone)
   // so it shows in the student's comms history.
   function placementWhatsAppText(t: Record<string, any>): string {
+    // Self check-in building (Capel Street): only what gets them in on day one; the rest is in the email + house guide.
+    if (t['accommodation.self_checkin']) {
+      const ap = [
+        `Hi ${t['student.first_name'] || 'there'}, here's how to get into your ULearn apartment 🗝️`,
+        '',
+        t['accommodation.address'] ? `📍 ${t['accommodation.address']}` : null,
+        t['accommodation.googlemaps'] ? t['accommodation.googlemaps'] : null,
+        (t['accommodation.start_date'] && t['accommodation.end_date']) ? `Dates: ${t['accommodation.start_date']} to ${t['accommodation.end_date']} · check-in from ${t['accommodation.checkin_from'] || '2:00pm'}` : null,
+        '',
+        `1) The lockbox is ${t['accommodation.lockbox_where'] || 'at the street door'}. Code: ${t['accommodation.lockbox_code']}`,
+        `2) Take only the ${t['accommodation.key_label'] || 'key with your room on it'} key. It opens the street door, your apartment door and your room door.`,
+        '3) Close the lockbox and scramble the dials back to 0-0-0-0.',
+        '',
+        'Anything wrong at the door? Message us here. Your house guide (Wi-Fi, bins, heating) is in your email.',
+      ];
+      return ap.filter((l): l is string => l !== null).join('\n').replace(/\n{3,}/g, '\n\n').trim();
+    }
     const lines: (string | null)[] = [
       `Hi ${t['student.first_name'] || 'there'}, here are your Host Family details 🏠`,
       '',
@@ -469,9 +519,9 @@ export function emailRoutes(prisma: PrismaClient) {
         await prisma.emailLog.create({ data: {
           studentId: sid, bookingId: bookingId ? parseInt(bookingId) : null,
           fromEmail: 'whatsapp:+353851574801', toEmail: phone,
-          subject: `WhatsApp — Host Family details (${how})`,
+          subject: `WhatsApp — ${tokens['accommodation.self_checkin'] ? 'Apartment check-in' : 'Host Family details'} (${how})`,
           bodyHtml: text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\n/g, '<br>'),
-          templateId: 33, sentBy: (req as any).session?.user?.email || 'accomm@ulearnschool.com',
+          templateId: tokens['accommodation.self_checkin'] ? 30 : 33, sentBy: (req as any).session?.user?.email || 'accomm@ulearnschool.com',
         } as any });
       }
       res.json({ ok: true, phone: data.phone || phone, text, how: data.how, dryRun: !!dryRun });
