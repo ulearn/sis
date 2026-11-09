@@ -41,7 +41,7 @@ export function accommodationScripts(prisma: PrismaClient) {
         // Garda-vetting rollup for the Hosts-list status badge. status='signed'
         // = signed NVB form on file; 'submitted' = form entered, awaiting the
         // signed upload. (Full per-member list stays on the host detail view.)
-        vettingSubmissions: { select: { status: true } },
+        vettingSubmissions: { select: { status: true, formType: true, signedFilePath: true, data: true } },
       },
       orderBy: { name: 'asc' },
     });
@@ -52,13 +52,28 @@ export function accommodationScripts(prisma: PrismaClient) {
       const c = (st: string) => subs.filter(s => s.status === st).length;
       const submitted = c('submitted'), signed = c('signed'), returned = c('returned');
       const total = subs.length;
-      // Auto phase = weakest link across members (compliance needs ALL done):
-      // 0 None → 1 Form (entered) → 2 Upload (signed on file) → 3 Complete (vetting back).
-      const autoPhase = total === 0 ? 0 : submitted > 0 ? 1 : signed > 0 ? 2 : 3;
+      // Phases (Neil 2026-11-08): 0 None = nothing · 1 Form = the portal form is filled in (any documents still missing or
+      // failing — e.g. 2 of 3) · 2 Upload = ALL members have all 3 documents in and passed (form, ID, proof of address;
+      // 16–17s: form + ID) · 3 Complete = disclosure back and dated (vettingExpiresAt in the future). Expired is shown
+      // by the list from vettingExpiresAt. Weakest member decides. The junior claim gate (lib/junior-gate.ts) is unchanged.
+      const need = (s: any) => s.formType === 'NVB3' ? ['form', 'idFront'] : ['form', 'idFront', 'poa'];
+      const has = (s: any, k: string) => k === 'form' ? !!s.signedFilePath : !!(s.data && s.data.docs && s.data.docs[k] && s.data.docs[k].path);
+      const failed = (s: any, k: string) => !!(s.data && s.data.checks && s.data.checks[k] && s.data.checks[k].ok === false);
+      const docsIn = (s: any) => need(s).filter(k => has(s, k) && !failed(s, k)).length;
+      const allDone = total > 0 && subs.every(s => docsIn(s) === need(s).length);
+      const docs = subs.map(s => `${docsIn(s)} of ${need(s).length}`);
+      const eeiSent = subs.map(s => s.data && s.data.eei && s.data.eei.ok ? String(s.data.eei.sentAt).slice(0, 10) : null).filter(Boolean);
+      const disclosed = (r as any).vettingExpiresAt && new Date((r as any).vettingExpiresAt).getTime() > Date.now();
+      // Neil 2026-11-08 (2nd pass): Upload = ANY document uploaded (e.g. only the signed form); the badge shows the weakest
+      // household's documents in / needed (Upload 1/3 … 3/3; a couple 6/6) so the fully-done ones stand out. Form = form filled, nothing uploaded yet.
+      const anyUpload = subs.some(s => need(s).some(k => has(s, k)));
+      // Household total: documents in / documents needed across everyone (Mark + Yan = 6/6; one adult = n/3).
+      const weakest = subs.length ? `${subs.reduce((n, s) => n + docsIn(s), 0)}/${subs.reduce((n, s) => n + need(s).length, 0)}` : '';
+      const autoPhase = disclosed ? 3 : total === 0 ? 0 : anyUpload ? 2 : 1;
       // Manual override (vettingStatus) wins — chiefly to mark pre-system hosts Complete.
       const manual = (r as any).vettingStatus || null;
       const phase = manual != null ? (PHASE_NUM[manual] ?? autoPhase) : autoPhase;
-      p.vetting = { total, submitted, signed, returned, phase, autoPhase, manual };
+      p.vetting = { total, submitted, signed, returned, phase, autoPhase, manual, docs, eeiSent, weakest, allDone };
       delete p.vettingSubmissions;
       return p;
     });

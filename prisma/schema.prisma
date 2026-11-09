@@ -1446,6 +1446,14 @@ model AccommodationProvider {
   // vetting PREDATES this system as 'complete'. See routes/host-vetting.ts.
   vettingStatus String? @map("vetting_status")
 
+  // Garda vetting disclosure (Neil 2026-11-08). One per host — a newer disclosure replaces the old. For a household of
+  // several vetted people it is the OLDEST of each person's latest disclosure (the first to lapse). Expiry = +3 years.
+  // The PDF itself stays in accomm@ Gmail (vettingDisclosureMsg = its message id); nothing is stored on the server.
+  vettingDisclosedAt   DateTime? @db.Date @map("vetting_disclosed_at")
+  vettingExpiresAt     DateTime? @db.Date @map("vetting_expires_at")
+  vettingDisclosureRef String?   @map("vetting_disclosure_ref")
+  vettingDisclosureMsg String?   @map("vetting_disclosure_msg")
+
   // Host acceptance preferences (Kelly, 2026-07-31) — who a family will take.
   // Set from the Hosts list via toggle badges; drive the Age/Gender filters so
   // placement screens the pool (e.g. junior-only families excluded for a 37M).

@@ -1486,6 +1486,36 @@ async function examSaveSettings(){
 }
 
 // ─── API HELPERS ────────────────────────────────
+// Garda vetting → EEI request form (routes/host-vetting.ts /:id/eei): show exactly what will be sent, then send on OK.
+async function sendVettingToEei(subId, providerId) {
+  try {
+    const pv = await api('/host-vetting/' + subId + '/eei');
+    const f = pv.fields || {}, g = k => f['form_fields[' + k + ']'] || '';
+    const lines = [
+      'Send this vetting request to EEI (englisheducationireland.ie/vetting):', '',
+      'Name: ' + [g('name'), g('middle_name'), g('surname')].filter(Boolean).join(' '),
+      'Date of birth: ' + g('date_of_birth'), 'Phone: ' + g('number'), 'Email: ' + g('email'),
+      'Address: ' + [g('field_78d9bfc'), g('field_924e345'), g('field_2f46ae2'), g('field_d07d8e5'), g('field_2c77c09')].filter(Boolean).join(', '),
+      'Role: ' + g('field_b6f0396') + ' · Documentation furnished: ' + g('field_12a5f9e') + ' · Consent: ' + g('field_67e36bf') + ' (' + g('field_33f2b9d') + ')',
+    ];
+    if (pv.formChanged) {
+      // The watcher found EEI's form changed (or unreadable): automatic send is off; Neil is pinged in #sis.
+      alert('⚠️ EEI FORM CHANGE DETECTED — automatic send is off.\n\nPlease submit this one by hand at englisheducationireland.ie/vetting using the details below (Neil has been alerted in #sis).\n\n' + lines.slice(2).join('\n') + '\n\nWhat changed: ' + (pv.problems || []).join(' '));
+      return;
+    }
+    if (!pv.ready) return toast('Not ready: ' + (pv.problems || []).join(' '), true);
+    const sends = pv.sends || [], n = sends.length + 1;
+    const head = sends.length
+      ? ['⚠️ ALREADY SENT ' + sends.length + ' time' + (sends.length > 1 ? 's' : '') + ' (last ' + String(sends[sends.length - 1].at).slice(0, 10) + ' by ' + sends[sends.length - 1].by + ').',
+         'This is SEND NUMBER ' + n + '. EEI will get it again. Are you sure?', '']
+      : ['LIVE SEND — this goes straight to EEI and can\'t be undone.', ''];
+    if (!confirm(head.concat(lines).join('\n'))) return;
+    const r = await api('/host-vetting/' + subId + '/eei', { method: 'POST', body: { sendNumber: n } });
+    toast(r.ok ? 'Sent to EEI ✓' : 'EEI did not confirm: ' + (r.problems || []).join(' '), !r.ok);
+    if (typeof navigate === 'function') navigate('accommodation-detail', { id: providerId });
+  } catch (e) { toast(e.message || String(e), true); }
+}
+
 async function api(path, opts = {}) {
   const { method = 'GET', body } = opts;
   const config = { method, headers: { 'Content-Type': 'application/json' } };
@@ -16145,20 +16175,29 @@ function toggleFirstDibsFilter() { firstDibsFilter = !firstDibsFilter; showAccom
 // per-member list + form/upload/mark-returned actions live on the host detail.
 const GV_PHASES = [[0,'None','#b91c1c'],[1,'Form','#d97706'],[2,'Upload','#2563eb'],[3,'Complete','#16a34a']];
 const GV_PHASE = Object.fromEntries(GV_PHASES.map(([n,l,c]) => [n,{label:l,color:c}]));
-const GV_TIP = { 0:'Not started', 1:'Portal web form submitted', 2:'Signed form uploaded', 3:'Garda vetting complete' };
+const GV_TIP = { 0:'Nothing yet', 1:'Garda vetting form filled in on the portal — nothing uploaded yet', 2:'Something uploaded — the badge shows how many of the 3 (signed form, ID, proof of address); 3/3 = ready for EEI', 3:'Disclosure received and dated (valid 3 years)' };
 let hostGvFilter = new Set();   // MULTI-select GV phase filter (0..3)
 function toggleHostGvFilter(ph) {
-  ph = Number(ph);
+  ph = ph === 'exp' ? 'exp' : Number(ph);
   if (hostGvFilter.has(ph)) hostGvFilter.delete(ph); else hostGvFilter.add(ph);
   showAccommodationList();
 }
-function gvBadge(v) {
+// Disclosure older than 3 years (vettingExpiresAt passed) — a SOFT mark only (Neil 2026-11-08): nothing is blocked,
+// it is a list to act on by hand. Filter pill "Expired" on the hosts list.
+const gvExpired = p => !!(p && p.vettingExpiresAt && String(p.vettingExpiresAt).slice(0,10) < new Date().toISOString().slice(0,10));
+function gvBadge(v, prov) {
+  if (gvExpired(prov)) return `<span title="Garda vetting disclosure expired ${String(prov.vettingExpiresAt).slice(0,10)} (3 years) — needs re-vetting" style="display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;white-space:nowrap;color:#fff;background:#7f1d1d">Expired</span>`;
   v = v || { total: 0, phase: 0 };
   const ph = GV_PHASE[v.phase] || GV_PHASE[0];
-  const tip = v.total
-    ? `Garda vetting: ${ph.label} · ${v.total} member(s) — ${v.returned||0} returned, ${v.signed||0} uploaded, ${v.submitted||0} form`
-    : 'No Garda vetting started';
-  return `<span title="${tip}" style="display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;white-space:nowrap;color:#fff;background:${ph.color}">${ph.label}${v.total?` ${v.total}`:''}</span>`;
+  // Complete set by hand with no disclosure date on file (pre-system hosts) → "Complete?" until a disclosure is found.
+  const unproven = v.phase === 3 && prov && !prov.vettingDisclosedAt;
+  const until = prov && prov.vettingExpiresAt ? String(prov.vettingExpiresAt).slice(0,10) : '';
+  const tip = v.phase === 3
+    ? (unproven ? 'Marked complete by hand — no disclosure date on file' : `Disclosure received — valid to ${until}`)
+    : v.total
+      ? `Garda vetting: ${GV_TIP[v.phase] || ph.label} · ${v.total} member(s), documents: ${(v.docs || []).join(', ')}${(v.eeiSent || []).length ? ` · sent to EEI ${v.eeiSent.join(', ')}` : ''}`
+      : 'Nothing yet';
+  return `<span title="${tip}" style="display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;white-space:nowrap;color:#fff;background:${ph.color}">${ph.label}${unproven ? '?' : ''}${v.phase === 2 && v.weakest ? ` ${v.weakest}` : v.total && v.phase < 3 ? ` ${v.total}` : ''}</span>`;
 }
 // Host-level "Mark Completed" toggle (manual override, chiefly for pre-system
 // vetting). '' clears the override back to Auto; 'complete' forces the Complete
@@ -16215,7 +16254,7 @@ async function showAccommodationList() {
     else if (hostActiveFilter === 'deactivated') providers = providers.filter(p => !p.effectiveActive);
     if (hostCategoryFilter.size) providers = providers.filter(p => hostCategoryFilter.has(p.hostCategory || 'Sleeper'));
     if (firstDibsFilter) providers = providers.filter(p => p.firstDibsAt);
-    if (hostGvFilter.size) providers = providers.filter(p => hostGvFilter.has((p.vetting || { phase: 0 }).phase));
+    if (hostGvFilter.size) providers = providers.filter(p => gvExpired(p) ? hostGvFilter.has('exp') : hostGvFilter.has((p.vetting || { phase: 0 }).phase));
     if (hostAgeFilter.size) providers = providers.filter(p =>
       (hostAgeFilter.has('juniors') && p.acceptsJuniors) || (hostAgeFilter.has('adults') && p.acceptsAdults) || (hostAgeFilter.has('mature') && p.acceptsMature));
     if (hostGenderFilter.size) providers = providers.filter(p =>
@@ -16248,6 +16287,7 @@ async function showAccommodationList() {
           <span class="flabel">GV</span>
           <div class="sx-pills" style="margin:0">
             ${GV_PHASES.map(([n,l,c]) => `<button class="sx-pill${hostGvFilter.has(n)?' active':''}" onclick="toggleHostGvFilter(${n})" title="${GV_TIP[n]||''}" style="background:${c}">${l}</button>`).join('')}
+            <button class="sx-pill${hostGvFilter.has('exp')?' active':''}" onclick="toggleHostGvFilter('exp')" title="Disclosure older than 3 years — needs re-vetting" style="background:#7f1d1d">Expired</button>
           </div>
           <div class="fdiv"></div>
           <span class="flabel">ATTRIBUTES</span>
@@ -16282,7 +16322,7 @@ async function showAccommodationList() {
           <td style="font-family:var(--font-mono);font-size:12px">${esc(p.phone || '—')}</td>
           <td>${esc(p.address || '—')}</td>
           <td style="font-family:var(--font-mono);font-size:12px">${esc(p.zip || '—')}</td>
-          <td>${gvBadge(p.vetting)}</td>
+          <td>${gvBadge(p.vetting, p)}</td>
           <td onclick="event.stopPropagation()" style="white-space:nowrap">${acceptCell(p)}</td>
         </tr>`;
       }
@@ -16884,9 +16924,28 @@ async function showAccommodationDetail(id) {
               ? `<span class="badge" style="background:#e0ecff;color:#1d4ed8">NVB 3 · 16–17</span>`
               : `<span class="badge" style="background:#eef5d3;color:#3a6c00">NVB 1 · 18+</span>`;
             const when = s.createdAt ? new Date(s.createdAt).toLocaleDateString('en-IE',{day:'numeric',month:'short',year:'numeric'}) : '';
-            const right = (s.status === 'signed' || s.status === 'returned')
-              ? `<a href="/sis/api/host-vetting/${s.id}/file" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600">View signed form →</a>`
-              : `<span style="color:#b45309;font-weight:600;font-size:12px">Awaiting signed upload</span>`;
+            // One link per uploaded document (form · ID · ID back · proof of address); missing ones in amber (2026-11-08).
+            const docs = (s.data && s.data.docs) || {};
+            const have = { form: !!s.signedFilePath, idFront: !!(docs.idFront && docs.idFront.path), idBack: !!(docs.idBack && docs.idBack.path), poa: !!(docs.poa && docs.poa.path) };
+            const need = s.formType === 'NVB3' ? ['form', 'idFront'] : ['form', 'idFront', 'poa'];
+            const lbl = { form: 'Signed form', idFront: 'ID', idBack: 'ID back', poa: 'Proof of address' };
+            const right = ['form', 'idFront', 'idBack', 'poa'].filter(k => have[k] || need.includes(k)).map(k => have[k]
+              ? (((s.data && s.data.checks && s.data.checks[k]) || {}).ok === false
+                  ? `<a href="/sis/api/host-vetting/${s.id}/file?kind=${k}" target="_blank" rel="noopener" title="${esc((s.data.checks[k].issues || []).join(' '))}" style="color:#b91c1c;font-weight:600;font-size:12px">${lbl[k]} ✗ failed check →</a>`
+                  : `<a href="/sis/api/host-vetting/${s.id}/file?kind=${k}" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600;font-size:12px">${lbl[k]} →</a>`)
+              : `<span style="color:#b45309;font-weight:600;font-size:12px">${lbl[k]}: awaiting</span>`).join('')
+              // Send to EEI (2026-11-08): only once all needed uploads are in and none failed the AI check. Sent = date shown.
+              + (() => {
+                  const ck = (s.data && s.data.checks) || {};
+                  const done = need.every(k => have[k]) && !Object.keys(have).some(k => have[k] && ck[k] && ck[k].ok === false);
+                  const sends = (s.data && s.data.eeiSends) || [];
+                  const last = sends[sends.length - 1];
+                  if (!done || s.formType !== 'NVB1') return '';
+                  // Not sent = green button. Sent = amber "Sent ✓ <date> · send again" (each click warns which send number it is).
+                  return sends.length
+                    ? `<span style="color:#16a34a;font-weight:600;font-size:12px">✓ Sent to EEI ${String(last.sentAt).slice(0,10)}${sends.length > 1 ? ' (×' + sends.length + ')' : ''}${last.ok ? '' : ' — not confirmed'}</span><button class="btn btn-sm" style="padding:3px 10px;font-size:12px;background:#f59e0b;border-color:#f59e0b;color:#fff" onclick="sendVettingToEei(${s.id}, ${p.id})">Send again</button>`
+                    : `<button class="btn btn-sm" style="padding:3px 10px;font-size:12px;background:#16a34a;border-color:#16a34a;color:#fff" onclick="sendVettingToEei(${s.id}, ${p.id})">Send to EEI</button>`;
+                })();
             return `<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--card-border)">
               <div><strong>${esc(s.personName || 'Household member')}</strong> ${badge}<div style="font-size:11px;color:var(--text-muted)">Submitted ${when}</div></div>
               <div style="display:flex;align-items:center;gap:10px">${right}</div>
@@ -16899,11 +16958,18 @@ async function showAccommodationDetail(id) {
       const gvSummary = isComplete
         ? ` · <span style="color:#16a34a;font-weight:700">✓ Completed</span>`
         : (subs.length ? ` · ${awaitingUpload} awaiting upload` : '');
+      // Disclosure (2026-11-08): date the Garda vetting came back + expiry (+3 years); the PDF stays in accomm@ Gmail.
+      const dDate = p.vettingDisclosedAt ? String(p.vettingDisclosedAt).slice(0,10) : '', dExp = p.vettingExpiresAt ? String(p.vettingExpiresAt).slice(0,10) : '';
+      const dExpired = dExp && dExp < new Date().toISOString().slice(0,10);
+      const dLine = dDate
+        ? `<div style="padding:6px 0 10px;font-size:13px">Disclosure <strong>${dDate}</strong> · ${dExpired ? `<span style="color:#b91c1c;font-weight:700">expired ${dExp}</span>` : `valid to <strong>${dExp}</strong>`}${p.vettingDisclosureRef ? ` · <span style="color:var(--text-muted)">${esc(p.vettingDisclosureRef)}</span>` : ''}${p.vettingDisclosureMsg ? ` · <a href="https://mail.google.com/mail/u/?authuser=accomm@ulearnschool.com#all/${esc(p.vettingDisclosureMsg)}" target="_blank" rel="noopener" style="color:var(--accent)">open email →</a>` : ''}</div>`
+        : '';
+      const dBadge = dDate ? (dExpired ? ` · <span style="color:#b91c1c;font-weight:700">disclosure expired ${dExp}</span>` : ` · valid to ${dExp}`) : '';
       html += `<div class="card" style="margin:16px 0">
         <div class="card-header collapse-header" onclick="toggleCollapse(this)" style="cursor:pointer">
-          <h3>Garda Vetting <span style="font-weight:400;color:var(--text-muted);font-size:12px;margin-left:6px">${subs.length} form${subs.length===1?'':'s'}${gvSummary}</span></h3>
+          <h3>Garda Vetting <span style="font-weight:400;color:var(--text-muted);font-size:12px;margin-left:6px">${subs.length} form${subs.length===1?'':'s'}${gvSummary}${dBadge}</span></h3>
         </div>
-        <div class="card-body collapse-body">${rows}
+        <div class="card-body collapse-body">${dLine}${rows}
           <div style="padding:12px 0 2px;display:flex;justify-content:flex-end;border-top:1px solid var(--card-border);margin-top:8px">
             <button onclick="toggleHostVettingComplete(${id}, ${isComplete})" title="Toggle Garda vetting complete (done offline / pre-system)"
               style="padding:7px 18px;border-radius:8px;border:1px solid ${isComplete ? '#16a34a' : 'var(--card-border)'};background:${isComplete ? '#16a34a' : 'transparent'};color:${isComplete ? '#fff' : 'var(--text-muted)'};font-weight:700;font-size:13px;cursor:pointer">

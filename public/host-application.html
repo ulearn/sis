@@ -71,7 +71,7 @@
     <div id="okMsg" class="msg">
       <div class="tick">✓</div>
       <h2>Thank you — application received!</h2>
-      <p>Our accommodation team will review your details and contact you shortly at the email you provided.</p>
+      <p id="okPlain">Our accommodation team will review your details and contact you shortly at the email you provided.</p>
     </div>
 
     <form id="hostForm" novalidate>
@@ -121,11 +121,16 @@
 
       <fieldset>
         <legend>🎓 Students Accepted</legend>
+        <!-- All pre-ticked (Neil 2026-11-08): we want hosts open to everyone; they untick what they don't want. -->
         <div class="checks">
-          <label class="chk"><input type="checkbox" name="st_junior"> Juniors (12-17)</label>
-          <label class="chk"><input type="checkbox" name="st_adult"> Adults (18+)</label>
-          <label class="chk"><input type="checkbox" name="st_boy"> Boys</label>
-          <label class="chk"><input type="checkbox" name="st_girl"> Girls</label>
+          <label class="chk"><input type="checkbox" name="st_junior" checked> Juniors (under 18)</label>
+          <label class="chk"><input type="checkbox" name="st_adult" checked> Adults (18–29)</label>
+          <label class="chk"><input type="checkbox" name="st_mature" checked> Mature (30+)</label>
+        </div>
+        <p style="margin:6px 0 12px;color:#c2410c;font-weight:700;font-size:13px">Selecting juniors (under 18) requires Garda vetting.</p>
+        <div class="checks">
+          <label class="chk"><input type="checkbox" name="st_boy" checked> Boys</label>
+          <label class="chk"><input type="checkbox" name="st_girl" checked> Girls</label>
         </div>
       </fieldset>
 
@@ -273,7 +278,7 @@
         streetAddress: val('streetAddress'), neighbourhood: val('neighbourhood'), city: val('city'), eircode: val('eircode'),
         rooms: rooms,
         studentTypes: {
-          junior: form.elements['st_junior'].checked, adult: form.elements['st_adult'].checked,
+          junior: form.elements['st_junior'].checked, adult: form.elements['st_adult'].checked, mature: form.elements['st_mature'].checked,
           boy: form.elements['st_boy'].checked, girl: form.elements['st_girl'].checked
         },
         familyDescription: val('familyDescription'), children: children,
@@ -288,6 +293,12 @@
         if(res && res.success){
           form.style.display='none';
           document.getElementById('okMsg').style.display='block';
+          // Straight to their portal (whole window — this form sits in an iframe on ulearnschool.com). If the browser blocks
+          // that, the panel below shows an "Open your portal" button instead.
+          if(res.portalUrl){
+            try { window.top.location.href = res.portalUrl; } catch(e) {}
+            document.getElementById('okPlain').innerHTML = 'Your host portal is ready. <a href="' + res.portalUrl + '" target="_top" style="display:inline-block;margin-top:10px;background:#318817;color:#fff;font-weight:700;padding:12px 22px;border-radius:8px;text-decoration:none">Open your portal →</a>';
+          }
           document.getElementById('okMsg').scrollIntoView({behavior:'smooth',block:'center'});
         } else {
           errBanner.textContent = (res && res.error) || 'Something went wrong. Please try again.';

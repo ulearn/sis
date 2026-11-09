@@ -3,9 +3,12 @@
     {
       "id": "b1w1",
       "batch": 1,
-      "batchName": "GV Completed",
+      "batchName": "All hosts",
       "wave": 1,
       "gv": [
+        "none",
+        "form",
+        "upload",
         "complete"
       ],
       "level": [],
@@ -23,9 +26,12 @@
     {
       "id": "b1w2",
       "batch": 1,
-      "batchName": "GV Completed",
+      "batchName": "All hosts",
       "wave": 2,
       "gv": [
+        "none",
+        "form",
+        "upload",
         "complete"
       ],
       "level": [
@@ -44,9 +50,12 @@
     {
       "id": "b1w3",
       "batch": 1,
-      "batchName": "GV Completed",
+      "batchName": "All hosts",
       "wave": 3,
       "gv": [
+        "none",
+        "form",
+        "upload",
         "complete"
       ],
       "level": [
@@ -65,9 +74,12 @@
     {
       "id": "b1w4",
       "batch": 1,
-      "batchName": "GV Completed",
+      "batchName": "All hosts",
       "wave": 4,
       "gv": [
+        "none",
+        "form",
+        "upload",
         "complete"
       ],
       "level": [
@@ -93,6 +105,7 @@
         "form"
       ],
       "level": [],
+      "juniorsOnly": true,
       "preMatch": true,
       "includeUnset": false,
       "onlyUnset": false,
@@ -100,7 +113,7 @@
       "day": "Tue",
       "time": "08:00",
       "enabled": true,
-      "note": "Form done, not uploaded — nudge to upload signed form",
+      "note": "Form done, not uploaded, takes juniors — nudge to upload signed form",
       "lastFired": "2026-11-03"
     },
     {
@@ -131,6 +144,7 @@
         "none"
       ],
       "level": [],
+      "juniorsOnly": true,
       "preMatch": true,
       "includeUnset": false,
       "onlyUnset": false,
@@ -138,7 +152,7 @@
       "day": "Tue",
       "time": "15:00",
       "enabled": true,
-      "note": "Not vetted",
+      "note": "Not vetted, takes juniors — nudge to start vetting",
       "lastFired": "2026-11-03"
     },
     {

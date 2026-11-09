@@ -1865,7 +1865,7 @@ export function webhookRoutes(prisma: PrismaClient) {
         return res.status(404).json({ error: 'No student contact found on deal' });
       }
 
-      const contact = await hsGet(`/crm/v3/objects/contacts/${resolvedContactId}?properties=firstname,lastname,email,phone,mobilephone,country,date_of_birth,nationality,level,quiz_score,hs_additional_emails,clearance`);
+      const contact = await hsGet(`/crm/v3/objects/contacts/${resolvedContactId}?properties=firstname,lastname,email,phone,mobilephone,country,date_of_birth,dob,nationality,level,quiz_score,hs_additional_emails,clearance`);
       const cp = contact.properties || {};
 
       // No silent failure: resolved a student but they have no usable email — we
@@ -1905,6 +1905,18 @@ export function webhookRoutes(prisma: PrismaClient) {
       const quizScoreRaw = String(cp.quiz_score || '').trim();
       const quizScore = quizScoreRaw ? (parseInt(quizScoreRaw.replace(/[^0-9]/g, '')) || null) : null;
       const nationality = (cp.nationality || '').trim() || null;
+      // Date of birth (Neil 2026-11-08: accommodation matching needs junior vs adult). The website booking form writes HubSpot `dob`
+      // (date), the sales desks write `date_of_birth` (text): take either. Only a full, sane date — never a guess.
+      const birthday = (() => {
+        const v = String(cp.date_of_birth || cp.dob || '').trim();
+        let m = v.match(/^(\d{4})-(\d{2})-(\d{2})/), y: number, mo: number, d: number;
+        if (m) { y = +m[1]; mo = +m[2]; d = +m[3]; }
+        else if ((m = v.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/))) { d = +m[1]; mo = +m[2]; y = +m[3]; }
+        else return null;
+        const dt = new Date(Date.UTC(y, mo - 1, d));
+        const age = (Date.now() - dt.getTime()) / 31557600000;
+        return dt.getUTCMonth() === mo - 1 && age > 3 && age < 100 ? dt : null;
+      })();
       const level = (cp.level || '').trim() || null;
       // HubSpot keeps alternate addresses in hs_additional_emails (semicolon-separated).
       // Mirror the raw string so a returning student who re-books under a different
@@ -1923,6 +1935,7 @@ export function webhookRoutes(prisma: PrismaClient) {
             phone: cp.phone || null,
             phoneMobile: cp.mobilephone || null,
             nationality,
+            birthday,
             language: derivedLanguage,
             // First booking (a brand-new student is always on their first):
             // seed the level from the HubSpot quiz `level`, else default A2 so
@@ -1950,6 +1963,7 @@ export function webhookRoutes(prisma: PrismaClient) {
           updateData.additionalEmails = additionalEmails;
         }
         if (nationality && !student.nationality) updateData.nationality = nationality;
+        if (birthday && !(student as any).birthday) updateData.birthday = birthday;   // fill-only
         // Fill Mother Tongue if we can derive it and the student has none (fill-only).
         if (!(student as any).language && (derivedLanguage || languageForNationality(student.nationality))) {
           updateData.language = derivedLanguage || languageForNationality(student.nationality);

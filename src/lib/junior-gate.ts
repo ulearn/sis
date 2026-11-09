@@ -42,4 +42,4 @@ export function isJuniorAt(birthday: Date | string | null | undefined, at: Date 
 }
 
 export const JUNIOR_GV_MESSAGE =
-  'This student is under 18 on arrival, so Garda vetting must be complete before you can host them.';
+  'Junior student: complete Garda vetting to claim.';   // short on purpose (Neil 2026-11-08: 7 words max)

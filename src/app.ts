@@ -1032,11 +1032,10 @@ app.post('/sis/api/host-application', hostApplyLimiter, async (req, res) => {
     if (b.dob) { const d = new Date(String(b.dob)); if (!isNaN(d.getTime())) dob = d; }
 
     const st = b.studentTypes || {};
-    const studentTypes = { junior: !!st.junior, adult: !!st.adult, boy: !!st.boy, girl: !!st.girl };
+    const studentTypes = { junior: !!st.junior, adult: !!st.adult, mature: !!st.mature, boy: !!st.boy, girl: !!st.girl };
 
-    // Create a DEACTIVATED Host Family provider so the application lands in the Hosts list
-    // for staff to review + tick "Activated?" (Neil 2026-07-12: applications arrive with
-    // Active unchecked). NO dedup — a duplicate email is acceptable for now (Neil's own
+    // Create the Host Family provider so the application lands in the Hosts list for staff to
+    // review (active, matching OFF — see below; was deactivated until 2026-11-08). NO dedup — a duplicate email is acceptable for now (Neil's own
     // household already exists as a provider; that's fine). The full structured submission
     // is kept in host_applications (linked) for children / Garda-vetting detail; a readable
     // summary goes in the provider `note` so staff see everything on the existing provider
@@ -1066,7 +1065,13 @@ app.post('/sis/api/host-application', hostApplyLimiter, async (req, res) => {
         description: S(b.familyDescription),
         iban: S(b.iban), bic: S(b.bic),
         note: noteLines.join('\n'),
-        active: false, // arrives DEACTIVATED — staff review then tick "Activated?"
+        // Neil 2026-11-08: arrives ACTIVE with MATCHING OFF (was: deactivated). Active = their portal works, so the
+        // pre-checks (Garda vetting for juniors) happen straight away; matching off = no outreach emails, no WhatsApp
+        // rounds, no students or First Dibs in the portal. Staff switch matching on after the visit (+ vetting if juniors).
+        active: true, portalMatchingEnabled: false,
+        // The form's ticks (were never copied over before 2026-11-08): 3 age bands + gender.
+        acceptsJuniors: studentTypes.junior, acceptsAdults: studentTypes.adult, acceptsMature: studentTypes.mature,
+        acceptsMale: studentTypes.boy, acceptsFemale: studentTypes.girl,
       } as any,
     });
 
@@ -1082,7 +1087,48 @@ app.post('/sis/api/host-application', hostApplyLimiter, async (req, res) => {
       },
     });
 
-    res.json({ success: true });
+    // Straight into their portal (Neil 2026-11-08: no success page in between). The page redirects the browser there and the
+    // portal shows a first-visit welcome panel (?welcome=1); juniors ticked → it says do the Garda vetting now.
+    let portalUrl: string | null = null, vettingUrl: string | null = null;
+    try {
+      const { mintHostPortalToken } = await import('./routes/host-portal');
+      const t = await mintHostPortalToken(prisma, provider.id);
+      portalUrl = `https://sis.ulearnschool.com/host-portal/${t.token}?welcome=1`;
+      if (studentTypes.junior) vettingUrl = `https://sis.ulearnschool.com/host-portal/${t.token}/vetting`;
+    } catch (e: any) { console.error('[host-application] portal link failed:', e.message); }
+    res.json({ success: true, juniors: studentTypes.junior, portalUrl, vettingUrl });
+
+    // The applicant's own email: received + (juniors) the same vetting link, so it can be done later if not right away.
+    (async () => {
+      try {
+        const { sendEmail } = await import('./scripts/email');
+        const esc = (v: any) => String(v == null ? '' : v).replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' } as any)[c]);
+        const p = (t: string) => `<p>${t}</p>`;
+        const html = p(`Dear ${esc(firstName)},`)
+          + p('Thank you for applying to host ULearn students. We have your application.')
+          + (vettingUrl
+            ? p('You ticked juniors (under 18). To host juniors, everyone aged 16 or over in your home needs Garda vetting, and it is the one step left for you.')
+              + p(`<a href="${vettingUrl}"><strong>Start your Garda vetting →</strong></a>`)
+              + p('The form is already filled in with your details. Print it, sign it by hand, and upload a photo of it there, together with:')
+              + `<ul><li>your ID: passport, or driving licence (both sides)</li><li>proof of address: a postal or PDF document from a utility, your bank or Revenue, with your name and address, dated in the last 6 months</li></ul>`
+              + p('It takes about 10 minutes. We will be in touch once it is in.')
+            : p('Our accommodation team will review your details and be in touch.'))
+          + (portalUrl ? p(`Your host portal (keep this link): <a href="${portalUrl.replace('?welcome=1', '')}">${portalUrl.replace('?welcome=1', '')}</a>`) : '')
+          + p('Kind regards,') + p('ULearn Accommodation<br>accomm@ulearnschool.com · +353 85 157 4801');
+        await sendEmail({ from: 'accomm@ulearnschool.com', fromName: 'ULearn Accommodation', to: email, subject: vettingUrl ? 'Your ULearn host application: one step left (Garda vetting)' : 'Your ULearn host application', html });
+      } catch (e: any) { console.error(`[host-application] applicant email failed for #${created.id}: ${e.message}`); }
+    })();
+
+    // Slack #accomm: "New host submission" (Neil 2026-11-08) — name, address, rooms, link to the host in the SIS.
+    (async () => {
+      try {
+        const { postSlackMessage } = await import('./lib/slack');
+        const addr = [streetAddress, neighbourhood, S(b.city) || 'Dublin', eircode].filter(Boolean).join(', ');
+        const ages = [studentTypes.junior && 'juniors', studentTypes.adult && 'adults', studentTypes.mature && 'mature'].filter(Boolean).join(', ') || 'none ticked';
+        await postSlackMessage({ channel: process.env.SLACK_ACCOMM_CHANNEL || '#accomm',
+          text: `🏠 *New host submission*\n*${firstName} ${lastName}*\n${addr}\nRooms: ${rooms.map((r: any) => r.type).join(', ') || '—'} · accepts ${ages}${studentTypes.junior ? ' (Garda vetting needed)' : ''}\n<https://sis.ulearnschool.com/sis/admin#/accommodation-detail/${provider.id}|Open in SIS →>` });
+      } catch (e: any) { console.error(`[host-application] Slack notify failed for #${created.id}: ${e.message}`); }
+    })();
 
     // Notify the accommodation team (fire-and-forget — never blocks the applicant).
     (async () => {

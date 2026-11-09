@@ -40,6 +40,7 @@ export interface Wave {
   gv: string[];
   level: string[];
   firstDibs?: boolean;     // select by the First Dibs flag (firstDibsAt), not by activity level
+  juniorsOnly?: boolean;   // only hosts who ticked juniors — the GV reminders (adult-only hosts are never nagged about vetting)
   preMatch: boolean;
   includeUnset: boolean;
   onlyUnset: boolean;
@@ -52,16 +53,17 @@ export interface Wave {
 }
 
 const DEFAULT_WAVES: Wave[] = [
-  // Batch 1 — GV Complete, ascending activity Level. Standard template.
-  { id: 'b1w1', batch: 1, batchName: 'GV Completed', wave: 1, gv: ['complete'], level: [], firstDibs: true, preMatch: true, includeUnset: false, onlyUnset: false, template: 'standard', day: 'Mon', time: '08:00', enabled: true, note: 'First Dibs — flagged hosts (missed out last cycle, self-serve/manual), front of the queue' },
-  { id: 'b1w2', batch: 1, batchName: 'GV Completed', wave: 2, gv: ['complete'], level: ['Sleeper'], preMatch: true, includeUnset: false, onlyUnset: false, template: 'standard', day: 'Mon', time: '12:00', enabled: true, note: 'Dormant — re-engage' },
-  { id: 'b1w3', batch: 1, batchName: 'GV Completed', wave: 3, gv: ['complete'], level: ['Regular'], preMatch: true, includeUnset: false, onlyUnset: false, template: 'standard', day: 'Mon', time: '15:00', enabled: true, note: '' },
-  { id: 'b1w4', batch: 1, batchName: 'GV Completed', wave: 4, gv: ['complete'], level: ['BusyBee', 'SuperHost'], preMatch: true, includeUnset: false, onlyUnset: false, template: 'standard', day: 'Mon', time: '18:00', enabled: true, note: 'Most active — reliable' },
-  // Batch 2 — GV In-Progress, any Level, split by STAGE.
-  { id: 'b2w1', batch: 2, batchName: 'GV In-Progress', wave: 1, gv: ['form'], level: [], preMatch: true, includeUnset: false, onlyUnset: false, template: 'gv-reminder', day: 'Tue', time: '08:00', enabled: true, note: 'Form done, not uploaded — nudge to upload signed form' },
+  // Batch 1 — EVERY host, any vetting stage, ascending activity Level. Standard template (Neil 2026-11-08: Garda vetting is for
+  // JUNIORS only — a not-vetted host is matched to the adult pool only (poolFor), so adult-only hosts hear on Monday like everyone).
+  { id: 'b1w1', batch: 1, batchName: 'All hosts', wave: 1, gv: ['none', 'form', 'upload', 'complete'], level: [], firstDibs: true, preMatch: true, includeUnset: false, onlyUnset: false, template: 'standard', day: 'Mon', time: '08:00', enabled: true, note: 'First Dibs — flagged hosts (missed out last cycle, self-serve/manual), front of the queue' },
+  { id: 'b1w2', batch: 1, batchName: 'All hosts', wave: 2, gv: ['none', 'form', 'upload', 'complete'], level: ['Sleeper'], preMatch: true, includeUnset: false, onlyUnset: false, template: 'standard', day: 'Mon', time: '12:00', enabled: true, note: 'Dormant — re-engage' },
+  { id: 'b1w3', batch: 1, batchName: 'All hosts', wave: 3, gv: ['none', 'form', 'upload', 'complete'], level: ['Regular'], preMatch: true, includeUnset: false, onlyUnset: false, template: 'standard', day: 'Mon', time: '15:00', enabled: true, note: '' },
+  { id: 'b1w4', batch: 1, batchName: 'All hosts', wave: 4, gv: ['none', 'form', 'upload', 'complete'], level: ['BusyBee', 'SuperHost'], preMatch: true, includeUnset: false, onlyUnset: false, template: 'standard', day: 'Mon', time: '18:00', enabled: true, note: 'Most active — reliable' },
+  // Batch 2 — GV In-Progress, any Level, split by STAGE. The GV reminder goes only to hosts who ticked juniors (juniorsOnly).
+  { id: 'b2w1', batch: 2, batchName: 'GV In-Progress', wave: 1, gv: ['form'], level: [], juniorsOnly: true, preMatch: true, includeUnset: false, onlyUnset: false, template: 'gv-reminder', day: 'Tue', time: '08:00', enabled: true, note: 'Form done, not uploaded, takes juniors — nudge to upload signed form' },
   { id: 'b2w2', batch: 2, batchName: 'GV In-Progress', wave: 2, gv: ['upload'], level: [], preMatch: true, includeUnset: false, onlyUnset: false, template: 'standard', day: 'Tue', time: '12:00', enabled: true, note: 'Uploaded w/ signature — ball in our court, no GV nag' },
-  // Batch 3 — No GV.
-  { id: 'b3w1', batch: 3, batchName: 'No GV', wave: 1, gv: ['none'], level: [], preMatch: true, includeUnset: false, onlyUnset: false, template: 'gv-reminder', day: 'Tue', time: '15:00', enabled: true, note: 'Not vetted' },
+  // Batch 3 — No GV: the GV reminder, for hosts who ticked juniors only.
+  { id: 'b3w1', batch: 3, batchName: 'No GV', wave: 1, gv: ['none'], level: [], juniorsOnly: true, preMatch: true, includeUnset: false, onlyUnset: false, template: 'gv-reminder', day: 'Tue', time: '15:00', enabled: true, note: 'Not vetted, takes juniors — nudge to start vetting' },
   // Batch 4 — CATCH-ALL: hosts with NO attribute data.
   { id: 'b4w1', batch: 4, batchName: 'Catch-all (no attribute data)', wave: 1, gv: ['complete', 'upload'], level: [], preMatch: false, includeUnset: false, onlyUnset: true, template: 'standard', day: 'Wed', time: '08:00', enabled: true, note: 'Vetting done on their end — attributes unknown' },
   { id: 'b4w2', batch: 4, batchName: 'Catch-all (no attribute data)', wave: 2, gv: ['none', 'form'], level: [], preMatch: false, includeUnset: false, onlyUnset: true, template: 'gv-reminder', day: 'Wed', time: '12:00', enabled: true, note: 'Vetting not done — attributes unknown' },
@@ -175,6 +177,7 @@ export function autoNudgeScripts(prisma: PrismaClient) {
     const phases = new Set(w.gv.map(k => GV_KEY.indexOf(k as any)));
     return hosts.filter(h => {
       if (!phases.has(hostPhase(h))) return false;
+      if (w.juniorsOnly && !h.acceptsJuniors) return false;
       // First Dibs is now a standalone flag (firstDibsAt), independent of activity level.
       if (w.firstDibs) return h.firstDibsAt != null;
       return w.level.length === 0 || w.level.includes(h.hostCategory || 'Sleeper');
@@ -188,10 +191,10 @@ export function autoNudgeScripts(prisma: PrismaClient) {
   };
 
   /** Live wave list with host counts — for the UI. */
-  async function getWaves() {
+  async function getWaves(poolOverride?: any) {   // poolOverride: a what-if pool profile for dry-runs (counts only, never sends)
     const cfg = loadConfig();
     const hosts = (await fetchSendableHosts()).filter(h => h.portalToken?.token);
-    const pool = await unplacedProfiles();
+    const pool = poolOverride || await unplacedProfiles();
     const waves = cfg.waves.map(w => {
       const tier = inTier(w, hosts);
       return { ...w, rawCount: tier.length, matchedCount: applyMatch(w, tier, pool).length };

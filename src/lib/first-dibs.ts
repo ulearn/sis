@@ -1,6 +1,6 @@
 // First Dibs — the ONE grant, shared by the host portal button (routes/host-portal.ts) and the hubapp accomm desk
 // (a host emailing accomm@ to ask; hubapp scripts/accomm/processors.js runs this over SSH from dist/lib/first-dibs).
-// Gates: matching on · GV completed (else a "finish vetting" nudge, no grant, no slot used) · cap of 5 concurrent
+// Gates: matching on · cap of 5 concurrent (no vetting gate since 2026-11-08: vetting only gates claiming juniors)
 // holders. Single-use (auto-nudge clears it once the First Dibs wave emails them) + placement clearing
 // (scripts/accommodation.ts) stop it becoming a permanent bump.
 import { PrismaClient } from '../generated/prisma/client';
@@ -35,12 +35,8 @@ export async function grantFirstDibs(prisma: PrismaClient, providerId: number, s
   if (p.firstDibsAt) {
     return { status: 'already', message: 'You\'re already top of the queue — First Dibs on the next students we get. No need to click again.' };
   }
-  // GV gate — non-completed hosts get a nudge, not a grant (turns the First
-  // Dibs itch into a vetting-completion prompt), and it does NOT consume a slot.
-  const subs = await prisma.hostVettingSubmission.findMany({ where: { providerId }, select: { status: true } });
-  if (!firstDibsGvComplete(p.vettingStatus, subs)) {
-    return { status: 'gv-incomplete', message: 'Almost! Your Garda vetting isn\'t complete yet — finish it and you can grab First Dibs. Tap "Complete Garda Vetting" below to do the next step.' };
-  }
+  // No vetting gate (Neil 2026-11-08): Garda vetting is for JUNIORS only. A not-vetted holder is bumped for the ADULT pool
+  // (auto-nudge matches non-vetted hosts against adults only) and the junior gate still blocks claiming juniors.
   // Cap — count current flag-holders.
   const held = await prisma.accommodationProvider.count({ where: { firstDibsAt: { not: null } } });
   if (held >= FIRST_DIBS_CAP) {

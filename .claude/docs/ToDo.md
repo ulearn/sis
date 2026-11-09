@@ -1709,10 +1709,152 @@ Host payment line 242 (run 65, 20 Oct): Mohammed Ibrahimi Alsaidalani, checkout 
 **Priority:** High
 **Status:** Waiting — Neil (go-ahead to change the public host form)
 **Added:** 2026-11-05
-**Updated:** 2026-11-05T14:40:06Z
+**Updated:** 2026-11-08T22:20:06Z
 
 From #accomm (Diego/Kelly, Lavdim Dobra 40yo placement): hosts reject older and afternoon students, so recruit hosts who accept them. Form (public/host-application.html) asks only Juniors 12-17 / Adults 18+ / Boys / Girls; app.ts:1034 saves only those four. The SIS host record already has acceptsMature (used by AutoNudge matching), but the form never fills it. No field exists yet for morning/afternoon.
-- [ ] Add a "Mature adults (30+)" checkbox → studentTypes.mature → acceptsMature when the application becomes a host
+- [x] 8 Nov: Mature (30+) added; all cohorts pre-ticked and copied to the host record
 - [ ] Add a morning / afternoon / no-preference question (needs a new host field + AutoNudge filter)
+
+---
+
+## Host portal: add a simple PIN (default 2000) and decide on Cloudflare / exposure
+
+**Priority:** Medium
+**Status:** Waiting — Neil (go)
+**Added:** 2026-11-08
+**Updated:** 2026-11-08T21:30:06Z
+
+Neil 8 Nov: host portal links have no login and no PIN, and the URLs are open to the internet (not behind Cloudflare as far as we know). Now that the Garda vetting form (household names, dates of birth) lives in the portal, there's a GDPR side. Plan when Neil says go:
+**Plan (Neil 8 Nov, later — get the vetting flow working first):**
+- [ ] Existing hosts: no PIN yet. Email + WhatsApp them once: "we've added a 4-digit PIN to your portal — you'll set it next time you open it". Next visit = a one-time panel "Hi Patty, please set a personal PIN for better security" (new PIN twice) → set there and then. No PIN sent by email, so nobody gets locked out by a missed email.
+- [ ] New applicants: the welcome panel becomes 2 steps — step 1 as now, "Next" → step 2 "Set your PIN" (4 digits, twice).
+- [ ] After that the portal asks for the PIN (once per device). Top right: "Change PIN" (current PIN + new PIN twice).
+- [ ] Staff can see/reset a host's PIN in the SIS (forgotten PIN = not a big deal).
+- [ ] (Fallback idea from Neil: everyone starts on a default PIN; the set-your-own flow above is preferred.)
+- [ ] Decide: put sis.ulearnschool.com (or the portal paths) behind Cloudflare, or rate-limit/noindex at nginx
+- [x] 8 Nov audit done (see the vetting task): worst was the filled GV form → now hidden once the 3 documents pass or the host is vetted
+- [ ] Check what search engines could index (noindex the portal)
+
+---
+
+## Garda vetting last mile: map the EEI hand-off and the return
+
+**Priority:** Medium
+**Status:** In progress — flow built 8 Nov; first real send (Mark + Yan) waiting on Neil
+**Added:** 2026-11-08
+**Updated:** 2026-11-08T23:15:07Z
+
+Researched 8 Nov (accomm@ Gmail + SIS, read-only). "EEI" = **English Education Ireland** (formerly MEI, Marketing English in Ireland): Vetting@englisheducationireland.ie (old vetting@mei.ie), liaison Michelle Dodson, 01 618 0910. MEI is the registered organisation on the NVB1 form; refs look like MEI001-YYYYMMDD-NNNNN.
+- **Outbound (checked 8 Nov, every accomm@ email to/from EEI since 2024):** accomm@ has NEVER emailed EEI a form, an ID or a host's details. Every email to EEI is a status chase or a question. The submission is a **request on MEI's online form**: Andre (Jun 2024) "I have done my part 1 from the MEI online fill"; Michelle (Oct 2024) "complete the NVB1 and attach all requested documents, then send the request in to the office and I will send the link"; (Jul 2026) "I did receive the application request". EEI then starts the host on the Garda e-vetting portal (refs MEI001-…, evetting-portal.garda.ie). Which form, its URL, its login and its fields: **only Kelly knows (ask her)**. Live case: Mark Haslam + Yan Zhang (signed forms in the portal 29 Oct, ID by email 4 Nov, desk told him "we will now send everything on" on 5 Nov); no trace of it going to EEI yet.
+- **Then electronic (evidenced):** the NVB emails the applicant an e-vetting link ("Vetting Request MEI001-…"). It expires (expired = start again with a new NVB1 + ID under 6 months; NVB1 itself lapses after 180 days); must be done on a PC, not a phone; hosts miss/lose the email often (Kelly chased EEI ~10 times Jun–Aug, did 2 home visits to help).
+- **Return (evidenced):** EEI emails accomm@ a **PDF disclosure per person** (filename = MEI ref, often batched on Fridays, "Please see attached Garda Vetting Disclosures"). Turnaround, link sent → PDF: 18, 29, 35, 35, 37, 48, 52 days (typically 4–7 weeks).
+- **'complete' in the SIS (evidenced):** set only by hand (admin "Mark Completed" toggle; no date, no evidence, no audit_log entry). Uploads alone never reach complete (derived phase stops at "signed"), so nothing is marked early by the code. No case of 'complete' before a disclosure was found, but it can't be proven: no record of when/why it was set.
+- [x] Rule confirmed (Neil 8 Nov): complete = the disclosure is back (date recorded); valid 3 years
+- [x] Disclosure date/expiry/ref/Gmail link stored per HOST (Neil: one record, newer replaces older; PDF stays in Gmail)
+- [x] Expiry = disclosure date + 3 years (Neil confirmed 3), stored and shown
+- **The Garda side (vetting.garda.ie, checked 8 Nov):** NOT an open conduit. Vetting is "conducted on behalf of registered organisations only", never for an individual. Only a registered organisation's trained Liaison Person can send the e-vetting invitation (30-day link, reminder at 21 days), submit it to the NVB and receive the disclosure. Michelle is MEI's Liaison Person; ULearn is vetted through MEI (allowed by the Act: another registered organisation submits on our behalf). The ID check at a meeting is the NVB's own rule, not MEI's.
+- [ ] Neil: A) apply to register ULearn itself (letter to GNVB.Registration@garda.ie: name, business address, contact person, what we do; NVB then contacts us; a ULearn Liaison Person is trained) → we send the invitations ourselves, disclosures come straight to us · B) stay with MEI and automate only our side
+- [x] 8 Nov: asked the Vetting Bureau (GNVB.Registration@garda.ie, from accomm@, cc Neil) what Liaison Person training involves, how to sign up, renewal, vetting of the Liaison Person, fees/minimums, how to apply. Neil would be the Liaison Person (stays if staff leave); the AI does the admin. Not urgent.
+- Scope (Neil 8 Nov): vetting only for hosts who tick juniors AND then want to host them; it is the condition to CLAIM a junior. Adult-only hosts never see it.
+- [x] **Found the request form (8 Nov):** a public web form, no login, no attachments: https://englisheducationireland.ie/vetting/ (MEI's 2020 instructions: www.mei.ie/vetting). It takes only the person's details (all already in the SIS NVB1 submission) + role "Host Family" + "documentation furnished" Yes + consent Yes + date of consent. The paper form and ID copies STAY with us (MEI: don't send them; destroy once the disclosure arrives). Full process + 100-point ID list: .knowledge/kb/accommodation/garda-vetting-process.md
+- [x] 8 Nov: portal now has 3 labelled uploads per person (wet-signed form · Identification front + back · Proof of Address; NVB 3 = form + passport/birth cert); "send separately" wording gone; replaced files deleted; SIS host screen links each document; notify email on form + when the set is complete. Backups *.bak-iddocs-20261108
+- [x] 8 Nov: AI read of every upload (scripts/vetting-doc-check.ts, gpt-4o-mini vision; dates/expiry decided in code); host told at once why a file fails; ONE email to accomm@ only when all three pass ("ready for EEI"); proof-of-address wording = postal or PDF from utility/bank/Revenue, not mobile bills; no video ID call
+- [x] 8 Nov: "Send to EEI" (scripts/eei-submit.ts): the server posts EEI's public form from the SIS data; button on the SIS host screen shows exactly what goes, then sends; result kept (never twice). Dry run on Mark Haslam OK. NVB 3 by hand (EEI form has no parent fields). Not yet sent for real.
+- [x] 8 Nov: Mark Haslam + Yan Zhang's ID (Irish licences) + joint Virgin Media bill (28 Oct) attached from his 4 Nov email; all docs pass; Slack "Host GV complete" posted in #accomm (@Kelly @Neil). Not submitted before (Kelly on holiday from 29 Oct; no accomm@→EEI mail since 24 Aug)
+- [x] 8 Nov: Send button = green "Send to EEI"; after a send amber "Send again"; every click says LIVE SEND / "ALREADY SENT n times — this is SEND NUMBER n+1"; server refuses a send whose number doesn't match (no double sends). Watcher (eei-watch.ts) at send time only: form fingerprint must match the last accepted send, else blocked + SIS alert "submit by hand" + #sis ping to Neil
+- [x] 8 Nov: fixed — SIS had an old copy of the fins Slack bot token (same app A09USHN84HZ); copied the working one in (backup /home/sis/.env.bak-slack-20261108), test post to #sis OK. Was:  **SIS Slack bot token is dead (invalid_auth)** — every SIS Slack post fails silently (GV complete, form-change alert, anything else in lib/slack.ts). Neil: put the working hub/fins bot token in SIS .env SLACK_BOT_TOKEN (Claude was blocked from copying tokens between apps), then touch tmp/restart.txt
+- [x] 8 Nov 22:53/22:54: Neil sent Mark + Yan to EEI from the SIS — EEI replied "Your submission was successful" for both; form baseline set
+- [ ] Mon 9 Nov 10:00: follow-up to Michelle from accomm@ scheduled (at job, hubapp/data/scheduled/eei-followup-20261109.js) — watch for her yes; then the Garda links should reach Mark + Yan within ~2 working days
+- [x] 8 Nov: Slack #accomm "🏠 New host submission" (name, address, rooms, ages, SIS link) on every website application. Accom desk: Garda/Applications instructions updated + KB "On the desk" section (what each vetting email means now)
+- [x] 8 Nov: host application form (SIS /sis/host-apply, iframed on the website) → if Juniors ticked: the success screen shows "One step left to host juniors: Garda vetting" + a "Start Garda vetting now →" button (their own portal link), and the applicant gets an email with the same link + what to upload. No juniors → plain "application received" (and a short email). New applicants are now created ACTIVE with MATCHING OFF (Neil: was deactivated): their portal works for the pre-checks, but no outreach emails, WhatsApp rounds, students or First Dibs until staff switch matching on after the visit (+ vetting if juniors). Deactivated hosts can still open the vetting pages. Backups *.bak-gvapply-20261108. Not yet seen by a real applicant (Cloudflare check blocks a server test).
+- [x] 8 Nov: no success page — on submit the applicant goes straight to their own portal (whole window; fallback "Open your portal →" button if the browser blocks it). First visit shows a welcome panel (in-page, not an alert): students appear here once we've visited · Monday 8am email, later WhatsApp · first come first served, matched = gone · juniors need Garda vetting; if they ticked juniors and aren't vetted: "do your Garda vetting now" + button. Form's juniors/adults ticks now copied to the host (acceptsJuniors/acceptsAdults — never were). Applicant email carries the portal link. Backup host-portal.ts.bak-welcome-20261108
+- [x] 8 Nov: application form Students Accepted = Juniors (under 18) · Adults (18–29) · Mature (30+) · Boys · Girls, ALL pre-ticked, orange note "Selecting juniors (under 18) requires Garda vetting."; all five copied to the host record (acceptsJuniors/Adults/Mature/Male/Female)
+- [x] 8 Nov: filled GV form hidden once the 3 documents pass or the host is vetting-complete (applies to every already-vetted host now); list shows "✓ Garda vetting complete". Backup host-vetting.ts.bak-hideform-20261108
+- [ ] Portal exposure (audit 8 Nov, no PIN): link = 10 random characters (unguessable; risk is a forwarded/leaked link). Home shows the host's name, payments, placed students (full name, nationality, gender, age, allergies, diet) and the open pool (every unplaced student's full name, nationality, gender, dates). Host's own address isn't on the home page; uploaded ID/bills can never be viewed again. MOST exposed: the vetting print-and-sign page — each household member's full name + date of birth + email + phone + full address + Eircode. Options: hide the filled form once the set is complete (quick), and the PIN (see the PIN task)
+- [ ] Old applicants: Kate Farrell (host 152, applied 26 Aug, inactive) ticked juniors but the flag never reached her record (bug now fixed); the other one is Neil's own test (150)
+- [x] 8 Nov: disclosure history collected (hubapp/data/gv-disclosures.json + -summary.md, names/refs/dates only, PDFs deleted): 187 disclosures 2019-05 → 2026-09, all first to accomm@ (11 copies in dos@, none in info@); 48 still valid (<3 yrs), 35 of them on current hosts; 72 matched to hosts (39 exact, 33 likely), 115 unmatched (mostly 2019–20 hosts no longer in the SIS). Of the 19 hosts marked complete: Family McMahon (29) has no disclosure, Yvonne O'Rourke's expired 2022, the Melias' (Jean, likely match) expired 2025-11-03
+- [x] 8 Nov: disclosure date + expiry (+3 yrs) + ref + Gmail link written to 45 hosts (new columns vettingDisclosedAt/ExpiresAt/DisclosureRef/DisclosureMsg; household = oldest of each person's latest). Shown on the SIS host screen (Garda Vetting card). 21 valid, 24 expired. PDFs stay in Gmail (1 page: subject's name, DOB, address, search date, Criminal Record Nil/…, Specified Information Nil/…)
+- [x] 8 Nov: expired disclosures = SOFT mark only (Neil: no blocking, no automation): dark-red "Expired" GV badge on the Hosts list + an "Expired" GV filter pill → act on the list by hand later. Currently: Melias, Bridie Horan Dunne, Sheppards, Mary Carver, Ronaynes, Yvonne O'Rourke (+ inactive hosts)
+- [x] 8 Nov: GV badges follow Neil's definitions — None = nothing · Form = portal form filled, nothing uploaded · Upload = anything uploaded, badge shows the household total (Upload 1/3 … 3/3; a couple 6/6) — n/n = ready for EEI · Complete = disclosure dated and valid · Expired = 3 years passed · "Complete?" = marked complete by hand with no disclosure on file (Family McMahon). Junior claim gate unchanged. Today: 76 None, 9 Form, 21 Complete, 24 Expired, 1 Complete?
+- [ ] Mark Haslam shows Form only because of an empty, never-signed duplicate form (#30) — delete it in the SIS (Claude's delete was blocked by the permission check)
+- [ ] Hosts on Form who sent their documents by EMAIL (e.g. Nestor Rena's signed form 5 Oct, Pauline Turner's "vetting docs" 19 Jan): attach them to the portal records like Mark's, so they reach Upload
+- [ ] Later (by hand): work the Expired list — check who still lives there, re-vet
+- [x] 8 Nov: 8 hosts with a valid disclosure marked Complete (Foynes x2, Berminghams, Stafford, Finn, Bogdan, Traynor, Sherlocks); Paul Gill left out — he is staff, not a host
+- [ ] Staff vetting: teachers and any staff with contact with juniors need Garda vetting too (their disclosures went to dos@; 7 found, incl. Paul Gill). Hosts is the wrong container — needs its own place (staff/teachers in the SIS) with date + expiry
+- [ ] Incoming: match the Garda link email and each new EEI disclosure PDF to the host automatically (ref → submission), set date/expiry + Complete, then delete their ID copies
+- [ ] Later: switch to automatic send on completion, once sends have flowed end to end for a while (Neil: the send gate stays human for now)
+- [ ] Weekly nudge (email/WhatsApp) for junior-opt-in hosts stuck halfway; outreach to hosts who haven't started = later (after Kelly is back)
+- [x] Mark + Yan: not submitted before (Kelly away since 29 Oct; no accomm@→EEI mail since 24 Aug)
+- [x] Neil's target built (portal uploads + AI check + Slack "Host GV complete" + Send to EEI button); visit stays separate, after vetting
+- [x] Moot: EEI's request form found (public web form, no attachments) and the SIS posts it
+- [x] Upload notice rewritten (one Slack message when the set is complete; no "posted to the bureau")
+
+**Added in Wrike (2026-11-08 21:06):**
+Researched 8 Nov (accomm&#64; Gmail + SIS, read-only). "EEI" &#61; English Education Ireland (formerly MEI, Marketing English in Ireland): Vetting&#64;englisheducationireland.ie (old vetting&#64;mei.ie), liaison Michelle Dodson, 01 618 0910. MEI is the registered organisation on the NVB1 form; refs look like MEI001-YYYYMMDD-NNNNN.
+- Outbound (checked 8 Nov, every accomm&#64; email to/from EEI since 2024): accomm&#64; has NEVER emailed EEI a form, an ID or a host's details. Every email to EEI is a status chase or a question. The submission is a request on MEI's online form: Andre (Jun 2024) "I have done my part 1 from the MEI online fill"; Michelle (Oct 2024) "complete the NVB1 and attach all requested documents, then send the request in to the office and I will send the link"; (Jul 2026) "I did receive the application request". EEI then starts the host on the Garda e-vetting portal (refs MEI001-…, evetting-portal.garda.ie). Which form, its URL, its login and its fields: only Kelly knows (ask her). Live case: Mark Haslam + Yan Zhang (signed forms in the portal 29 Oct, ID by email 4 Nov, desk told him "we will now send everything on" on 5 Nov); no trace of it going to EEI yet.
+- Then electronic (evidenced): the NVB emails the applicant an e-vetting link ("Vetting Request MEI001-…"). It expires (expired &#61; start again with a new NVB1 + ID under 6 months; NVB1 itself lapses after 180 days); must be done on a PC, not a phone; hosts miss/lose the email often (Kelly chased EEI ~10 times Jun–Aug, did 2 home visits to help).
+- Return (evidenced): EEI emails accomm&#64; a PDF disclosure per person (filename &#61; MEI ref, often batched on Fridays, "Please see attached Garda Vetting Disclosures"). Turnaround, link sent → PDF: 18, 29, 35, 35, 37, 48, 52 days (typically 4–7 weeks).
+- ☐ Neil: confirm the rule "complete &#61; disclosure PDF received" (then the toggle should require it)
+- ☐ Auto-match: EEI disclosure emails (from Vetting&#64;englisheducationireland.ie, MEI001-*.pdf) → host → "ready to mark complete" for the accomm desk
+- ☐ Neil: A) apply to register ULearn itself (letter to GNVB.Registration&#64;garda.ie: name, business address, contact person, what we do; NVB then contacts us; a ULearn Liaison Person is trained) → we send the invitations ourselves, disclosures come straight to us · B) stay with MEI and automate only our side
+- ☑ 8 Nov: asked the Vetting Bureau (GNVB.Registration&#64;garda.ie, from accomm&#64;, cc Neil) what Liaison Person training involves, how to sign up, renewal, vetting of the Liaison Person, fees/minimums, how to apply. Neil would be the Liaison Person (stays if staff leave); the AI does the admin. Not urgent.
+- ☑ 8 Nov: portal now has 3 labelled uploads per person (wet-signed form · Identification front + back · Proof of Address; NVB 3 &#61; form + passport/birth cert); "send separately" wording gone; replaced files deleted; SIS host screen links each document; notify email on form + when the set is complete. Backups *.bak-iddocs-20261108
+- ☑ 8 Nov: AI read of every upload (scripts/vetting-doc-check.ts, gpt-4o-mini vision; dates/expiry decided in code); host told at once why a file fails; ONE email to accomm&#64; only when all three pass ("ready for EEI"); proof-of-address wording &#61; postal or PDF from utility/bank/Revenue, not mobile bills; no video ID call
+- ☑ 8 Nov: Mark Haslam + Yan Zhang's ID (Irish licences) + joint Virgin Media bill (28 Oct) attached from his 4 Nov email; all docs pass; Slack "Host GV complete" posted in #accomm (&#64;Kelly &#64;Neil). Not submitted before (Kelly on holiday from 29 Oct; no accomm&#64;→EEI mail since 24 Aug)
+- ☑ 8 Nov: Send button &#61; green "Send to EEI"; after a send amber "Send again"; every click says LIVE SEND / "ALREADY SENT n times — this is SEND NUMBER n+1"; server refuses a send whose number doesn't match (no double sends). Watcher (eei-watch.ts) at send time only: form fingerprint must match the last accepted send, else blocked + SIS alert "submit by hand" + #sis ping to Neil
+- ☐ SIS Slack bot token is dead (invalid_auth) — every SIS Slack post fails silently (GV complete, form-change alert, anything else in lib/slack.ts). Neil: put the working hub/fins bot token in SIS .env SLACK_BOT_TOKEN (Claude was blocked from copying tokens between apps), then touch tmp/restart.txt
+- ☐ Neil: reinstall the SIS Slack app (https://api.slack.com/apps/A09USHN84HZ/install-on-team) and put the bot token in SIS .env SLACK_BOT_TOKEN if it changed → then test a post
+- ☐ Weekly nudge (email/WhatsApp) for junior-opt-in hosts stuck halfway; outreach to hosts who haven't started &#61; later (after Kelly is back)
+- ☐ Match the Garda link email + the EEI disclosure PDF back to the host; Complete &#61; PDF in (date + file); then delete the ID copies
+
+**Added in Wrike (2026-11-08 21:26):**
+- ☐ Vetting expiry: disclosures are re-done every ~3 years (admin note) — no expiry date stored
+- ☑ 8 Nov: no success page — on submit the applicant goes straight to their own portal (whole window; fallback "Open your portal →" button if the browser blocks it). First visit shows a welcome panel (in-page, not an alert): students appear here once we've visited · Monday 8am email, later WhatsApp · first come first served, matched &#61; gone · juniors need Garda vetting; if they ticked juniors and aren't vetted: "do your Garda vetting now" + button. Form's juniors/adults ticks now copied to the host (acceptsJuniors/acceptsAdults — never were). Applicant email carries the portal link. Backup host-portal.ts.bak-welcome-20261108
+- ☑ 8 Nov: application form Students Accepted &#61; Juniors (under 18) · Adults (18–29) · Mature (30+) · Boys · Girls, ALL pre-ticked, orange note "Selecting juniors (under 18) requires Garda vetting."; all five copied to the host record (acceptsJuniors/Adults/Mature/Male/Female)
+- ☐ Portal exposure (audit 8 Nov, no PIN): link &#61; 10 random characters (unguessable; risk is a forwarded/leaked link). Home shows the host's name, payments, placed students (full name, nationality, gender, age, allergies, diet) and the open pool (every unplaced student's full name, nationality, gender, dates). Host's own address isn't on the home page; uploaded ID/bills can never be viewed again. MOST exposed: the vetting print-and-sign page — each household member's full name + date of birth + email + phone + full address + Eircode. Options: hide the filled form once the set is complete (quick), and the PIN (see the PIN task)
+
+**Added in Wrike (2026-11-08 21:51):**
+- ☑ 8 Nov: disclosure history collected (hubapp/data/gv-disclosures.json + -summary.md, names/refs/dates only, PDFs deleted): 187 disclosures 2019-05 → 2026-09, all first to accomm&#64; (11 copies in dos&#64;, none in info&#64;); 48 still valid (<3 yrs), 35 of them on current hosts; 72 matched to hosts (39 exact, 33 likely), 115 unmatched (mostly 2019–20 hosts no longer in the SIS). Of the 19 hosts marked complete: Family McMahon (29) has no disclosure, Yvonne O'Rourke's expired 2022, the Melias' (Jean, likely match) expired 2025-11-03
+
+**Added in Wrike (2026-11-08 21:56):**
+- ☐ Neil: write disclosure date + expiry (date + 3 years) onto each host's vetting record in the SIS — A) exact matches now, likely ones after a look · B) all matched now. No reminders until the dates are trusted (2025–26 ones are solid)
+
+**Added in Wrike (2026-11-08 22:01):**
+- ☑ 8 Nov: disclosure date + expiry (+3 yrs) + ref + Gmail link written to 45 hosts (new columns vettingDisclosedAt/ExpiresAt/DisclosureRef/DisclosureMsg; household &#61; oldest of each person's latest). Shown on the SIS host screen (Garda Vetting card). 21 valid, 24 expired. PDFs stay in Gmail (1 page: subject's name, DOB, address, search date, Criminal Record Nil/…, Specified Information Nil/…)
+
+**Added in Wrike (2026-11-08 22:06):**
+- ☐ Neil: 6 hosts marked Complete but disclosure EXPIRED — Melia (2025-11-03), Bridie Horan Dunne (2023-01), Sheppards (2022-09), Mary Carver (2022-07), Ronaynes (2022-06), Yvonne O'Rourke (2022-05). Check first: a household member who has since left can drag the date back, and some re-vetting may be in progress (Sheppards, Mary Carver had 2026 activity). Then A) unmark Complete + re-vet · B) leave until checked one by one
+- ☐ Neil: 9 hosts with a VALID disclosure but NOT marked Complete (so they can't claim juniors): Paul Gill, Sherlocks, Conall Foynes, Cillian Foynes, Viktor Bogdan, Angela Finn, Berminghams, Stacey Traynor, Stephen Stafford → mark Complete?
+
+**Added in Wrike (2026-11-08 22:11):**
+- ☑ 8 Nov: expired disclosures &#61; SOFT mark only (Neil: no blocking, no automation): dark-red "Expired" GV badge on the Hosts list + an "Expired" GV filter pill → act on the list by hand later. Currently: Melias, Bridie Horan Dunne, Sheppards, Mary Carver, Ronaynes, Yvonne O'Rourke (+ inactive hosts)
+- ☐ Staff vetting: teachers and any staff with contact with juniors need Garda vetting too (their disclosures went to dos&#64;; 7 found, incl. Paul Gill). Hosts is the wrong container — needs its own place (staff/teachers in the SIS) with date + expiry
+
+**Added in Wrike (2026-11-08 22:16):**
+- ☐ Store per person: EEI submitted date, MEI ref, disclosure date + PDF on the host; audit the toggle
+- ☐ Vetting expiry: disclosures are re-done every ~3 years (admin note) — no expiry date stored. Neil: store the date vetting succeeded (disclosure date) so expiry can be tracked — he thinks it may be ~2 years; check the rule. Historic hosts have no date (hard to backfill)
+- ☐ Incoming disclosures: match each new EEI PDF to the host automatically (ref → submission) and set date/expiry + Complete; then delete their ID copies
+- ☐ Ask Kelly whether Mark Haslam + Yan Zhang have been submitted on the EEI form
+- ☐ Neil's target (8 Nov): host uploads the wet-signed form → AI check (signature there, form complete, ID + proof of address in, visit / other-school assurance done) → a "Ready for EEI" card on the Accom desk with everything gathered → one press sends it (or Kelly submits on MEI's form from the card and ticks Sent) → the SIS records the date; the NVB link and the returned PDF match back to the host by themselves
+- ☐ Ask EEI whether the request can come by email with the NVB1 + ID attached (Michelle said an emailed copy of the form is fine) — if yes the card's press can send it directly
+- ☐ Fix the upload email wording: says forms are "posted to the vetting bureau" — they're submitted to EEI, then the host completes the NVB online link
+
+**Added in Wrike (2026-11-08 22:21):**
+- ☑ Rule confirmed (Neil 8 Nov): complete &#61; the disclosure is back (date recorded); valid 3 years
+- ☑ Expiry &#61; disclosure date + 3 years (Neil confirmed 3), stored and shown
+- ☑ Mark + Yan: not submitted before (Kelly away since 29 Oct; no accomm&#64;→EEI mail since 24 Aug)
+
+**Added in Wrike (2026-11-08 22:31):**
+- ☑ 8 Nov: GV badges follow Neil's definitions — None &#61; nothing · Form &#61; portal form filled, documents missing/failed (hover: "2 of 3") · Upload &#61; all 3 documents in and passed · Complete &#61; disclosure dated and valid · Expired &#61; 3 years passed · "Complete?" &#61; marked complete by hand with no disclosure on file (Family McMahon). Junior claim gate unchanged. Today: 76 None, 9 Form, 21 Complete, 24 Expired, 1 Complete?
+
+**Added in Wrike (2026-11-08 22:36):**
+- ☑ 8 Nov: GV badges follow Neil's definitions — None &#61; nothing · Form &#61; portal form filled, nothing uploaded · Upload &#61; anything uploaded, badge shows the household total (Upload 1/3 … 3/3; a couple 6/6) — n/n &#61; ready for EEI · Complete &#61; disclosure dated and valid · Expired &#61; 3 years passed · "Complete?" &#61; marked complete by hand with no disclosure on file (Family McMahon). Junior claim gate unchanged. Today: 76 None, 9 Form, 21 Complete, 24 Expired, 1 Complete?
+
+**Added in Wrike (2026-11-08 23:06):**
+- ☐ Neil: press "Send to EEI" for Mark + Yan in the SIS; then email Michelle ~10 min later to confirm she got them (proves the automatic send)
+
+**Added in Wrike (2026-11-08 23:11):**
+- ☐ Mon 9 Nov 10:00: follow-up to Michelle from accomm&#64; scheduled (at job, hubapp/data/scheduled/eei-followup-20261109.js) — watch for her yes; then the Garda links should reach Mark + Yan within ~2 working days
+- ☑ 8 Nov: Slack #accomm "&#x1f3e0; New host submission" (name, address, rooms, ages, SIS link) on every website application. Accom desk: Garda/Applications instructions updated + KB "On the desk" section (what each vetting email means now)
 
 ---

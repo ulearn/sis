@@ -51,6 +51,41 @@ const vettingUpload = multer({
 
 const esc = (s: any) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 
+// The documents a person uploads in the portal (Neil 2026-11-08: ID + proof of address are part of the portal, never "sent
+// separately" by email). 'form' = the wet-signed NVB form (signedFile* columns, sets status 'signed'); the others live in
+// data.docs[kind] = { path, name, at }. EEI's 100-point check: passport 70 / Irish licence 80 + a utility, bank or Revenue
+// letter. A 16–17 year old (NVB 3) needs only a passport or birth certificate (100 points alone) — no proof of address.
+// The paper form and ID copies STAY with us (MEI: never sent to them) and are deleted once the disclosure is in.
+type DocKind = 'form' | 'idFront' | 'idBack' | 'poa';
+const DOC_KINDS: DocKind[] = ['form', 'idFront', 'idBack', 'poa'];
+function docsNeeded(formType: string): DocKind[] {
+  return formType === 'NVB3' ? ['form', 'idFront'] : ['form', 'idFront', 'poa'];   // idBack = optional (driving licence)
+}
+function docOf(sub: any, kind: DocKind): { path: string; name: string; at: string } | null {
+  if (kind === 'form') return sub.signedFilePath ? { path: sub.signedFilePath, name: sub.signedFileName || 'signed-form', at: sub.signedUploadedAt } : null;
+  const d = sub.data && sub.data.docs && sub.data.docs[kind];
+  return d && d.path ? d : null;
+}
+const DOC_LABEL: Record<DocKind, string> = { form: 'signed form', idFront: 'ID', idBack: 'ID (back)', poa: 'proof of address' };
+// The AI read of each upload (scripts/vetting-doc-check.ts) lives in data.checks[kind]. ok:false = the host must re-upload;
+// ok:null = couldn't be read automatically (accepted, a person looks). Done = every needed document in AND none failed.
+function checkOf(sub: any, kind: DocKind): { ok: boolean | null; issues: string[]; docType?: string } | null {
+  return (sub.data && sub.data.checks && sub.data.checks[kind]) || null;
+}
+function setState(sub: any): { missing: DocKind[]; failed: DocKind[]; done: boolean } {
+  const need = docsNeeded(sub.formType);
+  const missing = need.filter(k => !docOf(sub, k));
+  const failed = DOC_KINDS.filter(k => docOf(sub, k) && checkOf(sub, k)?.ok === false);
+  return { missing, failed, done: !missing.length && !failed.length };
+}
+function personFor(sub: any) {
+  const d = sub.data || {};
+  const addr = [d.addr1, d.addr2, d.addr3, d.addr4, d.addr5, d.eircode].filter(Boolean).join(', ');
+  return sub.formType === 'NVB3'
+    ? { name: `${d.a_forenames || ''} ${d.a_surname || ''}`.trim(), dob: d.a_dob, address: addr, minor: true }
+    : { name: `${d.forenames || ''} ${d.middleName || ''} ${d.surname || ''}`.replace(/\s+/g, ' ').trim(), dob: d.dob, address: addr };
+}
+
 // Boxes per row on the printed forms. Text fields are capped to this on the
 // web form (maxlength) so a value can't overflow the grid it gets parsed into.
 const BOX = 28;
@@ -203,7 +238,7 @@ function renderNvb1Form(token: string, p: any): string {
       <ul style="margin:8px 0 0;padding-left:18px;font-size:13px">
         <li>Complete every field in <strong>BLOCK CAPITALS</strong>, clearly and legibly.</li>
         <li>You'll need to print and sign the form, then upload a photo/scan of it here.</li>
-        <li>Have ready to send separately: a copy of your <strong>passport or driving licence</strong> and a <strong>recent bill</strong> showing your name &amp; address.</li>
+        <li>Have ready to upload with it: your <strong>passport or driving licence</strong> (both sides) and a <strong>proof of address</strong> (utility, bank or Revenue letter to your name and address, dated in the last 6 months).</li>
         <li>Make sure your <strong>email address is correct</strong> — the Garda vetting invitation is sent there.</li>
       </ul>
     </div>
@@ -247,7 +282,7 @@ function renderNvb3Form(token: string, p: any): string {
       <a class="muted" href="/host-portal/${esc(token)}/vetting">← back</a></div>
     <div class="box tips">
       <strong>For a household member aged 16–17</strong>
-      <p style="margin:8px 0 0;font-size:13px">A parent or guardian must consent to the vetting of a 16–17 year old. Enter the young person's details, then the parent/guardian's details. You'll print, sign and upload it in the next steps.</p>
+      <p style="margin:8px 0 0;font-size:13px">A parent or guardian must consent to the vetting of a 16–17 year old. Enter the young person's details, then the parent/guardian's details. You'll print, sign and upload it in the next steps, with the young person's passport or birth certificate.</p>
     </div>
     <form method="POST" action="/host-portal/${esc(token)}/vetting/nvb3">
       <div class="sec">Applicant Details (the 16–17 year old)</div>
@@ -320,7 +355,7 @@ function renderNvb1Filled(d: any): string {
         <div style="font-size:12px;font-weight:700">Date:</div>
         <div>${dateGrid('')}</div>
       </div>
-      <div class="note">Note: Please return this form to ULearn English School either by post or email alongside your other documents proving your identity (passport / driving license) and address (recent bill).</div>
+      <div class="note">Note: Once signed, upload this form in your ULearn host portal, together with your ID (passport or driving licence) and proof of address.</div>
     </div>`;
 }
 
@@ -361,54 +396,111 @@ function renderNvb3Filled(d: any): string {
     </div>`;
 }
 
-function renderSignPage(token: string, sub: any): string {
-  const filled = sub.formType === 'NVB3' ? renderNvb3Filled(sub.data || {}) : renderNvb1Filled(sub.data || {});
+function renderSignPage(token: string, sub: any, hostVetted = false): string {
   const formLabel = sub.formType === 'NVB3' ? 'NVB 3 (Parent/Guardian Consent)' : 'NVB 1 (Vetting Invitation)';
-  const already = sub.status === 'signed' && sub.signedFilePath;
+  // Done = the three documents are in and passed, or the host is already vetting-complete (Neil 2026-11-08): the filled form
+  // (name + date of birth + email + phone + address) is no longer shown — the portal has no PIN yet, so it shouldn't sit there.
+  if (setState(sub).done || hostVetted) {
+    return vettingPage('Garda vetting — ' + formLabel, `
+      <div class="topbar"><h1>Garda vetting</h1><a class="muted" href="/host-portal/${esc(token)}/vetting">← back</a></div>
+      <div class="box"><span class="st-done">✓ We have everything for ${esc(sub.personName || 'this person')}</span>
+        <p class="muted" style="margin:8px 0 0">${hostVetted ? 'Your Garda vetting is complete.' : 'The signed form, ID and proof of address are in. We send it on for vetting; the Garda vetting office then emails a link to complete it online — please look out for it (check spam), it expires after 30 days.'} For your privacy the filled form is no longer shown here. To change anything, contact accomm@ulearnschool.com.</p></div>`);
+  }
+  const filled = sub.formType === 'NVB3' ? renderNvb3Filled(sub.data || {}) : renderNvb1Filled(sub.data || {});
+  const minor = sub.formType === 'NVB3';
+  // One drop zone per document. Once uploaded the host only sees "✓ received" — never the file (it can't be viewed again
+  // from the portal; only the accommodation team sees it in the SIS).
+  const zone = (kind: DocKind, slot: string) => {
+    const have = docOf(sub, kind);
+    const ck = checkOf(sub, kind);
+    const st = !have ? '<span class="muted">or drag a file here</span>'
+      : ck && ck.ok === false ? `<span style="color:#b91c1c">✗ ${esc((ck.issues || []).join(' '))} Please upload it again.</span>`
+      : '<span class="st-done">✓ Received</span>';
+    return `<div class="uploadzone" data-kind="${kind}" style="margin-top:10px">
+        ${slot ? `<p style="margin:0 0 8px;font-weight:700;font-size:13px">${slot}</p>` : ''}
+        <input type="file" accept="image/*,application/pdf" style="display:none">
+        <button class="btn" type="button">${have ? '↻ Replace' : '📷 Upload / Take Photo'}</button>
+        <div class="upStatus" style="font-size:13px;margin-top:10px">${st}</div>
+      </div>`;
+  };
+  const section = (n: number, title: string, sub2: string, zones: string) => `
+    <div class="box noprint" style="margin-top:16px">
+      <strong>${n}. ${title}</strong>
+      <p class="muted" style="margin:4px 0 0">${sub2}</p>
+      ${zones}
+    </div>`;
   const body = `
     <div class="toolbar noprint">
       <a class="muted" href="/host-portal/${esc(token)}/vetting">← back</a>
       <strong style="flex:1">Step 2 — Print &amp; sign &nbsp;·&nbsp; ${esc(formLabel)}</strong>
       <button class="btn" onclick="window.print()">🖨 Print form</button>
     </div>
-    <p class="muted noprint">Check the form below, print it, then <strong>sign and date it by hand</strong> (and tick the consent box if not already ticked). When done, upload a photo or scan of the signed form below.</p>
+    <p class="muted noprint">Check the form below, print it, then <strong>sign and date it by hand</strong> (and tick the consent box if not already ticked). Then upload it below with ${minor ? 'the young person\'s ID' : 'your ID and proof of address'}.</p>
     ${filled}
-    <div class="box noprint" style="margin-top:24px">
-      <strong>Step 3 — Upload your signed form</strong>
-      <p class="muted" style="margin:6px 0 12px">Take a clear photo of every page, or upload a scan/PDF. ${already ? '<span class="st-done">✓ A signed form is already on file — upload again to replace it.</span>' : ''}</p>
-      <div class="uploadzone" id="uz">
-        <p style="margin:0 0 12px">Drag a file here, or</p>
-        <input type="file" id="upFile" accept="image/*,application/pdf" style="display:none">
-        <button class="btn" type="button" onclick="document.getElementById('upFile').click()">📷 Upload / Take Photo</button>
-        <div id="upName" class="muted" style="margin-top:10px"></div>
-        <div id="upStatus"></div>
-      </div>
-    </div>
+    <div class="noprint" style="margin-top:24px"><strong>Step 3 — Upload</strong>
+      <p class="muted" style="margin:4px 0 0">PDF, JPG or PNG. A clear photo from your phone is fine.</p></div>
+    ${section(1, 'Wet-signed Garda Vetting Form', 'The form above, signed and dated by hand. PDF, JPG or PNG — every page.', zone('form', ''))}
+    ${minor
+      ? section(2, 'Identification', 'Passport or birth certificate of the 16–17 year old.', zone('idFront', ''))
+      : section(2, 'Identification', 'Passport or driving licence (both sides).', zone('idFront', 'Passport photo page, or front of the licence') + zone('idBack', 'Back of the driving licence (not needed for a passport)'))
+        + section(3, 'Proof of Address', 'A postal or PDF document from a utility, your bank or Revenue, with your name and address, dated in the last 6 months. Online PDFs are fine (e.g. Electric Ireland, Energia, Revolut). Not a mobile phone bill.', zone('poa', ''))}
+    <p class="noprint" style="margin-top:16px"><a class="btn btn-secondary" href="/host-portal/${esc(token)}/vetting">Done</a></p>
     <script>
       (function(){
-        var input=document.getElementById('upFile'), uz=document.getElementById('uz'),
-            nameEl=document.getElementById('upName'), statusEl=document.getElementById('upStatus');
         var url='/host-portal/${esc(token)}/vetting/${sub.id}/upload';
-        function send(file){
-          if(!file) return;
-          nameEl.textContent=file.name;
-          statusEl.innerHTML='Uploading…';
-          var fd=new FormData(); fd.append('file', file);
-          fetch(url,{method:'POST',body:fd}).then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j};});})
-            .then(function(res){
-              if(res.ok){ statusEl.innerHTML='<span class="st-done">✓ Uploaded — your signed form has been received. Thank you.</span>'
-                + ' &nbsp; <a href="/host-portal/${esc(token)}/vetting">Done</a>'; }
-              else { statusEl.innerHTML='<span style="color:#b91c1c">'+((res.j&&res.j.error)||'Upload failed')+'</span>'; }
-            }).catch(function(){ statusEl.innerHTML='<span style="color:#b91c1c">Network error — please try again.</span>'; });
-        }
-        input.addEventListener('change',function(){ send(input.files[0]); });
-        ['dragover','dragenter'].forEach(function(e){uz.addEventListener(e,function(ev){ev.preventDefault();uz.classList.add('drag');});});
-        ['dragleave','drop'].forEach(function(e){uz.addEventListener(e,function(ev){ev.preventDefault();uz.classList.remove('drag');});});
-        uz.addEventListener('drop',function(ev){ if(ev.dataTransfer.files&&ev.dataTransfer.files[0]) send(ev.dataTransfer.files[0]); });
+        Array.prototype.forEach.call(document.querySelectorAll('.uploadzone[data-kind]'), function(uz){
+          var kind=uz.getAttribute('data-kind'), input=uz.querySelector('input'), btn=uz.querySelector('button'), st=uz.querySelector('.upStatus');
+          function send(file){
+            if(!file) return;
+            st.innerHTML='Uploading and checking '+file.name.replace(/[<>&]/g,'')+'… (a few seconds)';
+            var fd=new FormData(); fd.append('file', file);
+            fetch(url+'?kind='+kind,{method:'POST',body:fd}).then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j};});})
+              .then(function(res){
+                var esc=function(x){return String(x).replace(/[<>&]/g,'');};
+                if(res.ok && res.j.check && res.j.check.ok===false){ st.innerHTML='<span style="color:#b91c1c">✗ '+esc((res.j.check.issues||[]).join(' '))+' Please upload it again.</span>'; btn.textContent='↻ Upload again'; }
+                else if(res.ok){ st.innerHTML='<span class="st-done">✓ Received — thank you.</span>'+(res.j.done?'<br><strong class="st-done">All done — we have everything for this person. We\\'ll be in touch.</strong>':''); btn.textContent='↻ Replace'; }
+                else { st.innerHTML='<span style="color:#b91c1c">'+((res.j&&res.j.error)||'Upload failed')+'</span>'; }
+              }).catch(function(){ st.innerHTML='<span style="color:#b91c1c">Network error — please try again.</span>'; });
+          }
+          btn.addEventListener('click',function(){ input.click(); });
+          input.addEventListener('change',function(){ send(input.files[0]); input.value=''; });
+          ['dragover','dragenter'].forEach(function(e){uz.addEventListener(e,function(ev){ev.preventDefault();uz.classList.add('drag');});});
+          ['dragleave','drop'].forEach(function(e){uz.addEventListener(e,function(ev){ev.preventDefault();uz.classList.remove('drag');});});
+          uz.addEventListener('drop',function(ev){ if(ev.dataTransfer.files&&ev.dataTransfer.files[0]) send(ev.dataTransfer.files[0]); });
+        });
       })();
     </script>
   `;
   return vettingPage('Print & sign — ' + formLabel, body);
+}
+
+// ─── The one notification: a person's set is complete (form + ID + proof of address all passed) ─────────────
+// Slack #accomm, @Kelly and @Neil (Neil 2026-11-08). A bot post, so Neil's Slack watcher doesn't pick it up as a task.
+// The link opens the host in the SIS, where "Send to EEI" is (a person presses it — the send gate stays human for now).
+export async function notifyVettingComplete(sub: any, provider: { id: number; name?: string | null }) {
+  try {
+    const { postSlackMessage } = await import('../lib/slack');
+    const d: any = sub.data || {};
+    const idType = (checkOf(sub, 'idFront') as any)?.docType || 'ID';
+    const mark = (k: DocKind) => checkOf(sub, k)?.ok === null ? '👀' : '✅';
+    const items = sub.formType === 'NVB3'
+      ? [`${mark('form')} GV form (NVB 3)`, `${mark('idFront')} ${idType}`]
+      : [`${mark('form')} GV form`, `${mark('idFront')} ${idType}${docOf(sub, 'idBack') ? ' (both sides)' : ''}`, `${mark('poa')} Proof of address`];
+    const unread = DOC_KINDS.filter(k => docOf(sub, k) && checkOf(sub, k)?.ok === null);
+    const link = `https://sis.ulearnschool.com/sis/admin#/accommodation-detail/${provider.id}`;
+    const who = sub.personName || `${d.forenames || ''} ${d.surname || ''}`.trim() || 'household member';
+    const host = provider.name || `Host #${provider.id}`;
+    await postSlackMessage({
+      channel: process.env.SLACK_ACCOMM_CHANNEL || '#accomm',
+      text: `🛡️ *Host GV complete — ${host}*${who !== host ? ` (${who})` : ''}
+${items.join(' · ')}`
+        + (unread.length ? `
+👀 Not read automatically, please look: ${unread.map(k => DOC_LABEL[k]).join(', ')}` : '')
+        + `
+<${link}|Submit to EEI now →>
+<@${process.env.SLACK_KELLY_USER_ID || 'U07CG9RPMDL'}> <@U4CUW7S2X>`,
+    });
+  } catch (e: any) { console.error(`[host-vetting] Slack notify failed for submission ${sub.id}: ${e?.message || e}`); }
 }
 
 // ─── Public router ───────────────────────────────────────────────────────────
@@ -416,7 +508,7 @@ function renderSignPage(token: string, sub: any): string {
 export function publicHostVettingRoutes(prisma: PrismaClient) {
   const router = Router();
   const urlencoded = express.urlencoded({ extended: true });
-  router.use('/:token', requireHostToken(prisma));
+  router.use('/:token', requireHostToken(prisma, { inactiveOk: () => true }));   // a new applicant can do vetting before activation
 
   // Hub — list this host's submissions + the two "add person" entry points.
   router.get('/:token/vetting', async (req: any, res) => {
@@ -424,23 +516,27 @@ export function publicHostVettingRoutes(prisma: PrismaClient) {
     const subs = await prisma.hostVettingSubmission.findMany({
       where: { providerId: req.hostProvider!.id },
       orderBy: { id: 'desc' },
-      select: { id: true, formType: true, personName: true, status: true, signedFileName: true, createdAt: true },
+      select: { id: true, formType: true, personName: true, status: true, signedFileName: true, signedFilePath: true, data: true, createdAt: true },
     });
+    const hostVetted = (await prisma.accommodationProvider.findUnique({ where: { id: req.hostProvider!.id }, select: { vettingStatus: true } }))?.vettingStatus === 'complete';
     const list = subs.length === 0
       ? `<p class="muted">No one added yet.</p>`
       : subs.map(s => {
           const badge = s.formType === 'NVB3' ? '<span class="badge b-nvb3">NVB 3 · 16–17</span>' : '<span class="badge b-nvb1">NVB 1 · 18+</span>';
-          const status = s.status === 'signed'
-            ? `<span class="st-done">✓ Signed form uploaded</span>`
-            : `<span class="st-need">Needs print &amp; signed upload</span>`;
+          const st = setState(s);
+          const missing = [...st.failed, ...st.missing].map(k => DOC_LABEL[k]);
+          const status = hostVetted ? `<span class="st-done">✓ Garda vetting complete</span>`
+            : st.done
+            ? `<span class="st-done">✓ Form, ID${s.formType === 'NVB3' ? '' : ' and proof of address'} received</span>`
+            : `<span class="st-need">Still to upload: ${missing.join(', ')}</span>`;
           return `<div class="sub">
             <div><strong>${esc(s.personName || 'Household member')}</strong> ${badge}<br><span class="muted">${status}</span></div>
-            <a class="btn btn-secondary" href="/host-portal/${esc(token)}/vetting/${s.id}/sign">${s.status === 'signed' ? 'View / re-upload' : 'Print &amp; sign →'}</a>
+            <a class="btn btn-secondary" href="/host-portal/${esc(token)}/vetting/${s.id}/sign">${hostVetted || !missing.length ? 'View' : s.status === 'signed' ? 'Upload the rest →' : 'Print, sign &amp; upload →'}</a>
           </div>`;
         }).join('');
     const body = `
       <div class="topbar"><h1>Garda Vetting</h1>
-        <a class="muted" href="/host-portal/${esc(token)}">← portal home</a></div>
+        ${req.hostProvider!.active ? `<a class="muted" href="/host-portal/${esc(token)}">← portal home</a>` : ''}</div>
       <div class="box tips">
         Everyone aged <strong>16 or over</strong> living in your home must complete Garda vetting.
         <ul style="margin:8px 0 0;padding-left:18px;font-size:13px">
@@ -504,7 +600,8 @@ export function publicHostVettingRoutes(prisma: PrismaClient) {
     if (!Number.isFinite(id)) return res.status(404).send('Not found');
     const sub = await prisma.hostVettingSubmission.findFirst({ where: { id, providerId: req.hostProvider!.id } });
     if (!sub) return res.status(404).send('Vetting form not found.');
-    res.send(renderSignPage(req.hostToken!, sub));
+    const host = await prisma.accommodationProvider.findUnique({ where: { id: req.hostProvider!.id }, select: { vettingStatus: true } });
+    res.send(renderSignPage(req.hostToken!, sub, host?.vettingStatus === 'complete'));
   });
 
   router.post('/:token/vetting/:id/upload', (req: any, res) => {
@@ -512,38 +609,37 @@ export function publicHostVettingRoutes(prisma: PrismaClient) {
       if (err) return res.status(400).json({ error: err.message || 'Upload failed' });
       if (!req.file) return res.status(400).json({ error: 'No file received' });
       const id = parseInt(String(req.params.id), 10);
+      const kind = (DOC_KINDS as string[]).includes(String(req.query.kind || 'form')) ? String(req.query.kind || 'form') as DocKind : 'form';
       const provider = req.hostProvider!;
-      const sub = await prisma.hostVettingSubmission.findFirst({ where: { id, providerId: provider.id }, select: { id: true, formType: true, personName: true } });
+      const sub = await prisma.hostVettingSubmission.findFirst({ where: { id, providerId: provider.id } });
       if (!sub) return res.status(404).json({ error: 'Vetting form not found' });
       const relPath = path.join('host-vetting', String(provider.id), req.file.filename);
-      await prisma.hostVettingSubmission.update({
-        where: { id },
-        data: { signedFilePath: relPath, signedFileName: req.file.originalname, signedUploadedAt: new Date(), status: 'signed' },
-      });
-      res.json({ ok: true });
+      const now = new Date();
+      const data: any = { ...((sub.data as any) || {}) };
+      let update: any;
+      if (kind === 'form') {
+        update = { signedFilePath: relPath, signedFileName: req.file.originalname, signedUploadedAt: now, status: 'signed' };
+      } else {
+        data.docs = { ...(data.docs || {}), [kind]: { path: relPath, name: req.file.originalname, at: now.toISOString() } };
+        update = { data };
+      }
+      const old = docOf(sub, kind);
+      // Read the document now (the host waits a few seconds and is told at once if it doesn't pass).
+      const { checkVettingDoc } = await import('../scripts/vetting-doc-check');
+      const check = await checkVettingDoc(kind, req.file.path, req.file.mimetype, personFor(sub));
+      const data2: any = { ...(kind === 'form' ? data : update.data) };
+      data2.checks = { ...(data2.checks || {}), [kind]: check };
+      const wasDone = setState(sub).done;
+      let after = await prisma.hostVettingSubmission.update({ where: { id }, data: { ...update, data: data2 } });
+      const state = setState(after);
+      if (state.done && !wasDone) after = await prisma.hostVettingSubmission.update({ where: { id }, data: { data: { ...data2, readyAt: now.toISOString() } } });
+      res.json({ ok: true, check: { ok: check.ok, issues: check.issues }, done: state.done });
+      // A replaced file is deleted, so we never keep two copies of someone's ID.
+      if (old && old.path !== relPath) { try { fs.unlinkSync(path.join(__dirname, '..', '..', 'uploads', old.path)); } catch (e) {} }
 
-      // Notify the accommodation team that a signed Garda vetting form has
-      // arrived (fire-and-forget — never blocks the host's upload response).
-      // Pairs with the in-app profile-bubble notification (GET /recent below).
-      (async () => {
-        try {
-          const { sendEmail } = await import('../scripts/email');
-          const esc = (v: any) => String(v == null ? '' : v).replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' } as any)[c]);
-          const who = esc(sub.personName || 'a household member');
-          const hostName = esc(provider.name || `Host #${provider.id}`);
-          const link = `https://sis.ulearnschool.com/sis/admin#/accommodation-detail/${provider.id}`;
-          await sendEmail({
-            from: 'accomm@ulearnschool.com', fromName: 'ULearn',
-            to: process.env.HOST_VETTING_NOTIFY || 'accomm@ulearnschool.com',
-            subject: `Garda Vetting form uploaded — ${hostName}`,
-            html: `<p><strong>${hostName}</strong> has uploaded a signed Garda vetting form (${esc(sub.formType)}) for <strong>${who}</strong>.</p>`
-              + `<p><a href="${link}">Open the host in SIS &rarr;</a> to review and file it.</p>`
-              + `<p style="color:#6b7280;font-size:13px">Reminder: an uploaded form still needs to be posted to the vetting bureau and cleared offline before the host is marked Garda-vetting complete.</p>`,
-          });
-        } catch (e: any) {
-          console.error(`[host-vetting] notify email failed for submission ${id}: ${e?.message || e}`);
-        }
-      })();
+      // ONE notification (Neil 2026-11-08): only when the whole set is in and has passed. Half-done = nothing starts.
+      if (!state.done || wasDone) return;
+      notifyVettingComplete(after, provider).catch(() => {});
     });
   });
 
@@ -584,15 +680,49 @@ export function hostVettingAdminRoutes(prisma: PrismaClient) {
     } catch (e) { res.status(400).json({ error: String(e) }); }
   });
 
+  // EEI request (scripts/eei-submit.ts): GET = what would be sent (dry run, nothing leaves); POST = send it. Only for a
+  // person whose three uploads have all passed. The result is kept in data.eei so it is never sent twice by accident.
+  router.get('/:id/eei', async (req, res) => {
+    const id = parseInt(String(req.params.id), 10);
+    const sub = await prisma.hostVettingSubmission.findUnique({ where: { id } });
+    if (!sub) return res.status(404).json({ error: 'not found' });
+    const { sendToEei } = await import('../scripts/eei-submit');
+    const r = await sendToEei(sub, { dry: true });
+    const st = setState(sub);
+    if (!st.done) r.problems.unshift(`Not ready: ${[...st.missing, ...st.failed].map(k => DOC_LABEL[k]).join(', ')} still to pass.`);
+    res.json({ ready: st.done && !r.problems.length, formChanged: !!r.formChanged, fields: r.fields, problems: r.problems, sends: ((sub.data as any)?.eeiSends || []).map((x: any) => ({ at: x.sentAt, by: x.by, ok: x.ok })) });
+  });
+  router.post('/:id/eei', express.json(), async (req: any, res) => {
+    const id = parseInt(String(req.params.id), 10);
+    const sub = await prisma.hostVettingSubmission.findUnique({ where: { id } });
+    if (!sub) return res.status(404).json({ error: 'not found' });
+    // Every send is kept (data.eeiSends). A repeat send needs the count the person confirmed, so a double click or a stale
+    // screen can never send twice by accident.
+    const sends: any[] = ((sub.data as any)?.eeiSends || []).slice();
+    if (Number(req.body?.sendNumber) !== sends.length + 1) return res.status(409).json({ error: `This would be send number ${sends.length + 1} — refresh and confirm again.`, sends: sends.length });
+    if (!setState(sub).done) return res.status(400).json({ error: 'The three documents have not all passed yet.' });
+    const { sendToEei } = await import('../scripts/eei-submit');
+    const r = await sendToEei(sub);
+    const by = req.user?.email || req.user?.name || 'SIS';
+    if (r.status) {
+      const rec = { sentAt: new Date().toISOString(), by, ok: r.ok, status: r.status, reply: r.body };
+      sends.push(rec);
+      await prisma.hostVettingSubmission.update({ where: { id }, data: { data: { ...((sub.data as any) || {}), eeiSends: sends, eei: rec } } });
+    }
+    res.status(r.ok ? 200 : 502).json({ ok: r.ok, formChanged: !!r.formChanged, problems: r.problems, reply: r.body, sends: sends.length });
+  });
+
   // Stream the signed file for a submission (inline so it previews in-browser).
   router.get('/:id/file', async (req, res) => {
     const id = parseInt(String(req.params.id), 10);
     if (!Number.isFinite(id)) return res.status(404).send('Not found');
-    const sub = await prisma.hostVettingSubmission.findUnique({ where: { id }, select: { signedFilePath: true, signedFileName: true } });
-    if (!sub?.signedFilePath) return res.status(404).send('No signed file on file');
-    const abs = path.join(__dirname, '..', '..', 'uploads', sub.signedFilePath);
+    const kind = (DOC_KINDS as string[]).includes(String(req.query.kind || 'form')) ? String(req.query.kind || 'form') as DocKind : 'form';
+    const sub = await prisma.hostVettingSubmission.findUnique({ where: { id } });
+    const doc = sub && docOf(sub, kind);
+    if (!doc) return res.status(404).send('No file on file');
+    const abs = path.join(__dirname, '..', '..', 'uploads', doc.path);
     if (!fs.existsSync(abs)) return res.status(404).send('File missing on disk');
-    res.setHeader('Content-Disposition', `inline; filename="${(sub.signedFileName || 'signed-form').replace(/"/g, '')}"`);
+    res.setHeader('Content-Disposition', `inline; filename="${(doc.name || 'document').replace(/"/g, '')}"`);
     res.sendFile(abs);
   });
 

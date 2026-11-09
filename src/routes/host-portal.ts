@@ -28,7 +28,7 @@ import { grantFirstDibs } from '../lib/first-dibs';
 // reference it without re-querying.
 declare module 'express-serve-static-core' {
   interface Request {
-    hostProvider?: { id: number; name: string; email: string | null; portalMatchingEnabled: boolean };
+    hostProvider?: { id: number; name: string; email: string | null; portalMatchingEnabled: boolean; active?: boolean };
     hostToken?: string;
   }
 }
@@ -77,7 +77,8 @@ export async function mintHostPortalToken(
 export async function resolveHostToken(
   prisma: PrismaClient,
   token: string,
-): Promise<{ id: number; name: string; email: string | null; portalMatchingEnabled: boolean } | null> {
+  opts: { allowInactive?: boolean } = {},
+): Promise<{ id: number; name: string; email: string | null; portalMatchingEnabled: boolean; active: boolean } | null> {
   // Strict shape check before hitting the DB — rules out random short
   // strings / garbage paths cheaply.
   if (!token || token.length !== TOKEN_LEN || !/^[A-Za-z0-9]+$/.test(token)) return null;
@@ -85,24 +86,26 @@ export async function resolveHostToken(
     where: { token },
     include: { provider: { select: { id: true, name: true, email: true, active: true, portalMatchingEnabled: true } } },
   });
-  if (!row || !row.provider || !row.provider.active) return null;
+  if (!row || !row.provider || (!row.provider.active && !opts.allowInactive)) return null;
   // Fire-and-forget activity bump
   prisma.hostPortalToken.update({
     where: { token },
     data: { lastUsedAt: new Date() },
   }).catch(() => { /* swallow — activity timestamp is best-effort */ });
-  return { id: row.provider.id, name: row.provider.name, email: row.provider.email, portalMatchingEnabled: row.provider.portalMatchingEnabled };
+  return { id: row.provider.id, name: row.provider.name, email: row.provider.email, portalMatchingEnabled: row.provider.portalMatchingEnabled, active: !!row.provider.active };
 }
 
 // Middleware factory for any /host-portal/<token>/* route in slices 3-4.
 // Reads :token from the path, attaches req.hostProvider on success, 404s
 // otherwise. Routes mount under /host-portal/:token, so this middleware
 // is added once at that subtree's base.
-export function requireHostToken(prisma: PrismaClient) {
+// opts.inactiveOk: a NEW applicant (provider not yet activated by staff) may open the Garda vetting pages only, straight from
+// the application form (Neil 2026-11-08) — everything else in the portal (students, matching) stays active-only.
+export function requireHostToken(prisma: PrismaClient, opts: { inactiveOk?: (req: Request) => boolean } = {}) {
   return async (req: Request, res: Response, next: NextFunction) => {
     // base64url is case-sensitive — do NOT lowercase
     const token = String(req.params.token || '');
-    const provider = await resolveHostToken(prisma, token);
+    const provider = await resolveHostToken(prisma, token, { allowInactive: !!(opts.inactiveOk && opts.inactiveOk(req)) });
     if (!provider) return res.status(404).send('Host portal link not recognised. Contact accommodation team.');
     req.hostProvider = provider;
     req.hostToken = token;
@@ -127,11 +130,12 @@ export function requireHostToken(prisma: PrismaClient) {
 //     a host claims a student (Slice 4)
 export function publicHostPortalRoutes(prisma: PrismaClient) {
   const router = Router();
-  router.use('/:token', requireHostToken(prisma));
+  router.use('/:token', requireHostToken(prisma, { inactiveOk: (req) => /^\/vetting(\/|$)/.test(req.path) }));
   router.get('/:token', async (req, res) => {
     const p = req.hostProvider!;
     try {
-      const html = await renderHostPortalPage(prisma, p.id, req.hostToken!);
+      let html = await renderHostPortalPage(prisma, p.id, req.hostToken!);
+      if (req.query.welcome === '1') html = html.replace('</body>', (await welcomeOverlay(prisma, p.id, req.hostToken!)) + '</body>');
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
       res.send(html);
     } catch (e: any) {
@@ -164,7 +168,7 @@ export function publicHostPortalRoutes(prisma: PrismaClient) {
           prisma.hostVettingSubmission.findMany({ where: { providerId: provider.id }, select: { status: true } }),
         ]);
         if (!gvComplete(hp?.vettingStatus, subs)) {
-          return res.status(403).json({ error: JUNIOR_GV_MESSAGE + ' Tap "Complete Garda Vetting" on this page to finish it.', code: 'GV_REQUIRED' });
+          return res.status(403).json({ error: JUNIOR_GV_MESSAGE, code: 'GV_REQUIRED' });
         }
       }
       // Atomic: only succeeds while still unclaimed AND unplaced AND active.
@@ -214,7 +218,7 @@ export function publicHostPortalRoutes(prisma: PrismaClient) {
           prisma.accommodationProvider.findUnique({ where: { id: provider.id }, select: { vettingStatus: true } }),
           prisma.hostVettingSubmission.findMany({ where: { providerId: provider.id }, select: { status: true } }),
         ]);
-        if (!gvComplete(hp?.vettingStatus, subs)) return res.status(403).json({ error: JUNIOR_GV_MESSAGE + ' Tap "Complete Garda Vetting" on this page to finish it.', code: 'GV_REQUIRED' });
+        if (!gvComplete(hp?.vettingStatus, subs)) return res.status(403).json({ error: JUNIOR_GV_MESSAGE, code: 'GV_REQUIRED' });
       }
       const updated = await prisma.provisionalHostRequest.updateMany({ where: { id, status: 'OPEN' }, data: { status: 'INTERESTED', interestedProviderId: provider.id, interestedAt: new Date() } });
       if (updated.count === 0) return res.status(409).json({ error: 'Another host has already said they are interested — it is no longer available.' });
@@ -374,8 +378,8 @@ async function renderHostPortalPage(prisma: PrismaClient, providerId: number, to
   // Surfaces whenever: matching is on, the pool is empty (they've missed out),
   // they don't already hold it, and fewer than FD_CAP hosts currently hold it.
   // No time window — the cascade email simply drops them here, and the button is
-  // always available to remedy a missed-out week. GV is checked on CLICK (non-GV
-  // still see it → get a "finish your vetting" nudge). Single-use (auto-nudge
+  // always available to remedy a missed-out week. No vetting gate (2026-11-08: vetting only gates juniors;
+  // a not-vetted holder is bumped for adults). Single-use (auto-nudge
   // clears it once the First Dibs wave actually emails them) + placement clearing
   // keep it from becoming a permanent bump.
   const FD_CAP = 5;
@@ -392,6 +396,37 @@ async function renderHostPortalPage(prisma: PrismaClient, providerId: number, to
     where: { status: 'OPEN', startDate: { gte: today } }, orderBy: { startDate: 'asc' },
   }).catch(() => [] as any[]);
   return wrapHtml(provider.name, buildPortalBody(provider, unplaced, placements, bills, totalEarnings, token, vettingStats, provider.portalMatchingEnabled !== false, firstDibs, provisional));
+}
+
+// ─── First-visit welcome overlay (Neil 2026-11-08) ───────────────────────────
+// A new applicant lands straight in their portal from the application form (?welcome=1) — no success page in between.
+// An in-page panel (not a browser alert): what the portal is, how matching works, and — if they ticked juniors and aren't
+// vetted yet — go and do the Garda vetting now. Matching is OFF for new applicants until our visit, so it says so.
+async function welcomeOverlay(prisma: PrismaClient, providerId: number, token: string): Promise<string> {
+  const p: any = await prisma.accommodationProvider.findUnique({ where: { id: providerId }, select: { contactFirstName: true, name: true, acceptsJuniors: true, vettingStatus: true, portalMatchingEnabled: true } });
+  if (!p) return '';
+  const first = esc(p.contactFirstName || String(p.name || '').split(' ')[0] || 'there');
+  const gvUrl = `/host-portal/${esc(token)}/vetting`;
+  const needGv = p.acceptsJuniors && p.vettingStatus !== 'complete';
+  return `
+<div id="welcomeOv" style="position:fixed;inset:0;background:rgba(20,30,10,.55);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:14px;max-width:520px;width:100%;max-height:90vh;overflow:auto;padding:24px 22px;box-shadow:0 12px 40px rgba(0,0,0,.25)">
+    <h2 style="margin:0 0 12px;font-size:20px;text-transform:none;letter-spacing:0;color:#318817">Welcome to your ULearn host portal, ${first}!</h2>
+    <ul style="margin:0 0 14px;padding-left:20px;font-size:14px">
+      <li>Here you will see the students looking for a host${p.portalMatchingEnabled === false ? ' — we switch this on once we have visited your home' : ''}.</li>
+      <li>We contact you every <strong>Monday from 8am</strong> by email, and later by WhatsApp, when students need a host.</li>
+      <li>Matching is <strong>first come, first served</strong>: as soon as a student is matched, they disappear from the portal.</li>
+      <li>Hosting <strong>juniors (under 18)</strong> needs Garda vetting — it is at the bottom of this page.</li>
+    </ul>
+    ${needGv ? `<div style="background:#fff7ed;border:1px solid #fdba74;border-radius:10px;padding:12px 14px;margin:0 0 14px;font-size:14px">
+      <strong>${first}, you ticked juniors — please do your Garda vetting now.</strong><br>
+      The form is already filled in with your details: print it, sign it by hand, and upload it with your <strong>ID</strong> (passport, or driving licence both sides) and <strong>proof of address</strong> (utility, bank or Revenue, last 6 months). About 10 minutes.
+      <div style="margin-top:10px"><a href="${gvUrl}" style="display:inline-block;background:#318817;color:#fff;font-weight:700;padding:10px 16px;border-radius:8px;text-decoration:none">Go to Garda vetting →</a></div>
+    </div>` : ''}
+    <div style="text-align:right"><button type="button" onclick="document.getElementById('welcomeOv').remove()" style="background:${needGv ? '#fff' : '#318817'};color:${needGv ? '#318817' : '#fff'};border:1px solid #318817;font-weight:700;padding:9px 18px;border-radius:8px;cursor:pointer">${needGv ? 'Later — look around first' : 'Got it'}</button></div>
+  </div>
+</div>
+<script>try{history.replaceState(null,'',location.pathname)}catch(e){}</script>`;
 }
 
 // ─── HTML helpers ──────────────────────────────────────────────────────────
@@ -658,16 +693,15 @@ function renderStudentCard(pl: any, hidden: boolean, hostGvComplete = true): str
       <div class="card-meta">
         ${esc(s?.nationality || '')}${s?.gender ? ' · ' + genderSymbol(s.gender) : ''}${ageFrom(s?.birthday) ? ' · age ' + ageFrom(s?.birthday) : ''}
         ${dietBits ? ' · <span class="pill">' + esc(dietBits) + '</span>' : ''}
-        ${junior ? ' · <span class="pill" style="background:#fff7ed;color:#9a3412">Under 18</span>' : ''}
+        ${junior ? (s?.birthday ? ' · <span class="pill" style="background:#fff7ed;color:#9a3412">Under 18</span>' : ' · <span class="pill" style="background:#fff7ed;color:#9a3412">Age to be confirmed</span>') : ''}
         ${part ? ' · <span class="pill" style="background:#fef3c7;color:#92400e">Provisional · deposit paid</span>' : ''}
       </div>
       <div class="card-dates"><strong>Arr ${fmtDate(pl.startDate)}</strong> · ${nights} nights (${esc(pl.board || 'board TBC')})</div>
       ${part ? `<div class="muted" style="font-size:12px;margin-top:4px">This student has paid a deposit; the balance is due before arrival. Until it is fully paid the booking is provisional — for us and for you: if it doesn't go ahead, neither side is committed.</div>` : ''}
-      ${blocked ? `<div class="gv-note">🛡️ <strong>Under 18 — Garda vetting needed.</strong> You can host this student once your Garda vetting is complete. It only takes a few minutes to start — <a href="#gv">Complete Garda Vetting ↓</a></div>` : ''}
     </div>
     <div>
       ${blocked
-        ? `<button class="btn claim-btn" disabled title="${esc(JUNIOR_GV_MESSAGE)}" style="opacity:.55;cursor:not-allowed">🛡️ Vetting needed</button>`
+        ? `<a class="btn claim-btn" href="#gv" title="${esc(JUNIOR_GV_MESSAGE)}" style="background:#fff7ed;border-color:#fdba74;color:#9a3412;text-decoration:none">🛡️ Complete Garda vetting to claim</a>`
         : `<button class="btn claim-btn" data-ba="${pl.id}" onclick="claimStudent(this)" title="Register your interest in hosting this student">Claim</button>`}
     </div>
   </div>`;
@@ -681,14 +715,14 @@ function renderProvisionalCard(r: any, hostGvComplete = true): string {
   return `<div class="card prov" data-arrival="${localIso(new Date(r.startDate))}">
     <div class="card-body">
       <div class="card-name">Provisional <span class="pill" style="background:#ffedd5;color:#9a3412">Short notice</span></div>
-      <div class="card-meta">${esc(r.nationality || '')}${r.gender ? ' · ' + genderSymbol(r.gender) : ''}${ageFrom(r.birthday) ? ' · age ' + ageFrom(r.birthday) : ''}${junior ? ' · <span class="pill" style="background:#fff7ed;color:#9a3412">Under 18</span>' : ''}</div>
+      <div class="card-meta">${esc(r.nationality || '')}${r.gender ? ' · ' + genderSymbol(r.gender) : ''}${ageFrom(r.birthday) ? ' · age ' + ageFrom(r.birthday) : ''}${junior ? (r.birthday ? ' · <span class="pill" style="background:#fff7ed;color:#9a3412">Under 18</span>' : ' · <span class="pill" style="background:#fff7ed;color:#9a3412">Age to be confirmed</span>') : ''}</div>
       <div class="card-dates"><strong>Arr ${fmtDate(r.startDate)}</strong> · ${nights} nights (${esc(r.board || 'board TBC')})</div>
       ${r.notes ? `<div class="muted" style="font-size:12px;margin-top:4px">${esc(r.notes)}</div>` : ''}
       <div class="muted" style="font-size:12px;margin-top:4px">Short notice and unconfirmed until a Host accepts. Tap Interested and we will arrange &amp; confirm — nothing is agreed until we come back to you.</div>
     </div>
     <div>
       ${blocked
-        ? `<button class="btn claim-btn" disabled title="${esc(JUNIOR_GV_MESSAGE)}" style="opacity:.55;cursor:not-allowed">🛡️ Vetting needed</button>`
+        ? `<a class="btn claim-btn" href="#gv" title="${esc(JUNIOR_GV_MESSAGE)}" style="background:#fff7ed;border-color:#fdba74;color:#9a3412;text-decoration:none">🛡️ Complete Garda vetting to claim</a>`
         : `<button class="btn claim-btn" data-prov="${r.id}" onclick="provisionalInterest(this)" style="background:#ea580c;border-color:#ea580c;color:#fff">Interested</button>`}
     </div>
   </div>`;
