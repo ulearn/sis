@@ -167,7 +167,7 @@ export function attendanceScripts(prisma: PrismaClient) {
       const _bk = sa.bookingCourse?.booking;
       const _paid  = Number(_bk?.amountPaid  || 0);
       const _total = Number(_bk?.amountTotal || 0);
-      const balanceOpen = (_total > 0 && (_total - _paid) > 0.01) ? (_total - _paid) : 0;
+      const balanceOpen = (_total > 0 && (_total - _paid) >= 1) ? (_total - _paid) : 0;   // under €1 = rounding (Sergiy: €1,622 cash on €1,622.05), not a balance (2026-11-09)
 
       return {
         studentId: student.id,

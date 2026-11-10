@@ -1806,7 +1806,7 @@ async function initPushNotifications() {
         <div style="font-size:12px;color:#475569;margin-top:4px">Not sure which exam? <a href="#" onclick="examContactUs();return false" style="color:#4f46e5;font-weight:600">Contact us</a></div>
       </div>
       ${!list.length ? `<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px;font-size:13px;color:#475569">No sittings fall inside your exam window right now. <a href="#" onclick="examContactUs();return false" style="color:#4f46e5;font-weight:600">Contact us</a> and we’ll sort one out.</div>` : `
-      <div id="examDates">${list.map(s => {
+      <div id="examDates">${list.slice(0, window._examShow || 7).map(s => {
         const sel = window._examPick.sittingId === s.id;
         const warn = (s.warnings && s.warnings.length) ? s.warnings[0] : '';
         const border = sel ? '#6366f1' : (s.suitable ? '#e2e8f0' : '#fcd34d');
@@ -1817,9 +1817,9 @@ async function initPushNotifications() {
           </div>
           <div style="font-size:12px;color:#64748b;margin-top:2px">${esc(s.centre)}</div>
           ${warn?`<div style="font-size:11.5px;color:#92400e;background:#fffbeb;border-radius:8px;padding:5px 8px;margin-top:6px;line-height:1.35">&#9888; ${esc(warn)}</div>`:''}
-        </div>`; }).join('')}</div>
-      <div id="examConfirm"></div>`}`;
-    if (window._examPick.sittingId) renderExamConfirm();
+        </div>${sel ? '<div id="examConfirm"></div>' : ''}`; }).join('')}</div>
+      ${list.length > (window._examShow || 7) ? `<button onclick="window._examShow=(window._examShow||7)+7;renderExamOverlay(window._examData)" style="width:100%;background:#f1f5f9;color:#334155;border:0;border-radius:10px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:8px">Show more dates (${list.length - (window._examShow || 7)} more)</button>` : ''}`}`;
+    if (window._examPick.sittingId && document.getElementById('examConfirm')) renderExamConfirm();
   }
 
   function pickExamSitting(id) { window._examPick.sittingId = id; renderExamOverlay(window._examData); }
@@ -1830,7 +1830,9 @@ async function initPushNotifications() {
     document.getElementById('examConfirm').innerHTML = `
       <label style="display:flex;gap:9px;align-items:flex-start;margin:12px 0;font-size:12.5px;color:#475569;line-height:1.45">
         <input type="checkbox" id="examConsent" style="margin-top:3px">
-        <span>I want ULearn to request this sitting for me. I understand the exam centre (CES) will confirm availability and arrange payment directly with me.</span></label>
+        <span>${(window._examData && window._examData.paymentArrangement === 'DIRECT')
+          ? 'I want ULearn to request this sitting for me. I understand the exam centre (CES) will confirm availability and arrange payment directly with me.'
+          : 'I want ULearn to book this exam for me.'}</span></label>
       <button onclick="submitExam()" style="width:100%;background:var(--brand,#4f46e5);color:#fff;border:0;border-radius:10px;padding:12px;font-size:15px;font-weight:700;cursor:pointer">Submit request</button>`;
   }
 
@@ -1843,7 +1845,7 @@ async function initPushNotifications() {
       body.innerHTML = `<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:16px">
         <div style="font-weight:700;margin-bottom:6px">Request submitted ✅</div>
         <div style="font-size:14px;color:#166534;line-height:1.5">${esc(out.message||'Your request has been sent.')}</div>
-        <div style="font-size:12px;color:#64748b;margin-top:8px">Reference: ${esc(out.reference||('EX-'+out.bookingId))}</div></div>
+        <div style="font-size:12px;color:#64748b;margin-top:8px">Reference: ${esc(out.reference||'')}</div></div>
         <button onclick="closeExamOverlay();loadOverview()" style="margin-top:12px;width:100%;background:#f1f5f9;color:#334155;border:0;border-radius:10px;padding:11px;font-size:14px;font-weight:600;cursor:pointer">Done</button>`;
     } catch (e) { alert('Something went wrong — please try again.'); }
   }

@@ -2,6 +2,24 @@
 
 Open work for this project. Protocol: anything left unfinished at the end of a session goes here (not in memory); finished work is moved to ToDo-Done.md. Synced with Wrike (space "hub" → folder "SIS") every 5 minutes — edit the text here; status syncs both ways.
 
+## Exams: move students from the desk to the app
+
+**Priority:** High
+**Status:** In progress
+**Progress:** 50% — 2026-11-09 built: SIS → Exams requests table (filters: exam date range, level, exam, status; every column sortable; tick boxes with select-all + shift-click; HTML-in-cell bug fixed; "‹ Back to requests"); "+ Add request" for students who ask at the desk; "Send to CES" = ONE email from success@ with the ticked students (name, DOB, nationality, level, exam, date, ref) to the CES exams manager, DOS + accounts CC, previewed first, past dates refused → REQUESTED. LanguageCert added as an exam (CES runs ULearn sessions; 23 Nov 2026 sitting #258). Prepaid rule: exam-fee line OR booking before 13 Oct 2026 (pack era; config directPayFrom) → prepaid: app says "already paid with your course", held for the group send (no per-student CES email). 6 existing requests re-marked PREPAID. App: 7 dates then "Show more", Submit under the chosen date.
+**Added:** 2026-11-09
+**Updated:** 2026-11-09T15:35:07Z
+
+Neil 2026-11-09: students come to reception / email success@ or dos@ about exams; get them booking in the app (like holidays + documents), requests gathered in SIS, sent to CES in groups.
+- [ ] Neil: test as a student (app) + the table (Send to CES preview) — first live group send
+- [ ] Ana Lilian Freire de Oliveira (EX-6): her IELTS date (1 Nov) has passed — pick a new sitting
+- [ ] Fold dos@ (exams mail) into the Ops desk so exam emails become cases with an action ("added to SIS exam requests")
+- [ ] When it works: tell the staff, then a directive to students (App → Exams) — do not engage staff in the routing debate (Neil)
+- [ ] LifePass: nested courses → exam fee per course (1st fee = 1st course…)
+- [ ] Direct-pay cohort (course-only quotes since 13 Oct): per-student CES email with Reply-To = student (exists, sends disarmed + no cesEmail) — arm when the first of them reaches the exam window
+
+---
+
 ## Invoice-created self-heal re-points a booking to a one-off extra invoice
 
 **Priority:** Medium

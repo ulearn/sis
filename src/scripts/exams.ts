@@ -13,16 +13,17 @@ import { emailTemplateWhere } from './email-templates';
 import { getExamConfig } from '../lib/exam-config';
 import { irishPublicHolidays } from './irish-holidays';
 
-type ExamCode = 'B1_PRELIMINARY' | 'B2_FIRST' | 'C1_ADVANCED' | 'IELTS_GT';
+type ExamCode = 'B1_PRELIMINARY' | 'B2_FIRST' | 'C1_ADVANCED' | 'IELTS_GT' | 'LANGUAGECERT';
 
 const EXAM_TITLE: Record<ExamCode, string> = {
   B1_PRELIMINARY: 'Cambridge B1 Preliminary (PET)',
   B2_FIRST: 'Cambridge B2 First (FCE)',
   C1_ADVANCED: 'Cambridge C1 Advanced (CAE)',
   IELTS_GT: 'IELTS General Training',
+  LANGUAGECERT: 'LanguageCert ESOL (ULearn session at CES)',
 };
-const EXAM_KIND: Record<ExamCode, 'cambridge' | 'ielts'> = {
-  B1_PRELIMINARY: 'cambridge', B2_FIRST: 'cambridge', C1_ADVANCED: 'cambridge', IELTS_GT: 'ielts',
+const EXAM_KIND: Record<ExamCode, 'cambridge' | 'ielts' | 'languagecert'> = {
+  B1_PRELIMINARY: 'cambridge', B2_FIRST: 'cambridge', C1_ADVANCED: 'cambridge', IELTS_GT: 'ielts', LANGUAGECERT: 'languagecert',
 };
 // Indicative results turnaround (weeks) per Exam-Renewal-Protocol.md — IELTS on
 // computer 1–5 days (≤1wk); Cambridge digital 5–10 working days (~2wk). CES
@@ -30,7 +31,7 @@ const EXAM_KIND: Record<ExamCode, 'cambridge' | 'ielts'> = {
 // Used only to estimate "results expected by" + a soft deadline warning — never
 // a hard block.
 const RESULT_TURNAROUND_WEEKS: Record<ExamCode, number> = {
-  IELTS_GT: 1, B1_PRELIMINARY: 2, B2_FIRST: 2, C1_ADVANCED: 2,
+  IELTS_GT: 1, B1_PRELIMINARY: 2, B2_FIRST: 2, C1_ADVANCED: 2, LANGUAGECERT: 1,
 };
 
 const LEVEL_ORDER = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
@@ -44,6 +45,14 @@ const B1_RANK = LEVEL_ORDER.indexOf('B1');
 const ACTIVE_STATUSES = ['REQUEST_PENDING', 'REQUESTED', 'CONFIRMED', 'SAT', 'RESULTS_RECEIVED', 'COMPLETED', 'CHANGE_REQUESTED', 'NEEDS_ATTENTION'];
 const SATISFIED_STATUSES = ['REQUESTED', 'CONFIRMED', 'SAT', 'RESULTS_RECEIVED', 'COMPLETED', 'CHANGE_REQUESTED', 'NEEDS_ATTENTION'];
 
+// Reference = exam + date, UK order (Neil 2026-11-09: "EX-9" means nothing; "IELTS-06-12-2026" does). One per sitting —
+// a second sitting of the same exam that day gets -2, -3 (by start time).
+const EXAM_SHORT: Record<string, string> = { IELTS_GT: 'IELTS', LANGUAGECERT: 'LANGUAGECERT', B1_PRELIMINARY: 'PET', B2_FIRST: 'FCE', C1_ADVANCED: 'CAE' };
+const ukDate = (d: any) => { if (!d) return ''; const x = new Date(d); return `${String(x.getUTCDate()).padStart(2, '0')}/${String(x.getUTCMonth() + 1).padStart(2, '0')}/${x.getUTCFullYear()}`; };
+export function examRef(sitting: any, nth = 1): string {
+  if (!sitting) return 'NO-DATE';
+  return `${EXAM_SHORT[sitting.examCode] || sitting.examCode}-${ukDate(sitting.examDate).replace(/\//g, '-')}${nth > 1 ? '-' + nth : ''}`;
+}
 const DAY = 86400000;
 const WEEK = 7 * DAY;
 const iso = (d: any) => (d ? new Date(d).toISOString().slice(0, 10) : null);
@@ -101,7 +110,7 @@ export function examScripts(prisma: PrismaClient) {
       where: { studentId, status: { not: 'CANCELLED' } },
       orderBy: { serviceStart: 'desc' },
       select: {
-        id: true,
+        id: true, createdAt: true,
         extras: { where: { extraType: 'EXAM_FEE', active: true }, select: { id: true, details: true } },
         courses: { select: { id: true, name: true, category: true, level: true, startDate: true, endDate: true, holidayWks: true, isRenewal: true } },
       },
@@ -118,14 +127,21 @@ export function examScripts(prisma: PrismaClient) {
     const picked = running || started || earliest || null;
     if (picked) { booking = picked.b; course = picked.c; }
     const hasExamFee = !!booking?.extras?.length;
-    return { student, booking, course, hasExamFee, examFeeDetails: booking?.extras?.[0]?.details || null };
+    // PREPAID vs DIRECT (Neil 2026-11-09). Prepaid = the exam fee was paid to ULearn → we book + pay CES, the student pays nothing more.
+    // Bookings made before cfg.directPayFrom (the pack era; course-only quotes started 13 Oct 2026) count as prepaid even without an
+    // itemised EXAM_FEE line — the legacy Fidelo imports (Mar/Apr 2026) paid a pack whose exam isn't itemised in the SIS.
+    const cfg0 = getExamConfig() as any;
+    const cutoff = Date.parse(cfg0.directPayFrom || '2026-10-13');
+    const legacyPack = !!booking?.createdAt && +new Date(booking.createdAt) < cutoff;
+    const prepaid = hasExamFee || legacyPack || !cfg0.directPayEnabled;
+    return { student, booking, course, hasExamFee, prepaid, examFeeDetails: booking?.extras?.[0]?.details || null };
   }
 
   // Core eligibility/state for a student (no sittings list). Used by /me and as
   // the base for examOptions.
   async function eligibility(studentId: number) {
     const cfg = getExamConfig();
-    const { student, booking, course } = await resolveEnrolment(studentId);
+    const { student, booking, course, prepaid } = await resolveEnrolment(studentId);
     if (!student || !course) {
       return { relevant: false, visible: false, satisfied: false, reminder: null as any };
     }
@@ -146,8 +162,13 @@ export function examScripts(prisma: PrismaClient) {
     // FAQ both list IELTS as an approved exam). IELTS is band-scored with no level
     // floor, and the sitting is months after today's recorded level, so it is not
     // level-gated — the student (with our confirmation) chooses which to sit.
-    const codes: ExamCode[] = [alignedCode];
-    if (alignedCode !== 'IELTS_GT') codes.push('IELTS_GT');
+    // LanguageCert (ULearn's own group sessions at CES, any level) first — it is what students actually sit (Neil 2026-11-09).
+    // By level (Neil 2026-11-09: an A2 student was offered PET + IELTS): below B1 → LanguageCert only (CES runs it per level, A1/A2
+    // included); B1 and up → LanguageCert + their Cambridge exam (PET / FCE / CAE) + IELTS General Training. No level on file → treated as
+    // below B1 (LanguageCert), never a B1 exam they may not be ready for.
+    const below = levelRank(level) < B1_RANK;
+    const codes: ExamCode[] = below ? ['LANGUAGECERT'] : ['LANGUAGECERT', alignedCode];
+    if (!below && alignedCode !== 'IELTS_GT') codes.push('IELTS_GT');
 
     const existing = await prisma.studentExamBooking.findMany({
       where: { studentId, bookingCourseId: course.id },
@@ -166,10 +187,10 @@ export function examScripts(prisma: PrismaClient) {
       relevant: true, visible, satisfied,
       programmeWeek, eligibilityWeek: cfg.eligibilityWeek,
       level, eligibleExamCodes: codes,
-      alignedExamCode: alignedCode, alignedExamTitle: EXAM_TITLE[alignedCode],
+      alignedExamCode: below ? 'LANGUAGECERT' : alignedCode, alignedExamTitle: EXAM_TITLE[below ? 'LANGUAGECERT' : alignedCode],
       courseName: course.name, courseEnd: iso(courseEnd), permissionEnd: iso(permissionEnd), permissionSource,
       activeBooking: active ? { id: active.id, status: active.status } : null,
-      reminder,
+      reminder, paymentArrangement: prepaid ? 'PREPAID' : 'DIRECT',
     };
   }
 
@@ -255,7 +276,7 @@ export function examScripts(prisma: PrismaClient) {
     if (!Number.isInteger(examSittingId)) return { success: false, error: 'Pick an examination sitting.' };
 
     const cfg = getExamConfig();
-    const { student, booking, course, hasExamFee } = await resolveEnrolment(studentId);
+    const { student, booking, course, prepaid } = await resolveEnrolment(studentId);
     if (!student || !course) return { success: false, error: 'No Academic Year course on file — exams apply to Academic Year students.' };
 
     const programmeWeek = Math.floor((Date.now() - +new Date(course.startDate)) / WEEK) + 1;
@@ -284,7 +305,7 @@ export function examScripts(prisma: PrismaClient) {
     // V2 is gated because most legacy AY bookings carry NO itemised EXAM_FEE extra
     // yet DID pay (bundled) — flipping the branch on before that population clears
     // would wrongly tell ~2,000 paid students to pay CES again.
-    const paymentArrangement = (cfg.directPayEnabled && !hasExamFee) ? 'DIRECT' : 'PREPAID';
+    const paymentArrangement = prepaid ? 'PREPAID' : 'DIRECT';
     const code = sitting.examCode as ExamCode;
 
     // Create the row first (REQUEST_PENDING) so its id is the ULearn reference.
@@ -302,8 +323,15 @@ export function examScripts(prisma: PrismaClient) {
     });
     await prisma.examBookingEvent.create({ data: { examBookingId: row.id, eventType: 'status_change', toStatus: 'REQUEST_PENDING', actor: 'student-app', detail: `Selected ${EXAM_TITLE[code]} on ${iso(sitting.examDate)} (${paymentArrangement})` } });
 
-    const ref = `EX-${row.id}`;
+    const ref = examRef(sitting);
 
+    // PREPAID → held for the next GROUP booking: staff tick the requests in SIS → Exams and send CES one list (sendBatch). No email
+    // per student — CES gets names in batches, as Paul does by hand (Neil 2026-11-09).
+    if (paymentArrangement === 'PREPAID') {
+      await prisma.examBookingEvent.create({ data: { examBookingId: row.id, eventType: 'status_change', actor: 'student-app', detail: 'Prepaid — held for the next group booking to CES (SIS → Exams → Send to CES)' } });
+      return { success: true, bookingId: row.id, status: 'REQUEST_PENDING', reference: ref,
+        message: `Request received. We'll book your place with the exam centre and confirm the time and venue here.` };
+    }
     // Blocked if sends disarmed or CES address not yet verified/configured — the
     // request is still tracked; staff complete it from the admin UI.
     if (!cfg.sendsArmed || !cfg.cesEmail) {
@@ -315,7 +343,7 @@ export function examScripts(prisma: PrismaClient) {
     // Render the right CES template (prepaid vs direct) + send from success@,
     // student CC'd. threadId → emailThreadId so replies stay on one thread.
     try {
-      const slug = paymentArrangement === 'PREPAID' ? 'CES-Exam-Request-Prepaid' : 'CES-Exam-Request-DirectPay';
+      const slug = (paymentArrangement as string) === 'PREPAID' ? 'CES-Exam-Request-Prepaid' : 'CES-Exam-Request-DirectPay';
       const tpl = await prisma.documentTemplate.findFirst({
         where: emailTemplateWhere(slug, { templateType: 'email', active: true }),
         select: { id: true, subject: true, htmlTemplate: true },
@@ -565,7 +593,83 @@ export function examScripts(prisma: PrismaClient) {
     return summary;
   }
 
+  // STAFF add a request (a student who asked at reception / by email). Sitting optional (a NEEDS_ATTENTION row without one).
+  async function adminCreate(data: { studentId?: number; examSittingId?: number | null; note?: string }, actor = 'admin') {
+    const studentId = Number(data?.studentId);
+    if (!Number.isInteger(studentId)) return { ok: false, code: 400, error: 'studentId is required' };
+    const { student, course, prepaid } = await resolveEnrolment(studentId);
+    if (!student || !course) return { ok: false, code: 400, error: 'This student has no Academic Year course on file.' };
+    const existing = await prisma.studentExamBooking.findFirst({ where: { studentId, bookingCourseId: course.id, status: { in: ACTIVE_STATUSES as any } }, select: { id: true, status: true } });
+    if (existing) return { ok: false, code: 409, error: `Already has an active exam request (#${existing.id}, ${existing.status}).` };
+    let sitting: any = null;
+    if (data.examSittingId) { sitting = await prisma.examSitting.findUnique({ where: { id: Number(data.examSittingId) } }); if (!sitting) return { ok: false, code: 400, error: 'Sitting not found' }; }
+    const code = sitting ? (sitting.examCode as ExamCode) : null;
+    const row = await prisma.studentExamBooking.create({ data: {
+      studentId, bookingCourseId: course.id, examSittingId: sitting ? sitting.id : null,
+      status: sitting ? 'REQUEST_PENDING' : 'NEEDS_ATTENTION', paymentArrangement: prepaid ? 'PREPAID' : 'DIRECT', studentConfirmedAt: new Date(),
+      choiceSnapshot: sitting ? ({ examCode: code, title: EXAM_TITLE[code as ExamCode], provider: sitting.provider, examDate: iso(sitting.examDate), startTime: sitting.startTime, centre: sitting.centreId } as any) : undefined,
+    } });
+    await prisma.examBookingEvent.create({ data: { examBookingId: row.id, eventType: 'status_change', toStatus: row.status, actor, detail: `Added by staff${data.note ? ': ' + String(data.note).slice(0, 300) : ''}` } });
+    return { ok: true, request: row };
+  }
+
+  // GROUP SEND to CES (Neil 2026-11-09): the ticked requests in ONE email from success@ — a table of names, date of birth, level,
+  // exam and date — to the CES exams manager, DOS (+ accounts for prepaid) on CC, "please arrange and bill ULearn". The way Paul
+  // sends his lists, minus the copy-typing. Each request → REQUESTED, with the email logged on its timeline.
+  async function sendBatch(ids: number[], opts: { to?: string; cc?: string; note?: string; actor?: string; dry?: boolean } = {}) {
+    const cfg = getExamConfig() as any;
+    const list = (ids || []).map(Number).filter(Number.isInteger);
+    if (!list.length) return { ok: false, code: 400, error: 'Tick at least one request.' };
+    const rows = await prisma.studentExamBooking.findMany({ where: { id: { in: list } }, include: { student: { select: { id: true, firstName: true, lastName: true, email: true, currentLevel: true } }, examSitting: true } });
+    const bad = rows.filter(r => !r.examSitting);
+    if (bad.length) return { ok: false, code: 400, error: `No exam date chosen yet for: ${bad.map(r => `${r.student.firstName} ${r.student.lastName} (#${r.id})`).join(', ')}` };
+    const past = rows.filter(r => +new Date(r.examSitting!.examDate) < Date.now() - 864e5);
+    if (past.length) return { ok: false, code: 400, error: `Exam date already passed for: ${past.map(r => `${r.student.firstName} ${r.student.lastName} (${ukDate(r.examSitting!.examDate)})`).join(', ')} — pick a new date on the request first` };
+    const direct = rows.filter(r => r.paymentArrangement === 'DIRECT');
+    if (direct.length) return { ok: false, code: 400, error: `These pay CES themselves (direct), not part of a ULearn group booking: ${direct.map(r => `${r.student.firstName} ${r.student.lastName}`).join(', ')}` };
+    const to = String(opts.to || cfg.cesGroupEmail || cfg.cesEmail || 'examsmanager@ces-schools.com').trim();
+    const cc = String(opts.cc ?? (cfg.cesGroupCc || 'dos@ulearnschool.com, accounts@ulearnschool.com')).trim();
+    const esc = (x: any) => String(x ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    // CES's own list format (their "A2 List.xlsx" / "B1 List.xlsx", Stephen Bruce Jul 2026): ONE list per level per sitting,
+    // columns Email | First Name | Last Name. Body = a table per list; the same lists attached as CSV ("B1 List.csv").
+    const short = (r: any) => EXAM_TITLE[r.examSitting!.examCode as ExamCode].replace(/ \(.*\)$/, '');
+    const groups = new Map<string, any[]>();
+    for (const r of [...rows].sort((a, b) => +new Date(a.examSitting!.examDate) - +new Date(b.examSitting!.examDate) || String(a.student.currentLevel || '').localeCompare(String(b.student.currentLevel || '')) || String(a.student.lastName).localeCompare(String(b.student.lastName)))) {
+      const k = `${examRef(r.examSitting)}|${r.student.currentLevel || 'Level ?'}`;
+      if (!groups.has(k)) groups.set(k, []);
+      groups.get(k)!.push(r);
+    }
+    const td = 'border:1px solid #ccc;padding:5px 9px;font-size:13px';
+    const attachments: { filename: string; content: Buffer; contentType: string }[] = [];
+    const csvCell = (x: any) => `"${String(x ?? '').trim().replace(/"/g, '""')}"`;
+    let tables = '';
+    for (const [k, list] of groups) {
+      const [ref, level] = k.split('|'), r0 = list[0];
+      tables += `<p style="margin:14px 0 4px"><b>${esc(level)} — ${esc(short(r0))}, ${esc(ukDate(r0.examSitting!.examDate))}</b> (${list.length}) · ${esc(ref)}</p>`
+        + `<table style="border-collapse:collapse;margin:0 0 6px"><tr>${['Email', 'First Name', 'Last Name'].map(h => `<th style="${td};background:#f3f4f6;text-align:left">${h}</th>`).join('')}</tr>`
+        + list.map(r => `<tr><td style="${td}">${esc(r.student.email || '')}</td><td style="${td}">${esc(r.student.firstName || '')}</td><td style="${td}">${esc(r.student.lastName || '')}</td></tr>`).join('') + '</table>';
+      const csv = ['Email,First Name,Last Name', ...list.map(r => [r.student.email, r.student.firstName, r.student.lastName].map(csvCell).join(','))].join('\r\n');
+      attachments.push({ filename: `${level} List${groups.size > 1 && [...groups.keys()].filter(x => x.endsWith('|' + level)).length > 1 ? ' ' + ref : ''}.csv`, content: Buffer.from('﻿' + csv, 'utf8'), contentType: 'text/csv' });
+    }
+    const dates = [...new Set([...groups.keys()].map(k => k.split('|')[0]))];
+    const subject = `ULearn exam bookings — ${dates.join(', ')} (${rows.length} student${rows.length === 1 ? '' : 's'})`;
+    const html = `<p>Hi Stephen,</p><p>Please book the following ULearn student${rows.length === 1 ? '' : 's'} and bill ULearn for ${rows.length === 1 ? 'the sitting' : 'the sittings'}. The lists by level are below and attached.</p>${tables}`
+      + (opts.note ? `<p>${esc(opts.note)}</p>` : '') + `<p>Could you confirm the places, times and venue when you can?</p><p>Kind regards,</p>`;
+    if (opts.dry) return { ok: true, dry: true, to, cc, subject, html, count: rows.length, attachments: attachments.map(x => x.filename) };
+    const sent = await sendStudentEmail(prisma, { from: 'success@ulearnschool.com', fromName: 'ULearn Student Success Team', to, cc: cc || undefined, subject, html, attachments, sentBy: opts.actor || 'exam-batch' });
+    const now = new Date();
+    for (const r of rows) {
+      await prisma.studentExamBooking.update({ where: { id: r.id }, data: { status: 'REQUESTED', requestedAt: now, emailThreadId: sent.threadId, templateSlug: 'group-send' } });
+      await prisma.examBookingEvent.createMany({ data: [
+        { examBookingId: r.id, eventType: 'email_sent', detail: `Group booking sent to ${to}${cc ? ' (cc ' + cc + ')' : ''}: ${rows.length} student(s)`, emailLogId: sent.emailLogId, actor: opts.actor || 'admin' },
+        { examBookingId: r.id, eventType: 'status_change', fromStatus: r.status, toStatus: 'REQUESTED', actor: opts.actor || 'admin' },
+      ] });
+    }
+    return { ok: true, sent: rows.length, to, cc, subject, threadId: sent.threadId };
+  }
+
   return {
+    adminCreate, sendBatch,
     eligibility, options, createExamRequest, requestAssistance, cancelOwn,
     listSittings, createSitting, updateSitting, archiveSitting,
     listRequests, getRequest, updateRequest, importSittings, reminderTick,

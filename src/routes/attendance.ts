@@ -104,10 +104,10 @@ function renderSheetHtml(opts: {
     <tbody>
       ${Array.from({ length: totalRows }, (_, i) => {
         const s = cls.students[i];
-        // Outstanding balance rides on the surname as "(Bal €X)" so the teacher/
-        // front desk sees the debt on the paper sheet (Neil 2026-11-03).
+        // An open balance shows on the paper sheet as "(Balance)" — the word only, never the amount: the sheet sits in the
+        // classroom in front of students and teachers (Neil 2026-11-03; amount dropped 2026-11-09 after Paul Gill flagged it).
         const bal = Number(s?.balanceOpen || 0);
-        const balSuffix = bal > 0 ? ` <span class="bal">(Bal €${bal.toFixed(0)})</span>` : '';
+        const balSuffix = bal > 0 ? ' <span class="bal">(Balance)</span>' : '';
         return `<tr>
           <td class="num">${i + 1}</td>
           <td class="name">${escHtml(s?.firstName || '')}</td>

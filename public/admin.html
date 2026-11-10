@@ -1285,32 +1285,110 @@ function examTab(which){
   else examLoadSettings();
 }
 
+// Requests table (Neil 2026-11-09): filters (exam date range, level, exam, status), every column sortable, tick boxes with
+// select-all + shift-click, "+ Add request" for students who asked at the desk, and "Send to CES" — ONE email with the ticked
+// students to CES (success@, DOS + accounts CC), previewed first. Prepaid (exam paid with the course) = we book + pay CES.
+let _exReq = [], _exSel = new Set(), _exSort = { k: 'date', dir: 1 }, _exLast = null, _exF = { from: '', to: '', level: '', exam: '', status: 'open' };
+const EX_OPEN = ['REQUEST_PENDING','NEEDS_ATTENTION','CHANGE_REQUESTED','REQUESTED','CONFIRMED'];
+const exName = r => `${r.student?.firstName||''} ${r.student?.lastName||''}`.trim() || ('#'+r.studentId);
+const exExam = r => r.examSitting ? r.examSitting.examCode.replace(/_/g,' ') : '';
+const exDate = r => r.examSitting?.examDate ? r.examSitting.examDate.slice(0,10) : '';
+const exUk = d => d ? d.slice(0,10).split('-').reverse().join('/') : '';   // UK dates on screen (Neil 2026-11-09); ISO kept for sorting/filtering
+const EX_SHORT = { IELTS_GT:'IELTS', LANGUAGECERT:'LANGUAGECERT', B1_PRELIMINARY:'PET', B2_FIRST:'FCE', C1_ADVANCED:'CAE' };
+const exRef = s => s ? `${EX_SHORT[s.examCode]||s.examCode}-${exUk(s.examDate).replace(/\//g,'-')}` : 'no date yet';
 async function examLoadRequests(){
   const body = document.getElementById('examBody');
   try {
     const { requests } = await api('/exams/requests');
-    if (!requests.length) { body.innerHTML = `<div style="padding:20px;color:var(--text-muted)">No exam requests yet.</div>`; return; }
-    body.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px">
-      <thead><tr style="text-align:left;border-bottom:2px solid var(--card-border)">
-        ${['Student','Level','Exam','Date','Pay','Status','Requested',''].map(h=>`<th style="padding:7px 8px">${h}</th>`).join('')}
-      </tr></thead><tbody>
-      ${requests.map(r => {
-        const name = `${r.student?.firstName||''} ${r.student?.lastName||''}`.trim() || ('#'+r.studentId);
-        const exam = r.examSitting ? r.examSitting.examCode.replace(/_/g,' ') : '<span style="color:var(--text-muted)">—</span>';
-        const date = r.examSitting?.examDate ? r.examSitting.examDate.slice(0,10) : '';
-        return `<tr style="border-bottom:1px solid var(--card-border);cursor:pointer" onclick="examOpenRequest(${r.id})">
-          <td style="padding:7px 8px"><a href="/sis/admin?view=student-detail&id=${r.studentId}" onclick="event.stopPropagation();navigate('student-detail',{id:${r.studentId}});return false" style="color:var(--accent)">${esc(name)}</a></td>
-          <td style="padding:7px 8px">${esc(r.student?.currentLevel||'')}</td>
-          <td style="padding:7px 8px">${esc(exam)}</td>
-          <td style="padding:7px 8px">${date}</td>
-          <td style="padding:7px 8px">${r.paymentArrangement==='PREPAID'?'Prepaid':'Direct'}</td>
-          <td style="padding:7px 8px">${examBadge(r.status)}</td>
-          <td style="padding:7px 8px;color:var(--text-muted)">${r.requestedAt?r.requestedAt.slice(0,10):'—'}</td>
-          <td style="padding:7px 8px;color:var(--accent)">Open ›</td>
-        </tr>`;
-      }).join('')}
-      </tbody></table>`;
+    _exReq = requests || []; _exSel = new Set([..._exSel].filter(id => _exReq.some(r => r.id === id)));
+    const levels = [...new Set(_exReq.map(r => r.student?.currentLevel).filter(Boolean))].sort();
+    const exams = [...new Set(_exReq.map(exExam).filter(Boolean))].sort();
+    const sel = (id, opts, cur, all) => `<select id="${id}" onchange="examFilt()" style="font-size:12px;padding:4px 6px">${[`<option value="">${all}</option>`].concat(opts.map(o=>`<option value="${esc(o)}" ${o===cur?'selected':''}>${esc(o)}</option>`)).join('')}</select>`;
+    body.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px;font-size:12px">
+        <span>Exam date</span><input type="date" id="exFrom" value="${_exF.from}" onchange="examFilt()" style="font-size:12px;padding:3px 5px"><span>→</span><input type="date" id="exTo" value="${_exF.to}" onchange="examFilt()" style="font-size:12px;padding:3px 5px">
+        ${sel('exLevel', levels, _exF.level, 'All levels')}${sel('exExam', exams, _exF.exam, 'All exams')}
+        <select id="exStatus" onchange="examFilt()" style="font-size:12px;padding:4px 6px"><option value="open" ${_exF.status==='open'?'selected':''}>Open requests</option><option value="" ${_exF.status===''?'selected':''}>All statuses</option>${Object.keys(EXAM_STATUS_STYLE).map(k=>`<option value="${k}" ${_exF.status===k?'selected':''}>${k.replace(/_/g,' ')}</option>`).join('')}</select>
+        <button class="btn btn-secondary btn-sm" onclick="examAddOpen()">+ Add request</button>
+        <button class="btn btn-primary btn-sm" id="exSendBtn" onclick="examSendOpen()" style="margin-left:auto">Send to CES (0)</button>
+      </div><div id="exPanel"></div><div id="exTable"></div>`;
+    examRenderTable();
   } catch(e){ body.innerHTML = `<div style="padding:20px;color:var(--danger)">${esc(e.message||e)}</div>`; }
+}
+function examFilt(){ _exF = { from: document.getElementById('exFrom').value, to: document.getElementById('exTo').value, level: document.getElementById('exLevel').value, exam: document.getElementById('exExam').value, status: document.getElementById('exStatus').value }; examRenderTable(); }
+function examRows(){
+  const f = _exF;
+  let rows = _exReq.filter(r => (!f.from || (exDate(r) && exDate(r) >= f.from)) && (!f.to || (exDate(r) && exDate(r) <= f.to)) && (!f.level || r.student?.currentLevel === f.level) && (!f.exam || exExam(r) === f.exam)
+    && (!f.status || (f.status === 'open' ? EX_OPEN.includes(r.status) : r.status === f.status)));
+  const key = { student: exName, level: r => r.student?.currentLevel || '', exam: exExam, date: r => exDate(r) || '9999', pay: r => r.paymentArrangement, status: r => r.status, requested: r => r.requestedAt || r.createdAt || '' }[_exSort.k] || exDate;
+  return rows.sort((a, z) => String(key(a)).localeCompare(String(key(z))) * _exSort.dir);
+}
+function examSortBy(k){ _exSort = { k, dir: _exSort.k === k ? -_exSort.dir : 1 }; examRenderTable(); }
+function examRenderTable(){
+  const rows = examRows(), el = document.getElementById('exTable'); if (!el) return;
+  const cols = [['student','Student'],['level','Level'],['exam','Exam'],['date','Exam date'],['pay','Pay'],['status','Status'],['requested','Requested']];
+  const allOn = rows.length && rows.every(r => _exSel.has(r.id));
+  el.innerHTML = !rows.length ? `<div style="padding:20px;color:var(--text-muted)">No requests match.</div>` : `<table style="width:100%;border-collapse:collapse;font-size:13px">
+    <thead><tr style="text-align:left;border-bottom:2px solid var(--card-border)"><th style="padding:7px 8px;width:28px"><input type="checkbox" ${allOn?'checked':''} onclick="examTickAll(this.checked)" title="Tick every request shown"></th>
+      ${cols.map(([k,h])=>`<th style="padding:7px 8px;cursor:pointer;white-space:nowrap" onclick="examSortBy('${k}')">${h}${_exSort.k===k?(_exSort.dir>0?' ▲':' ▼'):''}</th>`).join('')}<th></th></tr></thead><tbody>
+    ${rows.map((r,i) => `<tr style="border-bottom:1px solid var(--card-border);cursor:pointer;${_exSel.has(r.id)?'background:var(--bg-subtle)':''}" onclick="examOpenRequest(${r.id})">
+      <td style="padding:7px 8px" onclick="event.stopPropagation()"><input type="checkbox" ${_exSel.has(r.id)?'checked':''} onclick="examTick(event,${r.id},${i})"></td>
+      <td style="padding:7px 8px"><a href="/sis/admin?view=student-detail&id=${r.studentId}" onclick="event.stopPropagation();navigate('student-detail',{id:${r.studentId}});return false" style="color:var(--accent)">${esc(exName(r))}</a></td>
+      <td style="padding:7px 8px">${esc(r.student?.currentLevel||'')}</td>
+      <td style="padding:7px 8px">${r.examSitting ? esc(exExam(r)) : '<span style="color:var(--text-muted)">no date chosen</span>'}</td>
+      <td style="padding:7px 8px">${exUk(exDate(r))}</td>
+      <td style="padding:7px 8px">${r.paymentArrangement==='PREPAID'?'Prepaid':'Direct'}</td>
+      <td style="padding:7px 8px">${examBadge(r.status)}</td>
+      <td style="padding:7px 8px;color:var(--text-muted)">${exUk(r.requestedAt||r.createdAt||'')||'—'}</td>
+      <td style="padding:7px 8px;color:var(--accent)">Open ›</td></tr>`).join('')}</tbody></table>`;
+  const b = document.getElementById('exSendBtn'); if (b) { b.textContent = `Send to CES (${_exSel.size})`; b.disabled = !_exSel.size; }
+}
+function examTick(ev, id, i){
+  const rows = examRows(), on = ev.target.checked;
+  if (ev.shiftKey && _exLast != null) { const [a, z] = [Math.min(_exLast, i), Math.max(_exLast, i)]; rows.slice(a, z + 1).forEach(r => on ? _exSel.add(r.id) : _exSel.delete(r.id)); }
+  else on ? _exSel.add(id) : _exSel.delete(id);
+  _exLast = i; examRenderTable();
+}
+function examTickAll(on){ examRows().forEach(r => on ? _exSel.add(r.id) : _exSel.delete(r.id)); _exLast = null; examRenderTable(); }
+async function examSendOpen(){
+  const p = document.getElementById('exPanel'); if (!_exSel.size) return;
+  p.innerHTML = `<div style="padding:10px;color:var(--text-muted)">Preparing the email…</div>`;
+  try {
+    const d = await api('/exams/requests/send-batch', { method: 'POST', body: { ids: [..._exSel], dry: true } });
+    p.innerHTML = `<div style="border:1px solid var(--card-border);border-radius:10px;padding:12px 14px;margin-bottom:12px;background:var(--card-bg,#fff)">
+      <div style="font-weight:700;margin-bottom:8px">Send ${d.count} student${d.count===1?'':'s'} to CES — from success@</div>
+      <div style="display:grid;grid-template-columns:60px 1fr;gap:6px;font-size:12px;align-items:center;margin-bottom:8px">
+        <span>To</span><input id="exTo2" value="${esc(d.to)}" style="font-size:12px;padding:4px 6px"><span>CC</span><input id="exCc2" value="${esc(d.cc)}" style="font-size:12px;padding:4px 6px"><span>Subject</span><span>${esc(d.subject)}</span></div>
+      <div style="border:1px solid var(--card-border);border-radius:8px;padding:10px;max-height:320px;overflow:auto;font-size:13px">${d.html}</div>
+      <div style="display:flex;gap:8px;margin-top:10px"><button class="btn btn-primary btn-sm" onclick="examSendGo(this)">Send to CES</button><button class="btn btn-secondary btn-sm" onclick="document.getElementById('exPanel').innerHTML=''">Cancel</button><span id="exSendMsg" style="font-size:12px;align-self:center"></span></div></div>`;
+  } catch(e){ p.innerHTML = `<div style="padding:10px;color:var(--danger)">${esc(e.message||e)}</div>`; }
+}
+async function examSendGo(btn){
+  btn.disabled = true; const m = document.getElementById('exSendMsg'); m.textContent = 'Sending…';
+  try { const d = await api('/exams/requests/send-batch', { method: 'POST', body: { ids: [..._exSel], to: document.getElementById('exTo2').value, cc: document.getElementById('exCc2').value } });
+    _exSel = new Set(); document.getElementById('exPanel').innerHTML = `<div style="padding:10px;color:#065f46;background:#d1fae5;border-radius:8px;margin-bottom:10px">✓ Sent to ${esc(d.to)}: ${d.sent} student${d.sent===1?'':'s'}, now REQUESTED.</div>`; examLoadRequests();
+  } catch(e){ m.textContent = '⚠ ' + (e.message||e); btn.disabled = false; }
+}
+async function examAddOpen(){
+  const p = document.getElementById('exPanel');
+  let sittings = []; try { sittings = ((await api('/exams/sittings')).sittings || []).filter(s => s.status === 'PUBLISHED' && s.examDate >= new Date().toISOString().slice(0,10)).sort((a,z)=>a.examDate.localeCompare(z.examDate)); } catch(e){}
+  p.innerHTML = `<div style="border:1px solid var(--card-border);border-radius:10px;padding:12px 14px;margin-bottom:12px">
+    <div style="font-weight:700;margin-bottom:8px">Add an exam request (a student who asked at the desk or by email)</div>
+    <input id="exAddQ" placeholder="Student name or email…" oninput="examAddSearch(this.value)" style="width:280px;font-size:12px;padding:5px 7px"><div id="exAddHits" style="max-width:420px;border:1px solid var(--card-border);border-radius:6px;margin-top:4px"></div>
+    <div style="margin-top:8px;font-size:12px">Sitting: <select id="exAddSit" style="font-size:12px;padding:4px 6px;max-width:360px"><option value="">— no date yet (needs attention) —</option>${sittings.map(s=>`<option value="${s.id}">${exUk(s.examDate)} · ${esc(s.examCode.replace(/_/g,' '))}${s.startTime?(' '+esc(s.startTime)):''}</option>`).join('')}</select></div>
+    <input id="exAddNote" placeholder="Note (optional): how they asked" style="width:420px;font-size:12px;padding:5px 7px;margin-top:8px">
+    <div style="display:flex;gap:8px;margin-top:10px"><button class="btn btn-primary btn-sm" onclick="examAddGo()">Add request</button><button class="btn btn-secondary btn-sm" onclick="document.getElementById('exPanel').innerHTML=''">Cancel</button><span id="exAddMsg" style="font-size:12px;align-self:center"></span></div></div>`;
+}
+let _exAddStudent = null, _exAddT = null;
+function examAddSearch(q){ clearTimeout(_exAddT); _exAddT = setTimeout(async () => { const box = document.getElementById('exAddHits'); if (!q || q.length < 2) { box.innerHTML=''; return; }
+  try { const res = await api('/students?search=' + encodeURIComponent(q) + '&limit=8'); const list = res.data || [];
+    box.innerHTML = list.map(s => `<div onclick="examAddPick(${s.id}, this)" style="padding:6px 9px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--card-border)">${esc(((s.firstName||'')+' '+(s.lastName||'')).trim())} <span style="color:var(--text-muted)">${esc(s.email||'')} · ${esc(s.currentLevel||'')}</span></div>`).join('') || '<div style="padding:6px 9px;font-size:12px;color:var(--text-muted)">No match</div>';
+  } catch(e){} }, 250); }
+function examAddPick(id, el){ _exAddStudent = id; document.querySelectorAll('#exAddHits div').forEach(d => d.style.background=''); el.style.background = 'var(--bg-subtle)'; }
+async function examAddGo(){
+  const m = document.getElementById('exAddMsg'); if (!_exAddStudent) { m.textContent = 'Pick the student first.'; return; }
+  try { await api('/exams/requests', { method: 'POST', body: { studentId: _exAddStudent, examSittingId: document.getElementById('exAddSit').value || null, note: document.getElementById('exAddNote').value } });
+    _exAddStudent = null; document.getElementById('exPanel').innerHTML = ''; examLoadRequests(); }
+  catch(e){ m.textContent = '⚠ ' + (e.message||e); }
 }
 
 async function examOpenRequest(id){
@@ -1324,18 +1402,18 @@ async function examOpenRequest(id){
     const statusOpts = ['REQUESTED','CONFIRMED','SAT','RESULTS_RECEIVED','COMPLETED','CANCELLED','CHANGE_REQUESTED','REJECTED','EXPIRED','NEEDS_ATTENTION']
       .map(o=>`<option value="${o}" ${o===r.status?'selected':''}>${o.replace(/_/g,' ')}</option>`).join('');
     body.innerHTML = `
-      <button class="btn btn-ghost btn-sm" onclick="examTab('requests')" style="margin-bottom:10px">‹ Back</button>
+      <button class="btn btn-ghost btn-sm" onclick="examTab('requests')" style="margin-bottom:10px">‹ Back to requests</button>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:900px">
         <div>
           <h3 style="margin:0 0 8px">${esc(name)} ${examBadge(r.status)}</h3>
           <div style="font-size:13px;line-height:1.9">
             <div><b>Exam:</b> ${s?esc(s.examCode.replace(/_/g,' ')):'—'}</div>
-            <div><b>Date:</b> ${s?.examDate?s.examDate.slice(0,10):'—'} ${s?.startTime?('· '+esc(s.startTime)):''}</div>
+            <div><b>Date:</b> ${s?.examDate?exUk(s.examDate):'—'} ${s?.startTime?('· '+esc(s.startTime)):''}</div>
             <div><b>Centre:</b> Centre of English Studies, Dublin</div>
             <div><b>Payment:</b> ${r.paymentArrangement==='PREPAID'?'Prepaid (ULearn settles)':'Direct (CES invoices student)'}</div>
             <div><b>Level:</b> ${esc(r.student?.currentLevel||'—')}</div>
             <div><b>Enrolment:</b> ${esc(r.bookingCourse?.name||'')}</div>
-            <div><b>ULearn ref:</b> EX-${r.id}</div>
+            <div><b>Reference:</b> ${exRef(r.examSitting)}</div>
             ${r.emailThreadId?`<div><b>Email thread:</b> <span style="font-family:monospace;font-size:12px">${esc(r.emailThreadId)}</span></div>`:''}
           </div>
           <div style="margin-top:14px;padding:12px;border:1px solid var(--card-border);border-radius:8px">
@@ -1353,7 +1431,7 @@ async function examOpenRequest(id){
           <div style="font-weight:600;margin-bottom:8px;font-size:13px">History</div>
           <div style="font-size:12px;line-height:1.6">
             ${(r.events||[]).map(e=>`<div style="padding:6px 0;border-bottom:1px solid var(--card-border)">
-              <span style="color:var(--text-muted)">${e.createdAt.slice(0,16).replace('T',' ')}</span> ·
+              <span style="color:var(--text-muted)">${exUk(e.createdAt)} ${e.createdAt.slice(11,16)}</span> ·
               <b>${esc(e.eventType)}</b>${e.toStatus?(' → '+esc(e.toStatus)):''}
               ${e.detail?`<div style="color:var(--text-muted)">${esc(e.detail)}</div>`:''}
               ${e.actor?`<span style="color:var(--text-muted);font-size:11px">by ${esc(e.actor)}</span>`:''}
@@ -1374,7 +1452,9 @@ async function examSaveRequest(id){
 async function examLoadSittings(){
   const body = document.getElementById('examBody');
   try {
-    const { sittings } = await api('/exams/sittings');
+    // Present and future only (Neil 2026-11-09: past sittings are not operable): from Monday of this week — last week drops off each week.
+    const mon = new Date(); mon.setUTCHours(0,0,0,0); mon.setUTCDate(mon.getUTCDate() - ((mon.getUTCDay() + 6) % 7));
+    const { sittings } = await api('/exams/sittings?from=' + mon.toISOString().slice(0,10));
     body.innerHTML = `
       <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
         <button class="btn btn-primary btn-sm" onclick="examAddSitting()">+ Add sitting</button>
@@ -1389,7 +1469,7 @@ async function examLoadSittings(){
         </tr></thead><tbody>
         ${sittings.map(s=>`<tr style="border-bottom:1px solid var(--card-border)${s.status==='ARCHIVED'?';opacity:.5':''}">
           <td style="padding:7px 8px">${esc(s.examCode.replace(/_/g,' '))}</td>
-          <td style="padding:7px 8px">${s.examDate.slice(0,10)}</td>
+          <td style="padding:7px 8px">${exUk(s.examDate)}</td>
           <td style="padding:7px 8px">${esc(s.startTime||'—')}</td>
           <td style="padding:7px 8px">${s.feeEur!=null?Number(s.feeEur).toFixed(2):'—'}</td>
           <td style="padding:7px 8px">${esc(s.status)}</td>

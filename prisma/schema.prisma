@@ -2775,6 +2775,7 @@ enum ExamCode {
   B2_FIRST              // Cambridge B2 First (FCE)
   C1_ADVANCED           // Cambridge C1 Advanced (CAE)
   IELTS_GT              // IELTS General Training
+  LANGUAGECERT          // LanguageCert ESOL — ULearn group sessions run by CES (Neil 2026-11-09)
   // Phase 2: A1/A2 (LanguageCert etc.), IELTS_ACADEMIC
 }
 

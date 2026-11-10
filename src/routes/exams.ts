@@ -65,6 +65,23 @@ export function examRoutes(prisma: PrismaClient) {
     try { res.json({ requests: await scripts.listRequests({ status: req.query.status as string }) }); }
     catch (e: any) { res.status(500).json({ error: String(e?.message || e) }); }
   });
+  // Staff add a request (asked at reception / by email) — Neil 2026-11-09.
+  router.post('/requests', async (req: any, res) => {
+    try {
+      const out = await (scripts as any).adminCreate(req.body || {}, String(req.session?.user || 'staff'));
+      if (!out.ok) return res.status(out.code || 400).json({ error: out.error });
+      res.json({ request: out.request });
+    } catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }
+  });
+  // Group send to CES: { ids:[…], to?, cc?, note?, dry? } — dry = preview only.
+  router.post('/requests/send-batch', async (req: any, res) => {
+    try {
+      const b = req.body || {};
+      const out = await (scripts as any).sendBatch(b.ids || [], { to: b.to, cc: b.cc, note: b.note, dry: !!b.dry, actor: String(req.session?.user || 'staff') });
+      if (!out.ok) return res.status(out.code || 400).json({ error: out.error });
+      res.json(out);
+    } catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }
+  });
   router.get('/requests/:id', async (req, res) => {
     try {
       const row = await scripts.getRequest(Number(req.params.id));
