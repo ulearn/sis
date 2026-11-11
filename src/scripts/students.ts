@@ -9,6 +9,7 @@ const DATE_FIELDS = [
   'visa2From', 'visa2Until', 'visa3From', 'visa3Until',
   'flightDate', 'outboundFlightDate',
   'insuranceFrom', 'insuranceUntil', 'medicalFrom', 'medicalUntil',
+  'examDate', 'placementTestDate', 'quizDate',
 ];
 
 function parseDates(data: Record<string, any>) {

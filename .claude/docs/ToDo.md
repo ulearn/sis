@@ -20,6 +20,23 @@ Neil 2026-11-09: students come to reception / email success@ or dos@ about exams
 
 ---
 
+## LMS: add a 3-question speaking section to the placement test
+
+**Priority:** High
+**Status:** Planned
+**Progress:** 10% — spec + questions in .claude/docs/handover-placement-speaking.md (hub session, 10/11/2026)
+**Added:** 2026-11-10
+**Updated:** 2026-11-10T17:25:07Z
+
+Neil 2026-11-10: recorded spoken answers between the 40 questions and the writing so the app level is realistic and the Monday oral can shrink. Delta study: 55% placed right, 8% two+ levels off, app overrates. Read the handover first.
+- [ ] Speaking screen in lms/prototype/app.js (band prompts, 15s prep, timer, one redo for the set)
+- [ ] POST /tests/public/speaking + token fields + AI transcript/CEFR via LMS
+- [ ] Mic in app iframe + browser; skip path if refused (tell Neil if a store release is needed)
+- [ ] DOS view: players, transcripts, estimate; oral-result field; Paul's sample list
+- [ ] 90-day audio prune cron
+
+---
+
 ## Invoice-created self-heal re-points a booking to a one-off extra invoice
 
 **Priority:** Medium
@@ -45,6 +62,20 @@ The student step of the placement email flow (Accept offer / place → Email 2/2
 - [ ] The text is English only; consider the student's language (lang-map) later
 - [ ] email_log shows "waiting on Yes" at send time; it is not updated when they tap Yes or when it expires (that state lives in hubapp `scripts/accomm/chat/data/broadcasts.json`)
 - [ ] Other notify flows (Day-1, transfers) could reuse `/whatsapp-notify` with their own text
+
+---
+
+## Disk space — retire quiz/stage domains + finish LMS backend re-home
+
+**Priority:** Medium
+**Status:** Waiting — on Neil/root (Hestia panel) for the domain deletes
+**Added:** 2026-11-10
+**Updated:** 2026-11-10T17:45:07Z
+
+Server hit 93% full (150 G disk). Cache sweep done 10 Nov freed ~15 G → **81% / 29 G free** (stale VS Code server builds, npm caches, unused Playwright on lms; kept Puppeteer/ffmpeg binaries). Remaining wins need Neil or root:
+- [ ] **Delete `quiz.ulearnschool.com`** — Neil confirms unused. My SSH key isn't on the `quiz` user and domain delete needs Hestia/root. (Add my key or run `du -sh ~/` as quiz to size it first.)
+- [ ] **Delete `stage.ulearnschool.com`** — unused now; may return if we migrate to Drupal 12. Likely the bigger win (Drupal copy = GBs). Same access blocker — Hestia/root.
+- [ ] **LMS subdomain (`lms.ulearnschool.com`) — do NOT just delete.** It's live: fronts Directus (content backend, DB only 20 MB), lms-api, PostgREST — SIS reaches them on localhost. Real reclaim is the ~3.6 G duplicated frontend tree (exists under both `/home/sis/.../lms/` and `/home/lms/.../web/`), which needs the backend re-homed off the `lms` vhost first, then a 301 → `sis.ulearnschool.com/prototype`, then DNS/vhost delete. Clean 2 code refs on retirement: `SSO_ORIGINS` (`sis/src/app.ts:268`), test CORS allowlist (`sis/src/routes/tests.ts:121`). See memory `project_lms_subdomain_migration`.
 
 ---
 
@@ -80,6 +111,56 @@ Fix shipped 2026-11-03 (compiled, restarted):
 - [ ] **Confirm on a real Android device** — the Filesystem save to `Directory.Documents` (scoped storage) couldn't be tested from the server; verify the file lands visibly in Files, else the email fallback carries it.
 - [ ] **Same bug on "My Documents" uploads** — the student's own uploaded-file download links (`myDocsList` / `previewUploadedDoc`) still use `target=_blank` and will also no-op in the app. Not covered by this fix (different data path, no email route). Fix if students report it.
 - [ ] **iOS (when it ships):** Filesystem-saved files are invisible without `UIFileSharingEnabled` + `LSSupportsOpeningDocumentsInPlace` in `ios/App/App/Info.plist` — add those on the next iOS build; until then iOS uses the email path (harmless, already wired).
+
+---
+
+## Xero: recognise Uyanga Tungalag's escrow invoice (2025 raised → 2026 released)
+
+**Priority:** Medium
+**Status:** Waiting — on fins/hub + accountant (Xero period call)
+**Added:** 2026-11-10
+**Updated:** 2026-11-10T23:35:06Z
+
+Uyanga Tungalag (SIS student 917, booking 1467, Easy Go Mongolia). Original AY invoice was Fidelo **D2025502** (21/10/2025, €3,066 gross / €2,405 net / €661 comm). Paid into TransferMate **escrow** 20/10/2025 (payment 17258, ref `ULEARNP2025900`), but **not released to ULearn until Oct 2026** (should have been ~18/03/2026 on her permission — the delay is ours). SIS now linked: booking 1467 → HubSpot deal **539377491157** (€3,066, close 18/03/2026, created 10 Nov) + invoice **1442119736557**. The reconnect deleted the webhook shell booking 18428; insurance extra moved to 1467.
+- [ ] Xero must show an **unpaid 2025 invoice that settles in 2026** on escrow release — not a 2026-dated invoice. Escrow money never hits Xero until released.
+- [ ] **Closed-period caveat:** if FY2025 is filed/locked, the accountant decides 2025 accrual + 2026 cash vs prior-year adjustment. Do not post blind.
+- [ ] HubSpot dating is approximate (deal created 10 Nov, close 18/03/2026) — correct the true picture in Xero downstream.
+- [ ] Pattern, not one-off — Neil is batch-processing escrow releases (10 Nov). Same reconnect done for **Dulguun Battur** (student 955, booking 1709, Fidelo invoice **D2025038**, €2,920 gross / €2,290 net; escrow ref `ULEARN29448` = ULEARN+Fidelo id 29448; released 23/10/2026; linked to new HubSpot deal 539347524852 + invoice 1442283818205; shell 18429 deleted). **FYI: that deal's amount is €3,350 in HubSpot vs €2,920 on the invoice — flagged to Neil to correct.** Other visa/escrow students likely have the same 2025→2026 release gap (see `project_escrow_reconciliation`).
+
+---
+
+## Insurance procurement — SIS side (table, feed, write-back, backfill)
+
+**Priority:** High
+**Status:** In progress — Insurance tab + read feed built & live 10 Nov; mirror table / write-back / backfill still to do
+**Added:** 2026-11-10
+**Progress:** 50% — the visible table + feed are live; the fins write-back + status mirror + backfill remain
+**Updated:** 2026-11-11T00:40:07Z
+
+Build the SIS side of the student-insurance procurement flow. Spec: hub `fins/.claude/Docs/Projects/Procurement/SIS-INSURANCE-HANDOVER.md`. fins owns the procurement dashboard + Arachas bulk file; SIS owns the table, the feed, and the write-back that files the policy PDF into the student app. Purchasing moves Ops→Finance; the student's payment (not a button) sends the row to procurement.
+
+Grounding confirmed (read-only 10 Nov):
+- `BookingExtra extraType='INSURANCE'`, `details` = `PEL;Health` (161) / `PEL` (3) / `Health` (1) / **null (34)**. Null root cause: SKU→details mapping only runs on the AY-invoice-mirror path (`webhooks.ts:1456`); the fallback `upsertExtra('INSURANCE',fee)` writes no `details`. Not corruption.
+- Student fields exist: `insurance_from/until`, `medical_from/until`, `learner_protection_policy`, `medical_policy`.
+- `documents.ts` `saveInsurancePolicy`/`fileInsurancePolicy` (1831-1901) + `attachExternalPdf` write the Student fields AND create an **ISSUED DocumentRecord** → **already surfaces in the student app** (same card as other issued docs; subject to the Android download bug tracked separately). Reuse this for the write-back.
+- Classifier `insurance-classifier.ts`: `classifyInsurancePdf`, `extractInsuranceFields` (policyNumber/from/until/premium), `INSURANCE_META` (slug/name/documentType per product).
+
+Built & live (10 Nov, compiled + restarted):
+- [x] **Admin UI** — Insurance button on the Bookings-page topbar (order Insurance · LifePass · Refunds), view `showInsuranceList()`. Table calendarised by course-start month, "▲ Upcoming" divider, historical rows dimmed; columns: student, nationality, product, course start (+ILEP), buy-by (overdue ⚠), paid pill, status badge, policy link (→ `openDocumentOverlay`). `public/admin.html`.
+- [x] **Read feed** — `GET /sis/api/bookings/insurance` → `src/scripts/insurance.ts insuranceScripts(prisma).list()`. Mirrors the hub `extras.js` cover logic (course start + 242 days, buy-by = coverStart−7, product from `BookingExtra.details`). Verified: 197 rows, 64 PURCHASED / 133 SENT, 53 upcoming. Status: SENT (listed=in procurement) / PURCHASED (policy number OR filed insurance DocumentRecord on file); APPROVED reserved for the fins mirror. **This doubles as the fins feed — tell fins the endpoint name.**
+
+LifePass note (11 Nov): the feed emits **one row per nested booking-course** (one AY year = one cover set), NOT per INSURANCE extra — so a LifePass booking shows 3 rows (Yr 1/2/3) with their own start/buy-by dates, tagged "· Yr N". The ~18 bookings with 3 active INSURANCE extras are **LifePass (3 nested courses), not duplicates — do NOT dedupe/delete them** (an attempted cleanup was correctly blocked; no data changed). Known gap: **Status is per-student** (any policy on file), so all LifePass years read "Purchased" even if only Yr 1 is truly bought — per-year status needs the mirror table below (keyed per booking-course).
+
+Still to build:
+- [ ] **Data:** `insurance_procurement` table 1:1 on `booking_extra_id` (or per booking-course, to carry per-year LifePass status) (unique = idempotent): fins-owned status `APPROVED` (the middle state SIS can't see), approved/purchased at, premium, `policy_doc_id`. (Hand-written SQL per prisma7 db-push hazard.) Until then the badge is SENT/PURCHASED only.
+- [ ] **Write-back (write) for fins:** `POST /sis/api/bookings/insurance/:id/status` + `POST …/:id/policy` (PDF) → reuse `documents.ts saveInsurancePolicy` → Student fields + ISSUED DocumentRecord (→ app). Status lifecycle per Neil 11 Nov: **Ordered → Paid** (he dropped "Received"; Sent is the implicit pre-order state). Auth = shared hub→SIS key (like `AUTOINV_KEY`).
+- [ ] **Feed should EXCLUDE/flag already-settled lines** so paid items never reach procurement (Neil 11 Nov).
+- [ ] **Exams feed parity** — a `/sis/api/.../exams` feed off `StudentExamBooking`, one row per line, so the unified dashboard can batch exams like insurance.
+- [ ] **Backfill** the 34 null `details` from each booking's HubSpot insurance SKU; default `PEL;Health` where unavailable, flag likely PEL-only.
+- [ ] **Confirm with fins:** feed = `GET /sis/api/bookings/insurance`; whether fins switches to reading it (vs its current HubSpot+sisRead derivation) + the write-back names above. Exams view to fold into this tab later.
+- [ ] **Procurement dashboard rebuild (fins side)** — Neil 11 Nov wants it collapsed to ONE flat table (types Insurance/Exams/General · type + start-date filters · select-all + row checkboxes · Approve · Ordered/Paid · Arachas file from selected · undo PR batching). Spec written to hub `fins/.claude/Docs/Projects/Procurement/PROCUREMENT-SIMPLIFY-NEIL-2026-11-11.md`. That UI is fins Claude's; SIS supplies the feeds + write-back above.
+
+Neil's own opens (not SIS build): remove Study&Protect portal logins from ops; regulatory invoice wording (not Central-Bank registered to sell insurance → handling fee?); who runs the Claude-Desktop manual-entry fallback.
 
 ---
 
@@ -722,9 +803,11 @@ Pre-04/05/2026 Fidelo attendance % is backfilled for current students. The full 
 **Priority:** Low
 **Status:** Someday/Maybe
 **Added:** 2026-05-22
-**Updated:** 2026-10-13T21:52:46Z
+**Updated:** 2026-11-10T13:00:08Z
 
 Antonella buys Learner Protection + Medical one by one on ARACHAS. Check whether ARACHAS has an API; otherwise (a) a bookmarklet/extension that autofills their web form from the open SIS student page, or (b) a "record purchase" form (policy number + PDF upload). Policy PDFs are already auto-classified on upload. (from Claude memory: project_insurance_workflow.md)
+
+Note 2026-11-10 (Slack, info desk): our generated bulk files fail to upload on backend.studyandprotect.com. Asked for a sample that uploaded OK: there is none. Reception used bulk files early on, hit the same upload error, a new file from Arachas did not help either, so they now use the website "Create order" one by one. A working bulk template has to come from Arachas/Study & Protect support.
 
 ---
 
@@ -1874,5 +1957,21 @@ Researched 8 Nov (accomm&#64; Gmail + SIS, read-only). "EEI" &#61; English Educa
 **Added in Wrike (2026-11-08 23:11):**
 - ☐ Mon 9 Nov 10:00: follow-up to Michelle from accomm&#64; scheduled (at job, hubapp/data/scheduled/eei-followup-20261109.js) — watch for her yes; then the Garda links should reach Mark + Yan within ~2 working days
 - ☑ 8 Nov: Slack #accomm "&#x1f3e0; New host submission" (name, address, rooms, ages, SIS link) on every website application. Accom desk: Garda/Applications instructions updated + KB "On the desk" section (what each vetting email means now)
+
+---
+
+## Insurances tab on Bookings + auto "send to procurement" (from fins)
+
+**Priority:** High
+**Status:** Planned
+**Added:** 2026-11-10
+**Updated:** 2026-11-10T21:30:07Z
+
+Neil 10 Nov (revised): payment of the INSURANCE extra sends the row to fins procurement automatically; there is no ops button. Finance approves, buys and uploads; the SIS shows status read-only and delivers the policy PDF to the app. Full brief: .claude/docs/INSURANCE-PROCUREMENT-HANDOVER.md
+- [ ] Insurances table on the Bookings page (calendarised by COURSE start): student, nationality, product, purchase date, course start, buy-by, paid state, policy no./PDF
+- [ ] Read-only Procurement badge mirrored from fins: Sent (grey) → Approved → Purchased
+- [ ] Feed for fins (or confirm fins reads BookingExtra INSURANCE directly)
+- [ ] Write-back endpoint for fins: status, policy no. + dates, policy PDF filed in the student documents → student app
+- [ ] Backfill BookingExtra INSURANCE details = null (~29 of 100 sampled)
 
 ---

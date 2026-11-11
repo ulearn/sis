@@ -1,10 +1,12 @@
 import { Router } from 'express';
 import { PrismaClient } from '../generated/prisma/client';
 import { bookingScripts } from '../scripts/bookings';
+import { insuranceScripts } from '../scripts/insurance';
 
 export function bookingRoutes(prisma: PrismaClient) {
   const router = Router();
   const scripts = bookingScripts(prisma);
+  const insurance = insuranceScripts(prisma);
 
   // ── Field-level write guard ───────────────────────────────────────────
   // HubSpot/Xero are the source of truth for the FINANCIAL component of a
@@ -168,6 +170,14 @@ export function bookingRoutes(prisma: PrismaClient) {
   router.get('/lifepass', async (_req, res) => {
     try {
       res.json({ students: await scripts.lifePassReport() });
+    } catch (e) { res.status(500).json({ error: String(e) }); }
+  });
+
+  // Insurance procurement list — the operational feed behind the Bookings-page
+  // Insurance tab (and the feed the hub fins dashboard reads). Before '/:id'.
+  router.get('/insurance', async (_req, res) => {
+    try {
+      res.json(await insurance.list());
     } catch (e) { res.status(500).json({ error: String(e) }); }
   });
 

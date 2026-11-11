@@ -1081,6 +1081,7 @@ function loadView(view, opts = {}) {
   else if (view === 'bookings') showBookingsList();
   else if (view === 'booking-detail') showBookingDetail(opts.id);
   else if (view === 'refunds') showRefundsList();
+  else if (view === 'insurance') showInsuranceList();
   else if (view === 'lifepass') showLifePass();
   else if (view === 'refund-detail') showRefundDetail(opts.id);
   else if (view === 'groups') showGroupsList();
@@ -8085,6 +8086,95 @@ async function _refundPickBooking(bookingId, studentId){
   } catch(e){ toast(e.message, true); }
 }
 
+// ── Insurance procurement (read-only operational list) ───────────────────
+// A row lists the moment a student with an INSURANCE extra pays; Finance buys
+// it in the hub procurement dashboard; the policy PDF lands back here (ISSUED
+// DocumentRecord → also shows in the student app). Status is read-only in SIS.
+let _insuranceRows = [];
+// Client-side filter state (the feed returns everything once).
+let _insTog = { pel: true, health: true, unspec: true, sent: true, purchased: true }; // on/off filters, all on = show all
+let _insHistorical = false;     // include past course starts
+let _insFrom = '', _insTo = ''; // course-start range (yyyy-mm-dd)
+let _insSortDir = 'desc';       // course-start sort — newest first by default
+function _insBadge(status){
+  const m = { SENT:['badge-escrow','Sent'], APPROVED:['badge-pending','Approved'], PURCHASED:['badge-confirmed','Purchased'] };
+  const [c,l] = m[status] || m.SENT;
+  return `<span class="badge ${c}">${l}</span>`;
+}
+function _insFlip(k){ _insTog[k] = !_insTog[k]; renderInsurance(); }
+function _insSetHistorical(on){ _insHistorical = !!on; renderInsurance(); }
+function _insSetFrom(v){ _insFrom = v; renderInsurance(); }
+function _insSetTo(v){ _insTo = v; renderInsurance(); }
+function _insToggleSort(){ _insSortDir = _insSortDir === 'desc' ? 'asc' : 'desc'; renderInsurance(); }
+async function showInsuranceList() {
+  setTopbar('Insurance',
+    `<span style="cursor:pointer;color:var(--accent);font-weight:600" onclick="navigate('bookings')">← Bookings</span>`,
+    `<button class="btn btn-secondary btn-sm" onclick="showInsuranceList()">Refresh</button>`);
+  const content = document.getElementById('content');
+  content.innerHTML = '<div style="padding:30px;color:var(--text-muted)">Loading…</div>';
+  try {
+    const res = await api('/bookings/insurance');
+    _insuranceRows = res.rows || [];
+    renderInsurance();
+  } catch (e) { content.innerHTML = `<div style="padding:20px;color:var(--danger)">${esc(e.message)}</div>`; }
+}
+function renderInsurance() {
+  const content = document.getElementById('content');
+  const todayIso = new Date().toISOString().slice(0,10);
+  let rows = _insuranceRows.slice();
+
+  // Filters (client-side)
+  if (!_insHistorical) rows = rows.filter(r => !r.courseStart || r.courseStart >= todayIso);
+  // Insurance-type toggles (independent on/off): a Both (PEL;Health) row shows if
+  // either PEL or Health is on; it only hides when both are off.
+  rows = rows.filter(r => { const p = r.product; return p == null ? _insTog.unspec : p === 'PEL' ? _insTog.pel : p === 'Health' ? _insTog.health : p === 'PEL;Health' ? (_insTog.pel || _insTog.health) : true; });
+  // Status toggles
+  rows = rows.filter(r => r.status === 'PURCHASED' ? _insTog.purchased : _insTog.sent);
+  if (_insFrom) rows = rows.filter(r => r.courseStart && r.courseStart >= _insFrom);
+  if (_insTo)   rows = rows.filter(r => r.courseStart && r.courseStart <= _insTo);
+  // Sort by course start — newest first by default
+  rows.sort((a,b)=>{ const x=a.courseStart||'', y=b.courseStart||''; return _insSortDir==='desc' ? y.localeCompare(x) : x.localeCompare(y); });
+
+  const tog = (k,label)=>`<label class="chip-btn pill-check ${_insTog[k]?'is-on':''}" style="font-size:12px"><input type="checkbox" ${_insTog[k]?'checked':''} onchange="_insFlip('${k}')">${label}</label>`;
+  const filters = `
+    <div class="toolbar" style="gap:10px;flex-wrap:wrap;align-items:center">
+      <div class="chip-row" title="Insurance type">${tog('pel','PEL')}${tog('health','Health')}${tog('unspec','Unspecified')}</div>
+      <div class="chip-row" title="Status">${tog('sent','Sent')}${tog('purchased','Purchased')}</div>
+      <label style="font-size:12px;color:var(--text-secondary);display:flex;align-items:center;gap:6px">From <input type="date" class="form-input" style="height:32px;width:150px" value="${_insFrom}" onchange="_insSetFrom(this.value)"></label>
+      <label style="font-size:12px;color:var(--text-secondary);display:flex;align-items:center;gap:6px">To <input type="date" class="form-input" style="height:32px;width:150px" value="${_insTo}" onchange="_insSetTo(this.value)"></label>
+      <label class="chip-btn pill-check ${_insHistorical?'is-on':''}" style="font-size:12px"><input type="checkbox" ${_insHistorical?'checked':''} onchange="_insSetHistorical(this.checked)">Historical</label>
+      <a href="https://hub.ulearnschool.com/fins/procurement" target="_blank" rel="noopener" class="btn btn-secondary btn-sm" style="margin-left:auto">Procurement ↗</a>
+    </div>`;
+
+  if (!rows.length) { content.innerHTML = filters + '<div class="table-wrap"><div class="table-empty">No insurance rows match these filters.</div></div>'; return; }
+
+  const arrow = _insSortDir==='desc' ? ' ▾' : ' ▴';
+  let body = '';
+  for (const r of rows) {
+    const overdue = r.status!=='PURCHASED' && r.buyBy && r.buyBy < todayIso;
+    const policy = (r.policyDocs && r.policyDocs.length)
+      ? r.policyDocs.map(d => `<a style="color:var(--accent);cursor:pointer;margin-right:8px" onclick="event.stopPropagation();openDocumentOverlay(${d.id})" title="${esc(d.type)}">${d.type.indexOf('medical')>=0?'Medical':'LP'} PDF</a>`).join('')
+      : ((r.lpPolicy||r.medPolicy) ? `<span style="color:var(--text-muted)">${esc(r.lpPolicy||r.medPolicy)}</span>` : '<span style="color:var(--text-muted)">—</span>');
+    body += `<tr class="clickable"${r.past?' style="opacity:.5"':''} onclick="navigate('booking-detail',{id:${r.bookingId}})">
+      <td><b>${esc(r.studentName)}</b>${r.yearLabel?` <span style="color:var(--text-muted);font-weight:400;font-size:11px">· ${r.yearLabel}</span>`:''} <span class="preview-btn" onclick="event.stopPropagation();showStudentPreview(${r.studentId})" title="Preview student"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span></td>
+      <td>${esc(r.nationality||'—')}</td>
+      <td>${r.productLabel?esc(r.productLabel):'<span class="badge badge-cancelled">unspecified</span>'}</td>
+      <td>${r.courseStart||'—'}</td>
+      <td>${r.ilepCode?esc(r.ilepCode):'<span style="color:var(--text-muted)">—</span>'}</td>
+      <td${overdue?' style="color:#991b1b;font-weight:700"':''}>${r.buyBy||'—'}</td>
+      <td onclick="event.stopPropagation()">${_insBadge(r.status)}</td>
+      <td onclick="event.stopPropagation()">${policy}</td>
+    </tr>`;
+  }
+  content.innerHTML = filters + `
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Student</th><th>Nationality</th><th>Product</th><th class="clickable" style="cursor:pointer" onclick="_insToggleSort()">Course Start${arrow}</th><th>ILEP</th><th>Buy By</th><th>Status</th><th>Policy</th></tr></thead>
+        <tbody>${body}</tbody>
+      </table>
+    </div>`;
+}
+
 async function showRefundsList() {
   if (!refundGuard()) return;
   setTopbar('Refund Requests',
@@ -8565,8 +8655,11 @@ async function showBookingsList() {
   const lifePassBtn = ['admin', 'accounts'].includes(currentUser.role)
     ? `<button class="btn btn-secondary" onclick="navigate('lifepass')" style="margin-right:8px" title="LifePass subscriptions — onboard, instalments, overdue & the private -Sub balance">💳 LifePass</button>`
     : '';
+  // Insurance procurement — operational, read-only; everyone who can see
+  // Bookings can see it (ops get visibility; Finance buys over in the hub).
+  const insuranceBtn = `<button class="btn btn-secondary" onclick="navigate('insurance')" style="margin-right:8px" title="Insurance procurement — who needs cover, buy-by dates, policies on file"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Insurance</button>`;
   const newBookingBtn = canEditFinancials() ? `<button class="btn btn-success" onclick="openNewBookingModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> New Booking</button>` : '';
-  setTopbar('Bookings', '', refundsBtn + lifePassBtn + newBookingBtn);
+  setTopbar('Bookings', '', insuranceBtn + lifePassBtn + refundsBtn + newBookingBtn);
 
   const params = new URLSearchParams({ page: bookingPage, limit: 25 });
   if (bookingSearch) params.set('search', bookingSearch);
