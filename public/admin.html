@@ -1037,6 +1037,7 @@ function updateTabLabel(label) {
 // ─── NAVIGATION (now routes through tab system) ──
 
 function navigate(view, opts = {}) {
+  if (typeof examClosePane === 'function' && view !== 'examinations') examClosePane();   // exam side pane is fixed; don't leave it over other views
   const tab = tabs.find(t => t.id === activeTabId);
   if (tab) {
     if (!tab.trail) tab.trail = [{ view: tab.view, opts: tab.opts, label: tab.label }];
@@ -1255,12 +1256,11 @@ async function referralSync(agencyId){
 
 // ─── EXAMINATIONS (exam booking module) ───────────────────────────
 const EXAM_STATUS_STYLE = {
-  REQUEST_PENDING: ['#92400e','#fef3c7'], REQUESTED: ['#1e40af','#dbeafe'], CONFIRMED: ['#065f46','#d1fae5'],
-  SAT: ['#3730a3','#e0e7ff'], RESULTS_RECEIVED: ['#065f46','#d1fae5'], COMPLETED: ['#374151','#e5e7eb'],
-  CANCELLED: ['#6b7280','#f3f4f6'], CHANGE_REQUESTED: ['#92400e','#fef3c7'], REJECTED: ['#991b1b','#fee2e2'],
-  EXPIRED: ['#6b7280','#f3f4f6'], NEEDS_ATTENTION: ['#991b1b','#fee2e2'],
+  REQUESTED: ['#92400e','#fef3c7'], BOOKED: ['#1e40af','#dbeafe'], CONFIRMED: ['#065f46','#d1fae5'],
+  CANCELLED: ['#6b7280','#f3f4f6'], NEEDS_ATTENTION: ['#991b1b','#fee2e2'], NOT_REQUESTED: ['#7c2d12','#fde68a'],
 };
-function examBadge(s){ const [c,b] = EXAM_STATUS_STYLE[s] || ['#374151','#e5e7eb']; return `<span style="font-size:11px;font-weight:600;color:${c};background:${b};padding:2px 8px;border-radius:999px;white-space:nowrap">${(s||'').replace(/_/g,' ')}</span>`; }
+const EXAM_STATUS_LABEL = { REQUESTED:'Requested', BOOKED:'Booked', CONFIRMED:'Confirmed', CANCELLED:'Cancelled', NEEDS_ATTENTION:'Needs attention', NOT_REQUESTED:'Not requested yet' };
+function examBadge(s){ const [c,b] = EXAM_STATUS_STYLE[s] || ['#374151','#e5e7eb']; return `<span style="font-size:11px;font-weight:600;color:${c};background:${b};padding:2px 8px;border-radius:999px;white-space:nowrap">${EXAM_STATUS_LABEL[s] || (s||'').replace(/_/g,' ')}</span>`; }
 let _examImportRows = null;
 
 function showExaminations(opts = {}) {
@@ -1277,7 +1277,10 @@ function showExaminations(opts = {}) {
       </div>
       <div id="examBody"><div style="padding:20px;color:var(--text-muted)">Loading…</div></div>
     </div>`;
-  if (opts.id) examOpenRequest(opts.id); else examTab('requests');
+  // Always load the table; a deep link (?id=) opens that request in the side pane on top of it.
+  // (Previously the detail rendered into #examBody and the async table load then overwrote it — the "flash then back" bug.)
+  examTab('requests');
+  if (opts.id) examOpenRequest(opts.id);
 }
 function examTab(which){
   document.querySelectorAll('#examTabs [data-et]').forEach(b => { b.className = 'btn btn-sm ' + (b.dataset.et === which ? 'btn-primary' : 'btn-secondary'); });
@@ -1289,26 +1292,40 @@ function examTab(which){
 // Requests table (Neil 2026-11-09): filters (exam date range, level, exam, status), every column sortable, tick boxes with
 // select-all + shift-click, "+ Add request" for students who asked at the desk, and "Send to CES" — ONE email with the ticked
 // students to CES (success@, DOS + accounts CC), previewed first. Prepaid (exam paid with the course) = we book + pay CES.
-let _exReq = [], _exSel = new Set(), _exSort = { k: 'date', dir: 1 }, _exLast = null, _exF = { from: '', to: '', level: '', exam: '', status: 'open' };
-const EX_OPEN = ['REQUEST_PENDING','NEEDS_ATTENTION','CHANGE_REQUESTED','REQUESTED','CONFIRMED'];
+let _exReq = [], _exNotReq = [], _exTargetWk = 30, _exSel = new Set(), _exSort = { k: 'date', dir: 1 }, _exLast = null, _exF = { from: '', to: '', level: '', exam: '', status: '' };
+const EX_TODAY = new Date().toISOString().slice(0,10);
 const exName = r => `${r.student?.firstName||''} ${r.student?.lastName||''}`.trim() || ('#'+r.studentId);
-const exExam = r => r.examSitting ? r.examSitting.examCode.replace(/_/g,' ') : '';
-const exDate = r => r.examSitting?.examDate ? r.examSitting.examDate.slice(0,10) : '';
+// Exam + date: the linked sitting wins; imported/desk rows (no sitting) fall back to their own examCode/examLabel + preferredDate.
+const exCode = r => [r.examSitting?.examCode, r.examCode].find(c => c && c !== 'OTHER') || '';   // 'OTHER' = unknown → use the free-text label
+const exExam = r => { const c = exCode(r); return c ? c.replace(/_/g,' ') : (r.examLabel || ''); };
+const exExamShort = r => { const c = exCode(r); return c ? (EX_SHORT[c] || c.replace(/_/g,' ')) : (r.examLabel || ''); };
+const exDate = r => r.examSitting?.examDate ? r.examSitting.examDate.slice(0,10) : (r.preferredDate ? r.preferredDate.slice(0,10) : '');
+// Default exam-date order (Neil 2026-11-11): upcoming first (soonest at top), then past (most recent first), then no date.
+const exDateRank = r => { const d = exDate(r); return !d ? '3' : d >= EX_TODAY ? '1' + d : '2' + (99999999 - Number(d.replace(/-/g,''))); };
 const exUk = d => d ? d.slice(0,10).split('-').reverse().join('/') : '';   // UK dates on screen (Neil 2026-11-09); ISO kept for sorting/filtering
-const EX_SHORT = { IELTS_GT:'IELTS', LANGUAGECERT:'LANGUAGECERT', B1_PRELIMINARY:'PET', B2_FIRST:'FCE', C1_ADVANCED:'CAE' };
+const EX_SHORT = { IELTS_GT:'IELTS', IELTS_ACADEMIC:'IELTS Academic', LANGUAGECERT:'LanguageCert', B1_PRELIMINARY:'PET', B2_FIRST:'FCE', C1_ADVANCED:'CAE' };
 const exRef = s => s ? `${EX_SHORT[s.examCode]||s.examCode}-${exUk(s.examDate).replace(/\//g,'-')}` : 'no date yet';
+const _exWk = 7*86400000;
+const exAddWeeks = (iso, w) => { if(!iso) return ''; const d = new Date(iso.slice(0,10)+'T00:00:00Z'); return new Date(d.getTime()+w*_exWk).toISOString().slice(0,10); };
+const exCourseStart = r => r.bookingCourse?.startDate ? r.bookingCourse.startDate.slice(0,10) : '';
+const exCourseEnd = r => r.bookingCourse?.endDate ? r.bookingCourse.endDate.slice(0,10) : '';   // AY end ≈ Fri wk25 (sit from wk26)
+const exSitBy = r => { const s = exCourseStart(r); return s ? exAddWeeks(s, _exTargetWk) : ''; };  // comfort target = start + targetSitWeek
+const exPermEnd = r => { const v = r.student?.visaUntil; if (v) return v.slice(0,10); const s = exCourseStart(r); return s ? exAddWeeks(s, 35) : ''; };  // hard limit
 async function examLoadRequests(){
   const body = document.getElementById('examBody');
   try {
-    const { requests } = await api('/exams/requests');
-    _exReq = requests || []; _exSel = new Set([..._exSel].filter(id => _exReq.some(r => r.id === id)));
-    const levels = [...new Set(_exReq.map(r => r.student?.currentLevel).filter(Boolean))].sort();
+    const [reqRes, cfgRes] = await Promise.all([ api('/exams/requests'), api('/exams/config').catch(()=>null) ]);
+    _exReq = reqRes.requests || []; _exNotReq = reqRes.notRequested || [];
+    _exTargetWk = (cfgRes && cfgRes.config && cfgRes.config.targetSitWeek) || 30;
+    _exSel = new Set([..._exSel].filter(id => _exReq.some(r => r.id === id)));
+    const levels = [...new Set([..._exReq, ..._exNotReq].map(r => r.student?.currentLevel).filter(Boolean))].sort();
     const exams = [...new Set(_exReq.map(exExam).filter(Boolean))].sort();
     const sel = (id, opts, cur, all) => `<select id="${id}" onchange="examFilt()" style="font-size:12px;padding:4px 6px">${[`<option value="">${all}</option>`].concat(opts.map(o=>`<option value="${esc(o)}" ${o===cur?'selected':''}>${esc(o)}</option>`)).join('')}</select>`;
+    const STATUS_OPTS = [['','All'],['REQUESTED','Requested'],['BOOKED','Booked'],['CONFIRMED','Confirmed'],['CANCELLED','Cancelled'],['NEEDS_ATTENTION','Needs attention'],['NOT_REQUESTED','Not requested yet']];
     body.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px;font-size:12px">
         <span>Exam date</span><input type="date" id="exFrom" value="${_exF.from}" onchange="examFilt()" style="font-size:12px;padding:3px 5px"><span>→</span><input type="date" id="exTo" value="${_exF.to}" onchange="examFilt()" style="font-size:12px;padding:3px 5px">
         ${sel('exLevel', levels, _exF.level, 'All levels')}${sel('exExam', exams, _exF.exam, 'All exams')}
-        <select id="exStatus" onchange="examFilt()" style="font-size:12px;padding:4px 6px"><option value="open" ${_exF.status==='open'?'selected':''}>Open requests</option><option value="" ${_exF.status===''?'selected':''}>All statuses</option>${Object.keys(EXAM_STATUS_STYLE).map(k=>`<option value="${k}" ${_exF.status===k?'selected':''}>${k.replace(/_/g,' ')}</option>`).join('')}</select>
+        <select id="exStatus" onchange="examFilt()" style="font-size:12px;padding:4px 6px">${STATUS_OPTS.map(([v,l])=>`<option value="${v}" ${_exF.status===v?'selected':''}>${l}</option>`).join('')}</select>
         <button class="btn btn-secondary btn-sm" onclick="examAddOpen()">+ Add request</button>
         <button class="btn btn-primary btn-sm" id="exSendBtn" onclick="examSendOpen()" style="margin-left:auto">Send to CES (0)</button>
       </div><div id="exPanel"></div><div id="exTable"></div>`;
@@ -1318,30 +1335,51 @@ async function examLoadRequests(){
 function examFilt(){ _exF = { from: document.getElementById('exFrom').value, to: document.getElementById('exTo').value, level: document.getElementById('exLevel').value, exam: document.getElementById('exExam').value, status: document.getElementById('exStatus').value }; examRenderTable(); }
 function examRows(){
   const f = _exF;
+  if (f.status === 'NOT_REQUESTED') {
+    let rows = _exNotReq.filter(r => !f.level || r.student?.currentLevel === f.level);
+    const key = { student: exName, level: r => r.student?.currentLevel || '', courseEnd: r => exCourseEnd(r) || '9999', sitBy: r => exSitBy(r) || '9999' }[_exSort.k] || (r => exSitBy(r) || '9999');
+    return rows.sort((a, z) => String(key(a)).localeCompare(String(key(z))) * _exSort.dir);
+  }
   let rows = _exReq.filter(r => (!f.from || (exDate(r) && exDate(r) >= f.from)) && (!f.to || (exDate(r) && exDate(r) <= f.to)) && (!f.level || r.student?.currentLevel === f.level) && (!f.exam || exExam(r) === f.exam)
-    && (!f.status || (f.status === 'open' ? EX_OPEN.includes(r.status) : r.status === f.status)));
-  const key = { student: exName, level: r => r.student?.currentLevel || '', exam: exExam, date: r => exDate(r) || '9999', pay: r => r.paymentArrangement, status: r => r.status, requested: r => r.requestedAt || r.createdAt || '' }[_exSort.k] || exDate;
+    && (!f.status || r.status === f.status));
+  const key = { student: exName, level: r => r.student?.currentLevel || '', exam: exExam, date: exDateRank, courseEnd: r => exCourseEnd(r) || '9999', sitBy: r => exSitBy(r) || '9999', pay: r => r.paymentArrangement, status: r => r.status, requested: r => r.requestedAt || r.createdAt || '' }[_exSort.k] || exDateRank;
   return rows.sort((a, z) => String(key(a)).localeCompare(String(key(z))) * _exSort.dir);
 }
 function examSortBy(k){ _exSort = { k, dir: _exSort.k === k ? -_exSort.dir : 1 }; examRenderTable(); }
 function examRenderTable(){
   const rows = examRows(), el = document.getElementById('exTable'); if (!el) return;
-  const cols = [['student','Student'],['level','Level'],['exam','Exam'],['date','Exam date'],['pay','Pay'],['status','Status'],['requested','Requested']];
-  const allOn = rows.length && rows.every(r => _exSel.has(r.id));
-  el.innerHTML = !rows.length ? `<div style="padding:20px;color:var(--text-muted)">No requests match.</div>` : `<table style="width:100%;border-collapse:collapse;font-size:13px">
-    <thead><tr style="text-align:left;border-bottom:2px solid var(--card-border)"><th style="padding:7px 8px;width:28px"><input type="checkbox" ${allOn?'checked':''} onclick="examTickAll(this.checked)" title="Tick every request shown"></th>
-      ${cols.map(([k,h])=>`<th style="padding:7px 8px;cursor:pointer;white-space:nowrap" onclick="examSortBy('${k}')">${h}${_exSort.k===k?(_exSort.dir>0?' ▲':' ▼'):''}</th>`).join('')}<th></th></tr></thead><tbody>
-    ${rows.map((r,i) => `<tr style="border-bottom:1px solid var(--card-border);cursor:pointer;${_exSel.has(r.id)?'background:var(--bg-subtle)':''}" onclick="examOpenRequest(${r.id})">
-      <td style="padding:7px 8px" onclick="event.stopPropagation()"><input type="checkbox" ${_exSel.has(r.id)?'checked':''} onclick="examTick(event,${r.id},${i})"></td>
-      <td style="padding:7px 8px"><a href="/sis/admin?view=student-detail&id=${r.studentId}" onclick="event.stopPropagation();navigate('student-detail',{id:${r.studentId}});return false" style="color:var(--accent)">${esc(exName(r))}</a></td>
+  const notReq = _exF.status === 'NOT_REQUESTED';
+  // Column order (Neil 2026-11-11): Student · Level · Course End · Sit By · Pay · Requested · Exam Date (with the exam) · Status.
+  const cols = [['student','Student'],['level','Level'],['courseEnd','Course End'],['sitBy','Sit By'],['pay','Pay'],['requested','Requested'],['date','Exam Date'],['status','Status']];
+  const allOn = !notReq && rows.length && rows.every(r => _exSel.has(r.id));
+  const setBtn = () => { const b = document.getElementById('exSendBtn'); if (b) { b.textContent = `Send to CES (${_exSel.size})`; b.disabled = !_exSel.size; } };
+  if (!rows.length) { el.innerHTML = `<div style="padding:20px;color:var(--text-muted)">No ${notReq?'students':'requests'} match.</div>`; setBtn(); return; }
+  el.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px">
+    <thead><tr style="text-align:left;border-bottom:2px solid var(--card-border)"><th style="padding:7px 8px;width:28px">${notReq?'':`<input type="checkbox" ${allOn?'checked':''} onclick="examTickAll(this.checked)" title="Tick every request shown">`}</th>
+      ${cols.map(([k,h])=>`<th style="padding:7px 8px;cursor:pointer;white-space:nowrap" onclick="examSortBy('${k}')">${h}${_exSort.k===k?(_exSort.dir>0?' ▲':' ▼'):''}</th>`).join('')}</tr></thead><tbody>
+    ${rows.map((r,i) => {
+      const ed = exDate(r), sb = exSitBy(r), pe = exPermEnd(r);
+      const overLimit = ed && pe && ed > pe, overTarget = ed && sb && ed > sb;
+      const dateStyle = overLimit ? 'color:#991b1b;font-weight:700' : overTarget ? 'color:#b45309;font-weight:700' : '';
+      const sbStyle = notReq && sb && sb < EX_TODAY ? 'color:#991b1b;font-weight:700' : '';
+      const act = notReq ? `navigate('student-detail',{id:${r.studentId}})` : `examOpenRequest(${r.id})`;
+      const noDate = !ed && (r.status === 'CONFIRMED' || r.status === 'BOOKED');   // booked/confirmed but no date = data gap → red
+      const exLbl = notReq ? '' : exExamShort(r);
+      const dateCell = ed ? `${exUk(ed)}${exLbl?` <span style="color:var(--text-muted);font-weight:400">· ${esc(exLbl)}</span>`:''}${!r.examSitting?' <span title="Date from the email; no CES sitting linked" style="color:var(--text-muted)">*</span>':''}`
+        : noDate ? `<span style="color:#991b1b;font-weight:700" title="${esc(EXAM_STATUS_LABEL[r.status])} but no exam date recorded">No date</span>${exLbl?` <span style="color:var(--text-muted)">· ${esc(exLbl)}</span>`:''}`
+        : (exLbl ? `<span style="color:var(--text-muted)">— · ${esc(exLbl)}</span>` : '—');
+      return `<tr class="${!notReq&&r.id===_exOpenId?'preview-active':''}" style="border-bottom:1px solid var(--card-border);cursor:pointer;${!notReq&&_exSel.has(r.id)?'background:var(--bg-subtle)':''}" onclick="${act}">
+      <td style="padding:7px 8px" onclick="event.stopPropagation()">${notReq?'':`<input type="checkbox" ${_exSel.has(r.id)?'checked':''} onclick="examTick(event,${r.id},${i})">`}</td>
+      <td style="padding:7px 8px;position:relative;padding-right:84px;white-space:nowrap"><a href="/sis/admin?view=student-detail&id=${r.studentId}" onclick="event.stopPropagation();navigate('student-detail',{id:${r.studentId}});return false" style="color:var(--accent)">${esc(exName(r))}</a>
+        <span class="preview-btn" onclick="event.stopPropagation();showStudentPreview(${r.studentId})" title="Preview"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Preview</span></td>
       <td style="padding:7px 8px">${esc(r.student?.currentLevel||'')}</td>
-      <td style="padding:7px 8px">${r.examSitting ? esc(exExam(r)) : '<span style="color:var(--text-muted)">no date chosen</span>'}</td>
-      <td style="padding:7px 8px">${exUk(exDate(r))}</td>
-      <td style="padding:7px 8px">${r.paymentArrangement==='PREPAID'?'Prepaid':'Direct'}</td>
-      <td style="padding:7px 8px">${examBadge(r.status)}</td>
-      <td style="padding:7px 8px;color:var(--text-muted)">${exUk(r.requestedAt||r.createdAt||'')||'—'}</td>
-      <td style="padding:7px 8px;color:var(--accent)">Open ›</td></tr>`).join('')}</tbody></table>`;
-  const b = document.getElementById('exSendBtn'); if (b) { b.textContent = `Send to CES (${_exSel.size})`; b.disabled = !_exSel.size; }
+      <td style="padding:7px 8px">${exUk(exCourseEnd(r))||'—'}</td>
+      <td style="padding:7px 8px;${sbStyle}">${exUk(sb)||'—'}</td>
+      <td style="padding:7px 8px">${notReq?'—':(r.paymentArrangement==='PREPAID'?'Prepaid':'Direct')}</td>
+      <td style="padding:7px 8px;color:var(--text-muted)">${notReq?'—':(exUk(r.requestedAt||r.createdAt||'')||'—')}</td>
+      <td style="padding:7px 8px;white-space:nowrap;${dateStyle}">${dateCell}</td>
+      <td style="padding:7px 8px">${examBadge(r.status)}</td></tr>`; }).join('')}</tbody></table>`;
+  setBtn();
 }
 function examTick(ev, id, i){
   const rows = examRows(), on = ev.target.checked;
@@ -1366,7 +1404,7 @@ async function examSendOpen(){
 async function examSendGo(btn){
   btn.disabled = true; const m = document.getElementById('exSendMsg'); m.textContent = 'Sending…';
   try { const d = await api('/exams/requests/send-batch', { method: 'POST', body: { ids: [..._exSel], to: document.getElementById('exTo2').value, cc: document.getElementById('exCc2').value } });
-    _exSel = new Set(); document.getElementById('exPanel').innerHTML = `<div style="padding:10px;color:#065f46;background:#d1fae5;border-radius:8px;margin-bottom:10px">✓ Sent to ${esc(d.to)}: ${d.sent} student${d.sent===1?'':'s'}, now REQUESTED.</div>`; examLoadRequests();
+    _exSel = new Set(); document.getElementById('exPanel').innerHTML = `<div style="padding:10px;color:#065f46;background:#d1fae5;border-radius:8px;margin-bottom:10px">✓ Sent to ${esc(d.to)}: ${d.sent} student${d.sent===1?'':'s'}, now BOOKED.</div>`; examLoadRequests();
   } catch(e){ m.textContent = '⚠ ' + (e.message||e); btn.disabled = false; }
 }
 async function examAddOpen(){
@@ -1392,29 +1430,45 @@ async function examAddGo(){
   catch(e){ m.textContent = '⚠ ' + (e.message||e); }
 }
 
+// Request detail opens in a right-side pane over the table (Neil 2026-11-11) — the table stays put behind it.
+let _exOpenId = null;
+function examPane(){
+  let pane = document.getElementById('examPreviewPane');
+  if (!pane) {
+    pane = document.createElement('div'); pane.id = 'examPreviewPane';
+    pane.style.cssText = 'position:fixed;top:0;right:0;height:100vh;width:0;overflow:hidden auto;z-index:9000;border-left:1px solid var(--card-border);background:var(--card-bg,#fff);box-shadow:-8px 0 24px rgba(0,0,0,0.18);transition:width 300ms cubic-bezier(0.16,1,0.3,1)';
+    document.body.appendChild(pane);
+  }
+  pane.style.width = 'min(480px,100vw)';
+  return pane;
+}
+function examClosePane(){ _exOpenId = null; const p = document.getElementById('examPreviewPane'); if (p) p.style.width = '0'; document.querySelectorAll('#exTable tr.preview-active').forEach(t => t.classList.remove('preview-active')); }
 async function examOpenRequest(id){
-  showExaminations({});
-  const body = document.getElementById('examBody');
+  _exOpenId = id;
+  if (document.getElementById('exTable')) examRenderTable();
+  const body = examPane();
   body.innerHTML = `<div style="padding:20px;color:var(--text-muted)">Loading request…</div>`;
   try {
     const { request: r } = await api('/exams/requests/'+id);
     const name = `${r.student?.firstName||''} ${r.student?.lastName||''}`.trim() || ('#'+r.studentId);
     const s = r.examSitting;
-    const statusOpts = ['REQUESTED','CONFIRMED','SAT','RESULTS_RECEIVED','COMPLETED','CANCELLED','CHANGE_REQUESTED','REJECTED','EXPIRED','NEEDS_ATTENTION']
-      .map(o=>`<option value="${o}" ${o===r.status?'selected':''}>${o.replace(/_/g,' ')}</option>`).join('');
+    const statusOpts = ['REQUESTED','BOOKED','CONFIRMED','CANCELLED','NEEDS_ATTENTION']
+      .map(o=>`<option value="${o}" ${o===r.status?'selected':''}>${EXAM_STATUS_LABEL[o]||o}</option>`).join('');
     body.innerHTML = `
-      <button class="btn btn-ghost btn-sm" onclick="examTab('requests')" style="margin-bottom:10px">‹ Back to requests</button>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:900px">
+      <div style="padding:12px 14px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><h3 style="margin:0;font-size:16px">${esc(name)}</h3>${examBadge(r.status)}
+        <button class="btn btn-ghost btn-sm" onclick="examClosePane()" style="margin-left:auto" title="Close">✕</button></div>
+      <div>
         <div>
-          <h3 style="margin:0 0 8px">${esc(name)} ${examBadge(r.status)}</h3>
-          <div style="font-size:13px;line-height:1.9">
-            <div><b>Exam:</b> ${s?esc(s.examCode.replace(/_/g,' ')):'—'}</div>
-            <div><b>Date:</b> ${s?.examDate?exUk(s.examDate):'—'} ${s?.startTime?('· '+esc(s.startTime)):''}</div>
+          <div style="font-size:13px;line-height:1.7">
+            <div><b>Exam:</b> ${esc(exExam(r)||'—')}</div>
+            <div><b>Date:</b> ${exUk(exDate(r))||'<span style="color:#991b1b;font-weight:700">No date</span>'} ${s?.startTime?('· '+esc(s.startTime)):''}${exDate(r)&&!s?' <span style="color:var(--text-muted)">(from email, no sitting linked)</span>':''}</div>
             <div><b>Centre:</b> Centre of English Studies, Dublin</div>
             <div><b>Payment:</b> ${r.paymentArrangement==='PREPAID'?'Prepaid (ULearn settles)':'Direct (CES invoices student)'}</div>
             <div><b>Level:</b> ${esc(r.student?.currentLevel||'—')}</div>
             <div><b>Enrolment:</b> ${esc(r.bookingCourse?.name||'')}</div>
             <div><b>Reference:</b> ${exRef(r.examSitting)}</div>
+            ${r.notes?`<div><b>Notes:</b> <span style="color:var(--text-muted)">${esc(r.notes)}</span></div>`:''}
             ${r.emailThreadId?`<div><b>Email thread:</b> <span style="font-family:monospace;font-size:12px">${esc(r.emailThreadId)}</span></div>`:''}
           </div>
           <div style="margin-top:14px;padding:12px;border:1px solid var(--card-border);border-radius:8px">
@@ -1428,8 +1482,8 @@ async function examOpenRequest(id){
             <button class="btn btn-primary btn-sm" onclick="examSaveRequest(${r.id})">Save</button>
           </div>
         </div>
-        <div>
-          <div style="font-weight:600;margin-bottom:8px;font-size:13px">History</div>
+        <div style="margin-top:12px">
+          <div style="font-weight:600;margin-bottom:6px;font-size:13px">History</div>
           <div style="font-size:12px;line-height:1.6">
             ${(r.events||[]).map(e=>`<div style="padding:6px 0;border-bottom:1px solid var(--card-border)">
               <span style="color:var(--text-muted)">${exUk(e.createdAt)} ${e.createdAt.slice(11,16)}</span> ·
@@ -1439,14 +1493,14 @@ async function examOpenRequest(id){
             </div>`).join('') || '<div style="color:var(--text-muted)">No events.</div>'}
           </div>
         </div>
-      </div>`;
+      </div></div>`;
   } catch(e){ body.innerHTML = `<div style="padding:20px;color:var(--danger)">${esc(e.message||e)}</div>`; }
 }
 async function examSaveRequest(id){
   try {
     const patch = { status: document.getElementById('examReqStatus').value, externalBookingReference: document.getElementById('examReqRef').value, note: document.getElementById('examReqNote').value || undefined };
     await api('/exams/requests/'+id, { method:'PATCH', body: patch });
-    toast('Saved'); examOpenRequest(id);
+    toast('Saved'); if (document.getElementById('exTable')) await examLoadRequests(); examOpenRequest(id);
   } catch(e){ toast(e.message||e, true); }
 }
 
@@ -8096,6 +8150,8 @@ let _insTog = { pel: true, health: true, unspec: true, sent: true, purchased: tr
 let _insHistorical = false;     // include past course starts
 let _insFrom = '', _insTo = ''; // course-start range (yyyy-mm-dd)
 let _insSortDir = 'desc';       // course-start sort — newest first by default
+let _insSearch = '';            // name / email / id search — same matching as the Students screen
+function _insSetSearch(v){ _insSearch = v; renderInsurance(); }
 function _insBadge(status){
   const m = { SENT:['badge-escrow','Sent'], APPROVED:['badge-pending','Approved'], PURCHASED:['badge-confirmed','Purchased'] };
   const [c,l] = m[status] || m.SENT;
@@ -8123,8 +8179,15 @@ function renderInsurance() {
   const todayIso = new Date().toISOString().slice(0,10);
   let rows = _insuranceRows.slice();
 
-  // Filters (client-side)
-  if (!_insHistorical) rows = rows.filter(r => !r.courseStart || r.courseStart >= todayIso);
+  // Search — the Students screen's matching (lib/student-search.ts), client-side: whitespace tokens, EACH must hit
+  // a column (name, nickname, email, Fidelo number, or a numeric student/booking id); accents ignored.
+  const tokens = _stripAccents(_insSearch.trim()).toLowerCase().split(/\s+/).filter(Boolean);
+  if (tokens.length) rows = rows.filter(r => {
+    const hay = _stripAccents(`${r.studentName||''} ${r.nickname||''}`).toLowerCase() + ` ${(r.email||'').toLowerCase()} ${(r.fideloCustomerNum||'').toLowerCase()}`;
+    return tokens.every(t => hay.includes(t) || (/^\d+$/.test(t) && (String(r.studentId).includes(t) || String(r.bookingId).includes(t))));
+  });
+  // Filters (client-side). A search looks through past courses too.
+  if (!_insHistorical && !tokens.length) rows = rows.filter(r => !r.courseStart || r.courseStart >= todayIso);
   // Insurance-type toggles (independent on/off): a Both (PEL;Health) row shows if
   // either PEL or Health is on; it only hides when both are off.
   rows = rows.filter(r => { const p = r.product; return p == null ? _insTog.unspec : p === 'PEL' ? _insTog.pel : p === 'Health' ? _insTog.health : p === 'PEL;Health' ? (_insTog.pel || _insTog.health) : true; });
@@ -8138,6 +8201,7 @@ function renderInsurance() {
   const tog = (k,label)=>`<label class="chip-btn pill-check ${_insTog[k]?'is-on':''}" style="font-size:12px"><input type="checkbox" ${_insTog[k]?'checked':''} onchange="_insFlip('${k}')">${label}</label>`;
   const filters = `
     <div class="toolbar" style="gap:10px;flex-wrap:wrap;align-items:center">
+      <div class="search-bar" style="width:240px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="insSearchInput" placeholder="Search students..." value="${esc(_insSearch)}" oninput="_insSetSearch(this.value)"></div>
       <div class="chip-row" title="Insurance type">${tog('pel','PEL')}${tog('health','Health')}${tog('unspec','Unspecified')}</div>
       <div class="chip-row" title="Status">${tog('sent','Sent')}${tog('purchased','Purchased')}</div>
       <label style="font-size:12px;color:var(--text-secondary);display:flex;align-items:center;gap:6px">From <input type="date" class="form-input" style="height:32px;width:150px" value="${_insFrom}" onchange="_insSetFrom(this.value)"></label>
@@ -8146,7 +8210,7 @@ function renderInsurance() {
       <a href="https://hub.ulearnschool.com/fins/procurement" target="_blank" rel="noopener" class="btn btn-secondary btn-sm" style="margin-left:auto">Procurement ↗</a>
     </div>`;
 
-  if (!rows.length) { content.innerHTML = filters + '<div class="table-wrap"><div class="table-empty">No insurance rows match these filters.</div></div>'; return; }
+  if (!rows.length) { content.innerHTML = filters + '<div class="table-wrap"><div class="table-empty">No insurance rows match these filters.</div></div>'; _insRefocus(); return; }
 
   const arrow = _insSortDir==='desc' ? ' ▾' : ' ▴';
   let body = '';
@@ -8173,7 +8237,9 @@ function renderInsurance() {
         <tbody>${body}</tbody>
       </table>
     </div>`;
+  _insRefocus();
 }
+function _insRefocus(){ if (!_insSearch) return; const el = document.getElementById('insSearchInput'); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } }
 
 async function showRefundsList() {
   if (!refundGuard()) return;
@@ -9525,7 +9591,7 @@ async function showBookingDetail(id) {
     if (b.extras && b.extras.length > 0) {
       for (const ex of b.extras) {
         const sku = extraToSku(ex);
-        const skuOpts = Object.keys(EXTRA_CATALOG).map(k => `<option value="${k}" ${k===sku?'selected':''}>${EXTRA_LABELS[k]}</option>`).join('');
+        const skuOpts = Object.keys(EXTRA_CATALOG).filter(k => k !== 'INS' || sku === 'INS').map(k => `<option value="${k}" ${k===sku?'selected':''}>${EXTRA_LABELS[k]}</option>`).join('');
         const isAirport = ex.extraType === 'AIRPORT_PICKUP' || ex.extraType === 'AIRPORT_DROPOFF';
         const fld = 'height:32px;box-sizing:border-box;font-size:12px;padding:2px 8px';
         const lbl = 'display:flex;flex-direction:column;gap:2px';
@@ -9757,13 +9823,18 @@ const EXTRA_LABELS = {
   'FCE':          'Exam Fee — Cambridge First',
   'CAE':          'Exam Fee — Cambridge Advanced',
   'INSR':         'PEL & Health Insurance',
+  'PEL':          'PEL Insurance',
+  'HEALTH':       'Health Insurance',
+  'INS':          'Insurance — Type Not Set',
 };
 
 // Reverse-lookup an existing BookingExtra row to a catalog SKU key.
 function extraToSku(ex) {
   if (ex.extraType === 'AIRPORT_PICKUP') return 'TRNS_PICKUP';
   if (ex.extraType === 'AIRPORT_DROPOFF') return 'TRNS_DROPOFF';
-  if (ex.extraType === 'INSURANCE') return 'INSR';
+  // Insurance type lives in `details` (webhooks.ts mirror): 'PEL;Health' | 'PEL' | 'Health'.
+  // Blank = never set — kept blank (INS) so a Save can't assert cover nobody bought.
+  if (ex.extraType === 'INSURANCE') return ({ 'PEL;Health': 'INSR', 'PEL': 'PEL', 'Health': 'HEALTH' })[ex.details] || 'INS';
   if (ex.extraType === 'EXAM_FEE') {
     if (ex.details === 'IELTS') return 'IELTS';
     if (ex.details === 'FCE') return 'FCE';
@@ -9774,7 +9845,7 @@ function extraToSku(ex) {
 }
 
 async function openAddExtraModal(bookingId) {
-  const opts = Object.keys(EXTRA_CATALOG).map(k => `<option value="${k}">${EXTRA_LABELS[k]}</option>`).join('');
+  const opts = Object.keys(EXTRA_CATALOG).filter(k => k !== 'INS').map(k => `<option value="${k}">${EXTRA_LABELS[k]}</option>`).join('');
   const html = `<div class="modal-overlay" onclick="if(event.target===this)this.remove()">
     <div class="modal" style="max-width:480px">
       <div class="modal-header"><h2>Add Extra</h2><button class="btn btn-ghost" onclick="this.closest('.modal-overlay').remove()">&times;</button></div>
@@ -10413,7 +10484,10 @@ const EXTRA_CATALOG = {
   'IELTS':        ['EXAM_FEE', 'IELTS'],
   'FCE':          ['EXAM_FEE', 'FCE'],
   'CAE':          ['EXAM_FEE', 'CAE'],
-  'INSR':         ['INSURANCE', null],
+  'INSR':         ['INSURANCE', 'PEL;Health'],
+  'PEL':          ['INSURANCE', 'PEL'],
+  'HEALTH':       ['INSURANCE', 'Health'],
+  'INS':          ['INSURANCE', null],   // legacy blank type — shown only on rows that already have it
 };
 
 function addExtraRow() {

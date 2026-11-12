@@ -38,12 +38,20 @@ const LEVEL_ORDER = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 const levelRank = (l?: string | null) => LEVEL_ORDER.indexOf((l || '').toUpperCase());
 const B1_RANK = LEVEL_ORDER.indexOf('B1');
 
-// Statuses that mean "the student has acted" — the dashboard reminder hides and
-// no second active request is allowed. (REQUEST_PENDING = started but the CES
-// send didn't go through yet, so it still counts as active/one-per-enrolment but
-// does NOT satisfy the reminder.)
-const ACTIVE_STATUSES = ['REQUEST_PENDING', 'REQUESTED', 'CONFIRMED', 'SAT', 'RESULTS_RECEIVED', 'COMPLETED', 'CHANGE_REQUESTED', 'NEEDS_ATTENTION'];
-const SATISFIED_STATUSES = ['REQUESTED', 'CONFIRMED', 'SAT', 'RESULTS_RECEIVED', 'COMPLETED', 'CHANGE_REQUESTED', 'NEEDS_ATTENTION'];
+// "Active" = one open exam per enrolment (and hides the dashboard reminder).
+// Base states are always active; a CONFIRMED row counts as active ONLY while its
+// exam date is still in the future — a past CONFIRMED must not block a resit.
+const ACTIVE_STATUSES = ['REQUESTED', 'BOOKED', 'NEEDS_ATTENTION'];
+// "Satisfied" = the student has an exam sorted (reminder clears): the above + CONFIRMED (any date).
+const SATISFIED_STATUSES = ['REQUESTED', 'BOOKED', 'CONFIRMED', 'NEEDS_ATTENTION'];
+const startOfTodayUtc = () => { const n = new Date(); return new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate())); };
+// Prisma `where` for active bookings (date-aware CONFIRMED). Spread extra filters in.
+const activeBookingWhere = (extra: any = {}) => ({ ...extra, OR: [
+  { status: { in: ACTIVE_STATUSES as any } },
+  { status: 'CONFIRMED' as any, examSitting: { is: { examDate: { gte: startOfTodayUtc() } } } },
+] });
+// In-memory active test for a row with examSitting (examDate) loaded.
+const isActiveRow = (r: any) => ACTIVE_STATUSES.includes(r.status) || (r.status === 'CONFIRMED' && r.examSitting?.examDate && +new Date(r.examSitting.examDate) >= +startOfTodayUtc());
 
 // Reference = exam + date, UK order (Neil 2026-11-09: "EX-9" means nothing; "IELTS-06-12-2026" does). One per sitting —
 // a second sitting of the same exam that day gets -2, -3 (by start time).
@@ -173,9 +181,9 @@ export function examScripts(prisma: PrismaClient) {
     const existing = await prisma.studentExamBooking.findMany({
       where: { studentId, bookingCourseId: course.id },
       orderBy: { createdAt: 'desc' },
-      select: { id: true, status: true, examSittingId: true, requestedAt: true },
+      select: { id: true, status: true, examSittingId: true, requestedAt: true, examSitting: { select: { examDate: true } } },
     });
-    const active = existing.find((e) => ACTIVE_STATUSES.includes(e.status)) || null;
+    const active = existing.find(isActiveRow) || null;
     const satisfied = existing.some((e) => SATISFIED_STATUSES.includes(e.status));
     const visible = programmeWeek >= cfg.eligibilityWeek;
 
@@ -267,7 +275,7 @@ export function examScripts(prisma: PrismaClient) {
   }
 
   // Student confirms a sitting → create the booking, email CES (student CC'd),
-  // track the Gmail thread. Email failure is non-fatal (row stays REQUEST_PENDING
+  // track the Gmail thread. Email failure is non-fatal (row stays REQUESTED
   // and staff see it) — mirrors requestHoliday.
   async function createExamRequest(studentId: number | undefined, data: { examSittingId?: number; consent?: boolean }) {
     if (!studentId) return { success: false, error: 'No student session' };
@@ -308,11 +316,11 @@ export function examScripts(prisma: PrismaClient) {
     const paymentArrangement = prepaid ? 'PREPAID' : 'DIRECT';
     const code = sitting.examCode as ExamCode;
 
-    // Create the row first (REQUEST_PENDING) so its id is the ULearn reference.
+    // Create the row first (REQUESTED) so its id is the ULearn reference.
     const row = await prisma.studentExamBooking.create({
       data: {
         studentId, bookingCourseId: course.id, examSittingId: sitting.id,
-        status: 'REQUEST_PENDING', paymentArrangement,
+        status: 'REQUESTED', paymentArrangement, source: 'APP', examCode: code,
         studentConfirmedAt: new Date(),
         choiceSnapshot: {
           examCode: code, title: EXAM_TITLE[code], provider: sitting.provider,
@@ -321,7 +329,7 @@ export function examScripts(prisma: PrismaClient) {
         } as any,
       },
     });
-    await prisma.examBookingEvent.create({ data: { examBookingId: row.id, eventType: 'status_change', toStatus: 'REQUEST_PENDING', actor: 'student-app', detail: `Selected ${EXAM_TITLE[code]} on ${iso(sitting.examDate)} (${paymentArrangement})` } });
+    await prisma.examBookingEvent.create({ data: { examBookingId: row.id, eventType: 'status_change', toStatus: 'REQUESTED', actor: 'student-app', detail: `Selected ${EXAM_TITLE[code]} on ${iso(sitting.examDate)} (${paymentArrangement})` } });
 
     const ref = examRef(sitting);
 
@@ -329,14 +337,14 @@ export function examScripts(prisma: PrismaClient) {
     // per student — CES gets names in batches, as Paul does by hand (Neil 2026-11-09).
     if (paymentArrangement === 'PREPAID') {
       await prisma.examBookingEvent.create({ data: { examBookingId: row.id, eventType: 'status_change', actor: 'student-app', detail: 'Prepaid — held for the next group booking to CES (SIS → Exams → Send to CES)' } });
-      return { success: true, bookingId: row.id, status: 'REQUEST_PENDING', reference: ref,
+      return { success: true, bookingId: row.id, status: 'REQUESTED', reference: ref,
         message: `Request received. We'll book your place with the exam centre and confirm the time and venue here.` };
     }
     // Blocked if sends disarmed or CES address not yet verified/configured — the
     // request is still tracked; staff complete it from the admin UI.
     if (!cfg.sendsArmed || !cfg.cesEmail) {
       await prisma.examBookingEvent.create({ data: { examBookingId: row.id, eventType: 'error', detail: !cfg.cesEmail ? 'CES email not configured — send skipped' : 'Sends disarmed — send skipped' } });
-      return { success: true, bookingId: row.id, status: 'REQUEST_PENDING', pendingSend: true, reference: ref,
+      return { success: true, bookingId: row.id, status: 'REQUESTED', pendingSend: true, reference: ref,
         message: 'Your request is recorded. Our team will finalise it with the exam centre.' };
     }
 
@@ -366,17 +374,17 @@ export function examScripts(prisma: PrismaClient) {
       });
       const updated = await prisma.studentExamBooking.update({
         where: { id: row.id },
-        data: { status: 'REQUESTED', requestedAt: new Date(), emailThreadId: sent.threadId, templateSlug: slug },
+        data: { status: 'BOOKED', requestedAt: new Date(), emailThreadId: sent.threadId, templateSlug: slug },
       });
       await prisma.examBookingEvent.createMany({ data: [
         { examBookingId: row.id, eventType: 'email_sent', detail: `CES request sent to ${cfg.cesEmail} (student CC'd) via ${slug}`, emailLogId: sent.emailLogId },
-        { examBookingId: row.id, eventType: 'status_change', fromStatus: 'REQUEST_PENDING', toStatus: 'REQUESTED', actor: 'student-app' },
+        { examBookingId: row.id, eventType: 'status_change', fromStatus: 'REQUESTED', toStatus: 'BOOKED', actor: 'student-app' },
       ] });
-      return { success: true, bookingId: updated.id, status: 'REQUESTED', reference: ref,
+      return { success: true, bookingId: updated.id, status: 'BOOKED', reference: ref,
         message: 'Request sent to the exam centre — they will confirm your place and payment directly. We\'ll keep you posted here.' };
     } catch (e: any) {
       await prisma.examBookingEvent.create({ data: { examBookingId: row.id, eventType: 'error', detail: `CES email failed: ${String(e?.message || e).slice(0, 300)}` } });
-      return { success: true, bookingId: row.id, status: 'REQUEST_PENDING', pendingSend: true, reference: ref,
+      return { success: true, bookingId: row.id, status: 'REQUESTED', pendingSend: true, reference: ref,
         message: 'Your request is recorded. Our team will finalise it with the exam centre.' };
     }
   }
@@ -389,7 +397,7 @@ export function examScripts(prisma: PrismaClient) {
     if (!student || !course) return { success: false, error: 'No Academic Year course on file.' };
 
     const existing = await prisma.studentExamBooking.findFirst({
-      where: { studentId, bookingCourseId: course.id, status: { in: ACTIVE_STATUSES as any } },
+      where: activeBookingWhere({ studentId, bookingCourseId: course.id }),
       select: { id: true },
     });
     const row = existing
@@ -417,7 +425,7 @@ export function examScripts(prisma: PrismaClient) {
     if (!studentId) return { success: false, error: 'No student session' };
     const row = await prisma.studentExamBooking.findFirst({ where: { id: bookingId, studentId } });
     if (!row) return { success: false, error: 'Request not found.' };
-    if (['CONFIRMED', 'SAT', 'RESULTS_RECEIVED', 'COMPLETED'].includes(row.status)) {
+    if (row.status === 'CONFIRMED') {
       return { success: false, error: 'This registration is already confirmed with the exam centre — contact Student Success to change it.' };
     }
     await prisma.studentExamBooking.update({ where: { id: row.id }, data: { status: 'CANCELLED' } });
@@ -470,11 +478,53 @@ export function examScripts(prisma: PrismaClient) {
     return prisma.studentExamBooking.findMany({
       where, orderBy: { createdAt: 'desc' },
       include: {
-        student: { select: { id: true, firstName: true, lastName: true, email: true, currentLevel: true } },
+        student: { select: { id: true, firstName: true, lastName: true, email: true, currentLevel: true, visaUntil: true } },
         examSitting: true,
-        bookingCourse: { select: { id: true, name: true } },
+        bookingCourse: { select: { id: true, name: true, startDate: true, endDate: true } },
       },
     });
+  }
+
+  // AY enrolments past the eligibility week with NO exam row — "we know these must
+  // sit, they haven't asked yet" (the list Paul works). Calculated, not stored.
+  async function notRequestedYet() {
+    const cfg = getExamConfig();
+    const courses = await prisma.bookingCourse.findMany({
+      where: {
+        active: true,
+        OR: [
+          { holidayWks: { not: null } }, { isRenewal: true },
+          { name: { contains: 'Academic', mode: 'insensitive' } },
+          { name: { contains: 'LifePass', mode: 'insensitive' } },
+          { name: { contains: 'Life Pass', mode: 'insensitive' } },
+        ],
+      },
+      select: {
+        id: true, name: true, startDate: true, endDate: true, holidayWks: true, isRenewal: true,
+        booking: { select: { student: { select: { id: true, firstName: true, lastName: true, email: true, currentLevel: true, visaUntil: true } } } },
+      },
+    });
+    const withRow = new Set((await prisma.studentExamBooking.findMany({ select: { bookingCourseId: true } })).map((r) => r.bookingCourseId));
+    const now = Date.now();
+    const out: any[] = [];
+    for (const c of courses) {
+      if (!isAyCourse(c) || withRow.has(c.id) || !c.startDate) continue;
+      const start = +new Date(c.startDate);
+      const week = Math.floor((now - start) / WEEK) + 1;
+      if (week < cfg.eligibilityWeek) continue;
+      const s = c.booking?.student; if (!s) continue;
+      // Only students who can STILL sit — the window to the hard limit (visaUntil,
+      // else start + 35 wk) hasn't closed. Keeps this Paul's live worklist, not all history.
+      const permEnd = s.visaUntil ? +new Date(s.visaUntil) : start + 35 * WEEK;
+      if (permEnd < now) continue;
+      out.push({
+        id: `nr-${c.id}`, notRequested: true, studentId: s.id, status: 'NOT_REQUESTED',
+        student: { id: s.id, firstName: s.firstName, lastName: s.lastName, email: s.email, currentLevel: s.currentLevel, visaUntil: s.visaUntil },
+        examSitting: null, paymentArrangement: null,
+        bookingCourse: { id: c.id, name: c.name, startDate: c.startDate, endDate: c.endDate },
+      });
+    }
+    return out;
   }
 
   // Staff update: record CES confirmation / mark sat / results / cancel / amend.
@@ -489,8 +539,6 @@ export function examScripts(prisma: PrismaClient) {
     if (patch.status && patch.status !== row.status) {
       data.status = patch.status;
       if (patch.status === 'CONFIRMED' && !row.centreConfirmedAt) data.centreConfirmedAt = now;
-      if (patch.status === 'SAT' && !row.satAt) data.satAt = now;
-      if (patch.status === 'RESULTS_RECEIVED' && !row.resultsReceivedAt) data.resultsReceivedAt = now;
       events.push({ examBookingId: id, eventType: patch.status === 'CONFIRMED' ? 'confirmation_recorded' : 'status_change', fromStatus: row.status, toStatus: patch.status, actor, detail: patch.note || null });
     }
     if (patch.note && !(patch.status && patch.status !== row.status)) {
@@ -537,7 +585,7 @@ export function examScripts(prisma: PrismaClient) {
           const feeChanged = (existing.feeEur != null ? Number(existing.feeEur) : null) !== (data.feeEur != null ? Number(data.feeEur) : null);
           const changed = dateChanged || feeChanged || existing.status !== (data.status || existing.status) || (existing.notes || null) !== (data.notes ?? existing.notes ?? null);
           if (changed && (dateChanged || feeChanged)) {
-            const refCount = await prisma.studentExamBooking.count({ where: { examSittingId: existing.id, status: { in: ACTIVE_STATUSES as any } } });
+            const refCount = await prisma.studentExamBooking.count({ where: activeBookingWhere({ examSittingId: existing.id }) });
             if (refCount > 0) result.flagged.push({ id: existing.id, examCode: existing.examCode, examDate: iso(existing.examDate), change: dateChanged ? 'date' : 'fee', activeBookings: refCount });
           }
           result.preview.push({ row: i + 1, action: changed ? 'update' : 'unchanged', id: existing.id, examCode: data.examCode, examDate: iso(data.examDate) });
@@ -556,9 +604,9 @@ export function examScripts(prisma: PrismaClient) {
     const now = new Date();
     const summary = { armed: cfg.reminders.armed, dry: !!opts.dry, ackDue: 0, escalated: 0, sent: 0 };
 
-    // Awaiting CES acknowledgement (REQUESTED) past ackDays / escalateDays working days.
+    // Awaiting CES confirmation (BOOKED) past ackDays / escalateDays working days.
     const pending = await prisma.studentExamBooking.findMany({
-      where: { status: 'REQUESTED' },
+      where: { status: 'BOOKED' },
       include: { student: { select: { id: true, firstName: true, lastName: true } }, examSitting: true },
     });
     for (const b of pending) {
@@ -599,14 +647,14 @@ export function examScripts(prisma: PrismaClient) {
     if (!Number.isInteger(studentId)) return { ok: false, code: 400, error: 'studentId is required' };
     const { student, course, prepaid } = await resolveEnrolment(studentId);
     if (!student || !course) return { ok: false, code: 400, error: 'This student has no Academic Year course on file.' };
-    const existing = await prisma.studentExamBooking.findFirst({ where: { studentId, bookingCourseId: course.id, status: { in: ACTIVE_STATUSES as any } }, select: { id: true, status: true } });
+    const existing = await prisma.studentExamBooking.findFirst({ where: activeBookingWhere({ studentId, bookingCourseId: course.id }), select: { id: true, status: true } });
     if (existing) return { ok: false, code: 409, error: `Already has an active exam request (#${existing.id}, ${existing.status}).` };
     let sitting: any = null;
     if (data.examSittingId) { sitting = await prisma.examSitting.findUnique({ where: { id: Number(data.examSittingId) } }); if (!sitting) return { ok: false, code: 400, error: 'Sitting not found' }; }
     const code = sitting ? (sitting.examCode as ExamCode) : null;
     const row = await prisma.studentExamBooking.create({ data: {
       studentId, bookingCourseId: course.id, examSittingId: sitting ? sitting.id : null,
-      status: sitting ? 'REQUEST_PENDING' : 'NEEDS_ATTENTION', paymentArrangement: prepaid ? 'PREPAID' : 'DIRECT', studentConfirmedAt: new Date(),
+      status: sitting ? 'REQUESTED' : 'NEEDS_ATTENTION', paymentArrangement: prepaid ? 'PREPAID' : 'DIRECT', source: 'DESK', examCode: code, studentConfirmedAt: new Date(),
       choiceSnapshot: sitting ? ({ examCode: code, title: EXAM_TITLE[code as ExamCode], provider: sitting.provider, examDate: iso(sitting.examDate), startTime: sitting.startTime, centre: sitting.centreId } as any) : undefined,
     } });
     await prisma.examBookingEvent.create({ data: { examBookingId: row.id, eventType: 'status_change', toStatus: row.status, actor, detail: `Added by staff${data.note ? ': ' + String(data.note).slice(0, 300) : ''}` } });
@@ -659,20 +707,118 @@ export function examScripts(prisma: PrismaClient) {
     const sent = await sendStudentEmail(prisma, { from: 'success@ulearnschool.com', fromName: 'ULearn Student Success Team', to, cc: cc || undefined, subject, html, attachments, sentBy: opts.actor || 'exam-batch' });
     const now = new Date();
     for (const r of rows) {
-      await prisma.studentExamBooking.update({ where: { id: r.id }, data: { status: 'REQUESTED', requestedAt: now, emailThreadId: sent.threadId, templateSlug: 'group-send' } });
+      await prisma.studentExamBooking.update({ where: { id: r.id }, data: { status: 'BOOKED', requestedAt: now, emailThreadId: sent.threadId, templateSlug: 'group-send' } });
       await prisma.examBookingEvent.createMany({ data: [
         { examBookingId: r.id, eventType: 'email_sent', detail: `Group booking sent to ${to}${cc ? ' (cc ' + cc + ')' : ''}: ${rows.length} student(s)`, emailLogId: sent.emailLogId, actor: opts.actor || 'admin' },
-        { examBookingId: r.id, eventType: 'status_change', fromStatus: r.status, toStatus: 'REQUESTED', actor: opts.actor || 'admin' },
+        { examBookingId: r.id, eventType: 'status_change', fromStatus: r.status, toStatus: 'BOOKED', actor: opts.actor || 'admin' },
       ] });
     }
     return { ok: true, sent: rows.length, to, cc, subject, threadId: sent.threadId };
   }
 
+  // Resolve the enrolment for a desk/import row: the AY course if any, else the
+  // student's latest active booking course (non-AY exam emails are allowed here).
+  async function resolveCourseForDesk(studentId: number) {
+    const { course } = await resolveEnrolment(studentId);
+    if (course) return { course, isAy: true };
+    const latest = await prisma.bookingCourse.findFirst({
+      where: { active: true, booking: { studentId } },
+      orderBy: { startDate: 'desc' },
+      select: { id: true, name: true, startDate: true, endDate: true },
+    });
+    return { course: latest as any, isAy: false };
+  }
+
+  // One door for the hub (and the desk agents): create or update an exam request
+  // from an email / reception / import. Idempotent on sourceRef+student. NEVER
+  // emails — sendBatch stays the only path to CES. Writes an event per change.
+  async function deskUpsert(input: any, actor = 'import:dos-scan') {
+    const studentId = Number(input?.studentId);
+    if (!Number.isInteger(studentId)) return { ok: false, code: 400, error: 'studentId is required' };
+    const student = await prisma.student.findUnique({ where: { id: studentId }, select: { id: true } });
+    if (!student) return { ok: false, code: 404, error: 'student not found' };
+
+    const STATUSES = ['REQUESTED', 'BOOKED', 'CONFIRMED', 'CANCELLED', 'NEEDS_ATTENTION'];
+    const status = String(input.status || '').toUpperCase();
+    if (!STATUSES.includes(status)) return { ok: false, code: 400, error: `status must be one of ${STATUSES.join(', ')}` };
+
+    const { course } = await resolveCourseForDesk(studentId);
+    if (!course) return { ok: false, code: 400, error: 'no course on file for this student' };
+
+    const examCode = input.examCode || null;
+    const examDate = input.examDate ? new Date(input.examDate) : null;
+    const startTime = input.startTime || null;
+    const toDate = (v: any) => (v ? new Date(v) : null);
+
+    // Sitting: use the id given; else match centre+code+date+time; else create it
+    // UNVERIFIED so a CES date heard by email still shows. No date → no sitting.
+    let sittingId: number | null = input.examSittingId ? Number(input.examSittingId) : null;
+    if (!sittingId && examCode && examDate) {
+      const centreId = 'CES-DUBLIN';
+      let sitting = await prisma.examSitting.findFirst({ where: { centreId, examCode, examDate, startTime } });
+      if (!sitting) {
+        const provider = examCode === 'IELTS_GT' || examCode === 'IELTS_ACADEMIC' ? 'IELTS / British Council'
+          : examCode === 'LANGUAGECERT' ? 'LanguageCert / CES'
+          : examCode === 'OTHER' ? 'Other' : 'Cambridge';
+        sitting = await prisma.examSitting.create({ data: { examCode, provider, centreId, examDate, startTime, status: 'UNVERIFIED' } as any });
+      }
+      sittingId = sitting.id;
+    }
+
+    // Match before create: 1) sourceRef+student; 2) active row for the same exam; 3) create.
+    let row: any = null;
+    if (input.sourceRef) row = await prisma.studentExamBooking.findFirst({ where: { studentId, sourceRef: input.sourceRef } });
+    if (!row && sittingId) row = await prisma.studentExamBooking.findFirst({ where: activeBookingWhere({ studentId, examSittingId: sittingId }) });
+    if (!row && examCode) row = await prisma.studentExamBooking.findFirst({ where: activeBookingWhere({ studentId, bookingCourseId: course.id, examCode }) });
+
+    if (!row) {
+      const created = await prisma.studentExamBooking.create({ data: {
+        studentId, bookingCourseId: course.id, examSittingId: sittingId,
+        status: status as any, paymentArrangement: input.paymentArrangement || 'DIRECT',
+        source: (input.source || 'IMPORT') as any, sourceRef: input.sourceRef || null,
+        examCode: examCode as any, examLabel: input.examLabel || null,
+        preferredDate: toDate(input.preferredDate), notes: input.notes || null,
+        externalBookingReference: input.reference || null,
+        requestedAt: toDate(input.requestedAt) || (status === 'REQUESTED' ? new Date() : null),
+        centreConfirmedAt: toDate(input.confirmedAt) || (status === 'CONFIRMED' ? new Date() : null),
+      } as any });
+      await prisma.examBookingEvent.create({ data: { examBookingId: created.id, eventType: 'status_change', toStatus: status, actor, detail: `Created via ${input.source || 'import'}${input.notes ? ': ' + String(input.notes).slice(0, 200) : ''}` } });
+      return { ok: true, request: created, created: true, changed: ['*'] };
+    }
+
+    // Update: status moves forward only (REQUESTED→BOOKED→CONFIRMED); backwards
+    // only to CANCELLED / NEEDS_ATTENTION. Fill empty fields; never duplicate.
+    const RANK: Record<string, number> = { REQUESTED: 1, BOOKED: 2, CONFIRMED: 3 };
+    let nextStatus = row.status;
+    if (status === 'CANCELLED' || status === 'NEEDS_ATTENTION') nextStatus = status;
+    else if ((RANK[status] || 0) >= (RANK[row.status] || 0)) nextStatus = status;
+
+    const data: any = {};
+    const changed: string[] = [];
+    const set = (k: string, v: any) => { if (v !== undefined && v !== null && v !== '' && row[k] !== v) { data[k] = v; changed.push(k); } };
+    if (nextStatus !== row.status) { data.status = nextStatus; changed.push('status'); }
+    set('sourceRef', input.sourceRef);
+    set('examCode', examCode);
+    set('examLabel', input.examLabel);
+    set('notes', input.notes);
+    set('externalBookingReference', input.reference);
+    if (input.paymentArrangement) set('paymentArrangement', input.paymentArrangement);
+    if (sittingId && row.examSittingId !== sittingId) { data.examSittingId = sittingId; changed.push('examSittingId'); }
+    if (input.preferredDate && !row.preferredDate) { data.preferredDate = toDate(input.preferredDate); changed.push('preferredDate'); }
+    if (input.requestedAt && !row.requestedAt) { data.requestedAt = toDate(input.requestedAt); changed.push('requestedAt'); }
+    if (input.confirmedAt && !row.centreConfirmedAt) { data.centreConfirmedAt = toDate(input.confirmedAt); changed.push('centreConfirmedAt'); }
+    if (!changed.length) return { ok: true, request: row, created: false, changed: [] };
+
+    const updated = await prisma.studentExamBooking.update({ where: { id: row.id }, data });
+    await prisma.examBookingEvent.create({ data: { examBookingId: row.id, eventType: nextStatus === 'CONFIRMED' && row.status !== 'CONFIRMED' ? 'confirmation_recorded' : 'status_change', fromStatus: row.status, toStatus: nextStatus, actor, detail: `deskUpsert [${changed.join(', ')}]${input.notes ? ': ' + String(input.notes).slice(0, 180) : ''}` } });
+    return { ok: true, request: updated, created: false, changed };
+  }
+
   return {
-    adminCreate, sendBatch,
+    adminCreate, sendBatch, deskUpsert,
     eligibility, options, createExamRequest, requestAssistance, cancelOwn,
     listSittings, createSitting, updateSitting, archiveSitting,
-    listRequests, getRequest, updateRequest, importSittings, reminderTick,
+    listRequests, notRequestedYet, getRequest, updateRequest, importSittings, reminderTick,
     EXAM_TITLE,
   };
 }

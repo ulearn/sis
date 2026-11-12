@@ -1715,7 +1715,7 @@ async function initPushNotifications() {
        the bottom tab bar (measured live in openLearningPanel), and scrolls its
        own content so the Start button is always reachable on any device. -->
   <div id="learning-test" style="display:none;position:fixed;left:0;right:0;top:76px;bottom:64px;background:#fff;z-index:10">
-    <iframe id="learning-test-frame" title="Placement test" scrolling="yes" style="width:100%;height:100%;border:0;background:#fff"></iframe>
+    <iframe id="learning-test-frame" title="Placement test" allow="microphone" scrolling="yes" style="width:100%;height:100%;border:0;background:#fff"></iframe>
   </div>
   <!-- Launch-phase gate: shown unless the student has the beta flag. -->
   <div id="learning-soon" style="display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;min-height:calc(100vh - 170px);padding:40px 28px">
@@ -1754,9 +1754,9 @@ async function initPushNotifications() {
     const big = 'display:block;width:100%;margin-top:10px;padding:13px;border:0;border-radius:12px;font-family:inherit;font-weight:700;font-size:15px;cursor:pointer;text-align:center';
     if (exam.satisfied && exam.activeBooking) {
       const st = exam.activeBooking.status;
-      const txt = st === 'CONFIRMED' ? '✅ Exam booked'
+      const txt = st === 'CONFIRMED' ? '✅ Exam confirmed'
+        : st === 'BOOKED' ? '✅ Exam booked'
         : st === 'NEEDS_ATTENTION' ? '📝 Exam — we’re in touch'
-        : st === 'REQUEST_PENDING' ? '📝 Finish exam booking'
         : '📝 Exam requested';
       return `<button onclick="openExamOverlay()" style="${big};background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0">${txt}</button>`;
     }
@@ -1786,14 +1786,15 @@ async function initPushNotifications() {
     // Already requested / confirmed → status, not the picker.
     if (data.satisfied && data.activeBooking) {
       const st = data.activeBooking.status;
-      const label = st === 'REQUESTED' ? 'Requested — the exam centre will confirm your place and payment directly with you.'
+      const label = st === 'REQUESTED' ? 'Request received — we’ll book your place with the exam centre.'
+        : st === 'BOOKED' ? 'Sent to the exam centre — they’ll confirm your place and payment. We’ll keep you posted.'
         : st === 'CONFIRMED' ? 'Confirmed by the exam centre. 🎉'
         : st === 'NEEDS_ATTENTION' ? 'Our team is arranging the right exam for you — we’ll be in touch.'
         : 'Your request is recorded. Our team will finalise it with the exam centre.';
       body.innerHTML = `<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:16px">
-        <div style="font-weight:700;margin-bottom:6px">Exam ${st==='CONFIRMED'?'confirmed':'requested'}</div>
+        <div style="font-weight:700;margin-bottom:6px">Exam ${st==='CONFIRMED'?'confirmed':st==='BOOKED'?'booked':'requested'}</div>
         <div style="font-size:14px;color:#166534;line-height:1.5">${esc(label)}</div></div>
-        ${['REQUEST_PENDING','REQUESTED'].includes(st) ? `<button onclick="cancelExam(${data.activeBooking.id})" style="margin-top:12px;background:none;border:1px solid #cbd5e1;color:#475569;border-radius:8px;padding:8px 13px;font-size:13px;cursor:pointer">Cancel request</button>` : ''}`;
+        ${['REQUESTED','BOOKED'].includes(st) ? `<button onclick="cancelExam(${data.activeBooking.id})" style="margin-top:12px;background:none;border:1px solid #cbd5e1;color:#475569;border-radius:8px;padding:8px 13px;font-size:13px;cursor:pointer">Cancel request</button>` : ''}`;
       return;
     }
 
@@ -1904,7 +1905,6 @@ async function initPushNotifications() {
       // student is moved class while the app is launched. URL params are a
       // fallback for first paint before /me resolves.
       if (tab === 'learning') openLearningPanel();
-      else stopLearningPoll();
       window.scrollTo({ top: 0, behavior: 'instant' });
     });
   });
@@ -1914,7 +1914,6 @@ async function initPushNotifications() {
   // (everyone, beta or not). Once completed: beta → LMS, others → coming soon
   // (with a small "done" acknowledgement). A light poll swaps the panel to the
   // completed state after they finish the test (no edits to the test page).
-  let _learningPollTimer = null;
   async function openLearningPanel() {
     const frame = document.getElementById('learning-frame');
     const soon = document.getElementById('learning-soon');
@@ -1923,6 +1922,8 @@ async function initPushNotifications() {
     const doneNote = document.getElementById('learning-done-note');
     const hideAll = () => { frame.style.display='none'; soon.style.display='none'; testWrap.style.display='none'; };
     const isBeta = !!(window._meData?.student?.beta);
+    // Mid-test (speaking/writing after the score landed) → leave the test where it is.
+    if (testWrap.style.display === 'flex' && testFrame.getAttribute('src') && testInFlight()) return;
 
     let gate = null;
     try { gate = await fetch('/sis/student/api/placement').then(r => r.json()); } catch (e) {}
@@ -1939,10 +1940,8 @@ async function initPushNotifications() {
       testWrap.style.bottom = (tabbar ? tabbar.offsetHeight : 64) + 'px';
       testWrap.style.display = 'flex';
       if (testFrame.getAttribute('src') !== gate.url) testFrame.src = gate.url;
-      startLearningPoll();
       return;
     }
-    stopLearningPoll();
 
     // LMS Milestone #1 — the SOW + can-do + post-lesson feedback panel is now live for
     // ALL placement-complete students (was beta-gated during construction). Students see
@@ -1965,17 +1964,21 @@ async function initPushNotifications() {
       soon.style.display = 'flex';
     }
   }
-  function startLearningPoll() {
-    stopLearningPoll();
-    _learningPollTimer = setInterval(async () => {
-      if (document.getElementById('tab-learning').classList.contains('hidden')) return;
-      try {
-        const g = await fetch('/sis/student/api/placement').then(r => r.json());
-        if (g && g.completed) { stopLearningPoll(); openLearningPanel(); }
-      } catch (e) {}
-    }, 15000);
-  }
-  function stopLearningPoll() { if (_learningPollTimer) { clearInterval(_learningPollTimer); _learningPollTimer = null; } }
+  // The test iframe reports its current screen. The score reaches SIS at question 40, so
+  // "completed" turns true while the student is still on speaking/writing — don't pull
+  // the test away until it reports the summary (or hasn't reported a live screen at all).
+  var _testScreen = null;
+  // No polling (Neil 2026-11-11): the test itself says when it's finished (summary screen) →
+  // show "Nicely done" for a moment, then open the Learning panel. Progress is saved by the
+  // test after every question (device + server), so nothing here needs to check on it.
+  window.addEventListener('message', (e) => {
+    if (!e.data || e.data.type !== 'ulearn:test-screen') return;
+    _testScreen = e.data.screen;
+    if (_testScreen === 'summary' && document.getElementById('learning-test')?.style.display === 'flex') {
+      setTimeout(() => { if (_testScreen === 'summary') openLearningPanel(); }, 4000);
+    }
+  });
+  function testInFlight() { return ['test', 'speaking', 'writing'].includes(_testScreen); }
 
   // Card collapse
   function toggleCard(header) {

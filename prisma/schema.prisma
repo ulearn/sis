@@ -2654,6 +2654,12 @@ model TestAccessToken {
   // the DOS review doesn't re-hit OpenAI on every open. See scripts/tests.ts.
   writingAssessment Json? @map("writing_assessment")
 
+  // Speaking section (placement only, Neil 2026-11-11) — 3 recorded answers between the
+  // 40 questions and the writing. { band, redoUsed, skipped?, answers: { "1": { promptId,
+  // prompt, file, durationMs, bytes, retake, takeId, uploadedAt } } }. Audio = MP3 under
+  // uploads/placement-audio/<studentId>/. Not graded yet — Paul listens in the LMS.
+  speaking Json? @map("speaking")
+
   // In-progress autosave (PLACEMENT only) — the client throttle-POSTs its state
   // (question index, answers-so-far, the writing text) as the student types, so a
   // stuck/abandoned attempt survives a browser close, a new token, or a different
@@ -2776,7 +2782,16 @@ enum ExamCode {
   C1_ADVANCED           // Cambridge C1 Advanced (CAE)
   IELTS_GT              // IELTS General Training
   LANGUAGECERT          // LanguageCert ESOL — ULearn group sessions run by CES (Neil 2026-11-09)
-  // Phase 2: A1/A2 (LanguageCert etc.), IELTS_ACADEMIC
+  IELTS_ACADEMIC        // IELTS Academic
+  OTHER                 // free text in examLabel (PTE, TOEIC, Duolingo, "final test")
+}
+
+enum ExamRequestSource {
+  APP
+  EMAIL
+  RECEPTION
+  DESK
+  IMPORT
 }
 
 enum ExamSittingStatus {
@@ -2787,18 +2802,11 @@ enum ExamSittingStatus {
 }
 
 enum ExamBookingStatus {
-  REQUEST_PENDING       // student started but not yet confirmed/submitted
-  REQUESTED             // email sent to CES; awaiting acknowledgement
-  CONFIRMED             // CES has confirmed the actual registration
-  SAT                   // student has completed the examination
-  RESULTS_RECEIVED      // results recorded against the student
-  COMPLETED             // documentation checked and filed
-  // exception states
+  REQUESTED             // student asked (app, email, reception); nothing sent to CES yet
+  BOOKED                // reservation request sent to CES (group send or email)
+  CONFIRMED             // CES confirmed the place; a past date just means it has happened
   CANCELLED
-  CHANGE_REQUESTED
-  REJECTED
-  EXPIRED
-  NEEDS_ATTENTION
+  NEEDS_ATTENTION       // no date chosen / below B1 etc. — kept for now
 }
 
 // A published examination sitting the student can choose from. Manually
@@ -2847,7 +2855,7 @@ model StudentExamBooking {
   examSittingId    Int?          @map("exam_sitting_id")
   examSitting      ExamSitting?  @relation(fields: [examSittingId], references: [id])
 
-  status           ExamBookingStatus @default(REQUEST_PENDING)
+  status           ExamBookingStatus @default(REQUESTED)
   // PREPAID = student paid ULearn an exam fee upfront (EXAM_FEE extra) → ULearn
   // settles with CES. DIRECT = no upfront fee → CES invoices the student.
   paymentArrangement String        @map("payment_arrangement")
@@ -2862,6 +2870,14 @@ model StudentExamBooking {
   emailThreadId    String?         @map("email_thread_id")            // Gmail threadId of the CES request
   templateSlug     String?         @map("template_slug")              // which CES template was used
   choiceSnapshot   Json?           @map("choice_snapshot")            // sitting snapshot at request time
+
+  // Request inventory (desk / email / import via examScripts.deskUpsert)
+  source           ExamRequestSource @default(APP)                    // how the request came in
+  sourceRef        String?         @map("source_ref")                 // "dos@:<gmailThreadId>" — idempotency key with student+exam
+  examCode         ExamCode?       @map("exam_code")                  // a request often names the exam before any sitting/date
+  examLabel        String?         @map("exam_label")                 // free text when examCode = OTHER
+  preferredDate    DateTime?       @map("preferred_date") @db.Date    // date the student asked for, no sitting yet
+  notes            String?                                            // short free text (venue, speaking date, who pays)
 
   // Reminder bookkeeping (cron-exam-reminders)
   ackReminderSentAt     DateTime?  @map("ack_reminder_sent_at")

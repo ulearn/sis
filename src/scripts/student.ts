@@ -14,7 +14,8 @@ import { computeImpact } from '../lib/impact-score';
 // moment it's linked. After that it exits the window (algos sink with age).
 const POST_WINDOW_DAYS = 14;
 import { fetchStudentHolidays, filterOutHolidayDates, pctFromRows, blendedAttendancePct, courseTuitionRate, legacyAttendanceCounts, presentCredit } from './attendance-pct';
-import { kellyMention } from '../lib/slack';
+import { kellyMention, postSlackMessage } from '../lib/slack';
+import { ambassadorScripts } from './ambassador';
 import { notifyChallenge } from '../lib/challenge-notify';
 import { mapCourseType, buildBaseDealProps } from './booking-deal';
 import { sendStudentEmail } from '../routes/email';
@@ -1047,10 +1048,10 @@ export function studentScripts(prisma: PrismaClient) {
     if ('googleReviewUrl' in body) {
       const u = (body.googleReviewUrl || '').toString().trim();
       allowed.googleReviewUrl = u || null;
-      // Editing URL invalidates prior verification — and clears ambassador
-      allowed.googleReviewVerified = false;
-      allowed.ambassadorCode = null;
-      allowed.ambassadorApprovedAt = null;
+      // Trust-based (Neil 2026-11-11, like the Instagram follow): a review link = verified → ambassador below; staff spot-check
+      // in #student-success and untick it (admin) if it is not a 5★ review. A cleared link clears the ambassador.
+      allowed.googleReviewVerified = !!u;
+      if (!u) { allowed.ambassadorCode = null; allowed.ambassadorApprovedAt = null; }
     }
     if ('trustpilotReviewUrl' in body) {
       const u = (body.trustpilotReviewUrl || '').toString().trim();
@@ -1059,16 +1060,10 @@ export function studentScripts(prisma: PrismaClient) {
     if (Object.keys(allowed).length === 0) return { ok: true, noop: true };
     await prisma.student.update({ where: { id: studentId }, data: allowed as any });
 
-    // Notify Kelly when the student submits/updates a Google review URL —
-    // she needs to verify the rating before the Ambassador badge auto-mints.
+    // Review link in → ambassador straight away (code, portal login, email), and a spot-check line for staff.
     if (allowed.googleReviewUrl) {
-      void notifyChallenge(prisma, studentId, {
-        title: '⭐ Review — link submitted',
-        body: [
-          `URL: ${allowed.googleReviewUrl}`,
-          `${kellyMention()} please confirm it's a 5★ review (anything less = no unlock).`,
-        ].join('\n'),
-      });
+      const r: any = await ambassadorScripts(prisma).promote(studentId, { by: 'app' }).catch((e: any) => ({ errors: [e.message] }));
+      void postSlackMessage({ text: `⭐ Review link from student ${studentId} → auto-verified, Ambassador code ${r.code || '?'}${r.errors && r.errors.length ? ' (' + r.errors.join('; ') + ')' : ''}\nURL: ${allowed.googleReviewUrl}\n${kellyMention()} please spot-check it is a 5★ review; if not, untick “Google review verified” on the student (the code stops working).` });
     }
     return { ok: true };
   }
@@ -1313,28 +1308,21 @@ export function studentScripts(prisma: PrismaClient) {
   async function adminSetVerify(studentId: number, body: any, byUser: string | null) {
     const data: any = {};
     if ('instagramFollowVerified' in body) data.instagramFollowVerified = !!body.instagramFollowVerified;
+    let promote: boolean | null = null;
     if ('googleReviewVerified' in body) {
       data.googleReviewVerified = !!body.googleReviewVerified;
-      if (data.googleReviewVerified) {
-        // Mint a code if there isn't one already
-        const existing = await prisma.student.findUnique({
-          where: { id: studentId },
-          select: { firstName: true, ambassadorCode: true } as any,
-        });
-        if (existing && !(existing as any).ambassadorCode) {
-          const fn = String((existing as any).firstName || 'STUDENT');
-          const slug = fn.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12);
-          data.ambassadorCode = `${slug}-${studentId}`;
-          data.ambassadorApprovedAt = new Date();
-        }
-      } else {
-        // Unverifying clears the ambassador
+      if (data.googleReviewVerified) promote = true;   // → ambassador.promote: code + agency + programme + portal login + email
+      else {
+        // Unverifying clears the ambassador; the programme goes inactive (agency + login stay)
         data.ambassadorCode = null;
         data.ambassadorApprovedAt = null;
+        promote = false;
       }
     }
     if (Object.keys(data).length === 0) return { ok: true, noop: true };
     await prisma.student.update({ where: { id: studentId }, data });
+    if (promote === true) { const r = await ambassadorScripts(prisma).promote(studentId, { by: byUser || 'admin' }).catch((e: any) => ({ errors: [e.message] })); return { ok: true, by: byUser, ambassador: r }; }
+    if (promote === false) await ambassadorScripts(prisma).demote(studentId).catch(() => null);
     return { ok: true, by: byUser };
   }
 

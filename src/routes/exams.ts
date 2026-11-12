@@ -61,9 +61,11 @@ export function examRoutes(prisma: PrismaClient) {
   });
 
   // ── Requests ────────────────────────────────────────────────────────────────
-  router.get('/requests', async (req, res) => {
-    try { res.json({ requests: await scripts.listRequests({ status: req.query.status as string }) }); }
-    catch (e: any) { res.status(500).json({ error: String(e?.message || e) }); }
+  router.get('/requests', async (_req, res) => {
+    try {
+      const [requests, notRequested] = await Promise.all([scripts.listRequests({}), scripts.notRequestedYet()]);
+      res.json({ requests, notRequested });
+    } catch (e: any) { res.status(500).json({ error: String(e?.message || e) }); }
   });
   // Staff add a request (asked at reception / by email) — Neil 2026-11-09.
   router.post('/requests', async (req: any, res) => {

@@ -320,13 +320,14 @@ export function referralScripts(prisma: PrismaClient) {
 
   // A code is free if no OTHER agency's program holds it and it is not a student
   // ambassador code (HubSpot can't police cross-object uniqueness, so we do).
-  async function assertCodeFree(code: string, exceptAgencyId?: number) {
+  async function assertCodeFree(code: string, exceptAgencyId?: number, ownStudentId?: number) {
     const existing = await prisma.referralProgram.findUnique({ where: { code }, select: { agencyId: true } });
     if (existing && existing.agencyId !== exceptAgencyId) {
       throw new Error(`Referral code "${code}" is already assigned to another partner.`);
     }
     const stu = await prisma.student.findFirst({ where: { ambassadorCode: code }, select: { id: true } });
-    if (stu) throw new Error(`Referral code "${code}" is already a student ambassador code.`);
+    // A student ambassador's own agency (ambassador.ts) carries the SAME code as the student — that is the point, not a clash.
+    if (stu && stu.id !== ownStudentId) throw new Error(`Referral code "${code}" is already a student ambassador code.`);
   }
 
   type ProgramInput = {
@@ -337,6 +338,7 @@ export function referralScripts(prisma: PrismaClient) {
     rewardFlatPct?: number | string | null;
     settlementMode?: string | null;
     active?: boolean;
+    ownStudentId?: number;   // student ambassador: the student holding this same code (ambassador.ts)
   };
 
   // Create/update a partner's program: validate → PATCH HubSpot (company + contact)
@@ -349,7 +351,7 @@ export function referralScripts(prisma: PrismaClient) {
     const code = normCode(input.code);
     if (!code) throw new Error('A referral code is required.');
     if (!/^[A-Z0-9][A-Z0-9_-]{1,31}$/.test(code)) throw new Error('Code must be 2–32 chars: letters, numbers, hyphen or underscore.');
-    await assertCodeFree(code, agencyId);
+    await assertCodeFree(code, agencyId, input.ownStudentId);
 
     const rewardModel = REWARD_MODELS.includes(input.rewardModel as any) ? (input.rewardModel as string) : 'AMBASSADOR_FLAT';
     const settlementMode = SETTLEMENT_MODES.includes(input.settlementMode as any) ? (input.settlementMode as string) : 'PAYOUT';

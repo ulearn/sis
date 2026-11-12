@@ -10,6 +10,9 @@
  * that bypasses the SIS session auth (see /sis/api/tests/public/).
  */
 import { Router } from 'express';
+import multer from 'multer';
+// Speaking answers: ≤60s of webm/opus or mp4/aac is well under 2 MB; 8 MB is headroom for odd encoders.
+const speakingUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 8 * 1024 * 1024 } });
 import type { PrismaClient } from '../generated/prisma/client';
 import { testScripts } from '../scripts/tests';
 
@@ -86,6 +89,18 @@ export function testRoutesStaff(prisma: PrismaClient) {
   // most recent placement-class test (PLACEMENT or DELTA). Returns score,
   // CEFR, per-question Q&A (from rawResult), and the writing task. Used by
   // the LMS Placement Review page in the admin UI.
+  // GET /sis/api/tests/speaking-audio/:tokenId/:q — stream one recorded answer to the LMS player (admin/DOS).
+  router.get('/speaking-audio/:tokenId/:q', async (req: any, res) => {
+    try {
+      const role = req.session?.role || '';
+      if (!['admin', 'dos'].includes(role)) return res.status(403).json({ success: false, error: 'admin or DOS only' });
+      const abs = await scripts.speakingAudioPath(parseInt(req.params.tokenId, 10), parseInt(req.params.q, 10));
+      if (!abs) return res.status(404).json({ success: false, error: 'No recording' });
+      res.setHeader('Cache-Control', 'private, max-age=3600');
+      res.sendFile(abs);
+    } catch (e: any) { res.status(500).json({ success: false, error: String(e?.message || e) }); }
+  });
+
   router.get('/placement/:studentId', async (req: any, res) => {
     try {
       const role = req.session?.role || '';
@@ -186,6 +201,32 @@ export function testRoutesPublic(prisma: PrismaClient) {
       if (!token) return res.status(400).json({ success: false, error: 'token required' });
       console.log(`[tests/writing] token=${String(token).slice(0, 8)} len=${writingResponse ? String(writingResponse).length : 0}`);
       res.json(await scripts.recordWriting(String(token), { writingPrompt, writingResponse }));
+    } catch (e: any) { res.status(500).json({ success: false, error: String(e?.message || e) }); }
+  });
+
+  // Speaking section — one recorded answer per POST (multipart: token, q, promptId, prompt,
+  // band, durationMs, takeId, audio). Like /writing, attaches to the already-scored token.
+  router.post('/speaking', speakingUpload.single('audio'), async (req: any, res) => {
+    try {
+      const b = req.body || {};
+      if (!b.token) return res.status(400).json({ success: false, error: 'token required' });
+      if (!req.file) return res.status(400).json({ success: false, error: 'audio required' });
+      const r = await scripts.recordSpeaking(String(b.token), {
+        q: Number(b.q), promptId: b.promptId, prompt: b.prompt, band: b.band, durationMs: Number(b.durationMs), takeId: b.takeId,
+        audio: req.file.buffer, mime: req.file.mimetype,
+      });
+      res.status(r.success ? 200 : 400).json(r);
+    } catch (e: any) {
+      console.error(`[tests/speaking] ERROR: ${e?.message || e}`);
+      res.status(500).json({ success: false, error: String(e?.message || e) });
+    }
+  });
+  router.post('/speaking/skip', async (req, res) => {
+    try {
+      const { token, reason } = req.body || {};
+      if (!token) return res.status(400).json({ success: false, error: 'token required' });
+      console.log(`[tests/speaking] skip token=${String(token).slice(0, 8)} reason=${reason}`);
+      res.json(await scripts.skipSpeaking(String(token), String(reason || '')));
     } catch (e: any) { res.status(500).json({ success: false, error: String(e?.message || e) }); }
   });
 

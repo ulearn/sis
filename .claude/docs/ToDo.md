@@ -2,6 +2,19 @@
 
 Open work for this project. Protocol: anything left unfinished at the end of a session goes here (not in memory); finished work is moved to ToDo-Done.md. Synced with Wrike (space "hub" → folder "SIS") every 5 minutes — edit the text here; status syncs both ways.
 
+## Insurance: review 15 bookings with insurance in the SIS but none on the invoice
+
+**Priority:** Medium
+**Status:** Waiting — Neil
+**Added:** 2026-11-11
+**Updated:** 2026-11-11T17:45:06Z
+
+Sweep of 2026-11-11 aligned every booking's insurance type to its HubSpot invoice (46 retyped, 63 added, 6 phantom "Academic Year" courses made from the `LP` Learner Protection SKU switched off; undo log + report in `.claude/docs/insurance-sweep-2026-11-11/`). Left alone: bookings where the SIS has PEL & Health but the invoice has no insurance line (LifePass subscription invoices excluded — those are bundled by design). Upcoming ones first: #18423 Júlia Oliveira Almeida (GE AM, 14 Dec), #18316 Marie-elyse Agbodjan (AY PM, 11 Jan), #18379 Giulia D'Agostino (AY AM, 9 Nov), #18365 Sofiia Korkishchenko; full list in the report (`sisOnly`). Hub procurement buys off the invoice SKUs, so these won't be bought there.
+- [ ] Decide per booking: add the insurance to the invoice, or remove it from the SIS booking
+- [ ] #18385 Ankhbayar Oyundelger: bought Academic Year AFTERNOON but is placed in the morning B2-C1 class (the placement sat on the phantom course; moved to his real course, class unchanged) — check with Paul
+
+---
+
 ## Exams: move students from the desk to the app
 
 **Priority:** High
@@ -20,20 +33,31 @@ Neil 2026-11-09: students come to reception / email success@ or dos@ about exams
 
 ---
 
+## Bulk insurance-PDF drop box in Insurances (auto-match to student)
+
+**Priority:** Medium
+**Status:** Backlog
+**Added:** 2026-11-11
+**Updated:** 2026-11-11T10:30:08Z
+
+Neil 2026-11-11: one at a time = drop the PDF into the student's Visa & Flight box (no separate ULearn-documents dropper — rolled back; rule: ULearn Documents = only what we produce, everything else is the student's). Next: a drop box in Insurances that takes many policy PDFs (or a zip) at once and puts each into the right student's Visa & Flight bucket. Match by name/policy text in the PDF (Arachas PDFs are text, `insurance-classifier.ts`); unmatched ones go to a short review list. Feeding the PDFs from the insurer site = browser extension, not code.
+
+---
+
 ## LMS: add a 3-question speaking section to the placement test
 
 **Priority:** High
-**Status:** Planned
-**Progress:** 10% — spec + questions in .claude/docs/handover-placement-speaking.md (hub session, 10/11/2026)
+**Status:** In progress — Waiting on Neil (phone test + iOS build)
+**Progress:** 70% — v1 built 2026-11-11: speaking screen after the 40 questions, recording, MP3 storage, LMS players. Left: live phone test, iOS build.
 **Added:** 2026-11-10
-**Updated:** 2026-11-10T17:25:07Z
+**Updated:** 2026-11-11T13:50:06Z
 
-Neil 2026-11-10: recorded spoken answers between the 40 questions and the writing so the app level is realistic and the Monday oral can shrink. Delta study: 55% placed right, 8% two+ levels off, app overrates. Read the handover first.
-- [ ] Speaking screen in lms/prototype/app.js (band prompts, 15s prep, timer, one redo for the set)
-- [ ] POST /tests/public/speaking + token fields + AI transcript/CEFR via LMS
-- [ ] Mic in app iframe + browser; skip path if refused (tell Neil if a store release is needed)
-- [ ] DOS view: players, transcripts, estimate; oral-result field; Paul's sample list
-- [ ] 90-day audio prune cron
+Built (Neil 2026-11-11 spec, Slack thread in #C07C8C0JENT): after Q40 the score goes to SIS (waypoint, unchanged), then 3 questions picked by band from the score (low A1–A2 / mid B1 / high B2+, 2 prompts per slot, fixed per token). Record → green DONE (from 2s) or 60s auto-stop, bar countdown; one redo PER QUESTION (↻ icon, server enforces; Neil 2026-11-11). Uploads in the background, retried; MP3 mono 32k (~240 KB/min) via ffmpeg-static in `uploads/placement-audio/<studentId>/`. Mic refused/unsupported → skip to writing, token marked. LMS placement view: Questions (collapsed) → Speaking (players) → Writing. Server tested end-to-end; the browser recorder is NOT yet tested on a real device.
+- [ ] Neil: do the test on a phone (Android app + emailed link) and listen in the LMS placement view
+- [x] Website `ulearnschool.com/placement-test` (Drupal node/41, revision 390) now iframes `sis.ulearnschool.com/prototype/placement/` with `allow="clipboard-write; microphone"` (was the stale Apr `lms.` copy). Via `ssh ulearn@localhost` + drush.
+- [ ] Phone app builds (2026-11-11): mic fix pushed to the mobile repo (commit 89a2635, tag v1.0.4). Android: MODIFY_AUDIO_SETTINGS added (Capacitor needs it with RECORD_AUDIO, else the mic is refused), versionCode 5. iOS: NSMicrophoneUsageDescription. The tag starts Codemagic `android-release` + `ios-testflight` (iOS now tag-triggered too); push to main started `android-debug` (APK to sideload). Left for Neil: check the builds ran, upload the release build to Play, swap the iOS build in App Store Connect, record the iPad video on it. Then remove the `inIosApp()` skip in `lms/prototype/app.js`.
+- [ ] Later (not in v1): audio prompts recorded by Paul, AI grading, oral-result field, Paul's sample list, 90-day audio prune
+- [x] Student app: 15s polling removed — the test signals its summary screen and the app opens Learning 4s later. Earlier fix: the poll closed the test as soon as the score landed at Q40 — cutting off the writing (and now speaking). The test now reports its screen; the app waits for the summary.
 
 ---
 

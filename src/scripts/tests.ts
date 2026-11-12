@@ -10,6 +10,9 @@
  *     into a full 40-Q placementTestScore.
  */
 import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
+import { execFile } from 'child_process';
 import type { PrismaClient } from '../generated/prisma/client';
 import { emailTemplateWhere } from './email-templates';
 import { sendEmail } from './email';
@@ -433,6 +436,7 @@ export function testScripts(prisma: PrismaClient) {
       writingPrompt: tok.writingPrompt,
       writingResponse: tok.writingResponse,
       writingAssessment: tok.writingAssessment,
+      speaking: tok.speaking,
       raw: tok.rawResult,
       student: tok.student,
     };
@@ -611,5 +615,82 @@ export function testScripts(prisma: PrismaClient) {
     return { success: true };
   }
 
-  return { generateToken, recordResult, recordWriting, lookupByToken, getPlacementForStudent, testStatus, placementGateForStudent, resetPlacement, assessWritingForStudent, recordDraft, loadDraft, setManualPlacement };
+  // ── Speaking section (Neil 2026-11-11) ────────────────────────────────────
+  // 3 recorded answers after the 40 questions (score already submitted, so the
+  // token is "used" — like /writing this never gates on usedAt). The browser
+  // records webm/opus or mp4/aac; we transcode to a small mono MP3 and keep only
+  // the latest take per question. One redo PER QUESTION, enforced here.
+  const AUDIO_BASE = path.join(__dirname, '..', '..', 'uploads', 'placement-audio');
+  const FFMPEG: string = (() => { try { return require('ffmpeg-static'); } catch { return 'ffmpeg'; } })();
+  const toMp3 = (inFile: string, outFile: string) => new Promise<void>((resolve, reject) =>
+    execFile(FFMPEG, ['-y', '-loglevel', 'error', '-i', inFile, '-vn', '-ac', '1', '-ar', '22050', '-b:a', '32k', '-codec:a', 'libmp3lame', outFile],
+      { timeout: 60000 }, err => err ? reject(err) : resolve()));
+
+  async function recordSpeaking(token: string, input: { q: number; promptId?: string; prompt?: string; band?: string; durationMs?: number; takeId?: string; audio: Buffer; mime?: string }) {
+    const tok = await prisma.testAccessToken.findUnique({ where: { token }, select: { id: true, studentId: true, testType: true, speaking: true } });
+    if (!tok) return { success: false, error: 'Invalid token' };
+    const q = Math.trunc(Number(input.q));
+    if (!(q >= 1 && q <= 3)) return { success: false, error: 'q must be 1-3' };
+    if (!input.audio?.length) return { success: false, error: 'audio required' };
+    const sp: any = (tok.speaking && typeof tok.speaking === 'object') ? { ...(tok.speaking as any) } : {};
+    sp.answers = { ...(sp.answers || {}) };
+    const prev = sp.answers[q];
+    if (prev && input.takeId && prev.takeId === input.takeId) return { success: true, duplicate: true };   // client retry of the same take
+    const isRetake = !!prev;
+    if (isRetake && prev.retake) return { success: false, error: 'Only one redo per question' };
+
+    const dir = path.join(AUDIO_BASE, String(tok.studentId));
+    fs.mkdirSync(dir, { recursive: true });
+    const ext = /mp4|aac|m4a/i.test(input.mime || '') ? 'm4a' : /ogg/i.test(input.mime || '') ? 'ogg' : 'webm';
+    const base = `${tok.id}-q${q}`;
+    const tmpIn = path.join(dir, `${base}.${Date.now()}.in.${ext}`);
+    fs.writeFileSync(tmpIn, input.audio);
+    let file = `${base}.mp3`;
+    try {
+      const tmpOut = path.join(dir, `${base}.${Date.now()}.tmp.mp3`);
+      await toMp3(tmpIn, tmpOut);
+      fs.renameSync(tmpOut, path.join(dir, file));
+      fs.unlinkSync(tmpIn);
+    } catch (e: any) {
+      // Never lose an answer: keep the original recording if the transcode fails.
+      console.error(`[tests/speaking] mp3 transcode failed token=${tok.id} q=${q}: ${e?.message || e}`);
+      file = `${base}.${ext}`;
+      fs.renameSync(tmpIn, path.join(dir, file));
+    }
+    if (prev?.file && prev.file !== file) { try { fs.unlinkSync(path.join(dir, prev.file)); } catch {} }
+    const bytes = fs.statSync(path.join(dir, file)).size;
+    sp.band = input.band || sp.band || null;
+    delete sp.skipped;
+    sp.answers[q] = {
+      promptId: String(input.promptId || '').slice(0, 40) || null,
+      prompt: String(input.prompt || '').slice(0, 500) || null,
+      file, bytes, durationMs: Math.max(0, Math.round(Number(input.durationMs) || 0)),
+      retake: isRetake, takeId: String(input.takeId || '').slice(0, 60) || null, uploadedAt: new Date().toISOString(),
+    };
+    await prisma.testAccessToken.update({ where: { id: tok.id }, data: { speaking: sp } });
+    console.log(`[tests/speaking] token=${tok.id} student=${tok.studentId} q=${q} ${file} ${bytes}B retake=${isRetake}`);
+    return { success: true, q, bytes, retake: isRetake };
+  }
+
+  // Mic refused / not supported / iOS app without mic permission → the Monday oral picks them up.
+  async function skipSpeaking(token: string, reason: string) {
+    const tok = await prisma.testAccessToken.findUnique({ where: { token }, select: { id: true, speaking: true } });
+    if (!tok) return { success: false, error: 'Invalid token' };
+    const sp: any = (tok.speaking && typeof tok.speaking === 'object') ? { ...(tok.speaking as any) } : {};
+    if (sp.answers && Object.keys(sp.answers).length >= 3) return { success: true, ignored: 'complete' };
+    sp.skipped = { reason: String(reason || 'skipped').slice(0, 120), at: new Date().toISOString() };
+    await prisma.testAccessToken.update({ where: { id: tok.id }, data: { speaking: sp } });
+    return { success: true };
+  }
+
+  // Staff playback: absolute path of one stored answer (null if none).
+  async function speakingAudioPath(tokenId: number, q: number) {
+    const tok = await prisma.testAccessToken.findUnique({ where: { id: tokenId }, select: { studentId: true, speaking: true } });
+    const f = (tok?.speaking as any)?.answers?.[q]?.file;
+    if (!tok || !f || /[\\/]/.test(f)) return null;
+    const abs = path.join(AUDIO_BASE, String(tok.studentId), f);
+    return fs.existsSync(abs) ? abs : null;
+  }
+
+  return { recordSpeaking, skipSpeaking, speakingAudioPath, generateToken, recordResult, recordWriting, lookupByToken, getPlacementForStudent, testStatus, placementGateForStudent, resetPlacement, assessWritingForStudent, recordDraft, loadDraft, setManualPlacement };
 }

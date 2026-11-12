@@ -5,7 +5,7 @@
  * armed from admin → Examinations → Settings.
  *
  * Cadence (working days, Irish bank-holiday aware), configurable:
- *   · ackDays (default 3):   flag a REQUESTED booking CES hasn't acknowledged.
+ *   · ackDays (default 3):   flag a BOOKED booking CES hasn't confirmed.
  *   · escalateDays (def 7):  email success@ to chase an unresolved request.
  * (Pre/post-exam student reminders are scaffolded in exam-config but off here
  * until the exam-day reminder copy is signed off — kept minimal per spec "keep

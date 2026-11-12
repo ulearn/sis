@@ -17,6 +17,7 @@ import { emailTemplateWhere } from '../scripts/email-templates';
 import { alertMissingStudentContact } from '../scripts/alerts/emails';
 import { clearanceScripts } from '../scripts/clearance';
 import { notifyDosOf121 } from '../scripts/notify-121';
+import { insuranceProductFromLines } from '../scripts/insurance';
 
 const HS_TOKEN = process.env.ACCESS_TOKEN!;
 
@@ -756,6 +757,9 @@ function skuToCourseCategory(sku: string): string | null {
   if (s.startsWith('RNW-AM')) return 'MORNING';
   if (s.startsWith('RNW-PM')) return 'AFTERNOON';
   // LifePass (last — LP* could otherwise shadow other prefixes)
+  // Bare 'LP' is Learner Protection insurance, NOT a LifePass course — it was turning the
+  // insurance line into a second Academic Year course (Neil 2026-11-11).
+  if (s === 'LP') return null;
   if (s.startsWith('LP')) return s.includes('AFT') ? 'AFTERNOON' : 'MORNING';
   return null;
 }
@@ -780,7 +784,7 @@ function classifyAuxItem(name: string, description: string): AuxKind {
   if (/\b(drop[\s-]?off|departure\s*transfer)\b/.test(d)) return 'dropoff';
   if (/\b(transfer|airport)\b/.test(d)) return 'transfer';
   if (/\b(exam\s*fee|exam\b|test\s*fee|ielts|cambridge|fce|cae)\b/.test(d)) return 'exam';
-  if (/\b(insurance|pel\b|health\s*cover)\b/.test(d)) return 'insurance';
+  if (/\b(insurance|pel\b|health\s*cover|learner\s*protection|medicover)\b/.test(d)) return 'insurance';
   if (/\b(accomm|host\s*family|hotel|residence|apartment|homestay|room|lodging|board)\b/.test(d)) return 'accommodation';
   return 'other';
 }
@@ -1377,6 +1381,7 @@ export async function resyncBookingLogistics(
   // Classify the non-course / non-accom line items into fee buckets (mirrors the create path).
   let regFee = 0, placementFee = 0, pickupFee = 0, dropoffFee = 0, transferFee = 0, examFee = 0, insuranceFee = 0;
   let examLine = false, insuranceSku = '';   // Academic Year: step 8 mirrors the invoice exactly, a €0 line included
+  const insLines: { sku: string; name: string; amount: number }[] = [];
   for (const li of lineItems) {
     const p = li.properties || {};
     const sku = p.hs_sku || '';
@@ -1389,7 +1394,7 @@ export async function resyncBookingLogistics(
       case 'dropoff':        dropoffFee   += amt; break;
       case 'transfer':       transferFee  += amt; break;
       case 'exam':           examFee      += amt; examLine = true; break;
-      case 'insurance':      insuranceFee += amt; insuranceSku = sku.toUpperCase(); break;
+      case 'insurance':      insuranceFee += amt; insuranceSku = sku.toUpperCase(); insLines.push({ sku, name: p.name || '', amount: amt }); break;
     }
   }
   // Ambiguous "airport / transfer" line item → split by the deal's pickup/dropoff flags,
@@ -1451,10 +1456,16 @@ export async function resyncBookingLogistics(
       if (!e.active || (details && e.details !== details) || Math.abs(Number(e.fee ?? 0) - fee) > 0.005) { await prisma.bookingExtra.update({ where: { id: e.id }, data: data as any }); changes.push(`extra#${e.id}(${extraType}) aligned`); }
     };
     await mirror('EXAM_FEE', examLine, examFee, null);
-    await mirror('INSURANCE', !!insuranceSku, insuranceFee, ({ INSR: 'PEL;Health', PEL: 'PEL', LP: 'PEL', MEDI: 'Health' } as Record<string, string>)[insuranceSku] || null);
+    await mirror('INSURANCE', !!insuranceSku, insuranceFee, insuranceProductFromLines(insLines));
   } else {
     if (examFee      > 0) await upsertExtra('EXAM_FEE', examFee);
     if (insuranceFee > 0) await upsertExtra('INSURANCE', insuranceFee);
+    // The insurance TYPE follows the invoice too — the SIS + hub procurement buy off it (Neil 2026-11-11).
+    const insProduct = insuranceProductFromLines(insLines);
+    if (insProduct) {
+      const res = await prisma.bookingExtra.updateMany({ where: { bookingId, extraType: 'INSURANCE', active: true, NOT: { details: insProduct } }, data: { details: insProduct } });
+      if (res.count) changes.push(`insurance type→${insProduct}`);
+    }
   }
 
   // If a transfer extra was just represented and the student's flight is
@@ -2048,6 +2059,7 @@ export function webhookRoutes(prisma: PrismaClient) {
       let insuranceFeeTotal = 0;
       let examLine = false;       // Academic Year: the invoice's lines decide the extras (below), not the deal's boxes
       let insuranceSku = '';
+      const insLines: { sku: string; name: string; amount: number }[] = [];
       let accomFallbackFee = 0;   // description-matched accom rows when SKU scan misses
       // Special diet (host-family only). AutoQuote emits a `DIET` SKU line per
       // host-family week; the diet TYPE rides in the line description, the student
@@ -2130,7 +2142,7 @@ export function webhookRoutes(prisma: PrismaClient) {
           case 'dropoff':        dropoffFeeTotal   += amount; break;
           case 'transfer':       transferFeeTotal  += amount; break;
           case 'exam':           examFeeTotal      += amount; examLine = true; break;
-          case 'insurance':      insuranceFeeTotal += amount; insuranceSku = sku.toUpperCase(); break;
+          case 'insurance':      insuranceFeeTotal += amount; insuranceSku = sku.toUpperCase(); insLines.push({ sku, name: p.name || '', amount }); break;
           case 'accommodation':  accomFallbackFee  += amount; break;
           // 'other' — already counted in totalAmount, no per-row destination
         }
@@ -2298,8 +2310,11 @@ export function webhookRoutes(prisma: PrismaClient) {
       // property unset (manual creation / legacy drift), where the bundle is the
       // safe default.
       const explicitInsurance = String(dp.insurance || '').trim();
-      const ayInsurance = ({ INSR: 'PEL;Health', PEL: 'PEL', LP: 'PEL', MEDI: 'Health' } as Record<string, string>)[insuranceSku] || explicitInsurance || 'PEL';
-      const insuranceVal = isAY ? ayInsurance : (explicitInsurance || (isBundledCourse ? 'PEL;Health' : null));
+      // The invoice's insurance lines win when present (name + price, see insuranceProductFromLines) —
+      // they are what was sold, and INSR has been used on PEL-only lines (Neil 2026-11-11).
+      const invoiceInsurance = insuranceProductFromLines(insLines);
+      const ayInsurance = invoiceInsurance || explicitInsurance || 'PEL';
+      const insuranceVal = isAY ? ayInsurance : (invoiceInsurance || explicitInsurance || (isBundledCourse ? 'PEL;Health' : null));
 
       // Airport Pickup
       if (isTrue(dp.airport_pickup)) {

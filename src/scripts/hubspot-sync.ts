@@ -56,6 +56,9 @@ function skuToCourseCategory(sku: string): string | null {
   if (s.startsWith('GIA') || s === 'AYAFT+') return 'AFTERNOON_PLUS';
   if (s.startsWith('GE3') || s.startsWith('INT')) return 'INTENSIVE';
   if (s.startsWith('PVT') || s.startsWith('PRIV')) return 'PRIVATE';
+  // Bare 'LP' is Learner Protection insurance, NOT a LifePass course — it was turning the
+  // insurance line into a second Academic Year course (Neil 2026-11-11).
+  if (s === 'LP') return null;
   if (s.startsWith('LP')) return s.includes('AFT') ? 'AFTERNOON' : 'MORNING'; // LifePass
   return null; // not a course SKU (reg fee, accomm, insurance, etc.)
 }

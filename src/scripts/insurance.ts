@@ -17,7 +17,7 @@
  * Product coding (from BookingExtra.details, mirrored off the HubSpot SKU in
  * webhooks.ts): 'PEL;Health' = both · 'PEL' = Learner Protection only ·
  * 'Health' = Medical only. Medicover is never bought alone (PEL is a legal
- * duty); a null is treated as both until the backfill resolves it.
+ * duty). Set from the invoice lines by insuranceProductFromLines below.
  *
  * Status badge (read-only in SIS, the fins dashboard owns the middle state):
  *   SENT      — listed = it is in procurement (the default once paid)
@@ -35,6 +35,27 @@ const PRODUCT_LABEL: Record<string, string> = {
   'PEL': 'PEL only',
   'Health': 'Medical only',
 };
+
+/**
+ * Insurance product from a HubSpot invoice's insurance lines → BookingExtra.details.
+ * HubSpot has three SKUs — INSR (PEL + Health bundle, usually €150), PEL / legacy LP
+ * (Learner Protection only, €29–50) and MEDI (Health) — but INSR has also been put on
+ * PEL-only lines ("PEL Insurance" €30), so the line NAME decides and price breaks ties.
+ * Health is never sold alone (PEL is the school's legal duty), so a lone €100+ health
+ * line is the bundle. Several lines combine (PEL + MEDI = both). Null = no insurance line.
+ */
+export function insuranceProductFromLines(lines: { sku?: string | null; name?: string | null; amount?: number | string | null }[]): string | null {
+  let pel = false, health = false;
+  for (const l of lines) {
+    const n = String(l.name || '').toLowerCase(), sku = String(l.sku || '').toUpperCase(), amt = Number(l.amount) || 0;
+    const nP = /\bpel\b|learner protection/.test(n), nH = /health|medi/.test(n);
+    if (sku === 'MEDI' || (nH && !nP)) { health = true; if (amt >= 100) pel = true; }
+    else if (nP && nH) { if (amt > 0 && amt < 100) pel = true; else { pel = true; health = true; } }
+    else if (nP || sku === 'PEL' || sku === 'LP') pel = true;
+    else if (sku === 'INSR') { pel = true; if (amt >= 100) health = true; }
+  }
+  return pel && health ? 'PEL;Health' : pel ? 'PEL' : health ? 'Health' : null;
+}
 
 export function insuranceScripts(prisma: PrismaClient) {
   /** All bookings carrying an active INSURANCE extra, as procurement rows. */
@@ -66,7 +87,7 @@ export function insuranceScripts(prisma: PrismaClient) {
         id: true, status: true, amountTotal: true, amountPaid: true, serviceStart: true, serviceEnd: true,
         student: {
           select: {
-            id: true, firstName: true, lastName: true, nationality: true, flightDate: true,
+            id: true, firstName: true, lastName: true, nickname: true, email: true, fideloCustomerNum: true, nationality: true, flightDate: true,
             learnerProtectionPolicy: true, medicalPolicy: true,
             insuranceFrom: true, insuranceUntil: true, medicalFrom: true, medicalUntil: true,
           },
@@ -129,6 +150,9 @@ export function insuranceScripts(prisma: PrismaClient) {
           studentId: s.id,
           studentName: `${s.firstName || ''} ${s.lastName || ''}`.trim() || '(no name)',
           nationality: s.nationality || null,
+          email: s.email || null,
+          nickname: s.nickname || null,
+          fideloCustomerNum: s.fideloCustomerNum || null,
           product,
           productLabel: product ? PRODUCT_LABEL[product] || product : null,
           yearLabel: multiYear ? `Yr ${idx + 1}` : null,
