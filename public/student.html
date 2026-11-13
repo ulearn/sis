@@ -4070,6 +4070,14 @@ async function initPushNotifications() {
     if (/\b(iPhone|iPad|iPod)\b/.test(ua) && !/Safari/.test(ua) && !/CriOS|FxiOS/.test(ua)) return true;
     return false;
   }
+  // Android app version 6+ hands downloads to the system download manager (MainActivity) and says so
+  // in its user agent. Navigating to the attachment URL is then a real download: Downloads folder +
+  // notification, on any phone. Older app versions don't carry the marker and keep the paths below.
+  function _appCanDownload() { return /ULearnDownloads\//.test(navigator.userAgent || ''); }
+  function _nativeDownload(id) {
+    _appToast('Downloading…', 3000);
+    window.location.href = `/sis/student/api/documents/${id}/pdf`;   // attachment → onDownloadStart in the app
+  }
   function _fnameFromResp(resp, id) {
     let fname = `ULearn-document-${id}.pdf`;
     const cd = (resp && resp.headers && resp.headers.get('Content-Disposition')) || '';
@@ -4086,6 +4094,7 @@ async function initPushNotifications() {
     const Cap = window.Capacitor;
     const FS = Cap && Cap.Plugins && Cap.Plugins.Filesystem;
     const platform = (Cap && Cap.getPlatform && Cap.getPlatform()) || '';
+    if (_appCanDownload()) return _nativeDownload(id);
     if (platform === 'android' && FS) {
       _appToast('Saving…', 12000);
       try {
@@ -4126,6 +4135,7 @@ async function initPushNotifications() {
     const Cap = window.Capacitor;
     const FS = Cap && Cap.Plugins && Cap.Plugins.Filesystem;
     const inApp = _isInAppWebview();
+    if (_appCanDownload()) return _nativeDownload(id);
     // ANDROID APP (Filesystem reachable) → one-tap real download: save the PDF
     // straight to the device's public Documents folder. The toast names the
     // exact outcome so the path taken is never a mystery.

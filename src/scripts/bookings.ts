@@ -644,7 +644,7 @@ export function bookingScripts(prisma: PrismaClient) {
     const realPaid = allPayments.reduce((sum, p) => {
       const m = (p.method || '').toLowerCase();
       const t = (p.type || '').toLowerCase();
-      const isEscrow = t === 'escrow' || m === 'transfermate escrow';
+      const isEscrow = t === 'escrow' || t === 'returned' || (!t && m === 'transfermate escrow');   // by TYPE: a released row is 'Standard' with method 'TransferMate Escrow' and IS paid
       return isEscrow ? sum : sum + Number(p.amount);
     }, 0);
     const booking = await prisma.booking.findUnique({
@@ -683,7 +683,7 @@ export function bookingScripts(prisma: PrismaClient) {
     const allPayments = await prisma.payment.findMany({ where: { bookingId }, select: { amount: true, method: true, type: true } });
     const realPaid = allPayments.reduce((sum, p) => {
       const m = (p.method || '').toLowerCase(), t = (p.type || '').toLowerCase();
-      const isEscrow = t === 'escrow' || m === 'transfermate escrow';
+      const isEscrow = t === 'escrow' || t === 'returned' || (!t && m === 'transfermate escrow');   // by TYPE: a released row is 'Standard' with method 'TransferMate Escrow' and IS paid
       return isEscrow ? sum : sum + Number(p.amount);
     }, 0);
     const booking = await prisma.booking.findUnique({ where: { id: bookingId }, select: { amountTotal: true, status: true } });
@@ -738,7 +738,7 @@ export function bookingScripts(prisma: PrismaClient) {
     const realPaid = allPayments.reduce((sum, p) => {
       const m = (p.method || '').toLowerCase();
       const t = (p.type || '').toLowerCase();
-      const isEscrow = t === 'escrow' || m === 'transfermate escrow';
+      const isEscrow = t === 'escrow' || t === 'returned' || (!t && m === 'transfermate escrow');   // by TYPE: a released row is 'Standard' with method 'TransferMate Escrow' and IS paid
       return isEscrow ? sum : sum + Number(p.amount);
     }, 0);
     const booking = await prisma.booking.findUnique({

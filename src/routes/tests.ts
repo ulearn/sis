@@ -50,6 +50,16 @@ export function testRoutesStaff(prisma: PrismaClient) {
   // POST /sis/api/tests/assess-writing/:studentId — admin/DOS: run (or refresh)
   // the AI Tutor grade of the student's placement writing task. force=true by
   // default here since it's a deliberate click; the result is cached on the token.
+  // POST /sis/api/tests/assess-speaking/:tokenId: admin/DOS run (or re-run) the AI listener on a placement's recorded answers.
+  router.post('/assess-speaking/:tokenId', async (req: any, res) => {
+    try {
+      if (!['admin', 'dos'].includes(req.session?.role || '')) return res.status(403).json({ success: false, error: 'Admin/DOS only' });
+      const tokenId = parseInt(req.params.tokenId);
+      if (!tokenId) return res.status(400).json({ success: false, error: 'tokenId required' });
+      res.json(await scripts.assessSpeakingForToken(tokenId));
+    } catch (e: any) { res.status(500).json({ success: false, error: String(e?.message || e) }); }
+  });
+
   router.post('/assess-writing/:studentId', async (req: any, res) => {
     try {
       const role = req.session?.role || '';

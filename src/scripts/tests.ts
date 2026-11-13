@@ -661,6 +661,7 @@ export function testScripts(prisma: PrismaClient) {
     const bytes = fs.statSync(path.join(dir, file)).size;
     sp.band = input.band || sp.band || null;
     delete sp.skipped;
+    delete sp.assessment;   // the answers changed, so the AI listener's verdict is stale; re-run below once all 3 are in
     sp.answers[q] = {
       promptId: String(input.promptId || '').slice(0, 40) || null,
       prompt: String(input.prompt || '').slice(0, 500) || null,
@@ -669,6 +670,10 @@ export function testScripts(prisma: PrismaClient) {
     };
     await prisma.testAccessToken.update({ where: { id: tok.id }, data: { speaking: sp } });
     console.log(`[tests/speaking] token=${tok.id} student=${tok.studentId} q=${q} ${file} ${bytes}B retake=${isRetake}`);
+    // All three answers in (or one re-recorded after that): the AI listener assesses the set. Fire-and-forget.
+    if (Object.keys(sp.answers).length >= 3) {
+      assessSpeakingForToken(tok.id).catch(e => console.error(`[ai-listener] token=${tok.id}:`, e?.message || e));
+    }
     return { success: true, q, bytes, retake: isRetake };
   }
 
@@ -683,6 +688,41 @@ export function testScripts(prisma: PrismaClient) {
     return { success: true };
   }
 
+  // AI listener (Neil 2026-11-12): send the recorded answers (the audio itself) to the LMS, which has
+  // OpenAI's audio model judge delivery (pace, pauses, prosody, pronunciation) as well as language.
+  // Stored as speaking.assessment; a verdict for answers that have since been re-recorded is discarded.
+  const answersSig = (sp: any) => Object.keys(sp?.answers || {}).sort().map(k => `${k}:${sp.answers[k].takeId || sp.answers[k].file}`).join('|');
+  async function assessSpeakingForToken(tokenId: number) {
+    const tok = await prisma.testAccessToken.findUnique({ where: { id: tokenId }, select: { id: true, studentId: true, speaking: true } });
+    const sp: any = tok?.speaking;
+    if (!tok || !sp?.answers || !Object.keys(sp.answers).length) return { success: false, error: 'no_answers' };
+    const AI_INTERNAL_KEY = process.env.AI_INTERNAL_KEY || '';
+    const LMS_AI_URL = process.env.LMS_AI_URL || 'https://sis.ulearnschool.com/lms-api';
+    if (!AI_INTERNAL_KEY) return { success: false, error: 'AI_INTERNAL_KEY not set' };
+    const sig = answersSig(sp);
+    const answers = Object.keys(sp.answers).sort()
+      .filter(k => /\.mp3$/.test(sp.answers[k].file || ''))   // a failed-transcode original (webm/m4a) can't go to the model
+      .map(k => ({
+        q: Number(k),
+        prompt: sp.answers[k].prompt || '',
+        audio: fs.readFileSync(path.join(AUDIO_BASE, String(tok.studentId), sp.answers[k].file)).toString('base64'),
+        format: 'mp3',
+      }));
+    if (!answers.length) return { success: false, error: 'no_mp3' };
+    const res = await fetch(`${LMS_AI_URL}/ai-tutor/assess-speaking`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'x-ai-internal-key': AI_INTERNAL_KEY },
+      body: JSON.stringify({ answers }),
+    });
+    const body: any = await res.json().catch(() => null);
+    if (!res.ok || !body?.success) return { success: false, error: body?.error || `lms_${res.status}` };
+    // Only keep it if the answers are still the ones we sent (a redo may have landed meanwhile).
+    const now = await prisma.testAccessToken.findUnique({ where: { id: tokenId }, select: { speaking: true } });
+    if (answersSig(now?.speaking) !== sig) return { success: false, error: 'stale' };
+    await prisma.$executeRaw`UPDATE test_access_tokens SET speaking = jsonb_set(COALESCE(speaking, '{}'::jsonb), '{assessment}', ${JSON.stringify(body.assessment)}::jsonb) WHERE id = ${tokenId}`;
+    console.log(`[ai-listener] token=${tokenId} student=${tok.studentId} overall=${body.assessment?.overall?.cefr} cost=$${body.assessment?.costUsd}`);
+    return { success: true, assessment: body.assessment };
+  }
+
   // Staff playback: absolute path of one stored answer (null if none).
   async function speakingAudioPath(tokenId: number, q: number) {
     const tok = await prisma.testAccessToken.findUnique({ where: { id: tokenId }, select: { studentId: true, speaking: true } });
@@ -692,5 +732,5 @@ export function testScripts(prisma: PrismaClient) {
     return fs.existsSync(abs) ? abs : null;
   }
 
-  return { recordSpeaking, skipSpeaking, speakingAudioPath, generateToken, recordResult, recordWriting, lookupByToken, getPlacementForStudent, testStatus, placementGateForStudent, resetPlacement, assessWritingForStudent, recordDraft, loadDraft, setManualPlacement };
+  return { recordSpeaking, skipSpeaking, assessSpeakingForToken, speakingAudioPath, generateToken, recordResult, recordWriting, lookupByToken, getPlacementForStudent, testStatus, placementGateForStudent, resetPlacement, assessWritingForStudent, recordDraft, loadDraft, setManualPlacement };
 }

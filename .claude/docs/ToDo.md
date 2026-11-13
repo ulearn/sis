@@ -2,6 +2,28 @@
 
 Open work for this project. Protocol: anything left unfinished at the end of a session goes here (not in memory); finished work is moved to ToDo-Done.md. Synced with Wrike (space "hub" → folder "SIS") every 5 minutes — edit the text here; status syncs both ways.
 
+## Android app: turn on code shrinking before Feb 2027 (Play warning)
+
+**Priority:** Low
+**Status:** Backlog
+**Added:** 2026-11-12
+**Updated:** 2026-11-12T23:10:07Z
+
+Play Console flags "DEX code optimization below threshold — obfuscation 1%", fix by Feb 2027, or the app's visibility on Play may suffer. Fix = `minifyEnabled true` (+ `shrinkResources true`) in the release build of `/home/sis/dev/sis-mobile/android/app/build.gradle`, then test the release build carefully (shrinking can break the native bridge, downloads, push). Also "deprecated edge-to-edge APIs" recommendation — not required. Do it in a normal app update, not mixed with feature work.
+
+---
+
+## Escrow: one booking left to identify (Enkhjin Oyun-Erdene #17877)
+
+**Priority:** Low
+**Status:** Backlog
+**Added:** 2026-11-12
+**Updated:** 2026-11-12T10:35:07Z
+
+Escrow cleanup done 2026-11-12 (scripts, backups and plan in `.claude/docs/escrow-release-2026-11-12/`): students who never came → payments 'Returned' (escrow released back to them) + bookings cancelled; students who attended → released to us ('Standard') + booking Confirmed; duplicate #1659 removed. Only #17877 Enkhjin Oyun-Erdene (€2,951.50 + €300 escrow, visa Pending) is left: no TransferMate payment under her name — find her TransferMate reference to settle it. #1593 and #18260 are genuinely still held.
+
+---
+
 ## Insurance: review 15 bookings with insurance in the SIS but none on the invoice
 
 **Priority:** Medium
@@ -50,13 +72,15 @@ Neil 2026-11-11: one at a time = drop the PDF into the student's Visa & Flight b
 **Status:** In progress — Waiting on Neil (phone test + iOS build)
 **Progress:** 70% — v1 built 2026-11-11: speaking screen after the 40 questions, recording, MP3 storage, LMS players. Left: live phone test, iOS build.
 **Added:** 2026-11-10
-**Updated:** 2026-11-11T13:50:06Z
+**Updated:** 2026-11-12T22:55:06Z
 
 Built (Neil 2026-11-11 spec, Slack thread in #C07C8C0JENT): after Q40 the score goes to SIS (waypoint, unchanged), then 3 questions picked by band from the score (low A1–A2 / mid B1 / high B2+, 2 prompts per slot, fixed per token). Record → green DONE (from 2s) or 60s auto-stop, bar countdown; one redo PER QUESTION (↻ icon, server enforces; Neil 2026-11-11). Uploads in the background, retried; MP3 mono 32k (~240 KB/min) via ffmpeg-static in `uploads/placement-audio/<studentId>/`. Mic refused/unsupported → skip to writing, token marked. LMS placement view: Questions (collapsed) → Speaking (players) → Writing. Server tested end-to-end; the browser recorder is NOT yet tested on a real device.
 - [ ] Neil: do the test on a phone (Android app + emailed link) and listen in the LMS placement view
 - [x] Website `ulearnschool.com/placement-test` (Drupal node/41, revision 390) now iframes `sis.ulearnschool.com/prototype/placement/` with `allow="clipboard-write; microphone"` (was the stale Apr `lms.` copy). Via `ssh ulearn@localhost` + drush.
-- [ ] Phone app builds (2026-11-11): mic fix pushed to the mobile repo (commit 89a2635, tag v1.0.4). Android: MODIFY_AUDIO_SETTINGS added (Capacitor needs it with RECORD_AUDIO, else the mic is refused), versionCode 5. iOS: NSMicrophoneUsageDescription. The tag starts Codemagic `android-release` + `ios-testflight` (iOS now tag-triggered too); push to main started `android-debug` (APK to sideload). Left for Neil: check the builds ran, upload the release build to Play, swap the iOS build in App Store Connect, record the iPad video on it. Then remove the `inIosApp()` skip in `lms/prototype/app.js`.
-- [ ] Later (not in v1): audio prompts recorded by Paul, AI grading, oral-result field, Paul's sample list, 90-day audio prune
+- [ ] Phone app builds: Android version 5 (mic fix) was submitted to Play 2026-11-12, then superseded the same night by **version 6** = mic + real downloads (mobile commit ecc646d: MainActivity hands downloads to the system DownloadManager → Downloads folder + notification; app adds `ULearnDownloads/1` to its user agent and student.html uses it, older builds keep the save/email fallback). Left: Neil tests the debug APK (download a document + placement speaking on student 97), runs Codemagic Android Release on main, replaces version 5 with 6 in Play. iOS: current build (no mic) goes to App Review first; after approval one iOS update with the mic + downloads (share sheet → Save to Files, not built yet), run manually in Codemagic, then remove the `inIosApp()` skip in `lms/prototype/app.js`. Remove the grey debug "build · android · fs=" line in the Documents card once downloads are confirmed.
+- [x] AI listener BUILT 2026-11-12: once all 3 answers are in, the SIS sends the MP3s to the LMS (`POST /lms-api/ai-tutor/assess-speaking`), which has OpenAI `gpt-audio-1.5` LISTEN (Claude has no audio input) and return per-answer transcript + fluency/pauses/prosody/pronunciation/grammar/vocabulary/task + CEFR, and an overall level. Stored on `test_access_tokens.speaking.assessment`; shown in the LMS placement view (overall + "AI notes" per answer, Re-assess button). Prompt: `lms/lms-api/prompts/ai-tutor/speaking-system.md`. Cost ≈ $0.04 per student (3 × ~35 s). `gpt-audio-mini` (≈ $0.013) rated a native speaker A2–B1, so not used.
+- [ ] Calibrate the AI listener: it rates Neil (native speaker, deliberately simple answers) B2, consistently. Needs Paul's sample recordings at known levels (A2…C1, plus a native) to tune the prompt; compare its level with Paul's on the first real students.
+- [ ] Later: audio prompts recorded by Paul, oral-result field, 90-day audio prune
 - [x] Student app: 15s polling removed — the test signals its summary screen and the app opens Learning 4s later. Earlier fix: the poll closed the test as soon as the score landed at Q40 — cutting off the writing (and now speaking). The test now reports its screen; the app waits for the summary.
 
 ---
@@ -1645,7 +1669,7 @@ webhooks.ts / hubspot-sync.ts treat any SKU starting "LP" as a LifePass (Academi
 **Status:** In progress
 **Progress:** Spec written (`.claude/projects/referral-setup.md`). Phase 1: [x] `referral_programs` cache table + `ReferralProgram` model (live, verified); [x] HubSpot props created — 6 on Company + 6 on Contact (group `sales_properties`) + Deal `referral_code` (group `dealinformation`). Design locked w/ Neil: props on Company AND Agent-Employee Contact (sole-trader + Ambassador reuse); autoQuote is always downstream (stamp-on-deal); Xero payout account = existing `PartnerPayments`. [x] `src/scripts/referral.ts` engine (upsert→proxy-PATCH company+Agent-Employee contact, syncFromHubSpot cache mirror, code-uniqueness incl. ambassadorCode, resolveReferralCode, validateForStudent) + `src/routes/referral.ts` (PUBLIC `/sis/referral/validate` w/ CORS for ulearnschool.com; staff `/sis/api/referral` CRUD + `/agencies` picker, writes admin/accounts-only) + mounted in app.ts. [x] **Admin "Referral Programs" view** in admin.html (Docs section sidebar) — list, agency-search create, edit form (code/label/discount/reward model+%/settlement/active), Save→PUT (shows HubSpot push count), Sync-from-HubSpot; writes UI-gated to admin/accounts. [x] **AMICI live** — agency 643 / HubSpot company 450325692610: code `AMICI`, 10% student discount, AMBASSADOR_FLAT 10% reward, PAYOUT settlement, active. Verified: public validate→`{valid:true,studentDiscountPct:10}` (reward not leaked), all 6 props on the HubSpot company, SIS cache mirrored. tsc 0, restarted. **NB starting %s are Marco's Ambassador proposal — Neil to confirm/adjust in the new UI.** Next: Drupal `discount_code` wire (validate + stamp via booking_enrichment) → hub autoQuote reads referral_code → `/invoice-created` → Booking.discountCode+agency.
 **Added:** 2026-10-21
-**Updated:** 2026-11-03T13:10:05Z
+**Updated:** 2026-11-13T00:15:07Z
 
 Driver: Amici di Dublino (Marco Torelli) — Italian referral community, fixed code `AMICI`,
 student discount (≈10%) + partner reward (Accelerator 22–44% tiered), paid out weekly via
@@ -1744,6 +1768,7 @@ Open commercials for Neil (not Phase-1 blockers): exact %s per Amici; reward bas
 account code for payouts; min payout threshold; VAT on the Italian-entity bill; discount-stacking
 vs Challenge (recommend exclusive).
 
+- [ ] Naming (Neil 13 Nov): **Ambassador** = our own students/alumni (internal, 5★ review → portal); **Referral** = external people who are not students (e.g. Amici). Same mechanics (code, 10% discount, reward) — use the right word in the portal, emails and admin. Sprint plan: hubapp ToDo "90-day sprint".
 ---
 
 ## Academic Year: visa-grounded stay/renewal dating (25-week course inside a 35-week visa)

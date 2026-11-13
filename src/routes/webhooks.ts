@@ -18,6 +18,7 @@ import { alertMissingStudentContact } from '../scripts/alerts/emails';
 import { clearanceScripts } from '../scripts/clearance';
 import { notifyDosOf121 } from '../scripts/notify-121';
 import { insuranceProductFromLines } from '../scripts/insurance';
+import { dealLostScripts } from '../scripts/deal-lost';
 
 const HS_TOKEN = process.env.ACCESS_TOKEN!;
 
@@ -298,6 +299,38 @@ async function invoiceIsOurLifePassSub(invoiceId: string): Promise<boolean> {
   } catch {
     return false;  // err on the side of "no" — caller decides what to do
   }
+}
+
+// DIFFERENCE INVOICES (Neil 2026-11-12): a second, customer-facing invoice on a deal that already has its booking —
+// e.g. a PM → AM move part-way through a course (Maria Eduarda, booking #1609). Marked by the creator BEFORE it opens:
+// hs_comments contains "Difference invoice" (hubapp scripts/quote-inv/differenceInvoice.js); hs_number gets a "-D" suffix
+// after opening (INV-1640-D) for people. Such an invoice never creates, repoints or re-syncs a booking: it only folds
+// into the booking's money — Total / Paid / Balance = the sum of the deal's live invoices (the /invoice-paid rule).
+// The booking keeps its primary invoice id, links and status.
+const DIFF_INVOICE_MARKER = /\bdifference invoice\b/i;
+export async function invoiceIsDifference(invoiceId: string): Promise<boolean> {
+  try {
+    const inv = await hsGet(`/crm/v3/objects/invoices/${invoiceId}?properties=hs_comments,hs_number`);
+    return DIFF_INVOICE_MARKER.test(String(inv?.properties?.hs_comments || '')) || /-D$/i.test(String(inv?.properties?.hs_number || ''));
+  } catch {
+    return false;
+  }
+}
+
+// Deal-wide money, as /invoice-paid sums it: skip draft/voided/deleted and LifePass -Sub masters.
+async function dealInvoiceTotals(dealId: string): Promise<{ billed: number; paid: number }> {
+  const assoc = await hsGet(`/crm/v3/objects/deals/${dealId}/associations/invoices`);
+  let billed = 0, paid = 0;
+  for (const r of (assoc.results || [])) {
+    const inv = await hsGet(`/crm/v3/objects/invoices/${r.id || r.toObjectId}?properties=hs_amount_billed,hs_amount_paid,hs_invoice_status,hs_number`);
+    const p = inv.properties || {};
+    const st = String(p.hs_invoice_status || '').toLowerCase();
+    if (st === 'voided' || st === 'deleted' || st === 'draft') continue;
+    if (/-Sub$/i.test(p.hs_number || '')) continue;
+    billed += parseFloat(p.hs_amount_billed) || 0;
+    paid += parseFloat(p.hs_amount_paid) || 0;
+  }
+  return { billed, paid };
 }
 
 export async function createLifePassSubscriptionInvoice(dealId: string, bookingTag: string, prismaClient: PrismaClient): Promise<void> {
@@ -1583,6 +1616,31 @@ export function webhookRoutes(prisma: PrismaClient) {
         return res.status(404).json({ error: 'No deal found for this invoice' });
       }
 
+      // DIFFERENCE INVOICE → fold its amount into the existing booking; touch nothing else (see invoiceIsDifference).
+      if (invoiceId && await invoiceIsDifference(String(invoiceId))) {
+        const bk = await prisma.booking.findFirst({ where: { hubspotDealId: resolvedDealId } as any });
+        if (!bk) {
+          console.warn(`[Invoice Created] difference invoice ${invoiceId} on deal ${resolvedDealId} but NO booking — nothing created (a difference invoice never makes a booking)`);
+          return res.status(409).json({ status: 'difference_no_booking', dealId: resolvedDealId });
+        }
+        const { billed, paid } = await dealInvoiceTotals(String(resolvedDealId));
+        const paidNow = Math.max(paid, Number(bk.amountPaid || 0));
+        const data: any = {};
+        if (billed > 0) { data.amountTotal = billed; data.amountOpen = billed - paidNow; }
+        if (paid > Number(bk.amountPaid || 0)) data.amountPaid = paid;
+        if (Object.keys(data).length) await prisma.booking.update({ where: { id: bk.id }, data });
+        console.log(`[Invoice Created] difference invoice ${invoiceId} folded into booking #${bk.id}: total €${billed.toFixed(2)}, paid €${paidNow.toFixed(2)} (primary invoice ${bk.hubspotInvoiceId} unchanged)`);
+        res.json({ status: 'difference_folded', bookingId: bk.id, amountTotal: billed, amountPaid: paidNow });
+        (async () => {
+          try {
+            await new Promise((r) => setTimeout(r, 60_000));   // let the creator's "-D" rename land, so Xero carries INV-####-D
+            const result = await createXeroInvoiceWithRetry({ hubspotInvoiceId: String(invoiceId), hubspotDealId: resolvedDealId }, ' (difference invoice)');
+            console.log(`[Xero Invoice] (difference) ${result.status}:`, JSON.stringify(result));
+          } catch (e: any) { console.error(`[Xero Invoice] (difference) FAILED for invoice ${invoiceId}: ${e.message}`); }
+        })();
+        return;
+      }
+
       // Check if booking already exists for THIS invoice / student.
       // Family-deal safety: a single deal can carry multiple Student-B2C
       // contacts (parent + child, siblings — Hughes Pimentel family case
@@ -2710,8 +2768,9 @@ export function webhookRoutes(prisma: PrismaClient) {
       let totalBilled = 0;
       let totalPaid = 0;
 
+      let diffOpen = 0;   // still owed on DIFFERENCE invoices only — never downgrades a CONFIRMED booking
       for (const invId of invoiceIds) {
-        const inv = await hsGet(`/crm/v3/objects/invoices/${invId}?properties=hs_amount_billed,hs_amount_paid,hs_invoice_status,hs_number`);
+        const inv = await hsGet(`/crm/v3/objects/invoices/${invId}?properties=hs_amount_billed,hs_amount_paid,hs_invoice_status,hs_number,hs_comments`);
         const props = inv.properties || {};
         const status = (props.hs_invoice_status || '').toLowerCase();
         // Skip VOIDED/DELETED invoices — they're cancelled, so their billed
@@ -2723,6 +2782,7 @@ export function webhookRoutes(prisma: PrismaClient) {
         if (/-Sub$/i.test(props.hs_number || '')) continue;
         totalBilled += parseFloat(props.hs_amount_billed) || 0;
         totalPaid += parseFloat(props.hs_amount_paid) || 0;
+        if (DIFF_INVOICE_MARKER.test(String(props.hs_comments || '')) || /-D$/i.test(props.hs_number || '')) diffOpen += (parseFloat(props.hs_amount_billed) || 0) - (parseFloat(props.hs_amount_paid) || 0);
       }
 
       const isFullyPaid = totalPaid >= totalBilled && totalBilled > 0;
@@ -2786,7 +2846,9 @@ export function webhookRoutes(prisma: PrismaClient) {
       // back to HubSpot, which should (if the workflow is wired correctly) re-fire
       // this webhook with the lower totalPaid.
       let targetStatus: string | null = null;
-      if (isFullyPaid) {
+      if (!isFullyPaid && booking.status === 'CONFIRMED' && diffOpen > 0.01 && totalBilled - totalPaid <= diffOpen + 0.01) {
+        targetStatus = 'CONFIRMED';   // the only money owed is a difference invoice: the course itself stays confirmed
+      } else if (isFullyPaid) {
         targetStatus = 'CONFIRMED';
       } else if (totalPaid > 0) {
         targetStatus = 'PARTIAL';
@@ -3139,6 +3201,22 @@ export function webhookRoutes(prisma: PrismaClient) {
   // Out of scope here (hub-orchestrated): moving the HubSpot deal to
   // closedwon + setting the escrow flag. That's done by the hub before it
   // calls us — we only own the SIS-side data.
+  // POST /sis/api/webhooks/deal-lost — fins `hs-lost-hook` calls this after voiding/crediting a Lost
+  // deal's invoices. Cancels the booking (or flags it if the student is already in class) and turns a
+  // held escrow row into the refunded row. Idempotent. Logic: scripts/deal-lost.ts.
+  router.post('/deal-lost', async (req, res) => {
+    if (req.headers['x-tm-internal-secret'] !== process.env.TM_INTERNAL_SECRET) {
+      return res.status(401).json({ ok: false, error: 'unauthorized' });
+    }
+    try {
+      const r = await dealLostScripts(prisma).handle(req.body || {});
+      return res.status(r.ok ? 200 : 400).json(r);
+    } catch (err: any) {
+      console.error('[Deal Lost] error:', err?.message);
+      return res.status(500).json({ ok: false, error: err?.message || 'internal error' });
+    }
+  });
+
   router.post('/transfermate-escrow', async (req, res) => {
     if (req.headers['x-tm-internal-secret'] !== process.env.TM_INTERNAL_SECRET) {
       return res.status(401).json({ error: 'unauthorized' });
