@@ -2,6 +2,19 @@
 
 Open work for this project. Protocol: anything left unfinished at the end of a session goes here (not in memory); finished work is moved to ToDo-Done.md. Synced with Wrike (space "hub" → folder "SIS") every 5 minutes — edit the text here; status syncs both ways.
 
+## Attendance: add "Excused Late Arrival" and "Excused Early Departure" options
+
+**Priority:** Medium
+**Status:** Waiting — Neil: how they count in the attendance %
+**Added:** 2026-11-16
+**Updated:** 2026-11-16T11:55:07Z
+
+Antonella asked in #sis (16/11/2026) for these two register options next to "Excused" (PPS appointments etc.). Build = two new AttendanceStatus values (schema + migration), labels/chips in the admin register and student app, and the counting rule in attendance-pct.ts presentCredit(). Today PRESENT = 1, LATE = 0.5, EXCUSED = 0 (counts as an absence in the %).
+- [ ] Neil decides: excused late/early = full day (1) or same as Late (0.5)
+- [ ] Build + test on one student, then tell Antonella
+
+---
+
 ## Android app: turn on code shrinking before Feb 2027 (Play warning)
 
 **Priority:** Low
@@ -72,12 +85,12 @@ Neil 2026-11-11: one at a time = drop the PDF into the student's Visa & Flight b
 **Status:** In progress — Waiting on Neil (phone test + iOS build)
 **Progress:** 70% — v1 built 2026-11-11: speaking screen after the 40 questions, recording, MP3 storage, LMS players. Left: live phone test, iOS build.
 **Added:** 2026-11-10
-**Updated:** 2026-11-12T22:55:06Z
+**Updated:** 2026-11-16T23:15:06Z
 
 Built (Neil 2026-11-11 spec, Slack thread in #C07C8C0JENT): after Q40 the score goes to SIS (waypoint, unchanged), then 3 questions picked by band from the score (low A1–A2 / mid B1 / high B2+, 2 prompts per slot, fixed per token). Record → green DONE (from 2s) or 60s auto-stop, bar countdown; one redo PER QUESTION (↻ icon, server enforces; Neil 2026-11-11). Uploads in the background, retried; MP3 mono 32k (~240 KB/min) via ffmpeg-static in `uploads/placement-audio/<studentId>/`. Mic refused/unsupported → skip to writing, token marked. LMS placement view: Questions (collapsed) → Speaking (players) → Writing. Server tested end-to-end; the browser recorder is NOT yet tested on a real device.
 - [ ] Neil: do the test on a phone (Android app + emailed link) and listen in the LMS placement view
 - [x] Website `ulearnschool.com/placement-test` (Drupal node/41, revision 390) now iframes `sis.ulearnschool.com/prototype/placement/` with `allow="clipboard-write; microphone"` (was the stale Apr `lms.` copy). Via `ssh ulearn@localhost` + drush.
-- [ ] Phone app builds: Android version 5 (mic fix) was submitted to Play 2026-11-12, then superseded the same night by **version 6** = mic + real downloads (mobile commit ecc646d: MainActivity hands downloads to the system DownloadManager → Downloads folder + notification; app adds `ULearnDownloads/1` to its user agent and student.html uses it, older builds keep the save/email fallback). Left: Neil tests the debug APK (download a document + placement speaking on student 97), runs Codemagic Android Release on main, replaces version 5 with 6 in Play. iOS: current build (no mic) goes to App Review first; after approval one iOS update with the mic + downloads (share sheet → Save to Files, not built yet), run manually in Codemagic, then remove the `inIosApp()` skip in `lms/prototype/app.js`. Remove the grey debug "build · android · fs=" line in the Documents card once downloads are confirmed.
+- [ ] Phone app builds: Android version 5 (mic fix) was submitted to Play 2026-11-12, then superseded the same night by **version 6** = mic + real downloads (mobile commit ecc646d: MainActivity hands downloads to the system DownloadManager → Downloads folder + notification; app adds `ULearnDownloads/1` to its user agent and student.html uses it, older builds keep the save/email fallback). Left: Neil tests the debug APK (download a document + placement speaking on student 97), runs Codemagic Android Release on main, replaces version 5 with 6 in Play. iOS: App Review rejected round 2 on 2026-11-16 (Google Play in screenshots, placeholder icon — fixed in mobile commit 00a6372, demo sign-in typo `ulearnschoo..com` in App Store Connect). Neil: fix the sign-in email, swap screenshots for the /sis/launch/ios/ set, run ios-testflight in Codemagic, pick the new build, resubmit. Version 6 Android is in Play review. Then after approval one iOS update with the mic + downloads (share sheet → Save to Files, not built yet), run manually in Codemagic, then remove the `inIosApp()` skip in `lms/prototype/app.js`. Remove the grey debug "build · android · fs=" line in the Documents card once downloads are confirmed.
 - [x] AI listener BUILT 2026-11-12: once all 3 answers are in, the SIS sends the MP3s to the LMS (`POST /lms-api/ai-tutor/assess-speaking`), which has OpenAI `gpt-audio-1.5` LISTEN (Claude has no audio input) and return per-answer transcript + fluency/pauses/prosody/pronunciation/grammar/vocabulary/task + CEFR, and an overall level. Stored on `test_access_tokens.speaking.assessment`; shown in the LMS placement view (overall + "AI notes" per answer, Re-assess button). Prompt: `lms/lms-api/prompts/ai-tutor/speaking-system.md`. Cost ≈ $0.04 per student (3 × ~35 s). `gpt-audio-mini` (≈ $0.013) rated a native speaker A2–B1, so not used.
 - [ ] Calibrate the AI listener: it rates Neil (native speaker, deliberately simple answers) B2, consistently. Needs Paul's sample recordings at known levels (A2…C1, plus a native) to tune the prompt; compare its level with Paul's on the first real students.
 - [ ] Later: audio prompts recorded by Paul, oral-result field, 90-day audio prune
