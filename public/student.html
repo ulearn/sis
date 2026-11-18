@@ -4078,6 +4078,23 @@ async function initPushNotifications() {
     _appToast('Downloading…', 3000);
     window.location.href = `/sis/student/api/documents/${id}/pdf`;   // attachment → onDownloadStart in the app
   }
+  // iOS app (2026-11 build onwards) has a native share sheet: we fetch the PDF here and hand it over as
+  // base64 (ULearnViewController in the app). Older iOS builds lack the handler and keep the email path.
+  function _iosCanShare() { try { return !!(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.ulearnSave); } catch (e) { return false; } }
+  async function _iosShareDoc(id) {
+    _appToast('Preparing…', 8000);
+    try {
+      const resp = await _withTimeout(fetch(`/sis/student/api/documents/${id}/pdf?inline=1`, { credentials: 'include' }), 20000, 'download');
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const blob = await _withTimeout(resp.blob(), 20000, 'read');
+      const b64 = await _blobToBase64(blob);
+      window.webkit.messageHandlers.ulearnSave.postMessage({ filename: _fnameFromResp(resp, id), data: b64 });
+      _appToast('Choose “Save to Files” to keep it on your phone', 4000);
+    } catch (e) {
+      _appToast('Couldn’t open it here — emailing it to you instead…', 3000);
+      await _emailDocToSelf(id);
+    }
+  }
   function _fnameFromResp(resp, id) {
     let fname = `ULearn-document-${id}.pdf`;
     const cd = (resp && resp.headers && resp.headers.get('Content-Disposition')) || '';
@@ -4095,6 +4112,7 @@ async function initPushNotifications() {
     const FS = Cap && Cap.Plugins && Cap.Plugins.Filesystem;
     const platform = (Cap && Cap.getPlatform && Cap.getPlatform()) || '';
     if (_appCanDownload()) return _nativeDownload(id);
+    if (_iosCanShare()) return _iosShareDoc(id);
     if (platform === 'android' && FS) {
       _appToast('Saving…', 12000);
       try {
@@ -4136,6 +4154,7 @@ async function initPushNotifications() {
     const FS = Cap && Cap.Plugins && Cap.Plugins.Filesystem;
     const inApp = _isInAppWebview();
     if (_appCanDownload()) return _nativeDownload(id);
+    if (_iosCanShare()) return _iosShareDoc(id);
     // ANDROID APP (Filesystem reachable) → one-tap real download: save the PDF
     // straight to the device's public Documents folder. The toast names the
     // exact outcome so the path taken is never a mystery.
