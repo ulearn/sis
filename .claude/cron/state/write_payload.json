@@ -1,67 +1,49 @@
 [
   {
-    "range": "H2:K2",
+    "range": "I10:I10",
     "values": [
       [
-        "2409th check Tue 17 Nov 2026 UTC — no data change\n• Payment 18122 (EUR 250, Card, 23 Aug 2026): booking_id = null — Day 86\n• Payment 18123 (EUR 250, Card, 23 Aug 2026): booking_id = null — Day 86\n• Payment 16988 (EUR 339.90, Bank, 28 Apr 2026): booking_id = null — Day 202\n• Payment 16989 (EUR 339.90, Bank, 28 Apr 2026): booking_id = null — Day 202\n• Payment 17187 (EUR 6,151, TransferMate Escrow, 1 May 2026): booking_id = null — Day 195\n• Payment 4781 (EUR 380, Flywire, Aug 2019): booking_id = null — legacy pre-migration record\n• Fix NOT RUN",
-        "Verify Payment 18122+18123 in Xero then link or void. See recipe: issue-1-addendum-14nov.md",
-        "2409th Tue 17 Nov UTC. No data change. P18122/P18123 Day 86; P16988/P16989 Day 202; P17187 Day 195; P4781 legacy.",
-        "6 orphan pmts"
+        "Issue Document Record 171; generate cert for Booking 1682; deactivate Booking Course 1909 + Booking Course 1660. See recipe: issue-9-addendum-19nov.md"
       ]
     ]
   },
   {
-    "range": "H10:K10",
+    "range": "I11:I11",
     "values": [
       [
-        "2409th check Tue 17 Nov 2026 UTC — no data change\n• Booking Course 1909 (Academic Year Morning, Booking 1682, Suvderdene Bayartsog): ended 2025-10-24 — Day 389; active = true; ilepCode = 0318/0010\n• Booking Course 1660 (ULearn Renewal Morning, Booking 1498): ended 2026-06-05 — Day 165; active = true; ilepCode = 0318/0010\n• Document Record 171 (student 947): status = DRAFT — awaiting issue\n• Fix NOT RUN",
-        "Issue Document Record 171; generate cert for Booking 1682; deactivate Booking Course 1909 + Booking Course 1660. See recipe: issue-9-addendum-16nov.md",
-        "2409th Tue 17 Nov UTC. BC1909 Day 389; BC1660 Day 165; DR171 DRAFT. No data change.",
-        "ilepCode set; DR171 DRAFT; BC1909 Day389"
+        "Set ILEP code on Booking Course 107; generate cert; deactivate Booking Course 107; fix confirmed flag on Booking 97. See recipe: issue-10-addendum-19nov.md"
       ]
     ]
   },
   {
-    "range": "H12:K12",
+    "range": "I21:I21",
     "values": [
       [
-        "2409th check Tue 17 Nov 2026 UTC — no data change\n• Booking Course 24696 (General English AM Plus, Booking 17912): ended 2026-07-03 — Day 137; active = true; ilepCode = null\n• Document Record 318 (certificate, Booking 17912): status = ISSUED (issued 2026-07-03)\n• Student 1063 (Valeriya Salauyova): hubspot_contact_id = null — no HubSpot contact linked\n• Fix NOT RUN",
-        "Deactivate Booking Course 24696; link student 1063 to HubSpot. See recipe: issue-11-addendum-16nov.md",
-        "2409th Tue 17 Nov UTC. BC24696 Day 137. DR318 cert ISSUED. Student 1063 HubSpot null. No data change.",
-        "BC24696 Day137; stu1063 HS null"
+        "Path A: set BC1791 active=false + confirm Bk1605. Path B: cancel Bk1605 + deactivate BC1791. See recipe: issue-20-addendum-19nov.md"
       ]
     ]
   },
   {
-    "range": "H31:K31",
+    "range": "I29:I29",
     "values": [
       [
-        "2409th check Tue 17 Nov 2026 UTC — no data change\n• Payment 945 (EUR 4,231, Bank Transfer, 30 Jan 2026): booking_id = 79, xeroPaymentId = null — Day 291\n• Booking Course 82 (Intensive General 30, Booking 79): ended 2026-03-06, active = true, ilepCode = null — Day 256 past end\n• Booking Course 83 (Afternoon General Plus, Booking 79): ended 2026-05-08, active = true, ilepCode = null — Day 193 past end\n• Fix NOT RUN",
-        "Deactivate Booking Course 82 + Booking Course 83; set ilep codes; link Payment 945 to Xero. See recipe: issue-30-addendum-15nov.md",
-        "2409th Tue 17 Nov UTC. No data change. P945 Day 291; BC82 Day 256; BC83 Day 193.",
-        "P945 Day291; BC82 Day256; BC83 Day193"
+        "Set Booking 17850 confirmed = true; reconcile Payment 17519 to Xero; deactivate Booking Course 24624. See recipe: issue-28-addendum-19nov.md"
       ]
     ]
   },
   {
-    "range": "H39:K39",
+    "range": "I38:I38",
     "values": [
       [
-        "2409th check Tue 17 Nov 2026 UTC — no data change\n• Booking Accommodation 11352 (Veronica Martin, Booking 18156, bed 83, Capel A1/Room 2): ended 2026-07-11, active = true, fee = EUR 360 — Day 129 past checkout\n• claimedByProviderId = null — Capel Street has not claimed this booking\n• Accommodation Provider 15 (Capel Street): xeroContactId = null — root blocker for all Capel billing\n• Fix NOT RUN",
-        "Deactivate Booking Accommodation 11352 when Capel billing resolved. See recipe: issue-37-addendum-14nov.md",
-        "2409th Tue 17 Nov UTC. No data change. BA11352 Day 129. Blocked on Capel billing (Issue 54).",
-        "BA11352 Day129; Capel billing TBC"
+        "Resolve Issue 54 (Capel xeroContactId); then deactivate Booking Accommodation 11393. See recipe: issue-36r38-addendum-19nov.md"
       ]
     ]
   },
   {
-    "range": "H57:K57",
+    "range": "I47:I47",
     "values": [
       [
-        "2409th check Tue 17 Nov 2026 UTC — no data change\n• Booking Accommodation 32 (Maria Rosa Ghiani, bed 168, Capel A1 Room 1): end date = 2026-10-11, active = true — Day 37 past checkout\n• Fee = EUR 400; claimedByProviderId = null\n• Fix NOT RUN — waiting on Capel billing mechanism (see Issue 54)",
-        "Deactivate Booking Accommodation 32 when Capel billing resolved. See recipe: issue-55-addendum-16nov.md",
-        "2409th Tue 17 Nov UTC. Booking Accommodation 32 still active Day 37 (was Day 36). Blocked on Capel billing.",
-        "BA32 Day37; Capel billing TBC"
+        "Deactivate Booking Course 1571; verify/deactivate Booking Course 25243 anomaly. See recipe: issue-45r47-addendum-19nov.md"
       ]
     ]
   }

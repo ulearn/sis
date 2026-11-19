@@ -1193,6 +1193,9 @@ export async function resyncBookingLogistics(
   // 4. Courses — conservative fills a NULL date; AUTHORITATIVE overwrites a DIFFERING date
   // (+ weeks). Still create at most one row per wholly-missing category; never duplicate.
   //
+  // Set when a stand-in course end (end = start on a >1-week course) is replaced by the deal's real
+  // course_end — the booking was created before the deal had one (David Encina bk18442, Neil 2026-11-18).
+  let placeholderEndFilled = false;
   // AUTHORITATIVE single-course recategorisation (Neil 2026-08-13): when the booking has
   // exactly ONE course and the deal/invoice now resolves to exactly ONE course of a
   // DIFFERENT category, the source was deliberately re-inscribed to correct a
@@ -1229,7 +1232,10 @@ export async function resyncBookingLogistics(
       if (ex) {
         const data: any = {};
         if (dc.startDate && (ex.startDate == null || (authoritative && +ex.startDate !== +dc.startDate))) data.startDate = dc.startDate;
-        if (dc.endDate && (ex.endDate == null || (authoritative && +ex.endDate !== +dc.endDate))) data.endDate = dc.endDate;
+        // Stand-in end (create path writes endDate = courseStart when the deal has no course_end) counts as EMPTY.
+        const placeholderEnd = !!(ex.startDate && ex.endDate && +ex.startDate === +ex.endDate && Number((ex as any).weeks || 0) > 1);
+        if (dc.endDate && (ex.endDate == null || (placeholderEnd && +dc.endDate !== +ex.endDate) || (authoritative && +ex.endDate !== +dc.endDate))) data.endDate = dc.endDate;
+        if (placeholderEnd && data.endDate) placeholderEndFilled = true;
         if (authoritative && dc.weeks && (ex as any).weeks !== dc.weeks) data.weeks = dc.weeks;
         if (Object.keys(data).length) {
           await prisma.bookingCourse.update({ where: { id: ex.id }, data });
@@ -1345,6 +1351,15 @@ export async function resyncBookingLogistics(
       await prisma.booking.update({ where: { id: bookingId }, data });
       changes.push(`service ${authoritative ? 'set' : 'fill'}:${Object.keys(data).join(',')}`);
     }
+  }
+
+  // The create-time Christmas shunt saw the stand-in end (before Christmas) and did nothing; now that the
+  // real end is in, apply it ONCE. Only on a stand-in fill — never on routine fires / staff-edited rows.
+  if (placeholderEndFilled) {
+    try {
+      const xmas = await applyChristmasClosures(prisma, bookingId);
+      if (xmas.applied) changes.push(`christmas-shunt:${xmas.applied}`);
+    } catch (e: any) { console.warn(`[resync] Christmas shunt failed for booking ${bookingId}: ${e.message}`); }
   }
 
   // Clear the ReSync flag so it can't linger and let a later ROUTINE fire overwrite dates
@@ -1846,6 +1861,11 @@ export function webhookRoutes(prisma: PrismaClient) {
         // label disqualifies; a co-present student label does not override it.
         const labelsOf = (a: any) => (a.associationTypes || []).map((t: any) => String(t.label || '').toLowerCase());
         const isPartnerContact = (a: any) => labelsOf(a).includes('partner');
+        // A "Relative" association label (referrer / parent / sponsor) is never the student — even when the
+        // contact ALSO carries a Student-B2C label (Ramses Brea as referrer on David Encina's deal, INV-1659,
+        // Neil 2026-11-18). Drop Relatives up front unless that would leave nobody.
+        const isRelativeContact = (a: any) => labelsOf(a).includes('relative');
+        { const nonRelative = candidates.filter(a => !isRelativeContact(a)); if (nonRelative.length) candidates = nonRelative; }
 
         try {
           const ids = contactAssocs.map(a => ({ id: String(a.toObjectId) }));
@@ -1895,7 +1915,9 @@ export function webhookRoutes(prisma: PrismaClient) {
 
           // If still multiple, prefer one explicitly tagged Student-*
           if (candidates.length > 1) {
-            const explicitStudent = candidates.find(a => (typeById.get(String(a.toObjectId)) || '').startsWith('student'));
+            // The invoice's own contact wins when it is a candidate (autoInvoice bills the STUDENT — Neil 2026-11-18).
+            const fromInvoice = invoiceContactId ? candidates.find(a => String(a.toObjectId) === invoiceContactId) : null;
+            const explicitStudent = fromInvoice || candidates.find(a => (typeById.get(String(a.toObjectId)) || '').startsWith('student'));
             if (explicitStudent) resolvedContactId = String(explicitStudent.toObjectId);
           } else if (candidates.length === 1) {
             resolvedContactId = String(candidates[0].toObjectId);
