@@ -1277,6 +1277,11 @@ app.use('/host-portal', publicHostPortalRoutes(prisma));
 import { publicHostVettingRoutes } from './routes/host-vetting';
 app.use('/host-portal', publicHostVettingRoutes(prisma));
 
+// Group link (public — token in the URL, no session). The organiser of a group
+// uploads passports → members. Staff mint/disable it on the group page. Neil 2026-11-20.
+import { publicGroupRoutes } from './routes/group-public';
+app.use('/sis/group', publicGroupRoutes(prisma));
+
 // Teacher contract signing (public — magic-link auth, no session). Replaces
 // Zoho Sign. Registered BEFORE requireAuth so teachers can sign from an email
 // link. Token resolution in routes/teacher-contract.ts.

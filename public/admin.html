@@ -8989,7 +8989,7 @@ async function showGroupDetail(id) {
       <td>${esc(s.level)||'—'}</td><td>${esc(s.nationality)||'—'}</td><td>${esc(s.course)||'—'}</td><td>${esc(s.status)||'—'}</td>
       <td style="text-align:center">${s.hubspotContactId?'<span style="color:var(--success)" title="In HubSpot">✓</span>':'<span style="color:var(--text-muted)">—</span>'}</td>
     </tr>`).join('') : `<tr><td colspan="8" class="table-empty">No students uploaded yet — the roster appears once the group's list is imported.</td></tr>`;
-  const needPush = d.roster.filter(s => !s.hubspotContactId).length;
+  const needPush = d.roster.filter(s => !s.hubspotContactId && s.role !== 'leader').length;
   // Section icons — reuse the app's existing transport(airport)/accom(house) glyphs; activities = compass (excursion/tourism).
   const svg = (inner, color) => `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="${color || 'currentColor'}" stroke-width="2" style="flex-shrink:0">${inner}</svg>`;
   const IC_COURSE = svg('<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>', '#16a34a');   // green
@@ -9025,9 +9025,12 @@ async function showGroupDetail(id) {
     : '';
   // Compact service column (icon + label over value) for the 3-up services row.
   const scol = (ic, label, val) => `<div><div style="display:flex;gap:6px;align-items:center;margin-bottom:3px"><span style="color:var(--text-muted)">${ic}</span><span style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600">${label}</span></div><div style="font-size:13px">${val || '—'}</div></div>`;
-  const gRight = g.hubspotDealId
-    ? `<button class="btn btn-sm btn-secondary" onclick="groupPullHubspot(${g.id})" title="Refresh Company, Leaders, Quote &amp; Invoice from the HubSpot deal">↻ Refresh from HubSpot</button>`
-    : '';
+  const gRight = `<button class="btn btn-sm btn-secondary" onclick="groupShareLink(${g.id})" title="Private no-login page where the organiser uploads every traveller's passport (name, birth date, passport details are read automatically)">${g.shareToken ? '🔗 Copy Passport Link' : '🔗 Passport Link'}</button>`
+    + (g.shareToken ? ` <button class="btn btn-sm btn-secondary" onclick="groupDisableLink(${g.id})" title="Switch the passport link off">Disable Link</button>` : '')
+    + ` <a class="btn btn-sm btn-secondary" href="/sis/api/groups/${g.id}/manifest.csv" title="Every traveller with passport details, for booking flights">✈ Flight Manifest</a>`
+    + (g.hubspotDealId
+    ? ` <button class="btn btn-sm btn-secondary" onclick="groupPullHubspot(${g.id})" title="Refresh Company, Leaders, Quote &amp; Invoice from the HubSpot deal">↻ Refresh from HubSpot</button>`
+    : '');
   setTopbar(esc(g.name), `<span onclick="navigate('groups')" style="cursor:pointer;color:var(--accent)">Groups</span> / ${esc(g.name)}`, gRight);
   // HubSpot deal → quote → invoice hierarchy — the GROUP is the apex entity that
   // holds these (members carry no financials). Same icons as a normal booking.
@@ -9132,6 +9135,19 @@ function groupCommsTo(email) {
   el.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
+async function groupShareLink(id) {
+  try {
+    const r = await api('/groups/' + id + '/share-link', { method: 'POST', body: {} });
+    try { await navigator.clipboard.writeText(r.url); toast('Passport link copied: ' + r.url); }
+    catch (_) { prompt('Passport link (copy it):', r.url); }
+    showGroupDetail(id);
+  } catch (e) { toast(e.message, true); }
+}
+async function groupDisableLink(id) {
+  if (!confirm('Switch the passport link off? Anyone holding it will see "link no longer active". You can make a new one later.')) return;
+  try { await api('/groups/' + id + '/share-link', { method: 'DELETE' }); toast('Passport link disabled'); showGroupDetail(id); }
+  catch (e) { toast(e.message, true); }
+}
 async function groupPullHubspot(id) {
   toast('Pulling from HubSpot…');
   try {
@@ -9217,7 +9233,7 @@ async function groupCommit(id) {
   if (!confirm(`Create ${students.length} SIS students + bookings for this group?\n\nEach gets a €0 booking (group-level invoice), a synthetic email, and the provisional level. HubSpot contacts are a separate step after.`)) return;
   try {
     const r = await api('/groups/' + id + '/commit', { method: 'POST', body: { students } });
-    toast(`Created ${r.created.length} students + bookings`);
+    toast(`Created ${r.created.length} students + bookings${r.skipped?.length ? ` · ${r.skipped.length} already in the group (skipped)` : ''}`);
     window._lastGroupParse = null;
     showGroupDetail(id);   // refresh → roster now populated
   } catch (e) { toast(e.message, true); }

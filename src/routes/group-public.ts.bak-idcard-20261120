@@ -1,0 +1,164 @@
+/**
+ * Public group link — /sis/group/<token> (no login).
+ *
+ * Neil 2026-11-20: a group (often juniors with no emails) needs names, DOB and
+ * passports so we can book their flights. The organiser or a leader opens one
+ * private link, drops in the passports (photo or PDF), and each passport becomes
+ * a group member: the passport reader fills name, DOB, sex, nationality, passport
+ * number and expiry; they fix anything it misread in the table. Leaders are
+ * marked as leaders (flights, no class).
+ *
+ * The token is the only key (like the host portal). Staff mint / disable it on
+ * the group page (routes/groups.ts). Every route here is scoped to the token's group.
+ */
+import { Router } from 'express';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import crypto from 'crypto';
+import type { PrismaClient } from '../generated/prisma/client';
+import { groupScripts } from '../scripts/groups';
+import { parsePassport } from '../scripts/passport-parser';
+
+const studentsDir = path.join(__dirname, '..', '..', 'uploads', 'students');
+const intakeDir = path.join(__dirname, '..', '..', 'uploads', 'group-intake');
+if (!fs.existsSync(intakeDir)) fs.mkdirSync(intakeDir, { recursive: true });
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, intakeDir),
+    filename: (_req, file, cb) => cb(null, `${Date.now()}-${crypto.randomBytes(4).toString('hex')}${path.extname(file.originalname || '').toLowerCase()}`),
+  }),
+  limits: { fileSize: 15 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const ok = /^(application\/pdf|image\/(jpeg|jpg|png|webp|heic|heif))$/i.test(file.mimetype);
+    if (ok) cb(null, true); else cb(new Error('Please upload a photo (JPG/PNG) or a PDF of the passport'));
+  },
+});
+
+const ALPHABET = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+export function newGroupToken(): string {
+  const buf = crypto.randomBytes(12);
+  let out = '';
+  for (let i = 0; i < 12; i++) out += ALPHABET[buf[i]! % ALPHABET.length];
+  return out;
+}
+
+export function publicGroupRoutes(prisma: PrismaClient) {
+  const router = Router();
+  const scripts = groupScripts(prisma);
+
+  const groupFor = async (token: string) => {
+    if (!/^[A-Za-z0-9]{8,32}$/.test(token || '')) return null;
+    return prisma.studentGroup.findUnique({ where: { shareToken: token } });
+  };
+
+  router.get('/:token', async (req, res) => {
+    const g = await groupFor(req.params.token);
+    if (!g) return res.status(404).send('<p style="font-family:sans-serif;padding:24px">This link is no longer active. Please contact ULearn.</p>');
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('X-Robots-Tag', 'noindex');
+    res.sendFile(path.join(__dirname, '..', '..', 'public', 'group-link.html'));
+  });
+
+  router.get('/:token/api', async (req, res) => {
+    try {
+      const g = await groupFor(req.params.token);
+      if (!g) return res.status(404).json({ success: false, error: 'Link not active' });
+      const t = await scripts.groupTravellers(g.id);
+      const day = (d: Date | null) => d ? new Date(d).toISOString().slice(0, 10) : null;
+      res.json({
+        success: true,
+        group: { name: g.name, pax: g.pax, courseStart: day(g.courseStart), courseEnd: day(g.courseEnd), arrival: day(g.accomStart || g.courseStart) },
+        members: t?.members || [],
+      });
+    } catch (e: any) { res.status(500).json({ success: false, error: String(e?.message || e) }); }
+  });
+
+  // One passport per request (the page sends files one by one so it can show progress).
+  router.post('/:token/api/passport', (req, res) => {
+    upload.single('file')(req, res, async (err: any) => {
+      const file = (req as any).file;
+      try {
+        if (err) return res.status(400).json({ success: false, error: err.message });
+        const g = await groupFor(req.params.token);
+        if (!g) { if (file) fs.unlink(file.path, () => {}); return res.status(404).json({ success: false, error: 'Link not active' }); }
+        if (!file) return res.status(400).json({ success: false, error: 'No file' });
+        const role = req.body?.role === 'leader' ? 'leader' : 'student';
+
+        const pp = await parsePassport(file.path, file.mimetype);
+        const x = pp.extracted;
+        const ppNo = (x?.passportNumber || '').replace(/\s+/g, '').toUpperCase();
+        if (ppNo) {
+          const dupe = await prisma.booking.findFirst({
+            where: { groupId: g.id, student: { passportNumber: ppNo } },
+            select: { student: { select: { firstName: true, lastName: true } } },
+          });
+          if (dupe) {
+            fs.unlink(file.path, () => {});
+            return res.json({ success: true, duplicate: true, name: `${dupe.student?.firstName || ''} ${dupe.student?.lastName || ''}`.trim() });
+          }
+        }
+        const sex = x?.sex === 'M' || x?.sex === 'F' ? x.sex : null;
+        const nat = x?.nationalityCountry || (x?.nationality && x.nationality.length > 3 ? x.nationality : null);
+        const m = await scripts.addGroupMember(g.id, {
+          firstName: x?.givenNames || null, lastName: x?.surname || null, dob: x?.dateOfBirth || null, sex,
+          nationality: nat, passportNumber: ppNo || null, passportIssued: x?.dateOfIssue || null, passportExpiry: x?.dateOfExpiry || null,
+          role,
+        });
+        // File the passport in the student's documents (same bucket as staff/student uploads).
+        const dir = path.join(studentsDir, String(m.studentId));
+        fs.mkdirSync(dir, { recursive: true });
+        const safe = (file.originalname || 'passport').replace(/[^A-Za-z0-9._-]+/g, '_').slice(-80);
+        const stored = `${Date.now()}-${safe}`;
+        fs.renameSync(file.path, path.join(dir, stored));
+        await prisma.studentDocument.create({
+          data: { studentId: m.studentId, filename: stored, originalName: file.originalname || 'passport', mimeType: file.mimetype, size: file.size, category: 'passport', uploadedBy: `group-link:${g.id}` },
+        });
+        console.log(`[group-link] group=${g.id} ${m.matched ? 'matched(' + m.matched + ')' : '+' + role} student=${m.studentId} read=${!!x} ${ppNo ? 'pp✓' : 'pp?'}`);
+        res.json({ success: true, read: !!(x && (x.surname || x.passportNumber)), matched: !!m.matched, bookingId: m.bookingId, parseError: pp.error || null });
+      } catch (e: any) {
+        if (file && fs.existsSync(file.path)) fs.unlink(file.path, () => {});
+        res.status(500).json({ success: false, error: String(e?.message || e) });
+      }
+    });
+  });
+
+  router.patch('/:token/api/members/:bookingId', async (req, res) => {
+    try {
+      const g = await groupFor(req.params.token);
+      if (!g) return res.status(404).json({ success: false, error: 'Link not active' });
+      const allowed = ['firstName', 'lastName', 'dob', 'sex', 'nationality', 'passportNumber', 'passportExpiry', 'role'];
+      const f: any = {};
+      for (const k of allowed) if (k in (req.body || {})) f[k] = req.body[k];
+      res.json(await scripts.updateGroupMember(g.id, parseInt(req.params.bookingId, 10), f));
+    } catch (e: any) { res.status(400).json({ success: false, error: String(e?.message || e) }); }
+  });
+
+  router.delete('/:token/api/members/:bookingId', async (req, res) => {
+    try {
+      const g = await groupFor(req.params.token);
+      if (!g) return res.status(404).json({ success: false, error: 'Link not active' });
+      res.json(await scripts.removeGroupMember(g.id, parseInt(req.params.bookingId, 10)));
+    } catch (e: any) { res.status(400).json({ success: false, error: String(e?.message || e) }); }
+  });
+
+  // View the uploaded passport (so the organiser can check a misread against the image).
+  router.get('/:token/api/members/:bookingId/passport', async (req, res) => {
+    try {
+      const g = await groupFor(req.params.token);
+      if (!g) return res.status(404).send('Not found');
+      const b = await prisma.booking.findFirst({ where: { id: parseInt(req.params.bookingId, 10), groupId: g.id }, select: { studentId: true } });
+      if (!b?.studentId) return res.status(404).send('Not found');
+      const doc = await prisma.studentDocument.findFirst({ where: { studentId: b.studentId, category: 'passport' }, orderBy: { id: 'desc' } });
+      if (!doc) return res.status(404).send('Not found');
+      const fp = path.join(studentsDir, String(b.studentId), doc.filename);
+      if (!fs.existsSync(fp)) return res.status(404).send('Not found');
+      res.setHeader('Content-Type', doc.mimeType || 'application/octet-stream');
+      res.setHeader('Cache-Control', 'no-store');
+      res.sendFile(fp);
+    } catch (e: any) { res.status(500).send(String(e?.message || e)); }
+  });
+
+  return router;
+}

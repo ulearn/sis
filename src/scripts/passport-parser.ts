@@ -36,21 +36,28 @@ export interface ParsedPassport {
   dateOfIssue: string | null;   // YYYY-MM-DD (printed visual zone; often absent in MRZ)
   dateOfExpiry: string | null;  // YYYY-MM-DD
   nationality: string | null;   // 3-letter code as printed, else country name
+  nationalityCountry?: string | null;  // the same nationality as an English country name ("Italy") — SIS stores names
   sex: 'M' | 'F' | null;
+  documentType?: 'passport' | 'id_card' | null;  // EU juniors often fly on a national ID card (Neil 2026-11-20)
   needsReview: string[];
 }
 
-const SYSTEM_PROMPT = `You read a passport photo/scan and extract its identity fields into a FIXED JSON object. Prefer the machine-readable zone (the two lines of "<<<" at the bottom) — it is the most reliable source — but use the printed visual zone for fields the MRZ lacks (especially date of issue). Rules:
+const SYSTEM_PROMPT = `You read a photo/scan of a travel document — a PASSPORT or a national IDENTITY CARD (e.g. the Italian "Carta di Identità", front, back, or both sides in one image) — and extract its identity fields into a FIXED JSON object. Labels may be in Italian or another language (Cognome = surname, Nome = given names, Data di nascita = date of birth, Sesso = sex, Cittadinanza = nationality, Emissione/Rilascio = issue, Scadenza = expiry). Prefer the machine-readable zone (the lines of "<<<") — it is the most reliable source — but use the printed visual zone for fields the MRZ lacks (especially date of issue). Rules:
+- mrz: the machine-readable lines EXACTLY as printed, one string per line, every character including each "<" (count them carefully); [] if none visible.
+- documentType: "passport" (MRZ starts "P", 2 lines of 44) or "id_card" (MRZ starts "I", "C" or "A", 3 lines of 30; or the card says Identity Card / Carta di Identità); null if unsure.
+- On an ID card's 3-line MRZ: line 1 positions 6-14 are the document number; line 2 holds date of birth (YYMMDD), sex, expiry (YYMMDD) and nationality; line 3 holds SURNAME<<GIVEN<NAMES. The document number is also printed on the front (often top right, e.g. "CA01960QR"). Do NOT use the fiscal code, the card serial under the photo area, or birth-record numbers.
+- Printed dates on ID cards are usually DD.MM.YYYY.
 - Output ONLY the JSON object. No prose, no markdown fences.
 - Dates: "YYYY-MM-DD". MRZ dates are YYMMDD — expand the century sensibly (issue/expiry are recent or future; date of birth is in the past). Blank/unreadable → null.
-- passportNumber: the document number (line 2 of the MRZ, positions 1-9, dropping filler "<").
+- passportNumber: the document number (passport: line 2 of the MRZ, positions 1-9; ID card: as above), dropping filler "<".
 - sex: "M" or "F" only; else null.
 - nationality: the 3-letter code as printed (e.g. "BRA"); if only a country name is legible, use that.
+- nationalityCountry: that nationality as the plain English country name (e.g. "Brazil", "Italy", "United Kingdom"); null if unknown.
 - NEVER invent. If a field is not legible, set it null AND add its name to "needsReview".
-- If the image is not a passport, or is unreadable, set all fields null and put "not_a_passport" in needsReview.
+- If the image is neither a passport nor an ID card, or is unreadable, set all fields null and put "not_a_passport" in needsReview.
 
 Schema (every key REQUIRED; null when absent):
-{"passportNumber":str|null,"surname":str|null,"givenNames":str|null,"dateOfBirth":str|null,"dateOfIssue":str|null,"dateOfExpiry":str|null,"nationality":str|null,"sex":"M"|"F"|null,"needsReview":[str]}`;
+{"passportNumber":str|null,"surname":str|null,"givenNames":str|null,"dateOfBirth":str|null,"dateOfIssue":str|null,"dateOfExpiry":str|null,"nationality":str|null,"nationalityCountry":str|null,"sex":"M"|"F"|null,"documentType":"passport"|"id_card"|null,"mrz":[str],"needsReview":[str]}`;
 
 // Produce a vision-ready image (buffer + mime) from the uploaded file: images
 // pass through as-is; a PDF's first page is rasterised to PNG at 200 DPI (sharp
@@ -72,6 +79,56 @@ async function toImage(filePath: string, mime: string): Promise<{ buf: Buffer; m
     } catch { return null; }
   }
   return null;
+}
+
+// ── Machine-readable zone, decoded in code ───────────────────────────────
+// The model transcribes the "<<<" lines; this decodes them by position and keeps
+// only fields whose ICAO check digit passes. The model's own reading of the MRZ is
+// unreliable (it glued the check digit onto an ID card number and misread a birth
+// date, 2026-11-20); a passing check digit is near-certain.
+function mrzCheck(field: string, digit: string): boolean {
+  const w = [7, 3, 1];
+  let sum = 0;
+  for (let i = 0; i < field.length; i++) {
+    const c = field[i]!;
+    const v = c === '<' ? 0 : /\d/.test(c) ? +c : /[A-Z]/.test(c) ? c.charCodeAt(0) - 55 : -1;
+    if (v < 0) return false;
+    sum += v * w[i % 3]!;
+  }
+  return String(sum % 10) === digit;
+}
+function mrzDate(yymmdd: string, kind: 'birth' | 'expiry'): string | null {
+  if (!/^\d{6}$/.test(yymmdd)) return null;
+  const yy = +yymmdd.slice(0, 2), mm = yymmdd.slice(2, 4), dd = yymmdd.slice(4, 6);
+  const nowYY = new Date().getUTCFullYear() % 100;
+  const year = kind === 'birth' ? (yy > nowYY ? 1900 + yy : 2000 + yy) : 2000 + yy;
+  return `${year}-${mm}-${dd}`;
+}
+function applyMrz(p: ParsedPassport, raw: unknown) {
+  if (!Array.isArray(raw)) return;
+  const lines = raw.map(l => String(l || '').toUpperCase().replace(/\s+/g, '').replace(/[«‹]/g, '<')).filter(l => l.length >= 28);
+  let num: string | null = null, numChk = '', dob = '', dobChk = '', sex = '', exp = '', expChk = '', nat = '', names = '';
+  if (lines.length >= 3 && /^[ACI]/.test(lines[0]!)) {          // ID card (3 × 30)
+    const [l1, l2, l3] = lines as [string, string, string];
+    num = l1.slice(5, 14); numChk = l1[14] || '';
+    dob = l2.slice(0, 6); dobChk = l2[6] || ''; sex = l2[7] || ''; exp = l2.slice(8, 14); expChk = l2[14] || ''; nat = l2.slice(15, 18);
+    names = l3;
+    p.documentType = 'id_card';
+  } else if (lines.length >= 2 && lines[0]!.startsWith('P')) {  // passport (2 × 44)
+    const [l1, l2] = lines as [string, string];
+    names = l1.slice(5);
+    num = l2.slice(0, 9); numChk = l2[9] || ''; nat = l2.slice(10, 13);
+    dob = l2.slice(13, 19); dobChk = l2[19] || ''; sex = l2[20] || ''; exp = l2.slice(21, 27); expChk = l2[27] || '';
+    p.documentType = 'passport';
+  } else return;
+  if (num && mrzCheck(num, numChk)) p.passportNumber = num.replace(/</g, '');
+  if (mrzCheck(dob, dobChk)) p.dateOfBirth = mrzDate(dob, 'birth');
+  if (mrzCheck(exp, expChk)) p.dateOfExpiry = mrzDate(exp, 'expiry');
+  if (sex === 'M' || sex === 'F') p.sex = sex;
+  if (/^[A-Z]{3}$/.test(nat)) p.nationality = nat;
+  const [sur, giv] = names.split('<<');
+  if (sur && /^[A-Z<]+$/.test(sur) && !p.surname) p.surname = sur.replace(/</g, ' ').trim();
+  if (giv && !p.givenNames) p.givenNames = giv.replace(/</g, ' ').trim();
 }
 
 export async function parsePassport(
@@ -107,7 +164,7 @@ export async function parsePassport(
           {
             role: 'user',
             content: [
-              { type: 'text', text: 'Extract the fields from this passport.' },
+              { type: 'text', text: 'Extract the fields from this travel document (passport or ID card).' },
               { type: 'image_url', image_url: { url: dataUri, detail: 'high' } },
             ],
           },
@@ -123,6 +180,8 @@ export async function parsePassport(
     let p: ParsedPassport;
     try { p = JSON.parse(content); } catch { return { supported: true, extracted: null, error: 'model returned non-JSON' }; }
     if (!Array.isArray((p as any).needsReview)) (p as any).needsReview = [];
+    applyMrz(p, (p as any).mrz);
+    delete (p as any).mrz;
     return { supported: true, extracted: p };
   } catch (e: any) {
     return { supported: true, extracted: null, error: String(e?.message || e) };

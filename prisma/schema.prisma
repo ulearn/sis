@@ -74,6 +74,7 @@ model Student {
 
   // Visa / Passport
   passportNumber    String?  @map("passport_number")
+  travelDocType     String?  @map("travel_doc_type")   // "passport" | "id_card" — the document in passportNumber / passportValid* (EU juniors often fly on ID cards)
   // DEPRECATED 2026-05-08 — visaRequired was cosmetic; nothing read it for
   // logic. Visa relevance is derived from `visaStatus` (any non-null value
   // means visa is in play). Field + DB column kept temporarily so legacy
@@ -528,6 +529,7 @@ model Booking {
   // each keeps its own booking for class assignment, attendance + LoA.
   groupId Int? @map("group_id")
   group   StudentGroup? @relation(fields: [groupId], references: [id])
+  groupRole String? @map("group_role")   // null = student; "leader" = travelling group leader (flights/passport, no class)
 
   // Relations
   courses            BookingCourse[]
@@ -572,6 +574,7 @@ model StudentGroup {
   courseStart   DateTime? @map("course_start") @db.Date
   courseEnd     DateTime? @map("course_end")   @db.Date
   accomType     String?   @map("accom_type")
+  shareToken    String?   @unique @map("share_token")  // public no-login group link (/sis/group/<token>): organiser uploads passports → members
   accomAddress  String?   @map("accom_address")  // external/independent accommodation (e.g. a hotel we didn't book) — group-level, one source of truth. NOT a provider/bed.
   accomStart    DateTime? @map("accom_start")  @db.Date
   accomEnd      DateTime? @map("accom_end")    @db.Date

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>ULearn · Group Passports</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --g:#339900; --g2:#2a7d00; --ink:#1a1a2e; --mut:#6b7280; --line:#e5e7eb; --bad:#dc2626; --warn:#d97706; --bg:#f4f6f3; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Inter, -apple-system, Segoe UI, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; }
+  header { background: var(--g); color: #fff; padding: 10px 16px; display: flex; align-items: center; gap: 12px; }
+  header b { font-size: 17px; font-weight: 800; }
+  header .meta { margin-left: auto; font-size: 13px; opacity: .92; text-align: right; }
+  main { max-width: 1100px; margin: 0 auto; padding: 10px 16px 40px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; }
+  .up { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .btn { border: 0; border-radius: 8px; padding: 10px 14px; font: 700 14px Inter, sans-serif; cursor: pointer; background: var(--g); color: #fff; }
+  .btn.alt { background: #fff; color: var(--g2); border: 1.5px solid var(--g); }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .drop { flex: 1 1 220px; border: 1.5px dashed #b9c4b1; border-radius: 8px; padding: 10px; color: var(--mut); text-align: center; font-size: 13px; }
+  .drop.on { border-color: var(--g); background: #eef7e8; color: var(--g2); }
+  #prog { font-size: 13px; color: var(--g2); font-weight: 600; margin-top: 6px; min-height: 0; }
+  #prog .err { color: var(--bad); display: block; font-weight: 600; }
+  .count { font-weight: 800; }
+  .hd, .m { display: grid; grid-template-columns: 1.1fr 1.1fr .5fr .95fr 1fr 1fr .95fr .75fr 54px; gap: 6px; align-items: center; }
+  .hd { font-size: 11px; font-weight: 700; color: var(--mut); text-transform: uppercase; padding: 0 12px 4px; }
+  .m { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; margin-bottom: 5px; }
+  .m.leader { border-left: 4px solid #7c3aed; }
+  .m input, .m select { width: 100%; border: 1px solid var(--line); border-radius: 6px; padding: 6px 7px; font: 13px Inter, sans-serif; color: var(--ink); background: #fff; min-width: 0; }
+  .m input.miss, .m select.miss { border-color: var(--bad); background: #fef2f2; }
+  .m input.soon { border-color: var(--warn); background: #fffbeb; }
+  .m .act { display: flex; gap: 4px; justify-content: flex-end; }
+  .ic { border: 0; background: none; cursor: pointer; font-size: 16px; padding: 2px 4px; color: var(--mut); }
+  .ic:hover { color: var(--ink); }
+  .lbl { display: none; }
+  .empty { color: var(--mut); text-align: center; padding: 18px; }
+  .legend { font-size: 12px; color: var(--mut); margin: 6px 0 8px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: -1px; margin: 0 3px 0 10px; }
+  @media (max-width: 760px) {
+    header .meta { font-size: 12px; }
+    .hd { display: none; }
+    .m { grid-template-columns: 1fr 1fr; padding: 8px 10px; }
+    .lbl { display: block; font-size: 10px; font-weight: 700; color: var(--mut); text-transform: uppercase; margin-bottom: 1px; }
+    .m .act { grid-column: 1 / -1; justify-content: space-between; }
+  }
+</style>
+</head>
+<body>
+<header><b>ULearn</b><span id="gname"></span><div class="meta" id="gmeta"></div></header>
+<main>
+  <div class="card">
+    <div class="up">
+      <button class="btn" id="bStu">Add Student Passports</button>
+      <button class="btn alt" id="bLead">Add Leader Passports</button>
+      <div class="drop" id="drop">Or drop passport photos / PDFs here (students)</div>
+    </div>
+    <div id="prog"></div>
+    <input type="file" id="fStu" accept="image/*,application/pdf" multiple hidden>
+    <input type="file" id="fLead" accept="image/*,application/pdf" multiple hidden>
+  </div>
+  <div class="legend"><span class="count" id="cnt"></span> <i style="background:#fef2f2;border:1px solid var(--bad)"></i>Missing <i style="background:#fffbeb;border:1px solid var(--warn)"></i>Passport expires within 3 months of the trip <i style="background:#7c3aed"></i>Leader</div>
+  <div class="hd"><span>Surname</span><span>Given Names</span><span>Sex</span><span>Birth Date</span><span>Nationality</span><span>Passport No.</span><span>Expiry</span><span>Role</span><span></span></div>
+  <div id="list"></div>
+</main>
+<script>
+const TOKEN = location.pathname.split('/').filter(Boolean).pop();
+const API = `/sis/group/${TOKEN}/api`;
+let DATA = { group: {}, members: [] };
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const fmt = d => d ? new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }) : '';
+
+async function load() {
+  const r = await fetch(API, { cache: 'no-store' }); const j = await r.json();
+  if (!j.success) { document.querySelector('main').innerHTML = '<div class="card empty">This link is no longer active. Please contact ULearn.</div>'; return; }
+  DATA = j; render();
+}
+function render() {
+  const g = DATA.group, ms = DATA.members.slice().sort((a, b) => (a.role === b.role ? 0 : a.role === 'leader' ? -1 : 1) || (a.lastName || '~').localeCompare(b.lastName || '~'));
+  document.getElementById('gname').textContent = g.name || '';
+  document.getElementById('gmeta').textContent = g.arrival ? `Arrival ${fmt(g.arrival)}` : '';
+  const leaders = ms.filter(m => m.role === 'leader').length, students = ms.length - leaders;
+  const todo = ms.filter(m => m.missing.length || m.expiresSoon).length;
+  document.getElementById('cnt').textContent = `${students} student${students === 1 ? '' : 's'}${g.pax ? ' of ' + g.pax : ''} · ${leaders} leader${leaders === 1 ? '' : 's'}${todo ? ` · ${todo} to check` : ' · all complete'}`;
+  const f = (m, k, label, type, extra = '') => {
+    const cls = m.missing.includes(k) ? 'miss' : (k === 'passportExpiry' && m.expiresSoon ? 'soon' : '');
+    return `<div><span class="lbl">${label}</span><input class="${cls}" type="${type}" data-k="${k}" data-b="${m.bookingId}" value="${esc(m[k] || '')}" ${extra}></div>`;
+  };
+  document.getElementById('list').innerHTML = ms.length ? ms.map(m => `
+    <div class="m ${m.role === 'leader' ? 'leader' : ''}">
+      ${f(m, 'lastName', 'Surname', 'text')}${f(m, 'firstName', 'Given Names', 'text')}
+      <div><span class="lbl">Sex</span><select data-k="sex" data-b="${m.bookingId}" class="${m.missing.includes('sex') ? 'miss' : ''}"><option value=""></option><option ${m.sex === 'F' ? 'selected' : ''}>F</option><option ${m.sex === 'M' ? 'selected' : ''}>M</option></select></div>
+      ${f(m, 'dob', 'Birth Date', 'date')}${f(m, 'nationality', 'Nationality', 'text')}${f(m, 'passportNumber', 'Passport No.', 'text', 'style="text-transform:uppercase"')}${f(m, 'passportExpiry', 'Expiry', 'date', m.expiresSoon ? 'title="Expires within 3 months of the end of the trip — many airlines and borders refuse this"' : '')}
+      <div><span class="lbl">Role</span><select data-k="role" data-b="${m.bookingId}"><option value="student" ${m.role !== 'leader' ? 'selected' : ''}>Student</option><option value="leader" ${m.role === 'leader' ? 'selected' : ''}>Leader</option></select></div>
+      <div class="act">${m.passportDocId ? `<button class="ic" title="View passport" onclick="window.open('${API}/members/${m.bookingId}/passport','_blank')">👁</button>` : '<span></span>'}<button class="ic" title="Remove" onclick="del(${m.bookingId})">✕</button></div>
+    </div>`).join('') : '<div class="card empty">No passports yet.</div>';
+}
+document.getElementById('list').addEventListener('change', async e => {
+  const el = e.target; if (!el.dataset.k) return;
+  el.disabled = true;
+  try {
+    const r = await fetch(`${API}/members/${el.dataset.b}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ [el.dataset.k]: el.value }) });
+    const j = await r.json(); if (!j.success) throw new Error(j.error || 'Save failed');
+    await load();
+  } catch (err) { alert(err.message || err); el.disabled = false; }
+});
+async function del(id) {
+  const m = DATA.members.find(x => x.bookingId === id);
+  if (!confirm(`Remove ${[m?.firstName, m?.lastName].filter(Boolean).join(' ') || 'this traveller'}?`)) return;
+  await fetch(`${API}/members/${id}`, { method: 'DELETE' }); load();
+}
+async function uploadAll(files, role) {
+  files = [...files].filter(f => /^image\/|pdf$/.test(f.type) || /\.(jpe?g|png|heic|heif|webp|pdf)$/i.test(f.name));
+  if (!files.length) return;
+  const prog = document.getElementById('prog'), btns = document.querySelectorAll('.btn');
+  btns.forEach(b => b.disabled = true);
+  const errs = []; let added = 0, dup = 0, unread = 0, matched = 0;
+  for (let i = 0; i < files.length; i++) {
+    prog.innerHTML = `Reading passport ${i + 1} of ${files.length}…`;
+    const fd = new FormData(); fd.append('role', role); fd.append('file', files[i]);
+    try {
+      const r = await fetch(`${API}/passport`, { method: 'POST', body: fd }); const j = await r.json();
+      if (!j.success) errs.push(`${files[i].name}: ${j.error}`);
+      else if (j.duplicate) dup++;
+      else if (j.matched) matched++;
+      else { added++; if (!j.read) unread++; }
+    } catch (e) { errs.push(`${files[i].name}: upload failed`); }
+    if ((i + 1) % 5 === 0) load();
+  }
+  btns.forEach(b => b.disabled = false);
+  prog.innerHTML = `Added ${added}${matched ? ` · ${matched} matched to names already on the list` : ''}${dup ? ` · ${dup} already on the list` : ''}${unread ? ` · ${unread} couldn’t be read, please type those in` : ''}` + errs.map(e => `<span class="err">${esc(e)}</span>`).join('');
+  load();
+}
+document.getElementById('bStu').onclick = () => document.getElementById('fStu').click();
+document.getElementById('bLead').onclick = () => document.getElementById('fLead').click();
+document.getElementById('fStu').onchange = e => { uploadAll(e.target.files, 'student'); e.target.value = ''; };
+document.getElementById('fLead').onchange = e => { uploadAll(e.target.files, 'leader'); e.target.value = ''; };
+const drop = document.getElementById('drop');
+['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('on'); }));
+['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('on'); }));
+drop.addEventListener('drop', e => uploadAll(e.dataTransfer.files, 'student'));
+load();
+</script>
+</body>
+</html>

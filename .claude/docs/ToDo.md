@@ -2,6 +2,26 @@
 
 Open work for this project. Protocol: anything left unfinished at the end of a session goes here (not in memory); finished work is moved to ToDo-Done.md. Synced with Wrike (space "hub" → folder "SIS") every 5 minutes — edit the text here; status syncs both ways.
 
+
+## Aluigi group: collect passports, book flights
+
+**Priority:** High
+**Status:** Waiting — families to upload their documents
+**Progress:** 40% — Giovanna's list loaded (53 students + 4 teachers, names/DOB/sex), pushed to HubSpot; 56 document numbers still to collect
+**Added:** 2026-11-20
+**Updated:** 2026-11-20T18:40:07Z
+
+Group #7 "Giovanna Aluigi Group" (HubSpot deal 534952000749): 53 students + 4 teachers (her list); ULearn books the flights (first time). Link (Italian/English, passports or ID cards, 📎 upload per person): https://sis.ulearnschool.com/sis/group/m7Ubfhx9UB57
+- [x] List loaded from her spreadsheet; Giovanna's own ID card read; 53 students pushed to HubSpot
+- [x] Link emailed to Giovanna from partners@ (2026-11-20) to forward to all students
+- [ ] Chase until every row has a document number (56 to go)
+- [ ] Group name says 54 PAX, her list has 53 students: check with her
+- [ ] Add course + accommodation dates to group #7 (not on the deal); then the expiry check uses them
+- [ ] Download ✈ Flight Manifest from the group page → book flights
+- [ ] Next phase: per-student links (for parents, and the placement test without email)
+
+---
+
 ## Attendance: add "Excused Late Arrival" and "Excused Early Departure" options
 
 **Priority:** Medium
@@ -2035,5 +2055,32 @@ Neil 10 Nov (revised): payment of the INSURANCE extra sends the row to fins proc
 - [ ] Feed for fins (or confirm fins reads BookingExtra INSURANCE directly)
 - [ ] Write-back endpoint for fins: status, policy no. + dates, policy PDF filed in the student documents → student app
 - [ ] Backfill BookingExtra INSURANCE details = null (~29 of 100 sampled)
+
+---
+
+## Host payout rate per placement
+
+**Priority:** Medium
+**Status:** Backlog
+**Added:** 2026-11-20
+**Updated:** 2026-11-20T16:40:08Z
+
+Rate is per host, but different rates apply by student/requirements (Neil, 20/11/2026). Today host-payments.ts pays only AccommodationProvider.weeklyRate; Group.defaultAccommRate exists in schema but is unused; line-item PATCH is a per-run manual edit only. Mark Haslam (provider 111) set to €210 on 20/11/2026 for Ian Zelko (BA 11458); his junior-sharing rate is €155.
+- [ ] Keep host default rate (provider.weeklyRate); add optional override per placement (e.g. booking_accommodations.host_weekly_rate) and/or rate tiers per host: adult standard, junior sharing, junior alone + packed lunch
+- [ ] Host payment run uses the placement override when set, else the host default
+- [ ] UI to set the override when placing a student; then restore Mark to €155 and set Ian's placement to €210
+
+---
+
+## Map +5 add-on products (PLS-) to a course line in the HubSpot webhook
+
+**Priority:** Medium
+**Status:** Waiting — Neil (go-ahead)
+**Added:** 2026-11-20
+**Updated:** 2026-11-20T16:45:06Z
+
+skuToCourseCategory in src/routes/webhooks.ts has no rule for PLS- products, so +5 add-on bookings arrive with no course line and the student is never put in the +5 class. Yuanyuan Guan (booking 18456) was fixed by hand on 20/11.
+- [ ] Add a PLS- rule: course line "General English +5 (Plus)", category OTHER, 5 h/wk (doesn't count in morning seats)
+- [ ] Fix Sergiy Bednarskiy booking 18387 the same way and place him in the +5 class
 
 ---

@@ -46,7 +46,7 @@ async function pushGroupToHubspot(prisma: PrismaClient, groupId: number) {
   const g = await prisma.studentGroup.findUnique({ where: { id: groupId } });
   if (!g) throw new Error('Group not found');
   const bookings = await prisma.booking.findMany({
-    where: { groupId },
+    where: { groupId, groupRole: null },   // leaders (groupRole 'leader') are agent staff, not Student-B2B contacts
     select: { student: { select: { id: true, firstName: true, lastName: true, email: true, phone: true, birthday: true, nationality: true, currentLevel: true, hubspotContactId: true } } },
     orderBy: { id: 'asc' },
   });
@@ -195,6 +195,8 @@ async function createGroupFromDeal(prisma: PrismaClient, dealIdRaw: string) {
   return { id: g.id, name };
 }
 
+import { newGroupToken } from './group-public';
+
 export function groupRoutes(prisma: PrismaClient) {
   const router = Router();
   const scripts = groupScripts(prisma);
@@ -284,7 +286,7 @@ export function groupRoutes(prisma: PrismaClient) {
       const result = await scripts.commitGroupStudents(parseInt(req.params.id, 10), students, {
         createdBy: (req.session as any)?.user || null,
       });
-      res.status(201).json({ created: result.created });
+      res.status(201).json({ created: result.created, skipped: result.skipped });
     } catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }
   });
 
@@ -293,6 +295,44 @@ export function groupRoutes(prisma: PrismaClient) {
   router.post('/:id/push-hubspot', async (req, res) => {
     try { res.json(await pushGroupToHubspot(prisma, parseInt(req.params.id, 10))); }
     catch (e: any) { res.status(400).json({ error: String(e?.message || e) }); }
+  });
+
+  // GROUP LINK: mint (or return) the group's public passport-upload link; DELETE disables it.
+  router.post('/:id/share-link', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id, 10);
+      const g = await prisma.studentGroup.findUnique({ where: { id }, select: { shareToken: true } });
+      if (!g) return res.status(404).json({ error: 'Group not found' });
+      const token = g.shareToken || newGroupToken();
+      if (!g.shareToken) await prisma.studentGroup.update({ where: { id }, data: { shareToken: token } });
+      res.json({ success: true, url: `https://sis.ulearnschool.com/sis/group/${token}` });
+    } catch (e: any) { res.status(500).json({ error: String(e?.message || e) }); }
+  });
+  router.delete('/:id/share-link', async (req, res) => {
+    try {
+      await prisma.studentGroup.update({ where: { id: parseInt(req.params.id, 10) }, data: { shareToken: null } });
+      res.json({ success: true });
+    } catch (e: any) { res.status(500).json({ error: String(e?.message || e) }); }
+  });
+
+  // FLIGHT MANIFEST: one row per traveller (students + leaders) with the passport
+  // fields an airline / travel agent needs. CSV opens straight in Excel.
+  router.get('/:id/manifest.csv', async (req, res) => {
+    try {
+      const t = await scripts.groupTravellers(parseInt(req.params.id, 10));
+      if (!t) return res.status(404).send('Group not found');
+      const q = (v: any) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+      const head = ['#', 'Given Names', 'Surname', 'Role', 'Sex', 'Date of Birth', 'Nationality', 'Document', 'Document No.', 'Document Expiry', 'Check'];
+      const rows = t.members
+        .slice().sort((a, b) => (a.role === b.role ? 0 : a.role === 'leader' ? -1 : 1) || a.lastName.localeCompare(b.lastName))
+        .map((m, i) => [i + 1, m.firstName, m.lastName.toUpperCase(), m.role === 'leader' ? 'Leader' : 'Student', m.sex, m.dob || '', m.nationality, m.docType === 'id_card' ? 'ID Card' : m.docType === 'passport' ? 'Passport' : '', m.passportNumber, m.passportExpiry || '',
+          [m.missing.length ? 'missing: ' + m.missing.join(', ') : '', m.expiresSoon ? 'document expires <3 months after stay' : ''].filter(Boolean).join('; ')]);
+      const csv = '\ufeff' + [head, ...rows].map(r => r.map(q).join(',')).join('\r\n');
+      const fname = `${t.group.name.replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '')}-flight-manifest.csv`;
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="${fname}"`);
+      res.send(csv);
+    } catch (e: any) { res.status(500).send(String(e?.message || e)); }
   });
 
   // PULL FROM HUBSPOT: refresh Company + Leaders from the deal's associations.
